@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, Suspense } from 'react';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -41,7 +41,7 @@ const FALLBACK_TAGS: TagItem[] = [
  * - Auto-hides on scroll down, reappears on scroll up (locked open when search is focused).
  * - Keyboard shortcuts (⌘K / / to expand, ESC to close).
  */
-export function SiteHeader({ tags: providedTags }: SiteHeaderProps) {
+function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
   const t = useTranslations('search');
   const router = useRouter();
   const pathname = usePathname();
@@ -505,5 +505,25 @@ export function SiteHeader({ tags: providedTags }: SiteHeaderProps) {
         </div>
       </div>
     </header>
+  );
+}
+
+export function SiteHeader(props: SiteHeaderProps) {
+  return (
+    <Suspense
+      fallback={
+        <header className="sticky top-0 z-40 w-full border-b border-white/10 bg-black/80 backdrop-blur-xl">
+          <div className="mx-auto flex max-w-[160rem] items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+            <div className="flex items-center gap-2">
+              <span className="font-sans text-sm font-bold tracking-widest text-white">
+                ALPHA <span className="font-serif italic text-white/90">α</span> COLORLAB
+              </span>
+            </div>
+          </div>
+        </header>
+      }
+    >
+      <SiteHeaderInner {...props} />
+    </Suspense>
   );
 }
