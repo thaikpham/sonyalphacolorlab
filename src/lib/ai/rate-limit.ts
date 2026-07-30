@@ -20,7 +20,16 @@ const windows = new Map<string, Window>();
 
 export type RateLimitResult = { allowed: boolean; remaining: number; retryAfterSeconds: number };
 
-export function checkRateLimit(key: string, now = Date.now()): RateLimitResult {
+/**
+ * `max` is a parameter so the community write paths can reuse this without
+ * sharing the AI endpoint's budget — the key namespaces them, the limit differs
+ * (an AI call costs money, a comment costs a row).
+ */
+export function checkRateLimit(
+  key: string,
+  now = Date.now(),
+  max = MAX_PER_WINDOW,
+): RateLimitResult {
   // Opportunistic sweep; the map would otherwise grow with every unique key.
   if (windows.size > 10_000) {
     for (const [k, w] of windows) if (w.resetAt <= now) windows.delete(k);
@@ -29,10 +38,10 @@ export function checkRateLimit(key: string, now = Date.now()): RateLimitResult {
   const existing = windows.get(key);
   if (!existing || existing.resetAt <= now) {
     windows.set(key, { count: 1, resetAt: now + WINDOW_MS });
-    return { allowed: true, remaining: MAX_PER_WINDOW - 1, retryAfterSeconds: 0 };
+    return { allowed: true, remaining: max - 1, retryAfterSeconds: 0 };
   }
 
-  if (existing.count >= MAX_PER_WINDOW) {
+  if (existing.count >= max) {
     return {
       allowed: false,
       remaining: 0,
@@ -43,7 +52,7 @@ export function checkRateLimit(key: string, now = Date.now()): RateLimitResult {
   existing.count += 1;
   return {
     allowed: true,
-    remaining: MAX_PER_WINDOW - existing.count,
+    remaining: max - existing.count,
     retryAfterSeconds: 0,
   };
 }

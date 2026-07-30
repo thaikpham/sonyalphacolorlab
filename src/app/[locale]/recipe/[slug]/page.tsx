@@ -177,7 +177,11 @@ export default async function RecipePage({
           {/* Right Column (Lg 5/12): White Balance (Top) + Exact Camera Settings Tables */}
           <div className="lg:col-span-5 lg:sticky lg:top-24 flex flex-col gap-6">
             {/* White Balance Core Engine (Top of Parameters Column) */}
-            <section className="glass p-5 sm:p-6 shadow-[0_15px_40px_-10px_rgba(0,0,0,0.8)] relative overflow-hidden">
+            {/* p-5 matches ParamBlock deliberately. This card and the parameter
+                tables stack in one column, so a different padding put every WB
+                row 4px right of every Picture Profile row below it — one shared
+                left edge down the whole column instead. */}
+            <section className="glass p-5 shadow-[0_15px_40px_-10px_rgba(0,0,0,0.8)] relative overflow-hidden">
               <div className="film-burn-leak" />
               <div className="relative z-10 flex flex-col gap-4">
                 <div>

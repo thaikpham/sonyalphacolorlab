@@ -13,7 +13,7 @@ const layout = readFileSync('src/app/[locale]/layout.tsx', 'utf8');
 
 /** Namespaces requested by any 'use client' component. */
 function clientNamespaces(): string[] {
-  const files = ['hero-landing', 'language-toggle', 'site-header', 'tweak-panel'];
+  const files = ['language-toggle', 'site-header', 'tweak-panel'];
   const found = new Set<string>();
   for (const f of files) {
     const src = readFileSync(`src/components/${f}.tsx`, 'utf8');

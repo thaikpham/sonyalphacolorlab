@@ -55,7 +55,6 @@ const AXIS_TINT: Record<Effect['axis'], string> = {
 };
 
 import {
-  getColorDepthChannelColor,
   getColorDepthChannelHexColor,
 } from '@/lib/camera/color';
 

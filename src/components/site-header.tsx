@@ -3,9 +3,10 @@
 import { useCallback, useEffect, useRef, useState, Suspense } from 'react';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { LanguageToggle } from './language-toggle';
-import { Link, usePathname, useRouter } from '@/i18n/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
+import { routing } from '@/i18n/routing';
 import { CREATIVE_LOOKS } from '@/lib/camera/constants';
 
 export interface TagItem {
@@ -44,7 +45,7 @@ const FALLBACK_TAGS: TagItem[] = [
 function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
   const t = useTranslations('search');
   const router = useRouter();
-  const pathname = usePathname();
+  const locale = useLocale();
   const searchParams = useSearchParams();
 
   const currentQ = searchParams?.get('q') ?? '';
@@ -60,13 +61,22 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
   const [query, setQuery] = useState(currentQ);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Sync local query when URL search param changes
-  useEffect(() => {
+  /**
+   * Keep the input in step with the URL.
+   *
+   * Adjusted during render rather than in an effect: React re-runs this
+   * component immediately without committing the first result, so there is no
+   * flash of the stale query and no cascading re-render. Doing it in an effect
+   * is what `react-hooks/set-state-in-effect` flags, and it would paint the old
+   * value for one frame after every navigation.
+   * https://react.dev/learn/you-might-not-need-an-effect
+   */
+  const [syncedQ, setSyncedQ] = useState(currentQ);
+  if (syncedQ !== currentQ) {
+    setSyncedQ(currentQ);
     setQuery(currentQ);
-    if (hasActiveFilters) {
-      setIsSearchOpen(true);
-    }
-  }, [currentQ, hasActiveFilters]);
+    if (hasActiveFilters) setIsSearchOpen(true);
+  }
 
   // Handle scroll auto-hide behavior
   useEffect(() => {
@@ -149,17 +159,33 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
       if (newLook && newFormat === 'cl') next.look = newLook;
       if (newTag) next.tag = newTag;
 
+      // Filtering always lands on the grid, whatever page we came from.
       const qs = new URLSearchParams(next).toString();
-      const targetPath = pathname === '/' ? '/' : '/';
-      const targetUrl = qs ? `${targetPath}?${qs}` : targetPath;
-
-      router.push(targetUrl, { scroll: false });
+      router.push(qs ? `/?${qs}` : '/', { scroll: false });
     },
-    [currentQ, currentFormat, currentLook, currentTag, pathname, router],
+    [currentQ, currentFormat, currentLook, currentTag, router],
   );
+
+  /**
+   * Live search, debounced.
+   *
+   * Navigating straight from `onChange` pushed a route per keystroke, and each
+   * push refetches the RSC payload for the whole grid — "portrait" cost eight
+   * round trips and raced its own results. One push once typing settles.
+   */
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const queueSearch = (value: string) => {
+    setQuery(value);
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => updateFilters({ q: value }), 250);
+  };
+  useEffect(() => () => {
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (searchTimer.current) clearTimeout(searchTimer.current);
     updateFilters({ q: query });
   };
 
@@ -231,7 +257,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                     </svg>
                     <span className="truncate">
                       {query ? (
-                        <strong className="text-white">"{query}"</strong>
+                        <strong className="text-white">&quot;{query}&quot;</strong>
                       ) : (
                         t('placeholder')
                       )}
@@ -261,11 +287,26 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                 </button>
               ) : (
                 /* Expanded Search Input Form */
+                /* A real GET form, not just an onSubmit handler: search has to
+                   work before hydration and with JS off. `action` must carry the
+                   locale prefix — a hardcoded "/" drops a Vietnamese reader who
+                   arrived on a shared /vi link (so has no cookie yet) into the
+                   English site. Active filters ride along as hidden inputs or
+                   searching silently clears them. */
                 <form
                   role="search"
+                  action={locale === routing.defaultLocale ? '/' : `/${locale}`}
+                  method="get"
                   onSubmit={handleSubmit}
                   className="relative flex items-center w-full animate-fade-in"
                 >
+                  {Object.entries({
+                    format: currentFormat,
+                    look: currentFormat === 'cl' ? currentLook : '',
+                    tag: currentTag,
+                  }).map(([key, value]) =>
+                    value ? <input key={key} type="hidden" name={key} value={value} /> : null,
+                  )}
                   <label htmlFor="header-search-input" className="sr-only">
                     {t('label')}
                   </label>
@@ -290,11 +331,9 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                       id="header-search-input"
                       ref={inputRef}
                       type="search"
+                      name="q"
                       value={query}
-                      onChange={(e) => {
-                        setQuery(e.target.value);
-                        updateFilters({ q: e.target.value });
-                      }}
+                      onChange={(e) => queueSearch(e.target.value)}
                       placeholder={t('placeholder')}
                       autoComplete="off"
                       className="w-full pl-9 pr-16 py-1.5 text-xs sm:text-sm rounded-full bg-black/70 text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-white/40 transition-all shadow-md"

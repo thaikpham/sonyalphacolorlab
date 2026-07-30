@@ -1,55 +1,67 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from './auth-context';
 import type { CommentItem } from '@/app/api/comments/route';
 import type { ProposalItem } from '@/app/api/proposals/route';
-import {
-  PP_GAMMA,
-  PP_COLOR_MODE,
-  PP_BLACK_GAMMA_RANGE,
-  PP_KNEE_MODE,
-  PP_DETAIL_BW_BALANCE,
-  PP_COLOR_DEPTH_CHANNELS,
-  CREATIVE_LOOKS,
-} from '@/lib/camera/constants';
 import { createClient } from '@supabase/supabase-js';
 import {
-  getColorDepthChannelColor,
   getColorDepthChannelHexColor,
   getKelvinColor,
-  getKelvinHexColor,
   getWbShiftAxisColor,
-  getWbShiftAxisHexColor,
 } from '@/lib/camera/color';
+// Rule 1: every legal enum and range is imported, never retyped at a call site.
+import {
+  PP_BLACK_GAMMA_RANGE,
+  PP_COLOR_DEPTH_CHANNELS,
+  PP_COLOR_MODE,
+  PP_DETAIL_BW_BALANCE,
+  PP_GAMMA,
+  PP_KNEE_MODE,
+  PP_RANGES,
+  WB_KELVIN,
+  WB_SHIFT_AXIS,
+} from '@/lib/camera/constants';
+import type { PpSettings, WhiteBalance } from '@/lib/camera/schema';
 
 type Props = {
   recipeSlug: string;
   recipeTitle: string;
   recipeFormat?: 'pp' | 'cl';
-  currentSettings: Record<string, any>;
-  currentWb: Record<string, any>;
+  currentSettings: Record<string, unknown>;
+  /** The real schema type — the editor writes camera values, so it must not
+      fall back to an untyped record where a bad field goes unnoticed. */
+  currentWb: WhiteBalance;
 };
 
-function formatProposalSettingPill(key: string, value: any): string {
+/** Narrows a <select> value to a camera enum, falling back if it is not legal. */
+function asEnum<T extends readonly string[]>(list: T, value: string, fallback: T[number]): T[number] {
+  return (list as readonly string[]).includes(value) ? (value as T[number]) : fallback;
+}
+
+function formatProposalSettingPill(key: string, value: unknown): string {
   if (key === 'blackGamma' && typeof value === 'object' && value !== null) {
-    const level = value.level > 0 ? `+${value.level}` : String(value.level);
-    return `Black Gamma: ${value.range || 'Middle'} ${level}`;
+    const bg = value as { range?: string; level?: number };
+    const level = (bg.level ?? 0) > 0 ? `+${bg.level}` : String(bg.level ?? 0);
+    return `Black Gamma: ${bg.range || 'Middle'} ${level}`;
   }
   if (key === 'knee' && typeof value === 'object' && value !== null) {
-    if (value.mode === 'Auto') {
-      return `Knee: Auto${value.maxPoint ? ` ${value.maxPoint}%` : ''}${value.sensitivity ? ` ${value.sensitivity}` : ''}`;
+    const k = value as { mode?: string; maxPoint?: number; sensitivity?: string; point?: number; slope?: number };
+    if (k.mode === 'Auto') {
+      return `Knee: Auto${k.maxPoint ? ` ${k.maxPoint}%` : ''}${k.sensitivity ? ` ${k.sensitivity}` : ''}`;
     }
-    const slope = value.slope > 0 ? `+${value.slope}` : String(value.slope);
-    return `Knee: Manual ${value.point ?? 75}% ${slope}`;
+    const slope = (k.slope ?? 0) > 0 ? `+${k.slope}` : String(k.slope ?? 0);
+    return `Knee: Manual ${k.point ?? 75}% ${slope}`;
   }
   if (key === 'detail' && typeof value === 'object' && value !== null) {
-    const lvl = value.level > 0 ? `+${value.level}` : String(value.level);
+    const d = value as { level?: number };
+    const lvl = (d.level ?? 0) > 0 ? `+${d.level}` : String(d.level ?? 0);
     return `Detail Level: ${lvl}`;
   }
   if (key === 'colorDepth' && typeof value === 'object' && value !== null) {
-    const parts = Object.entries(value)
-      .map(([k, v]: [string, any]) => `${k}${v > 0 ? `+${v}` : v}`)
+    const cd = value as Record<string, number>;
+    const parts = Object.entries(cd)
+      .map(([ch, v]) => `${ch}${v > 0 ? `+${v}` : v}`)
       .join(' ');
     return `Depth: ${parts}`;
   }
@@ -69,7 +81,18 @@ export function RecipeCommunitySection({
   currentSettings,
   currentWb,
 }: Props) {
-  const { user, openLoginModal } = useAuth();
+  const { user, openLoginModal, accessToken } = useAuth();
+
+  /* Every write carries the session JWT; the routes reject anything without
+     one. Identity is no longer sent in the body — the server reads it from the
+     token, so a forged authorName has nowhere to land. */
+  const authedJson = () => {
+    const token = accessToken();
+    return {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+  };
   const [activeTab, setActiveTab] = useState<'comments' | 'proposals'>('comments');
 
   // Comments state
@@ -85,19 +108,26 @@ export function RecipeCommunitySection({
   const [isPropFormOpen, setIsPropFormOpen] = useState(false);
 
   // Full Camera-Format Template Editor State
-  const [editSettings, setEditSettings] = useState<Record<string, any>>({});
-  const [editWb, setEditWb] = useState<Record<string, any>>({});
+  /* Partial, not the full PpSettings: the draft starts empty and the JSX
+     already guards each block (`editSettings.blackGamma && …`). The settings
+     editor only renders for `recipeFormat === 'pp'`. */
+  const [editSettings, setEditSettings] = useState<Partial<PpSettings>>({});
+  const [editWb, setEditWb] = useState<WhiteBalance | null>(null);
 
-  // Initialize template when opening proposal form
-  useEffect(() => {
-    if (isPropFormOpen) {
-      setEditSettings(JSON.parse(JSON.stringify(currentSettings)));
-      setEditWb(JSON.parse(JSON.stringify(currentWb)));
-    }
-  }, [isPropFormOpen, currentSettings, currentWb]);
+  /**
+   * Seeds the draft from the live recipe. Called when the form is opened rather
+   * than from an effect watching `isPropFormOpen` — an effect would re-seed on
+   * every render where `currentSettings` is a fresh object, silently discarding
+   * edits in progress, and it is the cascading-render pattern React warns about.
+   */
+  const openProposalForm = () => {
+    setEditSettings(JSON.parse(JSON.stringify(currentSettings)) as Partial<PpSettings>);
+    setEditWb(JSON.parse(JSON.stringify(currentWb)) as WhiteBalance);
+    setIsPropFormOpen(true);
+  };
 
   // Load comments
-  const fetchComments = async () => {
+  const fetchComments = useCallback(async () => {
     try {
       const res = await fetch(`/api/comments?slug=${recipeSlug}`);
       if (res.ok) {
@@ -107,12 +137,15 @@ export function RecipeCommunitySection({
     } catch {
       // Ignore network errors
     }
-  };
+  }, [recipeSlug]);
 
   // Load proposals
-  const fetchProposals = async () => {
+  const fetchProposals = useCallback(async () => {
     try {
-      const res = await fetch(`/api/proposals?slug=${recipeSlug}`);
+      const token = accessToken();
+      const res = await fetch(`/api/proposals?slug=${recipeSlug}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       if (res.ok) {
         const data = await res.json();
         setProposals(data.proposals || []);
@@ -120,11 +153,20 @@ export function RecipeCommunitySection({
     } catch {
       // Ignore network errors
     }
-  };
+  }, [recipeSlug, accessToken]);
 
   useEffect(() => {
-    fetchComments();
-    fetchProposals();
+    /* Recipe pages are statically generated, so comments and proposals cannot
+       be server-rendered without serving them stale — the initial load belongs
+       on the client.
+
+       `set-state-in-effect` cannot see through `useCallback` that both fetchers
+       suspend on `await fetch(...)` before touching state, so no setState here
+       is synchronous and no cascading render is possible. Scoped to this line;
+       remove it if either fetcher ever gains a synchronous early setState. */
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void fetchComments();
+    void fetchProposals();
 
     // Setup Supabase Realtime client if env variables exist
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -153,7 +195,7 @@ export function RecipeCommunitySection({
     } catch {
       // Ignore realtime connection errors
     }
-  }, [recipeSlug]);
+  }, [recipeSlug, fetchComments, fetchProposals]);
 
   // Post comment handler
   const handlePostComment = async (e: React.FormEvent) => {
@@ -164,12 +206,9 @@ export function RecipeCommunitySection({
     try {
       const res = await fetch('/api/comments', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authedJson(),
         body: JSON.stringify({
           recipeSlug,
-          authorName: user.name,
-          authorEmail: user.email,
-          authorAvatar: user.avatarUrl,
           content: newCommentText.trim(),
         }),
       });
@@ -195,13 +234,10 @@ export function RecipeCommunitySection({
     try {
       const res = await fetch('/api/proposals', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authedJson(),
         body: JSON.stringify({
           recipeSlug,
           title: newPropTitle.trim(),
-          authorName: user.name,
-          authorEmail: user.email,
-          authorAvatar: user.avatarUrl,
           sampleImageUrl: newSampleUrl.trim() || undefined,
           settings: editSettings,
           whiteBalance: editWb,
@@ -233,23 +269,16 @@ export function RecipeCommunitySection({
     setProposals((prev) =>
       prev.map((p) => {
         if (p.id !== proposalId) return p;
-        const hasVoted = p.votedBy.includes(user.email);
-        const newVotedBy = hasVoted
-          ? p.votedBy.filter((e) => e !== user.email)
-          : [...p.votedBy, user.email];
-        const newCount = hasVoted ? Math.max(0, p.voteCount - 1) : p.voteCount + 1;
-        return { ...p, voteCount: newCount, votedBy: newVotedBy };
+        const newCount = p.hasVoted ? Math.max(0, p.voteCount - 1) : p.voteCount + 1;
+        return { ...p, voteCount: newCount, hasVoted: !p.hasVoted };
       }),
     );
 
     try {
       await fetch('/api/proposals/vote', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          proposalId,
-          userEmail: user.email,
-        }),
+        headers: authedJson(),
+        body: JSON.stringify({ proposalId }),
       });
     } catch {
       // Revert if request failed
@@ -257,75 +286,134 @@ export function RecipeCommunitySection({
     }
   };
 
-  // Helper state adjusters
-  const updateNum = (key: string, delta: number, min: number, max: number) => {
+  /**
+   * Which range in constants.ts governs each editable field.
+   *
+   * Every call site used to pass its own min/max — `-15, 15`, `75, 105`,
+   * `-32, 32` and so on, about twenty times. That is Rule 1 violated at scale:
+   * a range changed in constants.ts would leave this editor happily producing
+   * proposals the camera rejects, with nothing failing to say so.
+   */
+  const NUM_RANGE = {
+    blackLevel: PP_RANGES.blackLevel,
+    saturation: PP_RANGES.saturation,
+    colorPhase: PP_RANGES.colorPhase,
+  } as const;
+
+  const NESTED_RANGE = {
+    'blackGamma.level': PP_RANGES.blackGammaLevel,
+    'knee.point': PP_RANGES.kneeManualPoint,
+    'knee.slope': PP_RANGES.kneeManualSlope,
+    'detail.level': PP_RANGES.detailLevel,
+    'detail.vhBalance': PP_RANGES.detailVhBalance,
+  } as const;
+
+  type NumKey = keyof typeof NUM_RANGE;
+  type NestedKey = keyof typeof NESTED_RANGE;
+
+  const clampTo = (value: number, range: { min: number; max: number; step: number }) => {
+    const bounded = Math.min(range.max, Math.max(range.min, value));
+    // Snap to the camera's own increment so float drift cannot produce a value
+    // the schema rejects on submit.
+    return Math.round(bounded / range.step) * range.step;
+  };
+
+  const updateNum = (key: NumKey, delta: number) => {
     setEditSettings((prev) => {
       const cur = typeof prev[key] === 'number' ? prev[key] : 0;
-      const val = Math.min(max, Math.max(min, cur + delta));
-      return { ...prev, [key]: val };
+      return { ...prev, [key]: clampTo(cur + delta, NUM_RANGE[key]) };
     });
   };
 
-  const updateNestedNum = (parent: string, child: string, delta: number, min: number, max: number) => {
+  const updateNestedNum = (
+    parent: 'blackGamma' | 'knee' | 'detail',
+    child: string,
+    delta: number,
+  ) => {
+    const range = NESTED_RANGE[`${parent}.${child}` as NestedKey];
     setEditSettings((prev) => {
-      const parentObj = prev[parent] || {};
-      const cur = typeof parentObj[child] === 'number' ? parentObj[child] : 0;
-      const val = Math.min(max, Math.max(min, cur + delta));
+      const parentObj = (prev[parent] ?? {}) as Record<string, unknown>;
+      const cur = typeof parentObj[child] === 'number' ? (parentObj[child] as number) : 0;
       return {
         ...prev,
-        [parent]: { ...parentObj, [child]: val },
+        [parent]: { ...parentObj, [child]: clampTo(cur + delta, range) },
       };
     });
   };
 
-  const updateNestedSelect = (parent: string, child: string, value: string) => {
-    setEditSettings((prev) => ({
-      ...prev,
-      [parent]: { ...prev[parent], [child]: value },
-    }));
+  const updateNestedSelect = (
+    parent: 'blackGamma' | 'knee' | 'detail',
+    child: string,
+    value: string,
+  ) => {
+    setEditSettings((prev) => {
+      const parentObj = (prev[parent] ?? {}) as Record<string, unknown>;
+      return { ...prev, [parent]: { ...parentObj, [child]: value } };
+    });
   };
 
-  const updateColorDepth = (channel: string, delta: number) => {
+  const updateColorDepth = (channel: (typeof PP_COLOR_DEPTH_CHANNELS)[number], delta: number) => {
     setEditSettings((prev) => {
-      const cd = prev.colorDepth || {};
-      const cur = typeof cd[channel] === 'number' ? cd[channel] : 0;
-      const val = Math.min(7, Math.max(-7, cur + delta));
+      const cd = prev.colorDepth ?? { R: 0, G: 0, B: 0, C: 0, M: 0, Y: 0 };
+      const cur = cd[channel] ?? 0;
       return {
         ...prev,
-        colorDepth: { ...cd, [channel]: val },
+        colorDepth: { ...cd, [channel]: clampTo(cur + delta, PP_RANGES.colorDepth) },
+      };
+    });
+  };
+
+  /** Steps Kelvin by one camera increment. No-op unless the draft is in Kelvin mode. */
+  const adjustKelvin = (direction: -1 | 1) => {
+    setEditWb((prev) => {
+      if (!prev || prev.mode !== 'kelvin') return prev;
+      return {
+        ...prev,
+        kelvin: Math.min(
+          WB_KELVIN.max,
+          Math.max(WB_KELVIN.min, prev.kelvin + direction * WB_KELVIN.step),
+        ),
       };
     });
   };
 
   const updateWbShift = (axisType: 'ab' | 'gm', delta: number) => {
     setEditWb((prev) => {
-      const shift = prev.shift || {};
-      const current = shift[axisType] || {
-        axis: axisType === 'ab' ? 'A' : 'G',
+      if (!prev) return prev;
+      const shift = prev.shift ?? {};
+      const current = shift[axisType] ?? {
+        axis: axisType === 'ab' ? ('A' as const) : ('G' as const),
         amount: 0,
       };
 
-      // Convert axis + amount into signed number:
-      // A (Amber) & G (Green) are positive
-      // B (Blue) & M (Magenta) are negative
+      // The two axes are stored as a letter plus a magnitude, so collapse them
+      // to one signed number to step through zero cleanly.
+      // A (Amber) and G (Green) are positive; B (Blue) and M (Magenta) negative.
       const isPositiveAxis = current.axis === 'A' || current.axis === 'G';
       let signedVal = isPositiveAxis ? current.amount : -current.amount;
 
-      // Apply step (+0.5 or -0.5)
-      signedVal += delta * 0.5;
-
-      // Bound to -7..+7
-      signedVal = Math.min(7, Math.max(-7, signedVal));
+      // Step and bound come from constants.ts. Hardcoding 0.5 here meant the
+      // editor could not reach the quarter-steps real recipes already use
+      // (M0.25, M0.75, M1.25, G1.75, M2.75) — the camera moves in 0.25.
+      signedVal += delta * WB_SHIFT_AXIS.step;
+      signedVal = Math.min(WB_SHIFT_AXIS.max, Math.max(-WB_SHIFT_AXIS.max, signedVal));
+      // Float drift: 0.1+0.2 style error would produce an amount the schema rejects.
+      signedVal = Math.round(signedVal / WB_SHIFT_AXIS.step) * WB_SHIFT_AXIS.step;
 
       const newAxis =
-        axisType === 'ab' ? (signedVal >= 0 ? 'A' : 'B') : signedVal >= 0 ? 'G' : 'M';
-      const newAmount = Math.abs(signedVal);
+        axisType === 'ab'
+          ? signedVal >= 0
+            ? ('A' as const)
+            : ('B' as const)
+          : signedVal >= 0
+            ? ('G' as const)
+            : ('M' as const);
 
       return {
         ...prev,
         shift: {
           ...shift,
-          [axisType]: { axis: newAxis, amount: newAmount },
+          [axisType]: { axis: newAxis, amount: Math.abs(signedVal) },
         },
       };
     });
@@ -501,7 +589,8 @@ export function RecipeCommunitySection({
               type="button"
               onClick={() => {
                 if (!user) openLoginModal();
-                else setIsPropFormOpen(!isPropFormOpen);
+                else if (isPropFormOpen) setIsPropFormOpen(false);
+                else openProposalForm();
               }}
               className="px-3.5 py-1.5 rounded-full bg-white/15 hover:bg-white/25 text-white text-xs font-semibold transition-all cursor-pointer shrink-0 flex items-center gap-1.5"
             >
@@ -567,13 +656,13 @@ export function RecipeCommunitySection({
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {/* Kelvin Temperature */}
-                  {editWb.mode === 'kelvin' && (
+                  {editWb?.mode === 'kelvin' && (
                     <div className="flex items-center justify-between bg-black/50 px-3.5 py-2 rounded-lg border border-white/10">
                       <span className="text-xs text-white/70">Nhiệt độ Kelvin</span>
                       <div className="flex items-center gap-1.5">
                         <button
                           type="button"
-                          onClick={() => setEditWb((prev) => ({ ...prev, kelvin: Math.max(2500, prev.kelvin - 100) }))}
+                          onClick={() => adjustKelvin(-1)}
                           className="w-6 h-6 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
                         >
                           -
@@ -583,7 +672,7 @@ export function RecipeCommunitySection({
                         </span>
                         <button
                           type="button"
-                          onClick={() => setEditWb((prev) => ({ ...prev, kelvin: Math.min(9900, prev.kelvin + 100) }))}
+                          onClick={() => adjustKelvin(1)}
                           className="w-6 h-6 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
                         >
                           +
@@ -603,8 +692,8 @@ export function RecipeCommunitySection({
                       >
                         -
                       </button>
-                      <span className={`text-xs font-bold w-12 text-center ${getWbShiftAxisColor(editWb.shift?.ab?.axis || 'A')}`}>
-                        {editWb.shift?.ab ? `${editWb.shift.ab.axis}${editWb.shift.ab.amount}` : 'A0'}
+                      <span className={`text-xs font-bold w-12 text-center ${getWbShiftAxisColor(editWb?.shift?.ab?.axis || 'A')}`}>
+                        {editWb?.shift?.ab ? `${editWb.shift!.ab.axis}${editWb.shift!.ab.amount}` : 'A0'}
                       </span>
                       <button
                         type="button"
@@ -627,8 +716,8 @@ export function RecipeCommunitySection({
                       >
                         -
                       </button>
-                      <span className={`text-xs font-bold w-12 text-center ${getWbShiftAxisColor(editWb.shift?.gm?.axis || 'G')}`}>
-                        {editWb.shift?.gm ? `${editWb.shift.gm.axis}${editWb.shift.gm.amount}` : 'G0'}
+                      <span className={`text-xs font-bold w-12 text-center ${getWbShiftAxisColor(editWb?.shift?.gm?.axis || 'G')}`}>
+                        {editWb?.shift?.gm ? `${editWb.shift!.gm.axis}${editWb.shift!.gm.amount}` : 'G0'}
                       </span>
                       <button
                         type="button"
@@ -657,17 +746,17 @@ export function RecipeCommunitySection({
                         <div className="flex items-center gap-1.5">
                           <button
                             type="button"
-                            onClick={() => updateNum('blackLevel', -1, -15, 15)}
+                            onClick={() => updateNum('blackLevel', -1)}
                             className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
                           >
                             -
                           </button>
                           <span className="text-xs font-bold w-8 text-center text-white">
-                            {editSettings.blackLevel > 0 ? `+${editSettings.blackLevel}` : editSettings.blackLevel}
+                            {(editSettings.blackLevel ?? 0) > 0 ? `+${editSettings.blackLevel}` : (editSettings.blackLevel ?? 0)}
                           </span>
                           <button
                             type="button"
-                            onClick={() => updateNum('blackLevel', 1, -15, 15)}
+                            onClick={() => updateNum('blackLevel', 1)}
                             className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
                           >
                             +
@@ -680,7 +769,12 @@ export function RecipeCommunitySection({
                         <span className="text-xs text-white/70">Gamma</span>
                         <select
                           value={editSettings.gamma || 'S-Cinetone'}
-                          onChange={(e) => setEditSettings((prev) => ({ ...prev, gamma: e.target.value }))}
+                          onChange={(e) =>
+                            setEditSettings((prev) => ({
+                              ...prev,
+                              gamma: asEnum(PP_GAMMA, e.target.value, 'S-Cinetone'),
+                            }))
+                          }
                           className="bg-black text-xs text-white px-2 py-1 rounded border border-white/20 focus:outline-none"
                         >
                           {PP_GAMMA.map((g) => (
@@ -706,7 +800,7 @@ export function RecipeCommunitySection({
                             <div className="flex items-center gap-1">
                               <button
                                 type="button"
-                                onClick={() => updateNestedNum('blackGamma', 'level', -1, -7, 7)}
+                                onClick={() => updateNestedNum('blackGamma', 'level', -1)}
                                 className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
                               >
                                 -
@@ -716,7 +810,7 @@ export function RecipeCommunitySection({
                               </span>
                               <button
                                 type="button"
-                                onClick={() => updateNestedNum('blackGamma', 'level', 1, -7, 7)}
+                                onClick={() => updateNestedNum('blackGamma', 'level', 1)}
                                 className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
                               >
                                 +
@@ -747,7 +841,7 @@ export function RecipeCommunitySection({
                                   <span className="text-[10px] text-white/50">Point:</span>
                                   <button
                                     type="button"
-                                    onClick={() => updateNestedNum('knee', 'point', -5, 75, 105)}
+                                    onClick={() => updateNestedNum('knee', 'point', -5)}
                                     className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
                                   >
                                     -
@@ -755,7 +849,7 @@ export function RecipeCommunitySection({
                                   <span className="text-xs font-bold text-white">{editSettings.knee.point ?? 75}%</span>
                                   <button
                                     type="button"
-                                    onClick={() => updateNestedNum('knee', 'point', 5, 75, 105)}
+                                    onClick={() => updateNestedNum('knee', 'point', 5)}
                                     className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
                                   >
                                     +
@@ -766,7 +860,7 @@ export function RecipeCommunitySection({
                                   <span className="text-[10px] text-white/50">Slope:</span>
                                   <button
                                     type="button"
-                                    onClick={() => updateNestedNum('knee', 'slope', -1, -5, 5)}
+                                    onClick={() => updateNestedNum('knee', 'slope', -1)}
                                     className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
                                   >
                                     -
@@ -776,7 +870,7 @@ export function RecipeCommunitySection({
                                   </span>
                                   <button
                                     type="button"
-                                    onClick={() => updateNestedNum('knee', 'slope', 1, -5, 5)}
+                                    onClick={() => updateNestedNum('knee', 'slope', 1)}
                                     className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
                                   >
                                     +
@@ -793,7 +887,12 @@ export function RecipeCommunitySection({
                         <span className="text-xs text-white/70">Color Mode</span>
                         <select
                           value={editSettings.colorMode || 'S-Cinetone'}
-                          onChange={(e) => setEditSettings((prev) => ({ ...prev, colorMode: e.target.value }))}
+                          onChange={(e) =>
+                            setEditSettings((prev) => ({
+                              ...prev,
+                              colorMode: asEnum(PP_COLOR_MODE, e.target.value, 'S-Cinetone'),
+                            }))
+                          }
                           className="bg-black text-xs text-white px-2 py-1 rounded border border-white/20 focus:outline-none max-w-[120px] truncate"
                         >
                           {PP_COLOR_MODE.map((cm) => (
@@ -808,17 +907,17 @@ export function RecipeCommunitySection({
                         <div className="flex items-center gap-1.5">
                           <button
                             type="button"
-                            onClick={() => updateNum('saturation', -1, -32, 32)}
+                            onClick={() => updateNum('saturation', -1)}
                             className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
                           >
                             -
                           </button>
                           <span className="text-xs font-bold w-8 text-center text-white">
-                            {editSettings.saturation > 0 ? `+${editSettings.saturation}` : editSettings.saturation}
+                            {(editSettings.saturation ?? 0) > 0 ? `+${editSettings.saturation}` : (editSettings.saturation ?? 0)}
                           </span>
                           <button
                             type="button"
-                            onClick={() => updateNum('saturation', 1, -32, 32)}
+                            onClick={() => updateNum('saturation', 1)}
                             className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
                           >
                             +
@@ -832,17 +931,17 @@ export function RecipeCommunitySection({
                         <div className="flex items-center gap-1.5">
                           <button
                             type="button"
-                            onClick={() => updateNum('colorPhase', -1, -7, 7)}
+                            onClick={() => updateNum('colorPhase', -1)}
                             className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
                           >
                             -
                           </button>
                           <span className="text-xs font-bold w-8 text-center text-white">
-                            {editSettings.colorPhase > 0 ? `+${editSettings.colorPhase}` : editSettings.colorPhase}
+                            {(editSettings.colorPhase ?? 0) > 0 ? `+${editSettings.colorPhase}` : (editSettings.colorPhase ?? 0)}
                           </span>
                           <button
                             type="button"
-                            onClick={() => updateNum('colorPhase', 1, -7, 7)}
+                            onClick={() => updateNum('colorPhase', 1)}
                             className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
                           >
                             +
@@ -874,7 +973,9 @@ export function RecipeCommunitySection({
                                   -
                                 </button>
                                 <span className="text-xs font-bold w-5 text-center" style={{ color: hex }}>
-                                  {editSettings.colorDepth[ch] > 0 ? `+${editSettings.colorDepth[ch]}` : editSettings.colorDepth[ch]}
+                                  {(editSettings.colorDepth?.[ch] ?? 0) > 0
+                                    ? `+${editSettings.colorDepth?.[ch] ?? 0}`
+                                    : (editSettings.colorDepth?.[ch] ?? 0)}
                                 </span>
                                 <button
                                   type="button"
@@ -905,7 +1006,7 @@ export function RecipeCommunitySection({
                           <div className="flex items-center gap-1.5">
                             <button
                               type="button"
-                              onClick={() => updateNestedNum('detail', 'level', -1, -7, 7)}
+                              onClick={() => updateNestedNum('detail', 'level', -1)}
                               className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
                             >
                               -
@@ -915,7 +1016,7 @@ export function RecipeCommunitySection({
                             </span>
                             <button
                               type="button"
-                              onClick={() => updateNestedNum('detail', 'level', 1, -7, 7)}
+                              onClick={() => updateNestedNum('detail', 'level', 1)}
                               className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
                             >
                               +
@@ -929,7 +1030,7 @@ export function RecipeCommunitySection({
                           <div className="flex items-center gap-1.5">
                             <button
                               type="button"
-                              onClick={() => updateNestedNum('detail', 'vhBalance', -1, -2, 2)}
+                              onClick={() => updateNestedNum('detail', 'vhBalance', -1)}
                               className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
                             >
                               -
@@ -939,7 +1040,7 @@ export function RecipeCommunitySection({
                             </span>
                             <button
                               type="button"
-                              onClick={() => updateNestedNum('detail', 'vhBalance', 1, -2, 2)}
+                              onClick={() => updateNestedNum('detail', 'vhBalance', 1)}
                               className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
                             >
                               +
@@ -991,7 +1092,7 @@ export function RecipeCommunitySection({
               </p>
             ) : (
               proposals.map((prop) => {
-                const hasVoted = user ? prop.votedBy.includes(user.email) : false;
+                const hasVoted = user ? prop.hasVoted : false;
                 return (
                   <div
                     key={prop.id}

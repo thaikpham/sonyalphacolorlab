@@ -10,12 +10,17 @@ import { describe, expect, it } from 'vitest';
  * they arrived via a shared /vi link. That is exactly the path least likely to
  * be caught by hand, so it is pinned here.
  */
-const source = readFileSync('src/components/search-box.tsx', 'utf8');
+/* Points at site-header, which owns the live form. It used to read the
+   standalone search-box.tsx — which the redesign orphaned, so these assertions
+   went on passing against a component that rendered nowhere while the real form
+   had lost both the GET fallback and the locale-aware action. */
+const source = readFileSync('src/components/site-header.tsx', 'utf8');
 
 describe('search form', () => {
   it('builds its action from the active locale', () => {
-    expect(source).toContain('routing.defaultLocale');
-    expect(source).toContain('action={action}');
+    // Asserts the shape of the value, not the identifier it is bound to, so
+    // inlining or renaming the expression does not fail this for no reason.
+    expect(source).toMatch(/action=\{[^}]*routing\.defaultLocale/);
   });
 
   it('never hardcodes the root path as the action', () => {
@@ -24,6 +29,10 @@ describe('search form', () => {
 
   it('submits with GET so it works without JavaScript', () => {
     expect(source).toContain('method="get"');
+  });
+
+  it('debounces live search instead of navigating per keystroke', () => {
+    expect(source).toContain('clearTimeout');
   });
 
   it('carries the active filters through as hidden inputs', () => {

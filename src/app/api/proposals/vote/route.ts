@@ -1,13 +1,30 @@
 import { NextResponse } from 'next/server';
 import { isSupabaseConfigured, supabaseAdmin } from '@/lib/supabase/server';
+import { requireUser, UNAUTHENTICATED } from '@/lib/auth/require-user';
+import { checkRateLimit } from '@/lib/ai/rate-limit';
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { proposalId, userEmail } = body;
+    /* The voter is whoever the token says, not whoever the body claims. Taking
+       `userEmail` from the payload made the unique(proposal_id, user_email)
+       constraint meaningless: invent a new address, cast another vote. */
+    const user = await requireUser(request);
+    if (!user) return NextResponse.json(UNAUTHENTICATED, { status: 401 });
 
-    if (!proposalId || !userEmail) {
-      return NextResponse.json({ error: 'Missing proposalId or userEmail' }, { status: 400 });
+    const limit = checkRateLimit(`vote:${user.email}`, Date.now(), 30);
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: 'Bạn đang vote quá nhanh. Thử lại sau ít giây.' },
+        { status: 429, headers: { 'Retry-After': String(limit.retryAfterSeconds) } },
+      );
+    }
+
+    const body = await request.json();
+    const { proposalId } = body;
+    const userEmail = user.email;
+
+    if (!proposalId) {
+      return NextResponse.json({ error: 'Missing proposalId' }, { status: 400 });
     }
 
     if (!isSupabaseConfigured()) {

@@ -167,6 +167,30 @@ prefix them `NEXT_PUBLIC_`, never import them into a Client Component.
 AI output is re-validated with `recipeSchema` after it returns, regardless of
 what the tool schema claims.
 
+**The anon key is public** — it ships in the browser bundle, so anyone can call
+PostgREST directly. RLS is row-level and cannot hide a column: a table holding
+`author_email` needs a column-level `grant select (…) to anon`, not just a
+policy. Never `select('*')` in a route that answers an unauthenticated request;
+name the columns. `proposal_votes` is emails only and is readable by the service
+role alone. Pinned by `no-email-leak.test.ts` and the privilege tests in
+`migration.test.ts`.
+
+Every `.sql` in `supabase/migrations/` is executed by `migration.test.ts`
+against PGlite. Adding one there is what proves it is valid — and applying it to
+Supabase is a separate, manual step that nothing in CI can do for you.
+
+## Who the caller is
+
+Identity comes from `requireUser(request)` — a Supabase JWT verified server-side
+— and **never from the request body**. Any route that writes on a reader's
+behalf must 401 without it, and must fill author columns from `user.email` /
+`user.name`, not from fields the client sent. The earlier stub took a typed-in
+address on trust, so an unauthenticated `curl` could comment as anyone and vote
+without limit. Pinned by `identity-not-from-body.test.ts`.
+
+Never put an email in a query string — it lands in every access log. Community
+writes are rate-limited per verified address via `checkRateLimit`.
+
 ## AI ("Tweak with AI")
 
 `claude-sonnet-5` via structured outputs, so the JSON shape is constrained by the
