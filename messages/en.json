@@ -1,0 +1,73 @@
+{
+  "site": {
+    "tagline": "White Balance Shift · Sony Alpha"
+  },
+  "home": {
+    "headlineLead": "Colour starts at",
+    "headlineEmphasis": "white balance.",
+    "intro": "Every recipe here begins with a White Balance Shift, then pairs it with a Picture Profile or a Creative Look. Dial them in on the camera — no editing afterwards.",
+    "planeCaption": "{count, plural, one {# recipe} other {# recipes}} · {shifted} shifted",
+    "resultCount": "{count, plural, one {# recipe} other {# recipes}}",
+    "emptyTitle": "No recipes match those filters yet.",
+    "emptyAction": "Clear them",
+    "emptyTail": "to see all {total}."
+  },
+  "filters": {
+    "format": "Format",
+    "look": "Look",
+    "tags": "Tags",
+    "all": "All"
+  },
+  "recipe": {
+    "back": "All recipes",
+    "share": "Share",
+    "copyLink": "Copy link",
+    "copied": "Copied",
+    "shareOn": "Share on {network}"
+  },
+  "language": {
+    "label": "Language",
+    "en": "English",
+    "vi": "Tiếng Việt"
+  },
+  "tweak": {
+    "title": "Tweak with AI",
+    "placeholder": "Describe the change — e.g. \"warmer, softer shadows\"",
+    "submit": "Tweak",
+    "working": "Thinking…",
+    "failed": "Something went wrong. Try again.",
+    "changeCount": "{count, plural, =0 {No values changed} one {# value changed} other {# values changed}}",
+    "disclaimer": "AI-generated adjustment. Every value is checked against what the camera accepts, but shoot a test frame before trusting it."
+  },
+  "notFound": {
+    "title": "That recipe isn't here.",
+    "body": "It may have been renamed, or the link may be incomplete. The full catalogue is one click away.",
+    "action": "Browse all recipes"
+  },
+  "error": {
+    "title": "Something broke.",
+    "body": "That's on us, not you. Try again — if it keeps happening, the catalogue is still reachable from the home page.",
+    "action": "Try again"
+  },
+  "search": {
+    "label": "Search recipes",
+    "placeholder": "Search by name or tag…",
+    "submit": "Search",
+    "noResults": "Nothing matches “{q}”.",
+    "shortcutHint": "Press ⌘K or / to search",
+    "clear": "Clear search",
+    "close": "Close search bar"
+  },
+  "heroLanding": {
+    "badge": "ALPHA COLORLAB 2.0",
+    "systemTag": "// SONY ALPHA COLOUR ENGINE",
+    "headlineLead": "SHOOT IN STYLES",
+    "headlineAccent": "COLORLAB 2.0",
+    "subhead": "Next-gen White Balance Shift matrix paired with Picture Profiles & Creative Looks. Zero post-processing required.",
+    "cta": "ENTER LAB 2.0",
+    "featureWb": "WB SHIFT MATRIX",
+    "featureCl": "CREATIVE LOOKS",
+    "featurePp": "PICTURE PROFILES",
+    "status": "LIVE CATALOGUE v2.0"
+  }
+}

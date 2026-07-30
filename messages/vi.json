@@ -1,0 +1,73 @@
+{
+  "site": {
+    "tagline": "White Balance Shift · Sony Alpha"
+  },
+  "home": {
+    "headlineLead": "Màu bắt đầu từ",
+    "headlineEmphasis": "white balance.",
+    "intro": "Mỗi công thức ở đây đều bắt đầu bằng White Balance Shift, rồi kết hợp với một Picture Profile hoặc một Creative Look. Chỉnh trực tiếp trên máy — không cần hậu kỳ.",
+    "planeCaption": "{count} công thức · {shifted} có shift",
+    "resultCount": "{count} công thức",
+    "emptyTitle": "Chưa có công thức nào khớp bộ lọc này.",
+    "emptyAction": "Xoá bộ lọc",
+    "emptyTail": "để xem cả {total} công thức."
+  },
+  "filters": {
+    "format": "Định dạng",
+    "look": "Look",
+    "tags": "Thẻ",
+    "all": "Tất cả"
+  },
+  "recipe": {
+    "back": "Tất cả công thức",
+    "share": "Chia sẻ",
+    "copyLink": "Sao chép liên kết",
+    "copied": "Đã sao chép",
+    "shareOn": "Chia sẻ lên {network}"
+  },
+  "language": {
+    "label": "Ngôn ngữ",
+    "en": "English",
+    "vi": "Tiếng Việt"
+  },
+  "tweak": {
+    "title": "Tweak with AI",
+    "placeholder": "Mô tả thay đổi — ví dụ \"ấm hơn, vùng tối mềm hơn\"",
+    "submit": "Tinh chỉnh",
+    "working": "Đang xử lý…",
+    "failed": "Có lỗi xảy ra. Thử lại nhé.",
+    "changeCount": "{count, plural, =0 {Không có giá trị nào thay đổi} other {# giá trị đã thay đổi}}",
+    "disclaimer": "Kết quả do AI tạo. Mọi giá trị đều được kiểm tra so với giới hạn của máy ảnh, nhưng hãy chụp thử một tấm trước khi tin tưởng hoàn toàn."
+  },
+  "notFound": {
+    "title": "Không tìm thấy công thức này.",
+    "body": "Có thể nó đã được đổi tên, hoặc liên kết bị thiếu. Toàn bộ danh mục chỉ cách một cú nhấp.",
+    "action": "Xem tất cả công thức"
+  },
+  "error": {
+    "title": "Đã có lỗi xảy ra.",
+    "body": "Lỗi từ phía chúng tôi, không phải bạn. Hãy thử lại — nếu vẫn lỗi, bạn vẫn có thể vào danh mục từ trang chủ.",
+    "action": "Thử lại"
+  },
+  "search": {
+    "label": "Tìm công thức",
+    "placeholder": "Tìm theo tên hoặc thẻ…",
+    "submit": "Tìm",
+    "noResults": "Không có kết quả cho “{q}”.",
+    "shortcutHint": "Nhấn ⌘K hoặc / để tìm kiếm",
+    "clear": "Xóa tìm kiếm",
+    "close": "Đóng thanh tìm kiếm"
+  },
+  "heroLanding": {
+    "badge": "ALPHA COLORLAB 2.0",
+    "systemTag": "// SONY ALPHA COLOUR ENGINE",
+    "headlineLead": "SHOOT IN STYLES",
+    "headlineAccent": "COLORLAB 2.0",
+    "subhead": "Hệ thống White Balance Shift thế hệ mới kết hợp Picture Profile & Creative Look. Chụp trực tiếp không qua hậu kỳ.",
+    "cta": "KHÁM PHÁ COLORLAB",
+    "featureWb": "WB SHIFT MATRIX",
+    "featureCl": "CREATIVE LOOKS",
+    "featurePp": "PICTURE PROFILES",
+    "status": "LIVE CATALOGUE v2.0"
+  }
+}

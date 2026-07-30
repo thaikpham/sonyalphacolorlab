@@ -1,0 +1,509 @@
+'use client';
+
+import { useCallback, useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
+import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { LanguageToggle } from './language-toggle';
+import { Link, usePathname, useRouter } from '@/i18n/navigation';
+import { CREATIVE_LOOKS } from '@/lib/camera/constants';
+
+export interface TagItem {
+  tag: string;
+  count: number;
+}
+
+interface SiteHeaderProps {
+  tags?: TagItem[];
+}
+
+const FALLBACK_TAGS: TagItem[] = [
+  { tag: 'atmospheric', count: 0 },
+  { tag: 'high-contrast', count: 0 },
+  { tag: 'stylized', count: 0 },
+  { tag: 'versatile', count: 0 },
+  { tag: 'clean', count: 0 },
+  { tag: 'neutral', count: 0 },
+  { tag: 'portrait', count: 0 },
+  { tag: 'surreal', count: 0 },
+  { tag: 'artistic', count: 0 },
+  { tag: 'high-saturation', count: 0 },
+  { tag: 'bold', count: 0 },
+];
+
+/**
+ * Multi-functional sticky header navigation for Alpha ColorLab.
+ *
+ * Features:
+ * - Wordmark with Sony Alpha 'α' glyph standing in for the "A".
+ * - Expandable console integrating recipe keyword search, format filters (PP/CL),
+ *   Creative Look sub-filters, and Tag filters with smooth glass animations.
+ * - Auto-hides on scroll down, reappears on scroll up (locked open when search is focused).
+ * - Keyboard shortcuts (⌘K / / to expand, ESC to close).
+ */
+export function SiteHeader({ tags: providedTags }: SiteHeaderProps) {
+  const t = useTranslations('search');
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const currentQ = searchParams?.get('q') ?? '';
+  const currentFormat = searchParams?.get('format') ?? '';
+  const currentLook = searchParams?.get('look') ?? '';
+  const currentTag = searchParams?.get('tag') ?? '';
+
+  const tagList = providedTags && providedTags.length > 0 ? providedTags : FALLBACK_TAGS;
+  const hasActiveFilters = Boolean(currentQ || currentFormat || currentLook || currentTag);
+
+  const [isHidden, setIsHidden] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(hasActiveFilters);
+  const [query, setQuery] = useState(currentQ);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Sync local query when URL search param changes
+  useEffect(() => {
+    setQuery(currentQ);
+    if (hasActiveFilters) {
+      setIsSearchOpen(true);
+    }
+  }, [currentQ, hasActiveFilters]);
+
+  // Handle scroll auto-hide behavior
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+
+      if (currentScrollY < 0 || currentScrollY > maxScroll) return;
+
+      if (currentScrollY <= 20) {
+        setIsHidden(false);
+        lastScrollY = currentScrollY;
+        return;
+      }
+
+      const diff = currentScrollY - lastScrollY;
+      if (Math.abs(diff) > 6) {
+        if (diff > 0 && currentScrollY > 60) {
+          if (!isSearchOpen) {
+            setIsHidden(true);
+          }
+        } else if (diff < 0) {
+          setIsHidden(false);
+        }
+        lastScrollY = currentScrollY;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isSearchOpen]);
+
+  // Focus input when search expands
+  useEffect(() => {
+    if (isSearchOpen) {
+      const timer = setTimeout(() => {
+        inputRef.current?.focus();
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [isSearchOpen]);
+
+  // Global shortcut keys (⌘K / Ctrl+K / / to open search, Escape to close)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isTargetEditable =
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        (e.target instanceof HTMLElement && e.target.isContentEditable);
+
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsSearchOpen((prev) => !prev);
+      } else if (e.key === '/' && !isTargetEditable) {
+        e.preventDefault();
+        setIsSearchOpen(true);
+      } else if (e.key === 'Escape' && isSearchOpen) {
+        setIsSearchOpen(false);
+        inputRef.current?.blur();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isSearchOpen]);
+
+  const updateFilters = useCallback(
+    (patch: { q?: string; format?: string; look?: string; tag?: string }) => {
+      const next: Record<string, string> = {};
+
+      const newQ = patch.q !== undefined ? patch.q : currentQ;
+      const newFormat = patch.format !== undefined ? patch.format : currentFormat;
+      const newLook = patch.look !== undefined ? patch.look : currentLook;
+      const newTag = patch.tag !== undefined ? patch.tag : currentTag;
+
+      if (newQ.trim()) next.q = newQ.trim();
+      if (newFormat) next.format = newFormat;
+      if (newLook && newFormat === 'cl') next.look = newLook;
+      if (newTag) next.tag = newTag;
+
+      const qs = new URLSearchParams(next).toString();
+      const targetPath = pathname === '/' ? '/' : '/';
+      const targetUrl = qs ? `${targetPath}?${qs}` : targetPath;
+
+      router.push(targetUrl, { scroll: false });
+    },
+    [currentQ, currentFormat, currentLook, currentTag, pathname, router],
+  );
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateFilters({ q: query });
+  };
+
+  const handleClearQuery = () => {
+    setQuery('');
+    updateFilters({ q: '' });
+    inputRef.current?.focus();
+  };
+
+  const handleResetAll = () => {
+    setQuery('');
+    router.push('/', { scroll: false });
+  };
+
+  return (
+    <header
+      className={`sticky top-0 z-40 transition-transform duration-300 ease-in-out focus-within:translate-y-0 ${
+        isHidden && !isSearchOpen ? '-translate-y-full' : 'translate-y-0'
+      }`}
+    >
+      <div className="mx-auto max-w-[160rem] inset-safe pt-safe">
+        <div
+          className={`glass transition-all duration-300 ease-out px-3 py-2 sm:px-5 sm:py-2.5 flex flex-col gap-2.5 ${
+            isSearchOpen ? 'shadow-[0_12px_40px_rgba(0,0,0,0.6)]' : ''
+          }`}
+        >
+          {/* Main Top Header Line */}
+          <div className="flex items-center justify-between gap-2.5 sm:gap-4">
+            {/* Custom Brand Logo */}
+            <Link
+              href="/"
+              className="group flex items-center shrink-0 transition-transform duration-300 hover:scale-105 active:scale-95"
+            >
+              <Image
+                src="/logo.png"
+                alt="Alpha ColorLab Logo"
+                width={1780}
+                height={499}
+                priority
+                className="h-8 sm:h-9 md:h-10 lg:h-11 w-auto object-contain transition-all duration-300"
+              />
+            </Link>
+
+            {/* Center: Search Trigger or Expanded Live Search Form */}
+            <div className="flex-1 max-w-xl mx-auto transition-all duration-300">
+              {!isSearchOpen ? (
+                /* Compact Trigger Button */
+                <button
+                  type="button"
+                  onClick={() => setIsSearchOpen(true)}
+                  aria-expanded="false"
+                  aria-label={t('label')}
+                  className="w-full flex items-center justify-between gap-3 px-3.5 py-1.5 rounded-full bg-black/50 text-white/90 hover:text-white text-xs sm:text-sm transition-all duration-300 group cursor-pointer shadow-sm"
+                >
+                  <span className="flex items-center gap-2 truncate">
+                    <svg
+                      aria-hidden="true"
+                      className="w-3.5 h-3.5 text-white/60 group-hover:text-white transition-colors shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                      />
+                    </svg>
+                    <span className="truncate">
+                      {query ? (
+                        <strong className="text-white">"{query}"</strong>
+                      ) : (
+                        t('placeholder')
+                      )}
+                    </span>
+
+                    {/* Active Filter Badges in Compact Bar */}
+                    {currentFormat && (
+                      <span className="eyebrow text-[10px] px-2 py-0.5 rounded-full bg-white/20 text-white font-semibold">
+                        {currentFormat === 'pp'
+                          ? 'PP'
+                          : currentLook
+                          ? `CL:${currentLook}`
+                          : 'CL'}
+                      </span>
+                    )}
+                    {currentTag && (
+                      <span className="eyebrow text-[10px] px-2 py-0.5 rounded-full bg-white/20 text-white font-semibold truncate max-w-[5rem]">
+                        #{currentTag}
+                      </span>
+                    )}
+                  </span>
+
+                  <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded bg-white/15 text-white/80 group-hover:text-white transition-colors">
+                    <kbd>⌘</kbd>
+                    <kbd>K</kbd>
+                  </span>
+                </button>
+              ) : (
+                /* Expanded Search Input Form */
+                <form
+                  role="search"
+                  onSubmit={handleSubmit}
+                  className="relative flex items-center w-full animate-fade-in"
+                >
+                  <label htmlFor="header-search-input" className="sr-only">
+                    {t('label')}
+                  </label>
+
+                  <div className="relative flex items-center w-full">
+                    <svg
+                      aria-hidden="true"
+                      className="absolute left-3.5 w-4 h-4 text-white/70 pointer-events-none"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                      />
+                    </svg>
+
+                    <input
+                      id="header-search-input"
+                      ref={inputRef}
+                      type="search"
+                      value={query}
+                      onChange={(e) => {
+                        setQuery(e.target.value);
+                        updateFilters({ q: e.target.value });
+                      }}
+                      placeholder={t('placeholder')}
+                      autoComplete="off"
+                      className="w-full pl-9 pr-16 py-1.5 text-xs sm:text-sm rounded-full bg-black/70 text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-white/40 transition-all shadow-md"
+                    />
+
+                    {query && (
+                      <button
+                        type="button"
+                        onClick={handleClearQuery}
+                        title={t('clear')}
+                        aria-label={t('clear')}
+                        className="absolute right-9 p-1 rounded-full text-white/70 hover:text-white transition-colors cursor-pointer"
+                      >
+                        <span aria-hidden className="text-xs">
+                          ✕
+                        </span>
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => setIsSearchOpen(false)}
+                      title={t('close')}
+                      aria-label={t('close')}
+                      className="absolute right-2 p-1 text-xs text-white/70 hover:text-white transition-colors rounded-full cursor-pointer"
+                    >
+                      <span aria-hidden>✕</span>
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+
+            {/* Right Side Controls */}
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsSearchOpen(!isSearchOpen)}
+                aria-label={isSearchOpen ? t('close') : t('label')}
+                className="sm:hidden p-1.5 rounded-full glass-flat text-white/80 hover:text-white transition-colors cursor-pointer"
+              >
+                <svg
+                  aria-hidden="true"
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </button>
+
+              <LanguageToggle />
+            </div>
+          </div>
+
+          {/* Expanded Glass Console for Filters & Tags */}
+          {isSearchOpen && (
+            <div className="flex flex-col gap-2 pt-2 animate-fade-in text-xs">
+              {/* Row 1: Format Filters */}
+              <div className="flex items-center flex-wrap gap-1.5">
+                <span className="eyebrow text-[11px] text-white/80 uppercase mr-1 w-14 shrink-0 font-bold">
+                  Format
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() => updateFilters({ format: '', look: '' })}
+                  aria-current={!currentFormat ? 'true' : undefined}
+                  className={`eyebrow rounded-full px-3 py-1 text-xs transition-all duration-200 ease-out hover:scale-105 hover:-translate-y-0.5 active:scale-95 cursor-pointer ${
+                    !currentFormat
+                      ? '!text-black bg-white font-bold scale-105 shadow-[0_4px_16px_rgba(0,0,0,0.3)]'
+                      : 'glass-flat !text-white/80 hover:!text-white hover:bg-white/20 font-semibold'
+                  }`}
+                >
+                  All
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    updateFilters({ format: currentFormat === 'pp' ? '' : 'pp', look: '' })
+                  }
+                  aria-current={currentFormat === 'pp' ? 'true' : undefined}
+                  className={`eyebrow rounded-full px-3 py-1 text-xs transition-all duration-200 ease-out hover:scale-105 hover:-translate-y-0.5 active:scale-95 cursor-pointer ${
+                    currentFormat === 'pp'
+                      ? '!text-black bg-white font-bold scale-105 shadow-[0_4px_16px_rgba(0,0,0,0.3)]'
+                      : 'glass-flat !text-white/80 hover:!text-white hover:bg-white/20 font-semibold'
+                  }`}
+                >
+                  Picture Profile
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    updateFilters({ format: currentFormat === 'cl' ? '' : 'cl' })
+                  }
+                  aria-current={currentFormat === 'cl' ? 'true' : undefined}
+                  className={`eyebrow rounded-full px-3 py-1 text-xs transition-all duration-200 ease-out hover:scale-105 hover:-translate-y-0.5 active:scale-95 cursor-pointer ${
+                    currentFormat === 'cl'
+                      ? '!text-black bg-white font-bold scale-105 shadow-[0_4px_16px_rgba(0,0,0,0.3)]'
+                      : 'glass-flat !text-white/80 hover:!text-white hover:bg-white/20 font-semibold'
+                  }`}
+                >
+                  Creative Look
+                </button>
+              </div>
+
+              {/* Row 2: Creative Look Sub-Filters (only visible when format=cl) */}
+              {currentFormat === 'cl' && (
+                <div className="flex items-center flex-wrap gap-1.5 transition-all duration-300">
+                  <span className="eyebrow text-[11px] text-white/80 uppercase mr-1 w-14 shrink-0 font-bold">
+                    Look
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() => updateFilters({ look: '' })}
+                    aria-current={!currentLook ? 'true' : undefined}
+                    className={`eyebrow rounded-full px-2.5 py-0.5 text-[11px] transition-all duration-200 ease-out hover:scale-105 hover:-translate-y-0.5 active:scale-95 cursor-pointer ${
+                      !currentLook
+                        ? '!text-black bg-white font-bold scale-105 shadow-[0_4px_14px_rgba(0,0,0,0.3)]'
+                        : 'glass-flat !text-white/80 hover:!text-white hover:bg-white/20 font-semibold'
+                    }`}
+                  >
+                    All
+                  </button>
+
+                  {CREATIVE_LOOKS.map((l) => (
+                    <button
+                      key={l.code}
+                      type="button"
+                      onClick={() =>
+                        updateFilters({ look: currentLook === l.code ? '' : l.code })
+                      }
+                      aria-current={currentLook === l.code ? 'true' : undefined}
+                      className={`eyebrow rounded-full px-2.5 py-0.5 text-[11px] transition-all duration-200 ease-out hover:scale-105 hover:-translate-y-0.5 active:scale-95 cursor-pointer ${
+                        currentLook === l.code
+                          ? '!text-black bg-white font-bold scale-105 shadow-[0_4px_14px_rgba(0,0,0,0.3)]'
+                          : 'glass-flat !text-white/80 hover:!text-white hover:bg-white/20 font-semibold'
+                      }`}
+                    >
+                      {l.code}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Row 3: Tag Chips Bar */}
+              <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 scrollbar-none">
+                <span className="eyebrow text-[11px] text-white/80 uppercase mr-1 w-14 shrink-0 font-bold">
+                  Tags
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() => updateFilters({ tag: '' })}
+                  aria-current={!currentTag ? 'true' : undefined}
+                  className={`eyebrow shrink-0 rounded-full px-3 py-1 text-xs transition-all duration-200 ease-out hover:scale-105 hover:-translate-y-0.5 active:scale-95 cursor-pointer ${
+                    !currentTag
+                      ? '!text-black bg-white font-bold scale-105 shadow-[0_4px_16px_rgba(0,0,0,0.3)]'
+                      : 'glass-flat !text-white/80 hover:!text-white hover:bg-white/20 font-semibold'
+                  }`}
+                >
+                  All
+                </button>
+
+                {tagList.map((item) => (
+                  <button
+                    key={item.tag}
+                    type="button"
+                    onClick={() =>
+                      updateFilters({ tag: currentTag === item.tag ? '' : item.tag })
+                    }
+                    aria-current={currentTag === item.tag ? 'true' : undefined}
+                    className={`eyebrow shrink-0 rounded-full px-3 py-1 text-xs transition-all duration-200 ease-out hover:scale-105 hover:-translate-y-0.5 active:scale-95 cursor-pointer ${
+                      currentTag === item.tag
+                        ? '!text-black bg-white font-bold scale-105 shadow-[0_4px_16px_rgba(0,0,0,0.3)]'
+                        : 'glass-flat !text-white/80 hover:!text-white hover:bg-white/20 font-semibold'
+                    }`}
+                  >
+                    {item.tag}
+                  </button>
+                ))}
+              </div>
+
+              {/* Footer row: Clear all filters & Shortcut hint */}
+              {hasActiveFilters && (
+                <div className="flex items-center justify-between pt-1 border-t border-white/10 text-[10px] text-ink-faint">
+                  <button
+                    type="button"
+                    onClick={handleResetAll}
+                    className="eyebrow text-[10px] text-red-400 hover:text-red-300 transition-colors cursor-pointer underline underline-offset-2"
+                  >
+                    Clear all filters
+                  </button>
+                  <span className="font-mono hidden sm:inline">Press ESC to close</span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+}

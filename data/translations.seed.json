@@ -1,0 +1,462 @@
+[
+  {
+    "recipeId": "SCL-PP-001",
+    "locale": "en",
+    "description": "A nostalgic, sun-drenched style that bathes scenes in the warm glow of golden hour.\nPerfect for travel and lifestyle, it recreates rich yellows and deep blues, evoking the feeling of an endless summer road trip."
+  },
+  {
+    "recipeId": "SCL-PP-002",
+    "locale": "en",
+    "description": "A serene and subtle palette defined by rich jade tones and gentle skin colors.\nIdeal for contemplative portraits, street photography, and landscapes, creating a peaceful, painterly atmosphere."
+  },
+  {
+    "recipeId": "SCL-PP-003",
+    "locale": "en",
+    "description": "A warm tone, cinematic profile with distinctive deep blues and rich, crushed blacks.\nIt lends a moody, atmospheric quality to images, perfect for urban nightscapes, dramatic portraits, and storytelling."
+  },
+  {
+    "recipeId": "SCL-PP-004",
+    "locale": "en",
+    "description": "A vibrant, high-saturation style with warm, earthy reds and yellows.\nIt brings a bold, sun-baked intensity to images, reminiscent of classic European travel photography."
+  },
+  {
+    "recipeId": "SCL-PP-005",
+    "locale": "en",
+    "description": "A soft, pastel-like palette with gentle contrast and low saturation.\nIt renders skin tones beautifully and gives landscapes a dreamy, ethereal quality, perfect for romantic and fine-art portraits."
+  },
+  {
+    "recipeId": "SCL-PP-006",
+    "locale": "en",
+    "description": "A stylized look with heavily lifted blacks and muted colors, creating a soft, hazy effect.\nIt evokes a sense of nostalgia and is ideal for fashion, editorial, and lifestyle photography aiming for a vintage-modern feel."
+  },
+  {
+    "recipeId": "SCL-PP-007",
+    "locale": "en",
+    "description": "A high-contrast, moody profile with deep blacks and a dramatic, cool color shift.\nIt emphasizes texture and form, creating a strong graphic style reminiscent of vintage documentary slide film."
+  },
+  {
+    "recipeId": "SCL-PP-008",
+    "locale": "en",
+    "description": "A clean, vibrant, and contemporary style built on modern color science.\nIt delivers rich, pleasing colors with smooth tonal transitions, making it a versatile choice for everyday shooting, from portraits to products."
+  },
+  {
+    "recipeId": "SCL-PP-009",
+    "locale": "en",
+    "description": "A muted, low-saturation color profile with a distinctive cyan-teal cast in the shadows and mid-tones.\nIt creates a subtle, gentle, and slightly melancholic mood, perfect for street photography and urban exploration."
+  },
+  {
+    "recipeId": "SCL-PP-010",
+    "locale": "en",
+    "description": "A cinematic style with very low saturation and a subtle green tint, designed to emulate motion picture film.\nIt provides a flat, neutral base, ideal for shots requiring a desaturated, atmospheric feel."
+  },
+  {
+    "recipeId": "SCL-PP-011",
+    "locale": "en",
+    "description": "A night-specific formula that transforms artificial city lights into vibrant blues and cyans, while maintaining good highlight control.\nIt creates a futuristic, cyberpunk-inspired aesthetic."
+  },
+  {
+    "recipeId": "SCL-PP-012",
+    "locale": "en",
+    "description": "A warm, soft, and nostalgic profile with a gentle amber cast.\nIt excels at creating a cozy and intimate feel, perfect for golden hour portraits, family photos, and vintage-inspired shots."
+  },
+  {
+    "recipeId": "SCL-PP-013",
+    "locale": "en",
+    "description": "An incredibly versatile, low-contrast profile that utilizes an S-Log gamma to maximize dynamic range.\nIt produces a flat, soft image with rich colors, perfect for harsh lighting conditions or as a robust base for post-production."
+  },
+  {
+    "recipeId": "SCL-PP-014",
+    "locale": "en",
+    "description": "A vibrant, powerful style with a distinctive magenta cast, emulating a popular slide film.\nIdeal for landscapes and nature, making flowers and sunsets pop with intense, dramatic colors."
+  },
+  {
+    "recipeId": "SCL-PP-015",
+    "locale": "en",
+    "description": "A neutral, slightly faded style with a subtle green-cyan tint in the shadows.\nIt evokes the feeling of looking through old family slide films, perfect for nostalgic portraits and everyday scenes."
+  },
+  {
+    "recipeId": "SCL-PP-016",
+    "locale": "en",
+    "description": "A clean, balanced, and versatile profile with moderate saturation and natural skin tones.\nThis is a go-to choice for a wide range of situations, providing an authentic look with a subtle filmic feel."
+  },
+  {
+    "recipeId": "SCL-PP-017",
+    "locale": "en",
+    "description": "Characterized by soft contrast and a gentle magenta cast, this formula is perfect for flattering portraits.\nIt renders skin tones with a smooth, delicate quality, creating a refined and elegant look."
+  },
+  {
+    "recipeId": "SCL-PP-018",
+    "locale": "en",
+    "description": "A bold, high-contrast style with super-saturated, almost artificial colors and deep blacks.\nIt creates a strong graphic look, ideal for abstract subjects, modern architecture, and experimental photography."
+  },
+  {
+    "recipeId": "SCL-PP-019",
+    "locale": "en",
+    "description": "An explosion of color. This formula pushes saturation to the maximum, creating a super-vibrant, high-energy style.\nPerfect for making bold statements and capturing the fun, playful side of life."
+  },
+  {
+    "recipeId": "SCL-PP-020",
+    "locale": "en",
+    "description": "A modern take on classic warm film stocks, utilizing S-Cinetone for smooth tones.\nIt delivers a cozy feel, with slightly muted greens and yellows, perfect for capturing the essence of a misty autumn day."
+  },
+  {
+    "recipeId": "SCL-PP-021",
+    "locale": "en",
+    "description": "A soft and subtle style with moderate saturation and gentle tones.\nIt's versatile for everyday shooting, lending images a peaceful and pleasant feel without being overwhelmed by color."
+  },
+  {
+    "recipeId": "SCL-PP-022",
+    "locale": "en",
+    "description": "A neutral, true-to-life profile designed for accuracy.\nIt provides a clean, standard look with minimal color shifts, making it a great, reliable base for any type of photography."
+  },
+  {
+    "recipeId": "SCL-PP-023",
+    "locale": "en",
+    "description": "A cool-toned formula with a high Kelvin temperature, giving images a clean, crisp blue cast.\nIt's well-suited for emphasizing cold light in urban or mountain landscapes, creating a clean and edgy aesthetic."
+  },
+  {
+    "recipeId": "SCL-PP-024",
+    "locale": "en",
+    "description": "Pushing white balance to its coldest, this formula creates a unique, stylized look with a deep blue-green cast.\nIt's perfect for experimental, moody, and atmospheric photography."
+  },
+  {
+    "recipeId": "SCL-PP-025",
+    "locale": "en",
+    "description": "A powerful, high-saturation cinematic style, distinct from Fuji emulations.\nIt utilizes a wide color space to produce deep, rich colors with a filmic gamma curve, well-suited for vivid visual storytelling."
+  },
+  {
+    "recipeId": "SCL-PP-026",
+    "locale": "en",
+    "description": "Leveraging HLG (Hybrid Log-Gamma), this formula captures wide dynamic range with high saturation.\nIt produces a vivid, impactful image that feels both cinematic and surreal, ideal for high-energy shots."
+  },
+  {
+    "recipeId": "SCL-PP-027",
+    "locale": "en",
+    "description": "A modern, clean cinematic style based on S-Cinetone.\nIt's designed for daylight conditions, delivering beautiful skin tones, high saturation, and a professional, polished feel straight out of camera."
+  },
+  {
+    "recipeId": "SCL-PP-028",
+    "locale": "en",
+    "description": "An experimental and powerful style with ultra-high saturation and pronounced warm tones.\nIt creates fiery reds and oranges, perfect for bold, abstract, and high-impact photography."
+  },
+  {
+    "recipeId": "SCL-PP-029",
+    "locale": "en",
+    "description": "A balanced cinematic formula for tungsten lighting with a cool blue-green bias.\nBased on S-Cinetone, it delivers smooth tones and a sophisticated, professional look reminiscent of classic Hollywood films."
+  },
+  {
+    "recipeId": "SCL-PP-030",
+    "locale": "en",
+    "description": "A balanced, versatile monochrome style with a full tonal range and clean mid-tones.\nThis is a perfect starting point for black and white photography, delivering classic, timeless results for any subject."
+  },
+  {
+    "recipeId": "SCL-PP-031",
+    "locale": "en",
+    "description": "A dramatic, high-contrast monochrome style with inky blacks and crisp whites.\nIdeal for architectural details, powerful street photography, and making subjects stand out with impressive clarity."
+  },
+  {
+    "recipeId": "SCL-PP-032",
+    "locale": "en",
+    "description": "A powerful, high-contrast style that emulates the feel of 'pushed' black and white film used by photojournalists.\nIt's grainy, sharp, and full of character, perfect for capturing raw, unedited moments."
+  },
+  {
+    "recipeId": "SCL-PP-033",
+    "locale": "en",
+    "description": "A flat, soft-contrast profile with rich mid-tones and smooth transitions.\nIt emulates the look of a classic darkroom print on silver gelatin paper, ideal for fine-art portraits and subtle compositions."
+  },
+  {
+    "recipeId": "SCL-PP-034",
+    "locale": "en",
+    "description": "A clean, crisp, and cool-toned black and white style.\nIt features fine grain and high clarity, perfect for technical subjects, architecture, and portraits where detail is paramount."
+  },
+  {
+    "recipeId": "SCL-PP-035",
+    "locale": "en",
+    "description": "A versatile, medium-contrast style with a classic grain structure.\nThis is a black and white 'workhorse' choice, ideal for photojournalism, street photography, and capturing everyday life with an authentic feel."
+  },
+  {
+    "recipeId": "SCL-PP-036",
+    "locale": "en",
+    "description": "A very high-contrast, dramatic black and white style with deep, crushed blacks and bright whites.\nIt evokes the classic film noir aesthetic, perfect for creating mystery, drama, and graphic compositions."
+  },
+  {
+    "recipeId": "SCL-PP-037",
+    "locale": "en",
+    "description": "Designed to emulate high-speed film, this formula uses a cinematic gamma to handle contrast while encouraging grain.\nIt's perfect for low-light situations, adding texture and atmosphere to shots."
+  },
+  {
+    "recipeId": "SCL-PP-038",
+    "locale": "en",
+    "description": "A contemporary black and white style that utilizes S-Cinetone gamma for smooth, beautiful tonal transitions.\nIt delivers deep blacks without being overly harsh, well-suited for modern portraits and fine art."
+  },
+  {
+    "recipeId": "SCL-PP-039",
+    "locale": "en",
+    "description": "Emulating orthochromatic film, which is insensitive to red light.\nThis results in darkened skin and lip tones, creating a unique, vintage, and often dramatic portrait style."
+  },
+  {
+    "recipeId": "SCL-PP-040",
+    "locale": "en",
+    "description": "Based on the unique film style, this recipe offers a creative and unpredictable look with distinct color shifts, especially in reds and greens. It's perfect for photographers looking to experiment with a quirky, analog-inspired palette."
+  },
+  {
+    "recipeId": "SCL-PP-041",
+    "locale": "en",
+    "description": "A highly stylized and atmospheric recipe with a dominant, warm yellow-green cast. It dramatically transforms landscapes and scenes, creating a surreal, vintage, or even dystopian feel. Ideal for bold artistic statements."
+  },
+  {
+    "recipeId": "SCL-PP-043",
+    "locale": "en",
+    "description": "A color recipe with natural and vivid colors, suitable for Macro photography in the style of Photographer Tran Anh Tuan."
+  },
+  {
+    "recipeId": "SCL-PP-044",
+    "locale": "en",
+    "description": "A filmic recipe that mimic FJ C200 Film stock."
+  },
+  {
+    "recipeId": "SCL-PP-045",
+    "locale": "en",
+    "description": "A color recipe for crystal-clear images, featuring rich colors on a neutral foundation. Specially designed for livestreaming, it renders Asian skin tones authentically and radiantly."
+  },
+  {
+    "recipeId": "SCL-PP-046",
+    "locale": "en",
+    "description": "A color recipe for crystal-clear images, featuring rich colors on a neutral foundation. Specially designed for livestreaming, it renders Asian skin tones authentically and radiantly."
+  },
+  {
+    "recipeId": "SCL-PP-047",
+    "locale": "en",
+    "description": "A color recipe for crystal-clear images, featuring rich colors on a neutral foundation. Specially designed for livestreaming, it renders Asian skin tones authentically and radiantly."
+  },
+  {
+    "recipeId": "SCL-PP-001",
+    "locale": "vi",
+    "description": "Phong cách hoài niệm, ngập nắng, phủ lên khung hình ánh vàng ấm của giờ vàng.\nRất hợp cho ảnh du lịch và đời sống, tái hiện sắc vàng đậm và xanh sâu, gợi cảm giác một chuyến road trip mùa hè bất tận."
+  },
+  {
+    "recipeId": "SCL-PP-002",
+    "locale": "vi",
+    "description": "Bảng màu tĩnh lặng và tinh tế, nổi bật với sắc ngọc bích đậm và tông da dịu.\nLý tưởng cho chân dung trầm lắng, ảnh đường phố và phong cảnh, tạo bầu không khí yên bình như tranh vẽ."
+  },
+  {
+    "recipeId": "SCL-PP-003",
+    "locale": "vi",
+    "description": "Profile điện ảnh tông ấm với sắc xanh sâu đặc trưng và vùng tối đậm, dày.\nMang lại chất u tối, giàu không khí — hợp với cảnh đêm đô thị, chân dung kịch tính và ảnh kể chuyện."
+  },
+  {
+    "recipeId": "SCL-PP-004",
+    "locale": "vi",
+    "description": "Phong cách rực rỡ, độ bão hòa cao với sắc đỏ và vàng đất ấm.\nMang đến cường độ mạnh mẽ như nắng thiêu, gợi nhớ ảnh du lịch châu Âu cổ điển."
+  },
+  {
+    "recipeId": "SCL-PP-005",
+    "locale": "vi",
+    "description": "Bảng màu pastel mềm, tương phản nhẹ và độ bão hòa thấp.\nTông da lên rất đẹp, phong cảnh có chất mơ màng thoát tục — hợp ảnh chân dung lãng mạn và fine-art."
+  },
+  {
+    "recipeId": "SCL-PP-006",
+    "locale": "vi",
+    "description": "Look cách điệu với vùng tối được nâng mạnh và màu trầm, tạo hiệu ứng mềm, mờ sương.\nGợi cảm giác hoài cổ, lý tưởng cho thời trang, editorial và đời sống theo hướng vintage pha hiện đại."
+  },
+  {
+    "recipeId": "SCL-PP-007",
+    "locale": "vi",
+    "description": "Profile tương phản cao, u tối với vùng đen sâu và độ lệch màu lạnh rõ rệt.\nNhấn mạnh kết cấu và hình khối, tạo phong cách đồ họa mạnh gợi nhớ phim slide tài liệu xưa."
+  },
+  {
+    "recipeId": "SCL-PP-008",
+    "locale": "vi",
+    "description": "Phong cách sạch, tươi và hiện đại, dựa trên color science mới.\nMàu đậm dễ chịu với chuyển tông mượt — lựa chọn linh hoạt cho mọi tình huống, từ chân dung đến chụp sản phẩm."
+  },
+  {
+    "recipeId": "SCL-PP-009",
+    "locale": "vi",
+    "description": "Profile màu trầm, bão hòa thấp với sắc cyan-teal đặc trưng ở vùng tối và trung gian.\nTạo tâm trạng nhẹ nhàng, hơi man mác — hợp ảnh đường phố và khám phá đô thị."
+  },
+  {
+    "recipeId": "SCL-PP-010",
+    "locale": "vi",
+    "description": "Phong cách điện ảnh với độ bão hòa rất thấp và sắc xanh lá phảng phất, mô phỏng phim điện ảnh.\nCho nền màu phẳng, trung tính — lý tưởng cho những khung hình cần cảm giác nhạt màu, giàu không khí."
+  },
+  {
+    "recipeId": "SCL-PP-011",
+    "locale": "vi",
+    "description": "Công thức dành riêng cho ban đêm, biến ánh đèn thành phố thành sắc xanh dương và cyan rực rỡ, đồng thời giữ tốt vùng sáng.\nTạo thẩm mỹ tương lai, đậm chất cyberpunk."
+  },
+  {
+    "recipeId": "SCL-PP-012",
+    "locale": "vi",
+    "description": "Profile ấm, mềm và hoài niệm với sắc hổ phách dịu.\nRất mạnh ở cảm giác ấm cúng, thân mật — hợp chân dung giờ vàng, ảnh gia đình và ảnh mang hơi hướng xưa."
+  },
+  {
+    "recipeId": "SCL-PP-013",
+    "locale": "vi",
+    "description": "Profile tương phản thấp cực kỳ linh hoạt, dùng gamma S-Log để tối đa dynamic range.\nCho ảnh phẳng, mềm nhưng màu vẫn đậm — hợp điều kiện ánh sáng gắt hoặc làm nền vững cho hậu kỳ."
+  },
+  {
+    "recipeId": "SCL-PP-014",
+    "locale": "vi",
+    "description": "Phong cách rực rỡ, mạnh mẽ với sắc magenta đặc trưng, mô phỏng một dòng phim slide nổi tiếng.\nLý tưởng cho phong cảnh và thiên nhiên, làm hoa và hoàng hôn bật lên với màu đậm, kịch tính."
+  },
+  {
+    "recipeId": "SCL-PP-015",
+    "locale": "vi",
+    "description": "Phong cách trung tính, hơi phai với sắc xanh lá pha cyan nhẹ ở vùng tối.\nGợi cảm giác xem lại phim slide của gia đình ngày xưa — hợp chân dung hoài niệm và cảnh đời thường."
+  },
+  {
+    "recipeId": "SCL-PP-016",
+    "locale": "vi",
+    "description": "Profile sạch, cân bằng và linh hoạt với độ bão hòa vừa phải và tông da tự nhiên.\nLựa chọn mặc định cho nhiều tình huống, cho vẻ chân thực với chút chất phim tinh tế."
+  },
+  {
+    "recipeId": "SCL-PP-017",
+    "locale": "vi",
+    "description": "Tương phản mềm cùng sắc magenta dịu khiến công thức này rất hợp chân dung tôn dáng.\nTông da lên mượt và mỏng, tạo vẻ tinh tế, sang trọng."
+  },
+  {
+    "recipeId": "SCL-PP-018",
+    "locale": "vi",
+    "description": "Phong cách táo bạo, tương phản cao với màu bão hòa cực mạnh, gần như phi thực, cùng vùng đen sâu.\nTạo look đồ họa mạnh — lý tưởng cho chủ thể trừu tượng, kiến trúc hiện đại và ảnh thử nghiệm."
+  },
+  {
+    "recipeId": "SCL-PP-019",
+    "locale": "vi",
+    "description": "Một vụ nổ màu sắc. Công thức đẩy độ bão hòa lên tối đa, tạo phong cách siêu rực rỡ, tràn năng lượng.\nHợp để tuyên ngôn mạnh và bắt lấy khía cạnh vui tươi của cuộc sống."
+  },
+  {
+    "recipeId": "SCL-PP-020",
+    "locale": "vi",
+    "description": "Cách nhìn hiện đại về những dòng phim ấm cổ điển, dùng S-Cinetone cho chuyển tông mượt.\nCảm giác ấm cúng với sắc xanh lá và vàng hơi trầm — hợp bắt trọn tinh thần một ngày thu sương mờ."
+  },
+  {
+    "recipeId": "SCL-PP-021",
+    "locale": "vi",
+    "description": "Phong cách mềm và tinh tế với độ bão hòa vừa phải cùng tông màu dịu.\nLinh hoạt cho chụp hằng ngày, cho ảnh cảm giác bình yên, dễ chịu mà không bị màu lấn át."
+  },
+  {
+    "recipeId": "SCL-PP-022",
+    "locale": "vi",
+    "description": "Profile trung tính, sát thực tế, thiết kế cho độ chính xác.\nCho look sạch, chuẩn với rất ít lệch màu — nền tảng đáng tin cho mọi thể loại nhiếp ảnh."
+  },
+  {
+    "recipeId": "SCL-PP-023",
+    "locale": "vi",
+    "description": "Công thức tông lạnh với white balance Kelvin cao, cho ảnh sắc xanh dương sạch và sắc nét.\nRất hợp để nhấn ánh sáng lạnh trong cảnh đô thị hoặc núi cao, tạo thẩm mỹ sạch và gai góc."
+  },
+  {
+    "recipeId": "SCL-PP-024",
+    "locale": "vi",
+    "description": "Đẩy white balance về phía lạnh nhất, công thức tạo look cách điệu độc đáo với sắc xanh lam pha lục sâu.\nHợp ảnh thử nghiệm, u tối và giàu không khí."
+  },
+  {
+    "recipeId": "SCL-PP-025",
+    "locale": "vi",
+    "description": "Phong cách điện ảnh mạnh mẽ, bão hòa cao, khác biệt với các bản mô phỏng Fuji.\nDùng không gian màu rộng để cho màu sâu và đậm cùng đường gamma chất phim — hợp kể chuyện bằng hình ảnh sống động."
+  },
+  {
+    "recipeId": "SCL-PP-026",
+    "locale": "vi",
+    "description": "Tận dụng HLG (Hybrid Log-Gamma), công thức bắt được dynamic range rộng với độ bão hòa cao.\nCho ảnh sống động, giàu tác động, vừa điện ảnh vừa siêu thực — lý tưởng cho khung hình nhiều năng lượng."
+  },
+  {
+    "recipeId": "SCL-PP-027",
+    "locale": "vi",
+    "description": "Phong cách điện ảnh hiện đại, sạch, dựa trên S-Cinetone.\nThiết kế cho điều kiện ánh sáng ban ngày, cho tông da đẹp, độ bão hòa cao và vẻ chuyên nghiệp ngay từ máy."
+  },
+  {
+    "recipeId": "SCL-PP-028",
+    "locale": "vi",
+    "description": "Phong cách thử nghiệm và mạnh mẽ với độ bão hòa cực cao cùng tông ấm rõ rệt.\nTạo sắc đỏ và cam rực lửa — hợp ảnh táo bạo, trừu tượng và giàu tác động."
+  },
+  {
+    "recipeId": "SCL-PP-029",
+    "locale": "vi",
+    "description": "Công thức điện ảnh cân bằng cho ánh sáng tungsten với thiên hướng xanh lam pha lục lạnh.\nDựa trên S-Cinetone, cho chuyển tông mượt và vẻ chỉn chu gợi nhớ phim Hollywood cổ điển."
+  },
+  {
+    "recipeId": "SCL-PP-030",
+    "locale": "vi",
+    "description": "Phong cách đen trắng cân bằng, linh hoạt với dải tông đầy đủ và vùng trung gian sạch.\nĐiểm khởi đầu hoàn hảo cho ảnh đen trắng, cho kết quả cổ điển, vượt thời gian với mọi chủ thể."
+  },
+  {
+    "recipeId": "SCL-PP-031",
+    "locale": "vi",
+    "description": "Phong cách đen trắng kịch tính, tương phản cao với vùng đen như mực và vùng trắng sắc nét.\nLý tưởng cho chi tiết kiến trúc, ảnh đường phố mạnh mẽ và làm chủ thể nổi bật với độ rõ ấn tượng."
+  },
+  {
+    "recipeId": "SCL-PP-032",
+    "locale": "vi",
+    "description": "Phong cách tương phản cao, mạnh mẽ, mô phỏng cảm giác phim đen trắng bị 'push' mà các phóng viên ảnh hay dùng.\nNhiều hạt, sắc nét và giàu cá tính — hợp bắt những khoảnh khắc thô mộc, chưa qua chỉnh sửa."
+  },
+  {
+    "recipeId": "SCL-PP-033",
+    "locale": "vi",
+    "description": "Profile phẳng, tương phản mềm với vùng trung gian đậm đà và chuyển tông mượt.\nMô phỏng bản in buồng tối cổ điển trên giấy silver gelatin — lý tưởng cho chân dung fine-art và bố cục tinh tế."
+  },
+  {
+    "recipeId": "SCL-PP-034",
+    "locale": "vi",
+    "description": "Phong cách đen trắng sạch, sắc nét và tông lạnh.\nHạt mịn, độ rõ cao — hợp chủ thể kỹ thuật, kiến trúc và chân dung nơi chi tiết là ưu tiên hàng đầu."
+  },
+  {
+    "recipeId": "SCL-PP-035",
+    "locale": "vi",
+    "description": "Phong cách linh hoạt, tương phản trung bình với cấu trúc hạt cổ điển.\nLà lựa chọn 'chủ lực' cho ảnh đen trắng — lý tưởng cho ảnh báo chí, đường phố và ghi lại đời thường một cách chân thực."
+  },
+  {
+    "recipeId": "SCL-PP-036",
+    "locale": "vi",
+    "description": "Phong cách đen trắng kịch tính với tương phản rất cao, vùng đen sâu và vùng trắng sáng.\nGợi thẩm mỹ film noir cổ điển — hợp tạo sự bí ẩn, kịch tính và bố cục đồ họa."
+  },
+  {
+    "recipeId": "SCL-PP-037",
+    "locale": "vi",
+    "description": "Thiết kế để mô phỏng phim tốc độ cao, công thức dùng gamma điện ảnh để kiểm soát tương phản trong khi khuyến khích hạt.\nHợp điều kiện thiếu sáng, thêm kết cấu và không khí cho khung hình."
+  },
+  {
+    "recipeId": "SCL-PP-038",
+    "locale": "vi",
+    "description": "Phong cách đen trắng đương đại, dùng gamma S-Cinetone cho chuyển tông mượt và đẹp.\nCho vùng đen sâu mà không quá gắt — hợp chân dung hiện đại và fine-art."
+  },
+  {
+    "recipeId": "SCL-PP-039",
+    "locale": "vi",
+    "description": "Mô phỏng phim orthochromatic, loại phim không nhạy với ánh sáng đỏ.\nKết quả là tông da và môi sẫm lại, tạo phong cách chân dung độc đáo, cổ điển và thường rất kịch tính."
+  },
+  {
+    "recipeId": "SCL-PP-040",
+    "locale": "vi",
+    "description": "Dựa trên phong cách phim độc đáo, công thức cho look sáng tạo và khó đoán với những dịch chuyển màu rõ rệt, đặc biệt ở sắc đỏ và xanh lá. Hợp với người thích thử nghiệm bảng màu lạ, đậm chất analog."
+  },
+  {
+    "recipeId": "SCL-PP-041",
+    "locale": "vi",
+    "description": "Công thức cách điệu mạnh và giàu không khí với sắc vàng pha lục ấm áp áp đảo. Nó biến đổi phong cảnh và khung cảnh một cách rõ rệt, tạo cảm giác siêu thực, hoài cổ, thậm chí dystopian. Lý tưởng cho những tuyên ngôn nghệ thuật táo bạo."
+  },
+  {
+    "recipeId": "SCL-PP-043",
+    "locale": "vi",
+    "description": "Công thức màu tự nhiên và sống động, phù hợp cho ảnh Macro theo phong cách của nhiếp ảnh gia Trần Anh Tuấn."
+  },
+  {
+    "recipeId": "SCL-PP-044",
+    "locale": "vi",
+    "description": "Công thức chất phim, mô phỏng film stock FJ C200."
+  },
+  {
+    "recipeId": "SCL-PP-045",
+    "locale": "vi",
+    "description": "Công thức màu cho hình ảnh trong trẻo, màu sắc đậm đà trên nền trung tính. Được thiết kế riêng cho livestream, thể hiện tông da người châu Á chân thực và rạng rỡ."
+  },
+  {
+    "recipeId": "SCL-PP-046",
+    "locale": "vi",
+    "description": "Công thức màu cho hình ảnh trong trẻo, màu sắc đậm đà trên nền trung tính. Được thiết kế riêng cho livestream, thể hiện tông da người châu Á chân thực và rạng rỡ."
+  },
+  {
+    "recipeId": "SCL-PP-047",
+    "locale": "vi",
+    "description": "Công thức màu cho hình ảnh trong trẻo, màu sắc đậm đà trên nền trung tính. Được thiết kế riêng cho livestream, thể hiện tông da người châu Á chân thực và rạng rỡ."
+  }
+]

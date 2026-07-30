@@ -1,0 +1,827 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Alpha ColorLab — dark only.
+
+   There is no light theme by design: recipes are judged by their colour, and a
+   light surface changes how every accent reads. `color-scheme: dark` tells the
+   browser to match form controls and scrollbars.
+
+   Colours are OKLCH so the per-recipe accents (src/lib/camera/color.ts) sit in
+   the same space as the interface around them.
+--------------------------------------------------------------------------- */
+
+@theme {
+  --color-void:      oklch(13% 0.012 265);
+  --color-base:      oklch(16% 0.014 265);
+  --color-raised:    oklch(21% 0.016 265);
+  --color-edge:      oklch(32% 0.018 265);
+
+  --color-ink:       oklch(98% 0.004 265);
+  --color-ink-muted: oklch(82% 0.012 265);
+  --color-ink-faint: oklch(68% 0.014 265);
+
+  --font-sans: var(--font-noto-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-noto-sans-mono), ui-monospace, monospace;
+
+  --radius-glass: 1.125rem;
+
+  /* Beyond the default 2xl (96rem/1536px). Declared here rather than written
+     inline as `min-[2100px]:` — Tailwind v4 silently generates no rule for that
+     arbitrary form, so the column count just never changed. */
+  --breakpoint-3xl: 131.25rem; /* 2100px */
+  --breakpoint-4xl: 175rem;    /* 2800px */
+}
+
+:root {
+  color-scheme: dark;
+  /* Overridden per recipe from its own White Balance. */
+  --accent: oklch(78% 0 0);
+}
+
+html {
+  background: oklch(6% 0.005 265);
+}
+
+body {
+  color: var(--color-ink);
+  /* Deep Pitch-Black OLED background */
+  background: #040406;
+  background-attachment: fixed;
+}
+
+/* ---------------------------------------------------------------------------
+   Authentic Analog Film Photographic VFX (Film Grain, Film Burn, Halation & Bloom)
+--------------------------------------------------------------------------- */
+
+/* Authentic Film Grain Texture Overlay */
+.analog-film-grain {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.14;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='fg'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23fg)'/%3E%3C/svg%3E");
+  animation: film-grain-jitter 0.8s steps(6) infinite;
+}
+
+@keyframes film-grain-jitter {
+  0% { transform: translate(0, 0); }
+  20% { transform: translate(-0.4%, 0.4%); }
+  40% { transform: translate(0.4%, -0.4%); }
+  60% { transform: translate(-0.4%, -0.4%); }
+  80% { transform: translate(0.4%, 0.4%); }
+  100% { transform: translate(0, 0); }
+}
+
+/* Authentic 35mm Film Burn Light Leak VFX */
+.film-burn-leak {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: 0.4;
+  background: 
+    radial-gradient(ellipse 65% 45% at 95% 5%, oklch(75% 0.28 45 / 0.35), transparent 70%),
+    radial-gradient(ellipse 55% 55% at 5% 95%, oklch(70% 0.32 25 / 0.25), transparent 70%),
+    radial-gradient(circle 40% at 50% -15%, oklch(80% 0.25 75 / 0.2), transparent 70%);
+  animation: film-burn-pulse 12s ease-in-out infinite alternate;
+}
+
+@keyframes film-burn-pulse {
+  0% {
+    opacity: 0.3;
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(1.04) rotate(1deg);
+  }
+  100% {
+    opacity: 0.35;
+    transform: scale(0.98) rotate(-1deg);
+  }
+}
+
+/* Halation Glow Effect (Vintage Red/Amber Specular Edge Bleed) */
+.film-halation-glow {
+  filter: drop-shadow(0 0 10px oklch(70% 0.3 30 / 0.45)) drop-shadow(0 0 20px oklch(85% 0.3 75 / 0.25));
+}
+
+/* ---------------------------------------------------------------------------
+   Glass
+   Translucent fill + backdrop blur + specular edge
+--------------------------------------------------------------------------- */
+
+.glass {
+  position: relative;
+  background: linear-gradient(135deg, oklch(22% 0.016 265 / 0.75), oklch(17% 0.014 265 / 0.65));
+  backdrop-filter: blur(24px) saturate(1.5);
+  -webkit-backdrop-filter: blur(24px) saturate(1.5);
+  border-radius: var(--radius-glass);
+  border: 0 !important;
+  outline: none;
+  box-shadow: 0 10px 32px -6px rgba(0, 0, 0, 0.4);
+}
+
+/* Grain. Inline SVG turbulence — no raster asset, no network request. */
+.glass::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0.1;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.glass-flat {
+  background: oklch(24% 0.018 265 / 0.5);
+  backdrop-filter: blur(16px) saturate(1.3);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  border: 0 !important;
+  outline: none;
+  box-shadow: 0 4px 18px -2px rgba(0, 0, 0, 0.25);
+  color: var(--color-ink);
+}
+
+/* ---------------------------------------------------------------------------
+   Type
+   Camera values are set in mono: they are machine values that should align in
+   a column and never be mistaken for prose.
+--------------------------------------------------------------------------- */
+
+.tabular {
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: 0.725rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: oklch(88% 0.008 265);
+}
+
+/* ---------------------------------------------------------------------------
+   Display space
+
+   The layout adapts to the device's actual capabilities — viewport size and
+   pointer type — never to a sniffed user agent, which gets tablets, foldables
+   and iPadOS wrong.
+--------------------------------------------------------------------------- */
+
+/* `100vh` is wrong on mobile: it counts the address bar that collapses on
+   scroll, so the page runs taller than the screen. `dvh` tracks the real
+   viewport, with a vh fallback for browsers that lack it. */
+.min-h-screen-dynamic {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Content paints edge to edge under the notch and home indicator
+   (viewport-fit: cover), so every edge pays back its own inset. */
+.inset-safe {
+  padding-left: max(1.25rem, env(safe-area-inset-left));
+  padding-right: max(1.25rem, env(safe-area-inset-right));
+}
+
+.pb-safe {
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+}
+
+.pt-safe {
+  padding-top: max(0.75rem, env(safe-area-inset-top));
+}
+
+/* Installed, running without browser chrome. There is no address bar to scroll
+   away, so the header can sit tighter and give the grid the reclaimed space. */
+@media (display-mode: standalone), (display-mode: fullscreen) {
+  .app-shell {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  /* Overscroll bounce reveals the page background behind a "native" app and
+     breaks the illusion. */
+  html,
+  body {
+    overscroll-behavior-y: none;
+  }
+}
+
+/* Touch input, whatever the device claims to be: every control clears the 44px
+   minimum target, and hover-only affordances are not relied on. */
+@media (pointer: coarse) {
+  a.eyebrow,
+  button.eyebrow {
+    min-height: 2.75rem;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+/* Short landscape windows — a phone turned sideways, or a split-screen pane.
+   Measured at 797x375 the hero and filters pushed the first recipe to 586px,
+   more than a full screen of scrolling before any content. Each rule below
+   removes one part of that. */
+@media (max-height: 32rem) and (orientation: landscape) {
+  .hero-block {
+    padding-top: 1.25rem;
+    padding-bottom: 1.25rem;
+  }
+
+  /* The shift plane is the first thing to go: it is the largest single block
+     and the least useful when there is no room to read it. */
+  .hero-plane {
+    display: none;
+  }
+
+  /* 104px of headline on a 375px-tall screen is most of the viewport. */
+  .hero-block h1 {
+    font-size: 1.75rem;
+    line-height: 1.15;
+  }
+
+  .hero-intro {
+    display: none;
+  }
+}
+
+/* A wrapping tag list grows to three rows and pushes content off screen.
+   Below this width it becomes one row that scrolls sideways instead —
+   the chips stay reachable without costing vertical space. */
+@media (max-width: 48rem), (max-height: 32rem) {
+  .filter-scroll {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    /* Bleed to the viewport edge so the row reads as scrollable. */
+    margin-inline: -0.25rem;
+    padding-inline: 0.25rem;
+    scroll-padding-inline: 0.25rem;
+  }
+
+  .filter-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .filter-scroll > * {
+    flex: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Quality floor
+--------------------------------------------------------------------------- */
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+::selection {
+  background: oklch(78% 0.1 265 / 0.3);
+  color: var(--color-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* If backdrop-filter is unavailable, fall back to an opaque surface rather
+   than leaving text floating over a busy photograph. */
+@supports not (backdrop-filter: blur(1px)) {
+  .glass,
+  .glass-flat {
+    background: oklch(22% 0.016 265 / 0.96);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Y2K Color Pop & Cyber Aesthetics
+--------------------------------------------------------------------------- */
+
+.y2k-badge {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  background: linear-gradient(90deg, oklch(25% 0.08 330 / 0.6), oklch(25% 0.08 240 / 0.6));
+  border: 1px solid oklch(75% 0.25 330 / 0.4);
+  box-shadow: 0 0 15px oklch(75% 0.35 330 / 0.25);
+  border-radius: 9999px;
+  padding: 0.35rem 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.y2k-chrome-text {
+  background: linear-gradient(
+    135deg,
+    oklch(98% 0.02 265) 0%,
+    oklch(85% 0.35 330) 35%,
+    oklch(82% 0.25 240) 65%,
+    oklch(92% 0.28 140) 100%
+  );
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 20px oklch(75% 0.3 330 / 0.4));
+  animation: y2k-gradient-shift 6s ease infinite alternate;
+  display: inline-block;
+  padding-top: 0.25em;
+  padding-bottom: 0.1em;
+}
+
+.y2k-chrome-subtext {
+  background: linear-gradient(
+    90deg,
+    oklch(95% 0.05 240) 0%,
+    oklch(85% 0.25 140) 50%,
+    oklch(90% 0.25 330) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  padding-top: 0.15em;
+  padding-bottom: 0.1em;
+}
+
+.y2k-grid-bg {
+  background-image: 
+    linear-gradient(to right, oklch(100% 0 0 / 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, oklch(100% 0 0 / 0.05) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.y2k-glow-border {
+  position: relative;
+  border-radius: var(--radius-glass);
+}
+
+.y2k-card-pop {
+  background: oklch(20% 0.02 265 / 0.6);
+  backdrop-filter: blur(16px);
+  border: 0 !important;
+  transition: all 0.3s ease;
+}
+
+.y2k-card-pop:hover {
+  box-shadow: 0 12px 36px -8px oklch(75% 0.3 330 / 0.3);
+  transform: translateY(-3px);
+}
+
+@keyframes y2k-gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes y2k-pulse-glow {
+  0% {
+    opacity: 0.5;
+    filter: drop-shadow(0 0 8px oklch(75% 0.35 330 / 0.3));
+  }
+  100% {
+    opacity: 1;
+    filter: drop-shadow(0 0 20px oklch(78% 0.25 240 / 0.6));
+  }
+}
+
+@keyframes float-gentle {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-float-gentle {
+  animation: float-gentle 5s ease-in-out infinite;
+}
+
+@keyframes bounce-inviting {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    box-shadow: 0 0 15px oklch(85% 0.3 140 / 0.4);
+  }
+  50% {
+    transform: translateY(-5px) scale(1.03);
+    box-shadow: 0 0 25px oklch(78% 0.25 240 / 0.7);
+  }
+}
+
+.animate-bounce-inviting {
+  animation: bounce-inviting 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-bounce-inviting {
+    animation: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   3D Spatial & Perspective Effects
+--------------------------------------------------------------------------- */
+
+.perspective-1000 {
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.y2k-3d-card-center {
+  transform: translateZ(25px);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.y2k-3d-card-center:hover {
+  transform: translateZ(45px) scale(1.03);
+  box-shadow: 
+    0 20px 50px -10px oklch(85% 0.3 140 / 0.4),
+    0 0 30px oklch(85% 0.3 140 / 0.3);
+}
+
+.y2k-3d-card-left {
+  transform: rotateY(5deg) translateZ(10px);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.y2k-3d-card-left:hover {
+  transform: rotateY(0deg) translateZ(35px) scale(1.03);
+  box-shadow: 
+    0 20px 45px -10px oklch(78% 0.25 240 / 0.4),
+    0 0 25px oklch(78% 0.25 240 / 0.3);
+}
+
+.y2k-3d-card-right {
+  transform: rotateY(-5deg) translateZ(10px);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.y2k-3d-card-right:hover {
+  transform: rotateY(0deg) translateZ(35px) scale(1.03);
+  box-shadow: 
+    0 20px 45px -10px oklch(75% 0.35 330 / 0.4),
+    0 0 25px oklch(75% 0.35 330 / 0.3);
+}
+
+.y2k-laser-grid {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(to right, oklch(75% 0.35 330 / 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, oklch(78% 0.25 240 / 0.08) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 30%, transparent 80%);
+  -webkit-mask-image: radial-gradient(circle at center, rgba(0,0,0,1) 30%, transparent 80%);
+  animation: laser-grid-pulse 8s ease-in-out infinite alternate;
+}
+
+@keyframes laser-grid-pulse {
+  0% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0.9;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes radar-sweep {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-radar-sweep {
+  animation: radar-sweep 14s linear infinite;
+  transform-origin: center;
+}
+
+/* ---------------------------------------------------------------------------
+   Holographic Optics & Spectral 3D Design System
+--------------------------------------------------------------------------- */
+
+.holo-lens-bg {
+  background: 
+    radial-gradient(circle at 50% 50%, oklch(25% 0.1 265 / 0.8) 0%, transparent 60%),
+    radial-gradient(circle at 20% 20%, oklch(75% 0.35 330 / 0.18) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, oklch(78% 0.25 240 / 0.18) 0%, transparent 50%),
+    radial-gradient(circle at 50% 10%, oklch(85% 0.3 140 / 0.15) 0%, transparent 45%);
+}
+
+.holo-aperture-ring {
+  animation: aperture-rotate 35s linear infinite;
+  transform-origin: center;
+}
+
+.animate-aperture-reverse {
+  animation: aperture-reverse 25s linear infinite;
+  transform-origin: center;
+}
+
+@keyframes aperture-rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes aperture-reverse {
+  0% { transform: rotate(360deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.holo-glass-card {
+  background: linear-gradient(
+    135deg,
+    oklch(22% 0.02 265 / 0.75) 0%,
+    oklch(17% 0.015 265 / 0.85) 100%
+  );
+  backdrop-filter: blur(24px) saturate(2);
+  -webkit-backdrop-filter: blur(24px) saturate(2);
+  border: 1px solid oklch(100% 0 0 / 0.12);
+  box-shadow:
+    inset 0 1px 1px oklch(100% 0 0 / 0.25),
+    inset 0 -1px 1px oklch(0% 0 0 / 0.6),
+    0 20px 50px -15px oklch(0% 0 0 / 0.8);
+  position: relative;
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.holo-glass-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    oklch(85% 0.3 140 / 0.8) 30%,
+    oklch(75% 0.35 330 / 0.8) 70%,
+    transparent 100%
+  );
+  opacity: 0.6;
+}
+
+.holo-glass-card:hover {
+  border-color: oklch(85% 0.3 140 / 0.6);
+  box-shadow:
+    inset 0 1px 2px oklch(100% 0 0 / 0.4),
+    0 25px 60px -10px oklch(85% 0.3 140 / 0.3),
+    0 0 35px oklch(75% 0.35 330 / 0.25);
+  transform: translateY(-6px) translateZ(40px) scale(1.02);
+}
+
+.iridescent-text-lead {
+  background: linear-gradient(
+    120deg,
+    #ffffff 0%,
+    oklch(85% 0.35 330) 25%,
+    oklch(80% 0.28 240) 50%,
+    oklch(90% 0.3 140) 75%,
+    #ffffff 100%
+  );
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: iridescent-shift 8s ease infinite alternate;
+  filter: drop-shadow(0 0 25px oklch(75% 0.35 330 / 0.45));
+  display: inline-block;
+  padding-top: 0.25em;
+  padding-bottom: 0.1em;
+}
+
+.iridescent-text-accent {
+  background: linear-gradient(
+    90deg,
+    oklch(85% 0.3 140) 0%,
+    oklch(80% 0.28 240) 50%,
+    oklch(85% 0.35 330) 100%
+  );
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: iridescent-shift 6s ease infinite alternate;
+  filter: drop-shadow(0 0 25px oklch(85% 0.3 140 / 0.4));
+  display: inline-block;
+  padding-top: 0.15em;
+  padding-bottom: 0.1em;
+}
+
+@keyframes iridescent-shift {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+/* ---------------------------------------------------------------------------
+   Crystal Water Lake Ripple & Fluid Droplet VFX
+--------------------------------------------------------------------------- */
+
+.water-ripple-wave {
+  position: absolute;
+  border-radius: 9999px;
+  pointer-events: none;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.25) 0%,
+    oklch(78% 0.25 240 / 0.15) 40%,
+    transparent 70%
+  );
+  backdrop-filter: blur(8px) saturate(1.8);
+  -webkit-backdrop-filter: blur(8px) saturate(1.8);
+  border: 1.5px solid rgba(255, 255, 255, 0.6);
+  box-shadow:
+    inset 0 0 25px rgba(255, 255, 255, 0.4),
+    0 0 35px oklch(78% 0.25 240 / 0.4),
+    0 0 60px oklch(85% 0.3 140 / 0.2);
+  animation: water-ripple-expand 1.4s cubic-bezier(0.15, 0.85, 0.35, 1) forwards;
+}
+
+@keyframes water-ripple-expand {
+  0% {
+    width: 0px;
+    height: 0px;
+    opacity: 0.95;
+    transform: translate(-50%, -50%) scale(0.05);
+  }
+  40% {
+    opacity: 0.75;
+    border-color: rgba(255, 255, 255, 0.8);
+  }
+  100% {
+    width: 450px;
+    height: 450px;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.water-droplet-pearl {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.95), oklch(78% 0.25 240 / 0.7));
+  box-shadow: 
+    0 0 10px rgba(255, 255, 255, 0.8),
+    0 0 20px oklch(78% 0.25 240 / 0.5);
+  animation: water-droplet-splash 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes water-droplet-splash {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  60% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx), var(--dy)) scale(0.15);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Cyber Code Glitch Text Effects
+--------------------------------------------------------------------------- */
+
+.cyber-glitch-text {
+  position: relative;
+  display: inline-block;
+}
+
+.is-glitching {
+  animation: cyber-glitch-shake 0.25s steps(2, jump-start) forwards;
+  text-shadow: 
+    -1.5px 0 oklch(75% 0.35 330), 
+    1.5px 0 oklch(78% 0.25 240);
+  filter: saturate(2);
+}
+
+@keyframes cyber-glitch-shake {
+  0% {
+    transform: translate(0);
+    clip-path: inset(0 0 0 0);
+  }
+  20% {
+    transform: translate(-3px, 1px) skewX(-10deg);
+    clip-path: inset(20% 0 30% 0);
+  }
+  40% {
+    transform: translate(3px, -1px) skewX(8deg);
+    clip-path: inset(50% 0 10% 0);
+  }
+  60% {
+    transform: translate(-2px, -2px) skewX(-5deg);
+    clip-path: inset(10% 0 60% 0);
+  }
+  80% {
+    transform: translate(2px, 1px) skewX(4deg);
+    clip-path: inset(40% 0 20% 0);
+  }
+  100% {
+    transform: translate(0);
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Background Radar Dot Illumination VFX
+--------------------------------------------------------------------------- */
+
+/* ---------------------------------------------------------------------------
+   Exact Geometric Radar Fan Center Hit POP Illumination VFX
+--------------------------------------------------------------------------- */
+
+@keyframes radar-dot-illuminate {
+  /* 0%: Instantaneous POP burst exact when the geometric center of the fan beam sweeps over dot! */
+  0% {
+    r: 1.8px;
+    opacity: 1;
+    fill: #ffffff;
+    filter: 
+      drop-shadow(0 0 4px oklch(85% 0.3 140)) 
+      drop-shadow(0 0 8px oklch(75% 0.35 330));
+  }
+  /* 2.5%: Decaying flash beam glow as trailing edge sweeps past */
+  2.5% {
+    r: 1.1px;
+    opacity: 0.7;
+    filter: drop-shadow(0 0 2px oklch(85% 0.3 140 / 0.5));
+  }
+  /* 6% to 100%: Completely still at baseline static state until next rotation */
+  6%, 100% {
+    r: 0.55px;
+    opacity: 0.35;
+    filter: drop-shadow(0 0 0px transparent);
+  }
+}
+
+.animate-radar-dot {
+  animation: radar-dot-illuminate 14s ease-out infinite;
+}
+
+/* ---------------------------------------------------------------------------
+   Lightbox Zoom & Backdrop Blur Animations
+--------------------------------------------------------------------------- */
+
+@keyframes lightbox-zoom {
+  0% {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-lightbox-zoom {
+  animation: lightbox-zoom 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fade-in-backdrop {
+  0% {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    backdrop-filter: blur(24px);
+  }
+}
+
+.animate-backdrop-blur {
+  animation: fade-in-backdrop 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+

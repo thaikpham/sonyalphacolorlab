@@ -1,0 +1,2883 @@
+[
+  {
+    "id": "SCL-PP-001",
+    "slug": "mojave-sun",
+    "name": "SCL-PP-001: Mojave Sun",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 7000,
+      "shift": {
+        "ab": {
+          "axis": "B",
+          "amount": 3
+        },
+        "gm": {
+          "axis": "M",
+          "amount": 1.5
+        }
+      }
+    },
+    "tags": [
+      "nostalgic",
+      "sun-drenched",
+      "warm",
+      "travel",
+      "lifestyle",
+      "summer",
+      "golden-hour"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -7,
+      "gamma": "Cine1",
+      "blackGamma": {
+        "range": "Wide",
+        "level": 5
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 75,
+        "slope": 2
+      },
+      "colorMode": "S-Gamut3",
+      "saturation": 25,
+      "colorPhase": 1,
+      "colorDepth": {
+        "R": -1,
+        "G": 1,
+        "B": 5,
+        "C": 4,
+        "M": -2,
+        "Y": 2
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-001"
+  },
+  {
+    "id": "SCL-PP-002",
+    "slug": "kyoto-jade",
+    "name": "SCL-PP-002: Kyoto Jade",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 3700,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 7
+        },
+        "gm": {
+          "axis": "M",
+          "amount": 0.5
+        }
+      }
+    },
+    "tags": [
+      "serene",
+      "subtle",
+      "portrait",
+      "street-photography",
+      "landscape",
+      "peaceful",
+      "painterly"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": 0,
+      "gamma": "Cine1",
+      "blackGamma": {
+        "range": "Wide",
+        "level": 7
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 80,
+        "slope": 3
+      },
+      "colorMode": "Pro",
+      "saturation": 12,
+      "colorPhase": -4,
+      "colorDepth": {
+        "R": -4,
+        "G": 7,
+        "B": -2,
+        "C": -2,
+        "M": -5,
+        "Y": -3
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-002"
+  },
+  {
+    "id": "SCL-PP-003",
+    "slug": "caspian-blue",
+    "name": "SCL-PP-003: Caspian Blue",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 8000,
+      "shift": {
+        "ab": {
+          "axis": "B",
+          "amount": 2
+        },
+        "gm": {
+          "axis": "M",
+          "amount": 2
+        }
+      }
+    },
+    "tags": [
+      "cinematic",
+      "cool-tone",
+      "deep-blues",
+      "moody",
+      "atmospheric",
+      "urban-night",
+      "dramatic-portrait",
+      "storytelling"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -15,
+      "gamma": "Cine4",
+      "blackGamma": {
+        "range": "Middle",
+        "level": 4
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 85,
+        "slope": 4
+      },
+      "colorMode": "S-Gamut3.Cine",
+      "saturation": 22,
+      "colorPhase": 7,
+      "colorDepth": {
+        "R": 0,
+        "G": -2,
+        "B": 4,
+        "C": 5,
+        "M": 5,
+        "Y": 1
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-003"
+  },
+  {
+    "id": "SCL-PP-004",
+    "slug": "tuscan-ochre",
+    "name": "SCL-PP-004: Tuscan Ochre",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 4700,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 2
+        },
+        "gm": {
+          "axis": "M",
+          "amount": 0.5
+        }
+      }
+    },
+    "tags": [
+      "vibrant",
+      "high-saturation",
+      "earthy-reds",
+      "warm-yellows",
+      "bold",
+      "sun-baked",
+      "classic-european-travel"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": 2,
+      "gamma": "S-Cinetone",
+      "blackGamma": {
+        "range": "Wide",
+        "level": -5
+      },
+      "knee": {
+        "mode": "Auto"
+      },
+      "colorMode": "S-Gamut3.Cine",
+      "saturation": 25,
+      "colorPhase": 3,
+      "colorDepth": {
+        "R": -2,
+        "G": 6,
+        "B": 4,
+        "C": 5,
+        "M": 5,
+        "Y": 2
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-004"
+  },
+  {
+    "id": "SCL-PP-005",
+    "slug": "somerset-meadow",
+    "name": "SCL-PP-005: Somerset Meadow",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 4200,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 6
+        },
+        "gm": {
+          "axis": "M",
+          "amount": 2
+        }
+      }
+    },
+    "tags": [
+      "pastel",
+      "soft-contrast",
+      "low-saturation",
+      "dreamy",
+      "ethereal",
+      "romantic-portrait",
+      "fine-art"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -8,
+      "gamma": "Cine1",
+      "blackGamma": {
+        "range": "Middle",
+        "level": -5
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 90,
+        "slope": 1
+      },
+      "colorMode": "Pro",
+      "saturation": 8,
+      "colorPhase": 3,
+      "colorDepth": {
+        "R": -3,
+        "G": 6,
+        "B": -2,
+        "C": -3,
+        "M": -4,
+        "Y": 4
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-005"
+  },
+  {
+    "id": "SCL-PP-006",
+    "slug": "faded-cine",
+    "name": "SCL-PP-006: Faded Cine",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 3600,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 6
+        },
+        "gm": {
+          "axis": "M",
+          "amount": 1.5
+        }
+      }
+    },
+    "tags": [
+      "stylized",
+      "lifted-blacks",
+      "soft-colors",
+      "hazy",
+      "nostalgic",
+      "fashion",
+      "editorial",
+      "lifestyle",
+      "vintage-modern"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": 15,
+      "gamma": "Cine1",
+      "blackGamma": {
+        "range": "Narrow",
+        "level": 7
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 90,
+        "slope": -2
+      },
+      "colorMode": "Still",
+      "saturation": 10,
+      "colorPhase": -4,
+      "colorDepth": {
+        "R": -2,
+        "G": 5,
+        "B": -3,
+        "C": 3,
+        "M": 5,
+        "Y": 2
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-006"
+  },
+  {
+    "id": "SCL-PP-007",
+    "slug": "dynachrome-75",
+    "name": "SCL-PP-007: Dynachrome '75",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 4700,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 7
+        },
+        "gm": {
+          "axis": "G",
+          "amount": 0.5
+        }
+      }
+    },
+    "tags": [
+      "high-contrast",
+      "moody",
+      "deep-blacks",
+      "cool-color-shift",
+      "graphic",
+      "classic-slide-film"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -15,
+      "gamma": "S-Cinetone",
+      "blackGamma": {
+        "range": "Wide",
+        "level": -7
+      },
+      "knee": {
+        "mode": "Auto"
+      },
+      "colorMode": "Pro",
+      "saturation": 15,
+      "colorPhase": 2,
+      "colorDepth": {
+        "R": 2,
+        "G": 7,
+        "B": -7,
+        "C": -6,
+        "M": 3,
+        "Y": 3
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-007"
+  },
+  {
+    "id": "SCL-PP-008",
+    "slug": "modern-classic",
+    "name": "SCL-PP-008: Modern Classic",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 4000,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 7
+        },
+        "gm": {
+          "axis": "M",
+          "amount": 2
+        }
+      }
+    },
+    "tags": [
+      "clean",
+      "vibrant",
+      "contemporary",
+      "modern-color-science",
+      "rich-colors",
+      "smooth-tonal-transitions",
+      "versatile",
+      "everyday",
+      "portrait",
+      "product"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": 2,
+      "gamma": "S-Cinetone",
+      "blackGamma": {
+        "range": "Narrow",
+        "level": -7
+      },
+      "knee": {
+        "mode": "Auto"
+      },
+      "colorMode": "S-Cinetone",
+      "saturation": 16,
+      "colorPhase": -3,
+      "colorDepth": {
+        "R": 0,
+        "G": 6,
+        "B": 4,
+        "C": -2,
+        "M": 3,
+        "Y": 2
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-008"
+  },
+  {
+    "id": "SCL-PP-009",
+    "slug": "urban-teal",
+    "name": "SCL-PP-009: Urban Teal",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 4000,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 7
+        },
+        "gm": {
+          "axis": "M",
+          "amount": 0.5
+        }
+      }
+    },
+    "tags": [
+      "muted-color",
+      "low-saturation",
+      "cyan-teal",
+      "subtle",
+      "gentle",
+      "melancholy",
+      "street-photography",
+      "urban-exploration"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -5,
+      "gamma": "Cine4",
+      "blackGamma": {
+        "range": "Middle",
+        "level": -7
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 80,
+        "slope": 2
+      },
+      "colorMode": "Still",
+      "saturation": -2,
+      "colorPhase": 2,
+      "colorDepth": {
+        "R": -5,
+        "G": 6,
+        "B": 3,
+        "C": 4,
+        "M": -6,
+        "Y": -1
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-009"
+  },
+  {
+    "id": "SCL-PP-010",
+    "slug": "cinema-verde",
+    "name": "SCL-PP-010: Cinema Verde",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 4000,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 7
+        },
+        "gm": {
+          "axis": "M",
+          "amount": 0.25
+        }
+      }
+    },
+    "tags": [
+      "cinematic",
+      "very-low-saturation",
+      "subtle-green-tint",
+      "film-emulation",
+      "flat",
+      "neutral",
+      "desaturated",
+      "atmospheric"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": 5,
+      "gamma": "Cine1",
+      "blackGamma": {
+        "range": "Wide",
+        "level": -4
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 85,
+        "slope": 2
+      },
+      "colorMode": "Pro",
+      "saturation": -7,
+      "colorPhase": 1,
+      "colorDepth": {
+        "R": -3,
+        "G": 7,
+        "B": -2,
+        "C": 5,
+        "M": 3,
+        "Y": 2
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-010"
+  },
+  {
+    "id": "SCL-PP-011",
+    "slug": "midnight-halogen",
+    "name": "SCL-PP-011: Midnight Halogen",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 2700,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 7
+        },
+        "gm": {
+          "axis": "M",
+          "amount": 1.25
+        }
+      }
+    },
+    "tags": [
+      "night-specific",
+      "city-lights",
+      "vibrant-blues",
+      "cyan-teal",
+      "highlight-control",
+      "futuristic",
+      "cyberpunk"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -2,
+      "gamma": "Cine4",
+      "blackGamma": {
+        "range": "Wide",
+        "level": 7
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 90,
+        "slope": 3
+      },
+      "colorMode": "Still",
+      "saturation": 5,
+      "colorPhase": 5,
+      "colorDepth": {
+        "R": -5,
+        "G": -7,
+        "B": -6,
+        "C": 4,
+        "M": -7,
+        "Y": -5
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-011"
+  },
+  {
+    "id": "SCL-PP-012",
+    "slug": "amber-glow",
+    "name": "SCL-PP-012: Amber Glow",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 4300,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 7
+        },
+        "gm": {
+          "axis": "M",
+          "amount": 0.25
+        }
+      }
+    },
+    "tags": [
+      "warm",
+      "soft",
+      "nostalgic",
+      "amber-tint",
+      "intimate",
+      "golden-hour-portrait",
+      "family-photos",
+      "vintage-inspired"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": 0,
+      "gamma": "S-Cinetone",
+      "blackGamma": {
+        "range": "Middle",
+        "level": 2
+      },
+      "knee": {
+        "mode": "Auto"
+      },
+      "colorMode": "Pro",
+      "saturation": 5,
+      "colorPhase": 1,
+      "colorDepth": {
+        "R": 2,
+        "G": 5,
+        "B": 1,
+        "C": 2,
+        "M": 4,
+        "Y": 3
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-012"
+  },
+  {
+    "id": "SCL-PP-013",
+    "slug": "flatiron-mist",
+    "name": "SCL-PP-013: Flatiron Mist",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 4500,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 7
+        },
+        "gm": {
+          "axis": "M",
+          "amount": 1
+        }
+      }
+    },
+    "tags": [
+      "versatile",
+      "low-contrast",
+      "s-log",
+      "maximized-dynamic-range",
+      "flat-image",
+      "soft",
+      "rich-colors",
+      "harsh-lighting",
+      "post-production"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -15,
+      "gamma": "S-Log2",
+      "blackGamma": {
+        "range": "Middle",
+        "level": -7
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 75,
+        "slope": 5
+      },
+      "colorMode": "S-Gamut3",
+      "saturation": 22,
+      "colorPhase": 3,
+      "colorDepth": {
+        "R": 3,
+        "G": 5,
+        "B": 5,
+        "C": 7,
+        "M": 7,
+        "Y": -3
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-013"
+  },
+  {
+    "id": "SCL-PP-014",
+    "slug": "magenta-bloom",
+    "name": "SCL-PP-014: Magenta Bloom",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 3900,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 7
+        },
+        "gm": {
+          "axis": "M",
+          "amount": 0.25
+        }
+      }
+    },
+    "tags": [
+      "vibrant",
+      "powerful",
+      "magenta-cast",
+      "slide-film",
+      "landscape",
+      "nature",
+      "flowers",
+      "sunsets",
+      "intense-colors",
+      "dramatic"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -8,
+      "gamma": "Still",
+      "blackGamma": {
+        "range": "Middle",
+        "level": -7
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 80,
+        "slope": 4
+      },
+      "colorMode": "Pro",
+      "saturation": 12,
+      "colorPhase": -1,
+      "colorDepth": {
+        "R": 3,
+        "G": 7,
+        "B": 1,
+        "C": 2,
+        "M": -7,
+        "Y": 0
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-014"
+  },
+  {
+    "id": "SCL-PP-015",
+    "slug": "vintage-slide",
+    "name": "SCL-PP-015: Vintage Slide",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 3600,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 7
+        },
+        "gm": {
+          "axis": "M",
+          "amount": 1
+        }
+      }
+    },
+    "tags": [
+      "warm",
+      "faded",
+      "green-tint",
+      "old-family-slides",
+      "nostalgic-portrait",
+      "everyday-scenes"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -2,
+      "gamma": "Cine1",
+      "blackGamma": {
+        "range": "Middle",
+        "level": -7
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 80,
+        "slope": 4
+      },
+      "colorMode": "Pro",
+      "saturation": 10,
+      "colorPhase": -1,
+      "colorDepth": {
+        "R": 3,
+        "G": 5,
+        "B": -4,
+        "C": 2,
+        "M": 6,
+        "Y": 5
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-015"
+  },
+  {
+    "id": "SCL-PP-016",
+    "slug": "everyday-natural",
+    "name": "SCL-PP-016: Everyday Natural",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 3900,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 7
+        }
+      }
+    },
+    "tags": [
+      "clean",
+      "balanced",
+      "versatile",
+      "natural-skin-tones",
+      "all-situations",
+      "authentic-look",
+      "subtle-film-feel"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": 0,
+      "gamma": "S-Cinetone",
+      "blackGamma": {
+        "range": "Wide",
+        "level": 2
+      },
+      "knee": {
+        "mode": "Auto"
+      },
+      "colorMode": "S-Cinetone",
+      "saturation": 12,
+      "colorPhase": -1,
+      "colorDepth": {
+        "R": -1,
+        "G": 5,
+        "B": 3,
+        "C": 2,
+        "M": -3,
+        "Y": 2
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-016"
+  },
+  {
+    "id": "SCL-PP-017",
+    "slug": "soft-portrait",
+    "name": "SCL-PP-017: Soft Portrait",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 4100,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 7
+        },
+        "gm": {
+          "axis": "M",
+          "amount": 0.25
+        }
+      }
+    },
+    "tags": [
+      "soft-contrast",
+      "gentle-magenta",
+      "flattering-portraits",
+      "smooth-skin-tones",
+      "delicate",
+      "elegant"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -7,
+      "gamma": "S-Cinetone",
+      "blackGamma": {
+        "range": "Middle",
+        "level": -7
+      },
+      "knee": {
+        "mode": "Auto"
+      },
+      "colorMode": "Pro",
+      "saturation": 7,
+      "colorPhase": 0,
+      "colorDepth": {
+        "R": 0,
+        "G": 2,
+        "B": 3,
+        "C": 2,
+        "M": -6,
+        "Y": 0
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-017"
+  },
+  {
+    "id": "SCL-PP-018",
+    "slug": "vector-graphic",
+    "name": "SCL-PP-018: Vector Graphic",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 4000,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 5
+        },
+        "gm": {
+          "axis": "M",
+          "amount": 0.5
+        }
+      }
+    },
+    "tags": [
+      "bold",
+      "high-contrast",
+      "super-saturated",
+      "artificial-colors",
+      "deep-blacks",
+      "graphic",
+      "abstract",
+      "modern-architecture",
+      "experimental-photography"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -15,
+      "gamma": "Still",
+      "blackGamma": {
+        "range": "Wide",
+        "level": -7
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 92.5,
+        "slope": 5
+      },
+      "colorMode": "S-Gamut3.Cine",
+      "saturation": 30,
+      "colorPhase": 6,
+      "colorDepth": {
+        "R": 5,
+        "G": 7,
+        "B": 5,
+        "C": 5,
+        "M": 2,
+        "Y": 1
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-018"
+  },
+  {
+    "id": "SCL-PP-019",
+    "slug": "pop-art",
+    "name": "SCL-PP-019: Pop Art",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 3700,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 5
+        },
+        "gm": {
+          "axis": "M",
+          "amount": 1
+        }
+      }
+    },
+    "tags": [
+      "color-explosion",
+      "maximum-saturation",
+      "super-vibrant",
+      "high-energy",
+      "bold-statements",
+      "playful-side"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": 0,
+      "gamma": "Still",
+      "blackGamma": {
+        "range": "Middle",
+        "level": 7
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 85,
+        "slope": 3
+      },
+      "colorMode": "S-Gamut3",
+      "saturation": 28,
+      "colorPhase": -1,
+      "colorDepth": {
+        "R": 3,
+        "G": 7,
+        "B": 7,
+        "C": 7,
+        "M": 7,
+        "Y": 5
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-019"
+  },
+  {
+    "id": "SCL-PP-020",
+    "slug": "autumn-haze",
+    "name": "SCL-PP-020: Autumn Haze",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 4600,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 7
+        },
+        "gm": {
+          "axis": "G",
+          "amount": 1.25
+        }
+      }
+    },
+    "tags": [
+      "modern-take",
+      "classic-warm-film",
+      "s-cinetone",
+      "smooth-tones",
+      "cozy",
+      "subtle-greens",
+      "yellows",
+      "misty-autumn-day"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": 2,
+      "gamma": "S-Cinetone",
+      "blackGamma": {
+        "range": "Narrow",
+        "level": -7
+      },
+      "knee": {
+        "mode": "Auto"
+      },
+      "colorMode": "S-Cinetone",
+      "saturation": 20,
+      "colorPhase": 5,
+      "colorDepth": {
+        "R": 3,
+        "G": -4,
+        "B": -5,
+        "C": -3,
+        "M": 3,
+        "Y": -1
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-020"
+  },
+  {
+    "id": "SCL-PP-021",
+    "slug": "muted-pastels",
+    "name": "SCL-PP-021: Muted Pastels",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 4500,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 7
+        },
+        "gm": {
+          "axis": "M",
+          "amount": 0.75
+        }
+      }
+    },
+    "tags": [
+      "soft",
+      "subtle",
+      "moderate-saturation",
+      "soft-tones",
+      "versatile",
+      "everyday-shooting",
+      "peaceful",
+      "pleasant",
+      "not-overwhelmed-by-color"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": 2,
+      "gamma": "Cine1",
+      "blackGamma": {
+        "range": "Wide",
+        "level": -7
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 85,
+        "slope": 1
+      },
+      "colorMode": "Pro",
+      "saturation": 8,
+      "colorPhase": -1,
+      "colorDepth": {
+        "R": -4,
+        "G": 7,
+        "B": -3,
+        "C": -5,
+        "M": 5,
+        "Y": 4
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-021"
+  },
+  {
+    "id": "SCL-PP-022",
+    "slug": "neutral-standard",
+    "name": "SCL-PP-022: Neutral Standard",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 4000,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 7
+        },
+        "gm": {
+          "axis": "M",
+          "amount": 0.25
+        }
+      }
+    },
+    "tags": [
+      "neutral",
+      "true-to-life",
+      "accuracy",
+      "clean",
+      "standard-look",
+      "minimal-color-shift",
+      "reliable-base",
+      "any-type-of-photography"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": 0,
+      "gamma": "S-Cinetone",
+      "blackGamma": {
+        "range": "Wide",
+        "level": -7
+      },
+      "knee": {
+        "mode": "Auto"
+      },
+      "colorMode": "S-Cinetone",
+      "saturation": 2,
+      "colorPhase": 1,
+      "colorDepth": {
+        "R": 1,
+        "G": 7,
+        "B": 0,
+        "C": 3,
+        "M": 2,
+        "Y": 1
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-022"
+  },
+  {
+    "id": "SCL-PP-023",
+    "slug": "alpine-cool",
+    "name": "SCL-PP-023: Alpine Cool",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 7000,
+      "shift": {
+        "ab": {
+          "axis": "B",
+          "amount": 5
+        },
+        "gm": {
+          "axis": "M",
+          "amount": 0.25
+        }
+      }
+    },
+    "tags": [
+      "cool-tone",
+      "high-kelvin",
+      "clean-blue-cast",
+      "sharp",
+      "cold-light",
+      "urban-landscape",
+      "mountain",
+      "clean-aesthetic",
+      "crisp"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -9,
+      "gamma": "S-Cinetone",
+      "blackGamma": {
+        "range": "Middle",
+        "level": 7
+      },
+      "knee": {
+        "mode": "Auto"
+      },
+      "colorMode": "S-Cinetone",
+      "saturation": 8,
+      "colorPhase": 2,
+      "colorDepth": {
+        "R": 3,
+        "G": 7,
+        "B": 3,
+        "C": -5,
+        "M": 3,
+        "Y": -2
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-023"
+  },
+  {
+    "id": "SCL-PP-024",
+    "slug": "arctic-negative",
+    "name": "SCL-PP-024: Arctic Negative",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 9900,
+      "shift": {
+        "ab": {
+          "axis": "B",
+          "amount": 6
+        },
+        "gm": {
+          "axis": "M",
+          "amount": 0.5
+        }
+      }
+    },
+    "tags": [
+      "cold-white-balance",
+      "unique",
+      "stylized",
+      "deep-blue-green-cast",
+      "experimental",
+      "moody",
+      "atmospheric"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": 4,
+      "gamma": "S-Cinetone",
+      "blackGamma": {
+        "range": "Middle",
+        "level": -7
+      },
+      "knee": {
+        "mode": "Auto"
+      },
+      "colorMode": "S-Cinetone",
+      "saturation": 8,
+      "colorPhase": 1,
+      "colorDepth": {
+        "R": 2,
+        "G": 7,
+        "B": -4,
+        "C": -4,
+        "M": -5,
+        "Y": 3
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-024"
+  },
+  {
+    "id": "SCL-PP-025",
+    "slug": "saturated-cinema",
+    "name": "SCL-PP-025: Saturated Cinema",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 4000,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 7
+        },
+        "gm": {
+          "axis": "M",
+          "amount": 1
+        }
+      }
+    },
+    "tags": [
+      "high-saturation",
+      "powerful-cinematic",
+      "wide-color-space",
+      "deep-rich-colors",
+      "cinematic-gamma-curve",
+      "vivid-visual-storytelling"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -5,
+      "gamma": "Cine4",
+      "blackGamma": {
+        "range": "Wide",
+        "level": -5
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 87.5,
+        "slope": 3
+      },
+      "colorMode": "S-Gamut3",
+      "saturation": 32,
+      "colorPhase": 6,
+      "colorDepth": {
+        "R": -3,
+        "G": -2,
+        "B": 3,
+        "C": 7,
+        "M": -3,
+        "Y": -2
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-025"
+  },
+  {
+    "id": "SCL-PP-026",
+    "slug": "hdr-cinema",
+    "name": "SCL-PP-026: HDR Cinema",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 3500,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 7
+        }
+      }
+    },
+    "tags": [
+      "hlg",
+      "hybrid-log-gamma",
+      "wide-dynamic-range",
+      "high-saturation",
+      "vivid",
+      "impactful",
+      "cinematic-feel",
+      "surreal",
+      "high-energy-shots"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -15,
+      "gamma": "HLG3",
+      "blackGamma": {
+        "range": "Wide",
+        "level": 0
+      },
+      "knee": {
+        "mode": "Auto"
+      },
+      "colorMode": "BT.2020",
+      "saturation": 32,
+      "colorPhase": 7,
+      "colorDepth": {
+        "R": -4,
+        "G": -1,
+        "B": 7,
+        "C": 6,
+        "M": 5,
+        "Y": 2
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-026"
+  },
+  {
+    "id": "SCL-PP-027",
+    "slug": "daylight-cinema",
+    "name": "SCL-PP-027: Daylight Cinema",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 3700,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 5
+        },
+        "gm": {
+          "axis": "M",
+          "amount": 1.5
+        }
+      }
+    },
+    "tags": [
+      "modern-cinematic",
+      "clean",
+      "s-cinetone",
+      "daylight",
+      "beautiful-skin-tones",
+      "high-saturation",
+      "professional",
+      "polished",
+      "straight-out-of-camera"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -9,
+      "gamma": "S-Cinetone",
+      "blackGamma": {
+        "range": "Narrow",
+        "level": -7
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 75,
+        "slope": 5
+      },
+      "colorMode": "S-Cinetone",
+      "saturation": 25,
+      "colorPhase": 0,
+      "colorDepth": {
+        "R": -1,
+        "G": 3,
+        "B": 2,
+        "C": 2,
+        "M": -3,
+        "Y": -3
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-027"
+  },
+  {
+    "id": "SCL-PP-028",
+    "slug": "phoenix-fire",
+    "name": "SCL-PP-028: Phoenix Fire",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 8500,
+      "shift": {
+        "ab": {
+          "axis": "B",
+          "amount": 3.5
+        },
+        "gm": {
+          "axis": "G",
+          "amount": 1
+        }
+      }
+    },
+    "tags": [
+      "experimental",
+      "powerful",
+      "ultra-high-saturation",
+      "pronounced-warm-tones",
+      "fiery-reds",
+      "oranges",
+      "bold",
+      "abstract",
+      "high-impact"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -15,
+      "gamma": "Still",
+      "blackGamma": {
+        "range": "Wide",
+        "level": -7
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 105,
+        "slope": 5
+      },
+      "colorMode": "S-Cinetone",
+      "saturation": 32,
+      "colorPhase": 1,
+      "colorDepth": {
+        "R": 5,
+        "G": 7,
+        "B": 2,
+        "C": 5,
+        "M": 5,
+        "Y": 5
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-028"
+  },
+  {
+    "id": "SCL-PP-029",
+    "slug": "hollywood-cool",
+    "name": "SCL-PP-029: Hollywood Cool",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 8200,
+      "shift": {
+        "ab": {
+          "axis": "B",
+          "amount": 4.5
+        },
+        "gm": {
+          "axis": "G",
+          "amount": 1.75
+        }
+      }
+    },
+    "tags": [
+      "balanced-cinematic",
+      "tungsten-light",
+      "cool-blue-green-bias",
+      "s-cinetone",
+      "smooth-tones",
+      "sophisticated",
+      "professional-look",
+      "classic-hollywood"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -10,
+      "gamma": "S-Cinetone",
+      "blackGamma": {
+        "range": "Narrow",
+        "level": -7
+      },
+      "knee": {
+        "mode": "Auto"
+      },
+      "colorMode": "S-Cinetone",
+      "saturation": 16,
+      "colorPhase": 2,
+      "colorDepth": {
+        "R": 5,
+        "G": 7,
+        "B": -6,
+        "C": -5,
+        "M": 7,
+        "Y": -4
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-029"
+  },
+  {
+    "id": "SCL-PP-030",
+    "slug": "graphite-standard",
+    "name": "SCL-PP-030: Graphite Standard",
+    "whiteBalance": {
+      "mode": "auto",
+      "auto": "AWB (Priority White)"
+    },
+    "tags": [
+      "balanced-monochrome",
+      "versatile",
+      "full-tonal-range",
+      "clean-midtones",
+      "perfect-starting-point",
+      "black-and-white",
+      "classic",
+      "timeless"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -11,
+      "gamma": "Still",
+      "blackGamma": {
+        "range": "Middle",
+        "level": -3
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 85,
+        "slope": 5
+      },
+      "colorMode": "Black & White",
+      "saturation": 15,
+      "colorPhase": 0,
+      "colorDepth": {
+        "R": -1,
+        "G": 1,
+        "B": -1,
+        "C": 3,
+        "M": -3,
+        "Y": -1
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-030"
+  },
+  {
+    "id": "SCL-PP-031",
+    "slug": "obsidian-contrast",
+    "name": "SCL-PP-031: Obsidian Contrast",
+    "whiteBalance": {
+      "mode": "auto",
+      "auto": "AWB (Priority White)"
+    },
+    "tags": [
+      "dramatic-monochrome",
+      "high-contrast",
+      "inky-blacks",
+      "crisp-whites",
+      "architectural-details",
+      "powerful-street-photography",
+      "impressive-clarity"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -15,
+      "gamma": "Still",
+      "blackGamma": {
+        "range": "Wide",
+        "level": -7
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 85,
+        "slope": 5
+      },
+      "colorMode": "Black & White",
+      "saturation": 15,
+      "colorPhase": 0,
+      "colorDepth": {
+        "R": 2,
+        "G": -4,
+        "B": -1,
+        "C": 2,
+        "M": -1,
+        "Y": 2
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-031"
+  },
+  {
+    "id": "SCL-PP-032",
+    "slug": "newsprint-grit",
+    "name": "SCL-PP-032: Newsprint Grit",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 5500,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 3
+        },
+        "gm": {
+          "axis": "G",
+          "amount": 2
+        }
+      }
+    },
+    "tags": [
+      "powerful",
+      "high-contrast",
+      "pushed-black-and-white-film",
+      "photojournalism",
+      "grainy",
+      "sharp",
+      "character",
+      "raw",
+      "unedited-moments"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": 5,
+      "gamma": "Still",
+      "blackGamma": {
+        "range": "Wide",
+        "level": -7
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 77.5,
+        "slope": 2
+      },
+      "colorMode": "Black & White",
+      "saturation": 24,
+      "colorPhase": 0,
+      "colorDepth": {
+        "R": -4,
+        "G": -1,
+        "B": 6,
+        "C": 5,
+        "M": -3,
+        "Y": -3
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-032"
+  },
+  {
+    "id": "SCL-PP-033",
+    "slug": "silver-gelatin",
+    "name": "SCL-PP-033: Silver Gelatin",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 5500,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 3
+        },
+        "gm": {
+          "axis": "G",
+          "amount": 2
+        }
+      }
+    },
+    "tags": [
+      "flat",
+      "soft-contrast",
+      "rich-midtones",
+      "smooth-transitions",
+      "classic-darkroom-print",
+      "silver-gelatin-paper",
+      "fine-art-portrait",
+      "subtle-compositions"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": 3,
+      "gamma": "Cine1",
+      "blackGamma": {
+        "range": "Narrow",
+        "level": 5
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 75,
+        "slope": 3
+      },
+      "colorMode": "Black & White",
+      "saturation": 24,
+      "colorPhase": 0,
+      "colorDepth": {
+        "R": 3,
+        "G": 3,
+        "B": 3,
+        "C": 2,
+        "M": 3,
+        "Y": 2
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-033"
+  },
+  {
+    "id": "SCL-PP-034",
+    "slug": "crystal-clear",
+    "name": "SCL-PP-034: Crystal Clear",
+    "whiteBalance": {
+      "mode": "auto",
+      "auto": "AWB",
+      "shift": {
+        "ab": {
+          "axis": "B",
+          "amount": 3
+        },
+        "gm": {
+          "axis": "G",
+          "amount": 0.25
+        }
+      }
+    },
+    "tags": [
+      "clean",
+      "crisp",
+      "cool-tone",
+      "fine-grain",
+      "high-clarity",
+      "technical-subjects",
+      "architecture",
+      "detail-oriented-portraits"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -12,
+      "gamma": "Still",
+      "blackGamma": {
+        "range": "Middle",
+        "level": -7
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 82,
+        "slope": 5
+      },
+      "colorMode": "Black & White",
+      "saturation": 0,
+      "colorPhase": 0,
+      "colorDepth": {
+        "R": -1,
+        "G": -7,
+        "B": 7,
+        "C": 7,
+        "M": 7,
+        "Y": -4
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-034"
+  },
+  {
+    "id": "SCL-PP-035",
+    "slug": "classic-reportage",
+    "name": "SCL-PP-035: Classic Reportage",
+    "whiteBalance": {
+      "mode": "auto",
+      "auto": "AWB",
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 3
+        }
+      }
+    },
+    "tags": [
+      "versatile",
+      "medium-contrast",
+      "classic-grain",
+      "black-and-white-workhorse",
+      "photojournalism",
+      "street-photography",
+      "everyday-life",
+      "authentic-feel"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -12,
+      "gamma": "Movie",
+      "blackGamma": {
+        "range": "Middle",
+        "level": -5
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 75,
+        "slope": 4
+      },
+      "colorMode": "Black & White",
+      "saturation": 0,
+      "colorPhase": 0,
+      "colorDepth": {
+        "R": 0,
+        "G": 3,
+        "B": 0,
+        "C": 2,
+        "M": 3,
+        "Y": 0
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-035"
+  },
+  {
+    "id": "SCL-PP-036",
+    "slug": "noir-film",
+    "name": "SCL-PP-036: Noir Film",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 5500
+    },
+    "tags": [
+      "very-high-contrast",
+      "dramatic",
+      "deep-crushed-blacks",
+      "bright-whites",
+      "classic-film-noir",
+      "mystery",
+      "graphic-compositions"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -15,
+      "gamma": "Still",
+      "blackGamma": {
+        "range": "Wide",
+        "level": -7
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 75,
+        "slope": 4
+      },
+      "colorMode": "Black & White",
+      "saturation": 32,
+      "colorPhase": 0,
+      "colorDepth": {
+        "R": 2,
+        "G": 7,
+        "B": 1,
+        "C": 2,
+        "M": 7,
+        "Y": 1
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-036"
+  },
+  {
+    "id": "SCL-PP-037",
+    "slug": "low-light-grain",
+    "name": "SCL-PP-037: Low Light Grain",
+    "whiteBalance": {
+      "mode": "auto",
+      "auto": "AWB (Priority White)"
+    },
+    "tags": [
+      "high-speed-film-emulation",
+      "cinematic-gamma",
+      "contrast-handling",
+      "grain-encouraged",
+      "low-light-situations",
+      "texture",
+      "atmosphere"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -11,
+      "gamma": "Cine4",
+      "blackGamma": {
+        "range": "Wide",
+        "level": 7
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 82.5,
+        "slope": 0
+      },
+      "colorMode": "Black & White",
+      "saturation": 0,
+      "colorPhase": -2,
+      "colorDepth": {
+        "R": 3,
+        "G": 2,
+        "B": 7,
+        "C": 7,
+        "M": 4,
+        "Y": -5
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-037"
+  },
+  {
+    "id": "SCL-PP-038",
+    "slug": "modern-b-w",
+    "name": "SCL-PP-038: Modern B&W",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 5500
+    },
+    "tags": [
+      "contemporary-black-and-white",
+      "s-cinetone-gamma",
+      "smooth-beautiful-tonal-transitions",
+      "deep-blacks",
+      "not-harsh",
+      "modern-portrait",
+      "fine-art"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -15,
+      "gamma": "S-Cinetone",
+      "blackGamma": {
+        "range": "Narrow",
+        "level": -7
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 75,
+        "slope": 2
+      },
+      "colorMode": "Black & White",
+      "saturation": 28,
+      "colorPhase": 0,
+      "colorDepth": {
+        "R": -3,
+        "G": 4,
+        "B": 3,
+        "C": 3,
+        "M": 3,
+        "Y": 2
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-038"
+  },
+  {
+    "id": "SCL-PP-039",
+    "slug": "ortho-portrait",
+    "name": "SCL-PP-039: Ortho Portrait",
+    "whiteBalance": {
+      "mode": "auto",
+      "auto": "AWB",
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 3
+        },
+        "gm": {
+          "axis": "M",
+          "amount": 2.75
+        }
+      }
+    },
+    "tags": [
+      "orthochromatic-film",
+      "red-light-insensitive",
+      "darkened-skin-tones",
+      "lips",
+      "unique-portrait",
+      "vintage",
+      "dramatic"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -12,
+      "gamma": "Movie",
+      "blackGamma": {
+        "range": "Narrow",
+        "level": -7
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 105,
+        "slope": 5
+      },
+      "colorMode": "Still",
+      "saturation": 15,
+      "colorPhase": 0,
+      "colorDepth": {
+        "R": 7,
+        "G": 7,
+        "B": -7,
+        "C": -7,
+        "M": 7,
+        "Y": 7
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-039"
+  },
+  {
+    "id": "SCL-PP-040",
+    "slug": "sunbath",
+    "name": "SCL-PP-040: Sunbath",
+    "whiteBalance": {
+      "mode": "auto",
+      "auto": "AWB",
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 5
+        },
+        "gm": {
+          "axis": "G",
+          "amount": 0.5
+        }
+      }
+    },
+    "tags": [
+      "film-emulation",
+      "analog-inspired",
+      "quirky",
+      "experimental",
+      "color-shift"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -7,
+      "gamma": "Cine3",
+      "blackGamma": {
+        "range": "Narrow",
+        "level": -7
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 95,
+        "slope": 4
+      },
+      "colorMode": "Still",
+      "saturation": 15,
+      "colorPhase": 2,
+      "colorDepth": {
+        "R": 3,
+        "G": 7,
+        "B": -5,
+        "C": -5,
+        "M": 4,
+        "Y": 4
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-040"
+  },
+  {
+    "id": "SCL-PP-041",
+    "slug": "aya",
+    "name": "SCL-PP-041: Aya",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 8000,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 7
+        },
+        "gm": {
+          "axis": "G",
+          "amount": 5.5
+        }
+      }
+    },
+    "tags": [
+      "stylized",
+      "atmospheric",
+      "yellow-green-cast",
+      "surreal",
+      "vintage",
+      "dystopian",
+      "artistic"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -12,
+      "gamma": "Cine4",
+      "blackGamma": {
+        "range": "Middle",
+        "level": -7
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 75,
+        "slope": 4
+      },
+      "colorMode": "S-Gamut3",
+      "saturation": 32,
+      "colorPhase": 7,
+      "colorDepth": {
+        "R": 4,
+        "G": 5,
+        "B": 0,
+        "C": 0,
+        "M": -3,
+        "Y": 7
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-041"
+  },
+  {
+    "id": "SCL-PP-043",
+    "slug": "macro-shooting-for-tran-anh-tuan",
+    "name": "SCL-PP-043: Macro shooting for Tran Anh Tuan",
+    "whiteBalance": {
+      "mode": "auto",
+      "auto": "AWB",
+      "shift": {
+        "ab": {
+          "axis": "B",
+          "amount": 1
+        },
+        "gm": {
+          "axis": "G",
+          "amount": 0.5
+        }
+      }
+    },
+    "tags": [
+      "stylized",
+      "atmospheric",
+      "macro",
+      "surreal",
+      "contemporary",
+      "artistic"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -5,
+      "gamma": "Movie",
+      "blackGamma": {
+        "range": "Middle",
+        "level": -7
+      },
+      "knee": {
+        "mode": "Auto"
+      },
+      "colorMode": "Still",
+      "saturation": 10,
+      "colorPhase": -1,
+      "colorDepth": {
+        "R": 2,
+        "G": 2,
+        "B": 2,
+        "C": 0,
+        "M": 0,
+        "Y": 0
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "scl-043"
+  },
+  {
+    "id": "SCL-PP-044",
+    "slug": "filmic-fj-c200",
+    "name": "SCL-PP-044: Filmic FJ C200",
+    "whiteBalance": {
+      "mode": "auto",
+      "auto": "AWB",
+      "shift": {
+        "ab": {
+          "axis": "B",
+          "amount": 1
+        },
+        "gm": {
+          "axis": "G",
+          "amount": 0.5
+        }
+      }
+    },
+    "tags": [
+      "stylized",
+      "atmospheric",
+      "macro",
+      "surreal",
+      "contemporary",
+      "artistic"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": 5,
+      "gamma": "Cine4",
+      "blackGamma": {
+        "range": "Narrow",
+        "level": 5
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 75,
+        "slope": 5
+      },
+      "colorMode": "S-Gamut3.Cine",
+      "saturation": 20,
+      "colorPhase": -2,
+      "colorDepth": {
+        "R": 2,
+        "G": -3,
+        "B": 3,
+        "C": -4,
+        "M": 1,
+        "Y": -2
+      },
+      "detail": {
+        "level": -5,
+        "mode": "Manual",
+        "vhBalance": -2,
+        "bwBalance": "Type1",
+        "limit": 3,
+        "crispening": 3,
+        "hiLightDetail": 2
+      }
+    },
+    "legacyId": "scl-044"
+  },
+  {
+    "id": "SCL-PP-045",
+    "slug": "clearcast-pro",
+    "name": "SCL-PP-045: ClearCast Pro",
+    "whiteBalance": {
+      "mode": "auto",
+      "auto": "AWB",
+      "shift": {
+        "ab": {
+          "axis": "B",
+          "amount": 1
+        },
+        "gm": {
+          "axis": "M",
+          "amount": 0.75
+        }
+      }
+    },
+    "tags": [
+      "pro-color",
+      "live-stream",
+      "neutral",
+      "lips",
+      "portrait",
+      "color",
+      "high-contrast",
+      "crystal-clear"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -5,
+      "gamma": "S-Cinetone",
+      "blackGamma": {
+        "range": "Wide",
+        "level": -7
+      },
+      "knee": {
+        "mode": "Auto"
+      },
+      "colorMode": "S-Cinetone",
+      "saturation": 8,
+      "colorPhase": 0,
+      "colorDepth": {
+        "R": -1,
+        "G": -1,
+        "B": 1,
+        "C": 1,
+        "M": 1,
+        "Y": -1
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "PROCOLOR-001"
+  },
+  {
+    "id": "SCL-PP-046",
+    "slug": "clearcast-pro-2",
+    "name": "SCL-PP-046: ClearCast Pro 2",
+    "whiteBalance": {
+      "mode": "auto",
+      "auto": "AWB",
+      "shift": {
+        "ab": {
+          "axis": "B",
+          "amount": 1
+        },
+        "gm": {
+          "axis": "M",
+          "amount": 0.75
+        }
+      }
+    },
+    "tags": [
+      "pro-color",
+      "live-stream",
+      "neutral",
+      "lips",
+      "portrait",
+      "color",
+      "high-contrast",
+      "crystal-clear"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -3,
+      "gamma": "Movie",
+      "blackGamma": {
+        "range": "Wide",
+        "level": -7
+      },
+      "knee": {
+        "mode": "Auto"
+      },
+      "colorMode": "Still",
+      "saturation": 8,
+      "colorPhase": 0,
+      "colorDepth": {
+        "R": -1,
+        "G": -1,
+        "B": 1,
+        "C": 1,
+        "M": 1,
+        "Y": -1
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "PROCOLOR-002"
+  },
+  {
+    "id": "SCL-PP-047",
+    "slug": "extra-dr-stream-109",
+    "name": "SCL-PP-047: EXTRA DR Stream 109",
+    "whiteBalance": {
+      "mode": "auto",
+      "auto": "AWB",
+      "shift": {
+        "ab": {
+          "axis": "B",
+          "amount": 1
+        },
+        "gm": {
+          "axis": "M",
+          "amount": 0.75
+        }
+      }
+    },
+    "tags": [
+      "pro-color",
+      "live-stream",
+      "neutral",
+      "lips",
+      "portrait",
+      "color",
+      "high-contrast",
+      "crystal-clear"
+    ],
+    "published": true,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -3,
+      "gamma": "Cine1",
+      "blackGamma": {
+        "range": "Wide",
+        "level": -7
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 105,
+        "slope": 2
+      },
+      "colorMode": "Movie",
+      "saturation": 15,
+      "colorPhase": 0,
+      "colorDepth": {
+        "R": -2,
+        "G": -5,
+        "B": 3,
+        "C": 3,
+        "M": -4,
+        "Y": 2
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 2,
+        "bwBalance": "Type3",
+        "limit": 3,
+        "crispening": 7,
+        "hiLightDetail": 4
+      }
+    },
+    "legacyId": "PROCOLOR-003"
+  }
+]
