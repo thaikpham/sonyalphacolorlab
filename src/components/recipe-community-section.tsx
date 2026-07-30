@@ -306,6 +306,9 @@ export function RecipeCommunitySection({
     'knee.slope': PP_RANGES.kneeManualSlope,
     'detail.level': PP_RANGES.detailLevel,
     'detail.vhBalance': PP_RANGES.detailVhBalance,
+    'detail.limit': PP_RANGES.detailLimit,
+    'detail.crispening': PP_RANGES.detailCrispening,
+    'detail.hiLightDetail': PP_RANGES.detailHiLightDetail,
   } as const;
 
   type NumKey = keyof typeof NUM_RANGE;
@@ -1060,6 +1063,78 @@ export function RecipeCommunitySection({
                               <option key={bw} value={bw}>{bw}</option>
                             ))}
                           </select>
+                        </div>
+
+                        {/* Limit */}
+                        <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
+                          <span className="text-xs text-white/70">Limit</span>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => updateNestedNum('detail', 'limit', -1)}
+                              className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                            >
+                              -
+                            </button>
+                            <span className="text-xs font-bold w-8 text-center text-white">
+                              {editSettings.detail.limit || 0}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => updateNestedNum('detail', 'limit', 1)}
+                              className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Crispening */}
+                        <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
+                          <span className="text-xs text-white/70">Crispening</span>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => updateNestedNum('detail', 'crispening', -1)}
+                              className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                            >
+                              -
+                            </button>
+                            <span className="text-xs font-bold w-8 text-center text-white">
+                              {editSettings.detail.crispening || 0}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => updateNestedNum('detail', 'crispening', 1)}
+                              className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Hi-Light Detail */}
+                        <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
+                          <span className="text-xs text-white/70">Hi-Light Detail</span>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => updateNestedNum('detail', 'hiLightDetail', -1)}
+                              className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                            >
+                              -
+                            </button>
+                            <span className="text-xs font-bold w-8 text-center text-white">
+                              {editSettings.detail.hiLightDetail || 0}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => updateNestedNum('detail', 'hiLightDetail', 1)}
+                              className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                            >
+                              +
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
