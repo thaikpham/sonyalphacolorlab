@@ -12,6 +12,9 @@ import {
 } from '@/lib/camera/color';
 // Rule 1: every legal enum and range is imported, never retyped at a call site.
 import {
+  CL_MONOCHROME_LOOKS,
+  CL_RANGES,
+  CREATIVE_LOOKS,
   PP_BLACK_GAMMA_RANGE,
   PP_COLOR_DEPTH_CHANNELS,
   PP_COLOR_MODE,
@@ -22,7 +25,7 @@ import {
   WB_KELVIN,
   WB_SHIFT_AXIS,
 } from '@/lib/camera/constants';
-import type { PpSettings, WhiteBalance } from '@/lib/camera/schema';
+import type { ClSettings, PpSettings, WhiteBalance } from '@/lib/camera/schema';
 
 type Props = {
   recipeSlug: string;
@@ -108,10 +111,10 @@ export function RecipeCommunitySection({
   const [isPropFormOpen, setIsPropFormOpen] = useState(false);
 
   // Full Camera-Format Template Editor State
-  /* Partial, not the full PpSettings: the draft starts empty and the JSX
-     already guards each block (`editSettings.blackGamma && …`). The settings
-     editor only renders for `recipeFormat === 'pp'`. */
-  const [editSettings, setEditSettings] = useState<Partial<PpSettings>>({});
+  /* Partial, not the full PpSettings / ClSettings: the draft starts populated
+     from currentSettings. The editor branches on `recipeFormat` to render either
+     Picture Profile or Creative Look camera controls. */
+  const [editSettings, setEditSettings] = useState<Partial<PpSettings> & Partial<ClSettings>>({});
   const [editWb, setEditWb] = useState<WhiteBalance | null>(null);
 
   /**
@@ -121,7 +124,7 @@ export function RecipeCommunitySection({
    * edits in progress, and it is the cascading-render pattern React warns about.
    */
   const openProposalForm = () => {
-    setEditSettings(JSON.parse(JSON.stringify(currentSettings)) as Partial<PpSettings>);
+    setEditSettings(JSON.parse(JSON.stringify(currentSettings)) as Partial<PpSettings> & Partial<ClSettings>);
     setEditWb(JSON.parse(JSON.stringify(currentWb)) as WhiteBalance);
     setIsPropFormOpen(true);
   };
@@ -363,6 +366,26 @@ export function RecipeCommunitySection({
         ...prev,
         colorDepth: { ...cd, [channel]: clampTo(cur + delta, PP_RANGES.colorDepth) },
       };
+    });
+  };
+
+  const updateClNum = (key: keyof typeof CL_RANGES, delta: number) => {
+    setEditSettings((prev) => {
+      const cur = typeof prev[key] === 'number' ? (prev[key] as number) : 0;
+      return { ...prev, [key]: clampTo(cur + delta, CL_RANGES[key]) };
+    });
+  };
+
+  const updateClLook = (look: string) => {
+    setEditSettings((prev) => {
+      const isMono = (CL_MONOCHROME_LOOKS as readonly string[]).includes(look);
+      const next: Partial<PpSettings> & Partial<ClSettings> = { ...prev, look: look as any };
+      if (isMono) {
+        delete next.saturation;
+      } else if (next.saturation === undefined) {
+        next.saturation = 0;
+      }
+      return next;
     });
   };
 
@@ -733,6 +756,235 @@ export function RecipeCommunitySection({
                   </div>
                 </div>
               </div>
+
+              {/* BLOCK 2: Creative Look Settings */}
+              {recipeFormat === 'cl' && (
+                <div className="bg-black/40 p-4 rounded-xl border border-white/10 flex flex-col gap-3">
+                  <span className="eyebrow text-xs tracking-wider text-white/90 font-bold uppercase">
+                    2. Creative Look Camera Parameters
+                  </span>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {/* Creative Look Select */}
+                    <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
+                      <span className="text-xs text-white/70">Creative Look</span>
+                      <select
+                        value={String(editSettings.look || 'ST')}
+                        onChange={(e) => updateClLook(e.target.value)}
+                        className="bg-black text-xs text-white px-2 py-1 rounded border border-white/20 focus:outline-none"
+                      >
+                        {CREATIVE_LOOKS.map((l) => (
+                          <option key={l.code} value={l.code}>
+                            {l.code} ({l.label})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Contrast (-9 to +9) */}
+                    <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
+                      <span className="text-xs text-white/70">Contrast</span>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => updateClNum('contrast', -1)}
+                          className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                        >
+                          -
+                        </button>
+                        <span className="text-xs font-bold w-8 text-center text-white">
+                          {Number(editSettings.contrast ?? 0) > 0
+                            ? `+${editSettings.contrast}`
+                            : Number(editSettings.contrast ?? 0)}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => updateClNum('contrast', 1)}
+                          className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Highlights (-9 to +9) */}
+                    <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
+                      <span className="text-xs text-white/70">Highlights</span>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => updateClNum('highlights', -1)}
+                          className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                        >
+                          -
+                        </button>
+                        <span className="text-xs font-bold w-8 text-center text-white">
+                          {Number(editSettings.highlights ?? 0) > 0
+                            ? `+${editSettings.highlights}`
+                            : Number(editSettings.highlights ?? 0)}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => updateClNum('highlights', 1)}
+                          className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Shadows (-9 to +9) */}
+                    <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
+                      <span className="text-xs text-white/70">Shadows</span>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => updateClNum('shadows', -1)}
+                          className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                        >
+                          -
+                        </button>
+                        <span className="text-xs font-bold w-8 text-center text-white">
+                          {Number(editSettings.shadows ?? 0) > 0
+                            ? `+${editSettings.shadows}`
+                            : Number(editSettings.shadows ?? 0)}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => updateClNum('shadows', 1)}
+                          className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Fade (0 to 9) */}
+                    <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
+                      <span className="text-xs text-white/70">Fade</span>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => updateClNum('fade', -1)}
+                          className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                        >
+                          -
+                        </button>
+                        <span className="text-xs font-bold w-8 text-center text-white">
+                          {Number(editSettings.fade ?? 0)}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => updateClNum('fade', 1)}
+                          className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Saturation (-9 to +9, omitted for monochrome BW/SE) */}
+                    {!(CL_MONOCHROME_LOOKS as readonly string[]).includes(String(editSettings.look)) && (
+                      <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
+                        <span className="text-xs text-white/70">Saturation</span>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => updateClNum('saturation', -1)}
+                            className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                          >
+                            -
+                          </button>
+                          <span className="text-xs font-bold w-8 text-center text-white">
+                            {Number(editSettings.saturation ?? 0) > 0
+                              ? `+${editSettings.saturation}`
+                              : Number(editSettings.saturation ?? 0)}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => updateClNum('saturation', 1)}
+                            className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Sharpness (0 to 9) */}
+                    <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
+                      <span className="text-xs text-white/70">Sharpness</span>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => updateClNum('sharpness', -1)}
+                          className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                        >
+                          -
+                        </button>
+                        <span className="text-xs font-bold w-8 text-center text-white">
+                          {Number(editSettings.sharpness ?? 0)}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => updateClNum('sharpness', 1)}
+                          className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Sharpness Range (1 to 5) */}
+                    <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
+                      <span className="text-xs text-white/70">Sharpness Range</span>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => updateClNum('sharpnessRange', -1)}
+                          className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                        >
+                          -
+                        </button>
+                        <span className="text-xs font-bold w-8 text-center text-white">
+                          {Number(editSettings.sharpnessRange ?? 1)}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => updateClNum('sharpnessRange', 1)}
+                          className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Clarity (0 to 9) */}
+                    <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
+                      <span className="text-xs text-white/70">Clarity</span>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => updateClNum('clarity', -1)}
+                          className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                        >
+                          -
+                        </button>
+                        <span className="text-xs font-bold w-8 text-center text-white">
+                          {Number(editSettings.clarity ?? 0)}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => updateClNum('clarity', 1)}
+                          className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* BLOCK 2: Picture Profile Master Settings */}
               {recipeFormat === 'pp' && (
