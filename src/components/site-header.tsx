@@ -58,8 +58,21 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
 
   const [isHidden, setIsHidden] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(hasActiveFilters);
+  const [isEcosystemOpen, setIsEcosystemOpen] = useState(false);
   const [query, setQuery] = useState(currentQ);
   const inputRef = useRef<HTMLInputElement>(null);
+  const ecosystemRef = useRef<HTMLDivElement>(null);
+
+  // Close ecosystem dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ecosystemRef.current && !ecosystemRef.current.contains(e.target as Node)) {
+        setIsEcosystemOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   /**
    * Keep the input in step with the URL.
@@ -214,20 +227,129 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
         >
           {/* Main Top Header Line */}
           <div className="flex items-center justify-between gap-2.5 sm:gap-4">
-            {/* Custom Brand Logo */}
-            <Link
-              href="/"
-              className="group flex items-center shrink-0 transition-transform duration-300 hover:scale-105 active:scale-95"
-            >
-              <Image
-                src="/logo.png"
-                alt="Alpha ColorLab Logo"
-                width={1780}
-                height={499}
-                priority
-                className="h-8 sm:h-9 md:h-10 lg:h-11 w-auto object-contain transition-all duration-300"
-              />
-            </Link>
+            {/* Custom Brand Logo & Sony Alpha Ecosystem Dropdown */}
+            <div className="relative flex items-center gap-1.5 sm:gap-2 shrink-0" ref={ecosystemRef}>
+              <Link
+                href="/"
+                className="group flex items-center transition-transform duration-300 hover:scale-105 active:scale-95"
+              >
+                <Image
+                  src="/logo.png"
+                  alt="Alpha ColorLab Logo"
+                  width={1780}
+                  height={499}
+                  priority
+                  className="h-8 sm:h-9 md:h-10 lg:h-11 w-auto object-contain transition-all duration-300"
+                />
+              </Link>
+
+              {/* Ecosystem Dropdown Trigger Button */}
+              <button
+                type="button"
+                onClick={() => setIsEcosystemOpen((prev) => !prev)}
+                aria-expanded={isEcosystemOpen}
+                aria-label="Sony Alpha Ecosystem Apps"
+                title="Hệ sinh thái Sony Alpha"
+                className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-full glass-flat text-[10px] sm:text-[11px] font-bold text-white/80 hover:text-white hover:bg-white/20 transition-all duration-300 cursor-pointer shadow-sm border border-white/10 group"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                <span className="eyebrow text-[9px] sm:text-[10px] tracking-wider text-white/90 font-mono">ECOSYSTEM</span>
+                <svg
+                  className={`w-2.5 h-2.5 sm:w-3 sm:h-3 text-white/70 transition-transform duration-300 ${
+                    isEcosystemOpen ? 'rotate-180 text-white' : ''
+                  }`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {/* Ecosystem Dropdown Popover Menu */}
+              {isEcosystemOpen && (
+                <div className="absolute top-full left-0 mt-3 w-72 sm:w-80 rounded-2xl glass p-3 shadow-[0_16px_45px_rgba(0,0,0,0.85)] border border-white/15 z-50 animate-fade-in flex flex-col gap-2 bg-black/90 backdrop-blur-2xl">
+                  <div className="px-2 py-1 border-b border-white/10 flex items-center justify-between">
+                    <span className="eyebrow text-[10px] tracking-widest text-ink-muted uppercase font-bold">
+                      HỆ SINH THÁI SONY ALPHA
+                    </span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-white/60 font-mono">
+                      3 DỰ ÁN
+                    </span>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    {/* App 1: ColorLab 2.0 (Current App) */}
+                    <div className="flex items-center gap-3 p-2.5 rounded-xl bg-white/10 border border-white/20">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-rose-500 flex items-center justify-center text-black font-extrabold text-sm shrink-0 shadow-md">
+                        α
+                      </div>
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-white">ColorLab 2.0</span>
+                          <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold">
+                            Đang xem
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-white/60 truncate">Sony Alpha Colour Recipes & WB Shift</span>
+                      </div>
+                    </div>
+
+                    {/* App 2: CheeseBooth */}
+                    <a
+                      href="https://cheesebooth.vercel.app/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setIsEcosystemOpen(false)}
+                      className="group/item flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/10 border border-transparent hover:border-white/15 transition-all cursor-pointer"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-black font-bold text-sm shrink-0 shadow-md group-hover/item:scale-110 transition-transform">
+                        📸
+                      </div>
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-white/90 group-hover/item:text-white transition-colors">
+                            CheeseBooth
+                          </span>
+                          <svg className="w-3.5 h-3.5 text-white/40 group-hover/item:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                          </svg>
+                        </div>
+                        <span className="text-[10px] text-white/50 group-hover/item:text-white/80 transition-colors truncate">
+                          Smart Photobooth & Live Capture app
+                        </span>
+                      </div>
+                    </a>
+
+                    {/* App 3: Live Stream SOP */}
+                    <a
+                      href="https://sonylivesop.vercel.app/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setIsEcosystemOpen(false)}
+                      className="group/item flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/10 border border-transparent hover:border-white/15 transition-all cursor-pointer"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-md group-hover/item:scale-110 transition-transform">
+                        🎥
+                      </div>
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-white/90 group-hover/item:text-white transition-colors">
+                            Live Stream SOP
+                          </span>
+                          <svg className="w-3.5 h-3.5 text-white/40 group-hover/item:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                          </svg>
+                        </div>
+                        <span className="text-[10px] text-white/50 group-hover/item:text-white/80 transition-colors truncate">
+                          Standard Operating Procedures for Sony Alpha
+                        </span>
+                      </div>
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Center: Search Trigger or Expanded Live Search Form */}
             <div className="flex-1 max-w-xl mx-auto transition-all duration-300">
