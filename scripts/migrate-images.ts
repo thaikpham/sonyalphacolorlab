@@ -1,13 +1,22 @@
 /**
- * Moves the legacy recipe photographs into Supabase Storage.
+ * Moves recipe photographs into Supabase Storage, from both libraries.
  *
  * The original site hotlinked Google Photos. Those URLs expire — five of them
- * already 404 — which is the whole reason for this migration. Each image is
- * fetched once, stored under `<recipeId>/<n>.<ext>`, and its association with
- * the recipe is preserved by that path, not by ordering.
+ * already 404 — which is the whole reason for this migration. The Creative Look
+ * photographs have the same problem in a different wrapper: they live on Sony's
+ * marketing CDN, which is not ours to depend on either.
  *
- * Idempotent: re-running overwrites the same paths. Dead source URLs are
+ * Each image is fetched once, stored under `<recipeId>/<n>.<ext>`, and its
+ * association with the recipe is preserved by that path, not by ordering.
+ *
+ * Idempotent: re-running overwrites the same paths. Both sources are read on
+ * every run, so `images.seed.json` is rewritten complete rather than losing
+ * whichever library was not part of this invocation. Dead source URLs are
  * reported and skipped, never written as a broken row.
+ *
+ * The Creative Look photographs are Sony's, credited to the named photographers
+ * in `data/sony-asia-credits.json`. That credit is what the recipe descriptions
+ * carry, and it should stay attached wherever these are displayed.
  *
  * Run: npm run migrate:images
  */
@@ -28,6 +37,19 @@ function legacyImageMap(): Record<string, string[]> {
   return map;
 }
 
+/**
+ * Creative Look photos, keyed by the recipe id the importer already assigned.
+ * Unlike the legacy map these need no id translation — `emit-seed` wrote the
+ * canonical `SCL-CL-0xx` alongside each credit.
+ */
+function sonyAsiaImageMap(): Record<string, string[]> {
+  const credits = JSON.parse(readFileSync('data/sony-asia-credits.json', 'utf8')) as {
+    recipeId: string;
+    imageUrls: string[];
+  }[];
+  return Object.fromEntries(credits.map((c) => [c.recipeId, c.imageUrls]));
+}
+
 const isPlaceholder = (url: string) => url.includes('placehold.co');
 
 const extFor = (contentType: string) =>
@@ -37,14 +59,20 @@ type Row = { recipeId: string; storagePath: string; sort: number };
 
 async function main() {
   const db = adminClient();
-  const map = legacyImageMap();
+
+  // Both libraries, already keyed by canonical recipe id.
+  const sources: Record<string, string[]> = {
+    ...Object.fromEntries(
+      Object.entries(legacyImageMap()).map(([legacyId, urls]) => [toRecipeId(legacyId), urls]),
+    ),
+    ...sonyAsiaImageMap(),
+  };
 
   const rows: Row[] = [];
   const skipped: string[] = [];
   let uploaded = 0;
 
-  for (const [legacyId, urls] of Object.entries(map)) {
-    const recipeId = toRecipeId(legacyId);
+  for (const [recipeId, urls] of Object.entries(sources)) {
     // Placeholders were never photographs — carrying them over would dress up
     // "no image yet" as content.
     const real = urls.filter((u) => !isPlaceholder(u));
