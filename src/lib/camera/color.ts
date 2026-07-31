@@ -60,7 +60,7 @@ const NEUTRAL_MIRED = 1e6 / NEUTRAL_K;
  * working estimate. `accent-fidelity.test.ts` pins the resulting classification:
  * if this number changes, that test names exactly which recipes disagree.
  */
-const MIRED_PER_SHIFT_STEP = 17;
+export const MIRED_PER_SHIFT_STEP = 17;
 
 /** Divisor bringing mired offsets into roughly -1..1 for the vector sum. */
 const MIRED_SCALE = 90;
@@ -102,24 +102,51 @@ function monochromeOf(recipe: AccentInput): 'bw' | 'sepia' | null {
   return recipe.settings.colorMode === 'Black & White' ? 'bw' : null;
 }
 
-function whiteBalanceVector(wb: WhiteBalance): Vec {
+/**
+ * A White Balance resolved onto its two axes, in mireds.
+ *
+ * The point of splitting `kelvin` from `shift` rather than returning only the
+ * total: Temperature and Shift A/B are the *same* amber–blue axis in different
+ * units, so a recipe can set them against each other. Keeping both terms is
+ * what lets a caller say "the Kelvin warms, the shift pulls back" instead of
+ * only reporting where the two landed.
+ */
+export type WbBalance = {
+  /** Amber–blue contribution of the Kelvin dial. Positive is warmer. */
+  kelvin: number;
+  /** Amber–blue contribution of the A/B shift. Positive (A) is warmer. */
+  shift: number;
+  /** `kelvin + shift` — what the amber–blue axis actually reads as. */
+  warmth: number;
+  /** Green–magenta offset. Positive is magenta. Kelvin never reaches this axis. */
+  tint: number;
+};
+
+/**
+ * ⚠ The magnitudes here inherit `MIRED_PER_SHIFT_STEP`, which is fitted rather
+ * than sourced. Signs and ordering are sound; treat the numbers as an estimate.
+ */
+export function wbBalance(wb: WhiteBalance): WbBalance {
   // Setting a higher Kelvin tells the camera the light is bluer, so it warms
   // the image to compensate. Higher K therefore renders warmer, not cooler.
-  const fromKelvin = wb.mode === 'kelvin' ? NEUTRAL_MIRED - 1e6 / wb.kelvin : 0;
+  const kelvin = wb.mode === 'kelvin' ? NEUTRAL_MIRED - 1e6 / wb.kelvin : 0;
 
   const ab = wb.shift?.ab;
   const gm = wb.shift?.gm;
 
   // A = amber = warm. B = blue = cool.
-  const fromShift = ab
-    ? (ab.axis === 'A' ? ab.amount : -ab.amount) * MIRED_PER_SHIFT_STEP
-    : 0;
-  const warmth = (fromKelvin + fromShift) / MIRED_SCALE;
+  const shift = ab ? (ab.axis === 'A' ? ab.amount : -ab.amount) * MIRED_PER_SHIFT_STEP : 0;
 
-  // M = magenta. G = green. The green/magenta axis has no Kelvin component.
-  const tint = gm
-    ? ((gm.axis === 'M' ? gm.amount : -gm.amount) * MIRED_PER_SHIFT_STEP) / MIRED_SCALE
-    : 0;
+  // M = magenta. G = green.
+  const tint = gm ? (gm.axis === 'M' ? gm.amount : -gm.amount) * MIRED_PER_SHIFT_STEP : 0;
+
+  return { kelvin, shift, warmth: kelvin + shift, tint };
+}
+
+function whiteBalanceVector(wb: WhiteBalance): Vec {
+  const balance = wbBalance(wb);
+  const warmth = balance.warmth / MIRED_SCALE;
+  const tint = balance.tint / MIRED_SCALE;
 
   return add(
     polar(warmth >= 0 ? WB_HUE.amber : WB_HUE.blue, Math.abs(warmth)),

@@ -78,6 +78,15 @@ hardcoded threshold — widen a range and the wording follows. Each effect is
 tagged `contrast` / `color` / `detail` so a reader can see where a recipe's
 character comes from.
 
+White Balance has a third layer: `wbSummary()` says what the dials do
+**together**. Temperature and Shift A/B are one amber–blue axis in different
+units, so a warm Kelvin beside a `B` shift is not the mistake it looks like —
+31 of 46 recipes are that shape. Keep it out of the rows; a combined cast is
+not any single dial's property. Its neutral band is deliberately wider than the
+Kelvin row's, because it inherits `MIRED_PER_SHIFT_STEP` — **fitted, not
+published**. Never let it name warm or cool inside one shift step of neutral;
+"Mojave Sun" lands 0.1 mired either side depending on that estimate.
+
 Parameter rows use the shared `ParamRow` from `settings-table.tsx`, and its
 column widths are **fixed, not `auto`**. Each row is its own grid — a `<details>`
 cannot share tracks with siblings — so `auto` let every row size to its own

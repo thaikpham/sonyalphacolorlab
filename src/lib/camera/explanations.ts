@@ -153,6 +153,33 @@ export const CL_EXPLANATIONS = {
  * White Balance. These are controls, not Picture Profile settings, but they sit
  * in the same table so they need the same two kinds of help text.
  */
+/**
+ * How the White Balance section works as a whole, before any single row.
+ *
+ * The per-row text in `WB_EXPLANATIONS` cannot carry this: each row only knows
+ * its own dial, and the thing readers get stuck on is the *relationship* — that
+ * a high Kelvin renders warm rather than cool, and that a warm Kelvin sitting
+ * next to a B shift therefore is not the mistake it looks like.
+ *
+ * The Kelvin step figures come from `WB_KELVIN` in `constants.ts` (2500–9900 in
+ * 100K steps); the arithmetic that makes those steps coarse at the bottom and
+ * fine at the top is just 10^6/K.
+ */
+export const WB_OVERVIEW: { en: string[]; vi: string[] } = {
+  en: [
+    'Three dials, one result. Temperature declares what light you are claiming to shoot under, and the two shifts nudge the outcome off that declaration.',
+    'The part that trips almost everyone: a higher Kelvin number produces a warmer picture, not a cooler one. The number describes the light, not the output. Tell the camera the light is 8000K — very blue — and it compensates by adding amber, so the file comes out golden.',
+    'That is why Temperature and Shift A/B are really one amber–blue axis in two different units, and why a warm Kelvin paired with a B shift is not a contradiction. It is a broad warm base with part of it deliberately pulled back. It buys precision the Kelvin dial cannot give on its own: a single 100K step is worth about 15 mired down at 2500K but only about 1 mired up at 9900K, so the shift is the finer control at the warm end and the coarser one at the cool end.',
+    'Shift G/M is the second axis, and Kelvin never reaches it. It is the tint control: G cancels the green cast of fluorescent light and open shade, M goes the other way.',
+  ],
+  vi: [
+    'Ba nút điều chỉnh, một kết quả. Temperature khai báo bạn đang chụp dưới nguồn sáng nào, còn hai shift đẩy kết quả lệch khỏi khai báo đó.',
+    'Chỗ gần như ai cũng nhầm: số Kelvin càng cao thì ảnh càng ấm, chứ không phải càng lạnh. Con số đó mô tả ánh sáng, không phải mô tả ảnh ra. Bảo máy rằng ánh sáng là 8000K — tức rất xanh — thì máy bù lại bằng cách thêm hổ phách, nên file cho ra vàng ruộm.',
+    'Vì vậy Temperature và Shift A/B thực chất là cùng một trục hổ phách–xanh dương, chỉ khác đơn vị; và một mức Kelvin ấm đi kèm shift B không hề mâu thuẫn. Đó là đặt nền ấm rộng rồi chủ động kéo bớt lại. Cách này cho độ chính xác mà riêng nút Kelvin không có: một bước 100K đáng khoảng 15 mired ở vùng 2500K nhưng chỉ khoảng 1 mired ở vùng 9900K, nên shift là nút tinh hơn ở đầu ấm và thô hơn ở đầu lạnh.',
+    'Shift G/M là trục thứ hai, và Kelvin không bao giờ chạm tới. Đây là nút tint: G khử sắc xanh lá của đèn huỳnh quang và vùng bóng râm, M đi theo chiều ngược lại.',
+  ],
+};
+
 export const WB_EXPLANATIONS = {
   temperature: {
     en: 'The colour temperature the camera balances for. Set it higher than the actual light and the image renders warmer; lower and it renders cooler.',

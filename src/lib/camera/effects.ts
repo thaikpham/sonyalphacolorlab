@@ -20,6 +20,7 @@ import {
   type Range,
 } from './constants';
 import type { ClSettings, PpSettings, WhiteBalance } from './schema';
+import { MIRED_PER_SHIFT_STEP, wbBalance, type WbBalance } from './color';
 
 export type EffectAxis = 'contrast' | 'color' | 'detail';
 export type Effect = { axis: EffectAxis; en: string; vi: string };
@@ -291,29 +292,41 @@ export function ppEffects(s: PpSettings): Record<string, Effect> {
  *
  * Deliberately not the combined cast: the reader is looking at three separate
  * dials, and telling them "the net result is warm" on the Kelvin row would be
- * wrong the moment the shift pulls the other way. `color.ts` does the combining
- * for the accent; this stays per-control.
+ * wrong the moment the shift pulls the other way. The combined reading is
+ * `wbSummary()` below, which is a separate statement in a separate place.
  *
  * Kelvin is judged in mireds, the scale colour temperature is actually additive
  * on — 2500K to 3000K is a far bigger visual step than 9000K to 9500K.
  */
-const NEUTRAL_MIRED = 1e6 / 5500;
 
-function kelvinEffect(kelvin: number): Effect {
-  const mired = NEUTRAL_MIRED - 1e6 / kelvin;
-  if (Math.abs(mired) < 12) {
-    return { axis: 'color', en: 'Close to neutral daylight', vi: 'Gần với ánh sáng ban ngày trung tính' };
-  }
-  if (mired >= 55) {
-    return { axis: 'color', en: 'Set well above the light — renders strongly warm', vi: 'Đặt cao hơn nhiều so với ánh sáng — ảnh ra rất ấm' };
-  }
-  if (mired > 0) {
-    return { axis: 'color', en: 'Set above neutral — renders warmer', vi: 'Đặt trên mức trung tính — ảnh ấm hơn' };
-  }
-  if (mired <= -80) {
-    return { axis: 'color', en: 'Set well below the light — renders strongly cool', vi: 'Đặt thấp hơn nhiều so với ánh sáng — ảnh ra rất lạnh' };
-  }
-  return { axis: 'color', en: 'Set below neutral — renders cooler', vi: 'Đặt dưới mức trung tính — ảnh lạnh hơn' };
+/** Where the amber–blue axis lands, graded. Input is mireds; positive is warm. */
+type Warmth = 'strong-warm' | 'warm' | 'neutral' | 'cool' | 'strong-cool';
+
+/**
+ * The thresholds are asymmetric because the mired scale is. From 5500K neutral
+ * the warm end of the Kelvin range only reaches +81 mired, while the cool end
+ * runs to -218, so one symmetric cutoff would call almost every warm recipe
+ * mild and almost every cool one extreme.
+ */
+function gradeWarmth(mired: number): Warmth {
+  if (Math.abs(mired) < 12) return 'neutral';
+  if (mired >= 55) return 'strong-warm';
+  if (mired > 0) return 'warm';
+  if (mired <= -80) return 'strong-cool';
+  return 'cool';
+}
+
+const KELVIN_PHRASES: Record<Warmth, [en: string, vi: string]> = {
+  'strong-warm': ['Set well above the light — renders strongly warm', 'Đặt cao hơn nhiều so với ánh sáng — ảnh ra rất ấm'],
+  warm: ['Set above neutral — renders warmer', 'Đặt trên mức trung tính — ảnh ấm hơn'],
+  neutral: ['Close to neutral daylight', 'Gần với ánh sáng ban ngày trung tính'],
+  cool: ['Set below neutral — renders cooler', 'Đặt dưới mức trung tính — ảnh lạnh hơn'],
+  'strong-cool': ['Set well below the light — renders strongly cool', 'Đặt thấp hơn nhiều so với ánh sáng — ảnh ra rất lạnh'],
+};
+
+function kelvinEffect(mired: number): Effect {
+  const [en, vi] = KELVIN_PHRASES[gradeWarmth(mired)];
+  return { axis: 'color', en, vi };
 }
 
 function shiftEffect(axisLetter: 'A' | 'B' | 'G' | 'M', amount: number): Effect {
@@ -355,7 +368,7 @@ export function wbEffects(wb: WhiteBalance): Record<string, Effect> {
 
   effects.temperature =
     wb.mode === 'kelvin'
-      ? kelvinEffect(wb.kelvin)
+      ? kelvinEffect(wbBalance(wb).kelvin)
       : {
           axis: 'color',
           en: 'Camera decides the temperature per frame — consistent only if the light is',
@@ -366,6 +379,168 @@ export function wbEffects(wb: WhiteBalance): Record<string, Effect> {
   if (wb.shift?.gm) effects.shiftGm = shiftEffect(wb.shift.gm.axis, wb.shift.gm.amount);
 
   return effects;
+}
+
+// ---------------------------------------------------------------------------
+// White Balance — the combined reading
+// ---------------------------------------------------------------------------
+
+/**
+ * The three rows above answer "what is this dial doing". They do not answer the
+ * question readers actually arrive with, which is "so what does the picture
+ * look like" — and for the commonest pairing in this catalogue, a warm Kelvin
+ * with a B shift, the three rows read as a contradiction until someone points
+ * out that Temperature and Shift A/B are the same axis in different units.
+ *
+ * So this says two things the per-row text structurally cannot:
+ *   - `interplay` — why the two amber–blue controls are set against each other
+ *     (or stacked), naming this recipe's own numbers.
+ *   - `net` — where they land together, in terms of what shows up in the frame.
+ *
+ * Both are qualitative on purpose. The magnitude comes from `wbBalance()`,
+ * whose shift-step size is fitted rather than published, so this grades the
+ * result into bands and never states a temperature the camera will produce.
+ */
+export type WbSummary = {
+  /** Where the three dials land together. Always present. */
+  net: Effect;
+  /**
+   * Why Temperature and Shift A/B appear to fight. Present only when both are
+   * set and both are off neutral — otherwise there is no interplay to explain.
+   */
+  interplay?: Effect;
+};
+
+/**
+ * The summary's neutral band is wider than the Kelvin row's, and has to be.
+ *
+ * A Kelvin figure converts to mireds exactly, so the row can grade it at 12.
+ * The A/B shift's mired value cannot: `MIRED_PER_SHIFT_STEP` is fitted to eight
+ * hand-read labels, not published by Sony. Once a shift is in play, a net
+ * inside one shift step of neutral would flip sides if that estimate is off —
+ * "Mojave Sun" (7000K B3) lands 0.1 mired cool on the current figure and warm
+ * on a smaller one. Naming a direction there would be inventing precision, so
+ * the honest reading is that the two controls cancel.
+ */
+function gradeNet(balance: WbBalance): Warmth | 'balanced' {
+  const band = balance.shift !== 0 ? MIRED_PER_SHIFT_STEP : 12;
+  if (Math.abs(balance.warmth) >= band) return gradeWarmth(balance.warmth);
+  return balance.shift !== 0 && balance.kelvin !== 0 ? 'balanced' : 'neutral';
+}
+
+const NET_PHRASES: Record<Warmth | 'balanced', [en: string, vi: string]> = {
+  'strong-warm': [
+    'reads strongly warm — sunlit skin, whites tipping to cream, blues held well back',
+    'ra rất ấm — da bắt nắng, vùng trắng ngả kem, sắc xanh bị đẩy lùi rõ',
+  ],
+  warm: [
+    'reads warm — a golden-hour lean, with whites carrying a light cream cast',
+    'ra ấm — nghiêng về giờ vàng, vùng trắng phủ nhẹ sắc kem',
+  ],
+  neutral: [
+    'reads close to neutral — whites stay white, so the recipe’s colour character comes from the profile rather than from the balance',
+    'gần trung tính — vùng trắng vẫn là trắng, nên chất màu của công thức đến từ profile chứ không phải từ cân bằng trắng',
+  ],
+  balanced: [
+    'lands close to neutral — the Kelvin setting and the A/B shift very nearly cancel each other, so whatever colour character the recipe has is coming from the profile, not from the white balance',
+    'rơi vào khoảng gần trung tính — mức Kelvin và shift A/B gần như triệt tiêu nhau, nên chất màu của công thức đến từ profile chứ không phải từ cân bằng trắng',
+  ],
+  cool: [
+    'reads cool — a blue-hour lean, with whites carrying a light slate cast',
+    'ra lạnh — nghiêng về giờ xanh, vùng trắng phủ nhẹ sắc xám xanh',
+  ],
+  'strong-cool': [
+    'reads strongly cool — icy whites, cooled skin, blues pushed forward',
+    'ra rất lạnh — vùng trắng lạnh buốt, da nguội đi, sắc xanh nổi lên',
+  ],
+};
+
+/** Green–magenta, graded on the shift's own 0–7 throw rather than in mireds. */
+type Tint = 'strong-magenta' | 'magenta' | 'none' | 'green' | 'strong-green';
+
+/**
+ * A whole sentence, not a trailing clause. The net phrases already end in one,
+ * and appending a second produced "…, with whites carrying a light slate cast,
+ * with a light magenta lean in skin tones."
+ */
+const TINT_PHRASES: Record<Tint, [en: string, vi: string]> = {
+  'strong-magenta': [
+    ' A firm magenta tint sits over that — skin lifts rosy.',
+    ' Phủ lên trên là sắc cánh sen rõ — da ửng hồng.',
+  ],
+  magenta: [
+    ' A light magenta lean sits over that, most visible in skin tones.',
+    ' Phủ lên trên là sắc cánh sen nhẹ, thấy rõ nhất ở tông da.',
+  ],
+  none: ['', ''],
+  green: [
+    ' A light green lean sits over that, which suits foliage and open shade.',
+    ' Phủ lên trên là sắc xanh lá nhẹ, hợp với cây lá và vùng bóng râm.',
+  ],
+  'strong-green': [
+    ' A firm green tint sits over that — foliage and shade go cleaner, skin goes flatter.',
+    ' Phủ lên trên là sắc xanh lá rõ — cây lá và vùng râm sạch hơn, tông da phẳng hơn.',
+  ],
+};
+
+function gradeTint(gm: { axis: 'G' | 'M'; amount: number } | undefined): Tint {
+  if (!gm || gm.amount === 0) return 'none';
+  // Same four-step cutoff `shiftEffect` uses, so the row and the summary agree.
+  const strong = gm.amount >= 4;
+  if (gm.axis === 'M') return strong ? 'strong-magenta' : 'magenta';
+  return strong ? 'strong-green' : 'green';
+}
+
+export function wbSummary(wb: WhiteBalance): WbSummary {
+  const balance = wbBalance(wb);
+  const [netEn, netVi] = NET_PHRASES[gradeNet(balance)];
+  const [tintEn, tintVi] = TINT_PHRASES[gradeTint(wb.shift?.gm)];
+
+  const net: Effect = {
+    axis: 'color',
+    en: `Overall this ${netEn}.${tintEn}`,
+    vi: `Tổng thể ảnh ${netVi}.${tintVi}`,
+  };
+
+  const ab = wb.shift?.ab;
+  // No Kelvin, no A/B shift, or either sitting on neutral — nothing pulls
+  // against anything, and inventing a tension to explain would just be noise.
+  if (wb.mode !== 'kelvin' || !ab || ab.amount === 0 || balance.kelvin === 0) {
+    return { net };
+  }
+
+  const k = `${wb.kelvin}K`;
+  const s = `${ab.axis}${ab.amount}`;
+  const opposed = Math.sign(balance.kelvin) !== Math.sign(balance.shift);
+
+  if (!opposed) {
+    return {
+      net,
+      interplay: {
+        axis: 'color',
+        en: `${k} and ${s} push the same way, so they stack — the cast is stronger than either figure suggests on its own.`,
+        vi: `${k} và ${s} đẩy cùng chiều nên cộng dồn — sắc lệch mạnh hơn những gì từng con số gợi ra.`,
+      },
+    };
+  }
+
+  const warmBase = balance.kelvin > 0;
+  return {
+    net,
+    interplay: {
+      axis: 'color',
+      en:
+        `Not a contradiction: Temperature and Shift A/B are the same amber–blue axis in different units. ` +
+        `${k} sets a ${warmBase ? 'warm' : 'cool'} base and ${s} pulls part of it back, landing on a balance ` +
+        `the Kelvin dial cannot reach alone — its 100K steps are coarse down at 2500K and very fine up at 9900K. ` +
+        `Read the pair, never either number by itself.`,
+      vi:
+        `Không hề mâu thuẫn: Temperature và Shift A/B là cùng một trục hổ phách–xanh dương, chỉ khác đơn vị. ` +
+        `${k} đặt nền ${warmBase ? 'ấm' : 'lạnh'}, còn ${s} kéo bớt lại, đưa kết quả tới điểm mà riêng nút Kelvin ` +
+        `không chạm được — bước 100K của nó rất thô ở vùng 2500K và rất mịn ở vùng 9900K. ` +
+        `Hãy đọc cả cặp, đừng đọc riêng một con số.`,
+    },
+  };
 }
 
 // ---------------------------------------------------------------------------
