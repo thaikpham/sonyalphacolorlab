@@ -39,8 +39,51 @@ export const WB_KELVIN = r(2500, 9900, 100);
  */
 export const WB_SHIFT_AXIS = r(0, 7, 0.25);
 
-/** Auto white balance modes that appear in place of a Kelvin value. */
+/**
+ * Auto white balance modes that appear in place of a Kelvin value.
+ *
+ * ⚠ These are the *legacy dataset's* names. Sony's own menu calls them
+ * `Auto`, `Auto: White` and `Auto: Ambience` (see WB_PRESETS' citation).
+ * Do not "correct" them: 46 shipping recipes, the `wb_auto` CHECK constraint in
+ * `0001_init.sql` and every legacy redirect carry these exact strings. Renaming
+ * is a data migration, not an edit.
+ */
 export const WB_AUTO_MODES = ['AWB', 'AWB (Priority White)', 'AWB (Priority Ambience)'] as const;
+
+/**
+ * Light-source presets — the third way to set White Balance, alongside a Kelvin
+ * value and the Auto modes above.
+ *
+ * Source: ILCE-7M4 help guide, "White Balance (still image/movie)"
+ * https://helpguide.sony.net/ilc/2110/v1/en/contents/TP1000640840.html
+ *
+ * Listed there in menu order as: Auto / Auto: Ambience / Auto: White / Daylight
+ * / Shade / Cloudy / Incandescent / Fluor.: Warm White / Fluor.: Cool White /
+ * Fluor.: Day White / Fluor.: Daylight / Flash (only when shooting still
+ * images) / Underwater Auto / C.Temp./Filter / Custom 1-3.
+ *
+ * The Auto entries live in WB_AUTO_MODES and C.Temp./Filter is the Kelvin mode,
+ * so only the light-source presets are here.
+ *
+ * `Custom 1`–`Custom 3` are deliberately excluded. They replay a white card
+ * measured in one photographer's room; the name carries no colour and cannot be
+ * reproduced by a reader, so it is not a shareable recipe value.
+ */
+export const WB_PRESETS = [
+  'Daylight',
+  'Shade',
+  'Cloudy',
+  'Incandescent',
+  'Fluor.: Warm White',
+  'Fluor.: Cool White',
+  'Fluor.: Day White',
+  'Fluor.: Daylight',
+  'Flash',
+  'Underwater Auto',
+] as const;
+
+/** Sony documents Flash as "only when shooting still images". */
+export const WB_PRESETS_STILL_ONLY = ['Flash'] as const;
 
 /** Axis letters. A=amber B=blue on one axis, G=green M=magenta on the other. */
 export const WB_AXIS_AB = ['A', 'B'] as const;

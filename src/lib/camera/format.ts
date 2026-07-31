@@ -9,6 +9,7 @@
 import {
   CL_SIGNED_PARAMS,
   WB_AUTO_MODES,
+  WB_PRESETS,
   type ClParam,
   type Range,
 } from './constants';
@@ -28,9 +29,22 @@ export function formatClValue(param: ClParam, value: number): string {
   return (CL_SIGNED_PARAMS as readonly string[]).includes(param) ? signed(value) : num(value);
 }
 
-/** "7000K, B3-M1.5" | "5500K" | "AWB, A3" | "AWB (Priority White)" */
+/**
+ * The White Balance value without its shift — "7000K", "AWB", "Cloudy".
+ *
+ * Exported because the UI colours the head and the shift differently and so
+ * cannot use `formatWhiteBalance`'s joined string. One place owns the three-way
+ * branch; adding a fourth WB mode should not mean hunting for ternaries.
+ */
+export function wbHeadLabel(wb: WhiteBalance): string {
+  if (wb.mode === 'kelvin') return `${wb.kelvin}K`;
+  if (wb.mode === 'preset') return wb.preset;
+  return wb.auto;
+}
+
+/** "7000K, B3-M1.5" | "5500K" | "AWB, A3" | "Cloudy, A1.5-M0.5" */
 export function formatWhiteBalance(wb: WhiteBalance): string {
-  const head = wb.mode === 'kelvin' ? `${wb.kelvin}K` : wb.auto;
+  const head = wbHeadLabel(wb);
   if (!wb.shift) return head;
   const parts: string[] = [];
   if (wb.shift.ab) parts.push(`${wb.shift.ab.axis}${num(wb.shift.ab.amount)}`);
@@ -38,9 +52,19 @@ export function formatWhiteBalance(wb: WhiteBalance): string {
   return `${head}, ${parts.join('-')}`;
 }
 
+const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/**
+ * Longest-first, so "Fluor.: Daylight" is not consumed by the "Daylight"
+ * branch — regex alternation takes the first match, not the best one.
+ */
+const byLengthDesc = (a: string, b: string) => b.length - a.length;
+
 const WB_RE = new RegExp(
   '^\\s*(?:(\\d{3,4})K|(' +
-    WB_AUTO_MODES.map((m) => m.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') +
+    [...WB_AUTO_MODES].sort(byLengthDesc).map(esc).join('|') +
+    ')|(' +
+    [...WB_PRESETS].sort(byLengthDesc).map(esc).join('|') +
     '))' +
     '(?:\\s*,\\s*(?:([AB])(\\d+(?:\\.\\d+)?))?(?:-?([GM])(\\d+(?:\\.\\d+)?))?)?\\s*$',
 );
@@ -53,7 +77,7 @@ const WB_RE = new RegExp(
 export function parseWhiteBalance(input: string): WhiteBalance | null {
   const m = WB_RE.exec(input);
   if (!m) return null;
-  const [, kelvin, auto, abAxis, abAmt, gmAxis, gmAmt] = m;
+  const [, kelvin, auto, preset, abAxis, abAmt, gmAxis, gmAmt] = m;
 
   const shift =
     abAxis || gmAxis
@@ -62,13 +86,11 @@ export function parseWhiteBalance(input: string): WhiteBalance | null {
           ...(gmAxis ? { gm: { axis: gmAxis as 'G' | 'M', amount: Number(gmAmt) } } : {}),
         }
       : undefined;
+  const tail = shift ? { shift } : {};
 
-  if (kelvin) return { mode: 'kelvin', kelvin: Number(kelvin), ...(shift ? { shift } : {}) };
-  return {
-    mode: 'auto',
-    auto: auto as (typeof WB_AUTO_MODES)[number],
-    ...(shift ? { shift } : {}),
-  };
+  if (kelvin) return { mode: 'kelvin', kelvin: Number(kelvin), ...tail };
+  if (preset) return { mode: 'preset', preset: preset as (typeof WB_PRESETS)[number], ...tail };
+  return { mode: 'auto', auto: auto as (typeof WB_AUTO_MODES)[number], ...tail };
 }
 
 /** Renders a Range as the camera documents it, e.g. "-9 to +9" or "1 to 5". */

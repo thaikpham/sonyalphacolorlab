@@ -22,6 +22,7 @@ import {
   WB_AXIS_AB,
   WB_AXIS_GM,
   WB_KELVIN,
+  WB_PRESETS,
   WB_SHIFT_AXIS,
   type Range,
 } from './constants';
@@ -66,6 +67,15 @@ export const whiteBalanceSchema = z.discriminatedUnion('mode', [
   z.object({
     mode: z.literal('auto'),
     auto: z.enum(WB_AUTO_MODES),
+    shift: wbShiftSchema.optional(),
+  }),
+  // A light-source preset (Daylight, Cloudy, Underwater Auto, …). Like the Auto
+  // modes it has no Kelvin number of its own — the camera picks one — but it
+  // still takes a shift, and the Sony Asia recipes use exactly that pairing
+  // ("WB Cloudy A1.5, M0.5").
+  z.object({
+    mode: z.literal('preset'),
+    preset: z.enum(WB_PRESETS),
     shift: wbShiftSchema.optional(),
   }),
 ]);

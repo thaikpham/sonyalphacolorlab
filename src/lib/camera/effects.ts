@@ -363,17 +363,76 @@ function shiftEffect(axisLetter: 'A' | 'B' | 'G' | 'M', amount: number): Effect 
   }
 }
 
+/**
+ * What each light-source preset is balancing for.
+ *
+ * Deliberately no Kelvin equivalents. Sony's White Balance page names the
+ * sources and says the camera "adjusts the color tones to suit the selected
+ * light source" — it does not publish a temperature for any of them, and
+ * writing "Cloudy ≈ 6000K" here would be exactly the invented camera value
+ * rule 1 exists to stop. Direction is safe to state; a number is not.
+ */
+const PRESET_PHRASES: Record<string, [en: string, vi: string]> = {
+  Daylight: [
+    'Balanced for direct sun — the baseline outdoor setting',
+    'Cân bằng cho nắng trực tiếp — mức nền khi chụp ngoài trời',
+  ],
+  Shade: [
+    'Balanced for open shade, which is bluer than direct sun, so the camera adds warmth',
+    'Cân bằng cho vùng bóng râm — nơi ánh sáng xanh hơn nắng trực tiếp, nên máy bù thêm ấm',
+  ],
+  Cloudy: [
+    'Balanced for overcast light — a little warmth added against a flat grey sky',
+    'Cân bằng cho trời nhiều mây — thêm chút ấm để bù lại bầu trời xám phẳng',
+  ],
+  Incandescent: [
+    'Balanced for tungsten bulbs — cools hard, because the source is far warmer than daylight',
+    'Cân bằng cho đèn dây tóc — làm lạnh mạnh, vì nguồn sáng ấm hơn ánh sáng ngày rất nhiều',
+  ],
+  'Fluor.: Warm White': [
+    'Balanced for warm-white fluorescent tubes, including the green cast they carry',
+    'Cân bằng cho đèn huỳnh quang warm white, gồm cả sắc xanh lá mà loại đèn này mang theo',
+  ],
+  'Fluor.: Cool White': [
+    'Balanced for cool-white fluorescent tubes, including the green cast they carry',
+    'Cân bằng cho đèn huỳnh quang cool white, gồm cả sắc xanh lá mà loại đèn này mang theo',
+  ],
+  'Fluor.: Day White': [
+    'Balanced for day-white fluorescent tubes, including the green cast they carry',
+    'Cân bằng cho đèn huỳnh quang day white, gồm cả sắc xanh lá mà loại đèn này mang theo',
+  ],
+  'Fluor.: Daylight': [
+    'Balanced for daylight fluorescent tubes, including the green cast they carry',
+    'Cân bằng cho đèn huỳnh quang daylight, gồm cả sắc xanh lá mà loại đèn này mang theo',
+  ],
+  Flash: [
+    'Balanced for the flash tube. Sony documents this one as still images only',
+    'Cân bằng cho đèn flash. Sony ghi rõ chế độ này chỉ dùng khi chụp ảnh tĩnh',
+  ],
+  'Underwater Auto': [
+    'Auto balance tuned for underwater, where the scene skews blue-green',
+    'Cân bằng tự động cho môi trường dưới nước, nơi cảnh ngả xanh lam–lục',
+  ],
+};
+
 export function wbEffects(wb: WhiteBalance): Record<string, Effect> {
   const effects: Record<string, Effect> = {};
 
-  effects.temperature =
-    wb.mode === 'kelvin'
-      ? kelvinEffect(wbBalance(wb).kelvin)
-      : {
-          axis: 'color',
-          en: 'Camera decides the temperature per frame — consistent only if the light is',
-          vi: 'Máy tự quyết nhiệt độ màu từng khung — chỉ nhất quán khi ánh sáng nhất quán',
-        };
+  if (wb.mode === 'kelvin') {
+    effects.temperature = kelvinEffect(wbBalance(wb).kelvin);
+  } else if (wb.mode === 'preset') {
+    const [en, vi] = PRESET_PHRASES[wb.preset] ?? [
+      'Balanced for the selected light source',
+      'Cân bằng theo nguồn sáng đã chọn',
+    ];
+    effects.temperature = { axis: 'color', en, vi };
+  } else {
+    effects.temperature = {
+      axis: 'color',
+      en: 'Camera decides the temperature per frame — consistent only if the light is',
+      vi: 'Máy tự quyết nhiệt độ màu từng khung — chỉ nhất quán khi ánh sáng nhất quán',
+    };
+  }
 
   if (wb.shift?.ab) effects.shiftAb = shiftEffect(wb.shift.ab.axis, wb.shift.ab.amount);
   if (wb.shift?.gm) effects.shiftGm = shiftEffect(wb.shift.gm.axis, wb.shift.gm.amount);
@@ -495,6 +554,20 @@ export function wbSummary(wb: WhiteBalance): WbSummary {
   const balance = wbBalance(wb);
   const [netEn, netVi] = NET_PHRASES[gradeNet(balance)];
   const [tintEn, tintVi] = TINT_PHRASES[gradeTint(wb.shift?.gm)];
+
+  // A preset names the light the camera is balancing *for*, so "whites stay
+  // white" is not the story — how the frame reads depends on how far the real
+  // light sits from that named source, which the recipe cannot know. With no
+  // A/B shift pulling against it, the shift is the only part we can describe.
+  if (wb.mode === 'preset' && !wb.shift?.ab) {
+    return {
+      net: {
+        axis: 'color',
+        en: `Overall the camera balances for ${wb.preset}, and nothing pulls against it — the cast you actually get depends on how far the real light sits from that source.${tintEn}`,
+        vi: `Tổng thể máy cân bằng theo ${wb.preset}, và không có gì kéo ngược lại — sắc lệch thu được phụ thuộc vào việc ánh sáng thực lệch bao xa so với nguồn đó.${tintVi}`,
+      },
+    };
+  }
 
   const net: Effect = {
     axis: 'color',

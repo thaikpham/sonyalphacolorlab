@@ -104,10 +104,48 @@ describe('migrations', () => {
     expect(readable.rows).toHaveLength(0);
   });
 
-  it('accepts all 46 migrated recipes', async () => {
+  it('accepts every seeded recipe, in both formats', async () => {
     for (const r of seed) await insert(toRow(r, r.legacyId));
     const c = await db.query<{ n: number }>('select count(*)::int as n from recipes');
-    expect(c.rows[0].n).toBe(46);
+    // Derived, not hardcoded — the catalogue grows, and a stale literal here
+    // fails for the wrong reason and teaches nothing.
+    expect(c.rows[0].n).toBe(seed.length);
+
+    // Both libraries must survive the real CHECK constraints, not just the
+    // Picture Profile one the schema was originally written around.
+    const byFormat = await db.query<{ format: string; n: number }>(
+      'select format::text as format, count(*)::int as n from recipes group by format order by format',
+    );
+    expect(byFormat.rows.map((r) => r.format)).toEqual(['cl', 'pp']);
+    for (const row of byFormat.rows) expect(row.n).toBeGreaterThan(0);
+  });
+
+  it('stores a light-source preset with a null kelvin and a null auto', async () => {
+    const q = await db.query<{ wb_preset: string; wb_kelvin: number | null; wb_auto: string | null }>(
+      `select wb_preset, wb_kelvin, wb_auto from recipes where wb_mode = 'preset' limit 1`,
+    );
+    expect(q.rows).toHaveLength(1);
+    expect(q.rows[0].wb_preset).toBeTruthy();
+    expect(q.rows[0].wb_kelvin).toBeNull();
+    expect(q.rows[0].wb_auto).toBeNull();
+  });
+
+  it('rejects a preset row that also carries a kelvin', async () => {
+    // The three-way consistency constraint from 0006. Without it a row could
+    // claim both a named light source and a colour temperature.
+    await expect(
+      insert({
+        id: 'SCL-CL-999',
+        slug: 'wb-mode-conflict',
+        name: 'conflict',
+        format: 'cl',
+        wb_mode: 'preset',
+        wb_preset: 'Cloudy',
+        wb_kelvin: 5600,
+        look: 'ST',
+        settings: JSON.stringify({ look: 'ST' }),
+      }),
+    ).rejects.toThrow(/recipes_wb_mode_consistent/);
   });
 
   it('round-trips white balance through real columns', async () => {

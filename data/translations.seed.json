@@ -230,6 +230,191 @@
     "description": "A color recipe for crystal-clear images, featuring rich colors on a neutral foundation. Specially designed for livestreaming, it renders Asian skin tones authentically and radiantly."
   },
   {
+    "recipeId": "SCL-CL-001",
+    "locale": "en",
+    "description": "Film Look (FL) Creative Look recipe by Raoul Rutnam, Sri Lanka, from Sony's Alpha Recipes collection."
+  },
+  {
+    "recipeId": "SCL-CL-002",
+    "locale": "en",
+    "description": "Film Look (FL) Creative Look recipe by Arantha Sirimanne, Sri Lanka, from Sony's Alpha Recipes collection."
+  },
+  {
+    "recipeId": "SCL-CL-003",
+    "locale": "en",
+    "description": "Vivid2 (VV2) Creative Look recipe by Ravi Ranasinghe, Sri Lanka, from Sony's Alpha Recipes collection. Shot with Creative Looks Crop & RGB adjusted in post."
+  },
+  {
+    "recipeId": "SCL-CL-004",
+    "locale": "en",
+    "description": "Vivid2 (VV2) Creative Look recipe by Sony Asia, Asia Pacific, from Sony's Alpha Recipes collection."
+  },
+  {
+    "recipeId": "SCL-CL-005",
+    "locale": "en",
+    "description": "Vivid2 (VV2) Creative Look recipe by Jonpoon.jpg, Singapore, from Sony's Alpha Recipes collection."
+  },
+  {
+    "recipeId": "SCL-CL-006",
+    "locale": "en",
+    "description": "Vivid2 (VV2) Creative Look recipe by Jonpoon.jpg, Singapore, from Sony's Alpha Recipes collection."
+  },
+  {
+    "recipeId": "SCL-CL-007",
+    "locale": "en",
+    "description": "Vivid (VV) Creative Look recipe by Khong ខុង, Cambodia, from Sony's Alpha Recipes collection. Shot with Creative Looks Exposure & brightness adjusted in post."
+  },
+  {
+    "recipeId": "SCL-CL-008",
+    "locale": "en",
+    "description": "Vivid (VV) Creative Look recipe by Filmreel, Cambodia, from Sony's Alpha Recipes collection."
+  },
+  {
+    "recipeId": "SCL-CL-009",
+    "locale": "en",
+    "description": "Standard (ST) Creative Look recipe by Sandeeshwara Perera, Sri Lanka, from Sony's Alpha Recipes collection."
+  },
+  {
+    "recipeId": "SCL-CL-010",
+    "locale": "en",
+    "description": "Standard (ST) Creative Look recipe by Ravi Ranasinghe, Sri Lanka, from Sony's Alpha Recipes collection. Shot with Creative Looks Crop & RGB adjusted in post."
+  },
+  {
+    "recipeId": "SCL-CL-011",
+    "locale": "en",
+    "description": "Standard (ST) Creative Look recipe by Khong ខុង, Cambodia, from Sony's Alpha Recipes collection. Shot with Creative Looks Exposure & brightness adjusted in post."
+  },
+  {
+    "recipeId": "SCL-CL-012",
+    "locale": "en",
+    "description": "Standard (ST) Creative Look recipe by Filmreel, Cambodia, from Sony's Alpha Recipes collection."
+  },
+  {
+    "recipeId": "SCL-CL-013",
+    "locale": "en",
+    "description": "Soft Highkey (SH) Creative Look recipe by Sony Asia, Asia Pacific, from Sony's Alpha Recipes collection."
+  },
+  {
+    "recipeId": "SCL-CL-014",
+    "locale": "en",
+    "description": "Soft Highkey (SH) Creative Look recipe by Jonpoon.jpg, Singapore, from Sony's Alpha Recipes collection."
+  },
+  {
+    "recipeId": "SCL-CL-015",
+    "locale": "en",
+    "description": "Soft Highkey (SH) Creative Look recipe by Puy, Cambodia, from Sony's Alpha Recipes collection."
+  },
+  {
+    "recipeId": "SCL-CL-016",
+    "locale": "en",
+    "description": "Soft Highkey (SH) Creative Look recipe by Jomnot, Cambodia, from Sony's Alpha Recipes collection."
+  },
+  {
+    "recipeId": "SCL-CL-017",
+    "locale": "en",
+    "description": "Sepia (SE) Creative Look recipe by Satheeshan Thiyagaraja, Sri Lanka, from Sony's Alpha Recipes collection."
+  },
+  {
+    "recipeId": "SCL-CL-018",
+    "locale": "en",
+    "description": "Sepia (SE) Creative Look recipe by Ravi Ranasinghe, Sri Lanka, from Sony's Alpha Recipes collection. Shot with Creative Looks Crop & RGB adjusted in post."
+  },
+  {
+    "recipeId": "SCL-CL-019",
+    "locale": "en",
+    "description": "Portrait (PT) Creative Look recipe by Sandeeshwara Perera, Sri Lanka, from Sony's Alpha Recipes collection."
+  },
+  {
+    "recipeId": "SCL-CL-020",
+    "locale": "en",
+    "description": "Instant (IN) Creative Look recipe by Eranga Siriwardhana, Sri Lanka, from Sony's Alpha Recipes collection."
+  },
+  {
+    "recipeId": "SCL-CL-021",
+    "locale": "en",
+    "description": "Instant (IN) Creative Look recipe by Sony Asia, Asia Pacific, from Sony's Alpha Recipes collection."
+  },
+  {
+    "recipeId": "SCL-CL-022",
+    "locale": "en",
+    "description": "Instant (IN) Creative Look recipe by Sony Asia, Asia Pacific, from Sony's Alpha Recipes collection."
+  },
+  {
+    "recipeId": "SCL-CL-023",
+    "locale": "en",
+    "description": "Instant (IN) Creative Look recipe by Jonpoon.jpg, Singapore, from Sony's Alpha Recipes collection."
+  },
+  {
+    "recipeId": "SCL-CL-024",
+    "locale": "en",
+    "description": "Instant (IN) Creative Look recipe by Check In Siemreap ដើរលេងសៀមរាប, Cambodia, from Sony's Alpha Recipes collection."
+  },
+  {
+    "recipeId": "SCL-CL-025",
+    "locale": "en",
+    "description": "Film Look (FL) Creative Look recipe by Sandeeshwara Perera, Sri Lanka, from Sony's Alpha Recipes collection. Shot with Creative Looks Curves, contrast and shadows adjusted in post"
+  },
+  {
+    "recipeId": "SCL-CL-026",
+    "locale": "en",
+    "description": "Film Look (FL) Creative Look recipe by Sandeeshwara Perera, Sri Lanka, from Sony's Alpha Recipes collection."
+  },
+  {
+    "recipeId": "SCL-CL-027",
+    "locale": "en",
+    "description": "Film Look (FL) Creative Look recipe by Sandeeshwara Perera, Sri Lanka, from Sony's Alpha Recipes collection."
+  },
+  {
+    "recipeId": "SCL-CL-028",
+    "locale": "en",
+    "description": "Film Look (FL) Creative Look recipe by Lahiru Rumesh, Sri Lanka, from Sony's Alpha Recipes collection."
+  },
+  {
+    "recipeId": "SCL-CL-029",
+    "locale": "en",
+    "description": "Film Look (FL) Creative Look recipe by Isuru Mudalige, Sri Lanka, from Sony's Alpha Recipes collection."
+  },
+  {
+    "recipeId": "SCL-CL-030",
+    "locale": "en",
+    "description": "Film Look (FL) Creative Look recipe by Sony Asia, Asia Pacific, from Sony's Alpha Recipes collection."
+  },
+  {
+    "recipeId": "SCL-CL-031",
+    "locale": "en",
+    "description": "Film Look (FL) Creative Look recipe by Sony Asia, Asia Pacific, from Sony's Alpha Recipes collection."
+  },
+  {
+    "recipeId": "SCL-CL-032",
+    "locale": "en",
+    "description": "Film Look (FL) Creative Look recipe by jonpoon.jpg, Singapore, from Sony's Alpha Recipes collection."
+  },
+  {
+    "recipeId": "SCL-CL-033",
+    "locale": "en",
+    "description": "Film Look (FL) Creative Look recipe by Mardy Suong, Cambodia, from Sony's Alpha Recipes collection."
+  },
+  {
+    "recipeId": "SCL-CL-034",
+    "locale": "en",
+    "description": "Film Look (FL) Creative Look recipe by Mardy Suong, Cambodia, from Sony's Alpha Recipes collection."
+  },
+  {
+    "recipeId": "SCL-CL-035",
+    "locale": "en",
+    "description": "Film Look (FL) Creative Look recipe by Khong ខុង, Cambodia, from Sony's Alpha Recipes collection."
+  },
+  {
+    "recipeId": "SCL-CL-036",
+    "locale": "en",
+    "description": "Film Look (FL) Creative Look recipe by Hea Kimhong ហ៊ាន គីមហុង, Cambodia, from Sony's Alpha Recipes collection."
+  },
+  {
+    "recipeId": "SCL-CL-037",
+    "locale": "en",
+    "description": "Film Look (FL) Creative Look recipe by Filmreel, Cambodia, from Sony's Alpha Recipes collection."
+  },
+  {
     "recipeId": "SCL-PP-001",
     "locale": "vi",
     "description": "Phong cách hoài niệm, ngập nắng, phủ lên khung hình ánh vàng ấm của giờ vàng.\nRất hợp cho ảnh du lịch và đời sống, tái hiện sắc vàng đậm và xanh sâu, gợi cảm giác một chuyến road trip mùa hè bất tận."

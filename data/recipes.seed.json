@@ -2879,5 +2879,1174 @@
       }
     },
     "legacyId": "PROCOLOR-003"
+  },
+  {
+    "id": "SCL-CL-001",
+    "slug": "fl-raoul-rutnam",
+    "name": "SCL-CL-001: Film Look · Raoul Rutnam",
+    "whiteBalance": {
+      "mode": "auto",
+      "auto": "AWB"
+    },
+    "tags": [
+      "creative-look",
+      "film-look",
+      "sri-lanka"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "FL",
+      "contrast": 5,
+      "highlights": -9,
+      "shadows": 3,
+      "fade": 3,
+      "saturation": 3,
+      "sharpness": 4,
+      "sharpnessRange": 5,
+      "clarity": 4
+    }
+  },
+  {
+    "id": "SCL-CL-002",
+    "slug": "fl-arantha-sirimanne",
+    "name": "SCL-CL-002: Film Look · Arantha Sirimanne",
+    "whiteBalance": {
+      "mode": "preset",
+      "preset": "Cloudy",
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 1.5
+        },
+        "gm": {
+          "axis": "M",
+          "amount": 0.5
+        }
+      }
+    },
+    "tags": [
+      "creative-look",
+      "film-look",
+      "sri-lanka"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "FL",
+      "contrast": 3,
+      "highlights": -3,
+      "shadows": 1,
+      "fade": 1,
+      "saturation": -2,
+      "sharpness": 2,
+      "sharpnessRange": 3,
+      "clarity": 3
+    }
+  },
+  {
+    "id": "SCL-CL-003",
+    "slug": "vv2-ravi-ranasinghe",
+    "name": "SCL-CL-003: Vivid2 · Ravi Ranasinghe",
+    "whiteBalance": {
+      "mode": "auto",
+      "auto": "AWB"
+    },
+    "tags": [
+      "creative-look",
+      "vivid2",
+      "sri-lanka"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "VV2",
+      "contrast": 0,
+      "highlights": 0,
+      "shadows": 0,
+      "fade": 0,
+      "saturation": 0,
+      "sharpness": 4,
+      "sharpnessRange": 3,
+      "clarity": 8
+    }
+  },
+  {
+    "id": "SCL-CL-004",
+    "slug": "vv2-sony-asia",
+    "name": "SCL-CL-004: Vivid2 · Sony Asia",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 5600
+    },
+    "tags": [
+      "creative-look",
+      "vivid2",
+      "asia-pacific"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "VV2",
+      "contrast": -3,
+      "highlights": 0,
+      "shadows": 2,
+      "fade": 4,
+      "saturation": 0,
+      "sharpness": 4,
+      "sharpnessRange": 3,
+      "clarity": 1
+    }
+  },
+  {
+    "id": "SCL-CL-005",
+    "slug": "vv2-jonpoon-jpg",
+    "name": "SCL-CL-005: Vivid2 · Jonpoon.jpg",
+    "whiteBalance": {
+      "mode": "auto",
+      "auto": "AWB",
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 1
+        },
+        "gm": {
+          "axis": "G",
+          "amount": 1
+        }
+      }
+    },
+    "tags": [
+      "creative-look",
+      "vivid2",
+      "singapore"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "VV2",
+      "contrast": 1,
+      "highlights": 1,
+      "shadows": 2,
+      "fade": 1,
+      "saturation": 0,
+      "sharpness": 4,
+      "sharpnessRange": 4,
+      "clarity": 8
+    }
+  },
+  {
+    "id": "SCL-CL-006",
+    "slug": "vv2-jonpoon-jpg-2",
+    "name": "SCL-CL-006: Vivid2 · Jonpoon.jpg 2",
+    "whiteBalance": {
+      "mode": "preset",
+      "preset": "Daylight"
+    },
+    "tags": [
+      "creative-look",
+      "vivid2",
+      "singapore"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "VV2",
+      "contrast": 2,
+      "highlights": 4,
+      "shadows": 2,
+      "fade": 0,
+      "saturation": 2,
+      "sharpness": 4,
+      "sharpnessRange": 3,
+      "clarity": 8
+    }
+  },
+  {
+    "id": "SCL-CL-007",
+    "slug": "vv-khong",
+    "name": "SCL-CL-007: Vivid · Khong ខុង",
+    "whiteBalance": {
+      "mode": "preset",
+      "preset": "Daylight"
+    },
+    "tags": [
+      "creative-look",
+      "vivid",
+      "cambodia"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "VV",
+      "contrast": 0,
+      "highlights": 0,
+      "shadows": 0,
+      "fade": 0,
+      "saturation": 0,
+      "sharpness": 4,
+      "sharpnessRange": 3,
+      "clarity": 1
+    }
+  },
+  {
+    "id": "SCL-CL-008",
+    "slug": "vv-filmreel",
+    "name": "SCL-CL-008: Vivid · Filmreel",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 5000
+    },
+    "tags": [
+      "creative-look",
+      "vivid",
+      "cambodia"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "VV",
+      "contrast": 0,
+      "highlights": 0,
+      "shadows": 0,
+      "fade": 0,
+      "saturation": 0,
+      "sharpness": 4,
+      "sharpnessRange": 3,
+      "clarity": 1
+    }
+  },
+  {
+    "id": "SCL-CL-009",
+    "slug": "st-sandeeshwara-perera",
+    "name": "SCL-CL-009: Standard · Sandeeshwara Perera",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 5500,
+      "shift": {
+        "ab": {
+          "axis": "B",
+          "amount": 2.5
+        },
+        "gm": {
+          "axis": "G",
+          "amount": 1.5
+        }
+      }
+    },
+    "tags": [
+      "creative-look",
+      "standard",
+      "sri-lanka"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "ST",
+      "contrast": -7,
+      "highlights": 9,
+      "shadows": -9,
+      "fade": 0,
+      "saturation": 1,
+      "sharpness": 3,
+      "sharpnessRange": 3,
+      "clarity": 0
+    }
+  },
+  {
+    "id": "SCL-CL-010",
+    "slug": "st-ravi-ranasinghe",
+    "name": "SCL-CL-010: Standard · Ravi Ranasinghe",
+    "whiteBalance": {
+      "mode": "auto",
+      "auto": "AWB"
+    },
+    "tags": [
+      "creative-look",
+      "standard",
+      "sri-lanka"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "ST",
+      "contrast": -2,
+      "highlights": 0,
+      "shadows": 0,
+      "fade": 0,
+      "saturation": 0,
+      "sharpness": 4,
+      "sharpnessRange": 3,
+      "clarity": 1
+    }
+  },
+  {
+    "id": "SCL-CL-011",
+    "slug": "st-khong",
+    "name": "SCL-CL-011: Standard · Khong ខុង",
+    "whiteBalance": {
+      "mode": "preset",
+      "preset": "Daylight"
+    },
+    "tags": [
+      "creative-look",
+      "standard",
+      "cambodia"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "ST",
+      "contrast": 0,
+      "highlights": 0,
+      "shadows": 0,
+      "fade": 0,
+      "saturation": 0,
+      "sharpness": 4,
+      "sharpnessRange": 3,
+      "clarity": 1
+    }
+  },
+  {
+    "id": "SCL-CL-012",
+    "slug": "st-filmreel",
+    "name": "SCL-CL-012: Standard · Filmreel",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 6000
+    },
+    "tags": [
+      "creative-look",
+      "standard",
+      "cambodia"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "ST",
+      "contrast": -4,
+      "highlights": -7,
+      "shadows": 4,
+      "fade": 0,
+      "saturation": 4,
+      "sharpness": 0,
+      "sharpnessRange": 3,
+      "clarity": 0
+    }
+  },
+  {
+    "id": "SCL-CL-013",
+    "slug": "sh-sony-asia",
+    "name": "SCL-CL-013: Soft Highkey · Sony Asia",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 5600,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 3.5
+        },
+        "gm": {
+          "axis": "G",
+          "amount": 3
+        }
+      }
+    },
+    "tags": [
+      "creative-look",
+      "soft-highkey",
+      "asia-pacific"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "SH",
+      "contrast": -2,
+      "highlights": -5,
+      "shadows": 4,
+      "fade": 5,
+      "saturation": 0,
+      "sharpness": 5,
+      "sharpnessRange": 3,
+      "clarity": 1
+    }
+  },
+  {
+    "id": "SCL-CL-014",
+    "slug": "sh-jonpoon-jpg",
+    "name": "SCL-CL-014: Soft Highkey · Jonpoon.jpg",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 4700,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 6
+        },
+        "gm": {
+          "axis": "G",
+          "amount": 1.75
+        }
+      }
+    },
+    "tags": [
+      "creative-look",
+      "soft-highkey",
+      "singapore"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "SH",
+      "contrast": 0,
+      "highlights": -5,
+      "shadows": -3,
+      "fade": 2,
+      "saturation": 3,
+      "sharpness": 3,
+      "sharpnessRange": 2,
+      "clarity": 3
+    }
+  },
+  {
+    "id": "SCL-CL-015",
+    "slug": "sh-puy",
+    "name": "SCL-CL-015: Soft Highkey · Puy",
+    "whiteBalance": {
+      "mode": "auto",
+      "auto": "AWB"
+    },
+    "tags": [
+      "creative-look",
+      "soft-highkey",
+      "cambodia"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "SH",
+      "contrast": 1,
+      "highlights": -5,
+      "shadows": 0,
+      "fade": 6,
+      "saturation": 0,
+      "sharpness": 4,
+      "sharpnessRange": 3,
+      "clarity": 1
+    }
+  },
+  {
+    "id": "SCL-CL-016",
+    "slug": "sh-jomnot",
+    "name": "SCL-CL-016: Soft Highkey · Jomnot",
+    "whiteBalance": {
+      "mode": "auto",
+      "auto": "AWB"
+    },
+    "tags": [
+      "creative-look",
+      "soft-highkey",
+      "cambodia"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "SH",
+      "contrast": 0,
+      "highlights": 0,
+      "shadows": 0,
+      "fade": 6,
+      "saturation": 0,
+      "sharpness": 4,
+      "sharpnessRange": 3,
+      "clarity": 1
+    }
+  },
+  {
+    "id": "SCL-CL-017",
+    "slug": "se-satheeshan-thiyagaraja",
+    "name": "SCL-CL-017: Sepia · Satheeshan Thiyagaraja",
+    "whiteBalance": {
+      "mode": "auto",
+      "auto": "AWB"
+    },
+    "tags": [
+      "creative-look",
+      "sepia",
+      "sri-lanka",
+      "monochrome"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "SE",
+      "contrast": -3,
+      "highlights": -7,
+      "shadows": -6,
+      "fade": 0,
+      "sharpness": 4,
+      "sharpnessRange": 3,
+      "clarity": 3
+    }
+  },
+  {
+    "id": "SCL-CL-018",
+    "slug": "se-ravi-ranasinghe",
+    "name": "SCL-CL-018: Sepia · Ravi Ranasinghe",
+    "whiteBalance": {
+      "mode": "auto",
+      "auto": "AWB"
+    },
+    "tags": [
+      "creative-look",
+      "sepia",
+      "sri-lanka",
+      "monochrome"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "SE",
+      "contrast": -6,
+      "highlights": -4,
+      "shadows": -4,
+      "fade": 0,
+      "sharpness": 6,
+      "sharpnessRange": 5,
+      "clarity": 1
+    }
+  },
+  {
+    "id": "SCL-CL-019",
+    "slug": "pt-sandeeshwara-perera",
+    "name": "SCL-CL-019: Portrait · Sandeeshwara Perera",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 5500,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 1
+        },
+        "gm": {
+          "axis": "G",
+          "amount": 2
+        }
+      }
+    },
+    "tags": [
+      "creative-look",
+      "portrait",
+      "sri-lanka"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "PT",
+      "contrast": 0,
+      "highlights": -5,
+      "shadows": 5,
+      "fade": 2,
+      "saturation": 2,
+      "sharpness": 3,
+      "sharpnessRange": 3,
+      "clarity": 0
+    }
+  },
+  {
+    "id": "SCL-CL-020",
+    "slug": "in-eranga-siriwardhana",
+    "name": "SCL-CL-020: Instant · Eranga Siriwardhana",
+    "whiteBalance": {
+      "mode": "auto",
+      "auto": "AWB"
+    },
+    "tags": [
+      "creative-look",
+      "instant",
+      "sri-lanka"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "IN",
+      "contrast": 0,
+      "highlights": 0,
+      "shadows": 0,
+      "fade": 3,
+      "saturation": 0,
+      "sharpness": 4,
+      "sharpnessRange": 3,
+      "clarity": 1
+    }
+  },
+  {
+    "id": "SCL-CL-021",
+    "slug": "in-sony-asia",
+    "name": "SCL-CL-021: Instant · Sony Asia",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 6500,
+      "shift": {
+        "ab": {
+          "axis": "B",
+          "amount": 2.5
+        },
+        "gm": {
+          "axis": "M",
+          "amount": 5
+        }
+      }
+    },
+    "tags": [
+      "creative-look",
+      "instant",
+      "asia-pacific"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "IN",
+      "contrast": -3,
+      "highlights": -5,
+      "shadows": 6,
+      "fade": 1,
+      "saturation": 0,
+      "sharpness": 4,
+      "sharpnessRange": 3,
+      "clarity": 1
+    }
+  },
+  {
+    "id": "SCL-CL-022",
+    "slug": "in-sony-asia-2",
+    "name": "SCL-CL-022: Instant · Sony Asia 2",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 5600,
+      "shift": {
+        "ab": {
+          "axis": "B",
+          "amount": 4
+        },
+        "gm": {
+          "axis": "M",
+          "amount": 0.25
+        }
+      }
+    },
+    "tags": [
+      "creative-look",
+      "instant",
+      "asia-pacific"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "IN",
+      "contrast": -3,
+      "highlights": 1,
+      "shadows": 4,
+      "fade": 1,
+      "saturation": 0,
+      "sharpness": 4,
+      "sharpnessRange": 3,
+      "clarity": 1
+    }
+  },
+  {
+    "id": "SCL-CL-023",
+    "slug": "in-jonpoon-jpg",
+    "name": "SCL-CL-023: Instant · Jonpoon.jpg",
+    "whiteBalance": {
+      "mode": "auto",
+      "auto": "AWB",
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 1
+        },
+        "gm": {
+          "axis": "G",
+          "amount": 1
+        }
+      }
+    },
+    "tags": [
+      "creative-look",
+      "instant",
+      "singapore"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "IN",
+      "contrast": 1,
+      "highlights": -5,
+      "shadows": 1,
+      "fade": 2,
+      "saturation": 1,
+      "sharpness": 2,
+      "sharpnessRange": 2,
+      "clarity": 1
+    }
+  },
+  {
+    "id": "SCL-CL-024",
+    "slug": "in-check-in-siemreap",
+    "name": "SCL-CL-024: Instant · Check In Siemreap ដើរលេងសៀមរាប",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 5000,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 3
+        },
+        "gm": {
+          "axis": "G",
+          "amount": 1
+        }
+      }
+    },
+    "tags": [
+      "creative-look",
+      "instant",
+      "cambodia"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "IN",
+      "contrast": 2,
+      "highlights": -3,
+      "shadows": 3,
+      "fade": 2,
+      "saturation": 1,
+      "sharpness": 2,
+      "sharpnessRange": 2,
+      "clarity": 1
+    }
+  },
+  {
+    "id": "SCL-CL-025",
+    "slug": "fl-sandeeshwara-perera",
+    "name": "SCL-CL-025: Film Look · Sandeeshwara Perera",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 5200,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 4
+        },
+        "gm": {
+          "axis": "M",
+          "amount": 3
+        }
+      }
+    },
+    "tags": [
+      "creative-look",
+      "film-look",
+      "sri-lanka"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "FL",
+      "contrast": 2,
+      "highlights": 4,
+      "shadows": 4,
+      "fade": 0,
+      "saturation": 0,
+      "sharpness": 4,
+      "sharpnessRange": 3,
+      "clarity": 1
+    }
+  },
+  {
+    "id": "SCL-CL-026",
+    "slug": "fl-sandeeshwara-perera-2",
+    "name": "SCL-CL-026: Film Look · Sandeeshwara Perera 2",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 5900,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 3
+        },
+        "gm": {
+          "axis": "M",
+          "amount": 3.25
+        }
+      }
+    },
+    "tags": [
+      "creative-look",
+      "film-look",
+      "sri-lanka"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "FL",
+      "contrast": 0,
+      "highlights": -5,
+      "shadows": 4,
+      "fade": 0,
+      "saturation": 1,
+      "sharpness": 4,
+      "sharpnessRange": 3,
+      "clarity": 0
+    }
+  },
+  {
+    "id": "SCL-CL-027",
+    "slug": "fl-sandeeshwara-perera-3",
+    "name": "SCL-CL-027: Film Look · Sandeeshwara Perera 3",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 5200,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 1
+        },
+        "gm": {
+          "axis": "M",
+          "amount": 1.25
+        }
+      }
+    },
+    "tags": [
+      "creative-look",
+      "film-look",
+      "sri-lanka"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "FL",
+      "contrast": 2,
+      "highlights": -8,
+      "shadows": -5,
+      "fade": 1,
+      "saturation": 0,
+      "sharpness": 4,
+      "sharpnessRange": 3,
+      "clarity": 1
+    }
+  },
+  {
+    "id": "SCL-CL-028",
+    "slug": "fl-lahiru-rumesh",
+    "name": "SCL-CL-028: Film Look · Lahiru Rumesh",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 7600,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 1
+        },
+        "gm": {
+          "axis": "G",
+          "amount": 1.25
+        }
+      }
+    },
+    "tags": [
+      "creative-look",
+      "film-look",
+      "sri-lanka"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "FL",
+      "contrast": 2,
+      "highlights": -7,
+      "shadows": 0,
+      "fade": 1,
+      "saturation": -1,
+      "sharpness": 4,
+      "sharpnessRange": 3,
+      "clarity": 2
+    }
+  },
+  {
+    "id": "SCL-CL-029",
+    "slug": "fl-isuru-mudalige",
+    "name": "SCL-CL-029: Film Look · Isuru Mudalige",
+    "whiteBalance": {
+      "mode": "auto",
+      "auto": "AWB"
+    },
+    "tags": [
+      "creative-look",
+      "film-look",
+      "sri-lanka"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "FL",
+      "contrast": -5,
+      "highlights": -4,
+      "shadows": -5,
+      "fade": 0,
+      "saturation": 6,
+      "sharpness": 8,
+      "sharpnessRange": 2,
+      "clarity": 5
+    }
+  },
+  {
+    "id": "SCL-CL-030",
+    "slug": "fl-sony-asia",
+    "name": "SCL-CL-030: Film Look · Sony Asia",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 5600
+    },
+    "tags": [
+      "creative-look",
+      "film-look",
+      "asia-pacific"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "FL",
+      "contrast": -3,
+      "highlights": 0,
+      "shadows": 2,
+      "fade": 4,
+      "saturation": 0,
+      "sharpness": 4,
+      "sharpnessRange": 3,
+      "clarity": 1
+    }
+  },
+  {
+    "id": "SCL-CL-031",
+    "slug": "fl-sony-asia-2",
+    "name": "SCL-CL-031: Film Look · Sony Asia 2",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 5600,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 2.5
+        },
+        "gm": {
+          "axis": "G",
+          "amount": 2.5
+        }
+      }
+    },
+    "tags": [
+      "creative-look",
+      "film-look",
+      "asia-pacific"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "FL",
+      "contrast": 2,
+      "highlights": -5,
+      "shadows": -3,
+      "fade": 2,
+      "saturation": -1,
+      "sharpness": 4,
+      "sharpnessRange": 3,
+      "clarity": 3
+    }
+  },
+  {
+    "id": "SCL-CL-032",
+    "slug": "fl-jonpoon-jpg",
+    "name": "SCL-CL-032: Film Look · jonpoon.jpg",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 4700,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 6
+        },
+        "gm": {
+          "axis": "G",
+          "amount": 1.75
+        }
+      }
+    },
+    "tags": [
+      "creative-look",
+      "film-look",
+      "singapore"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "FL",
+      "contrast": 0,
+      "highlights": -5,
+      "shadows": -3,
+      "fade": 2,
+      "saturation": 3,
+      "sharpness": 2,
+      "sharpnessRange": 2,
+      "clarity": 3
+    }
+  },
+  {
+    "id": "SCL-CL-033",
+    "slug": "fl-mardy-suong",
+    "name": "SCL-CL-033: Film Look · Mardy Suong",
+    "whiteBalance": {
+      "mode": "preset",
+      "preset": "Daylight"
+    },
+    "tags": [
+      "creative-look",
+      "film-look",
+      "cambodia"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "FL",
+      "contrast": 0,
+      "highlights": 0,
+      "shadows": 0,
+      "fade": 0,
+      "saturation": 0,
+      "sharpness": 4,
+      "sharpnessRange": 3,
+      "clarity": 1
+    }
+  },
+  {
+    "id": "SCL-CL-034",
+    "slug": "fl-mardy-suong-2",
+    "name": "SCL-CL-034: Film Look · Mardy Suong 2",
+    "whiteBalance": {
+      "mode": "auto",
+      "auto": "AWB"
+    },
+    "tags": [
+      "creative-look",
+      "film-look",
+      "cambodia"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "FL",
+      "contrast": 0,
+      "highlights": 0,
+      "shadows": 0,
+      "fade": 0,
+      "saturation": 0,
+      "sharpness": 4,
+      "sharpnessRange": 3,
+      "clarity": 1
+    }
+  },
+  {
+    "id": "SCL-CL-035",
+    "slug": "fl-khong",
+    "name": "SCL-CL-035: Film Look · Khong ខុង",
+    "whiteBalance": {
+      "mode": "auto",
+      "auto": "AWB"
+    },
+    "tags": [
+      "creative-look",
+      "film-look",
+      "cambodia"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "FL",
+      "contrast": 1,
+      "highlights": 1,
+      "shadows": -4,
+      "fade": 0,
+      "saturation": -1,
+      "sharpness": 5,
+      "sharpnessRange": 3,
+      "clarity": 2
+    }
+  },
+  {
+    "id": "SCL-CL-036",
+    "slug": "fl-hea-kimhong",
+    "name": "SCL-CL-036: Film Look · Hea Kimhong ហ៊ាន គីមហុង",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 5000,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 3
+        },
+        "gm": {
+          "axis": "G",
+          "amount": 1
+        }
+      }
+    },
+    "tags": [
+      "creative-look",
+      "film-look",
+      "cambodia"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "FL",
+      "contrast": 0,
+      "highlights": 2,
+      "shadows": 0,
+      "fade": 0,
+      "saturation": 0,
+      "sharpness": 4,
+      "sharpnessRange": 3,
+      "clarity": 1
+    }
+  },
+  {
+    "id": "SCL-CL-037",
+    "slug": "fl-filmreel",
+    "name": "SCL-CL-037: Film Look · Filmreel",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 6500
+    },
+    "tags": [
+      "creative-look",
+      "film-look",
+      "cambodia"
+    ],
+    "published": true,
+    "format": "cl",
+    "settings": {
+      "look": "FL",
+      "contrast": -4,
+      "highlights": -7,
+      "shadows": 4,
+      "fade": 0,
+      "saturation": 4,
+      "sharpness": 0,
+      "sharpnessRange": 3,
+      "clarity": 0
+    }
   }
 ]

@@ -41,6 +41,22 @@ Three traps that have already bitten this dataset:
 - `V/H Balance` is only −2…+2. The legacy dataset shipped `-22`; see
   `LEGACY_CORRECTIONS` in `src/lib/legacy/migrate.ts`.
 
+## Rule 1b — White Balance has three modes, not two
+
+`kelvin` · `auto` (AWB…) · `preset` (Daylight, Cloudy, Shade, Underwater Auto…).
+All three take an optional shift, and both recipe formats share all of it.
+Presets are `WB_PRESETS` in `constants.ts`, cited to the a7 IV guide
+(`TP1000640840`). `Custom 1-3` are excluded on purpose — they replay a white
+card measured in one room and mean nothing to a reader.
+
+`WB_AUTO_MODES` uses the **legacy dataset's** spelling (`AWB (Priority White)`),
+not Sony's (`Auto: White`). Do not "fix" it: shipping rows, a CHECK constraint
+and the redirect map all carry those exact strings.
+
+Adding an enum value to Postgres needs **its own migration file** — a value
+cannot be used in the transaction that created it, which is why `0005` adds
+`preset` to `wb_mode` and `0006` is what uses it.
+
 ## Rule 2 — A recipe is exactly one format
 
 Picture Profile and Creative Look are **mutually exclusive on the camera**
@@ -105,11 +121,23 @@ Creative Look or supporting a new body touches `constants.ts` only. Use the
 ```
 src/lib/camera/     constants.ts · schema.ts · format.ts   ← source of truth
 src/lib/legacy/     one-shot migration from sonycolorlab (delete after cutover)
+src/lib/sony-asia/  import.ts — Creative Look library from Sony's Alpha Recipes
 src/lib/recipes/    row.ts (Recipe ⇄ DB row) · Supabase data access
 supabase/migrations/  SQL; runs for real against PGlite in migration.test.ts
 src/app/            App Router routes
 data/               recipes.seed.json (generated — never hand-edit)
 ```
+
+The catalogue is two libraries in one table: Picture Profile recipes migrated
+from sonycolorlab, and Creative Look recipes imported from a scrape of Sony's
+Alpha Recipes microsite. Both come from **untrusted input parsed against
+`constants.ts`** — `LEGACY_CORRECTIONS` and `SCRAPE_CORRECTIONS` record every
+fix by name and reason. A row the source does not fully state is **skipped and
+reported**, never completed with a plausible value: `Default Settings` has no
+published expansion, and a Kelvin *range* is not a Kelvin.
+
+`npm run seed:emit` prints the skips. Read them — they are the to-do list for
+whatever the source failed to publish.
 
 The SQL CHECK constraints restate some bounds from `constants.ts`. That is
 deliberate defence in depth, and `sql-drift.test.ts` fails if the two disagree —

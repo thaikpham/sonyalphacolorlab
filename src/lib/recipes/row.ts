@@ -14,9 +14,10 @@ export type RecipeRow = {
   slug: string;
   name: string;
   format: 'pp' | 'cl';
-  wb_mode: 'kelvin' | 'auto';
+  wb_mode: 'kelvin' | 'auto' | 'preset';
   wb_kelvin: number | null;
   wb_auto: string | null;
+  wb_preset: string | null;
   wb_shift_ab_axis: 'A' | 'B' | null;
   wb_shift_ab_amount: number | null;
   wb_shift_gm_axis: 'G' | 'M' | null;
@@ -47,10 +48,13 @@ export function fromRow(row: RecipeRow): Recipe {
         }
       : undefined;
 
+  const tail = shift ? { shift } : {};
   const whiteBalance =
     row.wb_mode === 'kelvin'
-      ? { mode: 'kelvin', kelvin: Number(row.wb_kelvin), ...(shift ? { shift } : {}) }
-      : { mode: 'auto', auto: row.wb_auto, ...(shift ? { shift } : {}) };
+      ? { mode: 'kelvin', kelvin: Number(row.wb_kelvin), ...tail }
+      : row.wb_mode === 'preset'
+        ? { mode: 'preset', preset: row.wb_preset, ...tail }
+        : { mode: 'auto', auto: row.wb_auto, ...tail };
 
   const parsed = recipeSchema.safeParse({
     id: row.id,
@@ -83,6 +87,7 @@ export function toRow(recipe: Recipe, legacyId: string | null = null): RecipeRow
     wb_mode: wb.mode,
     wb_kelvin: wb.mode === 'kelvin' ? wb.kelvin : null,
     wb_auto: wb.mode === 'auto' ? wb.auto : null,
+    wb_preset: wb.mode === 'preset' ? wb.preset : null,
     wb_shift_ab_axis: wb.shift?.ab?.axis ?? null,
     wb_shift_ab_amount: wb.shift?.ab?.amount ?? null,
     wb_shift_gm_axis: wb.shift?.gm?.axis ?? null,

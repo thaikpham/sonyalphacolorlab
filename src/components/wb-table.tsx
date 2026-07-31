@@ -1,6 +1,7 @@
 import { WB_EXPLANATIONS, WB_OVERVIEW, type Locale } from '@/lib/camera/explanations';
 import { wbEffects, wbSummary } from '@/lib/camera/effects';
 import type { WhiteBalance } from '@/lib/camera/schema';
+import { wbHeadLabel } from '@/lib/camera/format';
 import { ParamRow } from './settings-table';
 import {
   getKelvinHexColor,
@@ -14,7 +15,7 @@ import {
  * - Shift G/M: G (Green), M (Magenta)
  */
 export function FormattedWb({ wb, className = '' }: { wb: WhiteBalance; className?: string }) {
-  const kelvinStr = wb.mode === 'kelvin' ? `${wb.kelvin}K` : wb.auto;
+  const kelvinStr = wbHeadLabel(wb);
   const kelvinHex = wb.mode === 'kelvin' ? getKelvinHexColor(wb.kelvin) : '#ffffff';
 
   const ab = wb.shift?.ab;
@@ -101,7 +102,7 @@ function WbConclusion({ wb, locale }: { wb: WhiteBalance; locale: Locale }) {
 export function WbTable({ wb, locale = 'en' }: { wb: WhiteBalance; locale?: Locale }) {
   const fx = wbEffects(wb);
 
-  const temperature = wb.mode === 'kelvin' ? `${wb.kelvin}K` : wb.auto;
+  const temperature = wbHeadLabel(wb);
   const kelvinHex = wb.mode === 'kelvin' ? getKelvinHexColor(wb.kelvin) : '#ffffff';
   const ab = wb.shift?.ab;
   const gm = wb.shift?.gm;

@@ -5,6 +5,7 @@ import {
   RECIPE_FORMATS,
   WB_AUTO_MODES,
   WB_KELVIN,
+  WB_PRESETS,
   WB_SHIFT_AXIS,
 } from './constants';
 
@@ -65,5 +66,28 @@ describe('SQL / constants drift', () => {
   it('id check constraint matches the app-side id pattern', () => {
     const m = /id ~ '\^SCL-\(PP\|CL\)-\[0-9\]\{3\}\$'/.exec(sql);
     expect(m, 'recipes.id regex constraint not found or changed').not.toBeNull();
+  });
+
+  // The preset list arrived after 0001, so it lives in its own migration.
+  it('wb_preset check matches WB_PRESETS', () => {
+    const presetSql = readFileSync(
+      'supabase/migrations/0006_wb_light_source_presets.sql',
+      'utf8',
+    );
+    const m = /wb_preset in \(([\s\S]*?)\)\)/.exec(presetSql);
+    expect(m, 'wb_preset check constraint not found').not.toBeNull();
+    const values = [...m![1].matchAll(/'([^']*)'/g)].map((x) => x[1]);
+    expect(values).toEqual([...WB_PRESETS]);
+  });
+
+  it('wb_mode enum covers every mode the schema can produce', () => {
+    // 0001 declares two, 0005 adds the third. Miss one and rows the app
+    // considers valid are rejected by the database at insert time.
+    const declared = [
+      ...sqlEnum('wb_mode'),
+      ...[...readFileSync('supabase/migrations/0005_wb_preset_enum_value.sql', 'utf8')
+        .matchAll(/add value if not exists '([^']*)'/g)].map((x) => x[1]),
+    ];
+    expect(declared.sort()).toEqual(['auto', 'kelvin', 'preset']);
   });
 });
