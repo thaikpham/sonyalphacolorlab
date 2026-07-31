@@ -9,11 +9,10 @@
       "autoPort": false
     },
     {
-      "// ": "Seed-only preview: blanks the Supabase vars so the app takes its seed fallback, which is the only way to see freshly emitted recipes before they are pushed. Real process env wins over .env.local in Next, so this leaves that file untouched. Port 3001 keeps 3000 free for the OAuth callback.",
+      "// ": "Seed-only preview: the only way to see freshly emitted recipes before they are pushed. isSupabaseConfigured() needs BOTH url and anon key, so blanking just the key is enough to force the seed fallback — and it MUST be just the key, because publicImageUrl() builds Storage URLs from NEXT_PUBLIC_SUPABASE_URL. Blank that too and every recipe photo silently disappears. The bucket is public, so the images still load with no key. Real process env wins over .env.local in Next, so this leaves that file untouched. Port 3001 keeps 3000 free for the OAuth callback.",
       "name": "alpha-colorlab-seed",
       "runtimeExecutable": "env",
       "runtimeArgs": [
-        "NEXT_PUBLIC_SUPABASE_URL=",
         "NEXT_PUBLIC_SUPABASE_ANON_KEY=",
         "npm",
         "run",

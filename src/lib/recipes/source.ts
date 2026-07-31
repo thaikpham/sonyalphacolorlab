@@ -156,14 +156,31 @@ const pickDescription = (
   locale: Locale,
 ): string => lookup.get(`${id}:${locale}`) ?? lookup.get(`${id}:en`) ?? '';
 
+/**
+ * Recipes with a photograph first, everything else after in its existing order.
+ *
+ * The grid falls back to a derived colour field when a recipe has no photo, and
+ * most of the catalogue has none — 11 of the 46 Picture Profile recipes, and
+ * none of the Creative Look ones until their images are migrated to Storage.
+ * Ordered by id, that put a long run of colour fields at the top and the page
+ * read as though the images were broken.
+ *
+ * `sort` is stable, so this is a partition, not a reshuffle: within each group
+ * the id order is untouched and the page stays deterministic.
+ */
+export const photosFirst = <T extends { images: string[] }>(views: T[]): T[] =>
+  views.slice().sort((a, b) => (b.images.length > 0 ? 1 : 0) - (a.images.length > 0 ? 1 : 0));
+
 export async function listRecipes(
   locale: Locale = 'en',
   filters: RecipeFilters = {},
 ): Promise<RecipeView[]> {
   const seed = () =>
-    seedRecipes
-      .filter((r) => r.published && matches(r, filters))
-      .map((r) => toView(r, r.legacyId, pickDescription(seedDescriptions, r.id, locale)));
+    photosFirst(
+      seedRecipes
+        .filter((r) => r.published && matches(r, filters))
+        .map((r) => toView(r, r.legacyId, pickDescription(seedDescriptions, r.id, locale))),
+    );
 
   if (!isSupabaseConfigured()) return seed();
 
@@ -184,8 +201,10 @@ export async function listRecipes(
   if (filters.q) rows = rows.filter((row) => matchesQuery(fromRow(row), filters.q!));
 
   const lookup = await loadTranslations(rows.map((r) => r.id));
-  return rows.map((row) =>
-    toView(fromRow(row), row.legacy_id, pickDescription(lookup, row.id, locale)),
+  return photosFirst(
+    rows.map((row) =>
+      toView(fromRow(row), row.legacy_id, pickDescription(lookup, row.id, locale)),
+    ),
   );
   }, seed);
 }
