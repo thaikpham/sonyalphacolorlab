@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# nested workspaces
+cheese-booth-main/
+sonylivesop-main/

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState, Suspense } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
@@ -59,19 +60,13 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
   const [isHidden, setIsHidden] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(hasActiveFilters);
   const [isEcosystemOpen, setIsEcosystemOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [query, setQuery] = useState(currentQ);
   const inputRef = useRef<HTMLInputElement>(null);
   const ecosystemRef = useRef<HTMLDivElement>(null);
 
-  // Close ecosystem dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (ecosystemRef.current && !ecosystemRef.current.contains(e.target as Node)) {
-        setIsEcosystemOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    setMounted(true);
   }, []);
 
   /**
@@ -148,15 +143,20 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
       } else if (e.key === '/' && !isTargetEditable) {
         e.preventDefault();
         setIsSearchOpen(true);
-      } else if (e.key === 'Escape' && isSearchOpen) {
-        setIsSearchOpen(false);
-        inputRef.current?.blur();
+      } else if (e.key === 'Escape') {
+        if (isSearchOpen) {
+          setIsSearchOpen(false);
+          inputRef.current?.blur();
+        }
+        if (isEcosystemOpen) {
+          setIsEcosystemOpen(false);
+        }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isSearchOpen]);
+  }, [isSearchOpen, isEcosystemOpen]);
 
   const updateFilters = useCallback(
     (patch: { q?: string; format?: string; look?: string; tag?: string }) => {
@@ -214,7 +214,8 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
   };
 
   return (
-    <header
+    <>
+      <header
       className={`sticky top-0 z-40 transition-transform duration-300 ease-in-out focus-within:translate-y-0 ${
         isHidden && !isSearchOpen ? '-translate-y-full' : 'translate-y-0'
       }`}
@@ -227,8 +228,8 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
         >
           {/* Main Top Header Line */}
           <div className="flex items-center justify-between gap-2.5 sm:gap-4">
-            {/* Custom Brand Logo & Sony Alpha Ecosystem Dropdown */}
-            <div className="relative flex items-center gap-1.5 sm:gap-2 shrink-0" ref={ecosystemRef}>
+            {/* Custom Brand Logo & 4-Square Ecosystem Launcher */}
+            <div className="relative flex items-center gap-3 sm:gap-4 shrink-0" ref={ecosystemRef}>
               <Link
                 href="/"
                 className="group flex items-center transition-transform duration-300 hover:scale-105 active:scale-95"
@@ -243,112 +244,41 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                 />
               </Link>
 
-              {/* Ecosystem Dropdown Trigger Button */}
+              {/* 4-Square Grid Expand Button (Bigger Rounded Square) */}
               <button
                 type="button"
-                onClick={() => setIsEcosystemOpen((prev) => !prev)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsEcosystemOpen((prev) => !prev);
+                }}
                 aria-expanded={isEcosystemOpen}
-                aria-label="Sony Alpha Ecosystem Apps"
+                aria-label="Hệ sinh thái Sony Alpha"
                 title="Hệ sinh thái Sony Alpha"
-                className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-full glass-flat text-[10px] sm:text-[11px] font-bold text-white/80 hover:text-white hover:bg-white/20 transition-all duration-300 cursor-pointer shadow-sm border border-white/10 group"
+                className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl transition-all duration-300 cursor-pointer border flex items-center justify-center shrink-0 group ${
+                  isEcosystemOpen
+                    ? 'bg-white/20 text-white border-white/35 shadow-[0_0_20px_rgba(255,255,255,0.25)] scale-105'
+                    : 'glass-flat text-white/80 hover:text-white hover:bg-white/20 border-white/15 hover:border-white/30'
+                }`}
               >
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-                <span className="eyebrow text-[9px] sm:text-[10px] tracking-wider text-white/90 font-mono">ECOSYSTEM</span>
+                {/* 4-Square Grid SVG Icon (2x2 squares) */}
                 <svg
-                  className={`w-2.5 h-2.5 sm:w-3 sm:h-3 text-white/70 transition-transform duration-300 ${
-                    isEcosystemOpen ? 'rotate-180 text-white' : ''
+                  className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-300 ${
+                    isEcosystemOpen ? 'rotate-90 text-white' : 'group-hover:scale-110'
                   }`}
+                  viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  viewBox="0 0 24 24"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                  <rect x="3" y="3" width="7" height="7" rx="1.5" />
+                  <rect x="14" y="3" width="7" height="7" rx="1.5" />
+                  <rect x="3" y="14" width="7" height="7" rx="1.5" />
+                  <rect x="14" y="14" width="7" height="7" rx="1.5" />
                 </svg>
               </button>
-
-              {/* Ecosystem Dropdown Popover Menu */}
-              {isEcosystemOpen && (
-                <div className="absolute top-full left-0 mt-3 w-72 sm:w-80 rounded-2xl glass p-3 shadow-[0_16px_45px_rgba(0,0,0,0.85)] border border-white/15 z-50 animate-fade-in flex flex-col gap-2 bg-black/90 backdrop-blur-2xl">
-                  <div className="px-2 py-1 border-b border-white/10 flex items-center justify-between">
-                    <span className="eyebrow text-[10px] tracking-widest text-ink-muted uppercase font-bold">
-                      HỆ SINH THÁI SONY ALPHA
-                    </span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-white/60 font-mono">
-                      3 DỰ ÁN
-                    </span>
-                  </div>
-
-                  <div className="flex flex-col gap-1.5">
-                    {/* App 1: ColorLab 2.0 (Current App) */}
-                    <div className="flex items-center gap-3 p-2.5 rounded-xl bg-white/10 border border-white/20">
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-rose-500 flex items-center justify-center text-black font-extrabold text-sm shrink-0 shadow-md">
-                        α
-                      </div>
-                      <div className="flex flex-col min-w-0 flex-1">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-white">ColorLab 2.0</span>
-                          <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold">
-                            Đang xem
-                          </span>
-                        </div>
-                        <span className="text-[10px] text-white/60 truncate">Sony Alpha Colour Recipes & WB Shift</span>
-                      </div>
-                    </div>
-
-                    {/* App 2: CheeseBooth */}
-                    <a
-                      href="https://cheesebooth.vercel.app/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => setIsEcosystemOpen(false)}
-                      className="group/item flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/10 border border-transparent hover:border-white/15 transition-all cursor-pointer"
-                    >
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-black font-bold text-sm shrink-0 shadow-md group-hover/item:scale-110 transition-transform">
-                        📸
-                      </div>
-                      <div className="flex flex-col min-w-0 flex-1">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-white/90 group-hover/item:text-white transition-colors">
-                            CheeseBooth
-                          </span>
-                          <svg className="w-3.5 h-3.5 text-white/40 group-hover/item:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                          </svg>
-                        </div>
-                        <span className="text-[10px] text-white/50 group-hover/item:text-white/80 transition-colors truncate">
-                          Smart Photobooth & Live Capture app
-                        </span>
-                      </div>
-                    </a>
-
-                    {/* App 3: Live Stream SOP */}
-                    <a
-                      href="https://sonylivesop.vercel.app/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => setIsEcosystemOpen(false)}
-                      className="group/item flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/10 border border-transparent hover:border-white/15 transition-all cursor-pointer"
-                    >
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-md group-hover/item:scale-110 transition-transform">
-                        🎥
-                      </div>
-                      <div className="flex flex-col min-w-0 flex-1">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-white/90 group-hover/item:text-white transition-colors">
-                            Live Stream SOP
-                          </span>
-                          <svg className="w-3.5 h-3.5 text-white/40 group-hover/item:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                          </svg>
-                        </div>
-                        <span className="text-[10px] text-white/50 group-hover/item:text-white/80 transition-colors truncate">
-                          Standard Operating Procedures for Sony Alpha
-                        </span>
-                      </div>
-                    </a>
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Center: Search Trigger or Expanded Live Search Form */}
@@ -490,7 +420,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
             </div>
 
             {/* Right Side Controls */}
-            <div className="flex items-center gap-1.5 shrink-0">
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
               <button
                 type="button"
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
@@ -517,9 +447,15 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
             </div>
           </div>
 
-          {/* Expanded Glass Console for Filters & Tags */}
-          {isSearchOpen && (
-            <div className="flex flex-col gap-2 pt-2 animate-fade-in text-xs">
+          {/* Expanded Glass Console for Filters & Tags (Smooth Height Transition) */}
+          <div
+            className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${
+              isSearchOpen
+                ? 'grid-rows-[1fr] opacity-100 pt-2 border-t border-white/10'
+                : 'grid-rows-[0fr] opacity-0 pointer-events-none'
+            }`}
+          >
+            <div className="overflow-hidden flex flex-col gap-2 text-xs">
               {/* Row 1: Format Filters */}
               <div className="flex items-center flex-wrap gap-1.5">
                 <span className="eyebrow text-[11px] text-white/80 uppercase mr-1 w-14 shrink-0 font-bold">
@@ -662,10 +598,80 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                 </div>
               )}
             </div>
-          )}
+          </div>
         </div>
       </div>
     </header>
+
+    {/* Full-Screen Backdrop Blur & Ultra-Minimal iPad Launchpad */}
+    {isEcosystemOpen && mounted && typeof document !== 'undefined' && createPortal(
+      <div className="fixed inset-0 z-[99990] flex flex-col items-center justify-center p-4 sm:p-8">
+        {/* Full Screen Backdrop Blur Overlay */}
+        <div
+          className="absolute inset-0 bg-black/60 backdrop-blur-xl transition-opacity duration-300 cursor-pointer"
+          onClick={() => setIsEcosystemOpen(false)}
+        />
+
+        {/* iPad App Launchpad (Floating Apps without boxes) */}
+        <div className="relative z-[99999] w-full max-w-5xl flex flex-col sm:grid sm:grid-cols-3 gap-8 sm:gap-12 md:gap-16 justify-items-center items-center max-h-[85vh] overflow-y-auto px-4 py-6 scrollbar-none">
+          {/* App 1: ColorLab 2.0 (Current App) */}
+          <div className="group flex flex-col items-center text-center max-w-[240px] animate-subtle-bounce-1">
+            <div className="glow-rotate-halo logo-backlit-bg relative w-32 h-32 sm:w-40 sm:h-40 rounded-[26%] overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.9)] border border-white/10 p-1 sm:p-2 flex items-center justify-center mb-4 group-hover:scale-110 active:scale-95 transition-all duration-300 cursor-default">
+              <Image
+                src="/colorlab-icon.png"
+                alt="ColorLab 2.0 Logo"
+                width={200}
+                height={200}
+                className="w-full h-full object-contain scale-110 sm:scale-115 relative z-10"
+              />
+            </div>
+            <h4 className="text-lg sm:text-xl font-bold text-white tracking-wide mb-1 drop-shadow-md">
+              ColorLab 2.0
+            </h4>
+          </div>
+
+          {/* App 2: CheeseBooth */}
+          <a
+            href="https://cheese-booth.vercel.app/"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => setIsEcosystemOpen(false)}
+            className="group flex flex-col items-center text-center max-w-[240px] cursor-pointer animate-subtle-bounce-2"
+          >
+            <div className="glow-rotate-halo logo-backlit-bg relative w-32 h-32 sm:w-40 sm:h-40 rounded-[26%] overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.9)] border border-white/10 p-4 flex items-center justify-center mb-4 group-hover:scale-110 active:scale-95 transition-all duration-300">
+              <Image
+                src="/cheesebooth-icon.png"
+                alt="CheeseBooth Logo"
+                width={200}
+                height={200}
+                className="w-full h-full object-contain relative z-10"
+              />
+            </div>
+            <h4 className="text-lg sm:text-xl font-bold text-white group-hover:text-amber-300 transition-colors tracking-wide mb-1 drop-shadow-md">
+              CheeseBooth
+            </h4>
+          </a>
+
+          {/* App 3: Live Stream SOP */}
+          <a
+            href="https://sonylivesop.vercel.app/"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => setIsEcosystemOpen(false)}
+            className="group flex flex-col items-center text-center max-w-[240px] cursor-pointer animate-subtle-bounce-3"
+          >
+            <div className="glow-rotate-halo logo-backlit-bg relative w-32 h-32 sm:w-40 sm:h-40 rounded-[26%] overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.9)] border border-white/10 flex items-center justify-center text-5xl sm:text-6xl mb-4 group-hover:scale-110 active:scale-95 transition-all duration-300">
+              <span className="relative z-10">🎥</span>
+            </div>
+            <h4 className="text-lg sm:text-xl font-bold text-white group-hover:text-blue-300 transition-colors tracking-wide mb-1 drop-shadow-md">
+              Live Stream SOP
+            </h4>
+          </a>
+        </div>
+      </div>,
+      document.body
+    )}
+  </>
   );
 }
 
