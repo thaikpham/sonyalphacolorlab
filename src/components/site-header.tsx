@@ -620,9 +620,9 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
               <Image
                 src="/colorlab-icon.png"
                 alt="ColorLab 2.0 Logo"
-                width={200}
-                height={200}
-                className="w-full h-full object-contain scale-110 sm:scale-115 relative z-10"
+                width={150}
+                height={150}
+                className="w-full h-full object-contain relative z-10"
               />
             </div>
             <h4 className="text-lg sm:text-xl font-bold text-white tracking-wide mb-1 drop-shadow-md">
