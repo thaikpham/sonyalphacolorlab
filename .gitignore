@@ -40,6 +40,3 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# nested workspaces
-cheese-booth-main/
-sonylivesop-main/
