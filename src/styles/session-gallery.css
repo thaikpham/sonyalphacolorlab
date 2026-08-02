@@ -127,8 +127,23 @@
   border-color: rgba(255, 148, 148, 0.18);
 }
 
+/* This referenced `capture-outcome-spin`, which is defined nowhere in the
+   codebase — an animation naming an unknown keyframes set is simply dropped, so
+   the spinner a customer stares at while their photos upload never turned.
+   session-gallery.css is loaded on its own route and cannot rely on
+   capture-enterprise.css being present, so the keyframes live here. */
+@keyframes session-gallery-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .session-gallery-spinner {
-  animation: capture-outcome-spin 0.9s linear infinite;
+  animation: session-gallery-spin 0.9s linear infinite;
 }
 
 .session-gallery-content {

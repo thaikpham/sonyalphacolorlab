@@ -178,6 +178,13 @@ select {
   font-family: var(--font-mono);
 }
 
+/* Deliberate override of the shared `.eyebrow` in @colorlab/tokens. A kiosk is
+   read at arm's length, not at desk distance, so the label runs larger and far
+   more widely tracked than on the web apps, and takes the app accent rather
+   than a neutral ink.
+   base.css is imported after the token files, so this wins. It changes exactly
+   three shared properties — font-size, letter-spacing, color — and inherits
+   font-family, font-weight and text-transform from the shared rule. */
 .eyebrow {
   margin: 0 0 16px;
   font-size: 0.78rem;

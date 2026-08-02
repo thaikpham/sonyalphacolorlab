@@ -1,0 +1,62 @@
+/* GENERATED FILE — DO NOT EDIT.
+ *
+ * Source: packages/colorlab-tokens/src/tokens.ts
+ * Regenerate: npm run tokens:emit
+ *
+ * A drift test in each app fails if this file is edited by hand or falls
+ * behind the source, so an edit here is reverted by the next CI run at best
+ * and silently diverges the ecosystem at worst.
+ */
+
+:root {
+  /* Surfaces, darkest to lightest. `void` is the page, `base` a panel, `raised` a
+     card on that panel, `edge` a hairline. Dark only by design: recipes are
+     judged by their colour and a light surface changes how every accent reads. */
+  --color-void: oklch(13% 0.012 265);
+  --color-base: oklch(16% 0.014 265);
+  --color-raised: oklch(21% 0.016 265);
+  --color-edge: oklch(32% 0.018 265);
+
+  /* Text, in three weights of attention — and three is the floor, not a
+     stylistic choice. Measured against the #040406 page: ink 11.7:1,
+     ink-muted 11.7:1, ink-faint 7.1:1, all clearing WCAG AA. A fourth, dimmer
+     step is what everyone reaches for next; Live SOP had one (Tailwind's
+     gray-500, L55%) and it measured 4.24:1 — under the 4.5:1 AA floor, on
+     text set at 9px. Do not add a step below ink-faint. If a label needs to
+     recede further, reduce its size or weight, not its contrast. */
+  --color-ink: oklch(98% 0.004 265);
+  --color-ink-muted: oklch(82% 0.012 265);
+  --color-ink-faint: oklch(68% 0.014 265);
+
+  /* Signal colours, named for meaning. Use with opacity modifiers
+     (bg-community/15, border-proposal/30) rather than reaching for a
+     neighbouring step on some other scale. */
+  --color-community: oklch(78% 0.19 155);
+  --color-proposal: oklch(72% 0.20 305);
+  --color-ai: oklch(83% 0.16 85);
+  --color-danger: oklch(70% 0.19 25);
+  --color-heart: oklch(68% 0.21 15);
+
+  /* Font stacks. The family names are what @font-face declares; each app
+     supplies the faces itself, latin + vietnamese subsets only — never
+     latin-ext, which Lighthouse measured at ~330KB and +2s LCP for languages
+     nothing in this ecosystem is written in. */
+  --font-sans: 'Noto Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Noto Sans Display', 'Noto Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Noto Sans Mono', ui-monospace, monospace;
+
+  /* The one radius the glass primitive uses. */
+  --radius-glass: 1.125rem;
+
+  /* Beyond Tailwind's default 2xl (96rem). Declared as tokens rather than
+     written inline as `min-[2100px]:` — Tailwind v4 silently generates no rule
+     for that arbitrary form, so a column count just never changes. */
+  --breakpoint-3xl: 131.25rem;
+  --breakpoint-4xl: 175rem;
+
+  /* Fluid layout rhythm and the 44px minimum touch target. */
+  --layout-touch-target: 44px;
+  --layout-shell-padding: clamp(18px, 2vw, 34px);
+  --layout-gap: clamp(14px, 1.4vw, 24px);
+  --layout-gap-tight: clamp(10px, 1vw, 16px);
+}

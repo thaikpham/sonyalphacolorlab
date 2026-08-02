@@ -88,6 +88,35 @@ function normalizeDeviceLabel(label: string): string {
   return label.trim().toLowerCase()
 }
 
+/**
+ * Third-party virtual cameras. These present themselves as ordinary video
+ * inputs, and several of them hold the physical camera open while they run, so
+ * picking one can make the real device unopenable.
+ *
+ * Sony's own Imaging Edge is deliberately NOT in this list: it is scored
+ * separately below as a low-priority Sony fallback, because an operator with
+ * nothing else should still be able to use it.
+ *
+ * Note this app *deprioritises* virtual sources where Sony Live SOP hides them
+ * outright. That is a policy difference, not drift: a booth may be the only
+ * machine at the venue and must show something, while the SOP demo can afford
+ * to insist on a real camera. See sonylivesop-main/src/lib/camera-source.ts.
+ */
+const VIRTUAL_CAMERA_PATTERNS = [
+  'obs virtual',
+  'virtual camera',
+  'snap camera',
+  'droidcam',
+  'epoccam',
+  'ivcam',
+  'iriun',
+  'xsplit vcam',
+] as const
+
+function isVirtualCameraLabel(normalized: string): boolean {
+  return VIRTUAL_CAMERA_PATTERNS.some((pattern) => normalized.includes(pattern))
+}
+
 function scoreSonyPreference(label: string): number {
   const normalized = normalizeDeviceLabel(label)
 
@@ -111,6 +140,15 @@ function scoreSonyPreference(label: string): number {
     // If it's Imaging Edge, it's a fallback (low priority)
     if (normalized.includes('imaging edge')) return 5
     return 2
+  }
+
+  // 4. LAST RESORT: third-party virtual cameras. Ranked below an unknown
+  //    physical device (10) rather than excluded, so a booth with nothing else
+  //    plugged in still has a picture. Before this tier existed they scored 10
+  //    too, and the tie was broken alphabetically — which is how
+  //    "DroidCam Source 3" came to beat "Integrated Camera".
+  if (isVirtualCameraLabel(normalized)) {
+    return 20
   }
 
   return 10
