@@ -1,35 +1,36 @@
 import { useState } from 'react';
+import { Icon, type IconName } from './Icon';
 
 interface FAQItem {
   question: string;
   answer: string;
   explanation: string;
   category: 'Camera' | 'Lens' | 'Audio' | 'Setup';
-  icon: string;
+  icon: IconName;
   source?: string;
 }
 
 const FAQCard: React.FC<{ item: FAQItem; isOpen: boolean; onToggle: () => void }> = ({ item, isOpen, onToggle }) => (
-  <div className={`faq-gradient border rounded-2xl transition-all duration-300 overflow-hidden ${isOpen ? 'border-purple-500/40 ring-1 ring-purple-500/10' : 'border-white/5 hover:border-white/20'}`}>
+  <div className={`faq-gradient border rounded-2xl transition-all duration-300 overflow-hidden ${isOpen ? 'border-accent-deep/40 ring-1 ring-accent-deep/10' : 'border-white/5 hover:border-white/20'}`}>
     <button 
       onClick={onToggle}
       className="w-full text-left p-5 flex items-start gap-4 focus:outline-none"
     >
       <div className={`w-8 h-8 rounded-lg shrink-0 flex items-center justify-center ${
-        item.category === 'Camera' ? 'bg-blue-500/10 text-blue-400' :
-        item.category === 'Audio' ? 'bg-orange-500/10 text-orange-400' :
-        item.category === 'Lens' ? 'bg-yellow-500/10 text-yellow-400' : 'bg-purple-500/10 text-purple-400'
+        item.category === 'Camera' ? 'bg-info/10 text-info-soft' :
+        item.category === 'Audio' ? 'bg-warning/10 text-warning-soft' :
+        item.category === 'Lens' ? 'bg-yellow-500/10 text-warning-soft' : 'bg-accent-deep/10 text-accent-mid'
       }`}>
-        <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
+        <Icon name={item.icon} className="text-[20px]" />
       </div>
       <div className="flex-1">
         <div className="flex items-center justify-between gap-4">
           <h4 className="font-bold text-white text-xs md:text-sm leading-snug">{item.question}</h4>
-          <span className={`material-symbols-outlined text-white/30 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}>expand_more</span>
+          <Icon name="expand_more" className={`text-white/30 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
         </div>
         <div className="mt-1.5 flex gap-2">
           <span className="text-[8px] font-black uppercase tracking-widest text-white/40 bg-white/5 px-1.5 py-0.5 rounded">{item.category}</span>
-          <span className="text-[8px] font-black uppercase tracking-widest text-purple-400 bg-purple-500/10 px-1.5 py-0.5 rounded">{item.source || 'Sony Wiki'}</span>
+          <span className="text-[8px] font-black uppercase tracking-widest text-accent-mid bg-accent-deep/10 px-1.5 py-0.5 rounded">{item.source || 'Sony Wiki'}</span>
         </div>
       </div>
     </button>
@@ -38,9 +39,9 @@ const FAQCard: React.FC<{ item: FAQItem; isOpen: boolean; onToggle: () => void }
       <div className="px-5 pb-6 animate-fade">
         <div className="h-px bg-gradient-to-r from-white/5 to-transparent mb-5"></div>
         <div className="space-y-4">
-          <div className="bg-white/[0.02] border-l-2 border-purple-500 p-4 rounded-r-xl">
+          <div className="bg-white/[0.02] border-l-2 border-accent-deep p-4 rounded-r-xl">
             <p className="text-white text-xs font-bold mb-2 flex items-center gap-2">
-              <span className="material-symbols-outlined text-[14px] text-purple-400">lightbulb</span>
+              <Icon name="lightbulb" className="text-[14px] text-accent-mid" />
               Giải pháp thực chiến:
             </p>
             <p className="text-xs text-white/80 leading-relaxed">{item.answer}</p>
@@ -119,7 +120,7 @@ export const FAQSection: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-white/[0.06] pb-8">
         <div className="flex flex-col gap-1">
           <h2 className="text-3xl font-bold text-white flex items-center gap-3">
-            <span className="material-symbols-outlined text-purple-400 text-3xl">lightbulb</span>
+            <Icon name="lightbulb" className="text-accent-mid text-3xl" />
             Cơ Sở Tri Thức Kỹ Thuật (FAQ)
           </h2>
           <p className="text-white/40 text-sm max-w-xl">

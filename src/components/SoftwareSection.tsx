@@ -1,17 +1,18 @@
 import { useState } from 'react';
+import { Icon, type IconName } from './Icon';
 
-const EncoderCard: React.FC<{ name: string; desc: string; bestFor: string; icon: string }> = ({ name, desc, bestFor, icon }) => (
+const EncoderCard: React.FC<{ name: string; desc: string; bestFor: string; icon: IconName }> = ({ name, desc, bestFor, icon }) => (
   <div className="glass-card p-6 rounded-3xl flex flex-col h-full">
     <div className="flex items-center gap-3 mb-4">
       <div className="w-10 h-10 rounded-xl bg-white/[0.04] flex items-center justify-center">
-        <span className="material-symbols-outlined text-purple-400 text-xl">{icon}</span>
+        <Icon name={icon} className="text-accent-mid text-xl" />
       </div>
       <span className="text-xs font-bold text-white uppercase tracking-widest">{name}</span>
     </div>
     <p className="text-[11px] text-white/40 leading-relaxed font-medium mb-6 flex-1">{desc}</p>
     <div className="pt-4 border-t border-white/[0.06]">
       <span className="text-[9px] font-bold text-[#444] uppercase tracking-widest block mb-1">Cấu hình khuyến nghị:</span>
-      <span className="text-[10px] font-bold text-purple-300 uppercase tracking-tight">{bestFor}</span>
+      <span className="text-[10px] font-bold text-accent-soft uppercase tracking-tight">{bestFor}</span>
     </div>
   </div>
 );
@@ -49,8 +50,8 @@ export const SoftwareSection: React.FC = () => {
             {/* Output Panel */}
             <div className="glass-card rounded-[40px] p-8 lg:p-10">
               <div className="flex items-center gap-4 mb-10">
-                <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-purple-400">settings_suggest</span>
+                <div className="w-12 h-12 rounded-2xl bg-accent-deep/10 flex items-center justify-center">
+                  <Icon name="settings_suggest" className="text-accent-mid" />
                 </div>
                 <h3 className="text-xl font-bold text-white tracking-tight">Cấu hình Output & Video (OBS)</h3>
               </div>
@@ -89,9 +90,9 @@ export const SoftwareSection: React.FC = () => {
                 <div key={i} className="space-y-2">
                   <div className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full ${
-                      item.col === 'red' ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]' :
+                      item.col === 'red' ? 'bg-danger shadow-[0_0_8px_rgba(239,68,68,0.5)]' :
                       item.col === 'yellow' ? 'bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.5)]' :
-                      'bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.5)]'
+                      'bg-accent-deep shadow-[0_0_8px_rgba(168,85,247,0.5)]'
                     }`}></div>
                     <h5 className="text-[10px] font-bold text-white/80 uppercase">{item.title}</h5>
                   </div>
@@ -106,32 +107,32 @@ export const SoftwareSection: React.FC = () => {
       {subTab === 'audio' && (
         <div className="glass-card rounded-[40px] p-8 lg:p-10 animate-fade-in">
           <div className="flex items-center gap-4 mb-10">
-            <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center">
-              <span className="material-symbols-outlined text-purple-400">graphic_eq</span>
+            <div className="w-12 h-12 rounded-2xl bg-accent-deep/10 flex items-center justify-center">
+              <Icon name="graphic_eq" className="text-accent-mid" />
             </div>
             <h3 className="text-xl font-bold text-white tracking-tight">Sơ đồ đấu nối tín hiệu Âm Thanh (Audio Signal Chain)</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {[
+            {([
               { icon: 'mic', name: 'Micro Sony C-80', desc: 'Mic thu âm Condenser phòng thu chuyên nghiệp, bắt giọng cực ấm.', detail: 'Yêu cầu nguồn Phantom 48V' },
               { icon: 'cable', name: 'Cáp XLR cao cấp', desc: 'Dây truyền dẫn tín hiệu balanced chống nhiễu tín hiệu vật lý.', detail: 'Kết nối XLR 3-pin tiêu chuẩn' },
               { icon: 'equalizer', name: 'Soundcard Wave XLR', desc: 'Bộ tiền khuếch đại (Preamp) giải mã tín hiệu sang nhạc số USB-C.', detail: 'Gain khuyên dùng: 32dB' },
               { icon: 'computer', name: 'PC / Phần mềm OBS', desc: 'Nhận thiết bị đầu vào âm thanh, áp bộ lọc nén Compressor.', detail: 'Tần số lấy mẫu: 48kHz' },
-            ].map((item, i) => (
+            ] as const).map((item, i) => (
               <div key={i} className="relative">
                 <div className="glass-card p-6 rounded-2xl text-center h-full flex flex-col justify-between">
                   <div>
                     <div className="w-12 h-12 rounded-xl bg-white/[0.03] border border-white/5 flex items-center justify-center mx-auto mb-4">
-                      <span className="material-symbols-outlined text-purple-400">{item.icon}</span>
+                      <Icon name={item.icon} className="text-accent-mid" />
                     </div>
                     <h4 className="text-xs font-bold text-white mb-1">{item.name}</h4>
                     <p className="text-[10px] text-white/40 font-medium leading-relaxed mb-4">{item.desc}</p>
                   </div>
-                  <p className="text-[9px] text-purple-400 font-bold uppercase tracking-wider">{item.detail}</p>
+                  <p className="text-[9px] text-accent-mid font-bold uppercase tracking-wider">{item.detail}</p>
                 </div>
                 {i < 3 && (
                   <div className="hidden md:flex absolute top-1/2 -right-3 -translate-y-1/2 z-10 text-white/20">
-                    <span className="material-symbols-outlined text-lg">arrow_forward</span>
+                    <Icon name="arrow_forward" className="text-lg" />
                   </div>
                 )}
               </div>
@@ -145,7 +146,7 @@ export const SoftwareSection: React.FC = () => {
           <div className="glass-card rounded-[40px] p-8 lg:p-10">
             <div className="flex items-center gap-4 mb-10">
               <div className="w-12 h-12 rounded-2xl bg-[#ff0050]/10 flex items-center justify-center">
-                <span className="material-symbols-outlined text-[#ff0050] text-2xl">music_video</span>
+                <Icon name="music_video" className="text-[#ff0050] text-2xl" />
               </div>
               <h3 className="text-xl font-bold text-white">Thiết lập TikTok Live Studio chuẩn Sony</h3>
             </div>
@@ -188,7 +189,7 @@ export const SoftwareSection: React.FC = () => {
             </div>
             
             <div className="p-6 bg-[#ff0050]/5 rounded-[32px] border border-[#ff0050]/10 flex items-start gap-4">
-              <span className="material-symbols-outlined text-[#ff0050]">lightbulb</span>
+              <Icon name="lightbulb" className="text-[#ff0050]" />
               <p className="text-xs text-white/60 leading-relaxed font-medium">
                 **Quy tắc:** TikTok Studio nhận tín hiệu Camera Sony tốt nhất thông qua **Capture Card (HDMI)**. Để tận dụng các bộ lọc làm đẹp và chuyển cảnh mượt mà, hãy đặt **OBS Virtual Camera** làm đầu vào video cho TikTok Studio.
               </p>
@@ -198,14 +199,14 @@ export const SoftwareSection: React.FC = () => {
           <div className="glass-card rounded-[40px] p-8 lg:p-10 flex flex-col justify-center items-center text-center">
             <div className="max-w-sm">
               <div className="w-20 h-20 rounded-[32px] bg-white/[0.02] flex items-center justify-center mx-auto mb-8 border border-white/[0.06]">
-                <span className="material-symbols-outlined text-4xl text-white/20">admin_panel_settings</span>
+                <Icon name="admin_panel_settings" className="text-4xl text-white/20" />
               </div>
               <h4 className="text-lg font-bold text-white mb-4 tracking-tight">Quyền Quản Trị (Administrator)</h4>
               <p className="text-xs text-white/40 leading-relaxed font-medium mb-8">
                 Để tránh việc luồng phát bị giật, lag hoặc ứng dụng đột ngột treo khi chuyển cảnh livestream, nhân viên kỹ thuật phải luôn khởi chạy cả OBS và TikTok Live Studio bằng quyền Admin.
               </p>
               <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.06] inline-block">
-                <code className="text-[11px] text-purple-300 font-mono">Right Click -&gt; Run as Administrator</code>
+                <code className="text-[11px] text-accent-soft font-mono">Right Click -&gt; Run as Administrator</code>
               </div>
             </div>
           </div>

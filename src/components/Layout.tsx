@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import type { TabId } from '../App';
+import { Icon, type IconName } from './Icon';
 
 interface LayoutProps {
   children: ReactNode;
@@ -19,7 +20,15 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     navigate(`/${targetPath}`);
   };
 
-  const sections = [
+  interface NavItem {
+    id: TabId;
+    label: string;
+    icon: IconName;
+    sub: string;
+    highlight?: boolean;
+  }
+
+  const sections: { title: string; items: NavItem[] }[] = [
     {
       title: "Quy trình Setup Livestream (Staff Only)",
       items: [
@@ -52,8 +61,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="p-8 pb-8">
           <div className="flex items-center gap-3 mb-2">
             <div className="relative">
-              <div className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]"></div>
-              <div className="absolute inset-0 w-2.5 h-2.5 rounded-full bg-red-500 animate-ping opacity-75"></div>
+              <div className="w-2.5 h-2.5 rounded-full bg-danger shadow-[0_0_10px_rgba(239,68,68,0.8)]"></div>
+              <div className="absolute inset-0 w-2.5 h-2.5 rounded-full bg-danger animate-ping opacity-75"></div>
             </div>
             <span className="eyebrow text-[10px] text-white/50 tracking-[0.25em]">Master Console</span>
           </div>
@@ -79,11 +88,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                       : 'text-white/60 hover:bg-white/[0.04] hover:text-white'
                     }`}
                   >
-                    <span className={`material-symbols-outlined text-[24px] transition-all duration-300 ${activeTab === tab.id ? 'scale-110 text-emerald-400' : 'group-hover:text-white/80'} ${tab.highlight && activeTab !== tab.id ? 'text-purple-400/70' : ''}`}>
-                      {tab.icon}
-                    </span>
+                    <Icon name={tab.icon} className={`text-[24px] transition-all duration-300 ${activeTab === tab.id ? 'scale-110 text-success-soft' : 'group-hover:text-white/80'} ${tab.highlight && activeTab !== tab.id ? 'text-accent-mid/70' : ''}`} />
                     <div className="flex flex-col items-start text-left">
-                      <span className={`text-[13px] font-bold tracking-wide transition-colors ${activeTab === tab.id ? 'text-white' : 'group-hover:text-white/90'} ${tab.highlight && activeTab !== tab.id ? 'text-purple-300/90' : ''}`}>{tab.label}</span>
+                      <span className={`text-[13px] font-bold tracking-wide transition-colors ${activeTab === tab.id ? 'text-white' : 'group-hover:text-white/90'} ${tab.highlight && activeTab !== tab.id ? 'text-accent-soft/90' : ''}`}>{tab.label}</span>
                       <span className="eyebrow text-[9px] opacity-40 font-semibold tracking-tight">{tab.sub}</span>
                     </div>
                   </button>
@@ -100,7 +107,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         {/* Dynamic Top Header */}
         <div className="h-20 lg:h-24 px-6 lg:px-12 flex items-center justify-between border-b border-white/[0.08] bg-[#040406]/85 backdrop-blur-2xl z-10 shrink-0">
           <div className="flex items-center gap-4">
-            <span className="material-symbols-outlined text-emerald-400 text-2xl">{currentTab?.icon}</span>
+            <Icon name={currentTab?.icon ?? 'photo_camera'} className="text-success-soft text-2xl" />
             <div>
               <h2 className="text-lg font-bold text-white tracking-tight">{currentTab?.label}</h2>
               <p className="eyebrow text-[10px] text-white/40 tracking-widest">{currentTab?.sub}</p>
@@ -113,7 +120,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
             <div className="w-px h-8 bg-white/[0.08]"></div>
             <div className="flex items-center gap-2 px-4 py-2 glass-flat rounded-full">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>
+              <div className="w-1.5 h-1.5 rounded-full bg-success-soft"></div>
               <span className="eyebrow text-[10px] text-white/80">Standard Workflow</span>
             </div>
           </div>

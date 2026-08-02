@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { GEMINI_API_KEY, DEFAULT_MODEL } from '../config';
+import { DEFAULT_MODEL } from '../config';
+import { callGemini, readStoredModel, stripJsonFence } from '../lib/gemini';
+import { Icon } from './Icon';
 
 const SonyCategories = [
   { id: 'vlog', label: 'Vlogging Cameras', examples: 'ZV-1 II, ZV-E10 II, ZV-1F' },
@@ -19,44 +21,24 @@ export const ContentAISystem: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
 
-  // Dynamic Settings
-  const [apiKey, setApiKey] = useState(() => {
-    return localStorage.getItem('gemini_api_key') || GEMINI_API_KEY;
+  // Dynamic Settings — read once at mount. This panel has no settings form of
+  // its own; the values are written by ProductAdvisor, and handleGenerate
+  // re-reads localStorage at call time so a mid-session change still applies.
+  const [apiKey] = useState(() => {
+    return localStorage.getItem('gemini_api_key') || '';
   });
-  const [selectedModel, setSelectedModel] = useState(() => {
-    let savedModel = localStorage.getItem('gemini_model') || DEFAULT_MODEL;
-    if (savedModel === 'gemini-1.5-flash') {
-      savedModel = 'gemini-2.5-flash';
-    } else if (savedModel === 'gemini-1.5-pro') {
-      savedModel = 'gemini-2.5-pro';
-    }
-    return savedModel;
-  });
+  const [selectedModel] = useState(() => readStoredModel(DEFAULT_MODEL));
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [useSearch, setUseSearch] = useState(() => {
+  const [useSearch] = useState(() => {
     const saved = localStorage.getItem('gemini_use_search');
     return saved === null ? true : saved === 'true';
   });
 
-  // Sync settings and migrate on mount
+  // Persist the migrated model id. The three useState initialisers above already
+  // read the same localStorage keys, so re-reading them here and calling
+  // setState would only schedule a second render that changes nothing.
   useEffect(() => {
-    const savedKey = localStorage.getItem('gemini_api_key') || GEMINI_API_KEY;
-    let savedModel = localStorage.getItem('gemini_model') || DEFAULT_MODEL;
-    const savedSearch = localStorage.getItem('gemini_use_search');
-    let migrated = false;
-    if (savedModel === 'gemini-1.5-flash') {
-      savedModel = 'gemini-2.5-flash';
-      migrated = true;
-    } else if (savedModel === 'gemini-1.5-pro') {
-      savedModel = 'gemini-2.5-pro';
-      migrated = true;
-    }
-    if (migrated) {
-      localStorage.setItem('gemini_model', savedModel);
-    }
-    setApiKey(savedKey);
-    setSelectedModel(savedModel);
-    setUseSearch(savedSearch === null ? true : savedSearch === 'true');
+    localStorage.setItem('gemini_model', readStoredModel(DEFAULT_MODEL));
   }, []);
 
   const handleGenerate = async () => {
@@ -75,7 +57,7 @@ export const ContentAISystem: React.FC = () => {
     const fallbackScript = `[MỞ ĐẦU - 30 giây]\n"Xin chào các bạn! Hôm nay mình sẽ giới thiệu đến các bạn ${productName} — một sản phẩm ${categoryLabel} tuyệt vời từ Sony!"\n\n[ĐIỂM NHẤN 1 - Thiết kế & Chất lượng]\n"${productName} sở hữu thiết kế nhỏ gọn nhưng cực kỳ chắc chắn. Chất lượng build rất premium, xứng đáng với thương hiệu Sony."\n\n[ĐIỂM NHẤN 2 - Tính năng AI]\n"Điểm mình thích nhất là tính năng Eye-AF — lấy nét vào mắt cực kỳ nhạy. Kết hợp với Product Showcase, bạn có thể chuyển nét mượt mà từ mặt sang sản phẩm."\n\n[ĐIỂM NHẤN 3 - Trải nghiệm thực tế]\n"Màu da Sony cực đẹp tự nhiên, hồng hào và sắc nét từng chi tiết."\n\n[KÊU GỌI HÀNH ĐỘNG]\n"Đừng bỏ lỡ cơ hội sở hữu ${productName} với giá ưu đãi đặc biệt chỉ có trong buổi Live hôm nay! Comment ngay để được tư vấn nhé!"`;
 
     // Local settings fallbacks
-    const activeKey = apiKey || localStorage.getItem('gemini_api_key') || GEMINI_API_KEY;
+    const activeKey = apiKey || localStorage.getItem('gemini_api_key') || '';
     const activeModel = selectedModel || localStorage.getItem('gemini_model') || DEFAULT_MODEL;
 
     // Guard: Bypassing real network request if API Key is not set
@@ -106,46 +88,19 @@ Yêu cầu xuất ra cấu hình JSON hợp lệ chứa 3 trường dữ liệu 
   "script": "Kịch bản chi tiết chia thành các phần cụ thể: [MỞ ĐẦU - 30 giây], [ĐIỂM NHẤN 1 - Tính năng chính], [ĐIỂM NHẤN 2 - Trải nghiệm thực tế], [KÊU GỌI HÀNH ĐỘNG - Chốt đơn]"
 }`;
 
-      const requestBody: any = {
+      const { text } = await callGemini({
+        apiKey: activeKey,
+        model: activeModel,
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          responseMimeType: "application/json"
-        }
-      };
+        responseMimeType: 'application/json',
+        useSearch,
+      });
 
-      if (useSearch) {
-        requestBody.tools = [
-          {
-            google_search: {}
-          }
-        ];
-      }
-
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${activeModel}:generateContent?key=${activeKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestBody)
-        }
-      );
-
-      if (!response.ok) {
-        let errText = `HTTP ${response.status} ${response.statusText}`;
-        try {
-          const errData = await response.json();
-          if (errData?.error?.message) {
-            errText = errData.error.message;
-          }
-        } catch (_) {}
-        throw new Error(errText);
-      }
-
-      const data = await response.json();
-      const textResult = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-      
-      const cleanJson = textResult.replace(/```json/g, '').replace(/```/g, '').trim();
-      const parsed = JSON.parse(cleanJson);
+      const parsed = JSON.parse(stripJsonFence(text)) as Partial<{
+        title: string;
+        caption: string;
+        script: string;
+      }>;
 
       setResult({
         title: parsed.title || fallbackTitle,
@@ -153,10 +108,10 @@ Yêu cầu xuất ra cấu hình JSON hợp lệ chứa 3 trường dữ liệu 
         script: parsed.script || fallbackScript
       });
 
-    } catch (error: any) {
+    } catch (error) {
       console.error("AI Generation failed, falling back to local generator:", error);
-      setErrorMsg(error.message || String(error));
-      
+      setErrorMsg(error instanceof Error ? error.message : String(error));
+
       setResult({
         title: fallbackTitle,
         caption: fallbackCaption,
@@ -180,13 +135,13 @@ Yêu cầu xuất ra cấu hình JSON hợp lệ chứa 3 trường dữ liệu 
         <p className="text-white/50 text-sm max-w-xl flex items-center gap-2 flex-wrap">
           Tự động hóa kịch bản livestream và caption chuẩn Sony.
           {apiKey.trim() ? (
-            <span className="text-green-400/80 text-xs font-semibold flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+            <span className="text-success-soft/80 text-xs font-semibold flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse"></span>
               (Đang kết nối qua Gemini API - {selectedModel})
             </span>
           ) : (
-            <span className="text-orange-400/80 text-xs font-semibold flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
+            <span className="text-warning-soft/80 text-xs font-semibold flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-warning"></span>
               (Chế độ Demo - Offline)
             </span>
           )}
@@ -255,16 +210,14 @@ Yêu cầu xuất ra cấu hình JSON hợp lệ chứa 3 trường dữ liệu 
                 loading ? 'bg-white/10 text-white/50 cursor-not-allowed' : 'bg-white text-black hover:bg-gray-200 active:scale-95'
               }`}
             >
-              <span className={`material-symbols-outlined font-bold ${loading ? 'animate-spin' : ''}`}>
-                {loading ? 'sync' : 'bolt'}
-              </span>
+              <Icon name={loading ? 'sync' : 'bolt'} className={`font-bold ${loading ? 'animate-spin' : ''}`} />
               {loading ? 'Đang sáng tạo...' : 'Tạo Kịch Bản AI'}
             </button>
           </div>
 
-          <div className="bg-purple-600/10 border border-purple-500/20 rounded-3xl p-6">
-            <h4 className="text-xs font-bold text-purple-400 mb-2 uppercase tracking-widest flex items-center gap-2">
-              <span className="material-symbols-outlined text-[16px]">info</span>
+          <div className="bg-accent-deeper/10 border border-accent-deep/20 rounded-3xl p-6">
+            <h4 className="text-xs font-bold text-accent-mid mb-2 uppercase tracking-widest flex items-center gap-2">
+              <Icon name="info" className="text-[16px]" />
               Sony Knowledge Base
             </h4>
             <p className="text-[11px] text-purple-200/60 leading-relaxed italic">
@@ -276,8 +229,8 @@ Yêu cầu xuất ra cấu hình JSON hợp lệ chứa 3 trường dữ liệu 
         {/* Output Panel */}
         <div className="lg:col-span-2 space-y-6">
           {errorMsg && (
-            <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 text-xs text-red-400 flex items-start gap-2 animate-fade">
-              <span className="material-symbols-outlined text-[16px] mt-0.5">warning</span>
+            <div className="bg-danger/10 border border-danger/20 rounded-2xl p-4 text-xs text-danger flex items-start gap-2 animate-fade">
+              <Icon name="warning" className="text-[16px] mt-0.5" />
               <div>
                 <p className="font-bold">Lỗi kết nối Gemini API:</p>
                 <p className="opacity-90">{errorMsg}</p>
@@ -288,7 +241,7 @@ Yêu cầu xuất ra cấu hình JSON hợp lệ chứa 3 trường dữ liệu 
 
           {!result && !loading && (
             <div className="h-full min-h-[400px] border-2 border-dashed border-white/5 rounded-[40px] flex flex-col items-center justify-center text-center p-12 opacity-40">
-              <span className="material-symbols-outlined text-6xl mb-4">smart_toy</span>
+              <Icon name="smart_toy" className="text-6xl mb-4" />
               <p className="text-lg font-medium">Nhập tên sản phẩm Sony<br/>để bắt đầu sáng tạo nội dung</p>
             </div>
           )}
@@ -310,14 +263,12 @@ Yêu cầu xuất ra cấu hình JSON hợp lệ chứa 3 trường dữ liệu 
               {/* Title Section */}
               <div className="bg-[#1a1a1a] border border-white/10 rounded-[32px] p-8 group relative">
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Tiêu đề Livestream</span>
+                  <span className="text-[10px] font-bold text-info-soft uppercase tracking-widest">Tiêu đề Livestream</span>
                   <button 
                     onClick={() => copyToClipboard(result.title, 'title')}
                     className="p-2 hover:bg-white/5 rounded-xl transition-colors"
                   >
-                    <span className="material-symbols-outlined text-[20px] text-white/40">
-                      {copied === 'title' ? 'done' : 'content_copy'}
-                    </span>
+                    <Icon name={copied === 'title' ? 'done' : 'content_copy'} className="text-[20px] text-white/40" />
                   </button>
                 </div>
                 <h3 className="text-2xl font-bold text-white">{result.title}</h3>
@@ -326,14 +277,12 @@ Yêu cầu xuất ra cấu hình JSON hợp lệ chứa 3 trường dữ liệu 
               {/* Caption Section */}
               <div className="bg-[#1a1a1a] border border-white/10 rounded-[32px] p-8 group relative">
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-[10px] font-bold text-orange-400 uppercase tracking-widest">Caption Mạng Xã Hội</span>
+                  <span className="text-[10px] font-bold text-warning-soft uppercase tracking-widest">Caption Mạng Xã Hội</span>
                   <button 
                     onClick={() => copyToClipboard(result.caption, 'caption')}
                     className="p-2 hover:bg-white/5 rounded-xl transition-colors"
                   >
-                    <span className="material-symbols-outlined text-[20px] text-white/40">
-                      {copied === 'caption' ? 'done' : 'content_copy'}
-                    </span>
+                    <Icon name={copied === 'caption' ? 'done' : 'content_copy'} className="text-[20px] text-white/40" />
                   </button>
                 </div>
                 <p className="text-sm text-white/80 leading-relaxed whitespace-pre-wrap">{result.caption}</p>
@@ -343,16 +292,14 @@ Yêu cầu xuất ra cấu hình JSON hợp lệ chứa 3 trường dữ liệu 
               <div className="bg-gradient-to-br from-[#1a1a1a] to-black border border-white/10 rounded-[32px] p-8 group relative">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-green-400 uppercase tracking-widest">Kịch bản chi tiết</span>
-                    <div className="px-2 py-0.5 bg-green-500/10 rounded text-[9px] text-green-400 font-bold uppercase tracking-tighter">AI Expert View</div>
+                    <span className="text-[10px] font-bold text-success-soft uppercase tracking-widest">Kịch bản chi tiết</span>
+                    <div className="px-2 py-0.5 bg-success/10 rounded text-[9px] text-success-soft font-bold uppercase tracking-tighter">AI Expert View</div>
                   </div>
                   <button 
                     onClick={() => copyToClipboard(result.script, 'script')}
                     className="p-2 hover:bg-white/5 rounded-xl transition-colors"
                   >
-                    <span className="material-symbols-outlined text-[20px] text-white/40">
-                      {copied === 'script' ? 'done' : 'content_copy'}
-                    </span>
+                    <Icon name={copied === 'script' ? 'done' : 'content_copy'} className="text-[20px] text-white/40" />
                   </button>
                 </div>
                 <div className="prose prose-invert max-w-none">

@@ -1,3 +1,4 @@
+import { Icon } from './Icon';
 
 
 const ProductHighlight: React.FC<{
@@ -14,14 +15,14 @@ const ProductHighlight: React.FC<{
       <div className="grid grid-cols-1 gap-3">
         {features.map((f, i) => (
           <div key={i} className="flex items-center gap-3">
-            <span className="material-symbols-outlined text-[16px] text-white/40">check_circle</span>
+            <Icon name="check_circle" className="text-[16px] text-white/40" />
             <span className="text-xs text-white/70">{f}</span>
           </div>
         ))}
       </div>
     </div>
     <div className="md:w-1/2 relative min-h-[350px] bg-[#111] flex items-center justify-center p-8">
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-blue-500/10" />
+      <div className="absolute inset-0 bg-gradient-to-br from-accent-deep/10 to-info/10" />
       <img 
         src={image} 
         alt={title}
@@ -43,12 +44,12 @@ export const ShowcaseSection: React.FC<{ onLaunch?: () => void }> = ({ onLaunch 
 
       {/* Link Access Section */}
       <div className="relative group">
-        <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-[32px] blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+        <div className="absolute -inset-1 bg-gradient-to-r from-info to-accent-deeper rounded-[32px] blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
         <div className="relative bg-[#1a1a1a] border border-white/10 rounded-[32px] p-8 md:p-12 overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="relative z-10 space-y-4 text-center md:text-left">
             <div className="flex items-center justify-center md:justify-start gap-2">
-              <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-              <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Virtual Tour Access</span>
+              <span className="w-2 h-2 rounded-full bg-info animate-pulse"></span>
+              <span className="text-[10px] font-bold text-info-soft uppercase tracking-widest">Virtual Tour Access</span>
             </div>
             <h3 className="text-2xl md:text-3xl font-bold text-white">Trải nghiệm Sony Virtual Showcase</h3>
             <p className="text-sm text-[#969696] max-w-md">
@@ -61,12 +62,12 @@ export const ShowcaseSection: React.FC<{ onLaunch?: () => void }> = ({ onLaunch 
               onClick={onLaunch}
               className="px-8 py-4 font-bold rounded-2xl transition-all flex items-center justify-center gap-2 shadow-2xl active:scale-95 bg-white text-black hover:bg-gray-100 w-full md:w-auto cursor-pointer"
             >
-              <span className="material-symbols-outlined font-bold">play_arrow</span>
+              <Icon name="play_arrow" className="font-bold" />
               Khởi động Showcase
             </button>
           </div>
 
-          <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-info/10 rounded-full blur-3xl pointer-events-none"></div>
         </div>
       </div>
 
@@ -100,14 +101,14 @@ export const ShowcaseSection: React.FC<{ onLaunch?: () => void }> = ({ onLaunch 
 
       {/* Tech Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
+        {([
           { icon: 'view_in_ar', title: 'Product Showcase', desc: 'Lấy nét vật phẩm tức thì' },
           { icon: 'auto_awesome', title: 'Soft Skin Effect', desc: 'Làm mịn da tự nhiên' },
           { icon: 'battery_charging_full', title: 'Long Battery', desc: 'Sử dụng pin NP-FZ100' },
           { icon: 'blur_on', title: 'F1.8 Bokeh', desc: 'Xóa phông chuyên nghiệp' },
-        ].map((item, i) => (
+        ] as const).map((item, i) => (
           <div key={i} className="glass-panel p-5 rounded-2xl border border-white/5 text-center hover:bg-white/5 transition-colors">
-            <span className="material-symbols-outlined text-white/40 mb-3 text-2xl">{item.icon}</span>
+            <Icon name={item.icon} className="text-white/40 mb-3 text-2xl" />
             <h5 className="text-xs font-bold block mb-1">{item.title}</h5>
             <p className="text-[10px] text-[#969696] leading-tight">{item.desc}</p>
           </div>

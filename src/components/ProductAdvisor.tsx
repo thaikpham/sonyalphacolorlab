@@ -1,11 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { GEMINI_API_KEY, DEFAULT_MODEL } from '../config';
+import { DEFAULT_MODEL } from '../config';
+import { callGemini, readStoredModel } from '../lib/gemini';
+import type { GeminiGroundingMetadata } from '../lib/gemini';
+import { Icon } from './Icon';
+
+const readMigratedModel = () => readStoredModel(DEFAULT_MODEL);
 
 interface Message {
   role: 'user' | 'model';
   text: string;
   timestamp: Date;
-  groundingMetadata?: any;
+  groundingMetadata?: GeminiGroundingMetadata;
 }
 
 const DEFAULT_SYSTEM_INSTRUCTION = `Bạn là một chuyên gia tư vấn thiết bị Sony Live SOP chuyên nghiệp, am hiểu sâu sắc về máy ảnh Sony Alpha, dòng Cinema Line (FX3, FX30), các loại ống kính (G Master, G Lens) và Ngành hàng âm thanh gồm loa, tai nghe và các giải pháp vận hành Livestream chuyên nghiệp.
@@ -25,7 +30,7 @@ const SUGGESTIONS = [
   { text: 'Mic Condenser Sony C-80 hoạt động thế nào?', icon: 'mic' },
   { text: 'Ống kính FE 24-70mm GM II có gì nổi bật?', icon: 'photo_camera' },
   { text: 'Các combo livestream chính hãng của Sony', icon: 'shopping_bag' }
-];
+] as const;
 
 export const ProductAdvisor: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>(() => {
@@ -43,20 +48,13 @@ export const ProductAdvisor: React.FC = () => {
 
   // Settings State
   const [apiKey] = useState(() => {
-    return localStorage.getItem('gemini_api_key') || GEMINI_API_KEY;
+    return localStorage.getItem('gemini_api_key') || '';
   });
-  const [selectedModel, setSelectedModel] = useState(() => {
-    let savedModel = localStorage.getItem('gemini_model') || DEFAULT_MODEL;
-    if (savedModel === 'gemini-1.5-flash') {
-      savedModel = 'gemini-2.5-flash';
-    } else if (savedModel === 'gemini-1.5-pro') {
-      savedModel = 'gemini-2.5-pro';
-    }
-    return savedModel;
-  });
-  const [systemInstruction, setSystemInstruction] = useState(() => {
-    return localStorage.getItem('gemini_system_instruction') || DEFAULT_SYSTEM_INSTRUCTION;
-  });
+  const [selectedModel, setSelectedModel] = useState(readMigratedModel);
+  // The stored instruction is always replaced by the current default on mount
+  // (see the persistence effect below), so state starts from the default
+  // directly rather than reading a value that is about to be overwritten.
+  const [systemInstruction, setSystemInstruction] = useState(DEFAULT_SYSTEM_INSTRUCTION);
   const [useSearch, setUseSearch] = useState(() => {
     const saved = localStorage.getItem('gemini_use_search');
     return saved === null ? true : saved === 'true';
@@ -64,28 +62,12 @@ export const ProductAdvisor: React.FC = () => {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Load settings and migrate if necessary on mount
+  // Persist the migrated settings back to localStorage. This effect only writes
+  // to the outside world — the state above is already correct, so calling
+  // setState here would just schedule a second render for no change.
   useEffect(() => {
-    let savedModel = localStorage.getItem('gemini_model');
-    let migrated = false;
-    if (savedModel === 'gemini-1.5-flash') {
-      savedModel = 'gemini-2.5-flash';
-      migrated = true;
-    } else if (savedModel === 'gemini-1.5-pro') {
-      savedModel = 'gemini-2.5-pro';
-      migrated = true;
-    }
-    if (migrated && savedModel) {
-      localStorage.setItem('gemini_model', savedModel);
-      setSelectedModel(savedModel);
-    }
-
-    // Sync localStorage prompt with the new default custom prompt
-    const savedInstruction = localStorage.getItem('gemini_system_instruction');
-    if (savedInstruction !== DEFAULT_SYSTEM_INSTRUCTION) {
-      localStorage.setItem('gemini_system_instruction', DEFAULT_SYSTEM_INSTRUCTION);
-      setSystemInstruction(DEFAULT_SYSTEM_INSTRUCTION);
-    }
+    localStorage.setItem('gemini_model', readMigratedModel());
+    localStorage.setItem('gemini_system_instruction', DEFAULT_SYSTEM_INSTRUCTION);
   }, []);
 
   // Scroll to bottom when messages change
@@ -123,61 +105,31 @@ export const ProductAdvisor: React.FC = () => {
           parts: [{ text: msg.text }]
         }));
 
-        const requestBody: any = {
+        const { text, groundingMetadata } = await callGemini({
+          apiKey,
+          model: selectedModel,
           contents: conversationHistory,
-          systemInstruction: {
-            parts: [{ text: systemInstruction }]
-          }
-        };
+          systemInstruction,
+          useSearch,
+        });
 
-        if (useSearch) {
-          requestBody.tools = [
-            {
-              google_search: {}
-            }
-          ];
-        }
-
-        const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${apiKey}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(requestBody)
-          }
-        );
-
-        if (!response.ok) {
-          let errorMsg = `HTTP ${response.status} ${response.statusText}`;
-          try {
-            const errData = await response.json();
-            if (errData?.error?.message) {
-              errorMsg = errData.error.message;
-            }
-          } catch (_) {}
-          throw new Error(errorMsg);
-        }
-
-        const data = await response.json();
-        const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Không nhận được câu trả lời từ AI.';
-        const groundingMetadata = data.candidates?.[0]?.groundingMetadata;
-        
         setMessages(prev => [
           ...prev,
           {
             role: 'model',
-            text: responseText,
+            text: text || 'Không nhận được câu trả lời từ AI.',
             timestamp: new Date(),
             groundingMetadata
           }
         ]);
-      } catch (err: any) {
+      } catch (err) {
         console.error(err);
+        const detail = err instanceof Error ? err.message : String(err);
         setMessages(prev => [
           ...prev,
           {
             role: 'model',
-            text: `⚠️ **Lỗi kết nối API:** Không thể kết nối tới máy chủ Gemini. Chi tiết: ${err.message}. Vui lòng kiểm tra lại API Key hoặc kết nối mạng của bạn.`,
+            text: `⚠️ **Lỗi kết nối API:** Không thể kết nối tới máy chủ Gemini. Chi tiết: ${detail}. Vui lòng kiểm tra lại API Key hoặc kết nối mạng của bạn.`,
             timestamp: new Date()
           }
         ]);
@@ -359,7 +311,7 @@ Trong chế độ Demo, tôi có thể trả lời tốt các chủ đề về:
         if (closingCodeIdx !== -1) {
           const codeText = remaining.substring(codeIdx + 1, closingCodeIdx);
           parts.push(
-            <code key={key++} className="bg-white/10 px-1.5 py-0.5 rounded font-mono text-[10px] text-purple-300">
+            <code key={key++} className="bg-white/10 px-1.5 py-0.5 rounded font-mono text-[10px] text-accent-soft">
               {codeText}
             </code>
           );
@@ -377,30 +329,30 @@ Trong chế độ Demo, tôi có thể trả lời tốt các chủ đề về:
     <div className="flex flex-col h-[calc(100vh-6rem)] lg:h-[calc(100vh-7rem)] -m-6 lg:-m-12 relative overflow-hidden bg-[#080808]">
       
       {/* Dynamic glow decoration */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[150px] bg-gradient-to-b from-purple-500/10 to-transparent blur-[100px] pointer-events-none"></div>
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[150px] bg-gradient-to-b from-accent-deep/10 to-transparent blur-[100px] pointer-events-none"></div>
 
       {/* Top Header of Chat */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06] bg-[#0a0a0a]/80 backdrop-blur-xl shrink-0 z-10">
         <div className="flex items-center gap-3">
           <div className="relative">
-            <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-purple-600 to-blue-500 flex items-center justify-center shadow-lg shadow-purple-500/20">
-              <span className="material-symbols-outlined text-[20px] text-white">assistant</span>
+            <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-accent-deeper to-info flex items-center justify-center shadow-lg shadow-accent-deep/20">
+              <Icon name="assistant" className="text-[20px] text-white" />
             </div>
             {apiKey.trim() && (
-              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-green-500 border-2 border-[#080808]"></div>
+              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-success border-2 border-[#080808]"></div>
             )}
           </div>
           <div>
             <h3 className="text-sm font-bold text-white">Trợ Lý Tư Vấn Sản Phẩm</h3>
-            <p className="text-[9px] font-bold text-purple-400 uppercase tracking-widest flex items-center gap-1">
+            <p className="text-[9px] font-bold text-accent-mid uppercase tracking-widest flex items-center gap-1">
               {apiKey.trim() ? (
                 <>
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-success"></span>
                   Gemini Online ({selectedModel})
                 </>
               ) : (
                 <>
-                  <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-warning"></span>
                   Chế độ Demo (Offline)
                 </>
               )}
@@ -413,16 +365,16 @@ Trong chế độ Demo, tôi có thể trả lời tốt các chủ đề về:
             href="https://drive.google.com/drive/project/1TRo0XIKx39IaW_RxVqTwsG_6dZGsv8uj?usp=sharing"
             target="_blank"
             rel="noopener noreferrer"
-            className="px-4 py-2 bg-purple-600/10 hover:bg-purple-600/20 text-purple-400 hover:text-purple-300 border border-purple-500/20 hover:border-purple-500/40 rounded-xl transition-all flex items-center gap-1.5 text-xs font-bold shadow-md shadow-purple-500/5 active:scale-95"
+            className="px-4 py-2 bg-accent-deeper/10 hover:bg-accent-deeper/20 text-accent-mid hover:text-accent-soft border border-accent-deep/20 hover:border-accent-deep/40 rounded-xl transition-all flex items-center gap-1.5 text-xs font-bold shadow-md shadow-accent-deep/5 active:scale-95"
           >
-            <span className="material-symbols-outlined text-[18px]">folder_open</span>
+            <Icon name="folder_open" className="text-[18px]" />
             Tài liệu của Sony Trainers
           </a>
           <button
             onClick={() => setShowSettings(true)}
-            className="p-2 hover:bg-white/5 rounded-xl transition-all text-gray-400 hover:text-white flex items-center gap-1 text-xs font-semibold border border-white/5 bg-white/[0.02]"
+            className="p-2 hover:bg-white/5 rounded-xl transition-all text-ink-faint hover:text-white flex items-center gap-1 text-xs font-semibold border border-white/5 bg-white/[0.02]"
           >
-            <span className="material-symbols-outlined text-[18px]">settings</span>
+            <Icon name="settings" className="text-[18px]" />
             Cài đặt AI
           </button>
         </div>
@@ -433,9 +385,7 @@ Trong chế độ Demo, tôi có thể trả lời tốt các chủ đề về:
         
         {messages.length === 1 && (
           <div className="max-w-xl mx-auto text-center pt-8 pb-4 space-y-6">
-            <span className="material-symbols-outlined text-5xl bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent animate-pulse">
-              spatial_tracking
-            </span>
+            <Icon name="spatial_tracking" className="text-5xl bg-gradient-to-r from-accent-mid to-info-soft bg-clip-text text-transparent animate-pulse" />
             <div className="space-y-2">
               <h2 className="text-xl font-bold text-white tracking-tight">Hỏi đáp kỹ thuật & Chọn thiết bị</h2>
               <p className="text-xs text-white/50 leading-relaxed max-w-sm mx-auto">
@@ -449,11 +399,9 @@ Trong chế độ Demo, tôi có thể trả lời tốt các chủ đề về:
                 <button
                   key={idx}
                   onClick={() => handleSendMessage(s.text)}
-                  className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-purple-500/20 text-left hover:bg-white/[0.04] transition-all duration-300 group flex items-start gap-3 active:scale-95"
+                  className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-accent-deep/20 text-left hover:bg-white/[0.04] transition-all duration-300 group flex items-start gap-3 active:scale-95"
                 >
-                  <span className="material-symbols-outlined text-[20px] text-purple-400/80 group-hover:text-purple-400 transition-colors">
-                    {s.icon}
-                  </span>
+                  <Icon name={s.icon} className="text-[20px] text-accent-mid/80 group-hover:text-accent-mid transition-colors" />
                   <span className="text-xs text-white/70 group-hover:text-white font-medium leading-normal">{s.text}</span>
                 </button>
               ))}
@@ -472,20 +420,18 @@ Trong chế độ Demo, tôi có thể trả lời tốt các chủ đề về:
                     {/* Avatar */}
                     <div className={`w-8 h-8 rounded-xl shrink-0 flex items-center justify-center text-xs font-bold ${
                       isUser
-                        ? 'bg-blue-500/10 border border-blue-500/20 text-blue-400'
-                        : 'bg-gradient-to-tr from-purple-600 to-blue-500 text-white'
+                        ? 'bg-info/10 border border-info/20 text-info-soft'
+                        : 'bg-gradient-to-tr from-accent-deeper to-info text-white'
                     }`}>
-                      <span className="material-symbols-outlined text-[18px]">
-                        {isUser ? 'person' : 'assistant'}
-                      </span>
+                      <Icon name={isUser ? 'person' : 'assistant'} className="text-[18px]" />
                     </div>
 
                     {/* Chat Bubble Container */}
                     <div className="space-y-1">
                       <div className={`rounded-2xl px-4 py-3 border transition-all duration-300 ${
                         isUser
-                          ? 'bg-blue-500/10 border-blue-500/20 text-white/90 shadow-[0_4px_15px_rgba(59,130,246,0.05)]'
-                          : 'bg-[#121212]/90 border-white/5 text-white/95 shadow-md hover:border-purple-500/10'
+                          ? 'bg-info/10 border-info/20 text-white/90 shadow-[0_4px_15px_rgba(59,130,246,0.05)]'
+                          : 'bg-[#121212]/90 border-white/5 text-white/95 shadow-md hover:border-accent-deep/10'
                       }`}>
                         <div className="space-y-2">
                           {isUser ? <p className="text-xs leading-relaxed">{msg.text}</p> : renderMarkdown(msg.text)}
@@ -493,13 +439,13 @@ Trong chế độ Demo, tôi có thể trả lời tốt các chủ đề về:
                       </div>
 
                       {/* Grounding Citations */}
-                      {!isUser && msg.groundingMetadata?.groundingChunks?.length > 0 && (
+                      {!isUser && (msg.groundingMetadata?.groundingChunks?.length ?? 0) > 0 && (
                         <div className="mt-2 flex flex-wrap gap-2 px-1">
                           <span className="text-[9px] text-white/40 flex items-center gap-1 w-full">
-                            <span className="material-symbols-outlined text-[12px]">link</span>
+                            <Icon name="link" className="text-[12px]" />
                             Nguồn tham khảo:
                           </span>
-                          {msg.groundingMetadata.groundingChunks.map((chunk: any, chunkIdx: number) => {
+                          {(msg.groundingMetadata?.groundingChunks ?? []).map((chunk, chunkIdx) => {
                             if (chunk?.web?.uri) {
                               return (
                                 <a
@@ -507,7 +453,7 @@ Trong chế độ Demo, tôi có thể trả lời tốt các chủ đề về:
                                   href={chunk.web.uri}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white/[0.03] border border-white/5 text-[9px] text-purple-400 hover:text-purple-300 hover:bg-white/[0.06] transition-all"
+                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white/[0.03] border border-white/5 text-[9px] text-accent-mid hover:text-accent-soft hover:bg-white/[0.06] transition-all"
                                 >
                                   <span className="truncate max-w-[150px]">{chunk.web.title || chunk.web.uri}</span>
                                 </a>
@@ -532,13 +478,13 @@ Trong chế độ Demo, tôi có thể trả lời tốt các chủ đề về:
             {loading && (
               <div className="flex justify-start animate-fade">
                 <div className="flex gap-3 max-w-[85%] items-start">
-                  <div className="w-8 h-8 rounded-xl shrink-0 flex items-center justify-center bg-gradient-to-tr from-purple-600 to-blue-500 text-white animate-spin">
-                    <span className="material-symbols-outlined text-[18px]">sync</span>
+                  <div className="w-8 h-8 rounded-xl shrink-0 flex items-center justify-center bg-gradient-to-tr from-accent-deeper to-info text-white animate-spin">
+                    <Icon name="sync" className="text-[18px]" />
                   </div>
                   <div className="bg-[#121212] border border-white/5 rounded-2xl px-4 py-3.5 flex items-center gap-1.5">
-                    <div className="w-2 h-2 rounded-full bg-purple-400 animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                    <div className="w-2 h-2 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                    <div className="w-2 h-2 rounded-full bg-purple-400 animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                    <div className="w-2 h-2 rounded-full bg-accent-mid animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                    <div className="w-2 h-2 rounded-full bg-info-soft animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                    <div className="w-2 h-2 rounded-full bg-accent-mid animate-bounce" style={{ animationDelay: '300ms' }}></div>
                   </div>
                 </div>
               </div>
@@ -565,7 +511,7 @@ Trong chế độ Demo, tôi có thể trả lời tốt các chủ đề về:
             onChange={(e) => setInput(e.target.value)}
             placeholder={loading ? 'Vui lòng chờ AI phản hồi...' : 'Hỏi trợ lý Sony Live SOP về sản phẩm...'}
             disabled={loading}
-            className="flex-1 bg-white/[0.03] hover:bg-white/[0.05] border border-white/10 rounded-2xl px-5 py-3 text-xs text-white placeholder-white/30 focus:outline-none focus:border-purple-500/40 transition-all"
+            className="flex-1 bg-white/[0.03] hover:bg-white/[0.05] border border-white/10 rounded-2xl px-5 py-3 text-xs text-white placeholder-white/30 focus:outline-none focus:border-accent-deep/40 transition-all"
           />
           <button
             type="submit"
@@ -573,10 +519,10 @@ Trong chế độ Demo, tôi có thể trả lời tốt các chủ đề về:
             className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${
               loading || !input.trim()
                 ? 'bg-white/5 text-white/20 cursor-not-allowed border border-white/5'
-                : 'bg-gradient-to-tr from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white shadow-lg shadow-purple-500/10 active:scale-95'
+                : 'bg-gradient-to-tr from-accent-deeper to-info hover:from-purple-700 hover:to-info text-white shadow-lg shadow-accent-deep/10 active:scale-95'
             }`}
           >
-            <span className="material-symbols-outlined text-[20px] font-bold">send</span>
+            <Icon name="send" className="text-[20px] font-bold" />
           </button>
         </form>
       </div>
@@ -588,12 +534,12 @@ Trong chế độ Demo, tôi có thể trả lời tốt các chủ đề về:
             
             <div className="flex items-center justify-between border-b border-white/5 pb-4">
               <h4 className="text-md font-bold text-white flex items-center gap-2">
-                <span className="material-symbols-outlined text-[20px] text-purple-400">smart_toy</span>
+                <Icon name="smart_toy" className="text-[20px] text-accent-mid" />
                 Cấu hình Kết nối Gemini AI
               </h4>
               <button
                 onClick={() => setShowSettings(false)}
-                className="text-xs text-gray-500 hover:text-gray-300"
+                className="text-xs text-ink-faint hover:text-gray-300"
               >
                 Đóng
               </button>
@@ -603,7 +549,7 @@ Trong chế độ Demo, tôi có thể trả lời tốt các chủ đề về:
 
 
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider pl-1">Model / Phiên bản AI</label>
+                <label className="text-[10px] font-bold text-ink-faint uppercase tracking-wider pl-1">Model / Phiên bản AI</label>
                 <select
                   value={selectedModel}
                   onChange={(e) => setSelectedModel(e.target.value)}
@@ -618,7 +564,7 @@ Trong chế độ Demo, tôi có thể trả lời tốt các chủ đề về:
               <div className="flex items-center justify-between p-3.5 rounded-xl bg-[#181818] border border-white/5">
                 <div className="space-y-0.5">
                   <label className="text-xs font-bold text-white flex items-center gap-1.5 cursor-pointer" htmlFor="toggle-search">
-                    <span className="material-symbols-outlined text-[16px] text-purple-400">travel_explore</span>
+                    <Icon name="travel_explore" className="text-[16px] text-accent-mid" />
                     Tìm kiếm Google thời gian thực
                   </label>
                   <p className="text-[9px] text-white/40">Cho phép AI tìm thông tin trực tiếp từ website Sony Alpha Vietnam</p>
@@ -628,17 +574,17 @@ Trong chế độ Demo, tôi có thể trả lời tốt các chủ đề về:
                   id="toggle-search"
                   checked={useSearch}
                   onChange={(e) => setUseSearch(e.target.checked)}
-                  className="w-4 h-4 rounded border-white/10 bg-[#181818] text-purple-600 focus:ring-purple-500 cursor-pointer"
+                  className="w-4 h-4 rounded border-white/10 bg-[#181818] text-accent-deeper focus:ring-accent-deep cursor-pointer"
                 />
               </div>
 
               <div className="space-y-1">
                 <div className="flex justify-between items-center pl-1">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Chỉ dẫn hệ thống (System Prompt)</label>
+                  <label className="text-[10px] font-bold text-ink-faint uppercase tracking-wider">Chỉ dẫn hệ thống (System Prompt)</label>
                   <button
                     type="button"
                     onClick={() => setSystemInstruction(DEFAULT_SYSTEM_INSTRUCTION)}
-                    className="text-[9px] text-purple-400 hover:underline"
+                    className="text-[9px] text-accent-mid hover:underline"
                   >
                     Khôi phục mặc định
                   </button>
@@ -648,7 +594,7 @@ Trong chế độ Demo, tôi có thể trả lời tốt các chủ đề về:
                   placeholder="Nhập vai trò của AI, thông tin sản phẩm và quy tắc tư vấn..."
                   value={systemInstruction}
                   onChange={(e) => setSystemInstruction(e.target.value)}
-                  className="w-full bg-[#181818] border border-white/10 rounded-xl px-4 py-3 text-[11px] leading-relaxed text-white focus:outline-none focus:border-purple-500/40 dark-scrollbar"
+                  className="w-full bg-[#181818] border border-white/10 rounded-xl px-4 py-3 text-[11px] leading-relaxed text-white focus:outline-none focus:border-accent-deep/40 dark-scrollbar"
                 />
                 <p className="text-[9px] text-white/30 pl-1">
                   Bạn có thể dán toàn bộ quy định hoặc cấu hình dự án Gemini từ Google Drive của bạn vào khung này để AI hoạt động đúng ý bạn.
@@ -659,13 +605,13 @@ Trong chế độ Demo, tôi có thể trả lời tốt các chủ đề về:
                 <button
                   type="button"
                   onClick={() => setShowSettings(false)}
-                  className="px-4 py-2 text-xs font-bold text-gray-400 hover:text-white transition-colors"
+                  className="px-4 py-2 text-xs font-bold text-ink-faint hover:text-white transition-colors"
                 >
                   Đóng
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 bg-gradient-to-tr from-purple-600 to-blue-500 text-white font-bold text-xs rounded-xl hover:from-purple-700 hover:to-blue-600 active:scale-95 transition-all shadow-lg shadow-purple-500/10"
+                  className="px-5 py-2.5 bg-gradient-to-tr from-accent-deeper to-info text-white font-bold text-xs rounded-xl hover:from-purple-700 hover:to-info active:scale-95 transition-all shadow-lg shadow-accent-deep/10"
                 >
                   Lưu thiết lập
                 </button>

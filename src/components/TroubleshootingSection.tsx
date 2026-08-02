@@ -1,13 +1,14 @@
+import { Icon, type IconName } from './Icon';
 const IssueCard: React.FC<{
   title: string;
-  icon: string;
+  icon: IconName;
   steps: { text: string; sub?: string }[];
   accentColor: string;
 }> = ({ title, icon, steps, accentColor }) => (
   <div className="bg-[#121212] border border-white/5 rounded-3xl p-6 animate-fade hover:border-white/10 transition-colors">
     <div className="flex items-center gap-3 mb-6">
       <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${accentColor}`}>
-        <span className="material-symbols-outlined text-white">{icon}</span>
+        <Icon name={icon} className="text-white" />
       </div>
       <h3 className="text-sm font-bold text-white uppercase tracking-wider">{title}</h3>
     </div>
@@ -43,7 +44,7 @@ export const TroubleshootingSection: React.FC = () => {
         <IssueCard 
           title="Sự cố 1: Khắc phục Nóng máy ảnh (Overheating)"
           icon="thermostat"
-          accentColor="bg-red-500/20"
+          accentColor="bg-danger/20"
           steps={[
             { 
               text: "Chuyển sang cấp nguồn Pin ảo DC-C1", 
@@ -63,7 +64,7 @@ export const TroubleshootingSection: React.FC = () => {
         <IssueCard 
           title="Sự cố 2: Lệch hình lệch tiếng (Audio Sync Offset)"
           icon="timer"
-          accentColor="bg-purple-500/20"
+          accentColor="bg-accent-deep/20"
           steps={[
             { 
               text: "Đo độ trễ giữa hình ảnh và âm thanh", 
@@ -83,7 +84,7 @@ export const TroubleshootingSection: React.FC = () => {
         <IssueCard 
           title="Sự cố 3: Lỗi mất tín hiệu Capture Card (No Signal)"
           icon="cable"
-          accentColor="bg-blue-500/20"
+          accentColor="bg-info/20"
           steps={[
             { 
               text: "Kiểm tra cấu hình HDMI Output trên Camera", 
@@ -103,7 +104,7 @@ export const TroubleshootingSection: React.FC = () => {
         <IssueCard 
           title="Sự cố 4: Âm thanh bị rè, méo tiếng hoặc nhiễu điện"
           icon="volume_off"
-          accentColor="bg-orange-500/20"
+          accentColor="bg-warning/20"
           steps={[
             { 
               text: "Kiểm tra nút gạt suy giảm tín hiệu (Attenuator - Pad)", 
@@ -122,9 +123,9 @@ export const TroubleshootingSection: React.FC = () => {
       </div>
 
       <div className="bg-white/[0.02] border border-white/5 rounded-3xl p-6 text-center">
-        <span className="material-symbols-outlined text-purple-400 text-3xl mb-2">support_agent</span>
+        <Icon name="support_agent" className="text-accent-mid text-3xl mb-2" />
         <p className="text-xs text-white/50 leading-relaxed font-semibold">
-          Trong trường hợp xảy ra sự cố phần cứng không thể tự khắc phục, vui lòng báo cáo ngay cho Kỹ thuật viên phụ trách kỹ thuật Studio Sony: <span className="text-purple-400 font-bold">1800-xxxx (Nhánh 2)</span>
+          Trong trường hợp xảy ra sự cố phần cứng không thể tự khắc phục, vui lòng báo cáo ngay cho Kỹ thuật viên phụ trách kỹ thuật Studio Sony: <span className="text-accent-mid font-bold">1800-xxxx (Nhánh 2)</span>
         </p>
       </div>
     </div>

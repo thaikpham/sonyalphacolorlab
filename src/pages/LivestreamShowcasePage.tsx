@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, type ChangeEvent, type SyntheticEvent } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "motion/react";
-import { spring, SlideIn } from "../lib/ios-motion";
+import { SlideIn } from "../lib/ios-motion";
+import { spring } from "../lib/motion-config";
 import {
   readLastCameraConnectedAt,
   readPreferredCameraPreference,
@@ -11,18 +12,33 @@ import {
   writeVideoAudioMutedFallback,
   type ShowcaseRuntimeFlags,
 } from "../lib/showcase-runtime";
+import {
+  buildCameraTrackConstraints,
+  buildVideoSourceOptions,
+  DEFAULT_CAMERA_FRAME_SIZE,
+  getFittedVideoFrameSize,
+  pickPreferredVideoSource,
+  TARGET_CAMERA_VIEWPORT_HEIGHT_PX,
+  TARGET_CAMERA_VIEWPORT_WIDTH_PX,
+  type VideoSourceOption,
+} from "../lib/camera-source";
+import {
+  buildYouTubeEmbedUrl,
+  isPlaybackStateRunning,
+  YOUTUBE_IFRAME_API_SRC,
+  type YouTubeNamespace,
+  type YouTubePlayer,
+} from "../lib/youtube";
+import { SONY_LIVE_REASONS, type SonyReason } from "../data/sony-live-reasons";
+import {
+  COMMENT_POOL,
+  COMPLIMENT_TEXTS,
+  GIFT_EMOJIS,
+  HEART_COLORS,
+  type FeedComment,
+} from "../data/live-feed";
 import { AsciiRecBackground } from "../components/AsciiRecBackground";
 import {
-  Camera,
-  Gauge,
-  Star,
-  Lightbulb,
-  Sliders,
-  Cable,
-  Mic,
-  Settings,
-  Zap,
-  TriangleAlert,
   ChevronLeft,
   ChevronRight,
   RefreshCw,
@@ -55,81 +71,11 @@ interface GiftParticle {
   scale: number;
 }
 
-interface FeedComment {
-  id: number;
-  user: string;
-  text: string;
-  color: string;
-  avatar: string;
-}
-
-interface VideoSourceOption {
-  deviceId: string;
-  label: string;
-  note: string;
-  score: number;
-  recommended: boolean;
-}
 
 interface SourceSelectionOptions {
   openPickerOnFailure?: boolean;
 }
 
-type CameraTrackConstraints = MediaTrackConstraints & {
-  resizeMode?: ConstrainDOMString;
-};
-
-interface SonyReason {
-  id: number;
-  title: string;
-  hook: string;
-  benefit: string;
-  imageUrl: string;
-  youtubeVideoId?: string;
-  youtubeDurationMs?: number;
-  mediaAspectRatio?: string;
-  chips: string[];
-  details: string[];
-  icon: React.ComponentType<{ className?: string }>;
-  tone: "cool" | "warm" | "warning";
-}
-
-type YouTubeQualityLevel = "small" | "medium" | "large" | "hd720" | "hd1080" | "highres" | "default";
-
-interface YouTubePlayer {
-  destroy: () => void;
-  getPlayerState: () => number;
-  isMuted: () => boolean;
-  playVideo: () => void;
-  mute: () => void;
-  setVolume: (volume: number) => void;
-  unMute: () => void;
-  setPlaybackQuality: (quality: YouTubeQualityLevel) => void;
-}
-
-interface YouTubePlayerStateMap {
-  BUFFERING: number;
-  CUED: number;
-  ENDED: number;
-  PAUSED: number;
-  PLAYING: number;
-  UNSTARTED: number;
-}
-
-interface YouTubeNamespace {
-  Player: new (
-    element: HTMLElement,
-    options: {
-      videoId: string;
-      playerVars?: Record<string, string | number>;
-      events?: {
-        onReady?: (event: { target: YouTubePlayer }) => void;
-        onStateChange?: (event: { data: number }) => void;
-      };
-    },
-  ) => YouTubePlayer;
-  PlayerState: YouTubePlayerStateMap;
-}
 
 declare global {
   interface Window {
@@ -138,291 +84,27 @@ declare global {
   }
 }
 
-const HEART_COLORS = ['#ff6b6b', '#ff8787', '#ff6b9d', '#c44569', '#f8b500', '#ff6b35'];
-const COMPLIMENT_TEXTS = [
-  "Sony lên màu đẹp quá! 📸",
-  "Hình Sony nét căng luôn! ✨",
-  "Màu da từ Sony nhìn xịn ghê 🎬",
-  "Chất lượng hình ảnh quá pro! 🔥",
-  "Sony stream đẹp khỏi chỉnh 🎥",
-  "Dynamic range đỉnh thật 🌟",
-  "Màu cinematic quá đã mắt 🎨",
-  "Ảnh Sony quá mượt luôn 🚀",
-];
 
-function generateSvgAvatar(initial: string, bgColor: string) {
-  return `data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='${encodeURIComponent(bgColor)}'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-family='system-ui, sans-serif' font-weight='bold' font-size='14' fill='%23ffffff'%3E${initial}%3C/text%3E%3C/svg%3E`;
-}
 
-const COMMENT_POOL: FeedComment[] = [
-  {
-    id: 0,
-    user: "Minh Pro",
-    text: "Màu Sony đẹp quá, da người lên cực mịn!",
-    color: "text-cyan-400",
-    avatar: generateSvgAvatar("M", "#22d3ee"),
-  },
-  {
-    id: 1,
-    user: "Lan Studio",
-    text: "Độ nét đỉnh thật, nhìn như TVC luôn.",
-    color: "text-pink-400",
-    avatar: generateSvgAvatar("L", "#f472b6"),
-  },
-  {
-    id: 2,
-    user: "Huy Media",
-    text: "Dynamic range Sony quá ổn, không cháy highlight.",
-    color: "text-yellow-400",
-    avatar: generateSvgAvatar("H", "#eab308"),
-  },
-  {
-    id: 3,
-    user: "Khanh Film",
-    text: "Tone màu cinematic, xem đã mắt ghê.",
-    color: "text-green-400",
-    avatar: generateSvgAvatar("K", "#4ade80"),
-  },
-  {
-    id: 4,
-    user: "An Creator",
-    text: "Chất lượng hình ảnh Sony đúng là khác biệt!",
-    color: "text-purple-400",
-    avatar: generateSvgAvatar("A", "#c084fc"),
-  },
-  {
-    id: 5,
-    user: "Trung Live",
-    text: "Chi tiết quá tốt, zoom vẫn nét căng.",
-    color: "text-orange-400",
-    avatar: generateSvgAvatar("T", "#fb923c"),
-  },
-  {
-    id: 6,
-    user: "Mai Visual",
-    text: "Sony stream mà tưởng quay hậu kỳ rồi.",
-    color: "text-blue-400",
-    avatar: generateSvgAvatar("M", "#60a5fa"),
-  },
-];
 
-const GIFT_EMOJIS = ["🎁", "🌹", "💎", "🏆", "🔥", "🚀", "💐", "⭐"];
 const INITIAL_VISIBLE_FEED_COMMENTS = 4;
 const MAX_VISIBLE_FEED_COMMENTS = 4;
 const KIOSK_CAMERA_RETRY_BASE_MS = 1800;
 const KIOSK_CAMERA_RETRY_MAX_MS = 6500;
 const KIOSK_CAMERA_ERROR_THRESHOLD = 3;
 const KIOSK_VIDEO_AUTOPLAY_TIMEOUT_MS = 4200;
-const TARGET_CAMERA_VIEWPORT_WIDTH_PX = 1080;
-const TARGET_CAMERA_VIEWPORT_HEIGHT_PX = 1920;
-const TARGET_CAMERA_RAW_WIDTH_PX = TARGET_CAMERA_VIEWPORT_HEIGHT_PX;
-const TARGET_CAMERA_RAW_HEIGHT_PX = TARGET_CAMERA_VIEWPORT_WIDTH_PX;
-const TARGET_CAMERA_RAW_ASPECT_RATIO = TARGET_CAMERA_RAW_WIDTH_PX / TARGET_CAMERA_RAW_HEIGHT_PX;
 const PHONE_SHELL_WIDTH_PX = 410;
 const PHONE_SHELL_BORDER_PX = 8;
 const PHONE_VIEWPORT_ASPECT_RATIO = TARGET_CAMERA_VIEWPORT_WIDTH_PX / TARGET_CAMERA_VIEWPORT_HEIGHT_PX;
 const PHONE_VIEWPORT_WIDTH_PX = PHONE_SHELL_WIDTH_PX - PHONE_SHELL_BORDER_PX * 2;
 const PHONE_VIEWPORT_HEIGHT_PX = PHONE_VIEWPORT_WIDTH_PX / PHONE_VIEWPORT_ASPECT_RATIO;
 const PHONE_SHELL_HEIGHT_PX = PHONE_VIEWPORT_HEIGHT_PX + PHONE_SHELL_BORDER_PX * 2;
-const CAMERA_BASE_CONSTRAINTS: CameraTrackConstraints = {
-  width: { ideal: TARGET_CAMERA_RAW_WIDTH_PX, max: TARGET_CAMERA_RAW_WIDTH_PX },
-  height: { ideal: TARGET_CAMERA_RAW_HEIGHT_PX, max: TARGET_CAMERA_RAW_HEIGHT_PX },
-  aspectRatio: { ideal: TARGET_CAMERA_RAW_ASPECT_RATIO },
-  frameRate: { ideal: 30, max: 60 },
-  resizeMode: "crop-and-scale",
-};
-const DEFAULT_CAMERA_FRAME_SIZE = {
-  width: TARGET_CAMERA_RAW_WIDTH_PX,
-  height: TARGET_CAMERA_RAW_HEIGHT_PX,
-};
 const DEFAULT_PHONE_VIEWPORT_SIZE = {
   width: PHONE_VIEWPORT_WIDTH_PX,
   height: PHONE_VIEWPORT_HEIGHT_PX,
 };
-const CONFLICTING_CAMERA_PATTERNS = [
-  "imaging edge",
-  "imagingedge",
-  "obs virtual",
-  "virtual camera",
-  "snap camera",
-  "droidcam",
-  "epoccam",
-  "ivcam",
-  "iriun",
-  "xsplit vcam",
-] as const;
-const LAPTOP_CAMERA_PATTERNS = [
-  "integrated camera",
-  "built-in",
-  "facetime",
-  "hd webcam",
-] as const;
-
-function normalizeCameraLabel(label: string) {
-  return label.trim().toLowerCase();
-}
-
-function isConflictingCameraSource(label: string) {
-  const normalized = normalizeCameraLabel(label);
-  return CONFLICTING_CAMERA_PATTERNS.some(pattern => normalized.includes(pattern));
-}
-
-function isSonyUsbLivestreamSource(label: string) {
-  const normalized = normalizeCameraLabel(label);
-  const mentionsSony = normalized.includes("sony");
-  const mentionsUsbStream =
-    normalized.includes("usb") ||
-    normalized.includes("uvc") ||
-    normalized.includes("stream") ||
-    normalized.includes("live");
-
-  return mentionsSony && mentionsUsbStream && !isConflictingCameraSource(label);
-}
-
-function isSonyCameraSource(label: string) {
-  const normalized = normalizeCameraLabel(label);
-  return normalized.includes("sony") && !isConflictingCameraSource(label);
-}
-
-function scoreVideoDevice(device: MediaDeviceInfo) {
-  const label = device.label || "Camera chưa cấp quyền";
-  const normalized = normalizeCameraLabel(label);
-
-  if (!label) return 0;
-  if (isConflictingCameraSource(label)) return -1000;
-  if (isSonyUsbLivestreamSource(label)) return 300;
-  if (isSonyCameraSource(label)) return 220;
-  if (normalized.includes("usb")) return 120;
-  if (normalized.includes("camera")) return 60;
-  if (LAPTOP_CAMERA_PATTERNS.some(pattern => normalized.includes(pattern))) return 10;
-  return 30;
-}
-
-function describeVideoDevice(label: string) {
-  if (isSonyUsbLivestreamSource(label)) return "Ưu tiên: Sony USB Livestream / UVC";
-  if (isSonyCameraSource(label)) return "Nguồn Sony vật lý";
-  if (normalizeCameraLabel(label).includes("usb")) return "Nguồn USB khả dụng";
-  if (LAPTOP_CAMERA_PATTERNS.some(pattern => normalizeCameraLabel(label).includes(pattern))) {
-    return "Camera tích hợp";
-  }
-  return "Camera khả dụng";
-}
-
-function buildVideoSourceOptions(devices: MediaDeviceInfo[]) {
-  const visibleOptions: VideoSourceOption[] = devices
-    .filter(device => device.kind === "videoinput")
-    .filter(device => !isConflictingCameraSource(device.label))
-    .map(device => {
-      const score = scoreVideoDevice(device);
-      return {
-        deviceId: device.deviceId,
-        label: device.label || "Camera chưa rõ tên",
-        note: describeVideoDevice(device.label),
-        score,
-        recommended: score >= 300,
-      };
-    })
-    .sort((left, right) => right.score - left.score || left.label.localeCompare(right.label));
-
-  const hiddenLabels = devices
-    .filter(device => device.kind === "videoinput")
-    .filter(device => isConflictingCameraSource(device.label))
-    .map(device => device.label || "Nguồn camera ảo");
-
-  return { visibleOptions, hiddenLabels };
-}
-
-function labelsProbablyMatch(left: string | null | undefined, right: string | null | undefined) {
-  if (!left || !right) return false;
-
-  const normalizedLeft = normalizeCameraLabel(left);
-  const normalizedRight = normalizeCameraLabel(right);
-
-  return (
-    normalizedLeft === normalizedRight ||
-    normalizedLeft.includes(normalizedRight) ||
-    normalizedRight.includes(normalizedLeft)
-  );
-}
-
-function pickPreferredVideoSource(options: VideoSourceOption[]) {
-  if (!options.length) return null;
-
-  const storedPreference = readPreferredCameraPreference();
-
-  if (storedPreference?.deviceId) {
-    const exactMatch = options.find((option) => option.deviceId === storedPreference.deviceId);
-    if (exactMatch) return exactMatch;
-  }
-
-  if (storedPreference?.normalizedLabel) {
-    const labelMatch = options.find((option) => labelsProbablyMatch(option.label, storedPreference.normalizedLabel));
-    if (labelMatch) return labelMatch;
-  }
-
-  return options[0];
-}
-
-function getYouTubeThumbnailUrl(videoId: string) {
-  return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
-}
-
-function buildYouTubeEmbedUrl(videoId: string, { muted, autoplay }: { muted: boolean; autoplay: boolean }) {
-  const params = new URLSearchParams({
-    autoplay: autoplay ? "1" : "0",
-    controls: "1",
-    enablejsapi: "1",
-    fs: "1",
-    iv_load_policy: "3",
-    modestbranding: "1",
-    mute: muted ? "1" : "0",
-    playsinline: "1",
-    rel: "0",
-  });
-
-  return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
-}
-
-function normalizeRotation(rotation: number) {
-  return ((rotation % 360) + 360) % 360;
-}
-
-function getFittedVideoFrameSize(
-  viewport: { width: number; height: number },
-  frame: { width: number; height: number },
-  rotation: number,
-) {
-  const normalizedRotation = normalizeRotation(rotation);
-  const isQuarterTurn = normalizedRotation === 90 || normalizedRotation === 270;
-  const rotatedWidth = isQuarterTurn ? frame.height : frame.width;
-  const rotatedHeight = isQuarterTurn ? frame.width : frame.height;
-
-  if (!viewport.width || !viewport.height || !rotatedWidth || !rotatedHeight) {
-    return frame;
-  }
-
-  const scale = Math.max(viewport.width / rotatedWidth, viewport.height / rotatedHeight);
-
-  return {
-    width: frame.width * scale,
-    height: frame.height * scale,
-  };
-}
-
-function buildCameraTrackConstraints(deviceId?: string): CameraTrackConstraints {
-  return {
-    ...CAMERA_BASE_CONSTRAINTS,
-    ...(deviceId ? { deviceId: { exact: deviceId } } : {}),
-  };
-}
-
-function isPlaybackStateRunning(playerState: number | null, playerStateMap: YouTubePlayerStateMap) {
-  return playerState === playerStateMap.PLAYING || playerState === playerStateMap.BUFFERING;
-}
-
 const SHOWCASE_YOUTUBE_PLAYER_HOST_ID = "showcase-youtube-player-host";
 const DEFAULT_MAIN_APP_URL = "http://127.0.0.1:5173";
-const YOUTUBE_IFRAME_API_SRC = "https://www.youtube.com/iframe_api";
 let youTubeApiReadyPromise: Promise<YouTubeNamespace> | null = null;
 
 function ensureTrailingSlash(value: string) {
@@ -494,248 +176,6 @@ function loadYouTubeIframeApi() {
   return youTubeApiReadyPromise;
 }
 
-const SONY_LIVE_REASONS: SonyReason[] = [
-  {
-    id: 1,
-    title: "Image Quality",
-    hook: "Chất Lượng Hình Ấn Tượng",
-    benefit: "Cảm biến lớn, chi tiết rõ nét, màu sắc trung thực.",
-    imageUrl: "https://placehold.co/1600x900/0f172a/93c5fd?text=Image+Quality",
-    chips: ["Full-frame", "Dynamic range", "Skin tone"],
-    details: [
-      "Cảm biến lớn giảm noise, tăng chi tiết.",
-      "Dynamic range rộng giữ trọn vùng sáng tối khi setup ánh sáng.",
-      "Công nghệ xử lý màu Sony tái hiện da người tự nhiên.",
-    ],
-    icon: Camera,
-    tone: "cool",
-  },
-  {
-    id: 2,
-    title: "Bokeh",
-    hook: "Nổi Bật Nhờ Xóa Phông",
-    benefit: "Ống kính khẩu lớn, chủ thể rõ, nền mờ tự nhiên.",
-    imageUrl: "https://placehold.co/1600x900/1f132b/f0abfc?text=Bokeh",
-    chips: ["f/1.4-f/2", "Optical blur", "Depth"],
-    details: [
-      "Ống kính khẩu lớn tạo phông nền mờ sâu, nổi bật chủ thể.",
-      "Hiệu ứng bokeh tự nhiên hỗ trợ trải nghiệm livestream ấn tượng.",
-      "Quang học thực cho chất lượng nổi bật hơn phần mềm.",
-    ],
-    icon: Lightbulb,
-    tone: "warm",
-  },
-  {
-    id: 3,
-    title: "Eye AF",
-    hook: "Lấy Nét Mắt Tự Động",
-    benefit: "Tự động lấy nét mắt chính xác, duy trì hình ảnh sắc nét.",
-    imageUrl: "https://placehold.co/1600x900/0f172a/67e8f9?text=Eye+AF",
-    chips: ["Eye AF", "Product focus", "Stability"],
-    details: [
-      "Eye AF giúp tracking mắt nhanh và chính xác liên tục.",
-      "Chuyển nét mượt mà giữa người và vật thể.",
-      "Yên tâm cho cả bán hàng lẫn review sản phẩm trực tiếp.",
-    ],
-    icon: Gauge,
-    tone: "cool",
-  },
-  {
-    id: 4,
-    title: "Color Control",
-    hook: "Quản Lý Màu Chuyên Nghiệp",
-    benefit: "Tùy chỉnh màu linh hoạt, đảm bảo đồng nhất trên mọi nền tảng.",
-    imageUrl: "https://placehold.co/1600x900/0b1020/60a5fa?text=Color+Control",
-    chips: ["Creative Look", "Color Lab", "Color match"],
-    details: [
-      "Creative Look giúp thiết lập màu sắc nhanh chóng phù hợp với thương hiệu.",
-      "Picture Profile hỗ trợ tinh chỉnh chuyên sâu.",
-      "Dễ dàng cân chỉnh màu khi sử dụng nhiều camera Sony.",
-    ],
-    icon: Sliders,
-    tone: "cool",
-  },
-  {
-    id: 5,
-    title: "Low Light",
-    hook: "Quay Sáng Đẹp Đủ Mọi Điều Kiện",
-    benefit: "Hiệu suất tốt khi ánh sáng yếu, hình ảnh sạch chi tiết.",
-    imageUrl: "https://placehold.co/1600x900/2a180d/fbbf24?text=Low+Light",
-    chips: ["Low light", "Clean image", "Flexible"],
-    details: [
-      "ISO cao giúp hình sạch, giữ chi tiết khi ánh sáng yếu.",
-      "Hoạt động ổn định trong môi trường shop hoặc studio indoor.",
-      "Kết hợp đèn hỗ trợ cho chất lượng livestream tối ưu.",
-    ],
-    icon: Zap,
-    tone: "warm",
-  },
-  {
-    id: 6,
-    title: "Connectivity",
-    hook: "Kết Nối Dễ Dàng",
-    benefit: "HDMI và USB UVC hỗ trợ đa nền tảng, setup nhanh chóng.",
-    imageUrl: "https://placehold.co/1600x900/10203a/7dd3fc?text=Connectivity",
-    chips: ["Clean HDMI", "UVC", "OBS/vMix"],
-    details: [
-      "Hỗ trợ xuất HDMI sạch cho capture card chuyên dụng.",
-      "Kết nối USB UVC, không cần driver, cắm là dùng được.",
-      "Tương thích tốt với OBS, TikTok Live Studio, vMix.",
-    ],
-    icon: Cable,
-    tone: "cool",
-  },
-  {
-    id: 7,
-    title: "Audio",
-    hook: "Âm Thanh Chuẩn Xác",
-    benefit: "Kết nối digital, âm thanh rõ, đồng bộ hình tiếng.",
-    imageUrl: "https://placehold.co/1600x900/0b1326/93c5fd?text=Audio",
-    chips: ["MI Shoe", "Low noise", "A/V sync"],
-    details: [
-      "Mic Sony ECM truyền âm thanh digital trực tiếp, giảm nhiễu.",
-      "Không phụ thuộc jack 3.5mm, âm thanh ổn định.",
-      "Đồng bộ audio-video chính xác, không lệch khung hình.",
-    ],
-    icon: Mic,
-    tone: "cool",
-  },
-  {
-    id: 8,
-    title: "Ecosystem",
-    hook: "Hệ Sinh Thái Đa Năng",
-    benefit: "Dễ dàng nâng cấp body, thay đổi lens theo nhu cầu.",
-    imageUrl: "https://placehold.co/1600x900/0b1a33/c4b5fd?text=Ecosystem",
-    chips: ["ZV-E10→A7", "Lens swap", "Multi-use"],
-    details: [
-      "Chuyển đổi body linh hoạt: ZV-E10, ZV-E1, A7 series.",
-      "Đáp ứng linh hoạt mọi nhu cầu: livestream, video, chụp ảnh.",
-      "Lens đa dạng: góc rộng, xóa phông, macro...",
-    ],
-    icon: Settings,
-    tone: "cool",
-  },
-  {
-    id: 9,
-    title: "Trust Boost",
-    hook: "Hình Ảnh Tạo Niềm Tin",
-    benefit: "Hình ảnh sắc nét, giữ chân khách hàng hiệu quả.",
-    imageUrl: "https://placehold.co/1600x900/1a1024/f9a8d4?text=Trust+Boost",
-    chips: ["Retention", "Trust", "Conversion"],
-    details: [
-      "Tạo ấn tượng chuyên nghiệp, nâng cao uy tín thương hiệu.",
-      "Chất lượng hình ảnh giúp tăng thời gian theo dõi livestream.",
-      "Tối ưu cho cá nhân, doanh nghiệp, bán hàng trực tuyến.",
-    ],
-    icon: Star,
-    tone: "warm",
-  },
-  {
-    id: 10,
-    title: "Tận Hưởng Sự Khác Biệt",
-    hook: "Trải Nghiệm Sony, Cảm Nhận Đẳng Cấp",
-    benefit: "Hình ảnh và chất lượng vượt trội, khác biệt mọi thiết bị di động.",
-    imageUrl: "https://placehold.co/1600x900/2a1b0a/fcd34d?text=Sony+Difference",
-    chips: ["Cảm biến lớn", "Chất lượng vượt trội", "Nâng chuẩn livestream"],
-    details: [
-      "Cảm biến lớn, công nghệ mới dẫn đầu chất lượng hình ảnh.",
-      "Trải nghiệm livestream vượt trội so với thiết bị di động thông thường.",
-      "Nâng tầm hình ảnh cá nhân, doanh nghiệp ngay tại showroom.",
-    ],
-    icon: TriangleAlert,
-    tone: "warning",
-  },
-  {
-    id: 11,
-    title: "Tutorial 01",
-    hook: "Bật Product Showcase Trên Sony ZV",
-    benefit: "Video hướng dẫn thực hành cách chuyển nhanh chế độ Product Showcase.",
-    imageUrl: getYouTubeThumbnailUrl("xlatYBYoGSA"),
-    youtubeVideoId: "xlatYBYoGSA",
-    youtubeDurationMs: 73_000,
-    mediaAspectRatio: "16 / 9",
-    chips: ["YouTube Video", "Product Showcase", "Sony ZV"],
-    details: [
-      "Giải thích khi nào nên dùng Product Showcase trong livestream bán hàng.",
-      "Các bước thao tác trực tiếp trên thân máy để bật/tắt nhanh.",
-      "Tối ưu lấy nét sản phẩm khi đưa vật thể lên gần camera.",
-    ],
-    icon: Camera,
-    tone: "cool",
-  },
-  {
-    id: 12,
-    title: "Tutorial 02",
-    hook: "Cài Đặt Soft Skin Trên Máy Sony ZV",
-    benefit: "Video cài đặt Soft Skin để làm mịn da tự nhiên khi livestream.",
-    imageUrl: getYouTubeThumbnailUrl("CDJcWg5JYww"),
-    youtubeVideoId: "CDJcWg5JYww",
-    youtubeDurationMs: 36_000,
-    mediaAspectRatio: "16 / 9",
-    chips: ["YouTube Video", "Soft Skin", "Beauty Setup"],
-    details: [
-      "Thiết lập mức Soft Skin phù hợp từng điều kiện ánh sáng khác nhau.",
-      "Giữ độ chi tiết chủ thể và hạn chế cảm giác xử lý quá tay.",
-      "Kết hợp profile màu để da lên đều khi livestream dài phiên.",
-    ],
-    icon: Lightbulb,
-    tone: "warm",
-  },
-  {
-    id: 13,
-    title: "Tutorial 03",
-    hook: "Combo Lens Và Phụ Kiện Cho Livestream Thời Trang",
-    benefit: "Video gợi ý setup lens và phụ kiện tối ưu cho ngành thời trang.",
-    imageUrl: getYouTubeThumbnailUrl("f1cIbqmgQOg"),
-    youtubeVideoId: "f1cIbqmgQOg",
-    youtubeDurationMs: 38_000,
-    mediaAspectRatio: "16 / 9",
-    chips: ["YouTube Video", "Lens Combo", "Fashion Live"],
-    details: [
-      "Đề xuất tiêu cự và góc máy giúp tôn chất liệu, màu sắc sản phẩm.",
-      "Gợi ý phụ kiện giữ khung hình ổn định trong nhiều format live khác nhau.",
-      "Thiết lập nhanh để chuyển giữa talking-head và showcase sản phẩm.",
-    ],
-    icon: Sliders,
-    tone: "cool",
-  },
-  {
-    id: 14,
-    title: "Tutorial 04",
-    hook: "Combo Lens Và Phụ Kiện Cho F&B Và Mỹ Phẩm",
-    benefit: "Video hướng dẫn setup dành cho bối cảnh quay cận món ăn và mỹ phẩm.",
-    imageUrl: getYouTubeThumbnailUrl("1r6Tgcytqpk"),
-    youtubeVideoId: "1r6Tgcytqpk",
-    youtubeDurationMs: 29_000,
-    mediaAspectRatio: "16 / 9",
-    chips: ["YouTube Video", "F&B", "Cosmetic Live"],
-    details: [
-      "Tinh chỉnh khung và ánh sáng để texture món ăn/mỹ phẩm nổi bật.",
-      "Kết hợp lens phù hợp để quay close-up vẫn giữ nét ổn định.",
-      "Giảm rung và giữ chất lượng hình ảnh nhất quán trong suốt buổi live.",
-    ],
-    icon: Mic,
-    tone: "warm",
-  },
-  {
-    id: 15,
-    title: "Tutorial 05",
-    hook: "Setup Sony Đơn Giản Để Livestream Chuyên Nghiệp",
-    benefit: "Video tổng hợp quy trình setup nhanh cho phiên livestream tiêu chuẩn.",
-    imageUrl: getYouTubeThumbnailUrl("U2OoMn2H1Pk"),
-    youtubeVideoId: "U2OoMn2H1Pk",
-    youtubeDurationMs: 41_000,
-    mediaAspectRatio: "16 / 9",
-    chips: ["YouTube Video", "Quick Setup", "Pro Livestream"],
-    details: [
-      "Checklist toàn bộ bước chuẩn bị trước khi lên sóng.",
-      "Thiết lập camera, audio và ánh sáng theo flow dễ triển khai.",
-      "Giúp đội vận hành rút ngắn thời gian setup tại showroom.",
-    ],
-    icon: Settings,
-    tone: "warning",
-  },
-];
 
 // ─── Sony Reasons Infographic Panel ───────────────────────────────────────────
 function SonyLiveReasonsPanel({
@@ -766,11 +206,11 @@ function SonyLiveReasonsPanel({
     { surface: string; badge: string; chip: string; dot: string; glow: string; hoverShadow: string }
   > = {
     cool: {
-      surface: "border-cyan-300/16",
+      surface: "border-info-soft/16",
       badge: "border border-white/10 bg-slate-600/72 text-slate-100",
-      chip: "border border-cyan-300/18 bg-cyan-400/12 text-cyan-100",
-      dot: "bg-cyan-300",
-      glow: "from-cyan-300/20 via-sky-300/6 to-transparent",
+      chip: "border border-info-soft/18 bg-info-soft/12 text-cyan-100",
+      dot: "bg-info-soft",
+      glow: "from-info-soft/20 via-sky-300/6 to-transparent",
       hoverShadow: "0 26px 48px rgba(3, 8, 20, 0.46), 0 0 0 1px rgba(94, 221, 255, 0.14)",
     },
     warm: {
@@ -782,11 +222,11 @@ function SonyLiveReasonsPanel({
       hoverShadow: "0 26px 48px rgba(3, 8, 20, 0.46), 0 0 0 1px rgba(244, 114, 182, 0.14)",
     },
     warning: {
-      surface: "border-amber-300/18",
+      surface: "border-warning-soft/18",
       badge: "border border-white/10 bg-neutral-600/72 text-neutral-100",
-      chip: "border border-amber-300/18 bg-amber-400/12 text-amber-100",
-      dot: "bg-amber-300",
-      glow: "from-amber-300/18 via-orange-300/6 to-transparent",
+      chip: "border border-warning-soft/18 bg-warning-soft/12 text-amber-100",
+      dot: "bg-warning-soft",
+      glow: "from-warning-soft/18 via-orange-300/6 to-transparent",
       hoverShadow: "0 26px 48px rgba(3, 8, 20, 0.46), 0 0 0 1px rgba(245, 185, 92, 0.14)",
     },
   };
@@ -811,13 +251,32 @@ function SonyLiveReasonsPanel({
     writeVideoAudioMutedFallback(audioFallbackMuted);
   }, [audioFallbackMuted, kioskMode]);
 
+  // Reset the player bookkeeping when the slide changes.
+  //
+  // This is React's "adjusting state when a prop changes" pattern, done during
+  // render rather than in an effect. As an effect it painted one frame of the
+  // *previous* slide's loaded video against the new slide before resetting —
+  // and it tripped react-hooks/set-state-in-effect for exactly that reason.
+  // Setting state during render re-runs this component immediately, before the
+  // browser paints anything.
+  const slideResetKey = `${currentReason.id}:${hasYouTubeVideo}`;
+  const [lastSlideResetKey, setLastSlideResetKey] = useState(slideResetKey);
+
+  if (lastSlideResetKey !== slideResetKey) {
+    setLastSlideResetKey(slideResetKey);
+    setIsVideoFrameLoaded(false);
+    setUseIframeFallback(false);
+  }
+
+  // The ref half of the same reset. Refs stay in an effect: writing one during
+  // render is what react-hooks/refs forbids, and unlike state a ref cannot
+  // cause the extra paint that moved the two setState calls above out of an
+  // effect in the first place.
   useEffect(() => {
     playerStateRef.current = null;
     hasReloadedCurrentVideoRef.current = false;
     hasAttemptedAudioLiftRef.current = false;
-    setIsVideoFrameLoaded(false);
-    setUseIframeFallback(false);
-  }, [currentReason.id, hasYouTubeVideo]);
+  }, [slideResetKey]);
 
   const goPrev = useCallback(() => {
     setSlideDirection(-1);
@@ -1034,7 +493,20 @@ function SonyLiveReasonsPanel({
       cancelled = true;
       destroyPlayer();
     };
-  }, [currentReason.youtubeVideoId, goNext, hasYouTubeVideo, playerReloadNonce, useIframeFallback]);
+    // `audioFallbackMuted` is read inside (shouldAttemptAudibleAutoplay) and now
+    // declared. It is behaviour-neutral to add: every one of the four places
+    // that set it also changes `playerReloadNonce` or `useIframeFallback`,
+    // both already listed, so this effect re-ran on each of those transitions
+    // anyway. Declaring it removes the lie in the dependency list rather than
+    // changing when the player is rebuilt.
+  }, [
+    audioFallbackMuted,
+    currentReason.youtubeVideoId,
+    goNext,
+    hasYouTubeVideo,
+    playerReloadNonce,
+    useIframeFallback,
+  ]);
 
   return (
     <SlideIn from="left" delay={0.28} className="flex w-full max-w-[940px] flex-col lg:origin-center lg:scale-[0.86] xl:scale-[0.92] 2xl:scale-100">
@@ -1449,7 +921,7 @@ function PhoneMockup({
       }
 
       const currentDeviceId = selectedDeviceIdRef.current;
-      const preferredSource = pickPreferredVideoSource(visibleOptions);
+      const preferredSource = pickPreferredVideoSource(visibleOptions, readPreferredCameraPreference());
       const nextDeviceId =
         currentDeviceId && visibleOptions.some((option) => option.deviceId === currentDeviceId)
           ? currentDeviceId
@@ -1546,7 +1018,7 @@ function PhoneMockup({
       return false;
     }
 
-    const preferredSource = pickPreferredVideoSource(sources);
+    const preferredSource = pickPreferredVideoSource(sources, readPreferredCameraPreference());
     if (!preferredSource) {
       scheduleAutoReconnect(requestPermission);
       return false;
@@ -1576,7 +1048,14 @@ function PhoneMockup({
     return true;
   }, [clearRetryTimeout, connectToDevice, debugMode, refreshVideoSources, scheduleAutoReconnect]);
 
-  autoReconnectRef.current = autoConnectCamera;
+  // Kept in a ref so the retry timer can call the *current* implementation
+  // without being torn down and rescheduled every time the callback identity
+  // changes. Assigned in an effect rather than during render: a render may be
+  // thrown away or replayed, and a discarded render must not leave its closure
+  // behind in a ref that a live timer will call.
+  useEffect(() => {
+    autoReconnectRef.current = autoConnectCamera;
+  }, [autoConnectCamera]);
 
   const spawnHeart = useCallback(() => {
     const id = nextTransientId();
@@ -1736,11 +1215,19 @@ function PhoneMockup({
     };
   }, [appendNextFeedComment, isVideoPerformanceMode, kioskMode]);
 
-  useEffect(() => {
-    if (!isVideoPerformanceMode) return;
-    setHearts([]);
-    setCompliments([]);
-  }, [isVideoPerformanceMode]);
+  // Clear the floating hearts and compliments when the phone switches into
+  // video-performance mode. Same render-phase reset as the slide change above:
+  // as an effect, one frame of the old particles was painted over the new mode
+  // before they disappeared.
+  const [lastPerformanceMode, setLastPerformanceMode] = useState(isVideoPerformanceMode);
+
+  if (lastPerformanceMode !== isVideoPerformanceMode) {
+    setLastPerformanceMode(isVideoPerformanceMode);
+    if (isVideoPerformanceMode) {
+      setHearts([]);
+      setCompliments([]);
+    }
+  }
 
   // Hidden control panel toggle (Ctrl/Cmd only)
   useEffect(() => {
@@ -1757,12 +1244,20 @@ function PhoneMockup({
   }, [debugMode, kioskMode]);
 
   useEffect(() => {
+    // No setIsPickerOpen here: it is already initialised to `!kioskMode`, so
+    // both branches were setting it to the value it already held — a wasted
+    // render on every mount.
+    // Both branches reach refreshVideoSources, which sets `isRefreshingSources`
+    // synchronously before its first await. That is deliberate: the spinner
+    // must appear on the frame the scan starts, not after device enumeration
+    // resolves. Attaching to the media-device API is exactly the external-system
+    // synchronisation an effect is for, and React batches the mount flush into
+    // a single render — so the rule's cascading-render concern does not apply.
     if (kioskMode) {
-      setIsPickerOpen(false);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       void autoConnectCamera(true);
     } else {
       void refreshVideoSources(true);
-      setIsPickerOpen(true);
     }
 
     return () => {
@@ -1872,14 +1367,14 @@ function PhoneMockup({
                         key={source.deviceId}
                         className={`flex cursor-pointer items-start gap-3 rounded-2xl border px-3 py-3 transition ${
                           active
-                            ? "border-cyan-300/32 bg-cyan-400/8 shadow-[0_0_0_1px_rgba(103,232,249,0.16)]"
+                            ? "border-info-soft/32 bg-info-soft/8 shadow-[0_0_0_1px_rgba(103,232,249,0.16)]"
                             : "border-white/10 bg-white/[0.025] hover:border-white/20 hover:bg-white/[0.05]"
                         }`}
                       >
                         <input
                           type="radio"
                           name="video-source"
-                          className="mt-1 h-4 w-4 accent-cyan-400"
+                          className="mt-1 h-4 w-4 accent-info-soft"
                           checked={active}
                           onChange={() => setSelectedDeviceId(source.deviceId)}
                         />
@@ -1887,7 +1382,7 @@ function PhoneMockup({
                           <div className="flex items-center gap-2">
                             <p className="truncate text-[12px] font-semibold text-white">{source.label}</p>
                             {source.recommended && (
-                              <span className="rounded-full border border-cyan-300/18 bg-cyan-400/12 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.14em] text-cyan-100">
+                              <span className="rounded-full border border-info-soft/18 bg-info-soft/12 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.14em] text-cyan-100">
                                 Recommended
                               </span>
                             )}
@@ -1899,7 +1394,7 @@ function PhoneMockup({
                   })}
 
                   {!videoSources.length && !isRefreshingSources && (
-                    <div className="rounded-2xl border border-amber-300/20 bg-amber-400/10 px-3 py-3 text-[11px] leading-relaxed text-amber-100/90">
+                    <div className="rounded-2xl border border-warning-soft/20 bg-warning-soft/10 px-3 py-3 text-[11px] leading-relaxed text-amber-100/90">
                       Không có source khả dụng. Bật chế độ USB Livestream trên máy ảnh Sony rồi bấm quét lại.
                     </div>
                   )}
@@ -1919,7 +1414,7 @@ function PhoneMockup({
                 )}
 
                 {pickerError && (
-                  <div className="mt-3 rounded-2xl border border-amber-300/20 bg-amber-400/10 px-3 py-2.5">
+                  <div className="mt-3 rounded-2xl border border-warning-soft/20 bg-warning-soft/10 px-3 py-2.5">
                     <p className="text-[10px] leading-relaxed text-amber-100/90">{pickerError}</p>
                   </div>
                 )}
@@ -1937,7 +1432,7 @@ function PhoneMockup({
                     type="button"
                     onClick={() => void connectSelectedCamera()}
                     disabled={!selectedDeviceId || isRefreshingSources}
-                    className="inline-flex flex-[1.2] items-center justify-center rounded-2xl bg-cyan-300 px-3 py-2.5 text-[11px] font-bold text-slate-950 transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:bg-white/15 disabled:text-white/35"
+                    className="inline-flex flex-[1.2] items-center justify-center rounded-2xl bg-info-soft px-3 py-2.5 text-[11px] font-bold text-slate-950 transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:bg-white/15 disabled:text-white/35"
                   >
                     Dùng source đã chọn
                   </button>
@@ -1955,7 +1450,7 @@ function PhoneMockup({
               className="absolute left-4 top-1/2 z-[120] w-[260px] -translate-y-1/2 rounded-2xl border border-white/20 bg-black/80 p-3 backdrop-blur-md"
               data-testid="preview-control-panel"
             >
-              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-cyan-300">Preview Control</p>
+              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-info-soft">Preview Control</p>
               <p className="mt-1 text-[10px] text-white/55">
                 {interactionEnabled ? "Toggle panel: Ctrl / Cmd" : "Kiosk locked"}
               </p>
@@ -1968,7 +1463,7 @@ function PhoneMockup({
               <button
                 type="button"
                 onClick={() => setIsPickerOpen(true)}
-                className="mt-2 inline-flex w-full items-center justify-center rounded-lg border border-cyan-300/25 bg-cyan-400/10 px-2 py-1.5 text-[10px] font-semibold text-cyan-100 transition hover:bg-cyan-400/15"
+                className="mt-2 inline-flex w-full items-center justify-center rounded-lg border border-info-soft/25 bg-info-soft/10 px-2 py-1.5 text-[10px] font-semibold text-cyan-100 transition hover:bg-info-soft/15"
               >
                 Mở lại source picker
               </button>
@@ -2080,7 +1575,7 @@ function PhoneMockup({
           ))}
 
           {(cameraError && (!kioskMode || shouldSurfaceCompactCameraError)) && (
-            <div className="pointer-events-none absolute left-4 right-4 top-[86px] rounded-xl border border-amber-300/20 bg-black/45 px-3 py-1.5 backdrop-blur-sm">
+            <div className="pointer-events-none absolute left-4 right-4 top-[86px] rounded-xl border border-warning-soft/20 bg-black/45 px-3 py-1.5 backdrop-blur-sm">
               <p className="line-clamp-2 text-[10px] font-medium text-amber-200/90">Camera: {cameraError}</p>
             </div>
           )}
@@ -2096,7 +1591,7 @@ function PhoneMockup({
           <div className="flex items-start justify-between gap-3">
             <div className="space-y-2.5">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-lg bg-red-500 px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-[0.08em] text-white shadow-[0_10px_30px_rgba(239,68,68,0.35)]">
+                <span className="rounded-lg bg-danger px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-[0.08em] text-white shadow-[0_10px_30px_rgba(239,68,68,0.35)]">
                   Live
                 </span>
                 <span className="flex items-center gap-1.5 rounded-full border border-white/14 bg-black/48 px-2.5 py-1 text-[11px] font-semibold text-white/90 backdrop-blur-sm">
@@ -2290,16 +1785,22 @@ export function LivestreamShowcasePage({ onExit }: { onExit?: () => void } = {})
   const [runtimeFlags] = useState<ShowcaseRuntimeFlags>(() => readShowcaseRuntimeFlags());
   const [isExiting, setIsExiting] = useState(false);
   const [isVideoSlideFocused, setIsVideoSlideFocused] = useState(false);
-  const [bootTimestamp, setBootTimestamp] = useState<string | null>(null);
   const [mainAppSopUrl] = useState(() => buildMainAppUrl("/livestream"));
   const { kioskMode, debugMode } = runtimeFlags;
 
+  // Stamped once, when the component first mounts. `runtimeFlags` is read from
+  // the URL in its own initialiser and never changes, so `kioskMode` is
+  // constant for the life of the page and this can be decided up front instead
+  // of being pushed in from an effect on the render after mount.
+  const [bootTimestamp] = useState<string | null>(() =>
+    kioskMode ? new Date().toISOString() : null,
+  );
+
+  // The effect keeps only the write to the outside world.
   useEffect(() => {
-    if (!kioskMode) return;
-    const now = new Date().toISOString();
-    writeLastBootAt(now);
-    setBootTimestamp(now);
-  }, [kioskMode]);
+    if (!bootTimestamp) return;
+    writeLastBootAt(bootTimestamp);
+  }, [bootTimestamp]);
 
   const exitToSop = useCallback(() => {
     if (kioskMode) return;

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Icon } from './Icon';
 
 interface ChecklistItem {
   id: number;
@@ -37,11 +38,11 @@ export const ChecklistSection: React.FC = () => {
   const progress = Math.round((items.filter(i => i.checked).length / items.length) * 100);
 
   const categories = [
-    { id: 'camera', label: 'Thiết Lập Camera Sony', icon: 'photo_camera', color: 'text-blue-400' },
-    { id: 'audio', label: 'Cấu Hình Âm Thanh', icon: 'graphic_eq', color: 'text-orange-400' },
-    { id: 'lighting', label: 'Đồng Bộ Ánh Sáng & WB', icon: 'flare', color: 'text-yellow-400' },
-    { id: 'network', label: 'Phần Mềm & Mạng LAN', icon: 'router', color: 'text-green-400' },
-  ];
+    { id: 'camera', label: 'Thiết Lập Camera Sony', icon: 'photo_camera', color: 'text-info-soft' },
+    { id: 'audio', label: 'Cấu Hình Âm Thanh', icon: 'graphic_eq', color: 'text-warning-soft' },
+    { id: 'lighting', label: 'Đồng Bộ Ánh Sáng & WB', icon: 'flare', color: 'text-warning-soft' },
+    { id: 'network', label: 'Phần Mềm & Mạng LAN', icon: 'router', color: 'text-success-soft' },
+  ] as const;
 
   return (
     <div className="space-y-8 animate-fade pb-20 w-full">
@@ -51,14 +52,14 @@ export const ChecklistSection: React.FC = () => {
           <p className="text-white/40 text-sm">Các đầu việc kỹ thuật cốt lõi nhân viên Sony cần kiểm tra và bấm xác nhận trước khi bắt đầu bấm nút phát sóng (Go Live).</p>
         </div>
         <div className="text-right shrink-0">
-          <div className="text-4xl font-bold text-purple-400">{progress}%</div>
+          <div className="text-4xl font-bold text-accent-mid">{progress}%</div>
           <div className="text-[10px] text-white/30 font-bold uppercase tracking-widest">Tiến trình chuẩn bị</div>
         </div>
       </div>
 
       <div className="w-full bg-white/5 h-2 rounded-full overflow-hidden">
         <div 
-          className="bg-gradient-to-r from-purple-600 to-blue-500 h-full transition-all duration-500 ease-out" 
+          className="bg-gradient-to-r from-accent-deeper to-info h-full transition-all duration-500 ease-out" 
           style={{ width: `${progress}%` }}
         />
       </div>
@@ -69,7 +70,7 @@ export const ChecklistSection: React.FC = () => {
           return (
             <div key={cat.id} className="space-y-3">
               <h3 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-2 ${cat.color}`}>
-                <span className="material-symbols-outlined text-[16px]">{cat.icon}</span>
+                <Icon name={cat.icon} className="text-[16px]" />
                 {cat.label}
               </h3>
               <div className="grid grid-cols-1 gap-3">
@@ -79,14 +80,14 @@ export const ChecklistSection: React.FC = () => {
                     onClick={() => toggle(item.id)}
                     className={`w-full flex items-start gap-4 p-4 rounded-2xl border transition-all text-left group ${
                       item.checked 
-                        ? 'bg-purple-950/10 border-purple-500/20 text-white/40' 
+                        ? 'bg-purple-950/10 border-accent-deep/20 text-white/40' 
                         : 'bg-[#121212] border-white/5 text-white/80 hover:border-white/20'
                     }`}
                   >
                     <div className={`w-5 h-5 rounded-md flex items-center justify-center border shrink-0 mt-0.5 transition-all ${
-                      item.checked ? 'bg-purple-600 border-purple-600' : 'border-white/20 group-hover:border-white/40'
+                      item.checked ? 'bg-accent-deeper border-accent-deeper' : 'border-white/20 group-hover:border-white/40'
                     }`}>
-                      {item.checked && <span className="material-symbols-outlined text-white text-[14px] font-bold">check</span>}
+                      {item.checked && <Icon name="check" className="text-white text-[14px] font-bold" />}
                     </div>
                     <span className={`text-[11px] font-semibold leading-relaxed ${item.checked ? 'line-through' : ''}`}>
                       {item.text}
@@ -100,10 +101,10 @@ export const ChecklistSection: React.FC = () => {
       </div>
 
       {progress === 100 && (
-        <div className="bg-gradient-to-br from-green-500/10 to-transparent border border-green-500/30 p-8 rounded-3xl text-center animate-bounce shadow-lg shadow-green-500/5">
-          <span className="material-symbols-outlined text-green-400 text-5xl mb-3">verified</span>
-          <h3 className="text-xl font-bold text-green-400 mb-2">Đạt Tiêu Chuẩn Phát Sóng!</h3>
-          <p className="text-xs text-green-400/70 max-w-md mx-auto leading-relaxed">
+        <div className="bg-gradient-to-br from-success/10 to-transparent border border-success/30 p-8 rounded-3xl text-center animate-bounce shadow-lg shadow-success/5">
+          <Icon name="verified" className="text-success-soft text-5xl mb-3" />
+          <h3 className="text-xl font-bold text-success-soft mb-2">Đạt Tiêu Chuẩn Phát Sóng!</h3>
+          <p className="text-xs text-success-soft/70 max-w-md mx-auto leading-relaxed">
             Hệ thống máy ảnh, âm thanh, ánh sáng và mạng LAN đã được đồng bộ hóa hoàn hảo. Nhân viên kỹ thuật có thể bàn giao bảng điều khiển và bắt đầu buổi live.
           </p>
         </div>

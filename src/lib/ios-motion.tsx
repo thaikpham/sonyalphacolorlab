@@ -10,37 +10,12 @@
  *  • Page transition: slide + fade + scale (like iOS push navigation)
  */
 
-// @ts-nocheck
-
-import { motion, AnimatePresence, type Variants, type TargetAndTransition } from "motion/react";
+import { motion, type Variants, type TargetAndTransition } from "motion/react";
 import { forwardRef, type ReactNode, type HTMLAttributes, type ButtonHTMLAttributes } from "react";
 
-// ─── 60FPS Optimized Spring Configs ──────────────────────────────────
-
-export const spring = {
-  /** Ultra-fast for instant feedback (60fps optimized). */
-  instant: { type: "spring" as const, stiffness: 800, damping: 35, mass: 0.6 },
-  /** Fast snappy for hover states (60fps). */
-  hover: { type: "spring" as const, stiffness: 600, damping: 32, mass: 0.7, velocity: 0 },
-  /** Smooth press feedback (60fps). */
-  press: { type: "spring" as const, stiffness: 700, damping: 30, mass: 0.5, velocity: 0 },
-  /** Butter smooth page transitions (60fps). */
-  page: { 
-    type: "spring" as const, 
-    stiffness: 400, 
-    damping: 40, 
-    mass: 0.6,
-    velocity: 0,
-    restDelta: 0.0001,
-    restSpeed: 0.0001
-  },
-  /** Gentle for entrances (60fps). */
-  smooth: { type: "spring" as const, stiffness: 320, damping: 30, mass: 1 },
-  /** Very bouncy, for icons and accent elements. */
-  bouncy: { type: "spring" as const, stiffness: 500, damping: 22, mass: 0.8 },
-  /** Snappy, like UIKit spring. */
-  snap: { type: "spring" as const, stiffness: 420, damping: 28, mass: 1 },
-};
+// Spring constants live in ./motion-config so this module exports components
+// only and stays eligible for React Fast Refresh.
+import { spring } from "./motion-config";
 
 // ─── Page Transition ─────────────────────────────────────────────────────────
 
@@ -110,15 +85,8 @@ FadeUp.displayName = "FadeUp";
 
 // ─── Stagger Container / Item ─────────────────────────────────────────────────
 
-const staggerContainer: Variants = {
-  hidden: {},
-  show: {
-    transition: {
-      staggerChildren: 0.055,
-      delayChildren: 0.05,
-    },
-  },
-};
+// StaggerList builds its container variants inline so it can honour the
+// `stagger` and `delay` props, so there is no shared container constant here.
 
 const staggerItem: Variants = {
   hidden: { opacity: 0, y: 22, scale: 0.96 },
@@ -158,8 +126,9 @@ StaggerList.displayName = "StaggerList";
 
 interface StaggerItemProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
-  /** Optional: override the element tag (default: div). */
-  as?: keyof JSX.IntrinsicElements;
+  /** Optional: override the element tag (default: div).
+      React 19 dropped the global `JSX` namespace — it lives under React now. */
+  as?: keyof React.JSX.IntrinsicElements;
 }
 
 /**
@@ -294,5 +263,6 @@ export function PopIn({ children, className = "", delay = 0 }: PopInProps) {
   );
 }
 
-// ─── Re-export motion for convenience ────────────────────────────────────────
-export { motion, AnimatePresence };
+// `motion` and `AnimatePresence` are deliberately not re-exported here — a
+// non-component export would disable Fast Refresh for this whole module.
+// Import them straight from "motion/react" at the call site.

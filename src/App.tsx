@@ -20,7 +20,7 @@ export type TabId = 'gear' | 'lighting' | 'software' | 'checklist' | 'trouble' |
 const LoadingFallback = () => (
   <div className="flex items-center justify-center h-full w-full bg-[#040406]">
     <div className="flex flex-col items-center gap-4">
-      <div className="w-10 h-10 rounded-full border-2 border-emerald-500/20 border-t-emerald-400 animate-spin"></div>
+      <div className="w-10 h-10 rounded-full border-2 border-success/20 border-t-emerald-400 animate-spin"></div>
       <span className="eyebrow text-[10px] text-white/40 tracking-[0.2em]">Đang tải hệ thống SOP...</span>
     </div>
   </div>

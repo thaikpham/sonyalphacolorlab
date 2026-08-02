@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { Icon } from './Icon';
 
 // Product type definition matching the CSV schema
 interface Product {
@@ -332,7 +333,39 @@ const COMBOS: ComboDefinition[] = [
   }
 ];
 
+/**
+ * Writes the quote payload to the reader's downloads and returns the filename.
+ * Used when /api/send-quote does not answer — which is every environment except
+ * `npm run dev`, where a Vite middleware persists it server-side instead.
+ */
+function downloadQuoteLocally(payload: unknown): string {
+  const filename = `bao-gia-sony-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.json`;
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {
+    type: 'application/json',
+  });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  // Revoking immediately can cancel the download in some browsers; one tick is
+  // enough for the navigation to have been queued.
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+
+  return filename;
+}
+
 export const SmartPricingSystem: React.FC = () => {
+  // The quote reference is drawn once per mounted quote. It used to be built
+  // with Math.random() inline in the JSX, so it changed on every re-render —
+  // the number printed on the quote depended on when the user last clicked.
+  const [quoteRef] = useState(
+    () => `SONY-PRICING-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
+  );
+
   // Wizard state
   const [niche, setNiche] = useState<string>('');
   const [camerasCount, setCamerasCount] = useState<string>('');
@@ -566,6 +599,15 @@ export const SmartPricingSystem: React.FC = () => {
       timestamp: new Date().toISOString()
     };
 
+    // `/api/send-quote` only exists as a dev middleware in vite.config.ts, which
+    // writes the payload to scratch/sent_quotes. In production the SPA rewrite
+    // answers it with index.html, so response.json() threw and the old code
+    // reported "Lưu trữ file mô phỏng cục bộ" — a local save that never
+    // happened. Nothing here has ever sent an email in any environment.
+    //
+    // Rather than claim a save it did not make, the quote is now written to the
+    // reader's own downloads when no endpoint answers, and the copy says which
+    // of the two happened.
     try {
       const response = await fetch('/api/send-quote', {
         method: 'POST',
@@ -573,17 +615,22 @@ export const SmartPricingSystem: React.FC = () => {
         body: JSON.stringify(payload)
       });
 
+      const contentType = response.headers.get('content-type') ?? '';
+      if (!response.ok || !contentType.includes('application/json')) {
+        throw new Error(`Endpoint không khả dụng (HTTP ${response.status})`);
+      }
+
       const resData = await response.json();
       if (resData.success) {
         setSentFile(resData.file);
         setEmailSuccess(true);
       } else {
-        alert('Gửi email thất bại: ' + (resData.error || 'Lỗi không xác định'));
+        alert('Lưu báo giá thất bại: ' + (resData.error || 'Lỗi không xác định'));
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
-      // Fallback simulating success for dev preview
-      alert('Lỗi kết nối server: Lưu trữ file mô phỏng cục bộ.');
+      setSentFile(downloadQuoteLocally(payload));
+      setEmailSuccess(true);
     } finally {
       setIsSendingEmail(false);
     }
@@ -634,7 +681,7 @@ export const SmartPricingSystem: React.FC = () => {
             color: black !important;
             border-color: #d1d5db !important;
           }
-          .printable-invoice-wrapper .text-gray-400 {
+          .printable-invoice-wrapper .text-ink-faint {
             color: #6b7280 !important;
           }
           .printable-invoice-wrapper .bg-gray-50 {
@@ -682,13 +729,13 @@ export const SmartPricingSystem: React.FC = () => {
           {/* Step 1: Recommendation Wizard */}
           <div className="bg-[#121212] border border-white/5 rounded-3xl p-6 space-y-5">
             <h3 className="text-md font-bold text-white flex items-center gap-2">
-              <span className="material-symbols-outlined text-[20px] text-blue-400">magic_button</span>
+              <Icon name="magic_button" className="text-[20px] text-info-soft" />
               Trợ lý đề xuất góc quay & combo thiết bị
             </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider pl-1">Lĩnh vực Livestream</label>
+                <label className="text-[10px] font-bold text-ink-faint uppercase tracking-wider pl-1">Lĩnh vực Livestream</label>
                 <select
                   value={niche}
                   onChange={(e) => setNiche(e.target.value)}
@@ -703,7 +750,7 @@ export const SmartPricingSystem: React.FC = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider pl-1">Số góc quay (Cameras)</label>
+                <label className="text-[10px] font-bold text-ink-faint uppercase tracking-wider pl-1">Số góc quay (Cameras)</label>
                 <select
                   value={camerasCount}
                   onChange={(e) => setCamerasCount(e.target.value)}
@@ -723,28 +770,28 @@ export const SmartPricingSystem: React.FC = () => {
                 className={`px-5 py-3 rounded-2xl font-bold text-sm flex items-center gap-2 transition-all ${
                   !niche || !camerasCount
                     ? 'bg-white/5 text-white/30 cursor-not-allowed border border-white/5'
-                    : 'bg-blue-500 hover:bg-blue-600 text-white shadow-[0_4px_15px_rgba(59,130,246,0.3)] active:scale-95'
+                    : 'bg-info hover:bg-info text-white shadow-[0_4px_15px_rgba(59,130,246,0.3)] active:scale-95'
                 }`}
               >
-                <span className="material-symbols-outlined text-[18px]">smart_toy</span>
+                <Icon name="smart_toy" className="text-[18px]" />
                 Nhận đề xuất ngay
               </button>
             </div>
 
             {recommendationResult && (
-              <div className="bg-blue-950/20 border border-blue-500/20 rounded-2xl p-5 space-y-3 animate-fade">
+              <div className="bg-blue-950/20 border border-info/20 rounded-2xl p-5 space-y-3 animate-fade">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 bg-blue-500/20 text-blue-400 text-[10px] font-bold rounded">ĐỀ XUẤT</span>
+                    <span className="px-2 py-0.5 bg-info/20 text-info-soft text-[10px] font-bold rounded">ĐỀ XUẤT</span>
                     <h4 className="text-sm font-bold text-blue-300">{recommendationResult.name}</h4>
                   </div>
-                  <span className="text-xs font-bold text-gray-500">{recommendationResult.code}</span>
+                  <span className="text-xs font-bold text-ink-faint">{recommendationResult.code}</span>
                 </div>
                 <p className="text-xs text-blue-200/80 leading-relaxed italic">
                   &ldquo;{recommendationReason}&rdquo;
                 </p>
-                <div className="pt-2 text-[11px] text-gray-500 flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-[14px]">info</span>
+                <div className="pt-2 text-[11px] text-ink-faint flex items-center gap-1.5">
+                  <Icon name="info" className="text-[14px]" />
                   Combo đã tự động được nạp vào Bảng tùy chỉnh bên dưới.
                 </div>
               </div>
@@ -755,7 +802,7 @@ export const SmartPricingSystem: React.FC = () => {
           <div className="bg-[#121212] border border-white/5 rounded-3xl p-6 space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <h3 className="text-md font-bold text-white flex items-center gap-2">
-                <span className="material-symbols-outlined text-[20px] text-orange-400">tune</span>
+                <Icon name="tune" className="text-[20px] text-warning-soft" />
                 Bảng tùy chỉnh cấu hình thiết bị chi tiết
               </h3>
               <button
@@ -764,9 +811,9 @@ export const SmartPricingSystem: React.FC = () => {
                   setCustomItems([]);
                   setRecommendationResult(null);
                 }}
-                className="self-start sm:self-auto text-xs text-red-400 hover:text-red-300 transition-colors flex items-center gap-1"
+                className="self-start sm:self-auto text-xs text-danger hover:text-red-300 transition-colors flex items-center gap-1"
               >
-                <span className="material-symbols-outlined text-[16px]">delete_sweep</span>
+                <Icon name="delete_sweep" className="text-[16px]" />
                 Xóa tất cả
               </button>
             </div>
@@ -780,7 +827,7 @@ export const SmartPricingSystem: React.FC = () => {
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition-all ${
                     activeCategory === tab
                       ? 'bg-white/10 text-white border border-white/20'
-                      : 'text-gray-400 hover:bg-white/5 border border-transparent'
+                      : 'text-ink-faint hover:bg-white/5 border border-transparent'
                   }`}
                 >
                   {tab}
@@ -808,14 +855,14 @@ export const SmartPricingSystem: React.FC = () => {
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => handleToggleProduct(p.id)}
-                        className="w-4 h-4 rounded border-gray-600 bg-gray-800 text-blue-500 focus:ring-0 focus:ring-offset-0 cursor-pointer"
+                        className="w-4 h-4 rounded border-gray-600 bg-gray-800 text-info focus:ring-0 focus:ring-offset-0 cursor-pointer"
                       />
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-bold text-white truncate">{p.name}</span>
-                          <span className="px-1.5 py-0.5 bg-white/5 text-gray-500 rounded text-[9px] font-semibold font-mono tracking-tight shrink-0">{p.model}</span>
+                          <span className="px-1.5 py-0.5 bg-white/5 text-ink-faint rounded text-[9px] font-semibold font-mono tracking-tight shrink-0">{p.model}</span>
                         </div>
-                        <div className="text-[10px] text-gray-500 leading-tight mt-1 truncate">
+                        <div className="text-[10px] text-ink-faint leading-tight mt-1 truncate">
                           {p.role}
                         </div>
                       </div>
@@ -832,14 +879,14 @@ export const SmartPricingSystem: React.FC = () => {
                         <div className="flex items-center bg-black border border-white/10 rounded-xl p-1">
                           <button
                             onClick={() => handleUpdateQty(p.id, qty - 1)}
-                            className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-white transition-colors hover:bg-white/5 rounded-lg text-xs"
+                            className="w-6 h-6 flex items-center justify-center text-ink-faint hover:text-white transition-colors hover:bg-white/5 rounded-lg text-xs"
                           >
                             -
                           </button>
                           <span className="w-8 text-center text-xs font-bold text-white">{qty}</span>
                           <button
                             onClick={() => handleUpdateQty(p.id, qty + 1)}
-                            className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-white transition-colors hover:bg-white/5 rounded-lg text-xs"
+                            className="w-6 h-6 flex items-center justify-center text-ink-faint hover:text-white transition-colors hover:bg-white/5 rounded-lg text-xs"
                           >
                             +
                           </button>
@@ -854,10 +901,10 @@ export const SmartPricingSystem: React.FC = () => {
                           href={p.link}
                           target="_blank"
                           rel="noreferrer"
-                          className="p-1.5 bg-white/5 hover:bg-white/10 rounded-xl text-gray-400 hover:text-white transition-all shrink-0"
+                          className="p-1.5 bg-white/5 hover:bg-white/10 rounded-xl text-ink-faint hover:text-white transition-all shrink-0"
                           title="Xem chi tiết thiết bị"
                         >
-                          <span className="material-symbols-outlined text-[16px] block">link</span>
+                          <Icon name="link" className="text-[16px] block" />
                         </a>
                       )}
                     </div>
@@ -871,26 +918,26 @@ export const SmartPricingSystem: React.FC = () => {
               {!showCustomForm ? (
                 <button
                   onClick={() => setShowCustomForm(true)}
-                  className="w-full py-3 rounded-2xl border border-dashed border-white/10 hover:border-white/20 text-xs font-bold text-gray-400 hover:text-white transition-all flex items-center justify-center gap-1.5"
+                  className="w-full py-3 rounded-2xl border border-dashed border-white/10 hover:border-white/20 text-xs font-bold text-ink-faint hover:text-white transition-all flex items-center justify-center gap-1.5"
                 >
-                  <span className="material-symbols-outlined text-[16px]">add_circle</span>
+                  <Icon name="add_circle" className="text-[16px]" />
                   Thêm thiết bị ngoài danh mục (Tùy chỉnh)
                 </button>
               ) : (
                 <form onSubmit={handleAddCustomItem} className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 space-y-4 animate-fade">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-orange-400 uppercase tracking-widest pl-1">Nhập thiết bị tùy chọn</span>
+                    <span className="text-[10px] font-bold text-warning-soft uppercase tracking-widest pl-1">Nhập thiết bị tùy chọn</span>
                     <button
                       type="button"
                       onClick={() => setShowCustomForm(false)}
-                      className="text-xs text-gray-500 hover:text-gray-400"
+                      className="text-xs text-ink-faint hover:text-ink-faint"
                     >
                       Hủy bỏ
                     </button>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <label className="text-[9px] font-bold text-gray-500 uppercase tracking-wide">Tên thiết bị & Model</label>
+                      <label className="text-[9px] font-bold text-ink-faint uppercase tracking-wide">Tên thiết bị & Model</label>
                       <input
                         type="text"
                         required
@@ -901,7 +948,7 @@ export const SmartPricingSystem: React.FC = () => {
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[9px] font-bold text-gray-500 uppercase tracking-wide">Phân loại</label>
+                      <label className="text-[9px] font-bold text-ink-faint uppercase tracking-wide">Phân loại</label>
                       <select
                         value={customCategory}
                         onChange={e => setCustomCategory(e.target.value)}
@@ -918,7 +965,7 @@ export const SmartPricingSystem: React.FC = () => {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <label className="text-[9px] font-bold text-gray-500 uppercase tracking-wide">Giá trị (VND)</label>
+                      <label className="text-[9px] font-bold text-ink-faint uppercase tracking-wide">Giá trị (VND)</label>
                       <input
                         type="text"
                         required
@@ -932,7 +979,7 @@ export const SmartPricingSystem: React.FC = () => {
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[9px] font-bold text-gray-500 uppercase tracking-wide">Số lượng</label>
+                      <label className="text-[9px] font-bold text-ink-faint uppercase tracking-wide">Số lượng</label>
                       <input
                         type="number"
                         min="1"
@@ -949,7 +996,7 @@ export const SmartPricingSystem: React.FC = () => {
                       type="submit"
                       className="px-4 py-2 bg-white text-black font-bold text-xs rounded-xl hover:bg-gray-200 active:scale-95 transition-all flex items-center gap-1"
                     >
-                      <span className="material-symbols-outlined text-[16px] font-bold">check</span>
+                      <Icon name="check" className="text-[16px] font-bold" />
                       Thêm vào bảng giá
                     </button>
                   </div>
@@ -960,22 +1007,22 @@ export const SmartPricingSystem: React.FC = () => {
             {/* Custom added items list for control */}
             {customItems.length > 0 && (
               <div className="border-t border-white/5 pt-4 space-y-2">
-                <h4 className="text-xs font-bold text-orange-400 pl-1 uppercase tracking-wider">Thiết bị tùy chỉnh đã thêm</h4>
+                <h4 className="text-xs font-bold text-warning-soft pl-1 uppercase tracking-wider">Thiết bị tùy chỉnh đã thêm</h4>
                 <div className="space-y-2">
                   {customItems.map(item => (
-                    <div key={item.id} className="flex items-center justify-between gap-4 p-3 rounded-2xl border border-orange-500/20 bg-orange-500/5">
+                    <div key={item.id} className="flex items-center justify-between gap-4 p-3 rounded-2xl border border-warning/20 bg-warning/5">
                       <div>
                         <div className="text-xs font-bold text-white">{item.name}</div>
-                        <div className="text-[10px] text-gray-500 mt-0.5">{item.category} • {item.role}</div>
+                        <div className="text-[10px] text-ink-faint mt-0.5">{item.category} • {item.role}</div>
                       </div>
                       <div className="flex items-center gap-4">
                         <span className="text-xs font-bold text-white">{formatVND(item.price)} x {item.quantity}</span>
                         <button
                           onClick={() => handleRemoveCustomItem(item.id)}
-                          className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 rounded-xl transition-all"
+                          className="p-1.5 bg-danger/10 hover:bg-danger/20 text-danger hover:text-red-300 rounded-xl transition-all"
                           title="Xóa thiết bị"
                         >
-                          <span className="material-symbols-outlined text-[16px] block">delete</span>
+                          <Icon name="delete" className="text-[16px] block" />
                         </button>
                       </div>
                     </div>
@@ -993,14 +1040,14 @@ export const SmartPricingSystem: React.FC = () => {
           {/* Customer input & Send / Export buttons (Only visible on screen) */}
           <div className="bg-[#121212] border border-white/5 rounded-3xl p-6 space-y-4 no-print">
             <h3 className="text-md font-bold text-white flex items-center gap-2">
-              <span className="material-symbols-outlined text-[20px] text-purple-400">send_to_mobile</span>
+              <Icon name="send_to_mobile" className="text-[20px] text-accent-mid" />
               Lưu trữ & Gửi báo giá cho khách hàng
             </h3>
 
             <form onSubmit={handleSendEmail} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider pl-1">Tên khách hàng</label>
+                  <label className="text-[10px] font-bold text-ink-faint uppercase tracking-wider pl-1">Tên khách hàng</label>
                   <input
                     type="text"
                     required
@@ -1011,7 +1058,7 @@ export const SmartPricingSystem: React.FC = () => {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider pl-1">Email nhận báo giá</label>
+                  <label className="text-[10px] font-bold text-ink-faint uppercase tracking-wider pl-1">Email nhận báo giá</label>
                   <input
                     type="email"
                     required
@@ -1029,7 +1076,7 @@ export const SmartPricingSystem: React.FC = () => {
                   onClick={handlePrintPdf}
                   className="w-full py-3.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 font-bold rounded-2xl text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all"
                 >
-                  <span className="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+                  <Icon name="picture_as_pdf" className="text-[18px]" />
                   Xuất file PDF (A4)
                 </button>
 
@@ -1042,7 +1089,7 @@ export const SmartPricingSystem: React.FC = () => {
                       : 'bg-green-600 hover:bg-green-700 text-white shadow-[0_4px_15px_rgba(22,163,74,0.3)] active:scale-95'
                   }`}
                 >
-                  <span className="material-symbols-outlined text-[18px]">{isSendingEmail ? 'sync' : 'mail'}</span>
+                  <Icon name={isSendingEmail ? 'sync' : 'mail'} className="text-[18px]" />
                   {isSendingEmail ? 'Đang gửi...' : 'Gửi về Hộp thư'}
                 </button>
               </div>
@@ -1071,7 +1118,7 @@ export const SmartPricingSystem: React.FC = () => {
               <div className="text-right space-y-1">
                 <h1 className="text-lg font-black tracking-tight text-gray-900 uppercase">BÁO GIÁ THIẾT BỊ</h1>
                 <p className="text-[9px] text-gray-400 font-mono">
-                  REF: SONY-PRICING-{new Date().getFullYear()}-{Math.floor(1000 + Math.random() * 9000)}
+                  REF: {quoteRef}
                 </p>
                 <p className="text-[9px] text-gray-500">
                   Ngày lập: {new Date().toLocaleDateString('vi-VN')}
@@ -1218,13 +1265,13 @@ export const SmartPricingSystem: React.FC = () => {
       {emailSuccess && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fade no-print">
           <div className="bg-[#121212] border border-white/10 rounded-[32px] p-8 max-w-sm w-full text-center space-y-6 shadow-2xl">
-            <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto text-green-500">
-              <span className="material-symbols-outlined text-[40px] font-bold">check_circle</span>
+            <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto text-success">
+              <Icon name="check_circle" className="text-[40px] font-bold" />
             </div>
             <div className="space-y-2">
-              <h4 className="text-xl font-bold text-white">Đã gửi báo giá thành công!</h4>
+              <h4 className="text-xl font-bold text-white">Đã lưu báo giá thành công!</h4>
               <p className="text-xs text-white/50 leading-relaxed">
-                Hệ thống đã ghi nhận email và tự động lưu file báo giá cục bộ thành công:
+                Hệ thống đã ghi nhận email khách hàng và xuất file báo giá:
               </p>
               <div className="bg-white/5 border border-white/10 rounded-xl p-2.5 font-mono text-[10px] text-gray-300 select-all truncate mt-2">
                 {sentFile}

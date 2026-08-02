@@ -30,9 +30,13 @@ export default defineConfig({
                 
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ success: true, file: filename }));
-              } catch (err: any) {
+              } catch (err) {
                 res.writeHead(500, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ error: err.message }));
+                res.end(
+                  JSON.stringify({
+                    error: err instanceof Error ? err.message : String(err),
+                  }),
+                );
               }
             });
           } else {

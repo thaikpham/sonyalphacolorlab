@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Icon, type IconName } from './Icon';
 
 const ComboCard: React.FC<{
   type: string;
@@ -6,14 +7,14 @@ const ComboCard: React.FC<{
   priceRange: string;
   description: string;
   items: string[];
-  icon: string;
+  icon: IconName;
   color: string;
 }> = ({ type, title, priceRange, description, items, icon, color }) => (
   <div className="glass-card rounded-[32px] p-8 flex flex-col h-full group relative overflow-hidden">
     <div className={`absolute top-0 right-0 w-32 h-32 blur-[60px] opacity-10 transition-opacity group-hover:opacity-20 ${color}`}></div>
     
     <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 relative z-10 ${color}`}>
-      <span className="material-symbols-outlined text-white text-2xl">{icon}</span>
+      <Icon name={icon} className="text-white text-2xl" />
     </div>
     
     <div className="mb-6 relative z-10">
@@ -29,7 +30,7 @@ const ComboCard: React.FC<{
       {items.map((item, i) => (
         <div key={i} className="flex items-start gap-3">
           <div className="w-4 h-4 rounded-full bg-white/[0.05] flex items-center justify-center shrink-0 mt-0.5">
-            <span className="material-symbols-outlined text-[12px] text-white/40">done</span>
+            <Icon name="done" className="text-[12px] text-white/40" />
           </div>
           <span className="text-[11px] text-white/70 font-medium leading-relaxed">{item}</span>
         </div>
@@ -39,7 +40,7 @@ const ComboCard: React.FC<{
     <div className="pt-6 border-t border-white/[0.06] flex items-center justify-between relative z-10 mt-auto">
       <div className="flex flex-col">
         <span className="text-[8px] font-bold text-[#555] uppercase tracking-widest">Đơn giá định lượng</span>
-        <span className="text-xs font-bold text-purple-400">{priceRange}</span>
+        <span className="text-xs font-bold text-accent-mid">{priceRange}</span>
       </div>
       <span className="text-[9px] px-2.5 py-1 rounded bg-white/5 border border-white/5 text-white/40 font-bold uppercase tracking-wider">Sony Studio</span>
     </div>
@@ -82,7 +83,7 @@ export const GearSection: React.FC = () => {
             priceRange="~75.760.364đ"
             description="Giải pháp livestream 1 góc máy nhỏ gọn, chi phí tối ưu nhất, phù hợp cho sáng tạo nội dung cá nhân."
             icon="auto_videocam"
-            color="bg-blue-600"
+            color="bg-info"
             items={[
               "Camera: Sony ZV-E10 II (Kit 16-50mm) - Lấy nét mắt AI, chế độ Product Showcase",
               "Ống kính: FE 18-105mm f/4 G OSS - Zoom điện êm ái, đa dụng cảnh toàn đến cận",
@@ -97,7 +98,7 @@ export const GearSection: React.FC = () => {
             priceRange="~93.930.364đ"
             description="Livestream bán hàng chuyên nghiệp, thời trang, F&B, yêu cầu hoạt động liên tục 24/7 không lo quá nhiệt."
             icon="shopping_bag"
-            color="bg-purple-600"
+            color="bg-accent-deeper"
             items={[
               "Camera: Sony FX30 (Cảm biến Super35, quạt tản nhiệt chủ động không bao giờ sập nguồn)",
               "Ống kính: FE 18-105mm f/4 G OSS - Zoom điện đa dụng cảnh toàn đến cận sản phẩm",
@@ -158,18 +159,16 @@ export const GearSection: React.FC = () => {
               href={item.link} 
               target="_blank" 
               rel="noopener noreferrer" 
-              className="glass-card p-6 rounded-2xl flex flex-col gap-4 hover:border-purple-500/20 transition-all duration-300 group"
+              className="glass-card p-6 rounded-2xl flex flex-col gap-4 hover:border-accent-deep/20 transition-all duration-300 group"
             >
               <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-xl bg-white/[0.03] border border-white/5 flex items-center justify-center group-hover:bg-purple-500/10 transition-colors">
-                  <span className="material-symbols-outlined text-white/30 group-hover:text-purple-400 transition-colors">
-                    {item.tag === 'Camera' ? 'photo_camera' : item.tag === 'Lens' ? 'lens' : item.tag === 'Audio' ? 'mic' : 'settings'}
-                  </span>
+                <div className="w-10 h-10 rounded-xl bg-white/[0.03] border border-white/5 flex items-center justify-center group-hover:bg-accent-deep/10 transition-colors">
+                  <Icon name={item.tag === 'Camera' ? 'photo_camera' : item.tag === 'Lens' ? 'lens' : item.tag === 'Audio' ? 'mic' : 'settings'} className="text-white/30 group-hover:text-accent-mid transition-colors" />
                 </div>
                 <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest">{item.tag}</span>
               </div>
               <div className="flex-1">
-                <h4 className="text-xs font-bold text-white mb-1 group-hover:text-purple-300 transition-colors">{item.name}</h4>
+                <h4 className="text-xs font-bold text-white mb-1 group-hover:text-accent-soft transition-colors">{item.name}</h4>
                 <p className="text-[10px] text-white/40 font-medium leading-relaxed">{item.desc}</p>
               </div>
             </a>
@@ -180,12 +179,12 @@ export const GearSection: React.FC = () => {
       {/* Modern Info Banner - Full Width */}
       <div className="relative rounded-[40px] p-8 lg:p-12 overflow-hidden bg-gradient-to-br from-purple-900/30 via-blue-900/10 to-transparent border border-white/[0.06]">
         <div className="absolute top-0 right-0 p-12 opacity-10 pointer-events-none">
-          <span className="material-symbols-outlined text-[200px] text-purple-400">spatial_tracking</span>
+          <Icon name="spatial_tracking" className="text-[200px] text-accent-mid" />
         </div>
         <div className="relative z-10 max-w-3xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full mb-6">
-            <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
-            <span className="text-[9px] font-bold uppercase tracking-widest text-purple-300">Công nghệ Sony độc quyền</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-accent-mid"></span>
+            <span className="text-[9px] font-bold uppercase tracking-widest text-accent-soft">Công nghệ Sony độc quyền</span>
           </div>
           <h3 className="text-2xl font-bold mb-4 tracking-tight text-white">Chế độ Product Showcase & Real-time Eye AF</h3>
           <p className="text-xs text-white/60 leading-relaxed mb-6 font-medium">
@@ -193,11 +192,11 @@ export const GearSection: React.FC = () => {
           </p>
           <div className="flex flex-wrap gap-4">
             <div className="px-4 py-2 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center gap-2.5">
-              <span className="material-symbols-outlined text-xs text-purple-400">verified</span>
+              <Icon name="verified" className="text-xs text-accent-mid" />
               <span className="text-[9px] font-bold text-white/80 uppercase tracking-widest">Tản nhiệt chủ động (Active Cooling)</span>
             </div>
             <div className="px-4 py-2 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center gap-2.5">
-              <span className="material-symbols-outlined text-xs text-blue-400">face</span>
+              <Icon name="face" className="text-xs text-info-soft" />
               <span className="text-[9px] font-bold text-white/80 uppercase tracking-widest">Màu da chuyên nghiệp (S-Cinetone)</span>
             </div>
           </div>
