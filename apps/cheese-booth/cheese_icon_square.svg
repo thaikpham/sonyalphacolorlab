@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <style>
+      .stroke{stroke:#000;stroke-width:28;stroke-linecap:round;stroke-linejoin:round}
+    </style>
+    <clipPath id="bodyClip">
+      <path d="M90 240 L450 240
+               C462 252 490 252 502 240
+               L910 240
+               L910 330
+               C878 338 854 366 854 400
+               C854 434 878 462 910 470
+               L910 650
+               C910 674 892 692 868 692
+               L390 692
+               C387 664 361 642 330 642
+               C299 642 273 664 270 692
+               L110 692
+               C86 692 68 674 68 650
+               L68 590
+               C100 582 124 554 124 520
+               C124 486 100 458 68 450
+               L68 274
+               C68 258 78 246 90 240 Z"/>
+    </clipPath>
+  </defs>
+
+  <g transform="translate(0 128)">
+    <path class="stroke" fill="#f3c75d"
+          d="M90 240
+             L650 16
+             C790 6 906 80 952 190
+             C962 214 966 230 966 240
+             L502 240
+             C490 252 462 252 450 240
+             Z"/>
+
+    <path class="stroke" fill="#f8ae20"
+          d="M90 240 L450 240
+             C462 252 490 252 502 240
+             L910 240
+             L910 330
+             C878 338 854 366 854 400
+             C854 434 878 462 910 470
+             L910 650
+             C910 674 892 692 868 692
+             L390 692
+             C387 664 361 642 330 642
+             C299 642 273 664 270 692
+             L110 692
+             C86 692 68 674 68 650
+             L68 590
+             C100 582 124 554 124 520
+             C124 486 100 458 68 450
+             L68 274
+             C68 258 78 246 90 240 Z"/>
+
+    <path class="stroke" fill="none" d="M450 240 C462 260 490 260 502 240"/>
+
+    <g>
+      <ellipse fill="#e5ef9a" cx="500" cy="160" rx="30" ry="18"/>
+      <path fill="#000" d="M470 160c10-18 51-18 60 0-7-8-18-12-30-12-12 0-23 4-30 12z"/>
+      <ellipse fill="#e5ef9a" cx="700" cy="135" rx="54" ry="28"/>
+      <path fill="#000" d="M646 135c12-24 96-24 108 0-10-12-31-18-54-18-23 0-44 6-54 18z"/>
+    </g>
+
+    <g clip-path="url(#bodyClip)">
+      <circle fill="#e5ef9a" cx="610" cy="400" r="74"/>
+      <circle fill="#000" cx="580" cy="382" r="74"/>
+
+      <circle fill="#e5ef9a" cx="285" cy="392" r="40"/>
+      <circle fill="#000" cx="272" cy="380" r="40"/>
+
+      <circle fill="#e5ef9a" cx="492" cy="560" r="34"/>
+      <circle fill="#000" cx="480" cy="550" r="34"/>
+
+      <circle fill="#e5ef9a" cx="802" cy="620" r="34"/>
+      <circle fill="#000" cx="790" cy="608" r="34"/>
+    </g>
+  </g>
+</svg>

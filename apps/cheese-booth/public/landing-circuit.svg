@@ -1,0 +1,88 @@
+<svg
+  width="1440"
+  height="900"
+  viewBox="0 0 1440 900"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <rect width="1440" height="900" fill="#01070D" />
+  <defs>
+    <g id="traces">
+      <path d="M0 122H330L388 180V302H530L610 222V0" />
+      <path d="M0 146H356L414 204V328H560L642 246V0" />
+      <path d="M0 170H382L440 228V352H590L672 270V0" />
+      <path d="M0 194H408L466 252V376H620L702 294V0" />
+      <path d="M0 734H322L390 666V548H540L624 632V900" />
+      <path d="M0 760H348L416 692V572H566L650 656V900" />
+      <path d="M0 786H374L442 718V596H592L676 680V900" />
+      <path d="M0 812H400L468 744V620H618L702 704V900" />
+      <path d="M1440 146H1088L1018 216V334H876L790 248V0" />
+      <path d="M1440 170H1114L1044 240V358H902L816 272V0" />
+      <path d="M1440 194H1140L1070 264V382H928L842 296V0" />
+      <path d="M1440 218H1166L1096 288V406H954L868 320V0" />
+      <path d="M1440 670H1094L1028 604V498H898L814 582V900" />
+      <path d="M1440 696H1120L1054 630V524H924L840 608V900" />
+      <path d="M1440 722H1146L1080 656V550H950L866 634V900" />
+      <path d="M1440 748H1172L1106 682V576H976L892 660V900" />
+      <path d="M598 0V124L548 174V284" />
+      <path d="M624 0V94L578 140V228" />
+      <path d="M842 0V142L892 192V308" />
+      <path d="M816 0V112L862 158V248" />
+      <path d="M600 900V780L548 728V624" />
+      <path d="M840 900V792L892 740V636" />
+      <path d="M646 0V900" />
+      <path d="M670 0V900" />
+      <path d="M694 0V900" />
+      <path d="M718 0V900" />
+      <path d="M742 0V900" />
+      <path d="M766 0V900" />
+      <path d="M790 0V900" />
+    </g>
+    <g id="nodes">
+      <circle cx="330" cy="122" r="3.5" />
+      <circle cx="356" cy="146" r="3.5" />
+      <circle cx="382" cy="170" r="3.5" />
+      <circle cx="408" cy="194" r="3.5" />
+      <circle cx="322" cy="734" r="3.5" />
+      <circle cx="348" cy="760" r="3.5" />
+      <circle cx="374" cy="786" r="3.5" />
+      <circle cx="400" cy="812" r="3.5" />
+      <circle cx="1088" cy="146" r="3.5" />
+      <circle cx="1114" cy="170" r="3.5" />
+      <circle cx="1140" cy="194" r="3.5" />
+      <circle cx="1166" cy="218" r="3.5" />
+      <circle cx="1094" cy="670" r="3.5" />
+      <circle cx="1120" cy="696" r="3.5" />
+      <circle cx="1146" cy="722" r="3.5" />
+      <circle cx="1172" cy="748" r="3.5" />
+      <circle cx="548" cy="174" r="4" />
+      <circle cx="578" cy="140" r="4" />
+      <circle cx="892" cy="192" r="4" />
+      <circle cx="862" cy="158" r="4" />
+      <circle cx="548" cy="728" r="4" />
+      <circle cx="892" cy="740" r="4" />
+      <circle cx="646" cy="84" r="3.5" />
+      <circle cx="718" cy="56" r="3.5" />
+      <circle cx="790" cy="84" r="3.5" />
+    </g>
+  </defs>
+
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <g opacity="0.09" stroke="#35F5FF" stroke-width="14">
+      <use href="#traces" />
+    </g>
+    <g opacity="0.22" stroke="#49F6FF" stroke-width="6">
+      <use href="#traces" />
+    </g>
+    <g opacity="0.92" stroke="#98FDFF" stroke-width="2.2">
+      <use href="#traces" />
+    </g>
+  </g>
+
+  <g opacity="0.14" fill="#3DF6FF">
+    <use href="#nodes" />
+  </g>
+  <g opacity="0.9" fill="#A3FEFF">
+    <use href="#nodes" />
+  </g>
+</svg>

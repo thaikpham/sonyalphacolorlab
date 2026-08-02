@@ -1,0 +1,65 @@
+/* ---------------------------------------------------------------------------
+   CheeseBooth — app-specific design layer.
+
+   Everything shared with Alpha ColorLab and Sony Live SOP now comes from
+   @colorlab/tokens. Do not re-declare a token below that the generated files
+   already define: a local copy wins the cascade silently and the drift test
+   cannot see it.
+
+   Regenerate the imported files from the ColorLab repo root:
+       npm run tokens:emit
+--------------------------------------------------------------------------- */
+
+@import './colorlab-tokens/tokens.css';
+@import './colorlab-tokens/primitives.css';
+@import './colorlab-tokens/vfx.css';
+
+:root {
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* ---- App-specific, deliberately not shared -----------------------------
+
+     ColorLab overrides --accent per recipe from that recipe's White Balance.
+     A kiosk has no recipe, so it picks one accent and keeps it. */
+  --accent: oklch(85% 0.3 140);
+  --accent-strong: oklch(78% 0.25 240);
+  --danger: var(--color-danger);
+
+  /* Hairline rules over glass. Not --color-edge: that is an opaque line for a
+     solid surface, while these sit on translucent panels and must let the
+     backdrop through. */
+  --border: oklch(100% 0 0 / 0.08);
+  --border-strong: oklch(100% 0 0 / 0.18);
+
+  --shadow:
+    0 28px 60px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+  /* ---- Aliases kept for the existing stylesheets --------------------------
+
+     ~4700 lines of hand-written CSS in this app were written against these
+     names. They now resolve to the shared palette rather than to a second,
+     independently drifting set of literals. New rules should use the
+     --color-* names directly; these exist so the migration did not have to
+     touch every file at once.
+
+     Removed as part of that pass because nothing referenced them:
+     --surface-strong, --bg-elevated, --accent-dark. */
+  --bg: var(--color-void);
+  --surface: var(--color-raised);
+  --surface-soft: oklch(100% 0 0 / 0.05);
+  --text: var(--color-ink);
+  --text-soft: var(--color-ink-muted);
+  --text-mute: var(--color-ink-faint);
+}
+
+body {
+  /* Deep pitch-black for OLED, darker than --color-void on purpose: the kiosk
+     runs fullscreen and the frame should disappear into the bezel. */
+  background-color: #040406;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
