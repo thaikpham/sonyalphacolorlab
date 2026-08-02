@@ -1,0 +1,196 @@
+/* GENERATED FILE — DO NOT EDIT.
+ *
+ * Source: packages/colorlab-tokens/src/tokens.ts
+ * Regenerate: npm run tokens:emit
+ *
+ * A drift test in each app fails if this file is edited by hand or falls
+ * behind the source, so an edit here is reverted by the next CI run at best
+ * and silently diverges the ecosystem at worst.
+ */
+/* ---------------------------------------------------------------------------
+   @colorlab/tokens — shared primitives.
+
+   Hand-written and shared verbatim by all three apps. Only the token *values*
+   are generated (see tokens.ts); these rules are the same everywhere by
+   definition, because they ARE the design language.
+
+   Load order matters: import the generated token file first, then this one.
+--------------------------------------------------------------------------- */
+
+/* ---------------------------------------------------------------------------
+   Glass — translucent fill + backdrop blur + a 1px specular edge.
+
+   Two rules about this primitive, both learned on screen rather than by
+   reading, both encoded below rather than left to each app to rediscover:
+
+   1. `.glass` is plain unlayered CSS written after `@import "tailwindcss"`,
+      and unlayered rules beat layered ones whatever the specificity. So on a
+      `.glass` element these Tailwind utilities are silently dead:
+      `bg-*`, `rounded-*`, `border-*`, `ring-*`, `outline-*`, `shadow-*`, and
+      the position utilities. Put positioning and opacity on a plain wrapper
+      and `.glass` on the panel inside it.
+
+   2. The specular edge is an INSET BOX-SHADOW, not a border. `hover:border-*`
+      accents never once appeared on ColorLab's action cards because of rule 1,
+      and a `border` on the element also kills every `border-*` utility for
+      anyone who does have a legitimate use. Drawing the edge as
+      `inset 0 0 0 1px` leaves the border property free and still gives the
+      1px highlight this design language is built on.
+
+   ColorLab had `border: 0` with no replacement ring for a while, which quietly
+   removed the specular edge from the flagship while both siblings kept theirs
+   as a `1px solid` border. This is the resolution of that split.
+--------------------------------------------------------------------------- */
+
+.glass {
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    oklch(22% 0.016 265 / 0.75),
+    oklch(17% 0.014 265 / 0.65)
+  );
+  backdrop-filter: blur(24px) saturate(1.5);
+  -webkit-backdrop-filter: blur(24px) saturate(1.5);
+  border-radius: var(--radius-glass);
+  border: 0 !important;
+  outline: none;
+  box-shadow:
+    inset 0 0 0 1px oklch(100% 0 0 / 0.08),
+    0 10px 32px -6px rgba(0, 0, 0, 0.4);
+}
+
+/* Grain. Inline SVG turbulence — no raster asset, no network request. */
+.glass::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0.1;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.glass-flat {
+  background: oklch(24% 0.018 265 / 0.5);
+  backdrop-filter: blur(16px) saturate(1.3);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  border: 0 !important;
+  outline: none;
+  box-shadow:
+    inset 0 0 0 1px oklch(100% 0 0 / 0.06),
+    0 4px 18px -2px rgba(0, 0, 0, 0.25);
+  color: var(--color-ink);
+}
+
+/* If backdrop-filter is unavailable, fall back to an opaque surface rather
+   than leaving text floating over a busy photograph. */
+@supports not (backdrop-filter: blur(1px)) {
+  .glass,
+  .glass-flat {
+    background: oklch(22% 0.016 265 / 0.96);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Type
+--------------------------------------------------------------------------- */
+
+/* Machine values that should align in a column. Sans, not mono: the call sites
+   pair it with `font-sans` deliberately, and Noto Sans has true tabular
+   figures. Mono is for ASCII art and code — reach for `--font-mono` directly
+   there, not for this class. */
+.tabular {
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: 0.725rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: oklch(88% 0.008 265);
+}
+
+/* ---------------------------------------------------------------------------
+   Display space
+
+   Adapt by capability, never by user agent — sniffing gets tablets, foldables
+   and iPadOS (which reports as macOS) wrong.
+--------------------------------------------------------------------------- */
+
+/* `100vh` is wrong on mobile: it counts the address bar that collapses on
+   scroll, so the page runs taller than the screen. `dvh` tracks the real
+   viewport, with a vh fallback for browsers that lack it. */
+.min-h-screen-dynamic {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Content paints edge to edge under the notch and home indicator
+   (viewport-fit: cover), so every edge pays back its own inset. */
+.inset-safe {
+  padding-left: max(1.25rem, env(safe-area-inset-left));
+  padding-right: max(1.25rem, env(safe-area-inset-right));
+}
+
+.pb-safe {
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+}
+
+.pt-safe {
+  padding-top: max(0.75rem, env(safe-area-inset-top));
+}
+
+/* Installed and running without browser chrome. There is no address bar to
+   scroll away, and overscroll bounce reveals the page background behind a
+   "native" app and breaks the illusion. */
+@media (display-mode: standalone), (display-mode: fullscreen) {
+  html,
+  body {
+    overscroll-behavior-y: none;
+  }
+}
+
+/* Touch input, whatever the device claims to be: every control clears the
+   minimum target, and hover-only affordances are not relied on. */
+@media (pointer: coarse) {
+  a.eyebrow,
+  button.eyebrow {
+    min-height: var(--layout-touch-target);
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Quality floor
+--------------------------------------------------------------------------- */
+
+:focus-visible {
+  outline: 2px solid var(--accent, var(--color-ink));
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+::selection {
+  background: oklch(78% 0.1 265 / 0.3);
+  color: var(--color-ink);
+}
+
+/* Every app in this ecosystem animates heavily — film grain jitter, radar
+   sweeps, iridescent gradient shifts. All of it must stop for a reader who
+   asked it to. This lived only in ColorLab; the siblings shipped with none. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

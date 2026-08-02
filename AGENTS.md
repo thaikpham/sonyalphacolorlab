@@ -74,6 +74,14 @@ gamma/colour-mode names, WB values. These live in `constants.ts`, outside the
 message catalogues, so they cannot be translated by accident. Do not copy a
 technical label into a translation file to "make it easier".
 
+**Every user-visible string goes in `messages/*.json`.** Not a literal in JSX,
+not a `locale === 'vi' ? … : …` ternary. Both spellings hide copy from the parity
+test, and the failure is one-directional and silent: a Vietnamese literal renders
+untranslated to English readers and nothing errors. The whole gallery, community
+and sign-in chrome was Vietnamese-only on `/en` this way. `messages.test.ts`
+pins EN/VI to the same key set, so a string added to one locale fails the build
+until the other exists.
+
 Vietnamese needs the `vietnamese` subset explicitly on every `next/font` call, or
 diacritics fall back and break:
 
@@ -115,6 +123,30 @@ the effect text collapsed to 43px wide.
 `constants.ts` → `schema.ts` derives from it → tests derive from both. Adding a
 Creative Look or supporting a new body touches `constants.ts` only. Use the
 `sync-camera-constants` skill; do not hand-edit downstream files to match.
+
+## Rule 6 — Design tokens live in one package, for three apps
+
+This repo is the flagship of a three-app ecosystem. **CheeseBooth**
+(`cheese-booth-main/`, Vite + plain CSS, no Tailwind) and **Sony Live SOP**
+(`sonylivesop-main/`, Vite + Tailwind v4) are separate git repos, gitignored
+here, each deploying to its own Vercel project.
+
+Shared surfaces, ink, signal colours, radius, breakpoints, the glass
+primitives and the film/Y2K/holo VFX are defined **once** in
+`packages/colorlab-tokens/src/`. `npm run tokens:emit` generates two flavours —
+`theme.css` (`@theme static`, for the Tailwind consumers) and `tokens.css`
+(plain `:root`, for CheeseBooth) — and syncs them plus `primitives.css` and
+`vfx.css` into all three apps.
+
+Edit `src/tokens.ts`, `src/primitives.css` or `src/vfx.css`, then re-emit.
+Never hand-edit a generated file, and never re-declare a shared token in an
+app's own stylesheet — a local copy wins the cascade silently.
+`token-drift.test.ts` fails on all three.
+
+App-specific by design, and correctly **not** shared: `--accent` (ColorLab
+recomputes it per recipe), each app's page background, and each app's own
+accent/state palette. A colour named for what it means *here* — `community`,
+`proposal`, `ai` — must not be borrowed elsewhere to mean something else.
 
 ## Layout
 
@@ -176,6 +208,45 @@ Noto Sans throughout. Use the shared glass primitive; do not hand-roll
 Colours are OKLCH. **In `next/og` / ImageResponse use `accentHex()`, not
 `accentCss()`** — Satori ignores `oklch()` silently and renders a colourless
 card rather than erroring. Satori also has no `α` glyph in its default font.
+
+Interface colour comes from the tokens in `globals.css`, never from Tailwind's
+default scales. `community` / `proposal` / `ai` / `danger` / `heart` are named
+for meaning, so a reader can tell the three offers on a recipe page apart before
+reading a word — reaching for `emerald-500` instead puts an sRGB colour in an
+OKLCH interface and drifts a shade per component. They live in **`@theme
+static`**: a plain `@theme` only emits a variable Tailwind has seen a utility
+use, and one read solely through `var()` is dropped, which is how the proposal
+card once rendered with no accent at all.
+
+Three traps, all found on screen rather than by reading:
+
+- **`.glass` and `.glass-flat` beat every Tailwind utility on the same element.**
+  They are plain unlayered CSS written after `@import "tailwindcss"`, and
+  unlayered rules win over layered ones whatever the specificity. So on a
+  `glass` element these utilities are silently dead:
+
+  | class | dead utilities on it |
+  |---|---|
+  | `.glass` | `absolute` `fixed` `sticky` · `bg-*` · `rounded-*` · `border-*` · `ring-*` `outline-*` · `shadow-*` |
+  | `.glass-flat` | `bg-*` · `border-*` · `ring-*` `outline-*` · `shadow-*` (position and radius are fine) |
+
+  Two of these have bitten already. `hover:border-*` accent rings on the action
+  cards never appeared once — draw rings with `box-shadow: inset 0 0 0 1px`
+  instead. And the header profile menu was `glass absolute`, so it computed to
+  `position: relative`, stayed in normal flow and stretched the bar from 82px to
+  188px instead of opening over the page.
+
+  **Put positioning and opacity on a plain wrapper and `glass` on the panel
+  inside it.** A `glass` panel is translucent by construction, so `bg-void/95`
+  on it does nothing — paint the opaque colour on the wrapper underneath and let
+  the gradient sit on top, or text lands over whatever photograph is behind.
+- **Do not transition a `box-shadow` whose colour is `color-mix()` over a
+  `var()`.** Chrome resolves the target to the *from* value and holds there;
+  registering the property with `@property` does not help. Move the motion to
+  `transform`.
+- **`group-hover:` reaches the nearest `.group` ancestor, not a sibling.** Put
+  `group` on the wrapper, and remember a hover-only reveal is invisible on
+  touch: gate it with `pointer-fine:`.
 
 `accentFor()` combines White Balance and Picture Profile Color Depth. Its
 weights are a neutral default, **not validated** — see the header of
@@ -249,7 +320,10 @@ Measured with Lighthouse; both were found that way, not by inspection.
    ships the whole catalogue to the browser — a recipe page was carrying the
    homepage's headline copy. Adding a `useTranslations` namespace to a *client*
    component means adding it in `[locale]/layout.tsx` too, or its labels render
-   as raw keys. `src/app/messages.test.ts` enforces this.
+   as raw keys. `src/app/messages.test.ts` enforces this **both ways**: it also
+   fails on a namespace the layout ships that nothing reads. `heroLanding`
+   outlived the component it belonged to and kept sending ten strings to every
+   visitor, so deleting a component means deleting its namespace.
 
 Also: `<details>` is not valid inside `<dl>`, and heading levels must not skip
 (`h1` → `h3` fails axe). Both cost a11y points here before being fixed.

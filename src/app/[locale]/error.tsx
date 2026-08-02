@@ -22,7 +22,9 @@ export default function Error({
 
   return (
     <main className="mx-auto flex w-full max-w-[86rem] flex-1 flex-col items-start justify-center inset-safe py-32">
-      <pre aria-hidden className="tabular text-ink-faint text-sm leading-tight">
+      {/* font-mono, not `tabular`: that class resolves to --font-sans, and
+          box-drawing glyphs only line up in a fixed pitch. */}
+      <pre aria-hidden className="font-mono text-ink-faint text-sm leading-tight">
         {'  ┌─────┐\n  │  !  │\n  └─────┘'}
       </pre>
       <h1 className="mt-6 text-3xl font-semibold tracking-tight">{t('title')}</h1>

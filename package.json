@@ -11,6 +11,7 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "seed:emit": "tsx scripts/emit-seed.ts",
+    "tokens:emit": "tsx packages/colorlab-tokens/src/emit.ts",
     "push:supabase": "tsx --env-file=.env.local scripts/push-supabase.ts",
     "migrate:images": "tsx --env-file=.env.local scripts/migrate-images.ts"
   },

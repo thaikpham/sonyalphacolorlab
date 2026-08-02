@@ -15,5 +15,10 @@ export default defineConfig({
       'server-only': fileURLToPath(new URL('./src/test/server-only-stub.ts', import.meta.url)),
     },
   },
-  test: { environment: 'node', include: ['src/**/*.test.ts'] },
+  test: {
+    environment: 'node',
+    // packages/ holds the shared design-token source; its drift test is what
+    // keeps the two sibling apps from diverging from this one.
+    include: ['src/**/*.test.ts', 'packages/**/*.test.ts'],
+  },
 });
