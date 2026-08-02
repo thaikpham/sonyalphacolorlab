@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import type { Session } from '@supabase/supabase-js';
 import { supabaseBrowser } from '@/lib/supabase/browser';
 
@@ -54,6 +55,7 @@ function toProfile(session: Session | null): UserProfile | null {
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const t = useTranslations('auth');
   const [session, setSession] = useState<Session | null>(null);
   /* Distinguishes "signed out" from "still restoring" so the UI does not flash
      a login prompt at somebody who is in fact signed in. Starts true when there
@@ -61,7 +63,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
      during render avoids a setState in the effect below. */
   const [isReady, setIsReady] = useState(() => supabaseBrowser() === null);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  /* A code, not a sentence: the message is looked up at render, so switching
+     language does not leave a stale error in the other locale on screen. */
+  const [error, setError] = useState<'errNotConfigured' | 'errOpenFailed' | null>(null);
 
   useEffect(() => {
     const supabase = supabaseBrowser();
@@ -93,7 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loginWithGoogle = useCallback(async () => {
     const supabase = supabaseBrowser();
     if (!supabase) {
-      setError('Đăng nhập chưa được cấu hình trên máy chủ.');
+      setError('errNotConfigured');
       return;
     }
     setError(null);
@@ -102,7 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Come back to the page the reader was reading, in their own locale.
       options: { redirectTo: window.location.href },
     });
-    if (err) setError('Không thể mở đăng nhập Google. Vui lòng thử lại.');
+    if (err) setError('errOpenFailed');
   }, []);
 
   const logout = useCallback(async () => {
@@ -129,53 +133,55 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       {isLoginModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm font-sans animate-fade-in">
+          {/* Opaque fill, border, radius and shadow on this wrapper; `.glass` on
+              the panel inside. `.glass` is unlayered CSS that hard-sets
+              `background`/`box-shadow` and declares `border: 0 !important`, so
+              `bg-void/90 rounded-2xl border-white/15 shadow-2xl` were all dead
+              on one element and the sign-in dialog sat nearly transparent over
+              the page behind it. */}
           <div
-            className="w-full max-w-md glass p-6 rounded-2xl border border-white/15 shadow-2xl bg-void/90 flex flex-col gap-5 text-white"
+            className="w-full max-w-md overflow-hidden rounded-[var(--radius-glass)] border border-white/15 bg-void/90 shadow-2xl"
             role="dialog"
             aria-modal="true"
             aria-labelledby="google-login-title"
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <GoogleMark className="w-5 h-5" />
-                <h3 id="google-login-title" className="text-base font-bold text-white">
-                  Đăng nhập với Google
-                </h3>
+            <div className="glass p-6 flex flex-col gap-5 text-white">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <GoogleMark className="w-5 h-5" />
+                  <h3 id="google-login-title" className="text-base font-bold text-white">
+                    {t('modalTitle')}
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={closeLoginModal}
+                  className="text-white/50 hover:text-white text-lg font-bold p-1 rounded-lg transition-colors cursor-pointer"
+                  aria-label={t('closeModal')}
+                >
+                  ✕
+                </button>
               </div>
+
+              <p className="text-xs text-white/70 leading-relaxed">{t('modalBody')}</p>
+
               <button
                 type="button"
-                onClick={closeLoginModal}
-                className="text-white/50 hover:text-white text-lg font-bold p-1 rounded-lg transition-colors cursor-pointer"
-                aria-label="Đóng modal"
+                onClick={loginWithGoogle}
+                className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl bg-white text-black font-semibold text-sm hover:bg-white/90 hover:scale-[1.01] active:scale-[0.99] transition-all shadow-md cursor-pointer"
               >
-                ✕
+                <GoogleMark className="w-4 h-4 shrink-0" />
+                <span>{t('continueGoogle')}</span>
               </button>
+
+              {error && (
+                <p role="alert" className="text-xs text-danger leading-relaxed">
+                  {t(error)}
+                </p>
+              )}
+
+              <p className="text-[10px] text-white/40 leading-relaxed">{t('privacy')}</p>
             </div>
-
-            <p className="text-xs text-white/70 leading-relaxed">
-              Đăng nhập tài khoản Google để tham gia bình luận, đăng đề xuất công thức và vote
-              trái tim cho cộng đồng Sony Alpha.
-            </p>
-
-            <button
-              type="button"
-              onClick={loginWithGoogle}
-              className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl bg-white text-black font-semibold text-sm hover:bg-white/90 hover:scale-[1.01] active:scale-[0.99] transition-all shadow-md cursor-pointer"
-            >
-              <GoogleMark className="w-4 h-4 shrink-0" />
-              <span>Tiếp tục với Google</span>
-            </button>
-
-            {error && (
-              <p role="alert" className="text-xs text-[oklch(70%_0.19_25)] leading-relaxed">
-                {error}
-              </p>
-            )}
-
-            <p className="text-[10px] text-white/40 leading-relaxed">
-              Chúng tôi chỉ nhận tên và ảnh đại diện công khai của bạn. Địa chỉ email được lưu để
-              xác định quyền sở hữu bình luận và không bao giờ hiển thị công khai.
-            </p>
           </div>
         </div>
       )}

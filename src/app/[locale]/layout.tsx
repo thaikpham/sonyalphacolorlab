@@ -64,8 +64,10 @@ export default async function LocaleLayout({
    */
   const messages = await getMessages();
   const clientMessages = {
-    heroLanding: messages.heroLanding,
+    auth: messages.auth,
+    community: messages.community,
     language: messages.language,
+    nav: messages.nav,
     recipe: messages.recipe,
     search: messages.search,
     tweak: messages.tweak,

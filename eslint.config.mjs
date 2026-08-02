@@ -14,6 +14,12 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Verbatim copy of the original sonycolorlab dataset; deleted after cutover.
     "src/lib/legacy/*.legacy.js",
+    /* Separate apps that happen to sit in this folder — they are gitignored and
+       excluded from tsconfig, and they are not this project's code to fix.
+       Without these, `npm run lint` reports ~4.6k problems from them and buries
+       the handful that are actually ours. */
+    "cheese-booth-main/**",
+    "sonylivesop-main/**",
   ]),
   {
     rules: {

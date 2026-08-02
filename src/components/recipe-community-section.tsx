@@ -1,7 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { useAuth } from './auth-context';
+import { OPEN_PROPOSAL_EVENT } from '@/lib/community/events';
 import type { CommentItem } from '@/app/api/comments/route';
 import type { ProposalItem } from '@/app/api/proposals/route';
 import { createClient } from '@supabase/supabase-js';
@@ -15,6 +17,7 @@ import {
   CL_MONOCHROME_LOOKS,
   CL_RANGES,
   CREATIVE_LOOKS,
+  CREATIVE_LOOK_CODES,
   PP_BLACK_GAMMA_RANGE,
   PP_COLOR_DEPTH_CHANNELS,
   PP_COLOR_MODE,
@@ -84,7 +87,8 @@ export function RecipeCommunitySection({
   currentSettings,
   currentWb,
 }: Props) {
-  const { user, openLoginModal, accessToken } = useAuth();
+  const t = useTranslations('community');
+  const { user, openLoginModal, accessToken, loginWithGoogle } = useAuth();
 
   /* Every write carries the session JWT; the routes reject anything without
      one. Identity is no longer sent in the body — the server reads it from the
@@ -123,11 +127,11 @@ export function RecipeCommunitySection({
    * every render where `currentSettings` is a fresh object, silently discarding
    * edits in progress, and it is the cascading-render pattern React warns about.
    */
-  const openProposalForm = () => {
+  const openProposalForm = useCallback(() => {
     setEditSettings(JSON.parse(JSON.stringify(currentSettings)) as Partial<PpSettings> & Partial<ClSettings>);
     setEditWb(JSON.parse(JSON.stringify(currentWb)) as WhiteBalance);
     setIsPropFormOpen(true);
-  };
+  }, [currentSettings, currentWb]);
 
   // Load comments
   const fetchComments = useCallback(async () => {
@@ -199,6 +203,29 @@ export function RecipeCommunitySection({
       // Ignore realtime connection errors
     }
   }, [recipeSlug, fetchComments, fetchProposals]);
+
+  /* Opened from the gallery's "Propose & vote" card, which has no way to reach
+     this state directly — see `OPEN_PROPOSAL_EVENT`. `openProposalForm` is in
+     the deps because it seeds the draft from `currentSettings`: pinned to the
+     first render, a later recipe would have opened the editor on stale values. */
+  useEffect(() => {
+    const handleOpenProposalSection = () => {
+      setActiveTab('proposals');
+      /* Signed out, the editor does not render at all — without this the card
+         scrolled the reader to the proposals tab and then did nothing visible.
+         Same branch the section's own "Propose a new version" button takes. */
+      if (!user) openLoginModal();
+      else openProposalForm();
+      requestAnimationFrame(() => {
+        document
+          .getElementById('community-section')
+          ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    };
+
+    window.addEventListener(OPEN_PROPOSAL_EVENT, handleOpenProposalSection);
+    return () => window.removeEventListener(OPEN_PROPOSAL_EVENT, handleOpenProposalSection);
+  }, [openProposalForm, user, openLoginModal]);
 
   // Post comment handler
   const handlePostComment = async (e: React.FormEvent) => {
@@ -379,7 +406,13 @@ export function RecipeCommunitySection({
   const updateClLook = (look: string) => {
     setEditSettings((prev) => {
       const isMono = (CL_MONOCHROME_LOOKS as readonly string[]).includes(look);
-      const next: Partial<PpSettings> & Partial<ClSettings> = { ...prev, look: look as any };
+      /* Narrowed against the real code list rather than asserted through `any`:
+         the <select> only offers legal codes today, but the cast would have let
+         any future caller write a Look the camera has never heard of. */
+      const next: Partial<PpSettings> & Partial<ClSettings> = {
+        ...prev,
+        look: asEnum(CREATIVE_LOOK_CODES, look, prev.look ?? CREATIVE_LOOK_CODES[0]),
+      };
       if (isMono) {
         delete next.saturation;
       } else if (next.saturation === undefined) {
@@ -445,465 +478,269 @@ export function RecipeCommunitySection({
     });
   };
 
+  /*
+   * Opaque fill, border and shadow on the wrapper; `.glass` on the panel inside.
+   * `.glass` is unlayered CSS and hard-sets `background`/`box-shadow` with
+   * `border: 0 !important`, so `bg-black/40 border-white/10 shadow-xl
+   * rounded-2xl` were all dead on the same element — this panel was rendering
+   * far more transparent than intended, over whatever photograph sat behind it.
+   */
   return (
-    <section className="mt-8 glass p-5 sm:p-6 rounded-2xl border border-white/10 shadow-xl bg-black/40 font-sans text-white">
-      {/* Header & Tabs */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-white/10 pb-4">
-        <div>
-          <h2 className="text-xs font-bold tracking-wider uppercase text-white/90 font-sans flex items-center gap-2">
-            <span>🌐</span>
-            <span>Cộng Đồng & Đề Xuất Tinh Chỉnh</span>
-          </h2>
-          <p className="text-xs text-white/50 font-sans mt-0.5">
-            Thảo luận và bình chọn các biến thể công thức màu tốt nhất cho {recipeTitle}
-          </p>
-        </div>
-
-        {/* Tab Buttons */}
-        <div className="flex items-center gap-1.5 bg-black/60 p-1 rounded-xl border border-white/10 self-start sm:self-auto">
-          <button
-            type="button"
-            onClick={() => setActiveTab('comments')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-              activeTab === 'comments'
-                ? 'bg-white/20 text-white shadow-sm font-bold'
-                : 'text-white/60 hover:text-white'
-            }`}
-          >
-            💬 Bình luận ({comments.length})
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('proposals')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-              activeTab === 'proposals'
-                ? 'bg-white/20 text-white shadow-sm font-bold'
-                : 'text-white/60 hover:text-white'
-            }`}
-          >
-            💡 Đề xuất & Vote ❤️ ({proposals.length})
-          </button>
-        </div>
-      </div>
-
-      {/* Tab 1: Comments */}
-      {activeTab === 'comments' && (
-        <div className="mt-5 flex flex-col gap-6">
-          {/* Add Comment Form or Google Login Prompt */}
-          {user ? (
-            <form onSubmit={handlePostComment} className="flex flex-col gap-3 bg-black/40 p-4 rounded-xl border border-white/10">
-              <div className="flex items-center gap-2.5">
-                <img
-                  src={user.avatarUrl}
-                  alt={user.name}
-                  className="w-7 h-7 rounded-full border border-white/20 shrink-0"
-                />
-                <span className="text-xs font-semibold text-white/90">{user.name}</span>
-                <span className="text-[10px] text-white/40">({user.email})</span>
-              </div>
-
-              <textarea
-                value={newCommentText}
-                onChange={(e) => setNewCommentText(e.target.value)}
-                placeholder="Viết bình luận, mẹo chụp hoặc cảm nhận của bạn về công thức này..."
-                rows={2}
-                maxLength={2000}
-                className="w-full resize-y rounded-xl bg-black/60 p-3 text-sm text-white placeholder:text-white/35 focus:outline-none focus:border-white/30 font-sans border border-white/10"
-              />
-
-              <div className="flex justify-between items-center">
-                <span className="text-[10px] text-white/40 font-sans">
-                  Hãy giữ bình luận văn minh & hữu ích cho cộng đồng.
-                </span>
-                <button
-                  type="submit"
-                  disabled={isSubmittingComment || !newCommentText.trim()}
-                  className="px-4 py-1.5 rounded-full bg-white text-black text-xs font-bold hover:bg-white/90 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  {isSubmittingComment ? 'Đang gửi...' : 'Gửi bình luận'}
-                </button>
-              </div>
-            </form>
-          ) : (
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-black/50 p-4 rounded-xl border border-white/10">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center shrink-0">
-                  💬
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-white">Đăng nhập để tham gia bình luận</p>
-                  <p className="text-[11px] text-white/50">Sử dụng tài khoản Google (Gmail) để bình luận và trao đổi</p>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={openLoginModal}
-                className="flex items-center gap-2.5 px-4 py-2 rounded-full bg-white text-black font-bold text-xs hover:bg-white/90 hover:scale-105 active:scale-95 transition-all shadow-md cursor-pointer shrink-0"
-              >
-                <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z" />
-                  <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.29v3.15C3.26 21.3 7.31 24 12 24z" />
-                  <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.29C.47 8.21 0 10.05 0 12s.47 3.79 1.29 5.42l3.99-3.15z" />
-                  <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.58l3.99 3.15c.95-2.83 3.6-4.98 6.72-4.98z" />
-                </svg>
-                <span>Đăng nhập với Google</span>
-              </button>
-            </div>
-          )}
-
-          {/* Comments List */}
-          <div className="flex flex-col gap-3">
-            {comments.length === 0 ? (
-              <p className="text-xs text-white/40 italic py-4 text-center">
-                Chưa có bình luận nào. Hãy là người đầu tiên để lại ý kiến!
-              </p>
-            ) : (
-              comments.map((comment) => (
-                <div
-                  key={comment.id}
-                  className="flex flex-col gap-1.5 p-3.5 rounded-xl bg-white/5 border border-white/5 hover:border-white/10 transition-colors"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      {comment.authorAvatar ? (
-                        <img
-                          src={comment.authorAvatar}
-                          alt={comment.authorName}
-                          className="w-6 h-6 rounded-full border border-white/20 shrink-0"
-                        />
-                      ) : (
-                        <div className="w-6 h-6 rounded-full bg-white/20 text-white flex items-center justify-center text-[10px] font-bold">
-                          {comment.authorName.charAt(0)}
-                        </div>
-                      )}
-                      <span className="text-xs font-semibold text-white">{comment.authorName}</span>
-                    </div>
-
-                    <span className="text-[10px] text-white/40">
-                      {new Date(comment.createdAt).toLocaleDateString('vi-VN', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </span>
-                  </div>
-
-                  <p className="text-xs leading-relaxed text-white/80 pl-8 font-sans">
-                    {comment.content}
-                  </p>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Tab 2: Proposals & Heart Voting */}
-      {activeTab === 'proposals' && (
-        <div className="mt-5 flex flex-col gap-5">
-          {/* Header Action */}
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-xs text-white/60">
-              Điền trực tiếp thông số chuẩn format camera vào template để đề xuất phiên bản mới cho cộng đồng vote trái tim ❤️.
+    <section
+      id="community-section"
+      className="mt-8 overflow-hidden rounded-[var(--radius-glass)] border border-white/10 bg-black/40 shadow-xl font-sans text-white"
+    >
+      <div className="glass p-5 sm:p-6">
+        {/* Header & Tabs */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-white/10 pb-4">
+          <div>
+            <h2 className="text-xs font-bold tracking-wider uppercase text-white/90 font-sans flex items-center gap-2">
+              <span>🌐</span>
+              <span>{t('title')}</span>
+            </h2>
+            <p className="text-xs text-white/50 font-sans mt-0.5">
+              {t('subtitle', { title: recipeTitle })}
             </p>
+          </div>
+
+          {/* Tab Buttons */}
+          <div className="flex items-center gap-1.5 bg-black/60 p-1 rounded-xl border border-white/10 self-start sm:self-auto">
+            <button
+              type="button"
+              onClick={() => setActiveTab('comments')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                activeTab === 'comments'
+                  ? 'bg-white/20 text-white shadow-sm font-bold'
+                  : 'text-white/60 hover:text-white'
+              }`}
+            >
+              💬 {t('tabComments', { count: comments.length })}
+            </button>
 
             <button
               type="button"
-              onClick={() => {
-                if (!user) openLoginModal();
-                else if (isPropFormOpen) setIsPropFormOpen(false);
-                else openProposalForm();
-              }}
-              className="px-3.5 py-1.5 rounded-full bg-white/15 hover:bg-white/25 text-white text-xs font-semibold transition-all cursor-pointer shrink-0 flex items-center gap-1.5"
+              onClick={() => setActiveTab('proposals')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                activeTab === 'proposals'
+                  ? 'bg-white/20 text-white shadow-sm font-bold'
+                  : 'text-white/60 hover:text-white'
+              }`}
             >
-              {isPropFormOpen ? (
-                'Hủy'
-              ) : (
-                <>
-                  <span>✨</span>
-                  <span>Đề xuất phiên bản mới</span>
-                </>
-              )}
+              💡 {t('tabProposals', { count: proposals.length })}
             </button>
           </div>
+        </div>
 
-          {/* Interactive Camera-Accurate Template Editor Form */}
-          {isPropFormOpen && user && (
-            <form onSubmit={handleCreateProposal} className="flex flex-col gap-6 bg-black/60 p-5 sm:p-6 rounded-2xl border border-white/20 animate-fade-in shadow-2xl">
-              <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                  <span>💡</span>
-                  <span>Template Tinh Chỉnh {recipeFormat === 'pp' ? 'Picture Profile' : 'Creative Look'} Chuẩn Máy</span>
-                </h3>
-                <span className="text-[11px] text-emerald-400 font-semibold">Format Chuẩn Camera Sony</span>
-              </div>
-
-              {/* Proposal Title & Demo Photo URL */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-white/90 mb-1.5">
-                    Tên đề xuất phiên bản mới <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Ví dụ: Biến thể Nắng Chiều Rực Rỡ (Golden Warmth)..."
-                    value={newPropTitle}
-                    onChange={(e) => setNewPropTitle(e.target.value)}
-                    maxLength={150}
-                    className="w-full rounded-xl bg-black/80 px-3.5 py-2.5 text-sm text-white placeholder:text-white/35 border border-white/15 focus:outline-none focus:border-white/40 font-sans"
+        {/* Tab 1: Comments */}
+        {activeTab === 'comments' && (
+          <div className="mt-5 flex flex-col gap-6">
+            {/* Add Comment Form or Google Login Prompt */}
+            {user ? (
+              <form onSubmit={handlePostComment} className="flex flex-col gap-3 bg-black/40 p-4 rounded-xl border border-white/10">
+                <div className="flex items-center gap-2.5">
+                  {/* eslint-disable-next-line @next/next/no-img-element -- Google avatar, arbitrary host */}
+                  <img
+                    src={user.avatarUrl}
+                    alt=""
+                    className="w-7 h-7 rounded-full border border-white/20 shrink-0"
                   />
+                  <span className="text-xs font-semibold text-white/90">{user.name}</span>
+                  <span className="text-[10px] text-white/40">({user.email})</span>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-white/90 mb-1.5">
-                    URL Ảnh demo mẫu thực tế (Direct Image URL) <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    type="url"
-                    required
-                    placeholder="https://images.unsplash.com/photo-..."
-                    value={newSampleUrl}
-                    onChange={(e) => setNewSampleUrl(e.target.value)}
-                    className="w-full rounded-xl bg-black/80 px-3.5 py-2.5 text-sm text-white placeholder:text-white/35 border border-white/15 focus:outline-none focus:border-white/40 font-sans"
-                  />
-                </div>
-              </div>
+                <textarea
+                  value={newCommentText}
+                  onChange={(e) => setNewCommentText(e.target.value)}
+                  placeholder={t('commentPlaceholder')}
+                  rows={2}
+                  maxLength={2000}
+                  className="w-full resize-y rounded-xl bg-black/60 p-3 text-sm text-white placeholder:text-white/35 focus:outline-none focus:border-white/30 font-sans border border-white/10"
+                />
 
-              {/* BLOCK 1: White Balance Engine */}
-              <div className="bg-black/40 p-4 rounded-xl border border-white/10 flex flex-col gap-3">
-                <span className="eyebrow text-xs tracking-wider text-[oklch(85%_0.3_140)] font-bold uppercase">
-                  1. Cân Bằng Trắng (White Balance Shift)
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] text-white/40 font-sans">
+                    {t('commentHint')}
+                  </span>
+                  <button
+                    type="submit"
+                    disabled={isSubmittingComment || !newCommentText.trim()}
+                    className="px-4 py-1.5 rounded-full bg-white text-black text-xs font-bold hover:bg-white/90 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    {isSubmittingComment ? t('commentSending') : t('commentSubmit')}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div className="flex items-center gap-3 bg-black/40 p-3.5 rounded-xl border border-white/10 text-xs text-white/70 font-sans">
+                <span className="text-base shrink-0">💬</span>
+                <span>
+                  {t.rich('loginPrompt', {
+                    a: (chunks) => (
+                      <button
+                        type="button"
+                        onClick={loginWithGoogle}
+                        className="text-white font-bold underline hover:text-community transition-colors cursor-pointer"
+                      >
+                        {chunks}
+                      </button>
+                    ),
+                  })}
                 </span>
+              </div>
+            )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {/* Kelvin Temperature */}
-                  {editWb?.mode === 'kelvin' && (
-                    <div className="flex items-center justify-between bg-black/50 px-3.5 py-2 rounded-lg border border-white/10">
-                      <span className="text-xs text-white/70">Nhiệt độ Kelvin</span>
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => adjustKelvin(-1)}
-                          className="w-6 h-6 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
-                        >
-                          -
-                        </button>
-                        <span className={`text-xs font-bold w-12 text-center ${getKelvinColor(editWb.kelvin)}`}>
-                          {editWb.kelvin}K
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => adjustKelvin(1)}
-                          className="w-6 h-6 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
-                        >
-                          +
-                        </button>
+            {/* Comments List */}
+            <div className="flex flex-col gap-3">
+              {comments.length === 0 ? (
+                <p className="text-xs text-white/40 italic py-4 text-center">
+                  {t('noComments')}
+                </p>
+              ) : (
+                comments.map((comment) => (
+                  <div
+                    key={comment.id}
+                    className="flex flex-col gap-1.5 p-3.5 rounded-xl bg-white/5 border border-white/5 hover:border-white/10 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {comment.authorAvatar ? (
+                          /* eslint-disable-next-line @next/next/no-img-element -- Google avatar, arbitrary host */
+                          <img
+                            src={comment.authorAvatar}
+                            alt=""
+                            className="w-6 h-6 rounded-full border border-white/20 shrink-0"
+                          />
+                        ) : (
+                          <div className="w-6 h-6 rounded-full bg-white/20 text-white flex items-center justify-center text-[10px] font-bold">
+                            {comment.authorName.charAt(0)}
+                          </div>
+                        )}
+                        <span className="text-xs font-semibold text-white">{comment.authorName}</span>
                       </div>
-                    </div>
-                  )}
 
-                  {/* Shift A/B */}
-                  <div className="flex items-center justify-between bg-black/50 px-3.5 py-2 rounded-lg border border-white/10">
-                    <span className="text-xs text-white/70">Shift A/B</span>
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => updateWbShift('ab', -1)}
-                        className="w-6 h-6 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
-                      >
-                        -
-                      </button>
-                      <span className={`text-xs font-bold w-12 text-center ${getWbShiftAxisColor(editWb?.shift?.ab?.axis || 'A')}`}>
-                        {editWb?.shift?.ab ? `${editWb.shift!.ab.axis}${editWb.shift!.ab.amount}` : 'A0'}
+                      <span className="text-[10px] text-white/40">
+                        {new Date(comment.createdAt).toLocaleDateString('vi-VN', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
                       </span>
-                      <button
-                        type="button"
-                        onClick={() => updateWbShift('ab', 1)}
-                        className="w-6 h-6 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
-                      >
-                        +
-                      </button>
                     </div>
+
+                    <p className="text-xs leading-relaxed text-white/80 pl-8 font-sans">
+                      {comment.content}
+                    </p>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Tab 2: Proposals & Heart Voting */}
+        {activeTab === 'proposals' && (
+          <div className="mt-5 flex flex-col gap-5">
+            {/* Header Action */}
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-xs text-white/60">
+                {t('proposalIntro')}
+              </p>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (!user) openLoginModal();
+                  else if (isPropFormOpen) setIsPropFormOpen(false);
+                  else openProposalForm();
+                }}
+                className="px-3.5 py-1.5 rounded-full bg-white/15 hover:bg-white/25 text-white text-xs font-semibold transition-all cursor-pointer shrink-0 flex items-center gap-1.5"
+              >
+                {isPropFormOpen ? (
+                  t('cancel')
+                ) : (
+                  <>
+                    <span>✨</span>
+                    <span>{t('newProposal')}</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Interactive Camera-Accurate Template Editor Form */}
+            {isPropFormOpen && user && (
+              <form onSubmit={handleCreateProposal} className="flex flex-col gap-6 bg-black/60 p-5 sm:p-6 rounded-2xl border border-white/20 animate-fade-in shadow-2xl">
+                <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                  <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                    <span>💡</span>
+                    <span>
+                      {t('templateTitle', {
+                        format: recipeFormat === 'pp' ? 'Picture Profile' : 'Creative Look',
+                      })}
+                    </span>
+                  </h3>
+                  <span className="text-[11px] text-community font-semibold">{t('templateBadge')}</span>
+                </div>
+
+                {/* Proposal Title & Demo Photo URL */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-white/90 mb-1.5">
+                      {t('nameLabel')} <span className="text-danger">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder={t('namePlaceholder')}
+                      value={newPropTitle}
+                      onChange={(e) => setNewPropTitle(e.target.value)}
+                      maxLength={150}
+                      className="w-full rounded-xl bg-black/80 px-3.5 py-2.5 text-sm text-white placeholder:text-white/35 border border-white/15 focus:outline-none focus:border-white/40 font-sans"
+                    />
                   </div>
 
-                  {/* Shift G/M */}
-                  <div className="flex items-center justify-between bg-black/50 px-3.5 py-2 rounded-lg border border-white/10">
-                    <span className="text-xs text-white/70">Shift G/M</span>
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => updateWbShift('gm', -1)}
-                        className="w-6 h-6 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
-                      >
-                        -
-                      </button>
-                      <span className={`text-xs font-bold w-12 text-center ${getWbShiftAxisColor(editWb?.shift?.gm?.axis || 'G')}`}>
-                        {editWb?.shift?.gm ? `${editWb.shift!.gm.axis}${editWb.shift!.gm.amount}` : 'G0'}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => updateWbShift('gm', 1)}
-                        className="w-6 h-6 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
-                      >
-                        +
-                      </button>
-                    </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-white/90 mb-1.5">
+                      {t('sampleUrlLabel')} <span className="text-danger">*</span>
+                    </label>
+                    <input
+                      type="url"
+                      required
+                      placeholder="https://images.unsplash.com/photo-..."
+                      value={newSampleUrl}
+                      onChange={(e) => setNewSampleUrl(e.target.value)}
+                      className="w-full rounded-xl bg-black/80 px-3.5 py-2.5 text-sm text-white placeholder:text-white/35 border border-white/15 focus:outline-none focus:border-white/40 font-sans"
+                    />
                   </div>
                 </div>
-              </div>
 
-              {/* BLOCK 2: Creative Look Settings */}
-              {recipeFormat === 'cl' && (
+                {/* BLOCK 1: White Balance Engine */}
                 <div className="bg-black/40 p-4 rounded-xl border border-white/10 flex flex-col gap-3">
-                  <span className="eyebrow text-xs tracking-wider text-white/90 font-bold uppercase">
-                    2. Creative Look Camera Parameters
+                  <span className="eyebrow text-xs tracking-wider text-[oklch(85%_0.3_140)] font-bold uppercase">
+                    {t('sectionWb')}
                   </span>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {/* Creative Look Select */}
-                    <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
-                      <span className="text-xs text-white/70">Creative Look</span>
-                      <select
-                        value={String(editSettings.look || 'ST')}
-                        onChange={(e) => updateClLook(e.target.value)}
-                        className="bg-black text-xs text-white px-2 py-1 rounded border border-white/20 focus:outline-none"
-                      >
-                        {CREATIVE_LOOKS.map((l) => (
-                          <option key={l.code} value={l.code}>
-                            {l.code} ({l.label})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Contrast (-9 to +9) */}
-                    <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
-                      <span className="text-xs text-white/70">Contrast</span>
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => updateClNum('contrast', -1)}
-                          className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
-                        >
-                          -
-                        </button>
-                        <span className="text-xs font-bold w-8 text-center text-white">
-                          {Number(editSettings.contrast ?? 0) > 0
-                            ? `+${editSettings.contrast}`
-                            : Number(editSettings.contrast ?? 0)}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => updateClNum('contrast', 1)}
-                          className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Highlights (-9 to +9) */}
-                    <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
-                      <span className="text-xs text-white/70">Highlights</span>
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => updateClNum('highlights', -1)}
-                          className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
-                        >
-                          -
-                        </button>
-                        <span className="text-xs font-bold w-8 text-center text-white">
-                          {Number(editSettings.highlights ?? 0) > 0
-                            ? `+${editSettings.highlights}`
-                            : Number(editSettings.highlights ?? 0)}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => updateClNum('highlights', 1)}
-                          className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Shadows (-9 to +9) */}
-                    <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
-                      <span className="text-xs text-white/70">Shadows</span>
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => updateClNum('shadows', -1)}
-                          className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
-                        >
-                          -
-                        </button>
-                        <span className="text-xs font-bold w-8 text-center text-white">
-                          {Number(editSettings.shadows ?? 0) > 0
-                            ? `+${editSettings.shadows}`
-                            : Number(editSettings.shadows ?? 0)}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => updateClNum('shadows', 1)}
-                          className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Fade (0 to 9) */}
-                    <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
-                      <span className="text-xs text-white/70">Fade</span>
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => updateClNum('fade', -1)}
-                          className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
-                        >
-                          -
-                        </button>
-                        <span className="text-xs font-bold w-8 text-center text-white">
-                          {Number(editSettings.fade ?? 0)}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => updateClNum('fade', 1)}
-                          className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Saturation (-9 to +9, omitted for monochrome BW/SE) */}
-                    {!(CL_MONOCHROME_LOOKS as readonly string[]).includes(String(editSettings.look)) && (
-                      <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
-                        <span className="text-xs text-white/70">Saturation</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {/* Kelvin Temperature */}
+                    {editWb?.mode === 'kelvin' && (
+                      <div className="flex items-center justify-between bg-black/50 px-3.5 py-2 rounded-lg border border-white/10">
+                        <span className="text-xs text-white/70">{t('kelvinLabel')}</span>
                         <div className="flex items-center gap-1.5">
                           <button
                             type="button"
-                            onClick={() => updateClNum('saturation', -1)}
-                            className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                            onClick={() => adjustKelvin(-1)}
+                            className="w-6 h-6 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
                           >
                             -
                           </button>
-                          <span className="text-xs font-bold w-8 text-center text-white">
-                            {Number(editSettings.saturation ?? 0) > 0
-                              ? `+${editSettings.saturation}`
-                              : Number(editSettings.saturation ?? 0)}
+                          <span className={`text-xs font-bold w-12 text-center ${getKelvinColor(editWb.kelvin)}`}>
+                            {editWb.kelvin}K
                           </span>
                           <button
                             type="button"
-                            onClick={() => updateClNum('saturation', 1)}
-                            className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                            onClick={() => adjustKelvin(1)}
+                            className="w-6 h-6 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
                           >
                             +
                           </button>
@@ -911,72 +748,48 @@ export function RecipeCommunitySection({
                       </div>
                     )}
 
-                    {/* Sharpness (0 to 9) */}
-                    <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
-                      <span className="text-xs text-white/70">Sharpness</span>
+                    {/* Shift A/B */}
+                    <div className="flex items-center justify-between bg-black/50 px-3.5 py-2 rounded-lg border border-white/10">
+                      <span className="text-xs text-white/70">Shift A/B</span>
                       <div className="flex items-center gap-1.5">
                         <button
                           type="button"
-                          onClick={() => updateClNum('sharpness', -1)}
-                          className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                          onClick={() => updateWbShift('ab', -1)}
+                          className="w-6 h-6 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
                         >
                           -
                         </button>
-                        <span className="text-xs font-bold w-8 text-center text-white">
-                          {Number(editSettings.sharpness ?? 0)}
+                        <span className={`text-xs font-bold w-12 text-center ${getWbShiftAxisColor(editWb?.shift?.ab?.axis || 'A')}`}>
+                          {editWb?.shift?.ab ? `${editWb.shift!.ab.axis}${editWb.shift!.ab.amount}` : 'A0'}
                         </span>
                         <button
                           type="button"
-                          onClick={() => updateClNum('sharpness', 1)}
-                          className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                          onClick={() => updateWbShift('ab', 1)}
+                          className="w-6 h-6 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
                         >
                           +
                         </button>
                       </div>
                     </div>
 
-                    {/* Sharpness Range (1 to 5) */}
-                    <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
-                      <span className="text-xs text-white/70">Sharpness Range</span>
+                    {/* Shift G/M */}
+                    <div className="flex items-center justify-between bg-black/50 px-3.5 py-2 rounded-lg border border-white/10">
+                      <span className="text-xs text-white/70">Shift G/M</span>
                       <div className="flex items-center gap-1.5">
                         <button
                           type="button"
-                          onClick={() => updateClNum('sharpnessRange', -1)}
-                          className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                          onClick={() => updateWbShift('gm', -1)}
+                          className="w-6 h-6 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
                         >
                           -
                         </button>
-                        <span className="text-xs font-bold w-8 text-center text-white">
-                          {Number(editSettings.sharpnessRange ?? 1)}
+                        <span className={`text-xs font-bold w-12 text-center ${getWbShiftAxisColor(editWb?.shift?.gm?.axis || 'G')}`}>
+                          {editWb?.shift?.gm ? `${editWb.shift!.gm.axis}${editWb.shift!.gm.amount}` : 'G0'}
                         </span>
                         <button
                           type="button"
-                          onClick={() => updateClNum('sharpnessRange', 1)}
-                          className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Clarity (0 to 9) */}
-                    <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
-                      <span className="text-xs text-white/70">Clarity</span>
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => updateClNum('clarity', -1)}
-                          className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
-                        >
-                          -
-                        </button>
-                        <span className="text-xs font-bold w-8 text-center text-white">
-                          {Number(editSettings.clarity ?? 0)}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => updateClNum('clarity', 1)}
-                          className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                          onClick={() => updateWbShift('gm', 1)}
+                          className="w-6 h-6 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
                         >
                           +
                         </button>
@@ -984,34 +797,50 @@ export function RecipeCommunitySection({
                     </div>
                   </div>
                 </div>
-              )}
 
-              {/* BLOCK 2: Picture Profile Master Settings */}
-              {recipeFormat === 'pp' && (
-                <>
+                {/* BLOCK 2: Creative Look Settings */}
+                {recipeFormat === 'cl' && (
                   <div className="bg-black/40 p-4 rounded-xl border border-white/10 flex flex-col gap-3">
                     <span className="eyebrow text-xs tracking-wider text-white/90 font-bold uppercase">
-                      2. Picture Profile Master Settings
+                      2. Creative Look Camera Parameters
                     </span>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {/* Black Level */}
+                      {/* Creative Look Select */}
                       <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
-                        <span className="text-xs text-white/70">Black Level</span>
+                        <span className="text-xs text-white/70">Creative Look</span>
+                        <select
+                          value={String(editSettings.look || 'ST')}
+                          onChange={(e) => updateClLook(e.target.value)}
+                          className="bg-black text-xs text-white px-2 py-1 rounded border border-white/20 focus:outline-none"
+                        >
+                          {CREATIVE_LOOKS.map((l) => (
+                            <option key={l.code} value={l.code}>
+                              {l.code} ({l.label})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Contrast (-9 to +9) */}
+                      <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
+                        <span className="text-xs text-white/70">Contrast</span>
                         <div className="flex items-center gap-1.5">
                           <button
                             type="button"
-                            onClick={() => updateNum('blackLevel', -1)}
+                            onClick={() => updateClNum('contrast', -1)}
                             className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
                           >
                             -
                           </button>
                           <span className="text-xs font-bold w-8 text-center text-white">
-                            {(editSettings.blackLevel ?? 0) > 0 ? `+${editSettings.blackLevel}` : (editSettings.blackLevel ?? 0)}
+                            {Number(editSettings.contrast ?? 0) > 0
+                              ? `+${editSettings.contrast}`
+                              : Number(editSettings.contrast ?? 0)}
                           </span>
                           <button
                             type="button"
-                            onClick={() => updateNum('blackLevel', 1)}
+                            onClick={() => updateClNum('contrast', 1)}
                             className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
                           >
                             +
@@ -1019,53 +848,581 @@ export function RecipeCommunitySection({
                         </div>
                       </div>
 
-                      {/* Gamma Select */}
+                      {/* Highlights (-9 to +9) */}
                       <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
-                        <span className="text-xs text-white/70">Gamma</span>
-                        <select
-                          value={editSettings.gamma || 'S-Cinetone'}
-                          onChange={(e) =>
-                            setEditSettings((prev) => ({
-                              ...prev,
-                              gamma: asEnum(PP_GAMMA, e.target.value, 'S-Cinetone'),
-                            }))
-                          }
-                          className="bg-black text-xs text-white px-2 py-1 rounded border border-white/20 focus:outline-none"
-                        >
-                          {PP_GAMMA.map((g) => (
-                            <option key={g} value={g}>{g}</option>
-                          ))}
-                        </select>
+                        <span className="text-xs text-white/70">Highlights</span>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => updateClNum('highlights', -1)}
+                            className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                          >
+                            -
+                          </button>
+                          <span className="text-xs font-bold w-8 text-center text-white">
+                            {Number(editSettings.highlights ?? 0) > 0
+                              ? `+${editSettings.highlights}`
+                              : Number(editSettings.highlights ?? 0)}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => updateClNum('highlights', 1)}
+                            className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                          >
+                            +
+                          </button>
+                        </div>
                       </div>
 
-                      {/* Black Gamma (Range & Level) */}
-                      {editSettings.blackGamma && (
-                        <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10 col-span-1 sm:col-span-2">
-                          <span className="text-xs text-white/70">Black Gamma</span>
-                          <div className="flex items-center gap-2">
-                            <select
-                              value={editSettings.blackGamma.range || 'Middle'}
-                              onChange={(e) => updateNestedSelect('blackGamma', 'range', e.target.value)}
-                              className="bg-black text-xs text-white px-2 py-1 rounded border border-white/20 focus:outline-none"
+                      {/* Shadows (-9 to +9) */}
+                      <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
+                        <span className="text-xs text-white/70">Shadows</span>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => updateClNum('shadows', -1)}
+                            className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                          >
+                            -
+                          </button>
+                          <span className="text-xs font-bold w-8 text-center text-white">
+                            {Number(editSettings.shadows ?? 0) > 0
+                              ? `+${editSettings.shadows}`
+                              : Number(editSettings.shadows ?? 0)}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => updateClNum('shadows', 1)}
+                            className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Fade (0 to 9) */}
+                      <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
+                        <span className="text-xs text-white/70">Fade</span>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => updateClNum('fade', -1)}
+                            className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                          >
+                            -
+                          </button>
+                          <span className="text-xs font-bold w-8 text-center text-white">
+                            {Number(editSettings.fade ?? 0)}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => updateClNum('fade', 1)}
+                            className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Saturation (-9 to +9, omitted for monochrome BW/SE) */}
+                      {!(CL_MONOCHROME_LOOKS as readonly string[]).includes(String(editSettings.look)) && (
+                        <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
+                          <span className="text-xs text-white/70">Saturation</span>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => updateClNum('saturation', -1)}
+                              className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
                             >
-                              {PP_BLACK_GAMMA_RANGE.map((r) => (
-                                <option key={r} value={r}>{r}</option>
-                              ))}
-                            </select>
-                            <div className="flex items-center gap-1">
+                              -
+                            </button>
+                            <span className="text-xs font-bold w-8 text-center text-white">
+                              {Number(editSettings.saturation ?? 0) > 0
+                                ? `+${editSettings.saturation}`
+                                : Number(editSettings.saturation ?? 0)}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => updateClNum('saturation', 1)}
+                              className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Sharpness (0 to 9) */}
+                      <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
+                        <span className="text-xs text-white/70">Sharpness</span>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => updateClNum('sharpness', -1)}
+                            className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                          >
+                            -
+                          </button>
+                          <span className="text-xs font-bold w-8 text-center text-white">
+                            {Number(editSettings.sharpness ?? 0)}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => updateClNum('sharpness', 1)}
+                            className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Sharpness Range (1 to 5) */}
+                      <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
+                        <span className="text-xs text-white/70">Sharpness Range</span>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => updateClNum('sharpnessRange', -1)}
+                            className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                          >
+                            -
+                          </button>
+                          <span className="text-xs font-bold w-8 text-center text-white">
+                            {Number(editSettings.sharpnessRange ?? 1)}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => updateClNum('sharpnessRange', 1)}
+                            className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Clarity (0 to 9) */}
+                      <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
+                        <span className="text-xs text-white/70">Clarity</span>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => updateClNum('clarity', -1)}
+                            className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                          >
+                            -
+                          </button>
+                          <span className="text-xs font-bold w-8 text-center text-white">
+                            {Number(editSettings.clarity ?? 0)}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => updateClNum('clarity', 1)}
+                            className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* BLOCK 2: Picture Profile Master Settings */}
+                {recipeFormat === 'pp' && (
+                  <>
+                    <div className="bg-black/40 p-4 rounded-xl border border-white/10 flex flex-col gap-3">
+                      <span className="eyebrow text-xs tracking-wider text-white/90 font-bold uppercase">
+                        2. Picture Profile Master Settings
+                      </span>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {/* Black Level */}
+                        <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
+                          <span className="text-xs text-white/70">Black Level</span>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => updateNum('blackLevel', -1)}
+                              className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                            >
+                              -
+                            </button>
+                            <span className="text-xs font-bold w-8 text-center text-white">
+                              {(editSettings.blackLevel ?? 0) > 0 ? `+${editSettings.blackLevel}` : (editSettings.blackLevel ?? 0)}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => updateNum('blackLevel', 1)}
+                              className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Gamma Select */}
+                        <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
+                          <span className="text-xs text-white/70">Gamma</span>
+                          <select
+                            value={editSettings.gamma || 'S-Cinetone'}
+                            onChange={(e) =>
+                              setEditSettings((prev) => ({
+                                ...prev,
+                                gamma: asEnum(PP_GAMMA, e.target.value, 'S-Cinetone'),
+                              }))
+                            }
+                            className="bg-black text-xs text-white px-2 py-1 rounded border border-white/20 focus:outline-none"
+                          >
+                            {PP_GAMMA.map((g) => (
+                              <option key={g} value={g}>{g}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Black Gamma (Range & Level) */}
+                        {editSettings.blackGamma && (
+                          <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10 col-span-1 sm:col-span-2">
+                            <span className="text-xs text-white/70">Black Gamma</span>
+                            <div className="flex items-center gap-2">
+                              <select
+                                value={editSettings.blackGamma.range || 'Middle'}
+                                onChange={(e) => updateNestedSelect('blackGamma', 'range', e.target.value)}
+                                className="bg-black text-xs text-white px-2 py-1 rounded border border-white/20 focus:outline-none"
+                              >
+                                {PP_BLACK_GAMMA_RANGE.map((r) => (
+                                  <option key={r} value={r}>{r}</option>
+                                ))}
+                              </select>
+                              <div className="flex items-center gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => updateNestedNum('blackGamma', 'level', -1)}
+                                  className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                                >
+                                  -
+                                </button>
+                                <span className="text-xs font-bold w-8 text-center text-white">
+                                  {editSettings.blackGamma.level > 0 ? `+${editSettings.blackGamma.level}` : editSettings.blackGamma.level}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => updateNestedNum('blackGamma', 'level', 1)}
+                                  className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                                >
+                                  +
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Knee (Mode, Point, Slope) */}
+                        {editSettings.knee && (
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 bg-black/50 px-3 py-2 rounded-lg border border-white/10 col-span-1 sm:col-span-2 lg:col-span-3">
+                            <span className="text-xs text-white/70 font-semibold">Knee</span>
+                            <div className="flex flex-wrap items-center gap-2.5">
+                              <select
+                                value={editSettings.knee.mode || 'Auto'}
+                                onChange={(e) => updateNestedSelect('knee', 'mode', e.target.value)}
+                                className="bg-black text-xs text-white px-2 py-1 rounded border border-white/20 focus:outline-none"
+                              >
+                                {PP_KNEE_MODE.map((m) => (
+                                  <option key={m} value={m}>{m}</option>
+                                ))}
+                              </select>
+
+                              {editSettings.knee.mode === 'Manual' && (
+                                <>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-[10px] text-white/50">Point:</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => updateNestedNum('knee', 'point', -5)}
+                                      className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                                    >
+                                      -
+                                    </button>
+                                    <span className="text-xs font-bold text-white">{editSettings.knee.point ?? 75}%</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => updateNestedNum('knee', 'point', 5)}
+                                      className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                                    >
+                                      +
+                                    </button>
+                                  </div>
+
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-[10px] text-white/50">Slope:</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => updateNestedNum('knee', 'slope', -1)}
+                                      className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                                    >
+                                      -
+                                    </button>
+                                    <span className="text-xs font-bold text-white">
+                                      {(editSettings.knee.slope ?? 0) > 0 ? `+${editSettings.knee.slope}` : (editSettings.knee.slope ?? 0)}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => updateNestedNum('knee', 'slope', 1)}
+                                      className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                                    >
+                                      +
+                                    </button>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Color Mode Select */}
+                        <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
+                          <span className="text-xs text-white/70">Color Mode</span>
+                          <select
+                            value={editSettings.colorMode || 'S-Cinetone'}
+                            onChange={(e) =>
+                              setEditSettings((prev) => ({
+                                ...prev,
+                                colorMode: asEnum(PP_COLOR_MODE, e.target.value, 'S-Cinetone'),
+                              }))
+                            }
+                            className="bg-black text-xs text-white px-2 py-1 rounded border border-white/20 focus:outline-none max-w-[120px] truncate"
+                          >
+                            {PP_COLOR_MODE.map((cm) => (
+                              <option key={cm} value={cm}>{cm}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Saturation (-32 to +32) */}
+                        <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
+                          <span className="text-xs text-white/70">Saturation</span>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => updateNum('saturation', -1)}
+                              className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                            >
+                              -
+                            </button>
+                            <span className="text-xs font-bold w-8 text-center text-white">
+                              {(editSettings.saturation ?? 0) > 0 ? `+${editSettings.saturation}` : (editSettings.saturation ?? 0)}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => updateNum('saturation', 1)}
+                              className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Color Phase (-7 to +7) */}
+                        <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
+                          <span className="text-xs text-white/70">Color Phase</span>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => updateNum('colorPhase', -1)}
+                              className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                            >
+                              -
+                            </button>
+                            <span className="text-xs font-bold w-8 text-center text-white">
+                              {(editSettings.colorPhase ?? 0) > 0 ? `+${editSettings.colorPhase}` : (editSettings.colorPhase ?? 0)}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => updateNum('colorPhase', 1)}
+                              className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* BLOCK 3: Color Depth (6 Channels R, G, B, C, M, Y) */}
+                    {editSettings.colorDepth && (
+                      <div className="bg-black/40 p-4 rounded-xl border border-white/10 flex flex-col gap-3">
+                        <span className="eyebrow text-xs tracking-wider text-white/90 font-bold uppercase">
+                          {t('sectionColorDepth')}
+                        </span>
+
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+                          {PP_COLOR_DEPTH_CHANNELS.map((ch) => {
+                            const hex = getColorDepthChannelHexColor(ch);
+                            return (
+                              <div key={ch} className="flex items-center justify-between bg-black/50 px-2.5 py-1.5 rounded-lg border border-white/10">
+                                <span className="text-xs font-bold" style={{ color: hex }}>{ch}</span>
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => updateColorDepth(ch, -1)}
+                                    className="w-4 h-4 rounded bg-white/10 text-white font-bold text-[10px] hover:bg-white/20 flex items-center justify-center"
+                                  >
+                                    -
+                                  </button>
+                                  <span className="text-xs font-bold w-5 text-center" style={{ color: hex }}>
+                                    {(editSettings.colorDepth?.[ch] ?? 0) > 0
+                                      ? `+${editSettings.colorDepth?.[ch] ?? 0}`
+                                      : (editSettings.colorDepth?.[ch] ?? 0)}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => updateColorDepth(ch, 1)}
+                                    className="w-4 h-4 rounded bg-white/10 text-white font-bold text-[10px] hover:bg-white/20 flex items-center justify-center"
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* BLOCK 4: Detail Sub-Parameters */}
+                    {editSettings.detail && (
+                      <div className="bg-black/40 p-4 rounded-xl border border-white/10 flex flex-col gap-3">
+                        <span className="eyebrow text-xs tracking-wider text-white/90 font-bold uppercase">
+                          {t('sectionDetail')}
+                        </span>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                          {/* Detail Level */}
+                          <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
+                            <span className="text-xs text-white/70">Level</span>
+                            <div className="flex items-center gap-1.5">
                               <button
                                 type="button"
-                                onClick={() => updateNestedNum('blackGamma', 'level', -1)}
+                                onClick={() => updateNestedNum('detail', 'level', -1)}
                                 className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
                               >
                                 -
                               </button>
                               <span className="text-xs font-bold w-8 text-center text-white">
-                                {editSettings.blackGamma.level > 0 ? `+${editSettings.blackGamma.level}` : editSettings.blackGamma.level}
+                                {editSettings.detail.level > 0 ? `+${editSettings.detail.level}` : editSettings.detail.level}
                               </span>
                               <button
                                 type="button"
-                                onClick={() => updateNestedNum('blackGamma', 'level', 1)}
+                                onClick={() => updateNestedNum('detail', 'level', 1)}
+                                className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* V/H Balance */}
+                          <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
+                            <span className="text-xs text-white/70">V/H Balance</span>
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => updateNestedNum('detail', 'vhBalance', -1)}
+                                className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                              >
+                                -
+                              </button>
+                              <span className="text-xs font-bold w-8 text-center text-white">
+                                {editSettings.detail.vhBalance > 0 ? `+${editSettings.detail.vhBalance}` : editSettings.detail.vhBalance}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => updateNestedNum('detail', 'vhBalance', 1)}
+                                className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* B/W Balance Select */}
+                          <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
+                            <span className="text-xs text-white/70">B/W Balance</span>
+                            <select
+                              value={editSettings.detail.bwBalance || 'Type3'}
+                              onChange={(e) => updateNestedSelect('detail', 'bwBalance', e.target.value)}
+                              className="bg-black text-xs text-white px-2 py-1 rounded border border-white/20 focus:outline-none"
+                            >
+                              {PP_DETAIL_BW_BALANCE.map((bw) => (
+                                <option key={bw} value={bw}>{bw}</option>
+                              ))}
+                            </select>
+                          </div>
+
+                          {/* Limit */}
+                          <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
+                            <span className="text-xs text-white/70">Limit</span>
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => updateNestedNum('detail', 'limit', -1)}
+                                className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                              >
+                                -
+                              </button>
+                              <span className="text-xs font-bold w-8 text-center text-white">
+                                {editSettings.detail.limit || 0}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => updateNestedNum('detail', 'limit', 1)}
+                                className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Crispening */}
+                          <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
+                            <span className="text-xs text-white/70">Crispening</span>
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => updateNestedNum('detail', 'crispening', -1)}
+                                className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                              >
+                                -
+                              </button>
+                              <span className="text-xs font-bold w-8 text-center text-white">
+                                {editSettings.detail.crispening || 0}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => updateNestedNum('detail', 'crispening', 1)}
+                                className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Hi-Light Detail */}
+                          <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
+                            <span className="text-xs text-white/70">Hi-Light Detail</span>
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => updateNestedNum('detail', 'hiLightDetail', -1)}
+                                className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
+                              >
+                                -
+                              </button>
+                              <span className="text-xs font-bold w-8 text-center text-white">
+                                {editSettings.detail.hiLightDetail || 0}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => updateNestedNum('detail', 'hiLightDetail', 1)}
                                 className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
                               >
                                 +
@@ -1073,421 +1430,108 @@ export function RecipeCommunitySection({
                             </div>
                           </div>
                         </div>
-                      )}
-
-                      {/* Knee (Mode, Point, Slope) */}
-                      {editSettings.knee && (
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 bg-black/50 px-3 py-2 rounded-lg border border-white/10 col-span-1 sm:col-span-2 lg:col-span-3">
-                          <span className="text-xs text-white/70 font-semibold">Knee</span>
-                          <div className="flex flex-wrap items-center gap-2.5">
-                            <select
-                              value={editSettings.knee.mode || 'Auto'}
-                              onChange={(e) => updateNestedSelect('knee', 'mode', e.target.value)}
-                              className="bg-black text-xs text-white px-2 py-1 rounded border border-white/20 focus:outline-none"
-                            >
-                              {PP_KNEE_MODE.map((m) => (
-                                <option key={m} value={m}>{m}</option>
-                              ))}
-                            </select>
-
-                            {editSettings.knee.mode === 'Manual' && (
-                              <>
-                                <div className="flex items-center gap-1.5">
-                                  <span className="text-[10px] text-white/50">Point:</span>
-                                  <button
-                                    type="button"
-                                    onClick={() => updateNestedNum('knee', 'point', -5)}
-                                    className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
-                                  >
-                                    -
-                                  </button>
-                                  <span className="text-xs font-bold text-white">{editSettings.knee.point ?? 75}%</span>
-                                  <button
-                                    type="button"
-                                    onClick={() => updateNestedNum('knee', 'point', 5)}
-                                    className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
-                                  >
-                                    +
-                                  </button>
-                                </div>
-
-                                <div className="flex items-center gap-1.5">
-                                  <span className="text-[10px] text-white/50">Slope:</span>
-                                  <button
-                                    type="button"
-                                    onClick={() => updateNestedNum('knee', 'slope', -1)}
-                                    className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
-                                  >
-                                    -
-                                  </button>
-                                  <span className="text-xs font-bold text-white">
-                                    {(editSettings.knee.slope ?? 0) > 0 ? `+${editSettings.knee.slope}` : (editSettings.knee.slope ?? 0)}
-                                  </span>
-                                  <button
-                                    type="button"
-                                    onClick={() => updateNestedNum('knee', 'slope', 1)}
-                                    className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
-                                  >
-                                    +
-                                  </button>
-                                </div>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Color Mode Select */}
-                      <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
-                        <span className="text-xs text-white/70">Color Mode</span>
-                        <select
-                          value={editSettings.colorMode || 'S-Cinetone'}
-                          onChange={(e) =>
-                            setEditSettings((prev) => ({
-                              ...prev,
-                              colorMode: asEnum(PP_COLOR_MODE, e.target.value, 'S-Cinetone'),
-                            }))
-                          }
-                          className="bg-black text-xs text-white px-2 py-1 rounded border border-white/20 focus:outline-none max-w-[120px] truncate"
-                        >
-                          {PP_COLOR_MODE.map((cm) => (
-                            <option key={cm} value={cm}>{cm}</option>
-                          ))}
-                        </select>
                       </div>
+                    )}
+                  </>
+                )}
 
-                      {/* Saturation (-32 to +32) */}
-                      <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
-                        <span className="text-xs text-white/70">Saturation</span>
-                        <div className="flex items-center gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => updateNum('saturation', -1)}
-                            className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
-                          >
-                            -
-                          </button>
-                          <span className="text-xs font-bold w-8 text-center text-white">
-                            {(editSettings.saturation ?? 0) > 0 ? `+${editSettings.saturation}` : (editSettings.saturation ?? 0)}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => updateNum('saturation', 1)}
-                            className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
-                          >
-                            +
-                          </button>
-                        </div>
-                      </div>
+                {/* Submission Button */}
+                <div className="flex items-center justify-between pt-2 border-t border-white/10">
+                  <span className="text-[11px] text-white/50">
+                    {t('sampleNote')}
+                  </span>
 
-                      {/* Color Phase (-7 to +7) */}
-                      <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
-                        <span className="text-xs text-white/70">Color Phase</span>
-                        <div className="flex items-center gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => updateNum('colorPhase', -1)}
-                            className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
-                          >
-                            -
-                          </button>
-                          <span className="text-xs font-bold w-8 text-center text-white">
-                            {(editSettings.colorPhase ?? 0) > 0 ? `+${editSettings.colorPhase}` : (editSettings.colorPhase ?? 0)}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => updateNum('colorPhase', 1)}
-                            className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
-                          >
-                            +
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* BLOCK 3: Color Depth (6 Channels R, G, B, C, M, Y) */}
-                  {editSettings.colorDepth && (
-                    <div className="bg-black/40 p-4 rounded-xl border border-white/10 flex flex-col gap-3">
-                      <span className="eyebrow text-xs tracking-wider text-white/90 font-bold uppercase">
-                        3. Color Depth (6 Kênh Màu)
-                      </span>
-
-                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
-                        {PP_COLOR_DEPTH_CHANNELS.map((ch) => {
-                          const hex = getColorDepthChannelHexColor(ch);
-                          return (
-                            <div key={ch} className="flex items-center justify-between bg-black/50 px-2.5 py-1.5 rounded-lg border border-white/10">
-                              <span className="text-xs font-bold" style={{ color: hex }}>{ch}</span>
-                              <div className="flex items-center gap-1">
-                                <button
-                                  type="button"
-                                  onClick={() => updateColorDepth(ch, -1)}
-                                  className="w-4 h-4 rounded bg-white/10 text-white font-bold text-[10px] hover:bg-white/20 flex items-center justify-center"
-                                >
-                                  -
-                                </button>
-                                <span className="text-xs font-bold w-5 text-center" style={{ color: hex }}>
-                                  {(editSettings.colorDepth?.[ch] ?? 0) > 0
-                                    ? `+${editSettings.colorDepth?.[ch] ?? 0}`
-                                    : (editSettings.colorDepth?.[ch] ?? 0)}
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={() => updateColorDepth(ch, 1)}
-                                  className="w-4 h-4 rounded bg-white/10 text-white font-bold text-[10px] hover:bg-white/20 flex items-center justify-center"
-                                >
-                                  +
-                                </button>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* BLOCK 4: Detail Sub-Parameters */}
-                  {editSettings.detail && (
-                    <div className="bg-black/40 p-4 rounded-xl border border-white/10 flex flex-col gap-3">
-                      <span className="eyebrow text-xs tracking-wider text-white/90 font-bold uppercase">
-                        4. Detail (Độ Sắc Nét Chi Tiết)
-                      </span>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {/* Detail Level */}
-                        <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
-                          <span className="text-xs text-white/70">Level</span>
-                          <div className="flex items-center gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => updateNestedNum('detail', 'level', -1)}
-                              className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
-                            >
-                              -
-                            </button>
-                            <span className="text-xs font-bold w-8 text-center text-white">
-                              {editSettings.detail.level > 0 ? `+${editSettings.detail.level}` : editSettings.detail.level}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => updateNestedNum('detail', 'level', 1)}
-                              className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
-                            >
-                              +
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* V/H Balance */}
-                        <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
-                          <span className="text-xs text-white/70">V/H Balance</span>
-                          <div className="flex items-center gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => updateNestedNum('detail', 'vhBalance', -1)}
-                              className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
-                            >
-                              -
-                            </button>
-                            <span className="text-xs font-bold w-8 text-center text-white">
-                              {editSettings.detail.vhBalance > 0 ? `+${editSettings.detail.vhBalance}` : editSettings.detail.vhBalance}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => updateNestedNum('detail', 'vhBalance', 1)}
-                              className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
-                            >
-                              +
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* B/W Balance Select */}
-                        <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
-                          <span className="text-xs text-white/70">B/W Balance</span>
-                          <select
-                            value={editSettings.detail.bwBalance || 'Type3'}
-                            onChange={(e) => updateNestedSelect('detail', 'bwBalance', e.target.value)}
-                            className="bg-black text-xs text-white px-2 py-1 rounded border border-white/20 focus:outline-none"
-                          >
-                            {PP_DETAIL_BW_BALANCE.map((bw) => (
-                              <option key={bw} value={bw}>{bw}</option>
-                            ))}
-                          </select>
-                        </div>
-
-                        {/* Limit */}
-                        <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
-                          <span className="text-xs text-white/70">Limit</span>
-                          <div className="flex items-center gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => updateNestedNum('detail', 'limit', -1)}
-                              className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
-                            >
-                              -
-                            </button>
-                            <span className="text-xs font-bold w-8 text-center text-white">
-                              {editSettings.detail.limit || 0}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => updateNestedNum('detail', 'limit', 1)}
-                              className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
-                            >
-                              +
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* Crispening */}
-                        <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
-                          <span className="text-xs text-white/70">Crispening</span>
-                          <div className="flex items-center gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => updateNestedNum('detail', 'crispening', -1)}
-                              className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
-                            >
-                              -
-                            </button>
-                            <span className="text-xs font-bold w-8 text-center text-white">
-                              {editSettings.detail.crispening || 0}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => updateNestedNum('detail', 'crispening', 1)}
-                              className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
-                            >
-                              +
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* Hi-Light Detail */}
-                        <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-lg border border-white/10">
-                          <span className="text-xs text-white/70">Hi-Light Detail</span>
-                          <div className="flex items-center gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => updateNestedNum('detail', 'hiLightDetail', -1)}
-                              className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
-                            >
-                              -
-                            </button>
-                            <span className="text-xs font-bold w-8 text-center text-white">
-                              {editSettings.detail.hiLightDetail || 0}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => updateNestedNum('detail', 'hiLightDetail', 1)}
-                              className="w-5 h-5 rounded bg-white/10 text-white font-bold text-xs hover:bg-white/20"
-                            >
-                              +
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
-
-              {/* Submission Button */}
-              <div className="flex items-center justify-between pt-2 border-t border-white/10">
-                <span className="text-[11px] text-white/50">
-                  Ảnh demo mẫu sẽ tự động được thêm vào bộ sưu tập công thức.
-                </span>
-
-                <button
-                  type="submit"
-                  disabled={isSubmittingProp || !newPropTitle.trim() || !newSampleUrl.trim()}
-                  className="px-6 py-2.5 rounded-full bg-white text-black text-xs font-bold hover:bg-white/90 hover:scale-105 active:scale-95 transition-all shadow-lg cursor-pointer disabled:opacity-40"
-                >
-                  {isSubmittingProp ? 'Đang gửi...' : 'Đề xuất phiên bản mới'}
-                </button>
-              </div>
-            </form>
-          )}
-
-          {/* Proposal Cards Grid */}
-          <div className="grid grid-cols-1 gap-3.5">
-            {proposals.length === 0 ? (
-              <p className="text-xs text-white/40 italic py-4 text-center">
-                Chưa có đề xuất tinh chỉnh nào. Hãy tạo phiên bản mới đầu tiên!
-              </p>
-            ) : (
-              proposals.map((prop) => {
-                const hasVoted = user ? prop.hasVoted : false;
-                return (
-                  <div
-                    key={prop.id}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition-all"
+                  <button
+                    type="submit"
+                    disabled={isSubmittingProp || !newPropTitle.trim() || !newSampleUrl.trim()}
+                    className="px-6 py-2.5 rounded-full bg-white text-black text-xs font-bold hover:bg-white/90 hover:scale-105 active:scale-95 transition-all shadow-lg cursor-pointer disabled:opacity-40"
                   >
-                    {/* Proposal Details & Optional Demo Photo Thumbnail */}
-                    <div className="flex items-start sm:items-center gap-3.5 flex-1 min-w-0">
-                      {prop.sampleImageUrl && (
-                        <img
-                          src={prop.sampleImageUrl}
-                          alt={prop.title}
-                          className="w-16 h-16 sm:w-20 sm:h-14 rounded-lg object-cover border border-white/15 shrink-0 shadow-md"
-                        />
-                      )}
+                    {isSubmittingProp ? t('proposalSending') : t('proposalSubmit')}
+                  </button>
+                </div>
+              </form>
+            )}
 
-                      <div className="flex flex-col gap-1 flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          {prop.authorAvatar ? (
-                            <img
-                              src={prop.authorAvatar}
-                              alt={prop.authorName}
-                              className="w-5 h-5 rounded-full border border-white/20 shrink-0"
-                            />
-                          ) : (
-                            <div className="w-5 h-5 rounded-full bg-white/20 text-white flex items-center justify-center text-[9px] font-bold">
-                              {prop.authorName.charAt(0)}
-                            </div>
-                          )}
-                          <span className="text-xs font-semibold text-white/90 truncate">{prop.title}</span>
-                          <span className="text-[10px] text-white/40 shrink-0">bởi {prop.authorName}</span>
-                        </div>
+            {/* Proposal Cards Grid */}
+            <div className="grid grid-cols-1 gap-3.5">
+              {proposals.length === 0 ? (
+                <p className="text-xs text-white/40 italic py-4 text-center">
+                  {t('noProposals')}
+                </p>
+              ) : (
+                proposals.map((prop) => {
+                  const hasVoted = user ? prop.hasVoted : false;
+                  return (
+                    <div
+                      key={prop.id}
+                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition-all"
+                    >
+                      {/* Proposal Details & Optional Demo Photo Thumbnail */}
+                      <div className="flex items-start sm:items-center gap-3.5 flex-1 min-w-0">
+                        {prop.sampleImageUrl && (
+                          /* eslint-disable-next-line @next/next/no-img-element -- reader-supplied URL, arbitrary host */
+                          <img
+                            src={prop.sampleImageUrl}
+                            alt={prop.title}
+                            className="w-16 h-16 sm:w-20 sm:h-14 rounded-lg object-cover border border-white/15 shrink-0 shadow-md"
+                          />
+                        )}
 
-                        {/* Parameter highlight pills */}
-                        <div className="flex flex-wrap gap-1.5 mt-0.5">
-                          {Object.entries(prop.settings).slice(0, 6).map(([k, v]) => (
-                            <span
-                              key={k}
-                              className="text-[10px] px-2 py-0.5 rounded bg-black/40 text-white/70 border border-white/5"
-                            >
-                              {formatProposalSettingPill(k, v)}
-                            </span>
-                          ))}
+                        <div className="flex flex-col gap-1 flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            {prop.authorAvatar ? (
+                              /* eslint-disable-next-line @next/next/no-img-element -- Google avatar, arbitrary host */
+                              <img
+                                src={prop.authorAvatar}
+                                alt=""
+                                className="w-5 h-5 rounded-full border border-white/20 shrink-0"
+                              />
+                            ) : (
+                              <div className="w-5 h-5 rounded-full bg-white/20 text-white flex items-center justify-center text-[9px] font-bold">
+                                {prop.authorName.charAt(0)}
+                              </div>
+                            )}
+                            <span className="text-xs font-semibold text-white/90 truncate">{prop.title}</span>
+                            <span className="text-[10px] text-white/40 shrink-0">{t('by', { author: prop.authorName })}</span>
+                          </div>
+
+                          {/* Parameter highlight pills */}
+                          <div className="flex flex-wrap gap-1.5 mt-0.5">
+                            {Object.entries(prop.settings).slice(0, 6).map(([k, v]) => (
+                              <span
+                                key={k}
+                                className="text-[10px] px-2 py-0.5 rounded bg-black/40 text-white/70 border border-white/5"
+                              >
+                                {formatProposalSettingPill(k, v)}
+                              </span>
+                            ))}
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Heart Vote Button */}
-                    <button
-                      type="button"
-                      onClick={() => handleToggleVote(prop.id)}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all cursor-pointer shrink-0 ${
-                        hasVoted
-                          ? 'bg-red-500/20 border-red-500/50 text-red-300 font-bold scale-105 shadow-[0_0_12px_rgba(239,68,68,0.3)]'
-                          : 'bg-black/40 border-white/15 text-white/70 hover:text-white hover:border-white/30'
-                      }`}
-                    >
-                      <span className={`text-sm transition-transform ${hasVoted ? 'scale-125' : ''}`}>
-                        {hasVoted ? '❤️' : '🤍'}
-                      </span>
-                      <span className="text-xs">{prop.voteCount}</span>
-                    </button>
-                  </div>
-                );
-              })
-            )}
+                      {/* Heart Vote Button */}
+                      <button
+                        type="button"
+                        onClick={() => handleToggleVote(prop.id)}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all cursor-pointer shrink-0 ${
+                          hasVoted
+                            ? 'bg-heart/20 border-heart/50 text-heart font-bold scale-105 shadow-[0_0_12px_color-mix(in_oklch,var(--color-heart)_35%,transparent)]'
+                            : 'bg-black/40 border-white/15 text-white/70 hover:text-white hover:border-white/30'
+                        }`}
+                      >
+                        <span className={`text-sm transition-transform ${hasVoted ? 'scale-125' : ''}`}>
+                          {hasVoted ? '❤️' : '🤍'}
+                        </span>
+                        <span className="text-xs">{prop.voteCount}</span>
+                      </button>
+                    </div>
+                  );
+                })
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </section>
   );
 }

@@ -11,7 +11,6 @@ import {
   WB_AUTO_MODES,
   WB_PRESETS,
   type ClParam,
-  type Range,
 } from './constants';
 import type { WhiteBalance } from './schema';
 
@@ -91,11 +90,4 @@ export function parseWhiteBalance(input: string): WhiteBalance | null {
   if (kelvin) return { mode: 'kelvin', kelvin: Number(kelvin), ...tail };
   if (preset) return { mode: 'preset', preset: preset as (typeof WB_PRESETS)[number], ...tail };
   return { mode: 'auto', auto: auto as (typeof WB_AUTO_MODES)[number], ...tail };
-}
-
-/** Renders a Range as the camera documents it, e.g. "-9 to +9" or "1 to 5". */
-export function describeRange(range: Range): string {
-  const lo = range.min < 0 ? signed(range.min) : num(range.min);
-  const hi = range.max > 0 && range.min < 0 ? signed(range.max) : num(range.max);
-  return `${lo} to ${hi}`;
 }

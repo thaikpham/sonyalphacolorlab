@@ -1,0 +1,10 @@
+# Keep source diffable. A stray control byte in a .ts file makes git classify it
+# as binary and silently stop producing diffs — see SHIFT_SEP in
+# src/lib/sony-asia/import.ts for the case that caused it.
+*.ts   text diff
+*.tsx  text diff
+*.mjs  text diff
+*.json text diff
+*.css  text diff
+*.md   text diff
+*.sql  text diff

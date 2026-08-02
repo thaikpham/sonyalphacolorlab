@@ -61,7 +61,15 @@ export function LanguageToggle() {
   const active = (params.locale as string) ?? routing.defaultLocale;
 
   return (
-    <nav aria-label={t('label')} className="flex items-center gap-2">
+    /* Each flag is a fixed 36/40px hit area on the header's control rail, with
+       the disc itself inset inside it. The `scale-105` that used to mark the
+       active locale made the two flags visibly different sizes sitting side by
+       side — 33.6px against 32px — so the pair never lined up. The ring and the
+       glow already say which one is on; size stays constant. */
+    <nav
+      aria-label={t('label')}
+      className="flex h-9 sm:h-10 items-center gap-1 sm:gap-2 shrink-0"
+    >
       {routing.locales.map((locale) => {
         const on = locale === active;
         const isEn = locale === 'en';
@@ -74,13 +82,21 @@ export function LanguageToggle() {
             aria-current={on ? 'true' : undefined}
             aria-label={t(locale)}
             title={t(locale)}
-            className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all duration-300 ease-out hover:scale-110 active:scale-95 cursor-pointer overflow-hidden ${
-              on
-                ? 'ring-2 ring-white shadow-[0_0_16px_rgba(255,255,255,0.7)] scale-105 opacity-100'
-                : 'opacity-40 hover:opacity-100 hover:ring-1 hover:ring-white/50'
-            }`}
+            className="group w-8 h-8 sm:w-10 sm:h-10 shrink-0 rounded-full flex items-center justify-center cursor-pointer"
           >
-            {isEn ? <FlagUSA /> : <FlagVietnam />}
+            {/* `group-hover`, not `hover`: the hit area is the 36/40px link, so
+                a bare `hover:` on this inner disc would miss the ring of
+                padding around it and the flag would flick on and off as the
+                pointer crossed the edge. */}
+            <span
+              className={`block w-7 h-7 sm:w-8 sm:h-8 rounded-full overflow-hidden transition-all duration-300 ease-out group-hover:scale-110 group-active:scale-95 ${
+                on
+                  ? 'ring-2 ring-white shadow-[0_0_16px_rgba(255,255,255,0.7)] opacity-100'
+                  : 'opacity-40 group-hover:opacity-100 group-hover:ring-1 group-hover:ring-white/50'
+              }`}
+            >
+              {isEn ? <FlagUSA /> : <FlagVietnam />}
+            </span>
           </Link>
         );
       })}

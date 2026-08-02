@@ -52,12 +52,17 @@ export function getLocalPhotos(slug: string): readonly string[] {
 /** Server render has no storage; always the same empty array. */
 export const getServerPhotos = (): readonly string[] => EMPTY;
 
+/** Subscribes to both halves of the store; photos and credits change together. */
 export function subscribeLocalPhotos(onChange: () => void): () => void {
   listeners.add(onChange);
   const onStorage = (e: StorageEvent) => {
     if (e.key?.startsWith('colorlab_user_photos_')) {
       const slug = e.key.replace('colorlab_user_photos_', '');
       cache.set(slug, parse(e.newValue));
+      emit();
+    } else if (e.key?.startsWith('colorlab_user_credits_')) {
+      const slug = e.key.replace('colorlab_user_credits_', '');
+      creditsCache.set(slug, parseCredits(e.newValue));
       emit();
     }
   };
@@ -78,24 +83,59 @@ export function setLocalPhotos(slug: string, photos: string[]): void {
   emit();
 }
 
-/** Helper to get all local credits (author name, social link) by photo URL */
-export function getLocalCredits(slug: string): Record<string, PhotoCredit> {
-  if (typeof window === 'undefined') return {};
+/** Shared empty map, for the same reason as `EMPTY`. */
+const EMPTY_CREDITS: Readonly<Record<string, PhotoCredit>> = Object.freeze({});
+
+const creditsCache = new Map<string, Readonly<Record<string, PhotoCredit>>>();
+
+function parseCredits(raw: string | null): Readonly<Record<string, PhotoCredit>> {
+  if (!raw) return EMPTY_CREDITS;
   try {
-    const raw = localStorage.getItem(CREDITS_KEY(slug));
-    return raw ? JSON.parse(raw) : {};
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+      ? Object.freeze(parsed as Record<string, PhotoCredit>)
+      : EMPTY_CREDITS;
   } catch {
-    return {};
+    return EMPTY_CREDITS;
   }
 }
+
+/**
+ * Author credits, cached the same way the photo list is.
+ *
+ * This used to read `localStorage` on every call and hand back a fresh object.
+ * Two things followed from that, both silent. Called during render it returned
+ * `{}` on the server and real data on the client's first pass, which is a
+ * hydration mismatch; and because the object was new each time, `setLocalCredit`
+ * could `emit()` all it liked — `useSyncExternalStore` compares snapshots by
+ * reference, saw the photo list unchanged, and never re-rendered, so a credit
+ * just added did not appear until something else moved.
+ */
+export function getLocalCredits(slug: string): Readonly<Record<string, PhotoCredit>> {
+  const hit = creditsCache.get(slug);
+  if (hit) return hit;
+  if (typeof window === 'undefined') return EMPTY_CREDITS;
+
+  let map: Readonly<Record<string, PhotoCredit>> = EMPTY_CREDITS;
+  try {
+    map = parseCredits(localStorage.getItem(CREDITS_KEY(slug)));
+  } catch {
+    // Private mode, disabled storage
+  }
+  creditsCache.set(slug, map);
+  return map;
+}
+
+/** Server render has no storage; always the same empty map. */
+export const getServerCredits = (): Readonly<Record<string, PhotoCredit>> => EMPTY_CREDITS;
 
 /** Helper to set credit for a photo URL */
 export function setLocalCredit(slug: string, credit: PhotoCredit): void {
   if (typeof window === 'undefined') return;
+  const next = Object.freeze({ ...getLocalCredits(slug), [credit.url]: credit });
+  creditsCache.set(slug, next);
   try {
-    const existing = getLocalCredits(slug);
-    existing[credit.url] = credit;
-    localStorage.setItem(CREDITS_KEY(slug), JSON.stringify(existing));
+    localStorage.setItem(CREDITS_KEY(slug), JSON.stringify(next));
   } catch {
     // Quota or private mode
   }

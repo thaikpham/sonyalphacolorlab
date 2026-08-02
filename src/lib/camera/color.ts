@@ -316,18 +316,6 @@ export function getWbShiftAxisHexColor(axis: 'A' | 'B' | 'G' | 'M' | string): st
   }
 }
 
-export function getColorDepthChannelColor(channel: 'R' | 'G' | 'B' | 'C' | 'M' | 'Y' | string): string {
-  switch (channel) {
-    case 'R': return 'text-red-400';
-    case 'G': return 'text-emerald-400';
-    case 'B': return 'text-blue-400';
-    case 'C': return 'text-cyan-400';
-    case 'M': return 'text-pink-400';
-    case 'Y': return 'text-yellow-400';
-    default: return 'text-white';
-  }
-}
-
 export function getColorDepthChannelHexColor(channel: 'R' | 'G' | 'B' | 'C' | 'M' | 'Y' | string): string {
   switch (channel) {
     case 'R': return '#f87171'; // Red

@@ -722,10 +722,6 @@ export function clEffects(s: ClSettings): Record<string, Effect> {
   return effects;
 }
 
-/** Localised text for an effect, or undefined when there is nothing to say. */
-export const effectText = (e: Effect | undefined, locale: Locale): string | undefined =>
-  e?.[locale] || undefined;
-
 export const AXIS_LABELS: Record<EffectAxis, { en: string; vi: string }> = {
   contrast: { en: 'Contrast', vi: 'Tương phản' },
   color: { en: 'Colour', vi: 'Màu' },

@@ -2,9 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
+import { OPEN_PROPOSAL_EVENT, OPEN_TWEAK_EVENT } from '@/lib/community/events';
 import {
   getLocalCredits,
   getLocalPhotos,
+  getServerCredits,
   getServerPhotos,
   setLocalCredit,
   setLocalPhotos,
@@ -19,13 +22,80 @@ interface RecipeGalleryProps {
 }
 
 /**
+ * One of the three offers under the collage, as an app icon.
+ *
+ * Same squircle as the ecosystem launcher — `.app-tile-shell` and `.app-tile`
+ * are shared, not re-implemented — so the two rows of tiles on the site read as
+ * one language. Only the glow colour differs, and it comes from `--card-accent`
+ * so a tile cannot end up half one colour and half another.
+ *
+ * The `title` attribute carries the longer description that the old card
+ * printed under its heading. Losing the visible line is the point of the
+ * redesign; losing the sentence is not.
+ */
+function ActionTile({
+  accent,
+  icon,
+  label,
+  description,
+  expanded,
+  onClick,
+}: {
+  accent: 'community' | 'proposal' | 'ai';
+  icon: string;
+  label: string;
+  description: string;
+  expanded?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-expanded={expanded}
+      title={description}
+      className="group flex flex-col items-center gap-2.5 cursor-pointer font-sans"
+      style={{ '--card-accent': `var(--color-${accent})` } as React.CSSProperties}
+    >
+      <div className="app-tile-shell w-16 h-16 sm:w-20 sm:h-20">
+        <span aria-hidden className="accent-glow" />
+        <div className="app-tile w-full h-full flex items-center justify-center">
+          <span aria-hidden className="text-2xl sm:text-3xl leading-none">
+            {icon}
+          </span>
+        </div>
+      </div>
+
+      {/* Two lines of height are reserved whether or not the label needs them.
+          "Propose & vote new version" wraps and the other two do not, so
+          without this the three tiles have three different footprints and
+          anything laid out against them inherits the ragged edge. */}
+      <span className="action-tile-label flex items-start justify-center min-h-[2rem] sm:min-h-[2.125rem] text-[11px] sm:text-xs font-bold text-ink text-center leading-snug max-w-[7.5rem]">
+        {label}
+      </span>
+    </button>
+  );
+}
+
+/**
  * Photographic collage gallery with community contributions, author credits, and full-screen slider lightbox.
  */
 export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
+  const t = useTranslations('recipe');
+
   const localPhotos = useSyncExternalStore(
     subscribeLocalPhotos,
     useCallback(() => getLocalPhotos(slug), [slug]),
     getServerPhotos,
+  );
+
+  /* Read through the store like the photos are, not with a bare call during
+     render: that returned `{}` on the server and real data on the client, and
+     never re-rendered when a credit was added. */
+  const localCredits = useSyncExternalStore(
+    subscribeLocalPhotos,
+    useCallback(() => getLocalCredits(slug), [slug]),
+    getServerCredits,
   );
 
   const [remotePhotos, setRemotePhotos] = useState<string[]>([]);
@@ -115,15 +185,15 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
     const cleanSocial = authorSocial.trim();
 
     if (!cleanUrl) {
-      setErrorMsg('Vui lòng nhập đường dẫn URL ảnh hợp lệ.');
+      setErrorMsg(t('errUrlRequired'));
       return;
     }
     if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
-      setErrorMsg('URL ảnh phải bắt đầu bằng http:// hoặc https://');
+      setErrorMsg(t('errUrlScheme'));
       return;
     }
     if (cleanSocial && !cleanSocial.startsWith('http://') && !cleanSocial.startsWith('https://')) {
-      setErrorMsg('Link trang cá nhân phải bắt đầu bằng http:// hoặc https://');
+      setErrorMsg(t('errSocialScheme'));
       return;
     }
 
@@ -156,12 +226,10 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => null);
-        setErrorMsg(
-          data?.error ?? 'Ảnh đã lưu trên máy bạn nhưng chưa chia sẻ được với cộng đồng.',
-        );
+        setErrorMsg(data?.error ?? t('errShareFailed'));
       }
     } catch {
-      setErrorMsg('Ảnh đã lưu trên máy bạn nhưng chưa chia sẻ được với cộng đồng.');
+      setErrorMsg(t('errShareFailed'));
     }
   };
 
@@ -172,7 +240,32 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
     );
   };
 
-  const localCredits = getLocalCredits(slug);
+  const handleContributePhotoClick = () => {
+    const willOpen = !isFormOpen;
+    setIsFormOpen(willOpen);
+    if (!willOpen) return;
+    // One frame, so the form exists to scroll to.
+    requestAnimationFrame(() => {
+      document
+        .getElementById('contribute-photo-form')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  };
+
+  /* The proposal form lives in a sibling section with no shared parent state, so
+     the button asks for it by event rather than lifting the whole editor up. */
+  const handleProposeVersionClick = () => {
+    window.dispatchEvent(new CustomEvent(OPEN_PROPOSAL_EVENT));
+  };
+
+  /* The AI panel renders nothing until asked for, so this cannot just scroll to
+     it — there is no element to scroll to. Same sibling-component problem as
+     the proposal editor, solved the same way; the panel does its own scrolling
+     and focusing once it has mounted. */
+  const handleTweakAiClick = () => {
+    window.dispatchEvent(new CustomEvent(OPEN_TWEAK_EVENT));
+  };
+
   const allCredits = useMemo(() => ({ ...remoteCredits, ...localCredits }), [remoteCredits, localCredits]);
   const currentLightboxSrc = lightboxIndex !== null ? allPhotos[lightboxIndex] : null;
   const currentLightboxCredit: PhotoCredit | undefined = currentLightboxSrc
@@ -193,14 +286,14 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
             return (
               <li
                 key={src}
-                className={`relative ${
+                className={`group relative ${
                   isHeroTile ? 'sm:col-span-2 lg:col-span-2 sm:row-span-2' : ''
                 }`}
               >
                 <button
                   type="button"
                   onClick={() => setLightboxIndex(i)}
-                  aria-label={`Phóng to ảnh ${i + 1} của ${title}`}
+                  aria-label={t('zoomPhoto', { index: i + 1, title })}
                   className={`group relative block w-full overflow-hidden rounded-[var(--radius-glass)] cursor-zoom-in transition-all duration-300 shadow-md hover:shadow-[0_12px_40px_-10px_rgba(0,0,0,0.85)] ${
                     isHeroTile ? 'aspect-[4/3] sm:aspect-[16/10] h-full min-h-[18rem]' : 'aspect-[4/3]'
                   }`}
@@ -221,19 +314,23 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
 
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/30 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-3 sm:p-4">
                     <span className="self-start text-[10px] font-sans font-bold px-2.5 py-1 rounded-full bg-black/70 text-white backdrop-blur-md uppercase tracking-wider shadow-sm">
-                      {isHeroTile ? 'FEATURED SHOT' : isUserPhoto ? 'COMMUNITY' : `FRAME #${i + 1}`}
+                      {isHeroTile
+                        ? t('featuredShot')
+                        : isUserPhoto
+                          ? t('tagCommunity')
+                          : t('frame', { index: i + 1 })}
                     </span>
 
                     <div className="flex items-end justify-between text-xs text-white/90">
                       <div>
                         <span className="font-mono text-[11px] block truncate max-w-[80%]">{title}</span>
                         {credit?.authorName && (
-                          <span className="eyebrow text-[10px] text-emerald-300 block mt-0.5">
-                            📸 Photo by: {credit.authorName}
+                          <span className="eyebrow text-[10px] text-community block mt-0.5">
+                            📸 {t('photoBy')} {credit.authorName}
                           </span>
                         )}
                       </div>
-                      <span className="font-bold underline text-[11px] shrink-0">Phóng to ↗</span>
+                      <span className="font-bold underline text-[11px] shrink-0">{t('zoom')} ↗</span>
                     </div>
                   </div>
                 </button>
@@ -241,10 +338,14 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
                 {isLocalPhoto && (
                   <button
                     type="button"
-                    title="Xóa ảnh đóng góp"
-                    aria-label={`Xóa ảnh đóng góp ${i + 1}`}
+                    title={t('deletePhoto')}
+                    aria-label={t('deletePhotoAt', { index: i + 1 })}
                     onClick={() => handleDeleteUserPhoto(src)}
-                    className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 w-7 h-7 rounded-full bg-red-500/80 hover:bg-red-600 text-white flex items-center justify-center text-xs transition-opacity backdrop-blur-md shadow-md opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+                    /* Shown outright where there is no hover to reveal it with,
+                       revealed on hover where there is. It was `opacity-0
+                       group-hover:opacity-100` with `group` on the *sibling*
+                       image button, so it never appeared at all. */
+                    className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 w-7 h-7 rounded-full bg-danger/85 hover:bg-danger text-white flex items-center justify-center text-xs transition-opacity backdrop-blur-md shadow-md opacity-100 pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100 focus-visible:opacity-100"
                   >
                     <span aria-hidden>✕</span>
                   </button>
@@ -259,63 +360,86 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
       {allPhotos.length === 0 && !isFormOpen && (
         <div className="glass p-8 rounded-2xl text-center flex flex-col items-center justify-center gap-3 mb-6">
           <p className="text-sm text-ink-muted max-w-md">
-            Chưa có ảnh mẫu cho công thức này. Hãy nhấp nút{' '}
-            <strong className="text-ink">Đóng góp ảnh</strong> bên dưới để tải lên tấm ảnh đầu tiên
-            từ máy ảnh Sony Alpha của bạn!
+            {t.rich('galleryEmpty', {
+              b: (chunks) => <strong className="text-ink">{chunks}</strong>,
+            })}
           </p>
         </div>
       )}
 
-      {/* Header & Contribution Button (positioned below photos) */}
-      <div className="flex items-center justify-between gap-4 mb-4">
-        <div>
-          <h3 className="eyebrow text-xs tracking-widest uppercase flex items-center gap-2">
-            <span>📸</span>
-            <span>COLLAGE GALLERY &amp; COMMUNITY PHOTOS</span>
-          </h3>
-          <p className="text-xs text-ink-muted mt-0.5">
-            {allPhotos.length} ảnh mẫu · Đóng góp ảnh chụp từ máy Sony Alpha của bạn
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => setIsFormOpen(!isFormOpen)}
-          aria-expanded={isFormOpen}
-          className={`eyebrow px-4 py-2 rounded-full text-xs font-bold transition-all duration-300 flex items-center gap-2 cursor-pointer shadow-lg relative overflow-hidden group ${
-            isFormOpen
-              ? 'glass-flat text-ink-muted hover:text-white hover:border-white/40'
-              : 'bg-void/90 text-white border border-[oklch(85%_0.3_140_/_0.6)] shadow-[0_0_20px_oklch(85%_0.3_140_/_0.3)] hover:shadow-[0_0_30px_oklch(85%_0.3_140_/_0.6)] hover:border-[oklch(85%_0.3_140)] animate-float-gentle hover:scale-105 active:scale-95'
-          }`}
-        >
-          <span className="text-sm shrink-0">📷</span>
-          <span className="tracking-wider text-white font-bold">
-            {isFormOpen ? 'Hủy' : 'Đóng góp ảnh'}
-          </span>
-        </button>
+      {/* Contribute a photo · propose a version · tweak with AI.
+
+          `items-start`, so a label that wraps to two lines cannot drag its
+          neighbours' tiles down with it — the three icons stay on one line
+          whatever the locale does to the text.
+
+          `mt-16 mb-0`, which looks lopsided and is not. The two neighbours are
+          not symmetric: above is the collage, a sibling inside this section, so
+          its `mb-6` collapses with whatever margin sits here and the gap is
+          simply the larger of the two. Below is the next section — a sibling in
+          a `flex flex-col gap-8` parent, where margins do not collapse at all,
+          so its own `mt-8` stacks on the parent's 32px gap and the gap can
+          never be less than 64px. Matching that 64 on top is what makes the row
+          sit evenly between them, and it is the same rhythm as every other
+          block boundary in this column.
+
+          So: if the parent's `gap-8` or the sections' `mt-8` ever change, this
+          number has to change with them. */}
+      <div className="flex items-start justify-center gap-8 sm:gap-14 mt-16 mb-0">
+        <ActionTile
+          accent="community"
+          icon="📷"
+          label={t('contributePhoto')}
+          /* This tile toggles, so the tooltip says what the next press does. */
+          description={isFormOpen ? t('cancel') : t('contributePhotoDesc')}
+          expanded={isFormOpen}
+          onClick={handleContributePhotoClick}
+        />
+
+        <ActionTile
+          accent="proposal"
+          icon="🗳️"
+          label={t('proposeVersion')}
+          description={t('proposeVersionDesc')}
+          onClick={handleProposeVersionClick}
+        />
+
+        <ActionTile
+          accent="ai"
+          icon="✨"
+          label={t('tweakAi')}
+          description={t('tweakAiDesc')}
+          onClick={handleTweakAiClick}
+        />
       </div>
 
       {/* User Image Contribution Form with Author Credit & Social Link Inputs */}
       {isFormOpen && (
         <form
+          id="contribute-photo-form"
           onSubmit={handleAddPhoto}
-          className="glass p-5 sm:p-6 rounded-2xl mb-6 animate-fade-in flex flex-col gap-4 shadow-2xl"
+          /* The separation from the tiles above lives here, not on the row —
+             the row runs to `mb-0` so that when this form is closed it is the
+             section's last child and its own margin cannot widen the gap to the
+             next section. */
+          className="glass p-5 sm:p-6 rounded-2xl mt-6 mb-0 animate-fade-in flex flex-col gap-4 shadow-2xl"
         >
           <h4 className="font-sans text-white font-bold text-sm tracking-wide flex items-center gap-2">
             <span>📷</span>
-            <span>Đóng góp ảnh mẫu mới</span>
+            <span>{t('formTitle')}</span>
           </h4>
 
           {/* 1. Image URL (Required) */}
           <div>
             <label htmlFor="photo-url-input" className="block mb-1.5 text-white/90 text-xs font-semibold font-sans">
-              URL ảnh mẫu (Direct Image URL) <span className="text-red-400">*</span>
+              {t('urlLabel')} <span className="text-danger">*</span>
             </label>
             <input
               id="photo-url-input"
               type="url"
               value={inputUrl}
               onChange={(e) => handleUrlChange(e.target.value)}
-              placeholder="https://images.unsplash.com/photo-... hoặc https://..."
+              placeholder={t('urlPlaceholder')}
               className="w-full px-4 py-2.5 rounded-xl bg-black/70 border-0 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-white/40 font-sans transition-all shadow-inner"
               required
             />
@@ -325,21 +449,21 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label htmlFor="author-name-input" className="block mb-1.5 text-white/80 text-xs font-semibold font-sans">
-                Tên nhiếp ảnh gia / Author Credit (Không bắt buộc)
+                {t('authorLabel')}
               </label>
               <input
                 id="author-name-input"
                 type="text"
                 value={authorName}
                 onChange={(e) => setAuthorName(e.target.value)}
-                placeholder="Ví dụ: Nguyễn Văn A / Alex Pham"
+                placeholder={t('authorPlaceholder')}
                 className="w-full px-4 py-2.5 rounded-xl bg-black/70 border-0 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-white/40 font-sans transition-all shadow-inner"
               />
             </div>
 
             <div>
               <label htmlFor="author-social-input" className="block mb-1.5 text-white/80 text-xs font-semibold font-sans">
-                Link Social Network (Instagram, FB...) (Không bắt buộc)
+                {t('socialLabel')}
               </label>
               <input
                 id="author-social-input"
@@ -353,7 +477,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
           </div>
 
           {errorMsg && (
-            <p role="alert" className="text-xs text-red-400 mt-1">
+            <p role="alert" className="text-xs text-danger mt-1">
               {errorMsg}
             </p>
           )}
@@ -361,7 +485,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
           {/* Live Preview Card */}
           {previewUrl && (
             <div className="flex flex-col gap-1.5">
-              <span className="font-sans text-xs text-white/70">Xem trước ảnh (Live Preview):</span>
+              <span className="font-sans text-xs text-white/70">{t('previewLabel')}</span>
               <div className="relative w-full aspect-[16/9] max-h-48 overflow-hidden rounded-xl bg-black/60 shadow-md">
                 {/* eslint-disable-next-line @next/next/no-img-element -- arbitrary user URL */}
                 <img
@@ -369,7 +493,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
                   alt="Preview"
                   className="w-full h-full object-cover"
                   onError={() =>
-                    setErrorMsg('Không thể tải ảnh từ URL này. Vui lòng kiểm tra lại đường dẫn.')
+                    setErrorMsg(t('errPreviewLoad'))
                   }
                 />
               </div>
@@ -386,13 +510,13 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
               }}
               className="font-sans text-xs font-semibold text-white/70 hover:text-white px-3 py-1.5 transition-colors cursor-pointer"
             >
-              Hủy
+              {t('cancel')}
             </button>
             <button
               type="submit"
               className="font-sans bg-white !text-black px-5 py-2.5 rounded-xl text-xs font-bold hover:bg-white/90 hover:scale-105 active:scale-95 transition-all shadow-lg cursor-pointer"
             >
-              Thêm vào bộ sưu tập
+              {t('addToGallery')}
             </button>
           </div>
         </form>
@@ -403,7 +527,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
         <div
           role="dialog"
           aria-modal="true"
-          aria-label="Ảnh phóng to"
+          aria-label={t('lightboxLabel')}
           onClick={() => setLightboxIndex(null)}
           className="fixed inset-0 z-50 bg-black/85 backdrop-blur-2xl animate-backdrop-blur flex flex-col items-center justify-between p-4 sm:p-8 cursor-zoom-out select-none"
         >
@@ -415,7 +539,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
             <div className="flex items-center gap-2 truncate">
               <span className="eyebrow text-xs text-ink font-bold truncate">{title}</span>
               <span className="eyebrow text-[10px] px-2 py-0.5 rounded bg-white/15 text-white font-mono shrink-0">
-                FRAME #{lightboxIndex + 1} / {allPhotos.length}
+                {t('frame', { index: lightboxIndex + 1 })} / {allPhotos.length}
               </span>
             </div>
 
@@ -423,7 +547,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
               type="button"
               autoFocus
               onClick={() => setLightboxIndex(null)}
-              aria-label="Đóng"
+              aria-label={t('close')}
               className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-sm transition-all hover:scale-105 cursor-pointer shrink-0"
             >
               <span aria-hidden>✕</span>
@@ -436,8 +560,8 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
             {allPhotos.length > 1 && (
               <button
                 type="button"
-                aria-label="Ảnh trước"
-                title="Ảnh trước (Phím ←)"
+                aria-label={t('prev')}
+                title={t('prevTitle')}
                 onClick={(e) => {
                   e.stopPropagation();
                   prevPhoto();
@@ -465,7 +589,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
             {allPhotos.length > 1 && (
               <button
                 type="button"
-                aria-label="Ảnh trước"
+                aria-label={t('prev')}
                 onClick={(e) => {
                   e.stopPropagation();
                   prevPhoto();
@@ -495,13 +619,13 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
                   className="mt-3 glass px-3.5 py-1.5 rounded-full text-xs font-mono flex items-center gap-2 shadow-lg cursor-default"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <span className="text-emerald-400">📸 Photo by:</span>
+                  <span className="text-community">📸 {t('photoBy')}</span>
                   {currentLightboxCredit.authorSocial ? (
                     <a
                       href={currentLightboxCredit.authorSocial}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-white hover:text-emerald-300 underline underline-offset-2 font-bold transition-colors flex items-center gap-1"
+                      className="text-white hover:text-community underline underline-offset-2 font-bold transition-colors flex items-center gap-1"
                     >
                       <span>{currentLightboxCredit.authorName}</span>
                       <span>↗</span>
@@ -517,7 +641,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
             {allPhotos.length > 1 && (
               <button
                 type="button"
-                aria-label="Ảnh tiếp theo"
+                aria-label={t('next')}
                 onClick={(e) => {
                   e.stopPropagation();
                   nextPhoto();
@@ -532,8 +656,8 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
             {allPhotos.length > 1 && (
               <button
                 type="button"
-                aria-label="Ảnh tiếp theo"
-                title="Ảnh tiếp theo (Phím →)"
+                aria-label={t('next')}
+                title={t('nextTitle')}
                 onClick={(e) => {
                   e.stopPropagation();
                   nextPhoto();
@@ -569,7 +693,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
                 <button
                   key={thumbSrc}
                   type="button"
-                  aria-label={`Chuyển đến ảnh ${idx + 1}`}
+                  aria-label={t('goTo', { index: idx + 1 })}
                   onClick={() => setLightboxIndex(idx)}
                   className={`relative shrink-0 w-12 h-9 rounded-lg overflow-hidden transition-all duration-300 cursor-pointer ${
                     idx === lightboxIndex
@@ -588,7 +712,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
             </div>
 
             <span className="text-ink-faint hidden lg:inline">
-              Phím ← → hoặc nhấp ảnh 2 bên để lướt · Nhấn ESC hoặc nhấp bên ngoài để thoát
+              {t('lightboxHint')}
             </span>
           </div>
         </div>
