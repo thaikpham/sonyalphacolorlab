@@ -18,8 +18,8 @@ const eslintConfig = defineConfig([
        excluded from tsconfig, and they are not this project's code to fix.
        Without these, `npm run lint` reports ~4.6k problems from them and buries
        the handful that are actually ours. */
-    "cheese-booth-main/**",
-    "sonylivesop-main/**",
+    "apps/cheese-booth/**",
+    "apps/live-sop/**",
   ]),
   {
     rules: {

@@ -124,12 +124,22 @@ the effect text collapsed to 43px wide.
 Creative Look or supporting a new body touches `constants.ts` only. Use the
 `sync-camera-constants` skill; do not hand-edit downstream files to match.
 
-## Rule 6 — Design tokens live in one package, for three apps
+## Rule 6 — One repo, three apps, one set of design tokens
 
-This repo is the flagship of a three-app ecosystem. **CheeseBooth**
-(`cheese-booth-main/`, Vite + plain CSS, no Tailwind) and **Sony Live SOP**
-(`sonylivesop-main/`, Vite + Tailwind v4) are separate git repos, gitignored
-here, each deploying to its own Vercel project.
+This is an npm-workspaces monorepo. Alpha ColorLab (Next.js) lives at the root;
+**CheeseBooth** (`apps/cheese-booth`, Vite + plain CSS, no Tailwind) and
+**Sony Live SOP** (`apps/live-sop`, Vite + Tailwind v4) are workspaces. Each
+still deploys to its own Vercel project via a Root Directory setting.
+
+`npm run verify` is the whole-ecosystem gate — lint, typecheck and tests for
+all three — and it is what CI runs. Use it before assuming a change is safe:
+the apps share a lockfile, so a dependency bump in one is a bump in all.
+
+They were three separate repos until the design system moved into a package.
+That did not work: `token-drift.test.ts` reached into the siblings by relative
+path, so on a checkout without them it passed **vacuously** — the suite went
+green with an entire app missing. A guard that can only be trusted on one
+person's laptop is not a guard.
 
 Shared surfaces, ink, signal colours, radius, breakpoints, the glass
 primitives and the film/Y2K/holo VFX are defined **once** in

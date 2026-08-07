@@ -100,7 +100,7 @@ function normalizeDeviceLabel(label: string): string {
  * Note this app *deprioritises* virtual sources where Sony Live SOP hides them
  * outright. That is a policy difference, not drift: a booth may be the only
  * machine at the venue and must show something, while the SOP demo can afford
- * to insist on a real camera. See sonylivesop-main/src/lib/camera-source.ts.
+ * to insist on a real camera. See apps/live-sop/src/lib/camera-source.ts.
  */
 const VIRTUAL_CAMERA_PATTERNS = [
   'obs virtual',

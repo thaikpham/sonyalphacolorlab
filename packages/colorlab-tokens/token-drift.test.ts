@@ -48,10 +48,12 @@ describe.each(TARGETS)('$file', ({ file, destinations }) => {
   it.each(destinations)('%s is byte-identical to the source', (destination) => {
     const path = join(REPO_ROOT, destination)
 
-    // A sibling folder can legitimately be absent — they are gitignored by the
-    // parent, so a fresh clone of ColorLab alone will not have them. Missing is
-    // fine; present-but-different is not.
-    if (!existsSync(path)) return
+    // No escape hatch. While the apps lived in separate gitignored repos this
+    // read `if (!existsSync(path)) return`, so on any clone without the sibling
+    // folders every assertion below passed vacuously — the whole suite went
+    // green with an app entirely absent. In one repo they are always present,
+    // and a missing file is now the loudest possible failure.
+    expect(existsSync(path), `${destination} is missing — the monorepo should always contain it`).toBe(true)
 
     expect(
       readFileSync(path, 'utf8'),
@@ -84,13 +86,13 @@ describe('no app redefines a shared token', () => {
   /** Each app's own stylesheet — the one place a redeclaration would hide. */
   const APP_STYLESHEETS = [
     'src/app/globals.css',
-    'sonylivesop-main/src/index.css',
-    'cheese-booth-main/src/styles/tokens.css',
+    'apps/live-sop/src/index.css',
+    'apps/cheese-booth/src/styles/tokens.css',
   ]
 
   it.each(APP_STYLESHEETS)('%s declares none of them', (stylesheet) => {
     const path = join(REPO_ROOT, stylesheet)
-    if (!existsSync(path)) return
+    expect(existsSync(path), `${stylesheet} is missing`).toBe(true)
 
     // Strip comments: the prose in these files names the tokens it is
     // explaining, and a comment is not a declaration.
@@ -113,16 +115,16 @@ describe('no app redefines a shared token', () => {
 describe('every app imports the shared files', () => {
   const IMPORTERS: ReadonlyArray<[string, readonly string[]]> = [
     ['src/app/globals.css', ['theme.css', 'primitives.css', 'vfx.css']],
-    ['sonylivesop-main/src/index.css', ['theme.css', 'primitives.css', 'vfx.css']],
+    ['apps/live-sop/src/index.css', ['theme.css', 'primitives.css', 'vfx.css']],
     [
-      'cheese-booth-main/src/styles/tokens.css',
+      'apps/cheese-booth/src/styles/tokens.css',
       ['tokens.css', 'primitives.css', 'vfx.css'],
     ],
   ]
 
   it.each(IMPORTERS)('%s imports %s', (stylesheet, expectedImports) => {
     const path = join(REPO_ROOT, stylesheet)
-    if (!existsSync(path)) return
+    expect(existsSync(path), `${stylesheet} is missing`).toBe(true)
 
     const css = readFileSync(path, 'utf8')
     for (const file of expectedImports) {

@@ -1,0 +1,66 @@
+name: CI
+
+# One gate for the whole ecosystem.
+#
+# Before the monorepo there were three: CheeseBooth and Live SOP each had their
+# own, and Alpha ColorLab — the flagship, with the most tests and the only copy
+# of the design-token drift guard — had none at all. That guard also reached
+# into the sibling repos by relative path, so on any checkout without them it
+# passed vacuously: the suite went green with an entire app missing.
+#
+# Both problems are structural and both are fixed by there being one repo and
+# one workflow. `npm run verify` is the same command a developer runs locally.
+
+on:
+  push:
+    branches:
+      - main
+      - '**'
+  pull_request:
+
+# A second push to the same branch makes the first run irrelevant.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # One lockfile for all three apps — which is the point. The eslint plugin
+      # mismatch that left Live SOP's lint silently broken came from copying a
+      # config between separately-locked repos.
+      - name: Install dependencies
+        run: npm ci
+
+      # Regenerates the shared design tokens and fails if anything changed,
+      # which catches a hand-edited generated file before the drift test does
+      # and gives a clearer message when it happens.
+      - name: Design tokens are current
+        run: |
+          npm run tokens:emit
+          git diff --exit-code -- src/app/vendor apps/*/src/styles/colorlab-tokens packages/colorlab-tokens/dist \
+            || (echo "::error::Generated token files are stale. Run 'npm run tokens:emit' and commit the result." && exit 1)
+
+      # lint + typecheck + test for ColorLab, CheeseBooth and Live SOP.
+      - name: Verify all apps
+        run: npm run verify
+
+      - name: Build ColorLab
+        run: npm run build
+
+      - name: Build CheeseBooth
+        run: npm run build -w apps/cheese-booth
+
+      - name: Build Live SOP
+        run: npm run build -w apps/live-sop

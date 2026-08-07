@@ -83,27 +83,27 @@ export const TARGETS: ReadonlyArray<{
     file: 'theme.css',
     destinations: [
       'src/app/vendor/colorlab-tokens/theme.css',
-      'sonylivesop-main/src/styles/colorlab-tokens/theme.css',
+      'apps/live-sop/src/styles/colorlab-tokens/theme.css',
     ],
   },
   {
     file: 'tokens.css',
-    destinations: ['cheese-booth-main/src/styles/colorlab-tokens/tokens.css'],
+    destinations: ['apps/cheese-booth/src/styles/colorlab-tokens/tokens.css'],
   },
   {
     file: 'primitives.css',
     destinations: [
       'src/app/vendor/colorlab-tokens/primitives.css',
-      'sonylivesop-main/src/styles/colorlab-tokens/primitives.css',
-      'cheese-booth-main/src/styles/colorlab-tokens/primitives.css',
+      'apps/live-sop/src/styles/colorlab-tokens/primitives.css',
+      'apps/cheese-booth/src/styles/colorlab-tokens/primitives.css',
     ],
   },
   {
     file: 'vfx.css',
     destinations: [
       'src/app/vendor/colorlab-tokens/vfx.css',
-      'sonylivesop-main/src/styles/colorlab-tokens/vfx.css',
-      'cheese-booth-main/src/styles/colorlab-tokens/vfx.css',
+      'apps/live-sop/src/styles/colorlab-tokens/vfx.css',
+      'apps/cheese-booth/src/styles/colorlab-tokens/vfx.css',
     ],
   },
 ]

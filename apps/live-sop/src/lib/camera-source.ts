@@ -70,7 +70,7 @@ export const DEFAULT_CAMERA_FRAME_SIZE: FrameSize = {
 
 /**
  * CheeseBooth keeps the same list but *deprioritises* these instead of hiding
- * them (see cheese-booth-main/src/hooks/kioskControllerUtils.ts). That is a
+ * them (see apps/cheese-booth/src/hooks/kioskControllerUtils.ts). That is a
  * deliberate policy split, not drift: a photobooth may be the only machine at
  * the venue and must show something, while this demo can insist on a real
  * camera. It also ranks capture cards first, which this app has no concept of.
