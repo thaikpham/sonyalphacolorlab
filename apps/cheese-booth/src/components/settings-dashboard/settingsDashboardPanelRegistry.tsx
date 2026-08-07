@@ -18,7 +18,6 @@ import type {
 } from './settingsDashboardUtils'
 import { SettingsDashboardCameraPanel } from './panels/CameraPanel'
 import { SettingsDashboardCapturePanel } from './panels/CapturePanel'
-import { SettingsDashboardDownloadPanel } from './panels/DownloadPanel'
 import { SettingsDashboardOutputPanel } from './panels/OutputPanel'
 import { SettingsDashboardOverviewPanel } from './panels/OverviewPanel'
 import { SettingsDashboardTransformPanel } from './panels/TransformPanel'
@@ -121,5 +120,4 @@ export const settingsDashboardPanelRegistry: Record<
       onFlipVertical={props.onFlipVertical}
     />
   ),
-  download: () => <SettingsDashboardDownloadPanel />,
 }

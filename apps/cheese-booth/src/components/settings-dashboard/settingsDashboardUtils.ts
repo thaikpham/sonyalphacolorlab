@@ -2,13 +2,15 @@ import type { CountdownSec, PermissionState, StreamState } from '../../types'
 
 export const COUNTDOWN_OPTIONS: CountdownSec[] = [0, 3, 5, 10]
 
+// No 'download' section: this is a browser-only kiosk now. There is no desktop
+// build to fetch, so the panel that pointed operators at a GitHub Releases
+// archive has gone with it.
 export type SectionId =
   | 'overview'
   | 'capture'
   | 'camera'
   | 'output'
   | 'transform'
-  | 'download'
 export type DashboardStatusTone = 'good' | 'warn' | 'neutral'
 
 export interface DashboardStatusSummary {

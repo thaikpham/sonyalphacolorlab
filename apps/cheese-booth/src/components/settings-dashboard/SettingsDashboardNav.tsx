@@ -1,6 +1,5 @@
 import {
   Camera,
-  Download,
   HardDrive,
   LayoutDashboard,
   Monitor,
@@ -16,7 +15,6 @@ const SECTION_LINKS: { id: SectionId; label: string; icon: LucideIcon }[] = [
   { id: 'camera', label: 'Camera', icon: Monitor },
   { id: 'output', label: 'Cloud share', icon: HardDrive },
   { id: 'transform', label: 'Xoay / Lật', icon: RotateCw },
-  { id: 'download', label: 'Desktop app', icon: Download },
 ]
 
 interface SettingsDashboardNavProps {

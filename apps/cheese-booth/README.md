@@ -1,6 +1,8 @@
 # Cheese Booth Browser Kiosk
 
-Browser-only photobooth kiosk built with React, Vite, Vercel Functions, R2, and Postgres metadata.
+Browser-only photobooth kiosk built with React, Vite, Vercel Functions, R2,
+and Postgres metadata. It is one app in the Alpha ColorLab monorepo and
+deploys from `apps/cheese-booth`.
 
 ## What Lives Here
 
@@ -11,7 +13,18 @@ Browser-only photobooth kiosk built with React, Vite, Vercel Functions, R2, and 
 - Session gallery and media endpoints
 - Browser operator settings stored in localStorage
 
-This repo no longer ships desktop runtime, Tauri packaging, or inline desktop installer catalog logic.
+**Online only.** There is no desktop build, no installer and no release
+download — the kiosk is opened in a browser and updates when the page is
+reloaded. Anything that used to point an operator at a GitHub Releases
+archive has been removed: the Settings dashboard's `Desktop app` panel,
+`src/lib/externalLinks.ts` and `release-notes/`.
+
+Two consequences worth stating plainly:
+
+- Auto-save to a local folder is gone with the Tauri runtime. Captures
+  leave the machine through the cloud-share flow, or not at all.
+- The venue needs working network at capture time. The kiosk keeps running
+  once the page has loaded, but finalising a session uploads to R2.
 
 ## Development
 
@@ -66,15 +79,3 @@ Setup and deployment docs:
 Operational endpoint:
 
 - Health check: `/api/health/cloud-share`
-
-## Desktop Split
-
-Desktop source has been split out into the sibling folder:
-
-- `../kiosk-desktop`
-
-That folder is the continuation baseline for Tauri/local-save desktop work.
-
-Until a dedicated desktop remote is provisioned, the existing GitHub releases page is treated as the public archive:
-
-- https://github.com/thaikpham/colorlabv2-photokiosk/releases

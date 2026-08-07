@@ -8,11 +8,13 @@ Use this file as the entrypoint. Read the linked `docs/ai/*` files before broad 
 
 ## Repo Reality
 
-- This repo is the browser kiosk app only.
+- This is the browser kiosk app, one workspace of the Alpha ColorLab monorepo.
 - Frontend runtime: React 19 + Vite + `HashRouter`.
 - Backend runtime: Vercel Functions under `api/*`.
 - Cloud share stack: browser upload -> Vercel Function validation -> Cloudflare R2 object storage -> Postgres metadata -> QR gallery.
-- Desktop/Tauri work does **not** live here anymore. That continuation lives in `../kiosk-desktop`.
+- Online only: no desktop runtime, no Tauri packaging, no installer, no
+  release download. If a task asks to add one, that is a change of product
+  direction and needs saying out loud, not a build-config tweak.
 
 ## Read This First
 
