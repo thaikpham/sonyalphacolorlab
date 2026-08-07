@@ -869,7 +869,8 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
               <EcosystemApp
                 name="CheeseBooth"
                 icon="/cheesebooth-icon.png"
-                href="https://cheese-booth.vercel.app/"
+                href="/cheesebooth"
+                external={false}
                 iconInset="p-[11%]"
                 enter="app-enter-2"
                 accent="group-hover:text-amber-300"
@@ -879,7 +880,8 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
               <EcosystemApp
                 name="Live Stream SOP"
                 icon="/livesop-icon.png"
-                href="https://sonylivesop.vercel.app/"
+                href="/livesop"
+                external={false}
                 iconInset="p-[7.5%]"
                 enter="app-enter-3"
                 accent="group-hover:text-blue-300"
@@ -982,21 +984,33 @@ function EcosystemApp({
     return <div className={`${shell} cursor-default`}>{body}</div>;
   }
 
+  if (external) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={(e) => {
+          if (onNavigate) {
+            // Delay unmounting so the browser can process the default link action
+            setTimeout(onNavigate, 0);
+          }
+        }}
+        className={`${shell} cursor-pointer`}
+      >
+        {body}
+      </a>
+    );
+  }
+
   return (
-    <a
-      href={href}
-      target={external ? '_blank' : undefined}
-      rel={external ? 'noopener noreferrer' : undefined}
-      onClick={(e) => {
-        if (onNavigate) {
-          // Delay unmounting so the browser can process the default link action
-          setTimeout(onNavigate, 0);
-        }
-      }}
+    <Link
+      href={href as any}
+      onClick={onNavigate}
       className={`${shell} cursor-pointer`}
     >
       {body}
-    </a>
+    </Link>
   );
 }
 
