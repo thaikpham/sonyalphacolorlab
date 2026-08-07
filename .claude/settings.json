@@ -26,5 +26,16 @@
       "WebFetch(domain:nextjs.org)",
       "Read(//home/thaikpham/Desktop/ColorLab 2.0/**)"
     ]
+  },
+  "extraKnownMarketplaces": {
+    "claude-plugins-official": {
+      "source": {
+        "source": "git",
+        "url": "https://github.com/anthropics/claude-plugins-official.git"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "superpowers@claude-plugins-official": true
   }
 }
