@@ -859,8 +859,11 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
               <EcosystemApp
                 name="ColorLab 2.0"
                 icon="/colorlab-icon.png"
+                href="/"
+                external={false}
                 iconInset="p-[13.5%]"
                 enter="app-enter-1"
+                onNavigate={() => setIsEcosystemOpen(false)}
               />
 
               <EcosystemApp
@@ -917,6 +920,7 @@ function EcosystemApp({
   enter,
   accent = '',
   onNavigate,
+  external = true,
 }: {
   name: string;
   icon: string;
@@ -925,6 +929,9 @@ function EcosystemApp({
   enter: string;
   accent?: string;
   onNavigate?: () => void;
+  /** The sibling apps live on other origins and open in a new tab. This one is
+      the app you are already in, so it navigates in place. */
+  external?: boolean;
 }) {
   const body = (
     <>
@@ -938,13 +945,22 @@ function EcosystemApp({
             /* Decorative: the visible name below is already the link's label,
                and a duplicate here would have a screen reader read it twice. */
             alt=""
-            /* The tile is 160px at its largest, so this is the size Next should
-               plan around — not the source file's 512. At `width={512}` the
-               generated srcset was 640w at 1x and 1080w at 2x, i.e. a 1080px
-               PNG decoded into a 160px box, three times over, every time the
-               launcher opens. 200 asks for 256w / 640w instead. */
             width={200}
             height={200}
+            /* Served straight from /public, never through /_next/image.
+               These three broke in production with
+               `402 OPTIMIZED_IMAGE_REQUEST_PAYMENT_REQUIRED` — the account's
+               image-optimization quota is spent, so only transforms already in
+               Vercel's cache still resolve. Every other image on the site kept
+               working purely because it had been optimized before the quota
+               ran out; these were added after it, so no cached variant existed
+               and all three rendered as broken icons.
+               The sources are now 256x256 and 6-11KB each, which is smaller
+               than the optimizer's own output would have been, so there is
+               nothing left to optimize away. This also makes the launcher
+               immune to the quota, which is the point: it is the one component
+               whose whole job is to look like the apps work. */
+            unoptimized
             className="w-full h-full object-contain"
           />
         </div>
@@ -959,6 +975,9 @@ function EcosystemApp({
 
   const shell = `group app-enter ${enter} flex flex-col items-center text-center max-w-[240px]`;
 
+  // A tile with no href renders as a dead square: it looks identical to the
+  // two beside it, and clicking it does nothing at all — not even close the
+  // launcher. That is what "the links don't work" meant.
   if (!href) {
     return <div className={`${shell} cursor-default`}>{body}</div>;
   }
@@ -966,8 +985,8 @@ function EcosystemApp({
   return (
     <a
       href={href}
-      target="_blank"
-      rel="noopener noreferrer"
+      target={external ? '_blank' : undefined}
+      rel={external ? 'noopener noreferrer' : undefined}
       onClick={onNavigate}
       className={`${shell} cursor-pointer`}
     >
