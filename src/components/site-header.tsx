@@ -987,7 +987,12 @@ function EcosystemApp({
       href={href}
       target={external ? '_blank' : undefined}
       rel={external ? 'noopener noreferrer' : undefined}
-      onClick={onNavigate}
+      onClick={(e) => {
+        if (onNavigate) {
+          // Delay unmounting so the browser can process the default link action
+          setTimeout(onNavigate, 0);
+        }
+      }}
       className={`${shell} cursor-pointer`}
     >
       {body}
