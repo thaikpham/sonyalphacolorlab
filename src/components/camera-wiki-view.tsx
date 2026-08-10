@@ -435,10 +435,10 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
             return (
               <div
                 key={cam.id}
-                className={`glass p-4 rounded-2xl flex flex-col justify-between gap-4 border transition-all font-sans ${
+                className={`p-4 rounded-2xl flex flex-col justify-between gap-4 border transition-all font-sans backdrop-blur-md ${
                   isChecked
-                    ? 'border-amber-400/50 bg-amber-500/10 shadow-[0_0_20px_rgba(251,191,36,0.15)]'
-                    : 'border-white/10 hover:border-white/25'
+                    ? 'border-amber-400/60 bg-amber-500/15 shadow-[0_0_25px_rgba(251,191,36,0.2)]'
+                    : 'bg-[#28292e]/95 border-white/12 hover:border-white/30 hover:bg-[#2e3037]/95 shadow-lg'
                 }`}
               >
                 <div>
@@ -587,7 +587,7 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
             {/* Side-by-Side Comparison Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 font-sans">
               {comparedCameraObjects.map((cam) => (
-                <div key={cam.id} className="glass p-4 rounded-xl flex flex-col gap-3 border border-white/10 font-sans">
+                <div key={cam.id} className="bg-[#28292e]/95 p-4 rounded-xl flex flex-col gap-3 border border-white/15 shadow-xl font-sans backdrop-blur-md">
                   {/* Photo on Clean WHITE Background */}
                   <div className="relative w-full aspect-[4/3] rounded-xl bg-white border border-white/20 p-2 flex items-center justify-center shadow-inner overflow-hidden">
                     <Image
