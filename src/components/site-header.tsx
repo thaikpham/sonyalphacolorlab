@@ -880,7 +880,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
               <EcosystemApp
                 name="Sony Wiki"
                 icon="/sony-wiki-icon.png"
-                href={locale === routing.defaultLocale ? '/cameras' : `/${locale}/cameras`}
+                href="/cameras"
                 external={false}
                 iconInset="p-[10%]"
                 enter="app-enter-2"
