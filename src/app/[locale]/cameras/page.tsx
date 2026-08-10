@@ -33,7 +33,7 @@ export default async function CamerasPage({
     <>
       <SiteHeader />
 
-      <main className="flex-1 w-full max-w-[86rem] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="flex-1 w-full max-w-[160rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 py-8">
         <CameraWikiView initialCameras={initialCameras} />
       </main>
 
