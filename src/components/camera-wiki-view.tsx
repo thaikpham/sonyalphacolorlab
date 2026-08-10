@@ -531,7 +531,7 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                 </div>
 
                 {/* Price & Link */}
-                <div className="pt-3 border-t border-white/15 flex items-center justify-between gap-2">
+                <div className="pt-2 flex items-center justify-between gap-2">
                   <span className="font-mono text-base font-extrabold text-sky-400 drop-shadow-sm">
                     {cam.priceFormatted}
                   </span>
