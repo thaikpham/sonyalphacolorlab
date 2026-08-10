@@ -451,10 +451,10 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
             return (
               <div
                 key={cam.id}
-                className={`p-4.5 rounded-2xl flex flex-col justify-between gap-4 border transition-all font-sans backdrop-blur-md ${
+                className={`p-4.5 rounded-2xl flex flex-col justify-between gap-4 transition-all font-sans backdrop-blur-md ${
                   isChecked
-                    ? 'border-amber-400/70 bg-amber-500/20 shadow-[0_0_30px_rgba(251,191,36,0.25)]'
-                    : 'bg-[#28292e] border-white/15 hover:border-white/40 hover:bg-[#303138] shadow-xl'
+                    ? 'border-2 border-amber-400/70 bg-amber-500/20 shadow-[0_0_30px_rgba(251,191,36,0.25)]'
+                    : 'bg-[#28292e] hover:bg-[#303138] shadow-xl'
                 }`}
               >
                 <div>
@@ -487,7 +487,7 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                   {/* Photo on Clean WHITE Background (Click opens Detail Modal) */}
                   <div
                     onClick={() => setDetailProduct(cam)}
-                    className="relative w-full aspect-[4/3] rounded-xl bg-white border border-white/20 p-3 flex items-center justify-center mb-3.5 shadow-md overflow-hidden cursor-pointer group"
+                    className="relative w-full aspect-[4/3] rounded-xl bg-white p-3 flex items-center justify-center mb-3.5 shadow-md overflow-hidden cursor-pointer group"
                   >
                     <Image
                       src={cam.imageUrl}

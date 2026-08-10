@@ -209,7 +209,7 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
 
                 {comparedCameras.map((cam) => (
                   <th key={cam.id} scope="col" className="p-4 w-[18rem] bg-[#1e2025] border-r border-white/10 align-top">
-                    <div className="relative bg-[#28292e] p-4 rounded-xl flex flex-col gap-3 border border-white/20 shadow-lg h-full justify-between">
+                    <div className="relative bg-[#28292e] p-4 rounded-xl flex flex-col gap-3 shadow-lg h-full justify-between">
                       {/* Remove Button */}
                       <button
                         type="button"
@@ -223,7 +223,7 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                       {/* Photo on Clean WHITE Background (Click opens Detail Modal) */}
                       <div
                         onClick={() => setDetailProduct(cam)}
-                        className="relative w-full aspect-[4/3] rounded-xl bg-white border border-white/20 p-2 flex items-center justify-center shadow-md overflow-hidden cursor-pointer group shrink-0"
+                        className="relative w-full aspect-[4/3] rounded-xl bg-white p-2 flex items-center justify-center shadow-md overflow-hidden cursor-pointer group shrink-0"
                       >
                         <Image
                           src={cam.imageUrl}
