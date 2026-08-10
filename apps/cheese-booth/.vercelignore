@@ -1,7 +1,0 @@
-node_modules
-dist
-.vercel
-src-tauri
-logs
-scratch
-netlify.toml

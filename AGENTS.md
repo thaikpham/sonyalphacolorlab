@@ -124,39 +124,49 @@ the effect text collapsed to 43px wide.
 Creative Look or supporting a new body touches `constants.ts` only. Use the
 `sync-camera-constants` skill; do not hand-edit downstream files to match.
 
-## Rule 6 — One repo, three apps, one set of design tokens
+## Rule 6 — One app here, one set of design tokens, two readers elsewhere
 
-This is an npm-workspaces monorepo. Alpha ColorLab (Next.js) lives at the root;
-**CheeseBooth** (`apps/cheese-booth`, Vite + plain CSS, no Tailwind) and
-**Sony Live SOP** (`apps/live-sop`, Vite + Tailwind v4) are workspaces. Each
-still deploys to its own Vercel project via a Root Directory setting.
+This repo is Alpha ColorLab and nothing else. **CheeseBooth**
+(`cheese-booth.vercel.app`) and **Sony Live SOP** (`sonylivesop.vercel.app`)
+are separate projects in separate repos with their own deploys and their own
+CI. The ecosystem launcher in `site-header.tsx` links out to them by absolute
+URL; there is no copy of their source here and no way to build them from here.
+"Fix CheeseBooth" is a task in another repo.
 
-`npm run verify` is the whole-ecosystem gate — lint, typecheck and tests for
-all three — and it is what CI runs. Use it before assuming a change is safe:
-the apps share a lockfile, so a dependency bump in one is a bump in all.
-
-They were three separate repos until the design system moved into a package.
-That did not work: `token-drift.test.ts` reached into the siblings by relative
-path, so on a checkout without them it passed **vacuously** — the suite went
-green with an entire app missing. A guard that can only be trusted on one
-person's laptop is not a guard.
+They were workspaces under `apps/` for a while, which is why `npm run verify`
+used to gate three apps. It gates one. It is still what CI runs and still what
+to run before assuming a change is safe.
 
 Shared surfaces, ink, signal colours, radius, breakpoints, the glass
-primitives and the film/Y2K/holo VFX are defined **once** in
+primitives and the film/Y2K/holo VFX are still defined **once** in
 `packages/colorlab-tokens/src/`. `npm run tokens:emit` generates two flavours —
-`theme.css` (`@theme static`, for the Tailwind consumers) and `tokens.css`
-(plain `:root`, for CheeseBooth) — and syncs them plus `primitives.css` and
-`vfx.css` into all three apps.
+`theme.css` (`@theme static`, what this app imports) and `tokens.css` (plain
+`:root`, for a consumer without Tailwind) — writes both plus `primitives.css`
+and `vfx.css` to `dist/`, and syncs the three this app uses into
+`src/app/vendor/`.
 
 Edit `src/tokens.ts`, `src/primitives.css` or `src/vfx.css`, then re-emit.
-Never hand-edit a generated file, and never re-declare a shared token in an
-app's own stylesheet — a local copy wins the cascade silently.
-`token-drift.test.ts` fails on all three.
+Never hand-edit a generated file, and never re-declare a shared token in
+`globals.css` — a local copy wins the cascade silently.
+`token-drift.test.ts` fails on both.
+
+Two things to know before touching the emitter:
+
+- **A destination outside this repo is not a destination.** `emit.ts` writes
+  with `mkdirSync(…, { recursive: true })`, so a stale path in `TARGETS` does
+  not error — it *creates* the folder. The six `apps/…` entries would have
+  grown an untracked `apps/` tree back out of the first emit after the split.
+- **`tokens.css` has an empty destination list on purpose.** Its only consumer
+  is out of repo. It is still emitted to `dist/`, which is how CheeseBooth takes
+  a token change — by hand now. Nothing checks that it did: `token-drift.test.ts`
+  asserts only about paths this repo owns, because a guard that names a folder
+  which may not exist is the vacuous pass that once let an entire app go missing
+  from a green suite.
 
 App-specific by design, and correctly **not** shared: `--accent` (ColorLab
-recomputes it per recipe), each app's page background, and each app's own
-accent/state palette. A colour named for what it means *here* — `community`,
-`proposal`, `ai` — must not be borrowed elsewhere to mean something else.
+recomputes it per recipe) and the page background. A colour named for what it
+means *here* — `community`, `proposal`, `ai` — must not be borrowed elsewhere to
+mean something else.
 
 ## Layout
 

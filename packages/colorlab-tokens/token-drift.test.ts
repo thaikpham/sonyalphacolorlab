@@ -1,23 +1,35 @@
 /**
- * Fails when any app's copy of the shared design system stops matching the
+ * Fails when ColorLab's copy of the shared design system stops matching the
  * source in packages/colorlab-tokens.
  *
- * The three apps deploy from three separate git repos to three separate Vercel
- * projects, so nothing else can see all of them at once. Before this test, the
- * tokens were copy-pasted by hand and had drifted in exactly the ways you would
- * predict: `.glass` grew a border in the two siblings, `.tabular` resolved to
- * mono in one and sans in another, the whole signal-colour family was missing
- * from both, and CheeseBooth referenced a `film-burn-pulse` animation nobody
- * had defined.
+ * The tokens were once copy-pasted by hand between three apps and had drifted in
+ * exactly the ways you would predict: `.glass` grew a border in the two
+ * siblings, `.tabular` resolved to mono in one and sans in another, the whole
+ * signal-colour family was missing from both, and CheeseBooth referenced a
+ * `film-burn-pulse` animation nobody had defined.
  *
  * Same defence the SQL CHECK constraints get from sql-drift.test.ts: state the
  * value once, then fail loudly when a copy disagrees.
  *
+ * **Scope, and why it shrank.** CheeseBooth and Sony Live SOP are their own
+ * repos again, so this test asserts only about paths this repo owns. That is
+ * deliberate and it is the *safe* direction: the version of this file that
+ * reached into sibling folders by relative path had an
+ * `if (!existsSync(path)) return` escape hatch, so on a checkout without them
+ * every assertion passed vacuously and the suite went green with an entire app
+ * missing. A guard that names a path outside its own repo is a guard that can be
+ * satisfied by absence. Within this repo a missing file is still the loudest
+ * possible failure — see the assertion below.
+ *
+ * Nothing now checks the two siblings' copies. That is a real gap and it belongs
+ * to them; it is not fixable from here, and pretending otherwise is what the
+ * vacuous pass was.
+ *
  * The expected contents are computed in-process from generate(). The first
  * version of this file shelled out to the emitter instead — which rewrote every
- * app copy before the comparisons ran and healed the drift it was supposed to
- * catch. It passed against deliberately corrupted files. Never let a check
- * repair its own subject.
+ * copy before the comparisons ran and healed the drift it was supposed to catch.
+ * It passed against deliberately corrupted files. Never let a check repair its
+ * own subject.
  */
 
 import { existsSync, readFileSync } from 'node:fs'
@@ -45,24 +57,27 @@ describe.each(TARGETS)('$file', ({ file, destinations }) => {
     ).toBe(canonical)
   })
 
-  it.each(destinations)('%s is byte-identical to the source', (destination) => {
-    const path = join(REPO_ROOT, destination)
+  // `tokens.css` has no in-repo destination — it is emitted to dist/ for the
+  // no-Tailwind consumer that now lives in another repo. An empty `it.each` is
+  // an error in vitest, not zero tests, so the guard is on the describe.
+  if (destinations.length > 0) {
+    it.each(destinations)('%s is byte-identical to the source', (destination) => {
+      const path = join(REPO_ROOT, destination)
 
-    // No escape hatch. While the apps lived in separate gitignored repos this
-    // read `if (!existsSync(path)) return`, so on any clone without the sibling
-    // folders every assertion below passed vacuously — the whole suite went
-    // green with an app entirely absent. In one repo they are always present,
-    // and a missing file is now the loudest possible failure.
-    expect(existsSync(path), `${destination} is missing — the monorepo should always contain it`).toBe(true)
+      // No escape hatch. This once read `if (!existsSync(path)) return`, which
+      // is how an absent app produced a green suite. Every destination left in
+      // TARGETS is one this repo owns, so a missing file is a failure.
+      expect(existsSync(path), `${destination} is missing — this repo should always contain it`).toBe(true)
 
-    expect(
-      readFileSync(path, 'utf8'),
-      `${destination} has drifted from the source — run \`npm run tokens:emit\``,
-    ).toBe(canonical)
-  })
+      expect(
+        readFileSync(path, 'utf8'),
+        `${destination} has drifted from the source — run \`npm run tokens:emit\``,
+      ).toBe(canonical)
+    })
+  }
 })
 
-describe('no app redefines a shared token', () => {
+describe('the app does not redefine a shared token', () => {
   /* Re-declaring one of these locally wins the cascade silently, which is the
      failure mode this whole package exists to prevent. */
   const OWNED = [
@@ -83,12 +98,8 @@ describe('no app redefines a shared token', () => {
     '--breakpoint-4xl',
   ]
 
-  /** Each app's own stylesheet — the one place a redeclaration would hide. */
-  const APP_STYLESHEETS = [
-    'src/app/globals.css',
-    'apps/live-sop/src/index.css',
-    'apps/cheese-booth/src/styles/tokens.css',
-  ]
+  /** The app's own stylesheet — the one place a redeclaration would hide. */
+  const APP_STYLESHEETS = ['src/app/globals.css']
 
   it.each(APP_STYLESHEETS)('%s declares none of them', (stylesheet) => {
     const path = join(REPO_ROOT, stylesheet)
@@ -112,14 +123,9 @@ describe('no app redefines a shared token', () => {
   })
 })
 
-describe('every app imports the shared files', () => {
+describe('the app imports the shared files', () => {
   const IMPORTERS: ReadonlyArray<[string, readonly string[]]> = [
     ['src/app/globals.css', ['theme.css', 'primitives.css', 'vfx.css']],
-    ['apps/live-sop/src/index.css', ['theme.css', 'primitives.css', 'vfx.css']],
-    [
-      'apps/cheese-booth/src/styles/tokens.css',
-      ['tokens.css', 'primitives.css', 'vfx.css'],
-    ],
   ]
 
   it.each(IMPORTERS)('%s imports %s', (stylesheet, expectedImports) => {

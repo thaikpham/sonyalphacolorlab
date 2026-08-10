@@ -59,6 +59,12 @@ function sections(): string[] {
  *   theme.css   Tailwind v4 (`@theme static`). ColorLab and Sony Live SOP.
  *   tokens.css  plain `:root` custom properties. CheeseBooth, no Tailwind.
  *
+ * Only ColorLab is in this repo now — the other two are their own projects and
+ * take a token change by copying `dist/` across. Keep emitting both flavours
+ * anyway: `dist/tokens.css` is what a no-Tailwind consumer reads, it is named in
+ * this package's `exports`, and it is the only thing standing between CheeseBooth
+ * and the hand-copied drift this package was built to end.
+ *
  * `@theme static`, not a bare `@theme`: Tailwind only emits a theme variable it
  * has seen a utility use, and several of these are read solely through `var()`
  * from hand-written CSS, which the scanner cannot see. Under a plain `@theme`,
@@ -74,36 +80,38 @@ export function generate(): Record<string, string> {
   }
 }
 
-/** Where each artefact lands, relative to the repo root. */
+/**
+ * Where each artefact lands, relative to the repo root.
+ *
+ * In-repo copies only. Six of these used to point into `apps/live-sop` and
+ * `apps/cheese-booth`; both apps moved to their own repos, and a destination
+ * outside this one is not a destination — emit.ts writes with
+ * `mkdirSync(…, { recursive: true })`, so a stale path does not error, it
+ * *recreates* the folder. Leaving them here would have grown an untracked
+ * `apps/` tree back out of the first `npm run tokens:emit` after the removal.
+ *
+ * `tokens.css` therefore has no in-repo destination and an empty list, which is
+ * correct rather than an oversight: it is still written to `dist/`, which is
+ * where an out-of-repo consumer reads it from.
+ */
 export const TARGETS: ReadonlyArray<{
   readonly file: string
   readonly destinations: readonly string[]
 }> = [
   {
     file: 'theme.css',
-    destinations: [
-      'src/app/vendor/colorlab-tokens/theme.css',
-      'apps/live-sop/src/styles/colorlab-tokens/theme.css',
-    ],
+    destinations: ['src/app/vendor/colorlab-tokens/theme.css'],
   },
   {
     file: 'tokens.css',
-    destinations: ['apps/cheese-booth/src/styles/colorlab-tokens/tokens.css'],
+    destinations: [],
   },
   {
     file: 'primitives.css',
-    destinations: [
-      'src/app/vendor/colorlab-tokens/primitives.css',
-      'apps/live-sop/src/styles/colorlab-tokens/primitives.css',
-      'apps/cheese-booth/src/styles/colorlab-tokens/primitives.css',
-    ],
+    destinations: ['src/app/vendor/colorlab-tokens/primitives.css'],
   },
   {
     file: 'vfx.css',
-    destinations: [
-      'src/app/vendor/colorlab-tokens/vfx.css',
-      'apps/live-sop/src/styles/colorlab-tokens/vfx.css',
-      'apps/cheese-booth/src/styles/colorlab-tokens/vfx.css',
-    ],
+    destinations: ['src/app/vendor/colorlab-tokens/vfx.css'],
   },
 ]

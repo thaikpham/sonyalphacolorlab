@@ -1,15 +1,13 @@
 name: CI
 
-# One gate for the whole ecosystem.
+# The gate for Alpha ColorLab. `npm run verify` is the same command a developer
+# runs locally.
 #
-# Before the monorepo there were three: CheeseBooth and Live SOP each had their
-# own, and Alpha ColorLab — the flagship, with the most tests and the only copy
-# of the design-token drift guard — had none at all. That guard also reached
-# into the sibling repos by relative path, so on any checkout without them it
-# passed vacuously: the suite went green with an entire app missing.
-#
-# Both problems are structural and both are fixed by there being one repo and
-# one workflow. `npm run verify` is the same command a developer runs locally.
+# This briefly gated three apps: CheeseBooth and Sony Live SOP were workspaces
+# under apps/ and had per-app verify and build steps here. They are separate
+# repos again, each with its own CI, so this runs only what this repo can
+# actually build — an `-w apps/…` step against a workspace that no longer exists
+# does not skip, it fails the run with "No workspaces found".
 
 on:
   push:
@@ -37,30 +35,33 @@ jobs:
           node-version: 20
           cache: npm
 
-      # One lockfile for all three apps — which is the point. The eslint plugin
-      # mismatch that left Live SOP's lint silently broken came from copying a
-      # config between separately-locked repos.
       - name: Install dependencies
         run: npm ci
 
       # Regenerates the shared design tokens and fails if anything changed,
       # which catches a hand-edited generated file before the drift test does
       # and gives a clearer message when it happens.
+      #
+      # Asserts a clean worktree rather than diffing a list of paths. The list
+      # version named `apps/*/src/styles/colorlab-tokens`, and an unmatched git
+      # pathspec exits 0 — so once the apps left, that arm of the guard checked
+      # nothing and said so in green. Worse, `git diff` cannot see *untracked*
+      # files, and the emitter creates missing directories, so a stale
+      # destination in TARGETS would have written a whole apps/ tree onto the
+      # runner and passed. `git status --porcelain` sees both, and needs no edit
+      # the next time TARGETS changes.
       - name: Design tokens are current
         run: |
           npm run tokens:emit
-          git diff --exit-code -- src/app/vendor apps/*/src/styles/colorlab-tokens packages/colorlab-tokens/dist \
-            || (echo "::error::Generated token files are stale. Run 'npm run tokens:emit' and commit the result." && exit 1)
+          if [ -n "$(git status --porcelain)" ]; then
+            git status --porcelain
+            echo "::error::Generated token files are stale or wrote somewhere unexpected. Run 'npm run tokens:emit' and commit the result."
+            exit 1
+          fi
 
-      # lint + typecheck + test for ColorLab, CheeseBooth and Live SOP.
-      - name: Verify all apps
+      # lint + typecheck + test.
+      - name: Verify
         run: npm run verify
 
-      - name: Build ColorLab
+      - name: Build
         run: npm run build
-
-      - name: Build CheeseBooth
-        run: npm run build -w apps/cheese-booth
-
-      - name: Build Live SOP
-        run: npm run build -w apps/live-sop

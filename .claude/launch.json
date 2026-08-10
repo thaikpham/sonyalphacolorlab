@@ -23,21 +23,6 @@
       ],
       "port": 3001,
       "autoPort": false
-    },
-    {
-      "// ": "Sibling apps in the ecosystem. They are separate npm projects inside gitignored folders, so they need their own cwd and their own ports.",
-      "name": "sony-live-sop",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["--prefix", "apps/live-sop", "run", "dev", "--", "--port", "5180"],
-      "port": 5180,
-      "autoPort": false
-    },
-    {
-      "name": "cheese-booth",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["--prefix", "apps/cheese-booth", "run", "dev", "--", "--port", "5181"],
-      "port": 5181,
-      "autoPort": false
     }
   ]
 }

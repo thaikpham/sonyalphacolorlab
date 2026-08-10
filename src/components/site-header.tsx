@@ -866,11 +866,18 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                 onNavigate={() => setIsEcosystemOpen(false)}
               />
 
+              {/* Absolute URLs, and deliberately not routes here. These two are
+                  separate projects on their own repos and their own Vercel
+                  deployments — this app has no copy of their source and no way
+                  to render them. They used to be reachable at `/cheesebooth`
+                  and `/livesop`, which embedded each deployment in an iframe;
+                  that only ever worked because the destination was already
+                  external, and it cost the reader the app's own chrome, its
+                  URL bar and its deep links. Send them to the real origin. */}
               <EcosystemApp
                 name="CheeseBooth"
                 icon="/cheesebooth-icon.png"
-                href="/cheesebooth"
-                external={false}
+                href="https://cheese-booth.vercel.app/"
                 iconInset="p-[11%]"
                 enter="app-enter-2"
                 accent="group-hover:text-amber-300"
@@ -880,8 +887,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
               <EcosystemApp
                 name="Live Stream SOP"
                 icon="/livesop-icon.png"
-                href="/livesop"
-                external={false}
+                href="https://sonylivesop.vercel.app/gear"
                 iconInset="p-[7.5%]"
                 enter="app-enter-3"
                 accent="group-hover:text-blue-300"
@@ -990,11 +996,9 @@ function EcosystemApp({
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        onClick={(e) => {
-          if (onNavigate) {
-            // Delay unmounting so the browser can process the default link action
-            setTimeout(onNavigate, 0);
-          }
+        onClick={() => {
+          // Delay unmounting so the browser can process the default link action
+          if (onNavigate) setTimeout(onNavigate, 0);
         }}
         className={`${shell} cursor-pointer`}
       >
@@ -1005,7 +1009,7 @@ function EcosystemApp({
 
   return (
     <Link
-      href={href as any}
+      href={href}
       onClick={onNavigate}
       className={`${shell} cursor-pointer`}
     >

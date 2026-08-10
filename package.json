@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "workspaces": [
-    "apps/*",
     "packages/*"
   ],
   "scripts": {
@@ -16,11 +15,8 @@
     "typecheck": "tsc --noEmit",
     "seed:emit": "tsx scripts/emit-seed.ts",
     "tokens:emit": "tsx packages/colorlab-tokens/src/emit.ts",
-    "//": "Ecosystem-wide gates. `verify` is what CI runs and what the token drift guard needs, since it is the only place all three apps are checked together.",
-    "verify": "npm run verify:colorlab && npm run verify:cheese-booth && npm run verify:live-sop",
-    "verify:colorlab": "npm run lint && npm run typecheck && npm run test",
-    "verify:cheese-booth": "npm run lint -w apps/cheese-booth && npm run typecheck -w apps/cheese-booth && npm run test -w apps/cheese-booth",
-    "verify:live-sop": "npm run lint -w apps/live-sop && npm run typecheck -w apps/live-sop && npm run test -w apps/live-sop",
+    "//": "The gate. This is what CI runs and what a developer runs before assuming a change is safe. It chained two more `-w apps/*` gates while CheeseBooth and Sony Live SOP were workspaces here; they are their own repos now and gate themselves.",
+    "verify": "npm run lint && npm run typecheck && npm run test",
     "push:supabase": "tsx --env-file=.env.local scripts/push-supabase.ts",
     "migrate:images": "tsx --env-file=.env.local scripts/migrate-images.ts"
   },
