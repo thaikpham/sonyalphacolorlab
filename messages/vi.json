@@ -7,7 +7,8 @@
     "emptyTail": "để xem cả {total} công thức."
   },
   "nav": {
-    "ecosystem": "Hệ sinh thái Sony Alpha"
+    "ecosystem": "Hệ sinh thái Sony Alpha",
+    "cameras": "Tra cứu máy ảnh"
   },
   "auth": {
     "signIn": "Đăng nhập",
@@ -140,5 +141,36 @@
     "clearAll": "Xoá tất cả bộ lọc",
     "escHint": "Nhấn ESC để đóng",
     "close": "Đóng thanh tìm kiếm"
+  },
+  "cameras": {
+    "title": "Bảng Tra Cứu & So Sánh Máy Ảnh Sony",
+    "subtitle": "Khám phá và so sánh thông số kỹ thuật, giá niêm yết chính hãng và tính năng nổi bật của hơn 35+ dòng máy ảnh Sony Alpha & Cinema Line.",
+    "searchPlaceholder": "Tìm kiếm tên máy, mã SKU (ví dụ: ILCE-7M4, FX3), tính năng…",
+    "catAll": "Tất cả dòng máy",
+    "catFullFrame": "Full-Frame",
+    "catApsC": "APS-C",
+    "catCinemaLine": "Cinema Line",
+    "catVlog": "Vlog ZV",
+    "viewTable": "Xem dạng Bảng",
+    "viewGrid": "Xem dạng Lưới",
+    "sortBy": "Sắp xếp theo",
+    "sortPriceDesc": "Giá: Cao đến Thấp",
+    "sortPriceAsc": "Giá: Thấp đến Cao",
+    "sortName": "Tên máy",
+    "sortSku": "Mã SKU",
+    "compare": "So sánh",
+    "compareBarTitle": "Đã chọn {count, plural, one {# máy ảnh} other {# máy ảnh}}",
+    "compareBtn": "So sánh ngay",
+    "clearCompare": "Bỏ chọn",
+    "maxCompareHint": "Bạn có thể chọn tối đa 4 máy ảnh để so sánh trực quan.",
+    "officialUrl": "Xem tại Sony Việt Nam ↗",
+    "featuresLabel": "Tính năng nổi bật",
+    "priceLabel": "Giá niêm yết",
+    "skuLabel": "Mã SKU",
+    "categoryLabel": "Phân loại",
+    "sensorLabel": "Cảm biến & Bộ xử lý",
+    "actionLabel": "Chi tiết & So sánh",
+    "emptyTitle": "Không tìm thấy máy ảnh phù hợp với tìm kiếm của bạn.",
+    "emptyAction": "Xóa bộ lọc tìm kiếm"
   }
 }

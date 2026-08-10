@@ -366,6 +366,15 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                   <rect x="14" y="14" width="7" height="7" rx="1.5" />
                 </svg>
               </button>
+
+              {/* Sony Camera Wiki Direct Nav Link */}
+              <Link
+                href={locale === routing.defaultLocale ? '/cameras' : `/${locale}/cameras`}
+                className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-flat text-xs font-bold text-white/90 hover:text-white hover:bg-white/20 border border-white/15 transition-all shrink-0"
+              >
+                <span>📷</span>
+                <span>{tNav('cameras')}</span>
+              </Link>
             </div>
 
             {/* Center: Search Trigger or Expanded Live Search Form.

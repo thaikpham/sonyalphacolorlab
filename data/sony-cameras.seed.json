@@ -1,0 +1,402 @@
+[
+  {
+    "id": "sony-cam-ilce-1m2",
+    "sku": "ILCE-1M2/BQ AP2",
+    "name": "α1 II",
+    "fullName": "Máy ảnh flagship α1 II dành cho chuyên gia",
+    "category": "full-frame",
+    "priceVnd": 153153818,
+    "priceFormatted": "153.153.818 đ",
+    "url": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilce-1m2?sku=ilce-1m2-bq-ap2",
+    "imageUrl": "https://www.sony.com.vn/image/6c5b1b963315cb73b32f88b18f5de2be?fmt=png-alpha",
+    "features": [
+      "Cảm biến hình ảnh Exmor RS CMOS xếp chồng full-frame 35 mm 50,1 MP",
+      "Lấy nét tự động nhận dạng trong thời gian thực dựa trên AI+",
+      "Chụp liên tục không bị chớp đen lên đến 30 hình/giây với AF/AE"
+    ]
+  },
+  {
+    "id": "sony-cam-ilce-9m3",
+    "sku": "ILCE-9M3/BQ AP2",
+    "name": "α9 III",
+    "fullName": "α9 III với màn trập bao trùm Global Shutter",
+    "category": "full-frame",
+    "priceVnd": 143335636,
+    "priceFormatted": "143.335.636 đ",
+    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-9m3?sku=ilce-9m3-bq-ap2",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-21?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Cảm biến Exmor RS™ CMOS 24,6 MP xếp chồng full-frame với màn trập Global Shutter",
+      "Bộ xử lý BIONZ XR™ tốc độ cao gấp 8 lần",
+      "Chụp không bị chớp đen ở tốc độ 120 hình/giây với AF/AE tracking"
+    ]
+  },
+  {
+    "id": "sony-cam-ilme-fx6",
+    "sku": "ILME-FX6V//CAP2",
+    "name": "Cinema Line FX6",
+    "fullName": "Máy quay full-frame FX6 thuộc Cinema Line",
+    "category": "cinema-line",
+    "priceVnd": 139408364,
+    "priceFormatted": "139.408.364 đ",
+    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilme-fx6?sku=ilme-fx6v-cap2",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_Image-1?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Cảm biến Exmor R™ CMOS full-frame và BIONZ XR™",
+      "Dải tần nhạy sáng 15+ stops và ISO lên đến 409600",
+      "Quay 4K 120fps HFR với kính lọc ND điện tử linh hoạt"
+    ]
+  },
+  {
+    "id": "sony-cam-ilce-1",
+    "sku": "ILCE-1/BQ AP2",
+    "name": "Alpha 1",
+    "fullName": "Máy ảnh Alpha 1 với độ phân giải và tốc độ vượt trội",
+    "category": "full-frame",
+    "priceVnd": 132535636,
+    "priceFormatted": "132.535.636 đ",
+    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-1?sku=ilce-1-bq-ap2",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/02_Primary_image?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Cảm biến CMOS xếp chồng full-frame 50.1 MP",
+      "Chụp liên tục tốc độ cao lên tới 30 hình/giây",
+      "Quay phim chuyên nghiệp 8K/30p và 4K/120p"
+    ]
+  },
+  {
+    "id": "sony-cam-ilme-fx5",
+    "sku": "ILME-FX5B/Q FS1",
+    "name": "Cinema Line FX5",
+    "fullName": "Máy quay Full-frame Cinema Line FX5",
+    "category": "cinema-line",
+    "priceVnd": 130990000,
+    "priceFormatted": "130.990.000 đ",
+    "url": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilme-fx5?sku=ilme-fx5b-q-fs1",
+    "imageUrl": "https://www.sony.com.vn/image/a779c5111ad98d17c9678d3ec1592751?fmt=png-alpha",
+    "features": [
+      "Cảm biến Exmor RS™ full-frame xếp chồng và BIONZ XR2™ tích hợp bộ xử lý AI",
+      "Ghi hình X-OCN 16 bit scene-linear trong máy",
+      "Khả năng quay phim Open Gate 5K 120 fps"
+    ]
+  },
+  {
+    "id": "sony-cam-ilce-7rm6",
+    "sku": "ILCE-7RM6/BQFS1",
+    "name": "α7R VI",
+    "fullName": "Máy ảnh full-frame độ phân giải cao α7R VI",
+    "category": "full-frame",
+    "priceVnd": 113990000,
+    "priceFormatted": "113.990.000 đ",
+    "url": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilce-7rm6?sku=ilce-7rm6-bqfs1",
+    "imageUrl": "https://www.sony.com.vn/image/9bb73463633f22e8851c0d457f6fee10?fmt=png-alpha",
+    "features": [
+      "Cảm biến Exmor RS™ CMOS xếp chồng hoàn toàn 66,8 MP",
+      "Bộ xử lý BIONZ XR2™ tích hợp AI chuyên biệt",
+      "Chụp liên tục 30 hình/giây không chớp đen ở độ phân giải tối đa"
+    ]
+  },
+  {
+    "id": "sony-cam-ilme-fx3",
+    "sku": "ILME-FX3/Q AP2",
+    "name": "Cinema Line FX3",
+    "fullName": "Máy quay full-frame FX3 thuộc Cinema Line",
+    "category": "cinema-line",
+    "priceVnd": 91299273,
+    "priceFormatted": "91.299.273 đ",
+    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilme-fx3?sku=ilme-fx3-q-ap2",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/01_Primary_image?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Cảm biến Exmor R™ CMOS full-frame và bộ xử lý BIONZ XR™",
+      "Độ nhạy sáng cao, dải tần nhạy sáng rộng 15+ stops",
+      "Thân máy nhỏ gọn tích hợp quạt tản nhiệt & tay cầm XLR"
+    ]
+  },
+  {
+    "id": "sony-cam-ilce-7rm5",
+    "sku": "ILCE-7RM5/BQAP2",
+    "name": "α7R V",
+    "fullName": "Máy ảnh full-frame độ phân giải cao α7R V",
+    "category": "full-frame",
+    "priceVnd": 84426545,
+    "priceFormatted": "84.426.545 đ",
+    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-7rm5?sku=ilce-7rm5-bqap2",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/og-2?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Cảm biến Exmor R™ CMOS full-frame 61,0 MP",
+      "Bộ xử lý AI nhận dạng chủ thể thông minh",
+      "Quay phim 8K 24p/25p và 4K 60p chuyên nghiệp"
+    ]
+  },
+  {
+    "id": "sony-cam-ilce-7sm3",
+    "sku": "ILCE-7SM3/BQAP2",
+    "name": "α7S III",
+    "fullName": "Alpha 7S III chuyên quay phim & chụp thiếu sáng",
+    "category": "full-frame",
+    "priceVnd": 75590182,
+    "priceFormatted": "75.590.182 đ",
+    "url": "https://www.sony.com.vn/permalink/product/ilce-7sm3?locale=vi_VN&sku=ilce-7sm3-bqap2",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/02_Primary_image-3?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Cảm biến CMOS 12,1 MP chiếu sáng sau tối ưu low-light",
+      "Quay phim 4K 120p 10-bit 4:2:2 không giới hạn thời gian",
+      "Màn hình xoay lật 4 trục cảm ứng linh hoạt"
+    ]
+  },
+  {
+    "id": "sony-cam-ilce-7rm4a",
+    "sku": "ILCE-7RM4A/QAP2",
+    "name": "α7R IV",
+    "fullName": "Máy ảnh full-frame α7R IV (61.0 MP)",
+    "category": "full-frame",
+    "priceVnd": 73626545,
+    "priceFormatted": "73.626.545 đ",
+    "url": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilce-7rm4a?sku=ilce-7rm4a-qap2",
+    "imageUrl": "https://www.sony.com.vn/image/c8a930c97af5746b7120d4b639cfe813?fmt=png-alpha",
+    "features": [
+      "Cảm biến Exmor R™ CMOS full-frame 61,0 MP",
+      "Lấy nét tự động Real-time Eye AF & 10fps continuous",
+      "Thân máy hợp kim magie chống chịu thời tiết cao"
+    ]
+  },
+  {
+    "id": "sony-cam-ilce-7m5",
+    "sku": "ILCE-7M5/BQ FS1",
+    "name": "α7 V",
+    "fullName": "Máy ảnh Hybrid Full-Frame α7 V",
+    "category": "full-frame",
+    "priceVnd": 68990000,
+    "priceFormatted": "68.990.000 đ",
+    "url": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilce-7m5?sku=ilce-7m5-bq-fs1",
+    "imageUrl": "https://www.sony.com.vn/image/921c7202d895631a44388842d0a4622b?fmt=png-alpha",
+    "features": [
+      "Cảm biến Exmor RS™ CMOS xếp chồng một phần 33,0 MP",
+      "Bộ xử lý BIONZ XR2™ tích hợp AI chuyên sâu",
+      "Chụp không chớp đen 30 fps với AF/AE toàn diện"
+    ]
+  },
+  {
+    "id": "sony-cam-ilce-7cr",
+    "sku": "ILCE-7CR/BQ AP2",
+    "name": "α7CR",
+    "fullName": "Máy ảnh full-frame nhỏ gọn α7CR 61.0 MP",
+    "category": "full-frame",
+    "priceVnd": 66753818,
+    "priceFormatted": "66.753.818 đ",
+    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-7cr?sku=ilce-7cr-bq-ap2",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-20?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Cảm biến Exmor R™ CMOS full-frame 61,0 MP siêu nhỏ gọn",
+      "Bộ xử lý BIONZ XR™ kết hợp bộ xử lý AI độc lập",
+      "Chống rung trong thân máy 7.0 stops"
+    ]
+  },
+  {
+    "id": "sony-cam-ilme-fx2",
+    "sku": "ILME-FX2B/Q AP2",
+    "name": "Cinema Line FX2",
+    "fullName": "Máy quay full-frame Cinema Line FX2",
+    "category": "cinema-line",
+    "priceVnd": 59990000,
+    "priceFormatted": "59.990.000 đ",
+    "url": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilme-fx2?sku=ilme-fx2b-q-ap2",
+    "imageUrl": "https://www.sony.com.vn/image/5a0d06bb70f7c11131c5d1cd56fab813?fmt=png-alpha",
+    "features": [
+      "Máy quay Cinema Line full-frame chuyên nghiệp dễ tiếp cận",
+      "Màu sắc điện ảnh S-Cinetone kế thừa dòng Venice",
+      "Tối ưu cho nhà làm phim độc lập quay 1 người"
+    ]
+  },
+  {
+    "id": "sony-cam-ilce-7m4",
+    "sku": "ILCE-7M4/BQ AP2",
+    "name": "α7 IV",
+    "fullName": "Máy ảnh kết hợp Hybrid full-frame α7 IV",
+    "category": "full-frame",
+    "priceVnd": 53499273,
+    "priceFormatted": "53.499.273 đ",
+    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-7m4?sku=ilce-7m4-bq-ap2",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/og?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Cảm biến Exmor R™ CMOS full-frame 33,0 MP",
+      "Bộ xử lý BIONZ XR™ với màu sắc S-Cinetone & Creative Look",
+      "Quay phim 4K 60p 10-bit 4:2:2 & Livestream 4K qua USB"
+    ]
+  },
+  {
+    "id": "sony-cam-zv-e1",
+    "sku": "ZV-E1/BQ AP2",
+    "name": "ZV-E1",
+    "fullName": "Máy ảnh vlog full-frame ZV-E1",
+    "category": "vlog",
+    "priceVnd": 49081091,
+    "priceFormatted": "49.081.091 đ",
+    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/zv-e1?sku=zv-e1-bq-ap2",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/01_Primary_image-1?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Cảm biến Full-frame 12,1 MP tối ưu cho Vlog & thiếu sáng",
+      "Tính năng Framing Auto Cut & Cinematic Vlog Setting",
+      "Chống rung Dynamic Active Mode siêu ổn định"
+    ]
+  },
+  {
+    "id": "sony-cam-ilce-7rm3a",
+    "sku": "ILCE-7RM3A/CAP2",
+    "name": "α7R III",
+    "fullName": "Máy ảnh Alpha 7R III full-frame (42.4 MP)",
+    "category": "full-frame",
+    "priceVnd": 49081091,
+    "priceFormatted": "49.081.091 đ",
+    "url": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilce-7rm3a?sku=ilce-7rm3a-cap2",
+    "imageUrl": "https://www.sony.com.vn/image/2fe582b9ac80cd4da5f0973777cc845e?fmt=png-alpha",
+    "features": [
+      "Cảm biến Exmor R™ CMOS full-frame 42,4 MP",
+      "Chụp liên tục 10 hình/giây với AF/AE",
+      "Khe cắm thẻ đôi & chống rung 5 trục IBIS"
+    ]
+  },
+  {
+    "id": "sony-cam-ilce-7cm2",
+    "sku": "ILCE-7CM2/SQAP2",
+    "name": "α7C II",
+    "fullName": "Máy ảnh full-frame nhỏ gọn α7C II",
+    "category": "full-frame",
+    "priceVnd": 47608363,
+    "priceFormatted": "47.608.363 đ",
+    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-7cm2?sku=ilce-7cm2-sqap2",
+    "imageUrl": "https://www.sony.com.vn/image/e85dfc26cc12301bf97c60bb6e0e2ced?fmt=png-alpha",
+    "features": [
+      "Cảm biến CMOS full-frame 33,0 MP gọn nhẹ",
+      "Bộ xử lý BIONZ XR™ kết hợp chip AI nhận dạng chủ thể",
+      "Quay 4K 60p 10-bit & chống rung 7.0 stops"
+    ]
+  },
+  {
+    "id": "sony-cam-ilme-fx30",
+    "sku": "ILME-FX30B/QAP2",
+    "name": "Cinema Line FX30",
+    "fullName": "Máy quay gateway FX30 nhỏ gọn thuộc Cinema Line",
+    "category": "cinema-line",
+    "priceVnd": 41226546,
+    "priceFormatted": "41.226.546 đ",
+    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilme-fx30?sku=ilme-fx30b-qap2",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_Image-3?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Cảm biến Exmor R™ APS-C CMOS 20,1 MP Super35",
+      "Màu sắc điện ảnh S-Cinetone & S-Log3 chỉnh màu chuyên nghiệp",
+      "Thân máy nhiều lỗ ren 1/4-20 mount phụ kiện trực tiếp"
+    ]
+  },
+  {
+    "id": "sony-cam-ilce-7m3",
+    "sku": "ILCE-7M3/BQ AP2",
+    "name": "α7 III",
+    "fullName": "Máy ảnh Alpha 7 III full-frame quốc dân",
+    "category": "full-frame",
+    "priceVnd": 34353818,
+    "priceFormatted": "34.353.818 đ",
+    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-7m3-body-kit?sku=ilce-7m3-bq-ap2",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_Image-2?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Cảm biến Exmor R™ CMOS full-frame 24,2 MP",
+      "693 điểm lấy nét AF theo pha phủ 93% khung hình",
+      "Quay phim 4K HDR HLG & thời lượng pin Z-series ấn tượng"
+    ]
+  },
+  {
+    "id": "sony-cam-ilce-6700",
+    "sku": "ILCE-6700/BQAP2",
+    "name": "α6700",
+    "fullName": "Máy ảnh APS-C E-mount cao cấp α6700",
+    "category": "aps-c",
+    "priceVnd": 33372000,
+    "priceFormatted": "33.372.000 đ",
+    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-6700?sku=ilce-6700-bqap2",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/og-4?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Cảm biến Exmor R™ CMOS APS-C 26,0 MP",
+      "Bộ xử lý AI tự động nhận dạng người, xe, chim, côn trùng",
+      "Quay 4K 120p, chống rung 5 trục IBIS"
+    ]
+  },
+  {
+    "id": "sony-cam-ilce-7c",
+    "sku": "ILCE-7C/SQ AP2",
+    "name": "α7C",
+    "fullName": "Máy ảnh full-frame nhỏ gọn Alpha 7C",
+    "category": "full-frame",
+    "priceVnd": 29935636,
+    "priceFormatted": "29.935.636 đ",
+    "url": "https://www.sony.com.vn/permalink/product/ilce-7c?locale=vi_VN&sku=ilce-7c-sq-ap2",
+    "imageUrl": "https://www.sony.com.vn/image/542c82d573e4783e8097ac6fc4c722e9?fmt=png-alpha",
+    "features": [
+      "Thân máy full-frame nhỏ và nhẹ nhất thế giới có chống rung IBIS",
+      "Cảm biến Exmor R™ CMOS 24,2 MP",
+      "Màn hình xoay lật 180° tiện lợi cho quay vlog"
+    ]
+  },
+  {
+    "id": "sony-cam-zv-e10m2",
+    "sku": "ZV-E10M2/BQ AP2",
+    "name": "ZV-E10 II",
+    "fullName": "Máy ảnh vlog APS-C ZV-E10 II",
+    "category": "vlog",
+    "priceVnd": 25517455,
+    "priceFormatted": "25.517.455 đ",
+    "url": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/zv-e10m2?sku=zv-e10m2-bq-ap2",
+    "imageUrl": "https://www.sony.com.vn/image/e97df1e13186cfff76cc74554dbf7745?fmt=png-alpha",
+    "features": [
+      "Cảm biến Exmor R™ CMOS APS-C 26,0 MP thế hệ mới",
+      "Bộ xử lý BIONZ XR™ quay 4K 60p 10-bit",
+      "Giao diện màn hình dọc tự động xoay khi quay Video Dọc"
+    ]
+  },
+  {
+    "id": "sony-cam-ilce-6400",
+    "sku": "ILCE-6400/B AP2",
+    "name": "α6400",
+    "fullName": "Máy ảnh APS-C Alpha 6400",
+    "category": "aps-c",
+    "priceVnd": 17662909,
+    "priceFormatted": "17.662.909 đ",
+    "url": "https://www.sony.com.vn/permalink/product/ilce-6400?locale=vi_VN&sku=ilce-6400-b-ap2",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/02_Primary_image-2?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Tốc độ lấy nét tự động 0.02 giây với Real-time Tracking",
+      "Cảm biến APS-C Exmor™ CMOS 24,2 MP",
+      "Màn hình xoay 180° hỗ trợ quay Vlog & selfie"
+    ]
+  },
+  {
+    "id": "sony-cam-zv-e10",
+    "sku": "ZV-E10/BQ AP2",
+    "name": "ZV-E10",
+    "fullName": "Máy ảnh vlog quốc dân ZV-E10",
+    "category": "vlog",
+    "priceVnd": 14226546,
+    "priceFormatted": "14.226.546 đ",
+    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/zv-e10?sku=zv-e10-bq-ap2",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Cảm biến CMOS Exmor™ APS-C 24,2 MP",
+      "Micro 3 capsule tích hợp kèm mút chắn gió chuyên dụng",
+      "Nút Product Showcase & Soft Skin Effect cho Vlogger"
+    ]
+  },
+  {
+    "id": "sony-cam-ilme-fr7",
+    "sku": "ILME-FR7//C AP2",
+    "name": "Cinema Line FR7",
+    "fullName": "Máy quay PTZ full-frame FR7 thuộc Cinema Line",
+    "category": "cinema-line",
+    "priceVnd": 207153818,
+    "priceFormatted": "207.153.818 đ",
+    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilme-fr7?sku=ilme-fr7-c-ap2",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/og-1?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Máy quay PTZ (lia, nghiêng, zoom) Full-frame đầu tiên thế giới",
+      "Cảm biến 10.2 MP với khoa màu điện ảnh S-Cinetone",
+      "Điều khiển từ xa qua giao diện web hoặc bàn điều khiển RM-IP500"
+    ]
+  }
+]

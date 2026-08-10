@@ -65,6 +65,7 @@ export default async function LocaleLayout({
   const messages = await getMessages();
   const clientMessages = {
     auth: messages.auth,
+    cameras: messages.cameras,
     community: messages.community,
     language: messages.language,
     nav: messages.nav,
