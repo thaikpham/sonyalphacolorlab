@@ -319,7 +319,7 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                   <th scope="col" className="p-3.5">
                     {t('priceLabel')}
                   </th>
-                  <th scope="col" className="p-3.5 min-w-[16rem]">
+                  <th scope="col" className="p-3.5 min-w-[28rem] lg:min-w-[36rem]">
                     {t('featuresLabel')}
                   </th>
                   <th scope="col" className="p-3.5 text-right w-24">
@@ -398,12 +398,13 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                         {cam.priceFormatted}
                       </td>
 
-                      {/* Features */}
-                      <td className="p-3.5 font-sans">
-                        <ul className="list-disc list-inside space-y-0.5 text-xs text-white/90 font-medium">
+                      {/* Features (Expanded width with word-wrap) */}
+                      <td className="p-3.5 font-sans min-w-[28rem] lg:min-w-[36rem]">
+                        <ul className="space-y-1.5 text-xs text-white/95 font-medium leading-relaxed">
                           {cam.features.map((feat, idx) => (
-                            <li key={idx} className="truncate max-w-md font-sans">
-                              {feat}
+                            <li key={idx} className="flex items-start gap-2 whitespace-normal break-words font-sans">
+                              <span className="text-emerald-400 font-bold shrink-0 text-sm leading-none">•</span>
+                              <span className="flex-1 font-sans">{feat}</span>
                             </li>
                           ))}
                         </ul>
