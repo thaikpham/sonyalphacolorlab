@@ -394,7 +394,7 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                       </td>
 
                       {/* Price */}
-                      <td className="p-3.5 font-mono text-sm font-extrabold text-amber-300 whitespace-nowrap drop-shadow-sm">
+                      <td className="p-3.5 font-mono text-sm font-extrabold text-sky-400 whitespace-nowrap drop-shadow-sm">
                         {cam.priceFormatted}
                       </td>
 
@@ -508,7 +508,7 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
 
                 {/* Price & Link */}
                 <div className="pt-3 border-t border-white/15 flex items-center justify-between gap-2">
-                  <span className="font-mono text-base font-extrabold text-amber-300 drop-shadow-sm">
+                  <span className="font-mono text-base font-extrabold text-sky-400 drop-shadow-sm">
                     {cam.priceFormatted}
                   </span>
                   <a
@@ -605,7 +605,7 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                   <div className="font-sans">
                     <h4 className="font-extrabold text-base text-white font-sans">{cam.name}</h4>
                     <span className="font-mono text-xs font-bold text-amber-300 block mb-1">{cam.sku}</span>
-                    <span className="font-mono text-base font-extrabold text-amber-300 drop-shadow-sm">{cam.priceFormatted}</span>
+                    <span className="font-mono text-base font-extrabold text-sky-400 drop-shadow-sm">{cam.priceFormatted}</span>
                   </div>
 
                   {/* Category Badges */}
