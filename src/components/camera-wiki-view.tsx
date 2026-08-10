@@ -550,9 +550,9 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
         </div>
       )}
 
-      {/* Floating Compare Action Bar Overlay (Pure Fixed Overlay — Zero Layout Shift / 0 CLS) */}
+      {/* Floating Compare Action Overlay Layer (Pure Fixed Top Overlay — Floating directly on user screen) */}
       {selectedForCompare.length > 0 && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 glass px-6 py-4 rounded-2xl border border-amber-400/50 shadow-[0_10px_40px_rgba(0,0,0,0.8),0_0_20px_rgba(251,191,36,0.3)] flex items-center gap-6 animate-fade-in backdrop-blur-xl font-sans">
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 bg-[#1c1d22]/95 px-6 py-4 rounded-2xl border-2 border-amber-400/70 shadow-[0_20px_60px_rgba(0,0,0,0.9),0_0_30px_rgba(251,191,36,0.4)] flex items-center gap-6 animate-fade-in backdrop-blur-2xl font-sans">
           <div className="flex items-center gap-3">
             <span className="text-xl">⚡</span>
             <div className="flex flex-col">
