@@ -366,15 +366,6 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                   <rect x="14" y="14" width="7" height="7" rx="1.5" />
                 </svg>
               </button>
-
-              {/* Sony Camera Wiki Direct Nav Link */}
-              <Link
-                href={locale === routing.defaultLocale ? '/cameras' : `/${locale}/cameras`}
-                className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-flat text-xs font-bold text-white/90 hover:text-white hover:bg-white/20 border border-white/15 transition-all shrink-0"
-              >
-                <span>📷</span>
-                <span>{tNav('cameras')}</span>
-              </Link>
             </div>
 
             {/* Center: Search Trigger or Expanded Live Search Form.
@@ -875,7 +866,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                 do. These values land all three on roughly 70% of the tile.
                 Percentages, not `p-4`, so they hold at both tile sizes without
                 a breakpoint. */}
-            <div className="w-full max-w-5xl flex flex-col sm:grid sm:grid-cols-3 gap-10 sm:gap-12 justify-items-center items-center sm:items-start">
+            <div className="w-full max-w-6xl flex flex-col sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10 justify-items-center items-center sm:items-start">
               <EcosystemApp
                 name="ColorLab 2.0"
                 icon="/colorlab-icon.png"
@@ -883,6 +874,17 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                 external={false}
                 iconInset="p-[13.5%]"
                 enter="app-enter-1"
+                onNavigate={() => setIsEcosystemOpen(false)}
+              />
+
+              <EcosystemApp
+                name="Sony Wiki"
+                icon="/sony-wiki-icon.png"
+                href={locale === routing.defaultLocale ? '/cameras' : `/${locale}/cameras`}
+                external={false}
+                iconInset="p-[10%]"
+                enter="app-enter-2"
+                accent="group-hover:text-amber-300"
                 onNavigate={() => setIsEcosystemOpen(false)}
               />
 
@@ -899,7 +901,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                 icon="/cheesebooth-icon.png"
                 href="https://cheese-booth.vercel.app/"
                 iconInset="p-[11%]"
-                enter="app-enter-2"
+                enter="app-enter-3"
                 accent="group-hover:text-amber-300"
                 onNavigate={() => setIsEcosystemOpen(false)}
               />
@@ -909,7 +911,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                 icon="/livesop-icon.png"
                 href="https://sonylivesop.vercel.app/"
                 iconInset="p-[7.5%]"
-                enter="app-enter-3"
+                enter="app-enter-4"
                 accent="group-hover:text-blue-300"
                 onNavigate={() => setIsEcosystemOpen(false)}
               />
