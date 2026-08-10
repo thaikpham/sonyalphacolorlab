@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from 'react';
 import Image from 'next/image';
-import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
+import { useTranslations, useLocale } from 'next-intl';
 import type { ProductCategory, SonyCamera } from '@/lib/cameras/types';
 
 interface CameraWikiViewProps {
@@ -11,6 +12,9 @@ interface CameraWikiViewProps {
 
 export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
   const t = useTranslations('cameras');
+  const locale = useLocale();
+  const router = useRouter();
+
   const [selectedCategory, setSelectedCategory] = useState<ProductCategory>('all');
   const [selectedSub1, setSelectedSub1] = useState<string>('all');
   const [selectedSub2, setSelectedSub2] = useState<string>('all');
@@ -18,7 +22,7 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
   const [sortBy, setSortBy] = useState<'price-desc' | 'price-asc' | 'name' | 'sku'>('price-desc');
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('grid');
   const [selectedForCompare, setSelectedForCompare] = useState<string[]>([]);
-  const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
   // Main Categories
   const categories: { key: ProductCategory; label: string; icon: string }[] = [
@@ -108,7 +112,7 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
       if (prev.includes(id)) {
         return prev.filter((item) => item !== id);
       }
-      if (prev.length >= 4) {
+      if (prev.length >= 6) {
         return prev;
       }
       return [...prev, id];
@@ -118,6 +122,12 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
   const comparedCameraObjects = useMemo(() => {
     return initialCameras.filter((c) => selectedForCompare.includes(c.id));
   }, [initialCameras, selectedForCompare]);
+
+  const navigateToComparePage = () => {
+    if (selectedForCompare.length === 0) return;
+    setIsConfirmModalOpen(false);
+    router.push(`/${locale}/cameras/compare?ids=${selectedForCompare.join(',')}`);
+  };
 
   const getCategoryBadgeColor = (cat: SonyCamera['category']) => {
     switch (cat) {
@@ -549,7 +559,7 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
             </button>
             <button
               type="button"
-              onClick={() => setIsCompareModalOpen(true)}
+              onClick={() => setIsConfirmModalOpen(true)}
               className="px-4 py-2 rounded-xl bg-white text-black font-extrabold text-xs hover:bg-white/90 transition-all shadow-lg cursor-pointer font-sans scale-105"
             >
               ⚡ {t('compareBtn')}
@@ -558,41 +568,56 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
         </div>
       )}
 
-      {/* Side-by-Side Spec Comparison Modal */}
-      {isCompareModalOpen && (
+      {/* B&H Style Pop-up Confirmation Modal */}
+      {isConfirmModalOpen && (
         <div
           role="dialog"
           aria-modal="true"
-          onClick={() => setIsCompareModalOpen(false)}
-          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xl flex flex-col items-center justify-center p-4 sm:p-8 animate-backdrop-blur select-none font-sans"
+          onClick={() => setIsConfirmModalOpen(false)}
+          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xl flex flex-col items-center justify-center p-4 sm:p-6 animate-backdrop-blur select-none font-sans"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="glass w-full max-w-5xl max-h-[90dvh] rounded-2xl p-5 sm:p-6 overflow-y-auto flex flex-col gap-6 shadow-2xl border border-white/20 cursor-default font-sans"
+            className="glass w-full max-w-4xl max-h-[90dvh] rounded-2xl p-6 flex flex-col gap-6 shadow-2xl border border-white/20 cursor-default font-sans"
           >
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-white/15 pb-4 font-sans">
-              <div className="flex items-center gap-3">
-                <span className="text-xl">⚡</span>
-                <h3 className="font-extrabold text-lg text-white font-sans">
-                  {t('compareBtn')} ({comparedCameraObjects.length} products)
+              <div className="flex flex-col gap-1">
+                <h3 className="font-extrabold text-xl text-white font-sans">
+                  {t('compareConfirmTitle')} ({comparedCameraObjects.length})
                 </h3>
+                <p className="text-xs text-white/70 font-sans">
+                  {t('compareConfirmSub')}
+                </p>
               </div>
               <button
                 type="button"
-                onClick={() => setIsCompareModalOpen(false)}
+                onClick={() => setIsConfirmModalOpen(false)}
                 className="w-8 h-8 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center text-sm font-bold transition-all cursor-pointer font-sans"
               >
                 ✕
               </button>
             </div>
 
-            {/* Side-by-Side Comparison Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 font-sans">
+            {/* Selected Product Cards Grid (1 to 6 items side by side like B&H photo) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 overflow-y-auto max-h-[60dvh] p-1 font-sans">
               {comparedCameraObjects.map((cam) => (
-                <div key={cam.id} className="bg-[#28292e] p-4 rounded-xl flex flex-col gap-3 border border-white/20 shadow-xl font-sans backdrop-blur-md">
+                <div
+                  key={cam.id}
+                  className="relative bg-[#28292e] p-3 rounded-xl flex flex-col gap-2.5 border border-white/20 shadow-lg font-sans"
+                >
+                  {/* Remove Button */}
+                  <button
+                    type="button"
+                    onClick={() => toggleCompare(cam.id)}
+                    title="Xóa sản phẩm"
+                    className="absolute top-2 right-2 w-5 h-5 rounded-full bg-white/10 hover:bg-red-500/80 text-white/70 hover:text-white flex items-center justify-center text-xs transition-colors cursor-pointer z-10"
+                  >
+                    ✕
+                  </button>
+
                   {/* Photo on Clean WHITE Background */}
-                  <div className="relative w-full aspect-[4/3] rounded-xl bg-white border border-white/20 p-2 flex items-center justify-center shadow-md overflow-hidden">
+                  <div className="relative w-full aspect-[4/3] rounded-lg bg-white border border-white/20 p-2 flex items-center justify-center shadow-sm overflow-hidden">
                     <Image
                       src={cam.imageUrl}
                       alt={cam.name}
@@ -602,51 +627,36 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                     />
                   </div>
 
-                  {/* Name & Price */}
-                  <div className="font-sans">
-                    <h4 className="font-extrabold text-base text-white font-sans">{cam.name}</h4>
-                    <span className="font-mono text-xs font-bold text-amber-300 block mb-1">{cam.sku}</span>
-                    <span className="font-mono text-base font-extrabold text-sky-400 drop-shadow-sm">{cam.priceFormatted}</span>
-                  </div>
-
-                  {/* Category Badges */}
-                  <div className="flex flex-wrap gap-1 font-sans">
-                    <span className={`px-2 py-0.5 rounded text-[10px] border ${getCategoryBadgeColor(cam.category)}`}>
-                      {cam.category.toUpperCase()}
-                    </span>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-white/15 text-white border border-white/25">
-                      {cam.subCategory1}
-                    </span>
-                  </div>
-
-                  {/* Features */}
-                  <div className="pt-2 border-t border-white/15 font-sans">
-                    <span className="text-[10px] font-extrabold uppercase text-white/70 block mb-1.5 font-sans">
-                      {t('featuresLabel')}
-                    </span>
-                    <ul className="space-y-1 text-xs text-white/90 font-medium font-sans">
-                      {cam.features.map((feat, idx) => (
-                        <li key={idx} className="flex items-start gap-1 font-sans">
-                          <span className="text-emerald-400 font-bold shrink-0">•</span>
-                          <span className="font-sans leading-snug">{feat}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* Link */}
-                  <div className="mt-auto pt-3 font-sans">
-                    <a
-                      href={cam.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block w-full text-center py-2.5 rounded-xl bg-white/15 hover:bg-white/25 text-xs font-bold text-white border border-white/20 transition-colors font-sans"
-                    >
-                      {t('officialUrl')}
-                    </a>
+                  {/* Name & SKU */}
+                  <div className="flex flex-col gap-0.5 font-sans">
+                    <h4 className="font-extrabold text-xs text-white line-clamp-2 leading-snug">{cam.name}</h4>
+                    <span className="font-mono text-[10px] font-bold text-amber-300 truncate">{cam.sku}</span>
+                    <span className="font-mono text-xs font-extrabold text-sky-400 mt-0.5">{cam.priceFormatted}</span>
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* Footer Action Bar */}
+            <div className="pt-4 border-t border-white/15 flex items-center justify-between gap-4 font-sans">
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedForCompare([]);
+                  setIsConfirmModalOpen(false);
+                }}
+                className="text-xs font-bold text-white/70 hover:text-white underline transition-colors cursor-pointer"
+              >
+                {t('clearCompare')}
+              </button>
+
+              <button
+                type="button"
+                onClick={navigateToComparePage}
+                className="px-6 py-3 rounded-xl bg-white text-black font-extrabold text-xs sm:text-sm hover:bg-white/90 transition-all shadow-xl cursor-pointer scale-105"
+              >
+                {t('compareItemsBtn', { count: selectedForCompare.length })}
+              </button>
             </div>
           </div>
         </div>
