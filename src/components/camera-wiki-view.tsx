@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import type { CameraCategory, SonyCamera } from '@/lib/cameras/types';
+import type { ProductCategory, SonyCamera } from '@/lib/cameras/types';
 
 interface CameraWikiViewProps {
   initialCameras: SonyCamera[];
@@ -11,21 +11,50 @@ interface CameraWikiViewProps {
 
 export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
   const t = useTranslations('cameras');
-  const [selectedCategory, setSelectedCategory] = useState<CameraCategory>('all');
+  const [selectedCategory, setSelectedCategory] = useState<ProductCategory>('all');
+  const [selectedSub1, setSelectedSub1] = useState<string>('all');
+  const [selectedSub2, setSelectedSub2] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'price-desc' | 'price-asc' | 'name' | 'sku'>('price-desc');
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
   const [selectedForCompare, setSelectedForCompare] = useState<string[]>([]);
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
 
-  // Categories list
-  const categories: { key: CameraCategory; label: string }[] = [
-    { key: 'all', label: t('catAll') },
-    { key: 'full-frame', label: t('catFullFrame') },
-    { key: 'aps-c', label: t('catApsC') },
-    { key: 'cinema-line', label: t('catCinemaLine') },
-    { key: 'vlog', label: t('catVlog') },
+  // Main Categories
+  const categories: { key: ProductCategory; label: string; icon: string }[] = [
+    { key: 'all', label: t('catAll'), icon: '📦' },
+    { key: 'camera', label: t('catCamera'), icon: '📷' },
+    { key: 'lens', label: t('catLens'), icon: '🔍' },
+    { key: 'accessory', label: t('catAccessory'), icon: '🎙️' },
   ];
+
+  // Dynamically compute sub-categories available for current main category selection
+  const availableSub1List = useMemo(() => {
+    let prods = initialCameras;
+    if (selectedCategory !== 'all') {
+      prods = prods.filter((p) => p.category === selectedCategory);
+    }
+    const set1 = new Set<string>();
+    for (const p of prods) {
+      if (p.subCategory1) set1.add(p.subCategory1);
+    }
+    return Array.from(set1).sort();
+  }, [initialCameras, selectedCategory]);
+
+  const availableSub2List = useMemo(() => {
+    let prods = initialCameras;
+    if (selectedCategory !== 'all') {
+      prods = prods.filter((p) => p.category === selectedCategory);
+    }
+    if (selectedSub1 !== 'all') {
+      prods = prods.filter((p) => p.subCategory1 === selectedSub1);
+    }
+    const set2 = new Set<string>();
+    for (const p of prods) {
+      if (p.subCategory2) set2.add(p.subCategory2);
+    }
+    return Array.from(set2).sort();
+  }, [initialCameras, selectedCategory, selectedSub1]);
 
   // Filtering & Sorting
   const filteredCameras = useMemo(() => {
@@ -35,6 +64,14 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
       result = result.filter((c) => c.category === selectedCategory);
     }
 
+    if (selectedSub1 !== 'all') {
+      result = result.filter((c) => c.subCategory1 === selectedSub1);
+    }
+
+    if (selectedSub2 !== 'all') {
+      result = result.filter((c) => c.subCategory2 === selectedSub2);
+    }
+
     if (searchQuery.trim()) {
       const q = searchQuery.trim().toLowerCase();
       result = result.filter(
@@ -42,6 +79,8 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
           c.name.toLowerCase().includes(q) ||
           c.fullName.toLowerCase().includes(q) ||
           c.sku.toLowerCase().includes(q) ||
+          c.subCategory1.toLowerCase().includes(q) ||
+          c.subCategory2.toLowerCase().includes(q) ||
           c.features.some((f) => f.toLowerCase().includes(q)),
       );
     }
@@ -62,7 +101,7 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
     }
 
     return result;
-  }, [initialCameras, selectedCategory, searchQuery, sortBy]);
+  }, [initialCameras, selectedCategory, selectedSub1, selectedSub2, searchQuery, sortBy]);
 
   const toggleCompare = (id: string) => {
     setSelectedForCompare((prev) => {
@@ -82,13 +121,11 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
 
   const getCategoryBadgeColor = (cat: SonyCamera['category']) => {
     switch (cat) {
-      case 'full-frame':
+      case 'camera':
         return 'bg-amber-500/20 text-amber-300 border-amber-500/30';
-      case 'aps-c':
+      case 'lens':
         return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
-      case 'cinema-line':
-        return 'bg-purple-500/20 text-purple-300 border-purple-500/30';
-      case 'vlog':
+      case 'accessory':
         return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
       default:
         return 'bg-white/10 text-white/80 border-white/20';
@@ -102,13 +139,13 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
         <div className="flex items-center gap-3 flex-wrap">
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">{t('title')}</h1>
           <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-white/10 text-white/90 border border-white/15">
-            {filteredCameras.length} models
+            {filteredCameras.length} products
           </span>
         </div>
         <p className="text-xs sm:text-sm text-ink-muted max-w-3xl leading-relaxed">{t('subtitle')}</p>
       </div>
 
-      {/* Control Bar: Search, Category Tabs, Sort, View Switcher */}
+      {/* Control Bar: Search, Category Tabs, Sub-category filters, Sort, View Switcher */}
       <div className="glass p-4 rounded-2xl flex flex-col gap-4 shadow-xl">
         {/* Search Input */}
         <div className="relative w-full">
@@ -131,66 +168,110 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
           )}
         </div>
 
-        {/* Category Tabs & View Options */}
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          {/* Category Tabs */}
-          <div className="flex items-center gap-1.5 overflow-x-auto py-1 max-w-full scrollbar-none">
+        {/* Main Category Tabs */}
+        <div className="flex items-center justify-between gap-4 flex-wrap border-b border-white/10 pb-3">
+          <div className="flex items-center gap-2 overflow-x-auto py-1 max-w-full scrollbar-none">
             {categories.map((cat) => (
               <button
                 key={cat.key}
                 type="button"
-                onClick={() => setSelectedCategory(cat.key)}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                onClick={() => {
+                  setSelectedCategory(cat.key);
+                  setSelectedSub1('all');
+                  setSelectedSub2('all');
+                }}
+                className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-2 ${
                   selectedCategory === cat.key
-                    ? 'bg-white text-black font-bold shadow-md'
-                    : 'bg-white/5 text-white/70 hover:bg-white/15 hover:text-white'
+                    ? 'bg-white text-black shadow-lg scale-105'
+                    : 'bg-white/5 text-white/70 hover:bg-white/15 hover:text-white border border-white/10'
                 }`}
               >
-                {cat.label}
+                <span>{cat.icon}</span>
+                <span>{cat.label}</span>
               </button>
             ))}
           </div>
 
-          {/* Sort & View Mode Switcher */}
-          <div className="flex items-center gap-3 ml-auto shrink-0">
-            {/* Sort Select */}
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-white/60 hidden sm:inline">{t('sortBy')}:</span>
+          {/* View Mode Switcher */}
+          <div className="flex items-center p-1 rounded-xl bg-black/60 border border-white/15 ml-auto">
+            <button
+              type="button"
+              onClick={() => setViewMode('table')}
+              title={t('viewTable')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                viewMode === 'table' ? 'bg-white/20 text-white shadow-sm' : 'text-white/40 hover:text-white'
+              }`}
+            >
+              📋 {t('viewTable')}
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('grid')}
+              title={t('viewGrid')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                viewMode === 'grid' ? 'bg-white/20 text-white shadow-sm' : 'text-white/40 hover:text-white'
+              }`}
+            >
+              🔲 {t('viewGrid')}
+            </button>
+          </div>
+        </div>
+
+        {/* Sub-Category Filters & Sort Bar */}
+        <div className="flex items-center justify-between gap-3 flex-wrap text-xs">
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Sub-category 1 (Format / Sensor / Type) */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-white/50">{t('subCategoryLabel')}:</span>
               <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                value={selectedSub1}
+                onChange={(e) => {
+                  setSelectedSub1(e.target.value);
+                  setSelectedSub2('all');
+                }}
                 className="px-3 py-1.5 rounded-xl bg-black/70 border border-white/20 text-xs text-white focus:outline-none cursor-pointer"
               >
-                <option value="price-desc">{t('sortPriceDesc')}</option>
-                <option value="price-asc">{t('sortPriceAsc')}</option>
-                <option value="name">{t('sortName')}</option>
-                <option value="sku">{t('sortSku')}</option>
+                <option value="all">{t('sub1All')}</option>
+                {availableSub1List.map((sub1) => (
+                  <option key={sub1} value={sub1}>
+                    {sub1}
+                  </option>
+                ))}
               </select>
             </div>
 
-            {/* View Switcher Buttons */}
-            <div className="flex items-center p-1 rounded-xl bg-black/60 border border-white/15">
-              <button
-                type="button"
-                onClick={() => setViewMode('table')}
-                title={t('viewTable')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  viewMode === 'table' ? 'bg-white/20 text-white shadow-sm' : 'text-white/40 hover:text-white'
-                }`}
-              >
-                📋 {t('viewTable')}
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('grid')}
-                title={t('viewGrid')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  viewMode === 'grid' ? 'bg-white/20 text-white shadow-sm' : 'text-white/40 hover:text-white'
-                }`}
-              >
-                🔲 {t('viewGrid')}
-              </button>
-            </div>
+            {/* Sub-category 2 (Series / Line) */}
+            {availableSub2List.length > 0 && (
+              <div className="flex items-center gap-1.5">
+                <select
+                  value={selectedSub2}
+                  onChange={(e) => setSelectedSub2(e.target.value)}
+                  className="px-3 py-1.5 rounded-xl bg-black/70 border border-white/20 text-xs text-white focus:outline-none cursor-pointer"
+                >
+                  <option value="all">{t('sub2All')}</option>
+                  {availableSub2List.map((sub2) => (
+                    <option key={sub2} value={sub2}>
+                      {sub2}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
+
+          {/* Sort Dropdown */}
+          <div className="flex items-center gap-2 ml-auto">
+            <span className="text-white/50 hidden sm:inline">{t('sortBy')}:</span>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+              className="px-3 py-1.5 rounded-xl bg-black/70 border border-white/20 text-xs text-white focus:outline-none cursor-pointer"
+            >
+              <option value="price-desc">{t('sortPriceDesc')}</option>
+              <option value="price-asc">{t('sortPriceAsc')}</option>
+              <option value="name">{t('sortName')}</option>
+              <option value="sku">{t('sortSku')}</option>
+            </select>
           </div>
         </div>
       </div>
@@ -205,6 +286,8 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
             onClick={() => {
               setSearchQuery('');
               setSelectedCategory('all');
+              setSelectedSub1('all');
+              setSelectedSub2('all');
             }}
             className="text-xs font-semibold text-community hover:underline mt-1"
           >
@@ -229,6 +312,9 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                   </th>
                   <th scope="col" className="p-3.5">
                     {t('categoryLabel')}
+                  </th>
+                  <th scope="col" className="p-3.5">
+                    {t('subCategoryLabel')}
                   </th>
                   <th scope="col" className="p-3.5">
                     {t('priceLabel')}
@@ -286,7 +372,7 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                         {cam.sku}
                       </td>
 
-                      {/* Category Badge */}
+                      {/* Main Category Badge */}
                       <td className="p-3.5 whitespace-nowrap">
                         <span
                           className={`px-2.5 py-1 rounded-full text-[10px] font-bold font-mono border ${getCategoryBadgeColor(
@@ -295,6 +381,16 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                         >
                           {cam.category.toUpperCase()}
                         </span>
+                      </td>
+
+                      {/* Sub-categories */}
+                      <td className="p-3.5 whitespace-nowrap">
+                        <div className="flex flex-col gap-1">
+                          <span className="text-xs font-semibold text-white/90">{cam.subCategory1}</span>
+                          {cam.subCategory2 && (
+                            <span className="text-[10px] text-white/50 font-mono">{cam.subCategory2}</span>
+                          )}
+                        </div>
                       </td>
 
                       {/* Price */}
@@ -346,17 +442,22 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                 }`}
               >
                 <div>
-                  {/* Top Bar: Category & Checkbox */}
+                  {/* Top Bar: Badges & Checkbox */}
                   <div className="flex items-center justify-between gap-2 mb-3">
-                    <span
-                      className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono border ${getCategoryBadgeColor(
-                        cam.category,
-                      )}`}
-                    >
-                      {cam.category.toUpperCase()}
-                    </span>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold font-mono border ${getCategoryBadgeColor(
+                          cam.category,
+                        )}`}
+                      >
+                        {cam.category.toUpperCase()}
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-white/10 text-white/80 border border-white/15">
+                        {cam.subCategory1}
+                      </span>
+                    </div>
 
-                    <label className="flex items-center gap-1.5 text-xs text-white/80 cursor-pointer select-none">
+                    <label className="flex items-center gap-1.5 text-xs text-white/80 cursor-pointer select-none shrink-0">
                       <input
                         type="checkbox"
                         checked={isChecked}
@@ -381,7 +482,14 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                   {/* Name & SKU */}
                   <div className="flex flex-col gap-1 mb-3">
                     <h4 className="font-bold text-base text-white">{cam.name}</h4>
-                    <span className="font-mono text-[10px] text-white/50">{cam.sku}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-[10px] text-white/50">{cam.sku}</span>
+                      {cam.subCategory2 && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-white/60 font-mono">
+                          {cam.subCategory2}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-white/70 line-clamp-2 mt-0.5">{cam.fullName}</p>
                   </div>
 
@@ -464,7 +572,7 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
               <div className="flex items-center gap-3">
                 <span className="text-xl">⚡</span>
                 <h3 className="font-bold text-lg text-white">
-                  {t('compareBtn')} ({comparedCameraObjects.length} models)
+                  {t('compareBtn')} ({comparedCameraObjects.length} products)
                 </h3>
               </div>
               <button
@@ -498,10 +606,13 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                     <span className="font-mono text-sm font-bold text-amber-300">{cam.priceFormatted}</span>
                   </div>
 
-                  {/* Category Badge */}
-                  <div>
+                  {/* Category Badges */}
+                  <div className="flex flex-wrap gap-1">
                     <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${getCategoryBadgeColor(cam.category)}`}>
                       {cam.category.toUpperCase()}
+                    </span>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-white/10 text-white/80 border border-white/15">
+                      {cam.subCategory1}
                     </span>
                   </div>
 

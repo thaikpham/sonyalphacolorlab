@@ -1,402 +1,1674 @@
 [
   {
-    "id": "sony-cam-ilce-1m2",
-    "sku": "ILCE-1M2/BQ AP2",
-    "name": "α1 II",
-    "fullName": "Máy ảnh flagship α1 II dành cho chuyên gia",
-    "category": "full-frame",
-    "priceVnd": 153153818,
-    "priceFormatted": "153.153.818 đ",
-    "url": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilce-1m2?sku=ilce-1m2-bq-ap2",
-    "imageUrl": "https://www.sony.com.vn/image/6c5b1b963315cb73b32f88b18f5de2be?fmt=png-alpha",
-    "features": [
-      "Cảm biến hình ảnh Exmor RS CMOS xếp chồng full-frame 35 mm 50,1 MP",
-      "Lấy nét tự động nhận dạng trong thời gian thực dựa trên AI+",
-      "Chụp liên tục không bị chớp đen lên đến 30 hình/giây với AF/AE"
-    ]
-  },
-  {
-    "id": "sony-cam-ilce-9m3",
-    "sku": "ILCE-9M3/BQ AP2",
-    "name": "α9 III",
-    "fullName": "α9 III với màn trập bao trùm Global Shutter",
-    "category": "full-frame",
-    "priceVnd": 143335636,
-    "priceFormatted": "143.335.636 đ",
-    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-9m3?sku=ilce-9m3-bq-ap2",
-    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-21?$primaryshotPreset$&fmt=png-alpha",
-    "features": [
-      "Cảm biến Exmor RS™ CMOS 24,6 MP xếp chồng full-frame với màn trập Global Shutter",
-      "Bộ xử lý BIONZ XR™ tốc độ cao gấp 8 lần",
-      "Chụp không bị chớp đen ở tốc độ 120 hình/giây với AF/AE tracking"
-    ]
-  },
-  {
-    "id": "sony-cam-ilme-fx6",
-    "sku": "ILME-FX6V//CAP2",
-    "name": "Cinema Line FX6",
-    "fullName": "Máy quay full-frame FX6 thuộc Cinema Line",
-    "category": "cinema-line",
-    "priceVnd": 139408364,
-    "priceFormatted": "139.408.364 đ",
-    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilme-fx6?sku=ilme-fx6v-cap2",
-    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_Image-1?$primaryshotPreset$&fmt=png-alpha",
-    "features": [
-      "Cảm biến Exmor R™ CMOS full-frame và BIONZ XR™",
-      "Dải tần nhạy sáng 15+ stops và ISO lên đến 409600",
-      "Quay 4K 120fps HFR với kính lọc ND điện tử linh hoạt"
-    ]
-  },
-  {
-    "id": "sony-cam-ilce-1",
-    "sku": "ILCE-1/BQ AP2",
-    "name": "Alpha 1",
-    "fullName": "Máy ảnh Alpha 1 với độ phân giải và tốc độ vượt trội",
-    "category": "full-frame",
-    "priceVnd": 132535636,
-    "priceFormatted": "132.535.636 đ",
-    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-1?sku=ilce-1-bq-ap2",
-    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/02_Primary_image?$primaryshotPreset$&fmt=png-alpha",
-    "features": [
-      "Cảm biến CMOS xếp chồng full-frame 50.1 MP",
-      "Chụp liên tục tốc độ cao lên tới 30 hình/giây",
-      "Quay phim chuyên nghiệp 8K/30p và 4K/120p"
-    ]
-  },
-  {
-    "id": "sony-cam-ilme-fx5",
-    "sku": "ILME-FX5B/Q FS1",
-    "name": "Cinema Line FX5",
-    "fullName": "Máy quay Full-frame Cinema Line FX5",
-    "category": "cinema-line",
-    "priceVnd": 130990000,
-    "priceFormatted": "130.990.000 đ",
-    "url": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilme-fx5?sku=ilme-fx5b-q-fs1",
-    "imageUrl": "https://www.sony.com.vn/image/a779c5111ad98d17c9678d3ec1592751?fmt=png-alpha",
-    "features": [
-      "Cảm biến Exmor RS™ full-frame xếp chồng và BIONZ XR2™ tích hợp bộ xử lý AI",
-      "Ghi hình X-OCN 16 bit scene-linear trong máy",
-      "Khả năng quay phim Open Gate 5K 120 fps"
-    ]
-  },
-  {
-    "id": "sony-cam-ilce-7rm6",
-    "sku": "ILCE-7RM6/BQFS1",
-    "name": "α7R VI",
-    "fullName": "Máy ảnh full-frame độ phân giải cao α7R VI",
-    "category": "full-frame",
-    "priceVnd": 113990000,
-    "priceFormatted": "113.990.000 đ",
-    "url": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilce-7rm6?sku=ilce-7rm6-bqfs1",
-    "imageUrl": "https://www.sony.com.vn/image/9bb73463633f22e8851c0d457f6fee10?fmt=png-alpha",
-    "features": [
-      "Cảm biến Exmor RS™ CMOS xếp chồng hoàn toàn 66,8 MP",
-      "Bộ xử lý BIONZ XR2™ tích hợp AI chuyên biệt",
-      "Chụp liên tục 30 hình/giây không chớp đen ở độ phân giải tối đa"
-    ]
-  },
-  {
-    "id": "sony-cam-ilme-fx3",
-    "sku": "ILME-FX3/Q AP2",
-    "name": "Cinema Line FX3",
-    "fullName": "Máy quay full-frame FX3 thuộc Cinema Line",
-    "category": "cinema-line",
-    "priceVnd": 91299273,
-    "priceFormatted": "91.299.273 đ",
-    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilme-fx3?sku=ilme-fx3-q-ap2",
-    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/01_Primary_image?$primaryshotPreset$&fmt=png-alpha",
-    "features": [
-      "Cảm biến Exmor R™ CMOS full-frame và bộ xử lý BIONZ XR™",
-      "Độ nhạy sáng cao, dải tần nhạy sáng rộng 15+ stops",
-      "Thân máy nhỏ gọn tích hợp quạt tản nhiệt & tay cầm XLR"
-    ]
-  },
-  {
-    "id": "sony-cam-ilce-7rm5",
-    "sku": "ILCE-7RM5/BQAP2",
-    "name": "α7R V",
-    "fullName": "Máy ảnh full-frame độ phân giải cao α7R V",
-    "category": "full-frame",
-    "priceVnd": 84426545,
-    "priceFormatted": "84.426.545 đ",
-    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-7rm5?sku=ilce-7rm5-bqap2",
-    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/og-2?$primaryshotPreset$&fmt=png-alpha",
-    "features": [
-      "Cảm biến Exmor R™ CMOS full-frame 61,0 MP",
-      "Bộ xử lý AI nhận dạng chủ thể thông minh",
-      "Quay phim 8K 24p/25p và 4K 60p chuyên nghiệp"
-    ]
-  },
-  {
-    "id": "sony-cam-ilce-7sm3",
-    "sku": "ILCE-7SM3/BQAP2",
-    "name": "α7S III",
-    "fullName": "Alpha 7S III chuyên quay phim & chụp thiếu sáng",
-    "category": "full-frame",
-    "priceVnd": 75590182,
-    "priceFormatted": "75.590.182 đ",
-    "url": "https://www.sony.com.vn/permalink/product/ilce-7sm3?locale=vi_VN&sku=ilce-7sm3-bqap2",
-    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/02_Primary_image-3?$primaryshotPreset$&fmt=png-alpha",
-    "features": [
-      "Cảm biến CMOS 12,1 MP chiếu sáng sau tối ưu low-light",
-      "Quay phim 4K 120p 10-bit 4:2:2 không giới hạn thời gian",
-      "Màn hình xoay lật 4 trục cảm ứng linh hoạt"
-    ]
-  },
-  {
-    "id": "sony-cam-ilce-7rm4a",
-    "sku": "ILCE-7RM4A/QAP2",
-    "name": "α7R IV",
-    "fullName": "Máy ảnh full-frame α7R IV (61.0 MP)",
-    "category": "full-frame",
-    "priceVnd": 73626545,
-    "priceFormatted": "73.626.545 đ",
-    "url": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilce-7rm4a?sku=ilce-7rm4a-qap2",
-    "imageUrl": "https://www.sony.com.vn/image/c8a930c97af5746b7120d4b639cfe813?fmt=png-alpha",
-    "features": [
-      "Cảm biến Exmor R™ CMOS full-frame 61,0 MP",
-      "Lấy nét tự động Real-time Eye AF & 10fps continuous",
-      "Thân máy hợp kim magie chống chịu thời tiết cao"
-    ]
-  },
-  {
-    "id": "sony-cam-ilce-7m5",
-    "sku": "ILCE-7M5/BQ FS1",
-    "name": "α7 V",
-    "fullName": "Máy ảnh Hybrid Full-Frame α7 V",
-    "category": "full-frame",
-    "priceVnd": 68990000,
-    "priceFormatted": "68.990.000 đ",
-    "url": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilce-7m5?sku=ilce-7m5-bq-fs1",
-    "imageUrl": "https://www.sony.com.vn/image/921c7202d895631a44388842d0a4622b?fmt=png-alpha",
-    "features": [
-      "Cảm biến Exmor RS™ CMOS xếp chồng một phần 33,0 MP",
-      "Bộ xử lý BIONZ XR2™ tích hợp AI chuyên sâu",
-      "Chụp không chớp đen 30 fps với AF/AE toàn diện"
-    ]
-  },
-  {
-    "id": "sony-cam-ilce-7cr",
-    "sku": "ILCE-7CR/BQ AP2",
-    "name": "α7CR",
-    "fullName": "Máy ảnh full-frame nhỏ gọn α7CR 61.0 MP",
-    "category": "full-frame",
-    "priceVnd": 66753818,
-    "priceFormatted": "66.753.818 đ",
-    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-7cr?sku=ilce-7cr-bq-ap2",
-    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-20?$primaryshotPreset$&fmt=png-alpha",
-    "features": [
-      "Cảm biến Exmor R™ CMOS full-frame 61,0 MP siêu nhỏ gọn",
-      "Bộ xử lý BIONZ XR™ kết hợp bộ xử lý AI độc lập",
-      "Chống rung trong thân máy 7.0 stops"
-    ]
-  },
-  {
-    "id": "sony-cam-ilme-fx2",
+    "id": "sony-ilme-fx2b-q-ap2",
+    "name": "FX2",
+    "fullName": "Sony FX2 (ILME-FX2B/Q AP2)",
     "sku": "ILME-FX2B/Q AP2",
-    "name": "Cinema Line FX2",
-    "fullName": "Máy quay full-frame Cinema Line FX2",
-    "category": "cinema-line",
+    "category": "camera",
+    "subCategory1": "Full Frame",
+    "subCategory2": "Cinema Line",
     "priceVnd": 59990000,
     "priceFormatted": "59.990.000 đ",
     "url": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilme-fx2?sku=ilme-fx2b-q-ap2",
     "imageUrl": "https://www.sony.com.vn/image/5a0d06bb70f7c11131c5d1cd56fab813?fmt=png-alpha",
     "features": [
-      "Máy quay Cinema Line full-frame chuyên nghiệp dễ tiếp cận",
-      "Màu sắc điện ảnh S-Cinetone kế thừa dòng Venice",
-      "Tối ưu cho nhà làm phim độc lập quay 1 người"
+      "Chiếc máy quay full-frame được thiết kế để mở ra cánh cổng đến sự nghiệp làm phim chuyên nghiệp",
+      "Biểu đạt đậm chất điện ảnh và sức mạnh kế thừa từ máy quay điện ảnh của Sony",
+      "Được thiết kế để quay phim độc lập với khả năng thao tác vượt trội"
     ]
   },
   {
-    "id": "sony-cam-ilce-7m4",
-    "sku": "ILCE-7M4/BQ AP2",
-    "name": "α7 IV",
-    "fullName": "Máy ảnh kết hợp Hybrid full-frame α7 IV",
-    "category": "full-frame",
-    "priceVnd": 53499273,
-    "priceFormatted": "53.499.273 đ",
-    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-7m4?sku=ilce-7m4-bq-ap2",
-    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/og?$primaryshotPreset$&fmt=png-alpha",
+    "id": "sony-ilme-fx3a-q-ap2",
+    "name": "FX3",
+    "fullName": "Sony FX3 (ILME-FX3A/Q AP2)",
+    "sku": "ILME-FX3A/Q AP2",
+    "category": "camera",
+    "subCategory1": "Full Frame",
+    "subCategory2": "Cinema Line",
+    "priceVnd": 86390182,
+    "priceFormatted": "86.390.182 đ",
+    "url": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilme-fx3a?sku=ilme-fx3a-q-ap2",
+    "imageUrl": "https://www.sony.com.vn/image/c9af700e2cecdc6f2cf251f8e633fff6?fmt=png-alpha",
     "features": [
-      "Cảm biến Exmor R™ CMOS full-frame 33,0 MP",
-      "Bộ xử lý BIONZ XR™ với màu sắc S-Cinetone & Creative Look",
-      "Quay phim 4K 60p 10-bit 4:2:2 & Livestream 4K qua USB"
+      "Cảm biến Exmor R™ CMOS full-frame và bộ xử lý hình ảnh BIONZ XR™ mạnh mẽ",
+      "Độ nhạy sáng cao, dải tần nhạy sáng rộng",
+      "Nâng cao khả năng di động với thân máy gọn nhẹ"
     ]
   },
   {
-    "id": "sony-cam-zv-e1",
-    "sku": "ZV-E1/BQ AP2",
-    "name": "ZV-E1",
-    "fullName": "Máy ảnh vlog full-frame ZV-E1",
-    "category": "vlog",
-    "priceVnd": 49081091,
-    "priceFormatted": "49.081.091 đ",
-    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/zv-e1?sku=zv-e1-bq-ap2",
-    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/01_Primary_image-1?$primaryshotPreset$&fmt=png-alpha",
-    "features": [
-      "Cảm biến Full-frame 12,1 MP tối ưu cho Vlog & thiếu sáng",
-      "Tính năng Framing Auto Cut & Cinematic Vlog Setting",
-      "Chống rung Dynamic Active Mode siêu ổn định"
-    ]
-  },
-  {
-    "id": "sony-cam-ilce-7rm3a",
-    "sku": "ILCE-7RM3A/CAP2",
-    "name": "α7R III",
-    "fullName": "Máy ảnh Alpha 7R III full-frame (42.4 MP)",
-    "category": "full-frame",
-    "priceVnd": 49081091,
-    "priceFormatted": "49.081.091 đ",
-    "url": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilce-7rm3a?sku=ilce-7rm3a-cap2",
-    "imageUrl": "https://www.sony.com.vn/image/2fe582b9ac80cd4da5f0973777cc845e?fmt=png-alpha",
-    "features": [
-      "Cảm biến Exmor R™ CMOS full-frame 42,4 MP",
-      "Chụp liên tục 10 hình/giây với AF/AE",
-      "Khe cắm thẻ đôi & chống rung 5 trục IBIS"
-    ]
-  },
-  {
-    "id": "sony-cam-ilce-7cm2",
-    "sku": "ILCE-7CM2/SQAP2",
-    "name": "α7C II",
-    "fullName": "Máy ảnh full-frame nhỏ gọn α7C II",
-    "category": "full-frame",
-    "priceVnd": 47608363,
-    "priceFormatted": "47.608.363 đ",
-    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-7cm2?sku=ilce-7cm2-sqap2",
-    "imageUrl": "https://www.sony.com.vn/image/e85dfc26cc12301bf97c60bb6e0e2ced?fmt=png-alpha",
-    "features": [
-      "Cảm biến CMOS full-frame 33,0 MP gọn nhẹ",
-      "Bộ xử lý BIONZ XR™ kết hợp chip AI nhận dạng chủ thể",
-      "Quay 4K 60p 10-bit & chống rung 7.0 stops"
-    ]
-  },
-  {
-    "id": "sony-cam-ilme-fx30",
+    "id": "sony-ilme-fx30b-qap2",
+    "name": "FX30",
+    "fullName": "Sony FX30 (ILME-FX30B/QAP2)",
     "sku": "ILME-FX30B/QAP2",
-    "name": "Cinema Line FX30",
-    "fullName": "Máy quay gateway FX30 nhỏ gọn thuộc Cinema Line",
-    "category": "cinema-line",
+    "category": "camera",
+    "subCategory1": "APS-C",
+    "subCategory2": "Cinema Line",
     "priceVnd": 41226546,
     "priceFormatted": "41.226.546 đ",
     "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilme-fx30?sku=ilme-fx30b-qap2",
     "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_Image-3?$primaryshotPreset$&fmt=png-alpha",
     "features": [
-      "Cảm biến Exmor R™ APS-C CMOS 20,1 MP Super35",
-      "Màu sắc điện ảnh S-Cinetone & S-Log3 chỉnh màu chuyên nghiệp",
-      "Thân máy nhiều lỗ ren 1/4-20 mount phụ kiện trực tiếp"
+      "Cảm biến Exmor R™ APS-C CMOS chiếu sáng sau với 20,1 triệu điểm ảnh* (*Xấp xỉ, hiệu dụng.)",
+      "Công nghệ màu sắc điện ảnh với S-Cinetone™ và S-Log3 để chỉnh màu",
+      "Lấy nét tự động đáng tin cậy, chính xác với độ ổn định hình ảnh Active Mode"
     ]
   },
   {
-    "id": "sony-cam-ilce-7m3",
-    "sku": "ILCE-7M3/BQ AP2",
-    "name": "α7 III",
-    "fullName": "Máy ảnh Alpha 7 III full-frame quốc dân",
-    "category": "full-frame",
-    "priceVnd": 34353818,
-    "priceFormatted": "34.353.818 đ",
-    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-7m3-body-kit?sku=ilce-7m3-bq-ap2",
-    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_Image-2?$primaryshotPreset$&fmt=png-alpha",
+    "id": "sony-ilme-fx5b-q-fs1",
+    "name": "FX5",
+    "fullName": "Sony FX5 (ILME-FX5B/Q FS1)",
+    "sku": "ILME-FX5B/Q FS1",
+    "category": "camera",
+    "subCategory1": "Full Frame",
+    "subCategory2": "Cinema Line",
+    "priceVnd": 130990000,
+    "priceFormatted": "130.990.000 đ",
+    "url": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilme-fx5?sku=ilme-fx5b-q-fs1",
+    "imageUrl": "https://www.sony.com.vn/image/a779c5111ad98d17c9678d3ec1592751?fmt=png-alpha",
     "features": [
-      "Cảm biến Exmor R™ CMOS full-frame 24,2 MP",
-      "693 điểm lấy nét AF theo pha phủ 93% khung hình",
-      "Quay phim 4K HDR HLG & thời lượng pin Z-series ấn tượng"
+      "Cảm biến Exmor RS™ full-frame xếp chồng và bộ xử lý hình ảnh BIONZ XR2™ kết hợp bộ phận xử lý trí tuệ nhân tạo.",
+      "Khả năng ghi hình X-OCN 16 bit scene-linear trong máy giúp tối ưu hóa quy trình hậu kỳ.",
+      "Các chế độ quét hình ảnh linh hoạt bao gồm cả Open Gate , với khả năng bắt trọn khoảnh khắc lên tới 5K 120 fps"
     ]
   },
   {
-    "id": "sony-cam-ilce-6700",
-    "sku": "ILCE-6700/BQAP2",
-    "name": "α6700",
-    "fullName": "Máy ảnh APS-C E-mount cao cấp α6700",
-    "category": "aps-c",
-    "priceVnd": 33372000,
-    "priceFormatted": "33.372.000 đ",
-    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-6700?sku=ilce-6700-bqap2",
-    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/og-4?$primaryshotPreset$&fmt=png-alpha",
+    "id": "sony-ilme-fx6v-cap2",
+    "name": "FX6",
+    "fullName": "Sony FX6 (ILME-FX6V//CAP2)",
+    "sku": "ILME-FX6V//CAP2",
+    "category": "camera",
+    "subCategory1": "Full Frame",
+    "subCategory2": "Cinema Line",
+    "priceVnd": 139408364,
+    "priceFormatted": "139.408.364 đ",
+    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilme-fx6?sku=ilme-fx6v-cap2",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_Image-1?$primaryshotPreset$&fmt=png-alpha",
     "features": [
-      "Cảm biến Exmor R™ CMOS APS-C 26,0 MP",
-      "Bộ xử lý AI tự động nhận dạng người, xe, chim, côn trùng",
-      "Quay 4K 120p, chống rung 5 trục IBIS"
+      "Cảm biến Exmor R™ CMOS full-frame và bộ xử lý hình ảnh BIONZ XR™ mạnh mẽ",
+      "Dải tần nhạy sáng ấn tượng với hơn 15 điểm dừng và độ nhạy sáng cao lên đến ISO 409600",
+      "Khả năng quay 4K (QFHD) HFR 120 hình/giây với tính năng lấy nết tự động nhanh và Kính lọc ND điện tử linh hoạt"
     ]
   },
   {
-    "id": "sony-cam-ilce-7c",
-    "sku": "ILCE-7C/SQ AP2",
-    "name": "α7C",
-    "fullName": "Máy ảnh full-frame nhỏ gọn Alpha 7C",
-    "category": "full-frame",
-    "priceVnd": 29935636,
-    "priceFormatted": "29.935.636 đ",
-    "url": "https://www.sony.com.vn/permalink/product/ilce-7c?locale=vi_VN&sku=ilce-7c-sq-ap2",
-    "imageUrl": "https://www.sony.com.vn/image/542c82d573e4783e8097ac6fc4c722e9?fmt=png-alpha",
-    "features": [
-      "Thân máy full-frame nhỏ và nhẹ nhất thế giới có chống rung IBIS",
-      "Cảm biến Exmor R™ CMOS 24,2 MP",
-      "Màn hình xoay lật 180° tiện lợi cho quay vlog"
-    ]
-  },
-  {
-    "id": "sony-cam-zv-e10m2",
-    "sku": "ZV-E10M2/BQ AP2",
-    "name": "ZV-E10 II",
-    "fullName": "Máy ảnh vlog APS-C ZV-E10 II",
-    "category": "vlog",
-    "priceVnd": 25517455,
-    "priceFormatted": "25.517.455 đ",
-    "url": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/zv-e10m2?sku=zv-e10m2-bq-ap2",
-    "imageUrl": "https://www.sony.com.vn/image/e97df1e13186cfff76cc74554dbf7745?fmt=png-alpha",
-    "features": [
-      "Cảm biến Exmor R™ CMOS APS-C 26,0 MP thế hệ mới",
-      "Bộ xử lý BIONZ XR™ quay 4K 60p 10-bit",
-      "Giao diện màn hình dọc tự động xoay khi quay Video Dọc"
-    ]
-  },
-  {
-    "id": "sony-cam-ilce-6400",
-    "sku": "ILCE-6400/B AP2",
-    "name": "α6400",
-    "fullName": "Máy ảnh APS-C Alpha 6400",
-    "category": "aps-c",
-    "priceVnd": 17662909,
-    "priceFormatted": "17.662.909 đ",
-    "url": "https://www.sony.com.vn/permalink/product/ilce-6400?locale=vi_VN&sku=ilce-6400-b-ap2",
-    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/02_Primary_image-2?$primaryshotPreset$&fmt=png-alpha",
-    "features": [
-      "Tốc độ lấy nét tự động 0.02 giây với Real-time Tracking",
-      "Cảm biến APS-C Exmor™ CMOS 24,2 MP",
-      "Màn hình xoay 180° hỗ trợ quay Vlog & selfie"
-    ]
-  },
-  {
-    "id": "sony-cam-zv-e10",
-    "sku": "ZV-E10/BQ AP2",
-    "name": "ZV-E10",
-    "fullName": "Máy ảnh vlog quốc dân ZV-E10",
-    "category": "vlog",
-    "priceVnd": 14226546,
-    "priceFormatted": "14.226.546 đ",
-    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/zv-e10?sku=zv-e10-bq-ap2",
-    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image?$primaryshotPreset$&fmt=png-alpha",
-    "features": [
-      "Cảm biến CMOS Exmor™ APS-C 24,2 MP",
-      "Micro 3 capsule tích hợp kèm mút chắn gió chuyên dụng",
-      "Nút Product Showcase & Soft Skin Effect cho Vlogger"
-    ]
-  },
-  {
-    "id": "sony-cam-ilme-fr7",
+    "id": "sony-ilme-fr7-c-ap2",
+    "name": "PTZ FR7",
+    "fullName": "Sony PTZ FR7 (ILME-FR7//C AP2)",
     "sku": "ILME-FR7//C AP2",
-    "name": "Cinema Line FR7",
-    "fullName": "Máy quay PTZ full-frame FR7 thuộc Cinema Line",
-    "category": "cinema-line",
+    "category": "camera",
+    "subCategory1": "Full Frame",
+    "subCategory2": "Cinema Line",
     "priceVnd": 207153818,
     "priceFormatted": "207.153.818 đ",
     "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilme-fr7?sku=ilme-fr7-c-ap2",
     "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/og-1?$primaryshotPreset$&fmt=png-alpha",
     "features": [
-      "Máy quay PTZ (lia, nghiêng, zoom) Full-frame đầu tiên thế giới",
-      "Cảm biến 10.2 MP với khoa màu điện ảnh S-Cinetone",
-      "Điều khiển từ xa qua giao diện web hoặc bàn điều khiển RM-IP500"
+      "Máy quay ống kính rời full-frame đầu tiên trên thế giới* với khả năng lia, nghiêng và zoom (PTZ) (*Tính đến đợt công bố sản phẩm vào tháng 9 năm 2022, so với các máy quay tích hợp ngàm lia và nghiêng, theo khảo sát của Sony.)",
+      "Cảm biến hình ảnh CMOS full-frame chiếu sáng sau với 10,2 triệu điểm ảnh* (*Xấp xỉ, hiệu dụng.)",
+      "Sẵn sàng cho thiết lập và quy trình làm việc nhiều máy quay"
+    ]
+  },
+  {
+    "id": "sony-dsc-rx10m5bcap2",
+    "name": "RX10 V",
+    "fullName": "Sony RX10 V (DSC-RX10M5BCAP2)",
+    "sku": "DSC-RX10M5BCAP2",
+    "category": "camera",
+    "subCategory1": "1-Inch",
+    "subCategory2": "DSC",
+    "priceVnd": 59990000,
+    "priceFormatted": "59.990.000 đ",
+    "url": "https://www.sony.com.vn/image/362957ebe1ae1ad73023d9d982fb9065?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF\nhttps://cdn.shopify.com/s/files/1/0298/6259/2571/files/rx10_1584xx1083.jpg?v=1783672699\nhttps://www.sony.com.vn/image/5e4d898229914cea5916a78705ea53d2?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF\nhttps://www.sony.com.vn/image/b0a8bee73b515a60d745a5e76985cb7e?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF\nhttps://www.sony.com.vn/image/9ac0498af943d392023c5bc3b9c6407e?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF\nhttps://www.sony.com.vn/image/d70d6edf99a281b0d01b870439c77d17?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF\nhttps://www.sony.com.vn/image/afe5bb70f505c6e192463f69b12fa264?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF\nhttps://www.sony.com.vn/image/83994fd0d9a1ae5030dfd884e10adbc3?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF\nhttps://www.sony.com.vn/image/dc805ee12802447087cb2af33233dfbf?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF\nhttps://www.sony.com.vn/image/df99388aa0669f984157aad1d223ae7b?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF\nhttps://www.sony.com.vn/image/0336944679067bc10f8fd947cddf9080?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF\nhttps://www.sony.com.vn/image/362957ebe1ae1ad73023d9d982fb9065?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF\nhttps://cdn.shopify.com/s/files/1/0298/6259/2571/files/rx10_1584xx1083.jpg?v=1783672699",
+    "imageUrl": "Tìm hiểu thêm",
+    "features": [
+      "Cảm biến CMOS Exmor RS™ xếp chồng loại 1.0 với 20,1 megapixel2",
+      "Ống kính zoom ZEISS® Vario-Sonnar T* 24-600 mm1 F2.4-4.0",
+      "Lấy nét tự động nhanh và nhận dạng chủ thể dựa trên AI tinh tế"
+    ]
+  },
+  {
+    "id": "sony-dsc-rx100m7-e32",
+    "name": "RX100 VII",
+    "fullName": "Sony RX100 VII (DSC-RX100M7/E32)",
+    "sku": "DSC-RX100M7/E32",
+    "category": "camera",
+    "subCategory1": "1-Inch",
+    "subCategory2": "DSC",
+    "priceVnd": 26499272,
+    "priceFormatted": "26.499.272 đ",
+    "url": "https://www.sony.com.vn/image/7dfe1883c81b07329241249057a11fbc?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF\nhttps://www.sony.com.vn/image/288004d76ab8ef84b7117ef3c81cc043?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF\nhttps://www.sony.com.vn/image/9893c68cef112e7879dbd6187512ece3?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF\nhttps://www.sony.com.vn/image/7b1fb76085e269e8b404f18b3b3d8ede?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF\nhttps://www.sony.com.vn/image/171ea9762591e8772dab7e5b44054615?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF\nhttps://www.sony.com.vn/image/1c3671332ccf05d68f7bc1a4b47d2722?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF\nhttps://www.sony.com.vn/image/70ff53d5fe8b22cfe440480e4dcd6a04?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF\nhttps://www.sony.com.vn/image/d80f0c50b3437c2f4ae48e2faa59d719?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF\nhttps://www.sony.com.vn/image/cc518d644a5bc09852753a914dc56f40?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF\nhttps://www.sony.com.vn/image/65f1858fbbccb080009b334435cf9515?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF\nhttps://www.sony.com.vn/image/c0712b94b490e37fc8ed824613024666?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF\nhttps://www.sony.com.vn/image/50b3c075fdab26a5959de4ab6af53d72?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF\nhttps://www.sony.com.vn/image/7dfe1883c81b07329241249057a11fbc?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF\nhttps://www.sony.com.vn/image/288004d76ab8ef84b7117ef3c81cc043?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF\nhttps://www.sony.com.vn/image/34a902e4f30b7d9c4d495a471b393fd1?fmt=png-alpha\nhttps://www.sony.com.vn/image/52963ec2b2ce42f42253226a181e152f?fmt=png-alpha",
+    "imageUrl": "Tìm hiểu thêm",
+    "features": [
+      "Cảm biến CMOS xếp chồng loại 1.0 mới và ống kính ZEISS® 24-200 mm5",
+      "Lấy nét tự động rộng và siêu nhanh với tính năng Lấy nét tự động theo ánh mắt và khả năng chụp 20 hình/giây6",
+      "Phim 4K HDR (HLG),78 màn hình cảm ứng dạng lật và ngõ vào mic"
+    ]
+  },
+  {
+    "id": "sony-dsc-rx1rm3-ap2",
+    "name": "RX1R III",
+    "fullName": "Sony RX1R III (DSC-RX1RM3  AP2)",
+    "sku": "DSC-RX1RM3  AP2",
+    "category": "camera",
+    "subCategory1": "Full Frame",
+    "subCategory2": "DSC",
+    "priceVnd": 125990000,
+    "priceFormatted": "125.990.000 đ",
+    "url": "https://www.sony.com.vn/image/4db5cb1fcf964dacb55b61345f5d18a9?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF\nhttps://www.sony.com.vn/image/55c9750638da41243ec4c637bb58fb62?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF\nhttps://www.sony.com.vn/image/c8e8ed6e297f1d54cae82066965b39b2?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF\nhttps://www.sony.com.vn/image/b34614591d297013be001e1cfe50761a?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF\nhttps://www.sony.com.vn/image/109821866b6c59b694b70d2206e1d485?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF\nhttps://www.sony.com.vn/image/a6db2f0b5e8d23770eed1a28c5339ef6?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF\nhttps://www.sony.com.vn/image/0e713f0e10255d12067dfdbfb8538573?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF\nhttps://www.sony.com.vn/image/210addc6678b4423afa0c9444288a502?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF\nhttps://www.sony.com.vn/image/4db5cb1fcf964dacb55b61345f5d18a9?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF\nhttps://www.sony.com.vn/image/9fa79e6e274fcd2d56954c5a6bb50025?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF\nhttps://www.sony.com.vn/image/4db5cb1fcf964dacb55b61345f5d18a9?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF\nhttps://www.sony.com.vn/image/55c9750638da41243ec4c637bb58fb62?fmt=png-alpha&wid=1578&hei=1050&bgcolor=F6F9FF",
+    "imageUrl": "Tìm hiểu thêm",
+    "features": [
+      "Chất lượng hình ảnh tuyệt đẹp với thiết kế ống kính cố định nhỏ gọn",
+      "Cảm biến hình ảnh Exmor R™ full-frame chiếu sáng sau với 61,0 triệu điểm ảnh",
+      "Khả năng nhận dạng chủ thể dựa trên AI tiên tiến"
+    ]
+  },
+  {
+    "id": "sony-selp1020g-csyx",
+    "name": "E 10-20 mm F4 G PZ",
+    "fullName": "Sony E 10-20 mm F4 G PZ (SELP1020G//CSYX)",
+    "sku": "SELP1020G//CSYX",
+    "category": "lens",
+    "subCategory1": "APS-C",
+    "subCategory2": "G",
+    "priceVnd": 15699273,
+    "priceFormatted": "15.699.273 đ",
+    "url": "https://www.sony.com.vn/permalink/product/selp1020g?locale=vi_VN&sku=selp1020g-csyx",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-3?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Ống kính E-Mount dành riêng cho cảm biến APS-C",
+      "Ống kính G zoom xa góc siêu rộng",
+      "Nhỏ gọn cho khả năng di động tuyệt vời"
+    ]
+  },
+  {
+    "id": "sony-sel1655g-c-syx",
+    "name": "E 16-55 mm F2.8 G",
+    "fullName": "Sony E 16-55 mm F2.8 G (SEL1655G//C SYX)",
+    "sku": "SEL1655G//C SYX",
+    "category": "lens",
+    "subCategory1": "APS-C",
+    "subCategory2": "G",
+    "priceVnd": 29444727,
+    "priceFormatted": "29.444.727 đ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel1655g?sku=sel1655g-c-syx",
+    "imageUrl": "https://www.sony.com.vn/image/5403ba0ae36182e870dffe17a7ef3d77?fmt=png-alpha",
+    "features": [
+      "Ống kính E-Mount dành riêng cho cảm biến APS-C",
+      "Ống kính G zoom chuẩn APS-C F2.8 nhỏ gọn",
+      "Độ phân giải cao trên toàn bộ phạm vi zoom ngay cả ở khẩu độ F2.8"
+    ]
+  },
+  {
+    "id": "sony-selp18105g-ae",
+    "name": "E 18-105mm F4 G OSS PZ",
+    "fullName": "Sony E 18-105mm F4 G OSS PZ (SELP18105G  AE)",
+    "sku": "SELP18105G  AE",
+    "category": "lens",
+    "subCategory1": "APS-C",
+    "subCategory2": "G",
+    "priceVnd": 11281091,
+    "priceFormatted": "11.281.091 đ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/selp18105g?sku=selp18105g-ae",
+    "imageUrl": "https://www.sony.com.vn/image/c7b33716d8e54790efe9796d5ff048ed?fmt=png-alpha",
+    "features": [
+      "Ống kính E-Mount dành riêng cho cảm biến APS-C",
+      "Ống kính zoom chuẩn G của Sony",
+      "Zoom xa, tuyệt vời để quay video"
+    ]
+  },
+  {
+    "id": "sony-sel70350g-csyx",
+    "name": "E 70-350 mm F4.5-6.3 G OSS",
+    "fullName": "Sony E 70-350 mm F4.5-6.3 G OSS (SEL70350G//CSYX)",
+    "sku": "SEL70350G//CSYX",
+    "category": "lens",
+    "subCategory1": "APS-C",
+    "subCategory2": "G",
+    "priceVnd": 20608364,
+    "priceFormatted": "20.608.364 đ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel70350g?sku=sel70350g-csyx",
+    "imageUrl": "https://www.sony.com.vn/image/8ba831bd31dfd3c2963e186cd6d37158?fmt=png-alpha",
+    "features": [
+      "Ống kính E-Mount dành riêng cho cảm biến APS-C",
+      "Ống kính G có khả năng zoom 5x khi chụp siêu tele",
+      "Độ phân giải cao và thiết kế nhỏ gọn"
+    ]
+  },
+  {
+    "id": "sony-sel1224g-syx",
+    "name": "FE 12-24mm F4 G",
+    "fullName": "Sony FE 12-24mm F4 G (SEL1224G    SYX)",
+    "sku": "SEL1224G    SYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "G",
+    "priceVnd": 38281091,
+    "priceFormatted": "38.281.091 đ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel1224g?sku=sel1224g-syx",
+    "imageUrl": "https://www.sony.com.vn/image/9f9e1cd8f11c4dce8d33864e43efd74e?fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G cao cấp",
+      "Ống kính zoom góc siêu rộng G Lens",
+      "Độ phân giải cao và thiết kế nhỏ gọn"
+    ]
+  },
+  {
+    "id": "sony-sel16f18g-qsyx",
+    "name": "FE 16 mm F1.8 G",
+    "fullName": "Sony FE 16 mm F1.8 G (SEL16F18G//QSYX)",
+    "sku": "SEL16F18G//QSYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "G",
+    "priceVnd": 21590182,
+    "priceFormatted": "21.590.182 đ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel16f18g?sku=sel16f18g-qsyx",
+    "imageUrl": "https://www.sony.com.vn/image/df480ae041307410b9aae9e3ecc4b502?fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G cao cấp",
+      "Ống kính G™ góc siêu rộng",
+      "Phối cảnh sinh động và hiệu ứng bokeh mượt mà ở 16 mm"
+    ]
+  },
+  {
+    "id": "sony-selp1635g-qsyx",
+    "name": "FE 16-35 mm F4 G PZ",
+    "fullName": "Sony FE 16-35 mm F4 G PZ (SELP1635G//QSYX)",
+    "sku": "SELP1635G//QSYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "G",
+    "priceVnd": 29444727,
+    "priceFormatted": "29.444.727 đ",
+    "url": "https://www.sony.com.vn/lenses/products/selp1635g?sku=selp1635g-qsyx",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-8?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G cao cấp",
+      "Zoom góc rộng Ống kính G",
+      "Trọng lượng siêu nhẹ và nhỏ gọn cho khả năng di động tuyệt vời"
+    ]
+  },
+  {
+    "id": "sony-selc1635g-syx",
+    "name": "FE C 16-35 mm T3.1 G",
+    "fullName": "Sony FE C 16-35 mm T3.1 G (SELC1635G SYX)",
+    "sku": "SELC1635G SYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "G",
+    "priceVnd": 0,
+    "priceFormatted": "Liên hệ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/selc1635g?sku=selc1635g-syx",
+    "imageUrl": "https://www.sony.com.vn/image/a090eb78c3396abea148bc3d65ca822b?fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G cao cấp",
+      "Ống kính zoom góc rộng thuộc dòng Ống kính quay phim",
+      "Hiệu suất quang học tiên tiến, khả năng vận hành tốt và các chức năng ghi hình thông minh"
+    ]
+  },
+  {
+    "id": "sony-sel1625g-z-syx",
+    "name": "FE 16–25 mm F2.8 G",
+    "fullName": "Sony FE 16–25 mm F2.8 G (SEL1625G//Z SYX)",
+    "sku": "SEL1625G//Z SYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "G",
+    "priceVnd": 30426545,
+    "priceFormatted": "30.426.545 đ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel1625g?sku=sel1625g-z-syx",
+    "imageUrl": "https://www.sony.com.vn/image/a1c971f3f7dacdd2015af652a1eca2a2?fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G cao cấp",
+      "Zoom góc rộng Ống kính G",
+      "Khẩu độ tối đa F2.8 không đổi"
+    ]
+  },
+  {
+    "id": "sony-sel20f18g-qsyx",
+    "name": "FE 20 mm F1.8 G",
+    "fullName": "Sony FE 20 mm F1.8 G (SEL20F18G//QSYX)",
+    "sku": "SEL20F18G//QSYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "G",
+    "priceVnd": 22572000,
+    "priceFormatted": "22.572.000 đ",
+    "url": "https://www.sony.com.vn/lenses/products/sel20f18g?sku=sel20f18g-qsyx",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-11?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G cao cấp",
+      "Ống kính G Prime góc cực rộng",
+      "Ống kính prime 20mm F1.8 nhỏ gọn, độ phân giải cao"
+    ]
+  },
+  {
+    "id": "sony-sel2070g-q-syx",
+    "name": "FE 20–70 mm F4 G",
+    "fullName": "Sony FE 20–70 mm F4 G (SEL2070G//Q SYX)",
+    "sku": "SEL2070G//Q SYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "G",
+    "priceVnd": 25517455,
+    "priceFormatted": "25.517.455 đ",
+    "url": "https://www.sony.com.vn/permalink/product/sel2070g?locale=vi_VN&sku=sel2070g-q-syx",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-18?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G cao cấp",
+      "Ống kính zoom chuẩn G Lens",
+      "Khẩu độ tối đa F4 không đổi"
+    ]
+  },
+  {
+    "id": "sony-sel200600g-csyx",
+    "name": "FE 200-600 mm F5.6-6.3 G OSS",
+    "fullName": "Sony FE 200-600 mm F5.6-6.3 G OSS (SEL200600G/CSYX)",
+    "sku": "SEL200600G/CSYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "G",
+    "priceVnd": 45153818,
+    "priceFormatted": "45.153.818 đ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel200600g?sku=sel200600g-csyx",
+    "imageUrl": "https://www.sony.com.vn/image/09ca714e355a8026bb4eba4ca4f354dd?fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G cao cấp",
+      "Khả năng zoom chụp siêu tele của ống kính G",
+      "Độ phân giải cao trong toàn bộ góc zoom"
+    ]
+  },
+  {
+    "id": "sony-sel24f28g-csyx",
+    "name": "FE 24 mm F2.8 G",
+    "fullName": "Sony FE 24 mm F2.8 G (SEL24F28G//CSYX)",
+    "sku": "SEL24F28G//CSYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "G",
+    "priceVnd": 14717455,
+    "priceFormatted": "14.717.455 đ",
+    "url": "https://www.sony.com.vn/permalink/product/sel24f28g?locale=vi_VN&sku=sel24f28g-csyx",
+    "imageUrl": "https://www.sony.com.vn/image/cfb88c475243eef6fb0af2dbe06ca34f?fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G cao cấp",
+      "Ống kính G prime góc rộng",
+      "Hình ảnh chất lượng cao và ống kính có chất lượng chế tác siêu việt với khả năng thao tác trực quan"
+    ]
+  },
+  {
+    "id": "sony-sel24105g-qsyx",
+    "name": "FE 24-105 mm F4 G OSS",
+    "fullName": "Sony FE 24-105 mm F4 G OSS (SEL24105G//QSYX)",
+    "sku": "SEL24105G//QSYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "G",
+    "priceVnd": 28462909,
+    "priceFormatted": "28.462.909 đ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel24105g?sku=sel24105g-qsyx",
+    "imageUrl": "https://www.sony.com.vn/image/406456d67374a225f3ff64f45d5c890d?fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G cao cấp",
+      "Ống kính zoom chuẩn G Lens",
+      "Khẩu độ tối đa F4 không đổi"
+    ]
+  },
+  {
+    "id": "sony-sel2450g-z-syx",
+    "name": "FE 24-50 mm F2.8 G",
+    "fullName": "Sony FE 24-50 mm F2.8 G (SEL2450G//Z SYX)",
+    "sku": "SEL2450G//Z SYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "G",
+    "priceVnd": 27481091,
+    "priceFormatted": "27.481.091 đ",
+    "url": "https://www.sony.com.vn/lenses/products/sel2450g?sku=sel2450g-z-syx",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-19?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G cao cấp",
+      "Chế độ zoom chuẩn của Ống kính G",
+      "Khẩu độ tối đa F2.8 không đổi"
+    ]
+  },
+  {
+    "id": "sony-selp28135g-csyx",
+    "name": "FE 28-135mm F4 G OSS PZ",
+    "fullName": "Sony FE 28-135mm F4 G OSS PZ (SELP28135G/CSYX)",
+    "sku": "SELP28135G/CSYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "G",
+    "priceVnd": 51044727,
+    "priceFormatted": "51.044.727 đ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/selp28135g?sku=selp28135g-csyx",
+    "imageUrl": "https://www.sony.com.vn/image/d001ab544b14a4df710de717bbb0115b?fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G cao cấp",
+      "Ống kính zoom chuẩn G của Sony",
+      "Được thiết kế để quay những thước phim chuyên nghiệp"
+    ]
+  },
+  {
+    "id": "sony-sel40f25g-csyx",
+    "name": "FE 40 mm F2.5 G",
+    "fullName": "Sony FE 40 mm F2.5 G (SEL40F25G//CSYX)",
+    "sku": "SEL40F25G//CSYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "G",
+    "priceVnd": 14717455,
+    "priceFormatted": "14.717.455 đ",
+    "url": "https://www.sony.com.vn/lenses/products/sel40f25g?sku=sel40f25g-csyx",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-9?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G cao cấp",
+      "Ống kính G prime chuẩn",
+      "Hình ảnh chất lượng cao và ống kính có chất lượng chế tác siêu việt với khả năng thao tác trực quan"
+    ]
+  },
+  {
+    "id": "sony-sel400800g-csyx",
+    "name": "FE 400–800 mm F6.3–8 G OSS",
+    "fullName": "Sony FE 400–800 mm F6.3–8 G OSS (SEL400800G/CSYX)",
+    "sku": "SEL400800G/CSYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "G",
+    "priceVnd": 68717455,
+    "priceFormatted": "68.717.455 đ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel400800g?sku=sel400800g-csyx",
+    "imageUrl": "https://www.sony.com.vn/image/09c30323209c58ac8ebc7b2f6ae7fd8a?fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G cao cấp",
+      "Ống kính zoom chụp siêu tele G Lens™",
+      "Ống kính dòng α™ đầu tiên3 đáp ứng phạm vi từ 400 đến 800 mm"
+    ]
+  },
+  {
+    "id": "sony-sel50f25g-csyx",
+    "name": "FE 50 mm F2.5 G",
+    "fullName": "Sony FE 50 mm F2.5 G (SEL50F25G//CSYX)",
+    "sku": "SEL50F25G//CSYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "G",
+    "priceVnd": 14717455,
+    "priceFormatted": "14.717.455 đ",
+    "url": "https://www.sony.com.vn/permalink/product/sel50f25g?locale=vi_VN&sku=sel50f25g-csyx",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-12?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G cao cấp",
+      "Ống kính G prime chuẩn",
+      "Hình ảnh chất lượng cao và ống kính có chất lượng chế tác siêu việt với khả năng thao tác trực quan"
+    ]
+  },
+  {
+    "id": "sony-sel70200g2-csyx",
+    "name": "FE 70-200mm F4 Macro G OSS Ⅱ",
+    "fullName": "Sony FE 70-200mm F4 Macro G OSS Ⅱ (SEL70200G2/CSYX)",
+    "sku": "SEL70200G2/CSYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "G",
+    "priceVnd": 39262909,
+    "priceFormatted": "39.262.909 đ",
+    "url": "https://www.sony.com.vn/lenses/products/sel70200g2?sku=sel70200g2-csyx",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/primary_image-2?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G cao cấp",
+      "Khả năng zoom chụp tele của ống kính G",
+      "Khả năng chụp nửa macro trong toàn phạm vi zoom"
+    ]
+  },
+  {
+    "id": "sony-sel90m28g-qsyx",
+    "name": "FE 90mm F2.8 Macro G OSS",
+    "fullName": "Sony FE 90mm F2.8 Macro G OSS (SEL90M28G//QSYX)",
+    "sku": "SEL90M28G//QSYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "G",
+    "priceVnd": 23553818,
+    "priceFormatted": "23.553.818 đ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel90m28g?sku=sel90m28g-qsyx",
+    "imageUrl": "https://www.sony.com.vn/image/e3915b69fed3d68a1f2d2c452882f44d?fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G cao cấp",
+      "Ống kính macro chụp tele tầm trung G của Sony",
+      "Độ phân giải cao cùng hiệu ứng bokeh tuyệt đẹp"
+    ]
+  },
+  {
+    "id": "sony-sel100m28gmqsyx",
+    "name": "FE 100 mm F2.8 Macro GM OSS",
+    "fullName": "Sony FE 100 mm F2.8 Macro GM OSS (SEL100M28GMQSYX)",
+    "sku": "SEL100M28GMQSYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "GM",
+    "priceVnd": 35990000,
+    "priceFormatted": "35.990.000 đ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel100m28gm?sku=sel100m28gmqsyx",
+    "imageUrl": "https://www.sony.com.vn/image/42e1383ea62c154f5fa8a65bd56f19a1?fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G Master đỉnh cao",
+      "Ống kính macro tele tầm trung G Master™",
+      "Độ phóng đại lên đến 1,4x hoặc 2,8x khi sử dụng bộ chuyển đổi tele bán rời2"
+    ]
+  },
+  {
+    "id": "sony-sel100400mcqsyx",
+    "name": "FE 100-400 mm F4.5 GM OSS",
+    "fullName": "Sony FE 100-400 mm F4.5 GM OSS (SEL100400MCQSYX)",
+    "sku": "SEL100400MCQSYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "GM",
+    "priceVnd": 115990000,
+    "priceFormatted": "115.990.000 đ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel100400mc?sku=sel100400mcqsyx",
+    "imageUrl": "https://www.sony.com.vn/image/22e0aabe6ad2b57a55e5153c45ad9380?fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G Master đỉnh cao",
+      "Ống kính zoom chụp siêu tele G Master",
+      "Trọng lượng tổng thể chỉ vỏn vẹn 1,840 g (bao gồm chân máy) và cấu trúc zoom bên trong"
+    ]
+  },
+  {
+    "id": "sony-sel100400gm-syx",
+    "name": "FE 100-400mm GM",
+    "fullName": "Sony FE 100-400mm GM (SEL100400GM SYX)",
+    "sku": "SEL100400GM SYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "GM",
+    "priceVnd": 58899273,
+    "priceFormatted": "58.899.273 đ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel100400gm?sku=sel100400gm-syx",
+    "imageUrl": "https://www.sony.com.vn/image/c6c0513704682cb02fef6bc49e84e358?fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G Master đỉnh cao",
+      "Ống kính chụp siêu tele G Master",
+      "Độ phân giải cao"
+    ]
+  },
+  {
+    "id": "sony-sel100f28gm-syx",
+    "name": "FE 100mm F2.8 STF GM OSS",
+    "fullName": "Sony FE 100mm F2.8 STF GM OSS (SEL100F28GM SYX)",
+    "sku": "SEL100F28GM SYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "GM",
+    "priceVnd": 36317455,
+    "priceFormatted": "36.317.455 đ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel100f28gm?sku=sel100f28gm-syx",
+    "imageUrl": "https://www.sony.com.vn/image/651aafca92dbf1b1218b7f2ec080cf97?fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G Master đỉnh cao",
+      "Ống kính G Master cố định chụp tele tầm trung",
+      "Yếu tố giảm nhiễu cho hiệu ứng bokeh tuyệt đẹp"
+    ]
+  },
+  {
+    "id": "sony-sel1224gm-jsyx",
+    "name": "FE 12-24 mm F2.8 GM",
+    "fullName": "Sony FE 12-24 mm F2.8 GM (SEL1224GM//JSYX)",
+    "sku": "SEL1224GM//JSYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "GM",
+    "priceVnd": 71662909,
+    "priceFormatted": "71.662.909 đ",
+    "url": "https://www.sony.com.vn/permalink/product/sel1224gm?locale=vi_VN&sku=sel1224gm-jsyx",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image_1200-2?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G Master đỉnh cao",
+      "Zoom góc siêu rộng G Master",
+      "Khẩu độ tối đa F2.8 không đổi"
+    ]
+  },
+  {
+    "id": "sony-sel135f18gm-syx",
+    "name": "FE 135mm F1.8 GM",
+    "fullName": "Sony FE 135mm F1.8 GM (SEL135F18GM SYX)",
+    "sku": "SEL135F18GM SYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "GM",
+    "priceVnd": 43190182,
+    "priceFormatted": "43.190.182 đ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel135f18gm?sku=sel135f18gm-syx",
+    "imageUrl": "https://www.sony.com.vn/image/71cd4c863bd5bbcaf4a2e36bad094ed6?fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G Master đỉnh cao",
+      "Ống kính chụp tele một tiêu cự F1.8 G Master",
+      "Độ phân giải và hiệu ứng bokeh tuyệt đẹp với khả năng Lấy nét tự động hàng đầu"
+    ]
+  },
+  {
+    "id": "sony-sel14f18gm-jsyx",
+    "name": "FE 14 mm F1.8 GM",
+    "fullName": "Sony FE 14 mm F1.8 GM (SEL14F18GM/JSYX)",
+    "sku": "SEL14F18GM/JSYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "GM",
+    "priceVnd": 36317455,
+    "priceFormatted": "36.317.455 đ",
+    "url": "https://www.sony.com.vn/permalink/product/sel14f18gm?locale=vi_VN&sku=sel14f18gm-jsyx",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-1?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G Master đỉnh cao",
+      "Ống kính prime góc siêu rộng G Master F1.8",
+      "Nhỏ gọn với trọng lượng nhẹ và độ phân giải cao xứng đáng chất lượng G Master"
+    ]
+  },
+  {
+    "id": "sony-sel1635gm2-qsyx",
+    "name": "FE 16–35 mm F2.8 GM II",
+    "fullName": "Sony FE 16–35 mm F2.8 GM II (SEL1635GM2/QSYX)",
+    "sku": "SEL1635GM2/QSYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "GM",
+    "priceVnd": 54481091,
+    "priceFormatted": "54.481.091 đ",
+    "url": "https://www.sony.com.vn/lenses/products/sel1635gm2?sku=sel1635gm2-qsyx",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/primary_image?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G Master đỉnh cao",
+      "Zoom góc rộng G Master",
+      "Khẩu độ tối đa F2.8 không đổi"
+    ]
+  },
+  {
+    "id": "sony-sel2470gm2-qsyx",
+    "name": "FE 24-70 mm F2.8 GM II",
+    "fullName": "Sony FE 24-70 mm F2.8 GM II (SEL2470GM2/QSYX)",
+    "sku": "SEL2470GM2/QSYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "GM",
+    "priceVnd": 46135636,
+    "priceFormatted": "46.135.636 đ",
+    "url": "https://www.sony.com.vn/permalink/product/sel2470gm2?locale=vi_VN&sku=sel2470gm2-qsyx",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary-image?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G Master đỉnh cao",
+      "Zoom F2.8 tiêu chuẩn dòng G Master",
+      "Gọn nhẹ với chất lượng G Master"
+    ]
+  },
+  {
+    "id": "sony-sel2470gm-qsyx",
+    "name": "FE 24-70mm F2.8 GM",
+    "fullName": "Sony FE 24-70mm F2.8 GM (SEL2470GM//QSYX)",
+    "sku": "SEL2470GM//QSYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "GM",
+    "priceVnd": 38281091,
+    "priceFormatted": "38.281.091 đ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel2470gm?sku=sel2470gm-qsyx",
+    "imageUrl": "https://www.sony.com.vn/image/142b846d19288ccfbe13fc850f1f0af2?fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G Master đỉnh cao",
+      "Ống kính zoom G Master tiêu chuẩn",
+      "Độ phân giải và rõ nét chưa từng có"
+    ]
+  },
+  {
+    "id": "sony-sel24f14gm-syx",
+    "name": "FE 24mm F1.4 GM",
+    "fullName": "Sony FE 24mm F1.4 GM (SEL24F14GM SYX)",
+    "sku": "SEL24F14GM SYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "GM",
+    "priceVnd": 34353818,
+    "priceFormatted": "34.353.818 đ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel24f14gm?sku=sel24f14gm-syx",
+    "imageUrl": "https://www.sony.com.vn/image/0feb512f5ed54880df7e1b4c9009b271?fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G Master đỉnh cao",
+      "Ống kính prime góc rộng F1.4 G Master",
+      "Độ phân giải ấn tượng trong một ống kính prime di động với F1.4"
+    ]
+  },
+  {
+    "id": "sony-sel2870gm-qsyx",
+    "name": "FE 28-70mm F2 GM",
+    "fullName": "Sony FE 28-70mm F2 GM (SEL2870GM//QSYX)",
+    "sku": "SEL2870GM//QSYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "GM",
+    "priceVnd": 76081091,
+    "priceFormatted": "76.081.091 đ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-e-mount/sel2870gm?sku=sel2870gm-qsyx",
+    "imageUrl": "https://www.sony.com.vn/image/94df45302e30919e157ef9aaa3b1dba6?fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G Master đỉnh cao",
+      "Ống kính zoom chuẩn G Master",
+      "Khẩu độ tối đa F2 không đổi"
+    ]
+  },
+  {
+    "id": "sony-sel300f28gm-syx",
+    "name": "FE 300 mm F2.8 GM OSS",
+    "fullName": "Sony FE 300 mm F2.8 GM OSS (SEL300F28GM/SYX)",
+    "sku": "SEL300F28GM/SYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "GM",
+    "priceVnd": 154135636,
+    "priceFormatted": "154.135.636 đ",
+    "url": "https://www.sony.com.vn/lenses/products/sel300f28gm?sku=sel300f28gm-syx",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/primary_image-1?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G Master đỉnh cao",
+      "Siêu nhẹ với độ cân bằng lý tưởng",
+      "Độ phân giải G Master ngoạn mục"
+    ]
+  },
+  {
+    "id": "sony-sel35f14gm-qsyx",
+    "name": "FE 35 mm F1.4 GM",
+    "fullName": "Sony FE 35 mm F1.4 GM (SEL35F14GM/QSYX)",
+    "sku": "SEL35F14GM/QSYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "GM",
+    "priceVnd": 34353818,
+    "priceFormatted": "34.353.818 đ",
+    "url": "https://www.sony.com.vn/permalink/product/sel35f14gm?locale=vi_VN&sku=sel35f14gm-qsyx",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary%20Image?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G Master đỉnh cao",
+      "Ống kính prime góc rộng G Master F1.4",
+      "Nhẹ và nhỏ gọn cho khả năng di động và thao tác tuyệt vời"
+    ]
+  },
+  {
+    "id": "sony-sel50f14gm-jsyx",
+    "name": "FE 50 mm F1.4 GM",
+    "fullName": "Sony FE 50 mm F1.4 GM (SEL50F14GM/JSYX)",
+    "sku": "SEL50F14GM/JSYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "GM",
+    "priceVnd": 36362909,
+    "priceFormatted": "36.362.909 đ",
+    "url": "https://www.sony.com.vn/permalink/product/sel50f14gm?locale=vi_VN&sku=d2c%3A43761079418939",
+    "imageUrl": "https://cdn.shopify.com/s/files/1/0298/6259/2571/files/SEL50F14GMJSYX_msc6t.png?v=1784183719",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G Master đỉnh cao",
+      "Ống kính tiêu chuẩn Khẩu độ lớn G Master F1.4",
+      "Độ phân giải tuyệt đỉnh và hiệu ứng bokeh tuyệt đẹp từ F1.4 trong một thiết kế gọn nhẹ"
+    ]
+  },
+  {
+    "id": "sony-sel50150gm-qsyx",
+    "name": "FE 50-150 mm F2 GM",
+    "fullName": "Sony FE 50-150 mm F2 GM (SEL50150GM/QSYX)",
+    "sku": "SEL50150GM/QSYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "GM",
+    "priceVnd": 93262909,
+    "priceFormatted": "93.262.909 đ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel50150gm?sku=sel50150gm-qsyx",
+    "imageUrl": "https://www.sony.com.vn/image/593ee9bef1a5a280aa597a32b3eec684?fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G Master đỉnh cao",
+      "Ống kính zoom chụp tele dòng G Master",
+      "Khẩu độ tối đa F2 không đổi"
+    ]
+  },
+  {
+    "id": "sony-sel50f12gm-qsyx",
+    "name": "FE 50mm F1.2 GM",
+    "fullName": "Sony FE 50mm F1.2 GM (SEL50F12GM/QSYX)",
+    "sku": "SEL50F12GM/QSYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "GM",
+    "priceVnd": 47117455,
+    "priceFormatted": "47.117.455 đ",
+    "url": "https://www.sony.com.vn/permalink/product/sel50f12gm?locale=vi_VN&sku=sel50f12gm-qsyx",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-2?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G Master đỉnh cao",
+      "Ống kính tiêu chuẩn khẩu độ lớn G Master F1.2",
+      "Nhỏ gọn nhưng có tốc độ vượt trội với độ phân giải và hiệu ứng bokeh xứng tầm G Master"
+    ]
+  },
+  {
+    "id": "sony-sel600f40gmjsyx",
+    "name": "FE 600 mm F4 GM OSS",
+    "fullName": "Sony FE 600 mm F4 GM OSS (SEL600F40GMJSYX)",
+    "sku": "SEL600F40GMJSYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "GM",
+    "priceVnd": 353444727,
+    "priceFormatted": "353.444.727 đ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel600f40gm?sku=sel600f40gmjsyx",
+    "imageUrl": "https://www.sony.com.vn/image/df5de41437d48c04ff92d80faa8a610a?fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G Master đỉnh cao",
+      "Ống kính siêu tele khẩu độ lớn G Master",
+      "Tốc độ vượt trội, độ phân giải G Master và hiệu ứng bokeh nổi bật"
+    ]
+  },
+  {
+    "id": "sony-sel70200gm2qsyx",
+    "name": "FE 70-200 mm F2.8 GM OSS II",
+    "fullName": "Sony FE 70-200 mm F2.8 GM OSS II (SEL70200GM2QSYX)",
+    "sku": "SEL70200GM2QSYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "GM",
+    "priceVnd": 55953818,
+    "priceFormatted": "55.953.818 đ",
+    "url": "https://www.sony.com.vn/lenses/products/sel70200gm2?sku=sel70200gm2qsyx",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image_1200?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G Master đỉnh cao",
+      "Định dạng Full Frame của E-mount",
+      "Ống kính zoom chụp tele G Master"
+    ]
+  },
+  {
+    "id": "sony-sel85f14gm-qsyx-mysonycarelens6mpackb",
+    "name": "FE 85 mm F1.4 GM II",
+    "fullName": "Sony FE 85 mm F1.4 GM II (SEL85F14GM/QSYX+MYSONYCARELENS6MPACKB)",
+    "sku": "SEL85F14GM/QSYX+MYSONYCARELENS6MPACKB",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "GM",
+    "priceVnd": 41762909,
+    "priceFormatted": "41.762.909 đ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel85f14gm2?sku=d2c%3A43697770561595",
+    "imageUrl": "https://cdn.shopify.com/s/files/1/0298/6259/2571/files/SEL85F14GMQSYX_msc6t.png?v=1783356748",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G Master đỉnh cao",
+      "Ống kính prime chụp tele tầm trung thuộc dòng G Master cao cấp",
+      "Chi tiết ảnh và hiệu ứng bokeh đặc biệt"
+    ]
+  },
+  {
+    "id": "sony-sel85f14gm-qsyx",
+    "name": "FE 85mm F1.4 GM",
+    "fullName": "Sony FE 85mm F1.4 GM (SEL85F14GM/QSYX)",
+    "sku": "SEL85F14GM/QSYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "GM",
+    "priceVnd": 39262909,
+    "priceFormatted": "39.262.909 đ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel85f14gm?sku=sel85f14gm-qsyx",
+    "imageUrl": "https://www.sony.com.vn/image/0b91f9a9ecc54beb2bf6621881e3fb63?fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount dòng G Master đỉnh cao",
+      "Ống kính G Master cố định chụp tele tầm trung",
+      "Chi tiết ảnh và hiệu ứng bokeh đặc biệt"
+    ]
+  },
+  {
+    "id": "sony-ilce-1-bq-ap2",
+    "name": "1",
+    "fullName": "Sony 1 (ILCE-1/BQ   AP2)",
+    "sku": "ILCE-1/BQ   AP2",
+    "category": "camera",
+    "subCategory1": "Full Frame",
+    "subCategory2": "Máy ảnh Alpha",
+    "priceVnd": 132535636,
+    "priceFormatted": "132.535.636 đ",
+    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-1?sku=ilce-1-bq-ap2",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/02_Primary_image?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Cảm biến CMOS xếp chồng full-frame 35 mm 50.1 MP* tích hợp bộ nhớ trong cho tốc độ cao (*Số điểm ảnh hiệu dụng xấp xỉ.)",
+      "Chụp liên tục tốc độ cao lên tới 30 hình/giây* (*Chế độ ghi hình liên tục “Hi+\". Tại 1/125 giây trở lên. Ở chế độ AF-C, tốc độ khung hình liên tục tối đa sẽ phụ thuộc vào chế độ chụp và loại ống kính sử dụng.)",
+      "Quay phim chuyên nghiệp lên đến 8K/30p và 4K/120p* (*Khi cắt hình 10%.)"
+    ]
+  },
+  {
+    "id": "sony-ilce-1m2-bq-ap2",
+    "name": "1 II",
+    "fullName": "Sony 1 II (ILCE-1M2/BQ AP2)",
+    "sku": "ILCE-1M2/BQ AP2",
+    "category": "camera",
+    "subCategory1": "Full Frame",
+    "subCategory2": "Máy ảnh Alpha",
+    "priceVnd": 153153818,
+    "priceFormatted": "153.153.818 đ",
+    "url": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilce-1m2?sku=ilce-1m2-bq-ap2",
+    "imageUrl": "https://www.sony.com.vn/image/6c5b1b963315cb73b32f88b18f5de2be?fmt=png-alpha",
+    "features": [
+      "Cảm biến hình ảnh Exmor RS CMOS xếp chồng full-frame 35 mm 50,1 triệu điểm ảnh",
+      "Lấy nét tự động nhận dạng trong thời gian thực dựa trên AI+",
+      "Chụp liên tục tốc độ cao mà không bị chớp đen lên đến 30 hình/giây với tính năng Lấy nét tự động/Phơi sáng tự động"
+    ]
+  },
+  {
+    "id": "sony-ilce-6400-b-ap2",
+    "name": "6400",
+    "fullName": "Sony 6400 (ILCE-6400/B AP2)",
+    "sku": "ILCE-6400/B AP2",
+    "category": "camera",
+    "subCategory1": "APS-C",
+    "subCategory2": "Máy ảnh Alpha",
+    "priceVnd": 17662909,
+    "priceFormatted": "17.662.909 đ",
+    "url": "https://www.sony.com.vn/permalink/product/ilce-6400?locale=vi_VN&sku=ilce-6400-b-ap2",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/02_Primary_image-2?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Hiệu suất lấy nét tự động 0,02 giây* phi thường có cả tính năng Theo dõi trong thời gian thực mới phát triển (*Theo nghiên cứu của Sony, được đo theo hướng dẫn của CIPA và bằng phương pháp đo nội bộ sử dụng một ống kính E 18–135 mm F3.5–5.6 OSS, tắt Lấy nét tự động trước và sử dụng khung ngắm.)",
+      "Cảm biến ExmorTM CMOS và BIONZ XTM cho chất lượng hình ảnh vượt trội",
+      "Màn hình cảm ứng LCD có thể xoay nghiêng 180° để chụp selfie và quay vlog"
+    ]
+  },
+  {
+    "id": "sony-ilce-6700-bqap2",
+    "name": "6700",
+    "fullName": "Sony 6700 (ILCE-6700/BQAP2)",
+    "sku": "ILCE-6700/BQAP2",
+    "category": "camera",
+    "subCategory1": "APS-C",
+    "subCategory2": "Máy ảnh Alpha",
+    "priceVnd": 33372000,
+    "priceFormatted": "33.372.000 đ",
+    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-6700?sku=ilce-6700-bqap2",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/og-4?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Cảm biến Exmor R™ CMOS chiếu sáng sau định dạng APS-C với 26,0 triệu điểm ảnh",
+      "Bộ xử lý BIONZ XR™ tiên tiến tăng tốc độ xử lý tổng thể lên đến 8 lần",
+      "Bộ xử lý AI giúp nhận dạng chủ thể phong phú và chính xác hơn"
+    ]
+  },
+  {
+    "id": "sony-ilce-7m3-bq-ap2",
+    "name": "7 III",
+    "fullName": "Sony 7 III (ILCE-7M3/BQ AP2)",
+    "sku": "ILCE-7M3/BQ AP2",
+    "category": "camera",
+    "subCategory1": "Full Frame",
+    "subCategory2": "Máy ảnh Alpha",
+    "priceVnd": 34353818,
+    "priceFormatted": "34.353.818 đ",
+    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-7m3-body-kit?sku=ilce-7m3-bq-ap2",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_Image-2?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Cảm biến Exmor R™ CMOS full-frame 24,2 MP* 35 mm mới phát triển và hệ thống xử lý hình ảnh nâng cao (*Số điểm ảnh hiệu dụng xấp xỉ.)",
+      "Hiệu suất lấy nét tự động tuyệt hảo và chụp liên tục 10 hình/giây* (*Lên tới 10 hình/giây trong chế độ “Hi+\" liên tục và lên tới 8 hình/giây trong chế độ “Hi\" liên tục. Số hình/giây tối đa phụ thuộc vào cài đặt máy ảnh.)",
+      "Các tính năng quay phim 4K HDR* ** full-frame và phim cấp chuyên nghiệp (*Cần có thẻ nhớ SDHC/SDXC Class 10 trở lên để quay phim định dạng XAVC S. Cần có thẻ UHS Speed Class 3 trở lên để quay phim ở tốc độ 100 Mbps. **Kết nối sản phẩm này với TV Sony tương thích HDR (HLG) qua cáp USB khi phát phim HDR (HLG).)"
+    ]
+  },
+  {
+    "id": "sony-ilce-7m4-bq-ap2",
+    "name": "7 IV",
+    "fullName": "Sony 7 IV (ILCE-7M4/BQ AP2)",
+    "sku": "ILCE-7M4/BQ AP2",
+    "category": "camera",
+    "subCategory1": "Full Frame",
+    "subCategory2": "Máy ảnh Alpha",
+    "priceVnd": 53499273,
+    "priceFormatted": "53.499.273 đ",
+    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-7m4?sku=ilce-7m4-bq-ap2",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/og?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Cảm biến hình ảnh Exmor R™ CMOS full-frame 33,0 triệu điểm ảnh* chiếu sáng sau (*Xấp xỉ, hiệu dụng.)",
+      "BIONZ XR™, cùng với các tính năng về ảnh tĩnh và phim kế thừa từ các model chủ lực của chúng tôi",
+      "Phát trực tiếp và chia sẻ nội dung chất lượng cao ngay tại chỗ"
+    ]
+  },
+  {
+    "id": "sony-ilce-7m5-bq-fs1",
+    "name": "7 V",
+    "fullName": "Sony 7 V (ILCE-7M5/BQ FS1)",
+    "sku": "ILCE-7M5/BQ FS1",
+    "category": "camera",
+    "subCategory1": "Full Frame",
+    "subCategory2": "Máy ảnh Alpha",
+    "priceVnd": 68990000,
+    "priceFormatted": "68.990.000 đ",
+    "url": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilce-7m5?sku=ilce-7m5-bq-fs1",
+    "imageUrl": "https://www.sony.com.vn/image/921c7202d895631a44388842d0a4622b?fmt=png-alpha",
+    "features": [
+      "Cảm biến hình ảnh Exmor RS™ CMOS xếp chồng một phần full-frame 33,0 triệu điểm ảnh",
+      "Bộ xử lý hình ảnh BIONZ XR2™ tích hợp AI",
+      "Chụp liên tục không bị chớp đen lên đến 30 hình/giây với khả năng theo dõi lấy nét tự động/phơi sáng tự động toàn diện"
+    ]
+  },
+  {
+    "id": "sony-ilce-7c-sq-ap2",
+    "name": "7C",
+    "fullName": "Sony 7C (ILCE-7C/SQ  AP2)",
+    "sku": "ILCE-7C/SQ  AP2",
+    "category": "camera",
+    "subCategory1": "Full Frame",
+    "subCategory2": "Máy ảnh Alpha",
+    "priceVnd": 29935636,
+    "priceFormatted": "29.935.636 đ",
+    "url": "https://www.sony.com.vn/permalink/product/ilce-7c?locale=vi_VN&sku=ilce-7c-sq-ap2",
+    "imageUrl": "https://www.sony.com.vn/image/542c82d573e4783e8097ac6fc4c722e9?fmt=png-alpha",
+    "features": [
+      "Thân máy ảnh full-frame chống rung nhỏ và nhẹ nhất thế giới",
+      "Cảm biến hình ảnh Exmor R™ CMOS full-frame 24,2 megapixel",
+      "Khả năng quay phim 4K linh hoạt cho người sáng tạo"
+    ]
+  },
+  {
+    "id": "sony-ilce-7cm2-sqap2",
+    "name": "7C II",
+    "fullName": "Sony 7C II (ILCE-7CM2/SQAP2)",
+    "sku": "ILCE-7CM2/SQAP2",
+    "category": "camera",
+    "subCategory1": "Full Frame",
+    "subCategory2": "Máy ảnh Alpha",
+    "priceVnd": 47608363,
+    "priceFormatted": "47.608.363 đ",
+    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-7cm2?sku=ilce-7cm2-sqap2",
+    "imageUrl": "https://www.sony.com.vn/image/e85dfc26cc12301bf97c60bb6e0e2ced?fmt=png-alpha",
+    "features": [
+      "Cảm biến hình ảnh CMOS full-frame chiếu sáng sau 33,0 MP",
+      "Bộ xử lý BIONZ XR™ tiên tiến với sức mạnh xử lý mạnh hơn tám lần",
+      "Bộ xử lý AI đột phá giúp nhận dạng chủ thể phong phú và chính xác hơn"
+    ]
+  },
+  {
+    "id": "sony-ilce-7cr-bq-ap2",
+    "name": "7CR",
+    "fullName": "Sony 7CR (ILCE-7CR/BQ AP2)",
+    "sku": "ILCE-7CR/BQ AP2",
+    "category": "camera",
+    "subCategory1": "Full Frame",
+    "subCategory2": "Máy ảnh Alpha",
+    "priceVnd": 66753818,
+    "priceFormatted": "66.753.818 đ",
+    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-7cr?sku=ilce-7cr-bq-ap2",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-20?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Cảm biến Exmor R™ CMOS full-frame chiếu sáng sau 61,0 MP",
+      "Bộ xử lý BIONZ XR™ tiên tiến tăng tốc độ xử lý tổng thể đến 8 lần",
+      "Bộ xử lý AI mới nhất"
+    ]
+  },
+  {
+    "id": "sony-ilce-7rm3a-cap2",
+    "name": "7R III",
+    "fullName": "Sony 7R III (ILCE-7RM3A/CAP2)",
+    "sku": "ILCE-7RM3A/CAP2",
+    "category": "camera",
+    "subCategory1": "Full Frame",
+    "subCategory2": "Máy ảnh Alpha",
+    "priceVnd": 49081091,
+    "priceFormatted": "49.081.091 đ",
+    "url": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilce-7rm3a?sku=ilce-7rm3a-cap2",
+    "imageUrl": "https://www.sony.com.vn/image/2fe582b9ac80cd4da5f0973777cc845e?fmt=png-alpha",
+    "features": [
+      "Cảm biến Exmor R™ CMOS full-frame 35 mm 42,4 MP và xử lý hình ảnh tăng cường",
+      "Hiệu suất lấy nét tự động tuyệt hảo và chụp liên tục 10 hình/giây",
+      "Thoải mái và tin cậy khi vận hành cho phép xử lý chuyên nghiệp"
+    ]
+  },
+  {
+    "id": "sony-ilce-7rm4a-qap2",
+    "name": "7R IV",
+    "fullName": "Sony 7R IV (ILCE-7RM4A/QAP2)",
+    "sku": "ILCE-7RM4A/QAP2",
+    "category": "camera",
+    "subCategory1": "Full Frame",
+    "subCategory2": "Máy ảnh Alpha",
+    "priceVnd": 73626545,
+    "priceFormatted": "73.626.545 đ",
+    "url": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilce-7rm4a?sku=ilce-7rm4a-qap2",
+    "imageUrl": "https://www.sony.com.vn/image/c8a930c97af5746b7120d4b639cfe813?fmt=png-alpha",
+    "features": [
+      "Cảm biến Exmor R™ CMOS full-frame 35 mm 61,0 MP và bộ xử lý hình ảnh tốc độ cao",
+      "Hiệu suất lấy nét tự động tuyệt hảo và khả năng chụp liên tục 10 hình/giây",
+      "Cảm giác thoải mái và độ tin cậy hỗ trợ thao tác vận hành khó mang tính yêu cầu cao của các chuyên gia"
+    ]
+  },
+  {
+    "id": "sony-ilce-7rm5-bqap2",
+    "name": "7R V",
+    "fullName": "Sony 7R V (ILCE-7RM5/BQAP2)",
+    "sku": "ILCE-7RM5/BQAP2",
+    "category": "camera",
+    "subCategory1": "Full Frame",
+    "subCategory2": "Máy ảnh Alpha",
+    "priceVnd": 84426545,
+    "priceFormatted": "84.426.545 đ",
+    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-7rm5?sku=ilce-7rm5-bqap2",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/og-2?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Bộ xử lý AI mới được phát triển",
+      "Cảm biến Exmor R™ CMOS full-frame chiếu sáng sau 61,0 MP*(*Số điểm ảnh hiệu dụng xấp xỉ.)",
+      "Quay phim chuyên nghiệp lên đến 8K 24p (25p) và 4K 60p (50p)** (*Chuyển động chậm & nhanh không khả dụng khi quay phim chuẩn XAVC HS 8K. [Ghi hình APS-C/S35] được ấn định [Tắt]. Góc ngắm xấp xỉ 1,2 lần.**[Ghi hình APS-C/S35] được ấn định [Tắt]. Góc ngắm xấp xỉ 1,2 lần khi quay phim chuẩn 4K 60 (50p).)"
+    ]
+  },
+  {
+    "id": "sony-ilce-7rm6-bqfs1",
+    "name": "7R VI",
+    "fullName": "Sony 7R VI (ILCE-7RM6/BQFS1)",
+    "sku": "ILCE-7RM6/BQFS1",
+    "category": "camera",
+    "subCategory1": "Full Frame",
+    "subCategory2": "Máy ảnh Alpha",
+    "priceVnd": 113990000,
+    "priceFormatted": "113.990.000 đ",
+    "url": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilce-7rm6?sku=ilce-7rm6-bqfs1",
+    "imageUrl": "https://www.sony.com.vn/image/9bb73463633f22e8851c0d457f6fee10?fmt=png-alpha",
+    "features": [
+      "Độ phân giải dẫn đầu phân khúc nhờ trang bị cảm biến hình ảnh full-frame Exmor RS™ CMOS xếp chồng hoàn toàn 66,8 MP",
+      "Bộ xử lý hình ảnh BIONZ XR2™ tích hợp bộ xử lý AI chuyên biệt",
+      "Chụp liên tục không bị chớp đen lên đến 30 hình/giây với độ phân giải tối đa và khả năng theo dõi lấy nét tự động/phơi sáng tự động"
+    ]
+  },
+  {
+    "id": "sony-ilce-7sm3-bqap2",
+    "name": "7S III",
+    "fullName": "Sony 7S III (ILCE-7SM3/BQAP2)",
+    "sku": "ILCE-7SM3/BQAP2",
+    "category": "camera",
+    "subCategory1": "Full Frame",
+    "subCategory2": "Máy ảnh Alpha",
+    "priceVnd": 75590182,
+    "priceFormatted": "75.590.182 đ",
+    "url": "https://www.sony.com.vn/permalink/product/ilce-7sm3?locale=vi_VN&sku=ilce-7sm3-bqap2",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/02_Primary_image-3?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Cảm biến 12,1 triệu điểm ảnh* mới được phát triển và bộ xử lý BIONZ XRTM mới (*Số điểm ảnh hiệu dụng xấp xỉ.)",
+      "Quay phim chuyên nghiệp lên đến 4K/120p* (*Khi cắt cúp hình 10%.)",
+      "Tính năng tự động lấy nét lai hiệu suất cao được tối ưu hóa để chụp ảnh tĩnh hoặc quay video"
+    ]
+  },
+  {
+    "id": "sony-ilce-9m3-bq-ap2",
+    "name": "9 III",
+    "fullName": "Sony 9 III (ILCE-9M3/BQ AP2)",
+    "sku": "ILCE-9M3/BQ AP2",
+    "category": "camera",
+    "subCategory1": "Full Frame",
+    "subCategory2": "Máy ảnh Alpha",
+    "priceVnd": 143335636,
+    "priceFormatted": "143.335.636 đ",
+    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-9m3?sku=ilce-9m3-bq-ap2",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-21?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Cảm biến hình ảnh Exmor RS™ CMOS 24,6 MP xếp chồng full-frame với màn trập bao trùm",
+      "Bộ xử lý hình ảnh BIONZ XR™ với sức mạnh xử lý cao gấp 8 lần",
+      "Chụp không bị chớp đen ở tốc độ 120 hình/giây với tính năng theo dõi lấy nét tự động/phơi sáng tự động"
+    ]
+  },
+  {
+    "id": "sony-sel1018-c-ae",
+    "name": "E 10-18mm F4 OSS",
+    "fullName": "Sony E 10-18mm F4 OSS (SEL1018//C  AE)",
+    "sku": "SEL1018//C  AE",
+    "category": "lens",
+    "subCategory1": "APS-C",
+    "subCategory2": "SEL",
+    "priceVnd": 17662909,
+    "priceFormatted": "17.662.909 đ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel1018?sku=sel1018-c-ae",
+    "imageUrl": "https://www.sony.com.vn/image/091c300275b83c990e723865ea8ccb67?fmt=png-alpha",
+    "features": [
+      "Ống kính E-Mount dành riêng cho cảm biến APS-C",
+      "Ống kính zoom góc rộng",
+      "Chống rung quang học SteadyShot™"
+    ]
+  },
+  {
+    "id": "sony-sel11f18-c-syx",
+    "name": "E 11 mm F1.8",
+    "fullName": "Sony E 11 mm F1.8 (SEL11F18//C SYX)",
+    "sku": "SEL11F18//C SYX",
+    "category": "lens",
+    "subCategory1": "APS-C",
+    "subCategory2": "SEL",
+    "priceVnd": 10790182,
+    "priceFormatted": "10.790.182 đ",
+    "url": "https://www.sony.com.vn/permalink/product/sel11f18?locale=vi_VN&sku=sel11f18-c-syx",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-4?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Ống kính E-Mount dành riêng cho cảm biến APS-C",
+      "Prime góc siêu rộng cho cả ảnh tĩnh và phim",
+      "Thiết kế nhỏ gọn với trọng lượng nhẹ"
+    ]
+  },
+  {
+    "id": "sony-sel15f14g-csyx",
+    "name": "E 15 mm F1.4 G",
+    "fullName": "Sony E 15 mm F1.4 G (SEL15F14G//CSYX)",
+    "sku": "SEL15F14G//CSYX",
+    "category": "lens",
+    "subCategory1": "APS-C",
+    "subCategory2": "SEL",
+    "priceVnd": 15699273,
+    "priceFormatted": "15.699.273 đ",
+    "url": "https://www.sony.com.vn/permalink/product/sel15f14g?locale=vi_VN&sku=sel15f14g-csyx",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image_1200-5?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Ống kính E-Mount dành riêng cho cảm biến APS-C",
+      "Ống kính prime G góc rộng khẩu độ rộng",
+      "Khẩu độ tối đa F1.4 không đổi"
+    ]
+  },
+  {
+    "id": "sony-sel18200le-syx",
+    "name": "E 18–200mm F3.5–6.3 OSS LE",
+    "fullName": "Sony E 18–200mm F3.5–6.3 OSS LE (SEL18200LE  SYX)",
+    "sku": "SEL18200LE  SYX",
+    "category": "lens",
+    "subCategory1": "APS-C",
+    "subCategory2": "SEL",
+    "priceVnd": 15699273,
+    "priceFormatted": "15.699.273 đ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel18200le?sku=sel18200le-syx",
+    "imageUrl": "https://www.sony.com.vn/image/89ae4f3a5e89a6f134b3db282adf5e75?fmt=png-alpha",
+    "features": [
+      "Ống kính E-Mount dành riêng cho cảm biến APS-C",
+      "Zoom phóng đại cao",
+      "Nhỏ gọn và nhẹ"
+    ]
+  },
+  {
+    "id": "sony-sel30m35-c-syx",
+    "name": "E 30 mm F3.5 Macro",
+    "fullName": "Sony E 30 mm F3.5 Macro (SEL30M35//C SYX)",
+    "sku": "SEL30M35//C SYX",
+    "category": "lens",
+    "subCategory1": "APS-C",
+    "subCategory2": "SEL",
+    "priceVnd": 5881091,
+    "priceFormatted": "5.881.091 đ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel30m35?sku=sel30m35-c-syx",
+    "imageUrl": "https://www.sony.com.vn/image/c40743f1385344c5a54745b9130fba5c?fmt=png-alpha",
+    "features": [
+      "Ống kính E-Mount dành riêng cho cảm biến APS-C",
+      "Ống kính macro",
+      "Tỷ lệ phóng đại 1:1, lấy nét tối thiểu 9,5 cm"
+    ]
+  },
+  {
+    "id": "sony-sel35f18-c-syx",
+    "name": "E 35mm F1.8 OSS",
+    "fullName": "Sony E 35mm F1.8 OSS (SEL35F18//C SYX)",
+    "sku": "SEL35F18//C SYX",
+    "category": "lens",
+    "subCategory1": "APS-C",
+    "subCategory2": "SEL",
+    "priceVnd": 7844727,
+    "priceFormatted": "7.844.727 đ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel35f18?sku=sel35f18-c-syx",
+    "imageUrl": "https://www.sony.com.vn/image/353e8887e1749b516e7bddd8fe07fbe1?fmt=png-alpha",
+    "features": [
+      "Ống kính E-Mount dành riêng cho cảm biến APS-C",
+      "Ống kính prime tiêu chuẩn",
+      "Vô cùng nhỏ gọn và dễ mang theo"
+    ]
+  },
+  {
+    "id": "sony-sel50f18-bc-syx",
+    "name": "E 50mm F1.8 OSS",
+    "fullName": "Sony E 50mm F1.8 OSS (SEL50F18/BC SYX)",
+    "sku": "SEL50F18/BC SYX",
+    "category": "lens",
+    "subCategory1": "APS-C",
+    "subCategory2": "SEL",
+    "priceVnd": 6862909,
+    "priceFormatted": "6.862.909 đ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel50f18?sku=sel50f18-bc-syx",
+    "imageUrl": "https://www.sony.com.vn/image/21519f325ed91cd52c6c67651c907e1d?fmt=png-alpha",
+    "features": [
+      "Ống kính E-Mount dành riêng cho cảm biến APS-C",
+      "Ống kính prime tiêu chuẩn",
+      "Khẩu độ F1.8 nhanh với hiệu ứng bokeh mượt mà"
+    ]
+  },
+  {
+    "id": "sony-sel24240-c-syx",
+    "name": "FE 24-240 mm F3.5-6.3 OSS",
+    "fullName": "Sony FE 24-240 mm F3.5-6.3 OSS (SEL24240//C SYX)",
+    "sku": "SEL24240//C SYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "SEL",
+    "priceVnd": 20608364,
+    "priceFormatted": "20.608.364 đ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel24240?sku=sel24240-c-syx",
+    "imageUrl": "https://www.sony.com.vn/image/9971cbdfe1271fab0f6d0dbd7d767679?fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount",
+      "Góc ngắm rộng 24 mm",
+      "Ống kính zoom 10x"
+    ]
+  },
+  {
+    "id": "sony-sel28f20-q-syx",
+    "name": "FE 28mm F2",
+    "fullName": "Sony FE 28mm F2 (SEL28F20//Q SYX)",
+    "sku": "SEL28F20//Q SYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "SEL",
+    "priceVnd": 9513818,
+    "priceFormatted": "9.513.818 đ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel28f20-series?sku=sel28f20-q-syx",
+    "imageUrl": "https://www.sony.com.vn/image/073fb3e9185c4417630a02a292533536?fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount",
+      "Ống kính prime góc cực rộng tiện lợi",
+      "Bộ chuyển đổi chuyên dụng tùy chọn sẵn có"
+    ]
+  },
+  {
+    "id": "sony-sel35f18f-csyx",
+    "name": "FE 35 mm F1.8",
+    "fullName": "Sony FE 35 mm F1.8 (SEL35F18F//CSYX)",
+    "sku": "SEL35F18F//CSYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "SEL",
+    "priceVnd": 15208364,
+    "priceFormatted": "15.208.364 đ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel35f18f?sku=sel35f18f-csyx",
+    "imageUrl": "https://www.sony.com.vn/image/a4adc03f65f5e71a012cfca0f2e98a79?fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount",
+      "Prime góc rộng",
+      "Nhanh, nhỏ gọn & trọng lượng nhẹ"
+    ]
+  },
+  {
+    "id": "sony-sel50f18f-csyx",
+    "name": "FE 50mm F1.8",
+    "fullName": "Sony FE 50mm F1.8 (SEL50F18F//CSYX)",
+    "sku": "SEL50F18F//CSYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "SEL",
+    "priceVnd": 6175636,
+    "priceFormatted": "6.175.636 đ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel50f18f?sku=sel50f18f-csyx",
+    "imageUrl": "https://www.sony.com.vn/image/465f8a49b9faee76afee2d2e0d84ed80?fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount",
+      "Khẩu độ tối đa F1.8 để chụp ảnh trong điều kiện thiếu sáng",
+      "Khẩu độ tròn 7 lá đem lại các hiệu ứng làm mờ đẹp mắt"
+    ]
+  },
+  {
+    "id": "sony-sel50m28-c-syx",
+    "name": "FE 50mm F2.8 Macro",
+    "fullName": "Sony FE 50mm F2.8 Macro (SEL50M28//C SYX)",
+    "sku": "SEL50M28//C SYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "SEL",
+    "priceVnd": 11772000,
+    "priceFormatted": "11.772.000 đ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel50m28?sku=sel50m28-c-syx",
+    "imageUrl": "https://www.sony.com.vn/image/ca7a2405d1899c07a004cd6238da7d13?fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount",
+      "Ống kính macro 1:1 tiêu chuẩn",
+      "Thiết kế nhỏ gọn với trọng lượng nhẹ"
+    ]
+  },
+  {
+    "id": "sony-sel85f18-syx",
+    "name": "FE 85mm F1.8",
+    "fullName": "Sony FE 85mm F1.8 (SEL85F18    SYX)",
+    "sku": "SEL85F18    SYX",
+    "category": "lens",
+    "subCategory1": "Full Frame",
+    "subCategory2": "SEL",
+    "priceVnd": 12262909,
+    "priceFormatted": "12.262.909 đ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel85f18?sku=sel85f18-syx",
+    "imageUrl": "https://www.sony.com.vn/image/994517cdbe6ea84bb69c922c11c0282d?fmt=png-alpha",
+    "features": [
+      "Ống kính Full Frame E-Mount",
+      "Prime chụp tele tầm trung",
+      "Tính di động linh hoạt phù hợp với mọi cảnh chụp thường ngày"
+    ]
+  },
+  {
+    "id": "sony-sel14tc-q-syx",
+    "name": "Tele Converter 1.4x",
+    "fullName": "Sony Tele Converter 1.4x (SEL14TC//Q  SYX)",
+    "sku": "SEL14TC//Q  SYX",
+    "category": "lens",
+    "subCategory1": "Adapter",
+    "subCategory2": "SEL",
+    "priceVnd": 12753818,
+    "priceFormatted": "12.753.818 đ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel14tc?sku=sel14tc-q-syx",
+    "imageUrl": "https://www.sony.com.vn/image/7fea66e12262d47478e13e223094ae8d?fmt=png-alpha",
+    "features": [
+      "Ống kính phóng đại 1.4x",
+      "Hụt sáng 1 F-Stop",
+      "E-mount trước, sau"
+    ]
+  },
+  {
+    "id": "sony-sel20tc-q-syx",
+    "name": "Tele Converter 2x",
+    "fullName": "Sony Tele Converter 2x (SEL20TC//Q  SYX)",
+    "sku": "SEL20TC//Q  SYX",
+    "category": "lens",
+    "subCategory1": "Adapter",
+    "subCategory2": "SEL",
+    "priceVnd": 12753818,
+    "priceFormatted": "12.753.818 đ",
+    "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel20tc?sku=sel20tc-q-syx",
+    "imageUrl": "https://www.sony.com.vn/image/f57b85b6c5a8f45d97410a5d6b52d3be?fmt=png-alpha",
+    "features": [
+      "Ống kính phóng đại 2x",
+      "Hụt sáng 2 F-Stops",
+      "E-mount trước, sau"
+    ]
+  },
+  {
+    "id": "sony-zv-1-wq-e32",
+    "name": "ZV-1",
+    "fullName": "Sony ZV-1 (ZV-1/WQ E32)",
+    "sku": "ZV-1/WQ E32",
+    "category": "camera",
+    "subCategory1": "1-Inch",
+    "subCategory2": "Vlog",
+    "priceVnd": 15699273,
+    "priceFormatted": "15.699.273 đ",
+    "url": "https://sony.scene7.com/is/image/sonyglobalsolutions/slide5_Mobile_white?$productIntroPlatemobile$&fmt=png-alpha\nhttps://cdn.shopify.com/s/files/1/0298/6259/2571/files/ZV-1.png?v=1783588144\nhttps://cdn.shopify.com/s/files/1/0298/6259/2571/files/ZV-1_1_1_9860a3e5-15ab-47c1-9b61-d54e9d573aa6.png?v=1712816338\nhttps://cdn.shopify.com/s/files/1/0298/6259/2571/files/3_60ba6fa4-5b8a-427d-8b8b-9f8bcc8c2e29.png?v=1712816338\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/SEA_Localisation_1584_980_mobile?$productIntroPlatemobile$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/slide1_Mobile_white-1?$productIntroPlatemobile$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/slide3_1_Mobile_white?$productIntroPlatemobile$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/slide3_2_Mobile_white?$productIntroPlatemobile$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/slide4_Mobile_white-1?$productIntroPlatemobile$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/slide5_Mobile_white?$productIntroPlatemobile$&fmt=png-alpha\nhttps://cdn.shopify.com/s/files/1/0298/6259/2571/files/ZV-1.png?v=1783588144\nhttps://www.sony.com.vn/content/dam/sony/contents/global/cameras/compact-cameras/year2022/model-zv-1-migrated/product-summary/reddotwinner2021-100.jpg\nhttps://www.sony.com.vn/content/dam/sony/contents/global/cameras/compact-cameras/year2022/model-zv-1-migrated/product-summary/DesignAward2021-100.png\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/VN_1862_640_all_spans?$promotionTilesMobile$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/primary_image?$S7Product$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-19?$S7Product$&fmt=png-alpha\nhttps://www.sony.com/image/42e1383ea62c154f5fa8a65bd56f19a1?fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-17?$S7Product$&fmt=png-alpha\nhttps://www.sony.com/image/df480ae041307410b9aae9e3ecc4b502?fmt=png-alpha\nhttps://www.sony.com/image/a1c971f3f7dacdd2015af652a1eca2a2?fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image_black-1?$S7Product$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/primary_image-2?$S7Product$&fmt=png-alpha\nhttps://www.sony.com/image/94df45302e30919e157ef9aaa3b1dba6?fmt=png-alpha\nhttps://www.sony.com/image/593ee9bef1a5a280aa597a32b3eec684?fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/primary_image-1?$S7Product$&fmt=png-alpha\nhttps://www.sony.com/image/2ea19010a696190117f57f7a666e7230?fmt=png-alpha\nhttps://www.sony.com/image/52bc10e41acc5ec0326749525d4b265e?fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-15?$S7Product$&fmt=png-alpha\nhttps://www.sony.com/image/09c30323209c58ac8ebc7b2f6ae7fd8a?fmt=png-alpha\nhttps://www.sony.com/image/fa5e09f443737954476853d67fb65a13?fmt=png-alpha\nhttps://www.sony.com/image/97853a17952f240620b83732595b0e87?fmt=png-alpha\nhttps://www.sony.com/image/22e0aabe6ad2b57a55e5153c45ad9380?fmt=png-alpha",
+    "imageUrl": "Tìm hiểu thêm",
+    "features": [
+      "Dành cho những bạn thích quay video: màn hình LCD đa góc, báng tay cầm trên thân máy và đèn quay phim",
+      "Micro định hướng có 3 đầu củ với mút chắn gió",
+      "Cảm biến hình ảnh Exmor RS™ CMOS loại 1.0 cỡ lớn và ống kính ZEISS® 24-70 mm"
+    ]
+  },
+  {
+    "id": "sony-zv-1m2-wq-e32",
+    "name": "ZV-1 II",
+    "fullName": "Sony ZV-1 II (ZV-1M2/WQ   E32)",
+    "sku": "ZV-1M2/WQ   E32",
+    "category": "camera",
+    "subCategory1": "1-Inch",
+    "subCategory2": "Vlog",
+    "priceVnd": 19626545,
+    "priceFormatted": "19.626.545 đ",
+    "url": "https://sony.scene7.com/is/image/sonyglobalsolutions/SlideShow_10_Mobile?$productIntroPlatemobile$&fmt=png-alpha\nhttps://cdn.shopify.com/s/files/1/0298/6259/2571/files/ZV-1ii.png?v=1783588145\nhttps://cdn.shopify.com/s/files/1/0298/6259/2571/files/may-anh-sony-vlog-ong-kinh-roi_zv-1ii.jpg?v=1781176181\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/SlideShow_2_Mobile-2?$productIntroPlatemobile$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/SlideShow_4_Mobile-2?$productIntroPlatemobile$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/SlideShow_6_Mobile-2?$productIntroPlatemobile$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/SlideShow_8_Mobile-2?$productIntroPlatemobile$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/SlideShow_10_Mobile?$productIntroPlatemobile$&fmt=png-alpha\nhttps://cdn.shopify.com/s/files/1/0298/6259/2571/files/ZV-1ii.png?v=1783588145\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/primary_image?$S7Product$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-19?$S7Product$&fmt=png-alpha\nhttps://www.sony.com/image/42e1383ea62c154f5fa8a65bd56f19a1?fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-17?$S7Product$&fmt=png-alpha\nhttps://www.sony.com/image/df480ae041307410b9aae9e3ecc4b502?fmt=png-alpha\nhttps://www.sony.com/image/a1c971f3f7dacdd2015af652a1eca2a2?fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image_black-1?$S7Product$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/primary_image-2?$S7Product$&fmt=png-alpha\nhttps://www.sony.com/image/94df45302e30919e157ef9aaa3b1dba6?fmt=png-alpha\nhttps://www.sony.com/image/593ee9bef1a5a280aa597a32b3eec684?fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/primary_image-1?$S7Product$&fmt=png-alpha\nhttps://www.sony.com/image/2ea19010a696190117f57f7a666e7230?fmt=png-alpha\nhttps://www.sony.com/image/52bc10e41acc5ec0326749525d4b265e?fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-15?$S7Product$&fmt=png-alpha\nhttps://www.sony.com/image/09c30323209c58ac8ebc7b2f6ae7fd8a?fmt=png-alpha\nhttps://www.sony.com/image/fa5e09f443737954476853d67fb65a13?fmt=png-alpha\nhttps://www.sony.com/image/97853a17952f240620b83732595b0e87?fmt=png-alpha\nhttps://www.sony.com/image/22e0aabe6ad2b57a55e5153c45ad9380?fmt=png-alpha",
+    "imageUrl": "Tìm hiểu thêm",
+    "features": [
+      "Cảm biến hình ảnh loại 1.0 lớn cho chất lượng hình ảnh ấn tượng",
+      "Ống kính zoom góc rộng 18–50 mm4 linh hoạt, lý tưởng để quay vlog",
+      "Âm thanh tuyệt vời với Micro 3 đầu củ thông minh tích hợp và mút chắn gió đi kèm"
+    ]
+  },
+  {
+    "id": "sony-zv-1f-wq-e32",
+    "name": "ZV-1F",
+    "fullName": "Sony ZV-1F (ZV-1F/WQ    E32)",
+    "sku": "ZV-1F/WQ    E32",
+    "category": "camera",
+    "subCategory1": "1-Inch",
+    "subCategory2": "Vlog",
+    "priceVnd": 13735636,
+    "priceFormatted": "13.735.636 đ",
+    "url": "https://sony.scene7.com/is/image/sonyglobalsolutions/slide12_Mobile?$productIntroPlatemobile$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/slide02_Mobile?$productIntroPlatemobile$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/slide04_Mobile?$productIntroPlatemobile$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/slide06_Mobile?$productIntroPlatemobile$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/slide08_Mobile?$productIntroPlatemobile$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/slide10_Mobile?$productIntroPlatemobile$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/slide12_Mobile?$productIntroPlatemobile$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/slide02_Mobile?$productIntroPlatemobile$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/primary_image?$S7Product$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-19?$S7Product$&fmt=png-alpha\nhttps://www.sony.com/image/42e1383ea62c154f5fa8a65bd56f19a1?fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-17?$S7Product$&fmt=png-alpha\nhttps://www.sony.com/image/df480ae041307410b9aae9e3ecc4b502?fmt=png-alpha\nhttps://www.sony.com/image/a1c971f3f7dacdd2015af652a1eca2a2?fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image_black-1?$S7Product$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/primary_image-2?$S7Product$&fmt=png-alpha\nhttps://www.sony.com/image/94df45302e30919e157ef9aaa3b1dba6?fmt=png-alpha\nhttps://www.sony.com/image/593ee9bef1a5a280aa597a32b3eec684?fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/primary_image-1?$S7Product$&fmt=png-alpha\nhttps://www.sony.com/image/2ea19010a696190117f57f7a666e7230?fmt=png-alpha\nhttps://www.sony.com/image/52bc10e41acc5ec0326749525d4b265e?fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-15?$S7Product$&fmt=png-alpha\nhttps://www.sony.com/image/09c30323209c58ac8ebc7b2f6ae7fd8a?fmt=png-alpha\nhttps://www.sony.com/image/fa5e09f443737954476853d67fb65a13?fmt=png-alpha\nhttps://www.sony.com/image/97853a17952f240620b83732595b0e87?fmt=png-alpha\nhttps://www.sony.com/image/22e0aabe6ad2b57a55e5153c45ad9380?fmt=png-alpha",
+    "imageUrl": "Tìm hiểu thêm",
+    "features": [
+      "Ống kính prime góc siêu rộng 20 mm* cùng màn hình LCD đa góc lý tưởng để quay selfie nhóm(*Tương đương định dạng 35 mm)",
+      "Thiết kế để trở thành máy ảnh vlog đầu tiên của bạn",
+      "Micro 3 đầu củ định hướng kèm theo mút chắn gió"
+    ]
+  },
+  {
+    "id": "sony-zv-e1-bq-ap2",
+    "name": "ZV-E1",
+    "fullName": "Sony ZV-E1 (ZV-E1/BQ    AP2)",
+    "sku": "ZV-E1/BQ    AP2",
+    "category": "camera",
+    "subCategory1": "Full Frame",
+    "subCategory2": "Vlog",
+    "priceVnd": 49081091,
+    "priceFormatted": "49.081.091 đ",
+    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/zv-e1?sku=zv-e1-bq-ap2",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/01_Primary_image-1?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Sản phẩm Sony chính hãng bảo hành toàn quốc"
+    ]
+  },
+  {
+    "id": "sony-zv-e10-bq-ap2",
+    "name": "ZV-E10",
+    "fullName": "Sony ZV-E10 (ZV-E10/BQ   AP2)",
+    "sku": "ZV-E10/BQ   AP2",
+    "category": "camera",
+    "subCategory1": "APS-C",
+    "subCategory2": "Vlog",
+    "priceVnd": 14226546,
+    "priceFormatted": "14.226.546 đ",
+    "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/zv-e10?sku=zv-e10-bq-ap2",
+    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image?$primaryshotPreset$&fmt=png-alpha",
+    "features": [
+      "Máy ảnh ống kính rời để làm vlog",
+      "Cảm biến CMOS Exmor™ 24,2 megapixel loại APS-C cỡ lớn",
+      "Micro 3 đầu củ định hướng kèm theo mút chắn gió"
+    ]
+  },
+  {
+    "id": "sony-zv-e10m2-bq-ap2",
+    "name": "ZV-E10 II",
+    "fullName": "Sony ZV-E10 II (ZV-E10M2/BQ AP2)",
+    "sku": "ZV-E10M2/BQ AP2",
+    "category": "camera",
+    "subCategory1": "APS-C",
+    "subCategory2": "Vlog",
+    "priceVnd": 25517455,
+    "priceFormatted": "25.517.455 đ",
+    "url": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/zv-e10m2?sku=zv-e10m2-bq-ap2",
+    "imageUrl": "https://www.sony.com.vn/image/e97df1e13186cfff76cc74554dbf7745?fmt=png-alpha",
+    "features": [
+      "Cảm biến Exmor R™ CMOS định dạng APS-C với 26,0 triệu điểm ảnh",
+      "Bộ xử lý hình ảnh BIONZ XR™ cho ra cảnh quay 4K ấn tượng ở tốc độ lên tới 60p",
+      "Tự do biểu đạt với ống kính rời và cài đặt vlog chuyên dụng"
+    ]
+  },
+  {
+    "id": "sony-ecm-m1",
+    "name": "Microphone thu âm Shotgun ECM-M1",
+    "fullName": "Sony Shotgun Microphone ECM-M1 8 Chế độ hướng thu",
+    "sku": "ECM-M1",
+    "category": "accessory",
+    "subCategory1": "Audio",
+    "subCategory2": "Microphone",
+    "priceVnd": 8990000,
+    "priceFormatted": "8.990.000 đ",
+    "url": "https://www.sony.com.vn/electronics/phu-kien-may-anh-ong-kinh-micro/ecm-m1",
+    "imageUrl": "https://www.sony.com.vn/image/20fb144081c7ff6c7cbdf424fa7ea278?fmt=png-alpha",
+    "features": [
+      "8 chế độ hướng thu âm thanh linh hoạt trong một thiết kế cực kỳ nhỏ gọn",
+      "Giao diện âm thanh kỹ thuật số qua Chân cắm đa năng (MI Shoe)",
+      "Công nghệ xử lý tín hiệu kỹ thuật số tiên tiến và khả năng lọc tiếng ồn nhiễu"
+    ]
+  },
+  {
+    "id": "sony-ecm-b10",
+    "name": "Microphone thu âm Compact Shotgun ECM-B10",
+    "fullName": "Sony Compact Shotgun Microphone ECM-B10",
+    "sku": "ECM-B10",
+    "category": "accessory",
+    "subCategory1": "Audio",
+    "subCategory2": "Microphone",
+    "priceVnd": 6990000,
+    "priceFormatted": "6.990.000 đ",
+    "url": "https://www.sony.com.vn/electronics/phu-kien-may-anh-ong-kinh-micro/ecm-b10",
+    "imageUrl": "https://www.sony.com.vn/image/098ee3ddffb3ce6bdcbfaee0f1e8fa87?fmt=png-alpha",
+    "features": [
+      "3 mô hình hướng thu thu âm định hướng siêu gọn nhẹ",
+      "Truyền tải âm thanh kỹ thuật số không dây qua MI Shoe",
+      "Kháng bụi ẩm tốt và chống rung nhiễu cơ học"
+    ]
+  },
+  {
+    "id": "sony-np-fz100",
+    "name": "Pin sạc Lithium-ion NP-FZ100",
+    "fullName": "Sony Rechargeable Battery Pack NP-FZ100 (2280mAh)",
+    "sku": "NP-FZ100",
+    "category": "accessory",
+    "subCategory1": "Power",
+    "subCategory2": "Battery",
+    "priceVnd": 1990000,
+    "priceFormatted": "1.990.000 đ",
+    "url": "https://www.sony.com.vn/electronics/phu-kien-may-anh-ong-kinh-pin-sac/np-fz100",
+    "imageUrl": "https://www.sony.com.vn/image/917a22830fdf33e387dd523b038eb9f3?fmt=png-alpha",
+    "features": [
+      "Dung lượng pin lớn 2280 mAh cho thời lượng chụp và quay lâu gấp đôi dòng W",
+      "Hỗ trợ hiển thị chính xác % dung lượng pin trên màn hình máy ảnh Alpha",
+      "Tích hợp mạch bảo vệ an toàn cao cấp chính hãng Sony"
+    ]
+  },
+  {
+    "id": "sony-gp-vpt2bt",
+    "name": "Báng tay cầm kiêm chân máy không dây GP-VPT2BT",
+    "fullName": "Sony Wireless Shooting Grip GP-VPT2BT Bluetooth",
+    "sku": "GP-VPT2BT",
+    "category": "accessory",
+    "subCategory1": "Grip / Tripod",
+    "subCategory2": "Vlog Accessory",
+    "priceVnd": 3190000,
+    "priceFormatted": "3.190.000 đ",
+    "url": "https://www.sony.com.vn/electronics/phu-kien-may-anh-ong-kinh-bang-tay-cam/gp-vpt2bt",
+    "imageUrl": "https://www.sony.com.vn/image/a0a6d0932a39281a1795c735dcae9b62?fmt=png-alpha",
+    "features": [
+      "Kết nối không dây Bluetooth tiện lợi điều khiển chụp/quay/zoom từ xa",
+      "Thiết kế linh hoạt chuyển đổi nhanh giữa báng cầm tay và chân máy mini",
+      "Khả năng chống bụi ẩm và xoay gập đa góc chụp Vlog dễ dàng"
+    ]
+  },
+  {
+    "id": "sony-la-ea5",
+    "name": "Ngàm chuyển đổi ống kính A-mount sang E-mount LA-EA5",
+    "fullName": "Sony Mount Adaptor LA-EA5 A-mount to E-mount",
+    "sku": "LA-EA5",
+    "category": "accessory",
+    "subCategory1": "Adapter",
+    "subCategory2": "Lens Mount",
+    "priceVnd": 6490000,
+    "priceFormatted": "6.490.000 đ",
+    "url": "https://www.sony.com.vn/electronics/phu-kien-may-anh-ong-kinh-ngam-chuyen/la-ea5",
+    "imageUrl": "https://www.sony.com.vn/image/6e5eb981eb080a22cf88c75d400e42d7?fmt=png-alpha",
+    "features": [
+      "Hỗ trợ lấy nét tự động AF pha mặt phẳng tiêu cự cho ống kính A-mount SSM/SAM trên máy E-mount",
+      "Tích hợp động cơ lấy nét mô tơ cơ học cho các ống kính A-mount không có mô tơ trong",
+      "Thiết kế hình trụ gọn gàng đồng bộ đường kính ngàm E-mount"
     ]
   }
 ]

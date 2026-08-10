@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { isSupabaseConfigured, supabaseRead } from '@/lib/supabase/server';
-import type { CameraCategory, SonyCamera } from './types';
+import type { ProductCategory, SonyCamera } from './types';
 
 let cachedSeedCameras: SonyCamera[] | null = null;
 
@@ -19,7 +19,9 @@ export function getSeedCameras(): SonyCamera[] {
 }
 
 export async function getSonyCameras(options?: {
-  category?: CameraCategory;
+  category?: ProductCategory;
+  subCategory1?: string;
+  subCategory2?: string;
   search?: string;
   sortBy?: 'price-asc' | 'price-desc' | 'name' | 'sku';
 }): Promise<SonyCamera[]> {
@@ -31,7 +33,7 @@ export async function getSonyCameras(options?: {
     try {
       const { data, error } = await supabaseRead()
         .from('sony_cameras')
-        .select('id, sku, name, full_name, category, price_vnd, price_formatted, url, image_url, features')
+        .select('id, sku, name, full_name, category, sub_category_1, sub_category_2, price_vnd, price_formatted, url, image_url, features')
         .order('price_vnd', { ascending: false });
 
       if (!error && Array.isArray(data) && data.length > 0) {
@@ -41,6 +43,8 @@ export async function getSonyCameras(options?: {
           name: row.name,
           fullName: row.full_name,
           category: row.category as SonyCamera['category'],
+          subCategory1: row.sub_category_1 || '',
+          subCategory2: row.sub_category_2 || '',
           priceVnd: Number(row.price_vnd),
           priceFormatted: row.price_formatted,
           url: row.url,
@@ -57,9 +61,19 @@ export async function getSonyCameras(options?: {
     cameras = seed;
   }
 
-  // Apply Category Filter
+  // Apply Main Category Filter
   if (options?.category && options.category !== 'all') {
     cameras = cameras.filter((c) => c.category === options.category);
+  }
+
+  // Apply Sub-category 1 Filter
+  if (options?.subCategory1 && options.subCategory1 !== 'all') {
+    cameras = cameras.filter((c) => c.subCategory1 === options.subCategory1);
+  }
+
+  // Apply Sub-category 2 Filter
+  if (options?.subCategory2 && options.subCategory2 !== 'all') {
+    cameras = cameras.filter((c) => c.subCategory2 === options.subCategory2);
   }
 
   // Apply Search Filter
@@ -70,6 +84,8 @@ export async function getSonyCameras(options?: {
         c.name.toLowerCase().includes(query) ||
         c.fullName.toLowerCase().includes(query) ||
         c.sku.toLowerCase().includes(query) ||
+        c.subCategory1.toLowerCase().includes(query) ||
+        c.subCategory2.toLowerCase().includes(query) ||
         c.features.some((f) => f.toLowerCase().includes(query)),
     );
   }

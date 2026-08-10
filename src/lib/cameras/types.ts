@@ -1,11 +1,13 @@
-export type CameraCategory = 'all' | 'full-frame' | 'aps-c' | 'cinema-line' | 'vlog';
+export type ProductCategory = 'all' | 'camera' | 'lens' | 'accessory';
 
 export interface SonyCamera {
   id: string;
   sku: string;
   name: string;
   fullName: string;
-  category: Exclude<CameraCategory, 'all'>;
+  category: 'camera' | 'lens' | 'accessory';
+  subCategory1: string;
+  subCategory2: string;
   priceVnd: number;
   priceFormatted: string;
   url: string;
