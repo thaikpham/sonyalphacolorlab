@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import type { ProductCategory, SonyCamera } from '@/lib/cameras/types';
+import { ProductDetailModal } from '@/components/product-detail-modal';
 
 interface CameraWikiViewProps {
   initialCameras: SonyCamera[];
@@ -23,6 +24,7 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('grid');
   const [selectedForCompare, setSelectedForCompare] = useState<string[]>([]);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [detailProduct, setDetailProduct] = useState<SonyCamera | null>(null);
 
   // Main Categories
   const categories: { key: ProductCategory; label: string; icon: string }[] = [
@@ -357,10 +359,13 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                         />
                       </td>
 
-                      {/* Photo & Name (Product image on clean WHITE background) */}
+                      {/* Photo & Name (Product image click opens Detail Modal) */}
                       <td className="p-3.5">
-                        <div className="flex items-center gap-3">
-                          <div className="relative w-14 h-14 shrink-0 rounded-xl overflow-hidden bg-white border border-white/30 p-1 flex items-center justify-center shadow-md">
+                        <div
+                          onClick={() => setDetailProduct(cam)}
+                          className="flex items-center gap-3 cursor-pointer group"
+                        >
+                          <div className="relative w-14 h-14 shrink-0 rounded-xl overflow-hidden bg-white border border-white/30 p-1 flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
                             <Image
                               src={cam.imageUrl}
                               alt={cam.name}
@@ -371,7 +376,7 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                             />
                           </div>
                           <div className="flex flex-col gap-0.5">
-                            <span className="font-extrabold text-sm text-white font-sans">{cam.name}</span>
+                            <span className="font-extrabold text-sm text-white group-hover:text-amber-300 transition-colors font-sans">{cam.name}</span>
                             <span className="text-[11px] text-white/90 font-medium line-clamp-1 font-sans">{cam.fullName}</span>
                           </div>
                         </div>
@@ -479,20 +484,28 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                     </label>
                   </div>
 
-                  {/* Photo on Clean WHITE Background */}
-                  <div className="relative w-full aspect-[4/3] rounded-xl bg-white border border-white/20 p-3 flex items-center justify-center mb-3.5 shadow-md overflow-hidden">
+                  {/* Photo on Clean WHITE Background (Click opens Detail Modal) */}
+                  <div
+                    onClick={() => setDetailProduct(cam)}
+                    className="relative w-full aspect-[4/3] rounded-xl bg-white border border-white/20 p-3 flex items-center justify-center mb-3.5 shadow-md overflow-hidden cursor-pointer group"
+                  >
                     <Image
                       src={cam.imageUrl}
                       alt={cam.name}
                       fill
-                      className="object-contain p-2"
+                      className="object-contain p-2 group-hover:scale-105 transition-transform"
                       unoptimized
                     />
                   </div>
 
-                  {/* Name & SKU */}
-                  <div className="flex flex-col gap-1 mb-3 font-sans">
-                    <h4 className="font-extrabold text-base text-white font-sans tracking-tight">{cam.name}</h4>
+                  {/* Name & SKU (Click opens Detail Modal) */}
+                  <div
+                    onClick={() => setDetailProduct(cam)}
+                    className="flex flex-col gap-1 mb-3 font-sans cursor-pointer group"
+                  >
+                    <h4 className="font-extrabold text-base text-white group-hover:text-amber-300 transition-colors font-sans tracking-tight">
+                      {cam.name}
+                    </h4>
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-mono text-[11px] font-bold text-amber-300 bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/25">
                         {cam.sku}
@@ -599,7 +612,7 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
               </button>
             </div>
 
-            {/* Selected Product Cards Grid (1 to 6 items side by side like B&H photo) */}
+            {/* Selected Product Cards Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 overflow-y-auto max-h-[60dvh] p-1 font-sans">
               {comparedCameraObjects.map((cam) => (
                 <div
@@ -617,7 +630,10 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                   </button>
 
                   {/* Photo on Clean WHITE Background */}
-                  <div className="relative w-full aspect-[4/3] rounded-lg bg-white border border-white/20 p-2 flex items-center justify-center shadow-sm overflow-hidden">
+                  <div
+                    onClick={() => setDetailProduct(cam)}
+                    className="relative w-full aspect-[4/3] rounded-lg bg-white border border-white/20 p-2 flex items-center justify-center shadow-sm overflow-hidden cursor-pointer"
+                  >
                     <Image
                       src={cam.imageUrl}
                       alt={cam.name}
@@ -629,7 +645,12 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
 
                   {/* Name & SKU */}
                   <div className="flex flex-col gap-0.5 font-sans">
-                    <h4 className="font-extrabold text-xs text-white line-clamp-2 leading-snug">{cam.name}</h4>
+                    <h4
+                      onClick={() => setDetailProduct(cam)}
+                      className="font-extrabold text-xs text-white line-clamp-2 leading-snug cursor-pointer hover:text-amber-300"
+                    >
+                      {cam.name}
+                    </h4>
                     <span className="font-mono text-[10px] font-bold text-amber-300 truncate">{cam.sku}</span>
                     <span className="font-mono text-xs font-extrabold text-sky-400 mt-0.5">{cam.priceFormatted}</span>
                   </div>
@@ -661,6 +682,14 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
           </div>
         </div>
       )}
+
+      {/* Product Specification Detail Modal */}
+      <ProductDetailModal
+        product={detailProduct}
+        onClose={() => setDetailProduct(null)}
+        isCompared={detailProduct ? selectedForCompare.includes(detailProduct.id) : false}
+        onToggleCompare={(id) => toggleCompare(id)}
+      />
     </div>
   );
 }

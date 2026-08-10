@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import type { SonyCamera } from '@/lib/cameras/types';
+import { ProductDetailModal } from '@/components/product-detail-modal';
 
 interface CameraCompareViewProps {
   initialCameras: SonyCamera[];
@@ -26,6 +27,7 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
   const [activeIds, setActiveIds] = useState<string[]>(selectedIds);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [searchAddQuery, setSearchAddQuery] = useState('');
+  const [detailProduct, setDetailProduct] = useState<SonyCamera | null>(null);
 
   // AI Chatbot State
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
@@ -74,6 +76,14 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
     setIsAddModalOpen(false);
     setSearchAddQuery('');
     router.replace(`/${locale}/cameras/compare?ids=${next.join(',')}`);
+  };
+
+  const toggleCompare = (id: string) => {
+    if (activeIds.includes(id)) {
+      removeCamera(id);
+    } else {
+      addCamera(id);
+    }
   };
 
   const askAiSpecialist = async (questionText: string) => {
@@ -178,7 +188,7 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
         </div>
       </div>
 
-      {/* Main Side-by-Side Spec Matrix (B&H Photo style) */}
+      {/* Main Side-by-Side Spec Matrix */}
       <div className="glass rounded-2xl overflow-hidden shadow-2xl border border-white/15 font-sans">
         <div className="overflow-x-auto scrollbar-none">
           <table className="w-full text-left border-collapse min-w-[60rem]">
@@ -202,20 +212,26 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                         ✕
                       </button>
 
-                      {/* Photo on Clean WHITE Background */}
-                      <div className="relative w-full aspect-[4/3] rounded-xl bg-white border border-white/20 p-2 flex items-center justify-center shadow-md overflow-hidden">
+                      {/* Photo on Clean WHITE Background (Click opens Detail Modal) */}
+                      <div
+                        onClick={() => setDetailProduct(cam)}
+                        className="relative w-full aspect-[4/3] rounded-xl bg-white border border-white/20 p-2 flex items-center justify-center shadow-md overflow-hidden cursor-pointer group"
+                      >
                         <Image
                           src={cam.imageUrl}
                           alt={cam.name}
                           fill
-                          className="object-contain p-1"
+                          className="object-contain p-1 group-hover:scale-105 transition-transform"
                           unoptimized
                         />
                       </div>
 
-                      {/* Info */}
-                      <div className="flex flex-col gap-1">
-                        <h3 className="font-extrabold text-sm text-white line-clamp-1">{cam.name}</h3>
+                      {/* Info (Click opens Detail Modal) */}
+                      <div
+                        onClick={() => setDetailProduct(cam)}
+                        className="flex flex-col gap-1 cursor-pointer group"
+                      >
+                        <h3 className="font-extrabold text-sm text-white group-hover:text-amber-300 transition-colors line-clamp-1">{cam.name}</h3>
                         <span className="font-mono text-[11px] font-bold text-amber-300 bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/25 w-fit">
                           {cam.sku}
                         </span>
@@ -515,6 +531,14 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
           </div>
         </div>
       )}
+
+      {/* Product Specification Detail Modal */}
+      <ProductDetailModal
+        product={detailProduct}
+        onClose={() => setDetailProduct(null)}
+        isCompared={detailProduct ? activeIds.includes(detailProduct.id) : false}
+        onToggleCompare={(id) => toggleCompare(id)}
+      />
     </div>
   );
 }

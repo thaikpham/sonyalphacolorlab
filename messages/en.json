@@ -196,6 +196,11 @@
     "specPrice": "Official Price",
     "specSku": "Official SKU",
     "specUrl": "Official Sony Page",
-    "specFeatures": "Key Features & Highlights"
+    "specFeatures": "Key Features & Highlights",
+    "detailModalTitle": "Product Spec Details",
+    "idealUseCaseLabel": "Ideal Use Cases",
+    "addToCompare": "⚡ Add to Compare",
+    "removeFromCompare": "✓ In Compare List",
+    "specSummary": "Product Overview"
   }
 }

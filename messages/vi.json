@@ -196,6 +196,11 @@
     "specPrice": "Giá niêm yết chính hãng",
     "specSku": "Mã SKU chính thức",
     "specUrl": "Trang Sony chính hãng",
-    "specFeatures": "Tính năng nổi bật"
+    "specFeatures": "Tính năng nổi bật",
+    "detailModalTitle": "Chi tiết thông số sản phẩm",
+    "idealUseCaseLabel": "Phù hợp cho nhu cầu",
+    "addToCompare": "⚡ Thêm vào danh sách so sánh",
+    "removeFromCompare": "✓ Đã có trong danh sách so sánh",
+    "specSummary": "Tổng quan sản phẩm"
   }
 }
