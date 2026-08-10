@@ -109,7 +109,18 @@
     "proposalSubmit": "Propose new version",
     "proposalSending": "Sending…",
     "noProposals": "No tweak proposals yet. Create the first new version.",
-    "by": "by {author}"
+    "by": "by {author}",
+    "errors": {
+      "unauthenticated": "Please sign in to do that.",
+      "rateLimited": "You are going too fast. Try again in a moment.",
+      "missingFields": "Something required is missing from that request.",
+      "recipeNotFound": "That recipe no longer exists.",
+      "photoLimitReached": "This recipe already has all the community photos it can hold.",
+      "invalidImageUrl": "That image URL is not valid. It has to start with https://",
+      "sampleUrlRequired": "A real sample photo URL is required.",
+      "saveFailed": "Could not save that. Please try again.",
+      "unknown": "Something went wrong. Please try again."
+    }
   },
   "notFound": {
     "title": "That recipe isn't here.",

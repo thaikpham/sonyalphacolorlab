@@ -42,9 +42,14 @@ export async function requireUser(request: Request): Promise<AuthedUser | null> 
         : typeof meta.name === 'string' && meta.name.trim()
           ? meta.name.trim()
           : data.user.email.split('@')[0];
+    const rawAvatar =
+      (typeof meta.avatar_url === 'string' && meta.avatar_url.trim()) ||
+      (typeof meta.picture === 'string' && meta.picture.trim()) ||
+      (typeof meta.avatarUrl === 'string' && meta.avatarUrl.trim()) ||
+      '';
     const avatarUrl =
-      typeof meta.avatar_url === 'string' && meta.avatar_url.startsWith('https://')
-        ? meta.avatar_url
+      rawAvatar.startsWith('http://') || rawAvatar.startsWith('https://') || rawAvatar.startsWith('//')
+        ? rawAvatar
         : null;
 
     return { email: data.user.email, name: name.slice(0, 100), avatarUrl };

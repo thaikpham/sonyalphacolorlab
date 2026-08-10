@@ -1,12 +1,12 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useAuth } from './auth-context';
 import { OPEN_PROPOSAL_EVENT } from '@/lib/community/events';
 import type { CommentItem } from '@/app/api/comments/route';
 import type { ProposalItem } from '@/app/api/proposals/route';
-import { createClient } from '@supabase/supabase-js';
+import { supabaseBrowser } from '@/lib/supabase/browser';
 import {
   getColorDepthChannelHexColor,
   getKelvinColor,
@@ -162,47 +162,70 @@ export function RecipeCommunitySection({
     }
   }, [recipeSlug, accessToken]);
 
+  /* The realtime subscription calls these, and must not re-subscribe when their
+     identity changes — see the note on that effect. Refs keep the handlers
+     pointed at the current closure without becoming a dependency. */
+  const fetchCommentsRef = useRef(fetchComments);
+  const fetchProposalsRef = useRef(fetchProposals);
   useEffect(() => {
-    /* Recipe pages are statically generated, so comments and proposals cannot
-       be server-rendered without serving them stale — the initial load belongs
-       on the client.
+    fetchCommentsRef.current = fetchComments;
+    fetchProposalsRef.current = fetchProposals;
+  }, [fetchComments, fetchProposals]);
 
-       `set-state-in-effect` cannot see through `useCallback` that both fetchers
-       suspend on `await fetch(...)` before touching state, so no setState here
-       is synchronous and no cascading render is possible. Scoped to this line;
-       remove it if either fetcher ever gains a synchronous early setState. */
+  /* Recipe pages are statically generated, so comments and proposals cannot be
+     server-rendered without serving them stale — the initial load belongs on the
+     client.
+
+     `set-state-in-effect` cannot see through `useCallback` that the fetchers
+     suspend on `await fetch(...)` before touching state, so no setState here is
+     synchronous and no cascading render is possible. Scoped to these lines;
+     remove the disable if either fetcher gains a synchronous early setState. */
+  useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void fetchComments();
+  }, [fetchComments]);
+
+  useEffect(() => {
+    /* Separate from the comments load because this one depends on the access
+       token as well as the slug: `hasVoted` is per-viewer, so signing in has to
+       refetch or every heart renders empty until a reload. */
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void fetchProposals();
+  }, [fetchProposals]);
 
-    // Setup Supabase Realtime client if env variables exist
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (!url || !anonKey) return;
+  useEffect(() => {
+    /* Realtime keeps its own effect, keyed on the slug alone.
+       It used to share the effect above, whose deps include `fetchProposals` —
+       and that identity changes with the access token, which Supabase rotates
+       on a timer. So every token refresh tore down the channel and ran
+       `createClient(url, anonKey)` again: a raw client, not the memoised
+       `supabaseBrowser()` one, with `persistSession` left at its default. Each
+       new instance registered another GoTrue listener on the same storage key
+       and another socket, and the cleanup only removed the channel — never the
+       client. A tab left open climbed past a thousand instances, which is what
+       the "Multiple GoTrueClient instances detected" console flood was.
+       One shared client, and a subscription that only cares about the slug. */
+    const client = supabaseBrowser();
+    if (!client) return;
 
-    try {
-      const client = createClient(url, anonKey);
-      const channel = client
-        .channel(`recipe-${recipeSlug}`)
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'recipe_comments', filter: `recipe_slug=eq.${recipeSlug}` },
-          () => fetchComments(),
-        )
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'recipe_proposals', filter: `recipe_slug=eq.${recipeSlug}` },
-          () => fetchProposals(),
-        )
-        .subscribe();
+    const channel = client
+      .channel(`recipe-${recipeSlug}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'recipe_comments', filter: `recipe_slug=eq.${recipeSlug}` },
+        () => void fetchCommentsRef.current(),
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'recipe_proposals', filter: `recipe_slug=eq.${recipeSlug}` },
+        () => void fetchProposalsRef.current(),
+      )
+      .subscribe();
 
-      return () => {
-        client.removeChannel(channel);
-      };
-    } catch {
-      // Ignore realtime connection errors
-    }
-  }, [recipeSlug, fetchComments, fetchProposals]);
+    return () => {
+      void client.removeChannel(channel);
+    };
+  }, [recipeSlug]);
 
   /* Opened from the gallery's "Propose & vote" card, which has no way to reach
      this state directly — see `OPEN_PROPOSAL_EVENT`. `openProposalForm` is in
@@ -305,14 +328,38 @@ export function RecipeCommunitySection({
     );
 
     try {
-      await fetch('/api/proposals/vote', {
+      const res = await fetch('/api/proposals/vote', {
         method: 'POST',
         headers: authedJson(),
         body: JSON.stringify({ proposalId }),
       });
+
+      /* A rejected write resolves the promise — it does not throw. So a 401 on
+         an expired session, or the 429 the route returns above 30 votes a
+         minute, used to leave the optimistic heart filled and the count bumped
+         while the server had recorded nothing at all; the vote only vanished on
+         the next reload. Reconcile against the server on any non-2xx.
+         The success path takes the authoritative count from the response
+         instead of trusting the guess, so a concurrent vote by someone else
+         lands immediately rather than at the next refetch. */
+      if (!res.ok) {
+        void fetchProposals();
+        return;
+      }
+
+      const data = (await res.json()) as { voted?: boolean; voteCount?: number };
+      if (typeof data.voteCount === 'number') {
+        setProposals((prev) =>
+          prev.map((p) =>
+            p.id === proposalId
+              ? { ...p, voteCount: data.voteCount as number, hasVoted: data.voted ?? p.hasVoted }
+              : p,
+          ),
+        );
+      }
     } catch {
-      // Revert if request failed
-      fetchProposals();
+      // Network failure: the optimistic state is a guess, so throw it away.
+      void fetchProposals();
     }
   };
 
@@ -542,6 +589,10 @@ export function RecipeCommunitySection({
                   <img
                     src={user.avatarUrl}
                     alt=""
+                    referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=0D8ABC&color=fff&bold=true`;
+                    }}
                     className="w-7 h-7 rounded-full border border-white/20 shrink-0"
                   />
                   <span className="text-xs font-semibold text-white/90">{user.name}</span>
@@ -608,6 +659,10 @@ export function RecipeCommunitySection({
                           <img
                             src={comment.authorAvatar}
                             alt=""
+                            referrerPolicy="no-referrer"
+                            onError={(e) => {
+                              e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.authorName)}&background=0D8ABC&color=fff&bold=true`;
+                            }}
                             className="w-6 h-6 rounded-full border border-white/20 shrink-0"
                           />
                         ) : (

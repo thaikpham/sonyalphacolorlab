@@ -109,7 +109,18 @@
     "proposalSubmit": "Đề xuất phiên bản mới",
     "proposalSending": "Đang gửi…",
     "noProposals": "Chưa có đề xuất tinh chỉnh nào. Hãy tạo phiên bản mới đầu tiên!",
-    "by": "bởi {author}"
+    "by": "bởi {author}",
+    "errors": {
+      "unauthenticated": "Bạn cần đăng nhập để thực hiện thao tác này.",
+      "rateLimited": "Bạn đang thao tác quá nhanh. Thử lại sau ít giây.",
+      "missingFields": "Yêu cầu thiếu thông tin bắt buộc.",
+      "recipeNotFound": "Không tìm thấy công thức.",
+      "photoLimitReached": "Công thức này đã đủ số ảnh cộng đồng.",
+      "invalidImageUrl": "URL ảnh không hợp lệ. Đường dẫn phải bắt đầu bằng https://",
+      "sampleUrlRequired": "URL ảnh demo mẫu thực tế là bắt buộc.",
+      "saveFailed": "Không lưu được. Vui lòng thử lại.",
+      "unknown": "Đã có lỗi xảy ra. Vui lòng thử lại."
+    }
   },
   "notFound": {
     "title": "Không tìm thấy công thức này.",

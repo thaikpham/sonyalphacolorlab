@@ -34,7 +34,6 @@ export async function POST(request: Request) {
 
     const db = supabaseAdmin();
 
-    // Check existing vote
     const { data: existingVote } = await db
       .from('proposal_votes')
       .select('id')
@@ -42,44 +41,40 @@ export async function POST(request: Request) {
       .eq('user_email', userEmail)
       .maybeSingle();
 
+    const voted = !existingVote;
+
     if (existingVote) {
-      // Remove vote
       await db.from('proposal_votes').delete().eq('id', existingVote.id);
-      
-      // Decrement vote_count
-      const { data: proposal } = await db
-        .from('recipe_proposals')
-        .select('vote_count')
-        .eq('id', proposalId)
-        .single();
-
-      const newCount = Math.max(0, (proposal?.vote_count || 1) - 1);
-      await db
-        .from('recipe_proposals')
-        .update({ vote_count: newCount })
-        .eq('id', proposalId);
-
-      return NextResponse.json({ ok: true, voted: false, voteCount: newCount, source: 'supabase' });
     } else {
-      // Add vote
       await db.from('proposal_votes').insert({ proposal_id: proposalId, user_email: userEmail });
-
-      // Increment vote_count
-      const { data: proposal } = await db
-        .from('recipe_proposals')
-        .select('vote_count')
-        .eq('id', proposalId)
-        .single();
-
-      const newCount = (proposal?.vote_count || 0) + 1;
-      await db
-        .from('recipe_proposals')
-        .update({ vote_count: newCount })
-        .eq('id', proposalId);
-
-      return NextResponse.json({ ok: true, voted: true, voteCount: newCount, source: 'supabase' });
     }
+
+    /* `vote_count` is recomputed from the votes table, never adjusted by ±1
+       against its own previous value.
+       Reading the counter and writing back `counter ± 1` is a read-modify-write
+       across two round trips: two people hearting the same proposal at once both
+       read N and both write N+1, and one vote disappears from the count while
+       staying in `proposal_votes` — visibly wrong, and permanent, because
+       nothing ever recomputed it. Counting the rows that are the actual source
+       of truth makes a lost update self-healing instead: the next vote on that
+       proposal writes the correct total regardless of what the column said.
+       The durable fix is a Postgres function doing both writes in one
+       statement; that needs a migration applied to Supabase by hand, so it is
+       deliberately not on this path. */
+    const { count } = await db
+      .from('proposal_votes')
+      .select('id', { count: 'exact', head: true })
+      .eq('proposal_id', proposalId);
+
+    const voteCount = count ?? 0;
+    await db.from('recipe_proposals').update({ vote_count: voteCount }).eq('id', proposalId);
+
+    return NextResponse.json({ ok: true, voted, voteCount, source: 'supabase' });
   } catch (err) {
-    return NextResponse.json({ error: 'Failed to process vote', details: String(err) }, { status: 500 });
+    /* Server-side only. `details: String(err)` used to go back in the response
+       body, which hands an unauthenticated caller the Postgres error text —
+       table and column names included. The client only learns the write failed. */
+    console.error('[proposals/vote] failed:', err instanceof Error ? err.message : err);
+    return NextResponse.json({ error: 'Failed to process vote' }, { status: 500 });
   }
 }

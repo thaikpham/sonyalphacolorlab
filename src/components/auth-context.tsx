@@ -44,12 +44,17 @@ function toProfile(session: Session | null): UserProfile | null {
   if (!u?.email) return null;
   const meta = (u.user_metadata ?? {}) as Record<string, unknown>;
   const name =
-    (typeof meta.full_name === 'string' && meta.full_name) ||
-    (typeof meta.name === 'string' && meta.name) ||
+    (typeof meta.full_name === 'string' && meta.full_name.trim()) ||
+    (typeof meta.name === 'string' && meta.name.trim()) ||
     u.email.split('@')[0];
+  const rawAvatar =
+    (typeof meta.avatar_url === 'string' && meta.avatar_url.trim()) ||
+    (typeof meta.picture === 'string' && meta.picture.trim()) ||
+    (typeof meta.avatarUrl === 'string' && meta.avatarUrl.trim()) ||
+    '';
   const avatarUrl =
-    typeof meta.avatar_url === 'string' && meta.avatar_url.startsWith('https://')
-      ? meta.avatar_url
+    rawAvatar.startsWith('http://') || rawAvatar.startsWith('https://') || rawAvatar.startsWith('//')
+      ? rawAvatar
       : `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0D8ABC&color=fff&bold=true`;
   return { name, email: u.email, avatarUrl };
 }

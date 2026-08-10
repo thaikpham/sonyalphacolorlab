@@ -1,10 +1,13 @@
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
-import tsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig({
-  plugins: [tsconfigPaths()],
   resolve: {
+    /* Replaces the `vite-tsconfig-paths` plugin, which Vite has made redundant:
+       every run printed "The plugin vite-tsconfig-paths is detected. Vite now
+       supports tsconfig paths resolution natively" before the first test. A
+       warning nobody can act on is a warning everybody learns to scroll past. */
+    tsconfigPaths: true,
     alias: {
       // `server-only` throws outside a React Server Component. It is a build-time
       // guard, not runtime behaviour, so stub it rather than exclude every module
@@ -18,7 +21,7 @@ export default defineConfig({
   test: {
     environment: 'node',
     // packages/ holds the shared design-token source; its drift test is what
-    // keeps the two sibling apps from diverging from this one.
+    // keeps this app's vendored copy honest.
     include: ['src/**/*.test.ts', 'packages/**/*.test.ts'],
   },
 });

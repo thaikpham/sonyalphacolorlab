@@ -21,6 +21,142 @@ interface RecipeGalleryProps {
   title: string;
 }
 
+function CameraIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 48 48" fill="none">
+      <defs>
+        <linearGradient id="cam-grad-body" x1="6" y1="10" x2="42" y2="40" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#34d399" />
+          <stop offset="50%" stopColor="#10b981" />
+          <stop offset="100%" stopColor="#059669" />
+        </linearGradient>
+        <linearGradient id="cam-grad-top" x1="16" y1="6" x2="32" y2="14" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#6ee7b7" />
+          <stop offset="100%" stopColor="#10b981" />
+        </linearGradient>
+        <linearGradient id="cam-grad-lens" x1="16" y1="16" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#064e3b" />
+          <stop offset="100%" stopColor="#022c22" />
+        </linearGradient>
+        <linearGradient id="cam-grad-glass" x1="19" y1="19" x2="29" y2="29" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#a7f3d0" />
+          <stop offset="100%" stopColor="#34d399" />
+        </linearGradient>
+      </defs>
+
+      {/* Top Viewfinder Bump */}
+      <path
+        d="M17 12C17 9.79086 18.7909 8 21 8H27C29.2091 8 31 9.79086 31 12V14H17V12Z"
+        fill="url(#cam-grad-top)"
+      />
+      {/* Main Camera Body */}
+      <rect
+        x="6"
+        y="12"
+        width="36"
+        height="26"
+        rx="7"
+        fill="url(#cam-grad-body)"
+      />
+      {/* Sensor Light */}
+      <circle cx="35" cy="19" r="2" fill="#a7f3d0" />
+      {/* Lens Outer Ring */}
+      <circle cx="24" cy="25" r="9.5" fill="url(#cam-grad-lens)" stroke="#6ee7b7" strokeWidth="1.5" />
+      {/* Lens Glass Reflection */}
+      <circle cx="24" cy="25" r="5.5" fill="url(#cam-grad-glass)" />
+      {/* Specular Highlight Arc */}
+      <path
+        d="M21.5 21.5C23 20 25.5 20 27 21"
+        stroke="#ffffff"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        opacity="0.85"
+      />
+    </svg>
+  );
+}
+
+function VoteIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 48 48" fill="none">
+      <defs>
+        <linearGradient id="vote-grad-box" x1="6" y1="20" x2="42" y2="42" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#f0abfc" />
+          <stop offset="50%" stopColor="#c084fc" />
+          <stop offset="100%" stopColor="#9333ea" />
+        </linearGradient>
+        <linearGradient id="vote-grad-top" x1="6" y1="18" x2="42" y2="26" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#f5d0fe" />
+          <stop offset="100%" stopColor="#e879f9" />
+        </linearGradient>
+        <linearGradient id="vote-grad-heart" x1="16" y1="4" x2="32" y2="20" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#fb7185" />
+          <stop offset="100%" stopColor="#e11d48" />
+        </linearGradient>
+      </defs>
+
+      {/* Floating Heart Ballot Paper */}
+      <path
+        d="M17 9C17 7.34315 18.3431 6 20 6H28C29.6569 6 31 7.34315 31 9V20H17V9Z"
+        fill="#ffffff"
+        opacity="0.95"
+      />
+      {/* Heart Icon on Card */}
+      <path
+        d="M24 16.5L21.6 14.2C20.7 13.3 20.7 11.9 21.6 11C22.5 10.1 23.9 10.1 24.8 11L24 11.8L23.2 11C24.1 10.1 25.5 10.1 26.4 11C27.3 11.9 27.3 13.3 26.4 14.2L24 16.5Z"
+        fill="url(#vote-grad-heart)"
+      />
+
+      {/* Ballot Box Body */}
+      <rect x="6" y="21" width="36" height="19" rx="6" fill="url(#vote-grad-box)" />
+      {/* Ballot Box Lid Rim */}
+      <rect x="4" y="17" width="40" height="7" rx="3.5" fill="url(#vote-grad-top)" />
+      {/* Box Slot Opening */}
+      <rect x="16" y="19" width="16" height="3" rx="1.5" fill="#3b0764" opacity="0.9" />
+    </svg>
+  );
+}
+
+function AiSparkleIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 48 48" fill="none">
+      <defs>
+        <linearGradient id="ai-grad-star1" x1="8" y1="4" x2="38" y2="40" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#fef08a" />
+          <stop offset="40%" stopColor="#fbbf24" />
+          <stop offset="100%" stopColor="#d97706" />
+        </linearGradient>
+        <linearGradient id="ai-grad-star2" x1="26" y1="2" x2="44" y2="20" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#ffffff" />
+          <stop offset="100%" stopColor="#f59e0b" />
+        </linearGradient>
+        <radialGradient id="ai-grad-glow" cx="24" cy="24" r="18" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#fef08a" stopOpacity="0.5" />
+          <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+
+      {/* Ambient Radial Glow */}
+      <circle cx="24" cy="24" r="18" fill="url(#ai-grad-glow)" />
+
+      {/* Primary 4-Point Star Crystal */}
+      <path
+        d="M22 5C22 14.5 14.5 22 5 22C14.5 22 22 29.5 22 39C22 29.5 29.5 22 39 22C29.5 22 22 14.5 22 5Z"
+        fill="url(#ai-grad-star1)"
+      />
+
+      {/* Top-Right Secondary Sparkle */}
+      <path
+        d="M35 3C35 7.5 38.5 11 43 11C38.5 11 35 14.5 35 19C35 14.5 31.5 11 27 11C31.5 11 35 7.5 35 3Z"
+        fill="url(#ai-grad-star2)"
+      />
+
+      {/* Bottom-Left Accent Dot */}
+      <circle cx="9" cy="37" r="2" fill="#fef08a" />
+    </svg>
+  );
+}
+
 /**
  * One of the three offers under the collage, as an app icon.
  *
@@ -42,7 +178,7 @@ function ActionTile({
   onClick,
 }: {
   accent: 'community' | 'proposal' | 'ai';
-  icon: string;
+  icon: React.ReactNode;
   label: string;
   description: string;
   expanded?: boolean;
@@ -54,23 +190,19 @@ function ActionTile({
       onClick={onClick}
       aria-expanded={expanded}
       title={description}
-      className="group flex flex-col items-center gap-2.5 cursor-pointer font-sans"
+      className="group flex flex-col items-center gap-3 cursor-pointer font-sans shrink-0"
       style={{ '--card-accent': `var(--color-${accent})` } as React.CSSProperties}
     >
-      <div className="app-tile-shell w-16 h-16 sm:w-20 sm:h-20">
+      <div className="app-tile-shell w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28">
         <span aria-hidden className="accent-glow" />
-        <div className="app-tile w-full h-full flex items-center justify-center">
-          <span aria-hidden className="text-2xl sm:text-3xl leading-none">
+        <div className="app-tile w-full h-full flex items-center justify-center text-[var(--card-accent)] group-hover:text-white transition-colors duration-300">
+          <span aria-hidden className="flex items-center justify-center">
             {icon}
           </span>
         </div>
       </div>
 
-      {/* Two lines of height are reserved whether or not the label needs them.
-          "Propose & vote new version" wraps and the other two do not, so
-          without this the three tiles have three different footprints and
-          anything laid out against them inherits the ragged edge. */}
-      <span className="action-tile-label flex items-start justify-center min-h-[2rem] sm:min-h-[2.125rem] text-[11px] sm:text-xs font-bold text-ink text-center leading-snug max-w-[7.5rem]">
+      <span className="action-tile-label flex items-center justify-center text-xs sm:text-sm font-bold text-ink text-center whitespace-nowrap">
         {label}
       </span>
     </button>
@@ -385,10 +517,10 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
 
           So: if the parent's `gap-8` or the sections' `mt-8` ever change, this
           number has to change with them. */}
-      <div className="flex items-start justify-center gap-8 sm:gap-14 mt-16 mb-0">
+      <div className="flex items-center justify-center gap-6 sm:gap-12 md:gap-16 mt-14 sm:mt-16 mb-0 flex-wrap">
         <ActionTile
           accent="community"
-          icon="📷"
+          icon={<CameraIcon className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12" />}
           label={t('contributePhoto')}
           /* This tile toggles, so the tooltip says what the next press does. */
           description={isFormOpen ? t('cancel') : t('contributePhotoDesc')}
@@ -398,7 +530,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
 
         <ActionTile
           accent="proposal"
-          icon="🗳️"
+          icon={<VoteIcon className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12" />}
           label={t('proposeVersion')}
           description={t('proposeVersionDesc')}
           onClick={handleProposeVersionClick}
@@ -406,7 +538,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
 
         <ActionTile
           accent="ai"
-          icon="✨"
+          icon={<AiSparkleIcon className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12" />}
           label={t('tweakAi')}
           description={t('tweakAiDesc')}
           onClick={handleTweakAiClick}

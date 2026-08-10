@@ -69,6 +69,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const ecosystemRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
+  const portalRef = useRef<HTMLDivElement>(null);
 
   /**
    * False on the server and during hydration, true afterwards — the guard the
@@ -194,7 +195,13 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
 
     const handlePointerDown = (e: PointerEvent) => {
       const target = e.target as Node;
-      if (isEcosystemOpen && !ecosystemRef.current?.contains(target)) setIsEcosystemOpen(false);
+      if (
+        isEcosystemOpen &&
+        !ecosystemRef.current?.contains(target) &&
+        !portalRef.current?.contains(target)
+      ) {
+        setIsEcosystemOpen(false);
+      }
       if (isProfileOpen && !profileRef.current?.contains(target)) setIsProfileOpen(false);
     };
 
@@ -555,6 +562,10 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                     <img
                       src={user.avatarUrl}
                       alt=""
+                      referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=0D8ABC&color=fff&bold=true`;
+                      }}
                       className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-white/40 shrink-0"
                     />
                     {/* Avatar-only below `sm`, for the same reason the sign-in
@@ -804,7 +815,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
 
     {/* Full-Screen Backdrop Blur & iPad-style Launchpad */}
     {isEcosystemOpen && mounted && typeof document !== 'undefined' && createPortal(
-      <div className="fixed inset-0 z-[99990]">
+      <div ref={portalRef} className="fixed inset-0 z-[99990]">
         {/* Backdrop. `black/80`, not `/60`: at 60% the recipe photographs
             behind still came through the blur as legible shapes and competed
             with the icons for attention. A launcher has to feel like a layer
@@ -887,7 +898,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
               <EcosystemApp
                 name="Live Stream SOP"
                 icon="/livesop-icon.png"
-                href="https://sonylivesop.vercel.app/gear"
+                href="https://sonylivesop.vercel.app/"
                 iconInset="p-[7.5%]"
                 enter="app-enter-3"
                 accent="group-hover:text-blue-300"
@@ -998,7 +1009,7 @@ function EcosystemApp({
         rel="noopener noreferrer"
         onClick={() => {
           // Delay unmounting so the browser can process the default link action
-          if (onNavigate) setTimeout(onNavigate, 0);
+          if (onNavigate) setTimeout(onNavigate, 200);
         }}
         className={`${shell} cursor-pointer`}
       >
