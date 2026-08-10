@@ -191,17 +191,25 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
       {/* Main Side-by-Side Spec Matrix */}
       <div className="glass rounded-2xl overflow-hidden shadow-2xl border border-white/15 font-sans">
         <div className="overflow-x-auto scrollbar-none">
-          <table className="w-full text-left border-collapse min-w-[60rem]">
+          <table className="w-full text-left border-collapse table-fixed">
+            <colgroup>
+              <col className="w-48 sm:w-56" />
+              {comparedCameras.map((cam) => (
+                <col key={cam.id} className="w-[18rem]" />
+              ))}
+              {comparedCameras.length < 6 && <col className="w-[18rem]" />}
+            </colgroup>
+
             {/* Header Row: Sticky Product Cards */}
             <thead className="bg-[#1e2025] sticky top-0 z-20 border-b border-white/15">
               <tr>
-                <th scope="col" className="p-4 w-48 min-w-[12rem] bg-[#1e2025] border-r border-white/10 text-xs font-extrabold uppercase text-white/60 font-mono">
+                <th scope="col" className="p-4 w-48 sm:w-56 bg-[#1e2025] border-r border-white/10 text-xs font-extrabold uppercase text-white/60 font-mono">
                   {t('sensorLabel')}
                 </th>
 
                 {comparedCameras.map((cam) => (
-                  <th key={cam.id} scope="col" className="p-4 min-w-[15rem] max-w-[18rem] bg-[#1e2025] border-r border-white/10 align-top">
-                    <div className="relative bg-[#28292e] p-4 rounded-xl flex flex-col gap-3 border border-white/20 shadow-lg">
+                  <th key={cam.id} scope="col" className="p-4 w-[18rem] bg-[#1e2025] border-r border-white/10 align-top">
+                    <div className="relative bg-[#28292e] p-4 rounded-xl flex flex-col gap-3 border border-white/20 shadow-lg h-full justify-between">
                       {/* Remove Button */}
                       <button
                         type="button"
@@ -215,13 +223,13 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                       {/* Photo on Clean WHITE Background (Click opens Detail Modal) */}
                       <div
                         onClick={() => setDetailProduct(cam)}
-                        className="relative w-full aspect-[4/3] rounded-xl bg-white border border-white/20 p-2 flex items-center justify-center shadow-md overflow-hidden cursor-pointer group"
+                        className="relative w-full aspect-[4/3] rounded-xl bg-white border border-white/20 p-2 flex items-center justify-center shadow-md overflow-hidden cursor-pointer group shrink-0"
                       >
                         <Image
                           src={cam.imageUrl}
                           alt={cam.name}
                           fill
-                          className="object-contain p-1 group-hover:scale-105 transition-transform"
+                          className="object-contain p-2 group-hover:scale-105 transition-transform"
                           unoptimized
                         />
                       </div>
@@ -232,7 +240,7 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                         className="flex flex-col gap-1 cursor-pointer group"
                       >
                         <h3 className="font-extrabold text-sm text-white group-hover:text-amber-300 transition-colors line-clamp-1">{cam.name}</h3>
-                        <span className="font-mono text-[11px] font-bold text-amber-300 bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/25 w-fit">
+                        <span className="font-mono text-[11px] font-bold text-amber-300 bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/25 w-fit truncate">
                           {cam.sku}
                         </span>
                         <span className="font-mono text-sm font-extrabold text-sky-400 mt-0.5">
@@ -255,7 +263,7 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
 
                 {/* Slot to Add More Products (Up to 6) */}
                 {comparedCameras.length < 6 && (
-                  <th scope="col" className="p-4 min-w-[15rem] max-w-[18rem] bg-[#1e2025] align-top">
+                  <th scope="col" className="p-4 w-[18rem] bg-[#1e2025] align-top">
                     <button
                       type="button"
                       onClick={() => setIsAddModalOpen(true)}
@@ -287,13 +295,13 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                   {t('categoryLabel')}
                 </td>
                 {comparedCameras.map((cam) => (
-                  <td key={cam.id} className="p-4 border-r border-white/10">
+                  <td key={cam.id} className="p-4 border-r border-white/10 w-[18rem]">
                     <span className={`px-2.5 py-1 rounded-full text-[10px] border ${getCategoryBadgeColor(cam.category)}`}>
                       {cam.category.toUpperCase()}
                     </span>
                   </td>
                 ))}
-                {comparedCameras.length < 6 && <td className="p-4"></td>}
+                {comparedCameras.length < 6 && <td className="p-4 w-[18rem]"></td>}
               </tr>
 
               {/* Sensor / Format Row */}
@@ -302,11 +310,11 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                   {t('specSub1')}
                 </td>
                 {comparedCameras.map((cam) => (
-                  <td key={cam.id} className="p-4 border-r border-white/10 font-bold text-white">
+                  <td key={cam.id} className="p-4 border-r border-white/10 w-[18rem] font-bold text-white">
                     {cam.subCategory1}
                   </td>
                 ))}
-                {comparedCameras.length < 6 && <td className="p-4"></td>}
+                {comparedCameras.length < 6 && <td className="p-4 w-[18rem]"></td>}
               </tr>
 
               {/* Series Row */}
@@ -315,11 +323,11 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                   {t('specSub2')}
                 </td>
                 {comparedCameras.map((cam) => (
-                  <td key={cam.id} className="p-4 border-r border-white/10 font-mono text-white/80 font-semibold">
+                  <td key={cam.id} className="p-4 border-r border-white/10 w-[18rem] font-mono text-white/80 font-semibold">
                     {cam.subCategory2 || '—'}
                   </td>
                 ))}
-                {comparedCameras.length < 6 && <td className="p-4"></td>}
+                {comparedCameras.length < 6 && <td className="p-4 w-[18rem]"></td>}
               </tr>
 
               {/* SECTION 2: PRICING & CODES */}
@@ -335,11 +343,11 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                   {t('specPrice')}
                 </td>
                 {comparedCameras.map((cam) => (
-                  <td key={cam.id} className="p-4 border-r border-white/10 font-mono text-base font-extrabold text-sky-400">
+                  <td key={cam.id} className="p-4 border-r border-white/10 w-[18rem] font-mono text-base font-extrabold text-sky-400">
                     {cam.priceFormatted}
                   </td>
                 ))}
-                {comparedCameras.length < 6 && <td className="p-4"></td>}
+                {comparedCameras.length < 6 && <td className="p-4 w-[18rem]"></td>}
               </tr>
 
               {/* SKU Row */}
@@ -348,11 +356,11 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                   {t('specSku')}
                 </td>
                 {comparedCameras.map((cam) => (
-                  <td key={cam.id} className="p-4 border-r border-white/10 font-mono font-bold text-amber-300">
+                  <td key={cam.id} className="p-4 border-r border-white/10 w-[18rem] font-mono font-bold text-amber-300 truncate">
                     {cam.sku}
                   </td>
                 ))}
-                {comparedCameras.length < 6 && <td className="p-4"></td>}
+                {comparedCameras.length < 6 && <td className="p-4 w-[18rem]"></td>}
               </tr>
 
               {/* SECTION 3: KEY FEATURES & HIGHLIGHTS */}
@@ -368,7 +376,7 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                   {t('featuresLabel')}
                 </td>
                 {comparedCameras.map((cam) => (
-                  <td key={cam.id} className="p-4 border-r border-white/10 align-top">
+                  <td key={cam.id} className="p-4 border-r border-white/10 w-[18rem] align-top">
                     <ul className="space-y-2 text-xs text-white/95 font-medium leading-relaxed">
                       {cam.features.map((feat, idx) => (
                         <li key={idx} className="flex items-start gap-2 whitespace-normal break-words">
@@ -379,7 +387,7 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                     </ul>
                   </td>
                 ))}
-                {comparedCameras.length < 6 && <td className="p-4"></td>}
+                {comparedCameras.length < 6 && <td className="p-4 w-[18rem]"></td>}
               </tr>
             </tbody>
           </table>
