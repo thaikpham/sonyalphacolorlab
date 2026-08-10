@@ -90,7 +90,7 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
     if (!questionText.trim() || isAiLoading || comparedCameras.length === 0) return;
 
     const userMsg: ChatMessage = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       sender: 'user',
       text: questionText.trim(),
     };
@@ -115,7 +115,7 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
         setChatMessages((prev) => [
           ...prev,
           {
-            id: (Date.now() + 1).toString(),
+            id: crypto.randomUUID(),
             sender: 'specialist',
             text: data.answer,
           },
@@ -124,7 +124,7 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
         setChatMessages((prev) => [
           ...prev,
           {
-            id: (Date.now() + 1).toString(),
+            id: crypto.randomUUID(),
             sender: 'specialist',
             text: 'Rất tiếc, đã xảy ra lỗi khi tạo câu trả lời. Vui lòng thử lại!',
           },
@@ -134,7 +134,7 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
       setChatMessages((prev) => [
         ...prev,
         {
-          id: (Date.now() + 1).toString(),
+          id: crypto.randomUUID(),
           sender: 'specialist',
           text: 'Không thể kết nối tới máy chủ tư vấn.',
         },

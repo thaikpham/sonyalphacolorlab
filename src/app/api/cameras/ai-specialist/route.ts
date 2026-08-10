@@ -94,7 +94,8 @@ Keep your response structured (using bolding and bullet points), clear, concise,
           .join('\n');
 
     return NextResponse.json({ answer: fallbackAnswer });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message || 'Internal server error' }, { status: 500 });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Internal server error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
