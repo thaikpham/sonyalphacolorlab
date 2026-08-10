@@ -122,13 +122,13 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
   const getCategoryBadgeColor = (cat: SonyCamera['category']) => {
     switch (cat) {
       case 'camera':
-        return 'bg-amber-500/20 text-amber-300 border-amber-500/30';
+        return 'bg-amber-400/25 text-amber-200 border-amber-400/50 shadow-sm font-extrabold';
       case 'lens':
-        return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
+        return 'bg-sky-400/25 text-sky-200 border-sky-400/50 shadow-sm font-extrabold';
       case 'accessory':
-        return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
+        return 'bg-emerald-400/25 text-emerald-200 border-emerald-400/50 shadow-sm font-extrabold';
       default:
-        return 'bg-white/10 text-white/80 border-white/20';
+        return 'bg-white/20 text-white border-white/30 font-bold';
     }
   };
 
@@ -138,15 +138,15 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-3 flex-wrap">
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white font-sans">{t('title')}</h1>
-          <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-white/10 text-white/90 border border-white/15">
+          <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-white/15 text-white border border-white/25 shadow-sm">
             {filteredCameras.length} products
           </span>
         </div>
-        <p className="text-xs sm:text-sm text-ink-muted max-w-3xl leading-relaxed font-sans">{t('subtitle')}</p>
+        <p className="text-xs sm:text-sm text-white/90 max-w-3xl leading-relaxed font-sans">{t('subtitle')}</p>
       </div>
 
       {/* Control Bar: Search, Category Tabs, Sub-category filters, Sort, View Switcher */}
-      <div className="glass p-4 rounded-2xl flex flex-col gap-4 shadow-xl font-sans">
+      <div className="glass p-4 rounded-2xl flex flex-col gap-4 shadow-xl font-sans border border-white/15">
         {/* Search Input */}
         <div className="relative w-full">
           <input
@@ -154,14 +154,14 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t('searchPlaceholder')}
-            className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-black/60 border border-white/15 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-white/40 transition-all font-sans"
+            className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-black/80 border border-white/25 text-sm text-white placeholder:text-white/50 focus:outline-none focus:ring-1 focus:ring-amber-400/60 transition-all font-sans font-medium"
           />
-          <span className="absolute left-3.5 top-3 text-white/40 text-sm select-none">🔍</span>
+          <span className="absolute left-3.5 top-3 text-white/60 text-sm select-none">🔍</span>
           {searchQuery && (
             <button
               type="button"
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-2.5 text-white/50 hover:text-white text-xs px-2 py-0.5 rounded bg-white/10 font-sans"
+              className="absolute right-3 top-2.5 text-white/70 hover:text-white text-xs px-2 py-0.5 rounded bg-white/15 font-sans font-bold"
             >
               ✕
             </button>
@@ -169,7 +169,7 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
         </div>
 
         {/* Main Category Tabs */}
-        <div className="flex items-center justify-between gap-4 flex-wrap border-b border-white/10 pb-3 font-sans">
+        <div className="flex items-center justify-between gap-4 flex-wrap border-b border-white/15 pb-3 font-sans">
           <div className="flex items-center gap-2 overflow-x-auto py-1 max-w-full scrollbar-none">
             {categories.map((cat) => (
               <button
@@ -182,8 +182,8 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                 }}
                 className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-2 font-sans ${
                   selectedCategory === cat.key
-                    ? 'bg-white text-black shadow-lg scale-105 font-bold'
-                    : 'bg-white/5 text-white/70 hover:bg-white/15 hover:text-white border border-white/10'
+                    ? 'bg-white text-black shadow-lg scale-105 font-extrabold'
+                    : 'bg-white/10 text-white/90 hover:bg-white/20 hover:text-white border border-white/15'
                 }`}
               >
                 <span>{cat.icon}</span>
@@ -193,13 +193,13 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
           </div>
 
           {/* View Mode Switcher */}
-          <div className="flex items-center p-1 rounded-xl bg-black/60 border border-white/15 ml-auto font-sans">
+          <div className="flex items-center p-1 rounded-xl bg-black/70 border border-white/20 ml-auto font-sans">
             <button
               type="button"
               onClick={() => setViewMode('table')}
               title={t('viewTable')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer font-sans ${
-                viewMode === 'table' ? 'bg-white/20 text-white shadow-sm' : 'text-white/40 hover:text-white'
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer font-sans ${
+                viewMode === 'table' ? 'bg-white/30 text-white shadow-md' : 'text-white/60 hover:text-white'
               }`}
             >
               📋 {t('viewTable')}
@@ -208,8 +208,8 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
               type="button"
               onClick={() => setViewMode('grid')}
               title={t('viewGrid')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer font-sans ${
-                viewMode === 'grid' ? 'bg-white/20 text-white shadow-sm' : 'text-white/40 hover:text-white'
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer font-sans ${
+                viewMode === 'grid' ? 'bg-white/30 text-white shadow-md' : 'text-white/60 hover:text-white'
               }`}
             >
               🔲 {t('viewGrid')}
@@ -222,14 +222,14 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
           <div className="flex items-center gap-3 flex-wrap">
             {/* Sub-category 1 (Format / Sensor / Type) */}
             <div className="flex items-center gap-1.5">
-              <span className="text-white/50 font-sans">{t('subCategoryLabel')}:</span>
+              <span className="text-white/80 font-bold font-sans">{t('subCategoryLabel')}:</span>
               <select
                 value={selectedSub1}
                 onChange={(e) => {
                   setSelectedSub1(e.target.value);
                   setSelectedSub2('all');
                 }}
-                className="px-3 py-1.5 rounded-xl bg-black/70 border border-white/20 text-xs text-white focus:outline-none cursor-pointer font-sans"
+                className="px-3 py-1.5 rounded-xl bg-black/80 border border-white/25 text-xs text-white font-bold focus:outline-none cursor-pointer font-sans"
               >
                 <option value="all">{t('sub1All')}</option>
                 {availableSub1List.map((sub1) => (
@@ -246,7 +246,7 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                 <select
                   value={selectedSub2}
                   onChange={(e) => setSelectedSub2(e.target.value)}
-                  className="px-3 py-1.5 rounded-xl bg-black/70 border border-white/20 text-xs text-white focus:outline-none cursor-pointer font-sans"
+                  className="px-3 py-1.5 rounded-xl bg-black/80 border border-white/25 text-xs text-white font-bold focus:outline-none cursor-pointer font-sans"
                 >
                   <option value="all">{t('sub2All')}</option>
                   {availableSub2List.map((sub2) => (
@@ -261,11 +261,11 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
 
           {/* Sort Dropdown */}
           <div className="flex items-center gap-2 ml-auto">
-            <span className="text-white/50 hidden sm:inline font-sans">{t('sortBy')}:</span>
+            <span className="text-white/80 font-bold hidden sm:inline font-sans">{t('sortBy')}:</span>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-              className="px-3 py-1.5 rounded-xl bg-black/70 border border-white/20 text-xs text-white focus:outline-none cursor-pointer font-sans"
+              className="px-3 py-1.5 rounded-xl bg-black/80 border border-white/25 text-xs text-white font-bold focus:outline-none cursor-pointer font-sans"
             >
               <option value="price-desc">{t('sortPriceDesc')}</option>
               <option value="price-asc">{t('sortPriceAsc')}</option>
@@ -278,7 +278,7 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
 
       {/* Main Content Area */}
       {filteredCameras.length === 0 ? (
-        <div className="glass p-12 rounded-2xl text-center flex flex-col items-center justify-center gap-3 font-sans">
+        <div className="glass p-12 rounded-2xl text-center flex flex-col items-center justify-center gap-3 font-sans border border-white/15">
           <span className="text-3xl">📷</span>
           <h3 className="text-base font-bold text-white font-sans">{t('emptyTitle')}</h3>
           <button
@@ -289,17 +289,17 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
               setSelectedSub1('all');
               setSelectedSub2('all');
             }}
-            className="text-xs font-semibold text-community hover:underline mt-1 font-sans"
+            className="text-xs font-bold text-amber-300 hover:underline mt-1 font-sans"
           >
             {t('emptyAction')}
           </button>
         </div>
       ) : viewMode === 'table' ? (
         /* Table View */
-        <div className="glass rounded-2xl overflow-hidden shadow-2xl border border-white/10 font-sans">
+        <div className="glass rounded-2xl overflow-hidden shadow-2xl border border-white/15 font-sans">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-white/90">
-              <thead className="bg-black/60 text-[11px] uppercase tracking-wider text-white/60 font-mono border-b border-white/10 select-none">
+            <table className="w-full text-left text-xs text-white">
+              <thead className="bg-black/80 text-[11px] uppercase tracking-wider text-white/80 font-mono border-b border-white/15 select-none font-bold">
                 <tr>
                   <th scope="col" className="p-3.5 text-center w-12">
                     {t('compare')}
@@ -327,14 +327,14 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5 font-sans">
+              <tbody className="divide-y divide-white/10 font-sans">
                 {filteredCameras.map((cam) => {
                   const isChecked = selectedForCompare.includes(cam.id);
                   return (
                     <tr
                       key={cam.id}
-                      className={`hover:bg-white/5 transition-colors ${
-                        isChecked ? 'bg-white/10' : ''
+                      className={`hover:bg-white/10 transition-colors ${
+                        isChecked ? 'bg-amber-500/20' : 'bg-[#28292e]/80'
                       }`}
                     >
                       {/* Checkbox for Compare */}
@@ -343,14 +343,14 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => toggleCompare(cam.id)}
-                          className="w-4 h-4 rounded bg-black/60 border-white/30 text-community focus:ring-0 cursor-pointer"
+                          className="w-4 h-4 rounded bg-black/60 border-white/40 text-community focus:ring-0 cursor-pointer"
                         />
                       </td>
 
                       {/* Photo & Name (Product image on clean WHITE background) */}
                       <td className="p-3.5">
                         <div className="flex items-center gap-3">
-                          <div className="relative w-14 h-14 shrink-0 rounded-xl overflow-hidden bg-white border border-white/20 p-1 flex items-center justify-center shadow-sm">
+                          <div className="relative w-14 h-14 shrink-0 rounded-xl overflow-hidden bg-white border border-white/30 p-1 flex items-center justify-center shadow-md">
                             <Image
                               src={cam.imageUrl}
                               alt={cam.name}
@@ -361,21 +361,21 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                             />
                           </div>
                           <div className="flex flex-col gap-0.5">
-                            <span className="font-bold text-sm text-white font-sans">{cam.name}</span>
-                            <span className="text-[11px] text-white/60 line-clamp-1 font-sans">{cam.fullName}</span>
+                            <span className="font-extrabold text-sm text-white font-sans">{cam.name}</span>
+                            <span className="text-[11px] text-white/90 font-medium line-clamp-1 font-sans">{cam.fullName}</span>
                           </div>
                         </div>
                       </td>
 
                       {/* SKU Code */}
-                      <td className="p-3.5 font-mono text-[11px] text-white/80 whitespace-nowrap">
+                      <td className="p-3.5 font-mono text-xs font-bold text-amber-300 whitespace-nowrap">
                         {cam.sku}
                       </td>
 
                       {/* Main Category Badge */}
                       <td className="p-3.5 whitespace-nowrap">
                         <span
-                          className={`px-2.5 py-1 rounded-full text-[10px] font-bold font-mono border ${getCategoryBadgeColor(
+                          className={`px-2.5 py-1 rounded-full text-[10px] border ${getCategoryBadgeColor(
                             cam.category,
                           )}`}
                         >
@@ -386,21 +386,21 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                       {/* Sub-categories */}
                       <td className="p-3.5 whitespace-nowrap font-sans">
                         <div className="flex flex-col gap-1">
-                          <span className="text-xs font-semibold text-white/90 font-sans">{cam.subCategory1}</span>
+                          <span className="text-xs font-bold text-white font-sans">{cam.subCategory1}</span>
                           {cam.subCategory2 && (
-                            <span className="text-[10px] text-white/50 font-mono">{cam.subCategory2}</span>
+                            <span className="text-[10px] text-white/70 font-mono font-semibold">{cam.subCategory2}</span>
                           )}
                         </div>
                       </td>
 
                       {/* Price */}
-                      <td className="p-3.5 font-mono text-sm font-bold text-amber-300 whitespace-nowrap">
+                      <td className="p-3.5 font-mono text-sm font-extrabold text-amber-300 whitespace-nowrap drop-shadow-sm">
                         {cam.priceFormatted}
                       </td>
 
                       {/* Features */}
                       <td className="p-3.5 font-sans">
-                        <ul className="list-disc list-inside space-y-0.5 text-[11px] text-white/70 font-sans">
+                        <ul className="list-disc list-inside space-y-0.5 text-xs text-white/90 font-medium">
                           {cam.features.map((feat, idx) => (
                             <li key={idx} className="truncate max-w-md font-sans">
                               {feat}
@@ -415,7 +415,7 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                           href={cam.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-[11px] text-white/60 hover:text-white underline font-semibold transition-colors font-sans"
+                          className="text-xs text-white font-bold hover:text-amber-300 underline underline-offset-2 transition-colors font-sans"
                         >
                           Sony ↗
                         </a>
@@ -428,17 +428,17 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
           </div>
         </div>
       ) : (
-        /* Grid View */
+        /* Grid View (18% Middle Gray cards with High Contrast Text) */
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 font-sans">
           {filteredCameras.map((cam) => {
             const isChecked = selectedForCompare.includes(cam.id);
             return (
               <div
                 key={cam.id}
-                className={`p-4 rounded-2xl flex flex-col justify-between gap-4 border transition-all font-sans backdrop-blur-md ${
+                className={`p-4.5 rounded-2xl flex flex-col justify-between gap-4 border transition-all font-sans backdrop-blur-md ${
                   isChecked
-                    ? 'border-amber-400/60 bg-amber-500/15 shadow-[0_0_25px_rgba(251,191,36,0.2)]'
-                    : 'bg-[#28292e]/95 border-white/12 hover:border-white/30 hover:bg-[#2e3037]/95 shadow-lg'
+                    ? 'border-amber-400/70 bg-amber-500/20 shadow-[0_0_30px_rgba(251,191,36,0.25)]'
+                    : 'bg-[#28292e] border-white/15 hover:border-white/40 hover:bg-[#303138] shadow-xl'
                 }`}
               >
                 <div>
@@ -446,30 +446,30 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                   <div className="flex items-center justify-between gap-2 mb-3">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold font-mono border ${getCategoryBadgeColor(
+                        className={`px-2 py-0.5 rounded-full text-[10px] border ${getCategoryBadgeColor(
                           cam.category,
                         )}`}
                       >
                         {cam.category.toUpperCase()}
                       </span>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-white/10 text-white/80 border border-white/15">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-white/15 text-white border border-white/25 shadow-sm">
                         {cam.subCategory1}
                       </span>
                     </div>
 
-                    <label className="flex items-center gap-1.5 text-xs text-white/80 cursor-pointer select-none shrink-0 font-sans">
+                    <label className="flex items-center gap-1.5 text-xs text-white font-bold cursor-pointer select-none shrink-0 font-sans hover:text-amber-300 transition-colors">
                       <input
                         type="checkbox"
                         checked={isChecked}
                         onChange={() => toggleCompare(cam.id)}
-                        className="w-4 h-4 rounded bg-black/60 border-white/30 text-community focus:ring-0 cursor-pointer"
+                        className="w-4 h-4 rounded bg-black/70 border-white/40 text-community focus:ring-0 cursor-pointer"
                       />
                       <span>{t('compare')}</span>
                     </label>
                   </div>
 
                   {/* Photo on Clean WHITE Background */}
-                  <div className="relative w-full aspect-[4/3] rounded-xl bg-white border border-white/20 p-3 flex items-center justify-center mb-3 shadow-inner overflow-hidden">
+                  <div className="relative w-full aspect-[4/3] rounded-xl bg-white border border-white/20 p-3 flex items-center justify-center mb-3.5 shadow-md overflow-hidden">
                     <Image
                       src={cam.imageUrl}
                       alt={cam.name}
@@ -481,23 +481,25 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
 
                   {/* Name & SKU */}
                   <div className="flex flex-col gap-1 mb-3 font-sans">
-                    <h4 className="font-bold text-base text-white font-sans">{cam.name}</h4>
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-[10px] text-white/50">{cam.sku}</span>
+                    <h4 className="font-extrabold text-base text-white font-sans tracking-tight">{cam.name}</h4>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-mono text-[11px] font-bold text-amber-300 bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/25">
+                        {cam.sku}
+                      </span>
                       {cam.subCategory2 && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-white/60 font-mono">
+                        <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-white/15 text-white border border-white/20">
                           {cam.subCategory2}
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-white/70 line-clamp-2 mt-0.5 font-sans">{cam.fullName}</p>
+                    <p className="text-xs text-white/90 font-medium line-clamp-2 mt-1 font-sans leading-relaxed">{cam.fullName}</p>
                   </div>
 
                   {/* Features List */}
-                  <ul className="space-y-1 mb-4 font-sans">
+                  <ul className="space-y-1.5 mb-4 font-sans">
                     {cam.features.map((feat, idx) => (
-                      <li key={idx} className="text-[11px] text-white/60 flex items-start gap-1.5 font-sans">
-                        <span className="text-community shrink-0">•</span>
+                      <li key={idx} className="text-xs text-white/90 font-medium flex items-start gap-2 font-sans leading-snug">
+                        <span className="text-emerald-400 font-bold shrink-0 text-sm leading-none">•</span>
                         <span className="line-clamp-2 font-sans">{feat}</span>
                       </li>
                     ))}
@@ -505,15 +507,15 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                 </div>
 
                 {/* Price & Link */}
-                <div className="pt-3 border-t border-white/10 flex items-center justify-between gap-2">
-                  <span className="font-mono text-sm font-bold text-amber-300">
+                <div className="pt-3 border-t border-white/15 flex items-center justify-between gap-2">
+                  <span className="font-mono text-base font-extrabold text-amber-300 drop-shadow-sm">
                     {cam.priceFormatted}
                   </span>
                   <a
                     href={cam.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs font-semibold text-white/80 hover:text-white underline transition-colors font-sans"
+                    className="text-xs font-bold text-white hover:text-amber-300 underline underline-offset-2 transition-colors font-sans"
                   >
                     Sony ↗
                   </a>
@@ -526,12 +528,12 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
 
       {/* Floating Compare Action Bar */}
       {selectedForCompare.length > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 glass px-5 py-3 rounded-2xl border border-white/20 shadow-2xl flex items-center gap-4 animate-fade-in backdrop-blur-xl font-sans">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 glass px-5 py-3.5 rounded-2xl border border-white/30 shadow-2xl flex items-center gap-5 animate-fade-in backdrop-blur-xl font-sans">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-bold text-white font-sans">
+            <span className="text-sm font-extrabold text-white font-sans">
               {t('compareBarTitle', { count: selectedForCompare.length })}
             </span>
-            <span className="text-[11px] text-white/50 hidden sm:inline font-sans">
+            <span className="text-xs text-white/70 hidden sm:inline font-sans">
               ({t('maxCompareHint')})
             </span>
           </div>
@@ -540,14 +542,14 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
             <button
               type="button"
               onClick={() => setSelectedForCompare([])}
-              className="px-3 py-1.5 rounded-xl text-xs font-semibold text-white/60 hover:text-white transition-colors cursor-pointer font-sans"
+              className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-white/80 hover:text-white transition-colors cursor-pointer font-sans"
             >
               {t('clearCompare')}
             </button>
             <button
               type="button"
               onClick={() => setIsCompareModalOpen(true)}
-              className="px-4 py-2 rounded-xl bg-white text-black font-bold text-xs hover:bg-white/90 transition-all shadow-lg cursor-pointer font-sans"
+              className="px-4 py-2 rounded-xl bg-white text-black font-extrabold text-xs hover:bg-white/90 transition-all shadow-lg cursor-pointer font-sans scale-105"
             >
               ⚡ {t('compareBtn')}
             </button>
@@ -568,17 +570,17 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
             className="glass w-full max-w-5xl max-h-[90dvh] rounded-2xl p-5 sm:p-6 overflow-y-auto flex flex-col gap-6 shadow-2xl border border-white/20 cursor-default font-sans"
           >
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-white/10 pb-4 font-sans">
+            <div className="flex items-center justify-between border-b border-white/15 pb-4 font-sans">
               <div className="flex items-center gap-3">
                 <span className="text-xl">⚡</span>
-                <h3 className="font-bold text-lg text-white font-sans">
+                <h3 className="font-extrabold text-lg text-white font-sans">
                   {t('compareBtn')} ({comparedCameraObjects.length} products)
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setIsCompareModalOpen(false)}
-                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-sm transition-all cursor-pointer font-sans"
+                className="w-8 h-8 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center text-sm font-bold transition-all cursor-pointer font-sans"
               >
                 ✕
               </button>
@@ -587,9 +589,9 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
             {/* Side-by-Side Comparison Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 font-sans">
               {comparedCameraObjects.map((cam) => (
-                <div key={cam.id} className="bg-[#28292e]/95 p-4 rounded-xl flex flex-col gap-3 border border-white/15 shadow-xl font-sans backdrop-blur-md">
+                <div key={cam.id} className="bg-[#28292e] p-4 rounded-xl flex flex-col gap-3 border border-white/20 shadow-xl font-sans backdrop-blur-md">
                   {/* Photo on Clean WHITE Background */}
-                  <div className="relative w-full aspect-[4/3] rounded-xl bg-white border border-white/20 p-2 flex items-center justify-center shadow-inner overflow-hidden">
+                  <div className="relative w-full aspect-[4/3] rounded-xl bg-white border border-white/20 p-2 flex items-center justify-center shadow-md overflow-hidden">
                     <Image
                       src={cam.imageUrl}
                       alt={cam.name}
@@ -601,31 +603,31 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
 
                   {/* Name & Price */}
                   <div className="font-sans">
-                    <h4 className="font-bold text-base text-white font-sans">{cam.name}</h4>
-                    <span className="font-mono text-[10px] text-white/50 block mb-1">{cam.sku}</span>
-                    <span className="font-mono text-sm font-bold text-amber-300">{cam.priceFormatted}</span>
+                    <h4 className="font-extrabold text-base text-white font-sans">{cam.name}</h4>
+                    <span className="font-mono text-xs font-bold text-amber-300 block mb-1">{cam.sku}</span>
+                    <span className="font-mono text-base font-extrabold text-amber-300 drop-shadow-sm">{cam.priceFormatted}</span>
                   </div>
 
                   {/* Category Badges */}
                   <div className="flex flex-wrap gap-1 font-sans">
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${getCategoryBadgeColor(cam.category)}`}>
+                    <span className={`px-2 py-0.5 rounded text-[10px] border ${getCategoryBadgeColor(cam.category)}`}>
                       {cam.category.toUpperCase()}
                     </span>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-white/10 text-white/80 border border-white/15">
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-white/15 text-white border border-white/25">
                       {cam.subCategory1}
                     </span>
                   </div>
 
                   {/* Features */}
-                  <div className="pt-2 border-t border-white/10 font-sans">
-                    <span className="text-[10px] font-bold uppercase text-white/40 block mb-1.5 font-sans">
+                  <div className="pt-2 border-t border-white/15 font-sans">
+                    <span className="text-[10px] font-extrabold uppercase text-white/70 block mb-1.5 font-sans">
                       {t('featuresLabel')}
                     </span>
-                    <ul className="space-y-1 text-xs text-white/80 font-sans">
+                    <ul className="space-y-1 text-xs text-white/90 font-medium font-sans">
                       {cam.features.map((feat, idx) => (
                         <li key={idx} className="flex items-start gap-1 font-sans">
-                          <span className="text-community shrink-0">•</span>
-                          <span className="font-sans">{feat}</span>
+                          <span className="text-emerald-400 font-bold shrink-0">•</span>
+                          <span className="font-sans leading-snug">{feat}</span>
                         </li>
                       ))}
                     </ul>
@@ -637,7 +639,7 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                       href={cam.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block w-full text-center py-2 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold text-white transition-colors font-sans"
+                      className="block w-full text-center py-2.5 rounded-xl bg-white/15 hover:bg-white/25 text-xs font-bold text-white border border-white/20 transition-colors font-sans"
                     >
                       {t('officialUrl')}
                     </a>
