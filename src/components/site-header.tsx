@@ -866,7 +866,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                 do. These values land all three on roughly 70% of the tile.
                 Percentages, not `p-4`, so they hold at both tile sizes without
                 a breakpoint. */}
-            <div className="w-full max-w-6xl flex flex-col sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10 justify-items-center items-center sm:items-start">
+            <div className="w-full max-w-2xl grid grid-cols-2 gap-8 sm:gap-12 justify-items-center items-center">
               <EcosystemApp
                 name="ColorLab 2.0"
                 icon="/colorlab-icon.png"
