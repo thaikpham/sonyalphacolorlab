@@ -148,14 +148,70 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
     <div className="w-full flex flex-col gap-6 font-sans">
       {/* Header Title & Description */}
       <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-3 flex-wrap">
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white font-sans">{t('title')}</h1>
-          <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-white/15 text-white border border-white/25 shadow-sm">
-            {filteredCameras.length} products
-          </span>
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white font-sans">{t('title')}</h1>
+            <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-white/15 text-white border border-white/25 shadow-sm">
+              {filteredCameras.length} products
+            </span>
+          </div>
+
+          {/* Header Immediate Compare Action Button */}
+          {selectedForCompare.length > 0 && (
+            <div className="flex items-center gap-3 animate-fade-in">
+              <button
+                type="button"
+                onClick={() => setSelectedForCompare([])}
+                className="text-xs font-bold text-white/70 hover:text-white underline transition-colors cursor-pointer font-sans"
+              >
+                {t('clearCompare')}
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsConfirmModalOpen(true)}
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-black font-extrabold text-xs sm:text-sm hover:brightness-110 transition-all shadow-[0_0_20px_rgba(251,191,36,0.4)] cursor-pointer flex items-center gap-2 scale-105 font-sans"
+              >
+                ⚡ {t('compareBtn')} ({selectedForCompare.length})
+              </button>
+            </div>
+          )}
         </div>
         <p className="text-xs sm:text-sm text-white/90 max-w-3xl leading-relaxed font-sans">{t('subtitle')}</p>
       </div>
+
+      {/* Immediate Top Compare Alert Banner (Appears as soon as items selected) */}
+      {selectedForCompare.length > 0 && (
+        <div className="bg-gradient-to-r from-amber-500/20 via-amber-400/15 to-amber-500/20 border border-amber-400/40 p-4 rounded-2xl flex items-center justify-between gap-4 shadow-xl font-sans backdrop-blur-md animate-fade-in">
+          <div className="flex items-center gap-3">
+            <span className="text-xl">⚡</span>
+            <div className="flex flex-col">
+              <span className="text-xs sm:text-sm font-extrabold text-white font-sans">
+                {t('compareBarTitle', { count: selectedForCompare.length })}
+              </span>
+              <span className="text-[11px] text-white/70 hidden sm:inline font-sans">
+                {t('maxCompareHint')}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 font-sans">
+            <button
+              type="button"
+              onClick={() => setSelectedForCompare([])}
+              className="text-xs font-bold text-white/70 hover:text-white underline transition-colors cursor-pointer font-sans"
+            >
+              {t('clearCompare')}
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsConfirmModalOpen(true)}
+              className="px-5 py-2.5 rounded-xl bg-white text-black font-extrabold text-xs sm:text-sm hover:bg-white/90 transition-all shadow-xl cursor-pointer font-sans scale-105"
+            >
+              ⚡ {t('compareBtn')} ({selectedForCompare.length})
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Control Bar: Search, Category Tabs, Sub-category filters, Sort, View Switcher */}
       <div className="glass p-4 rounded-2xl flex flex-col gap-4 shadow-xl font-sans border border-white/15">
@@ -552,7 +608,7 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
 
       {/* Floating Compare Action Bar */}
       {selectedForCompare.length > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 glass px-5 py-3.5 rounded-2xl border border-white/30 shadow-2xl flex items-center gap-5 animate-fade-in backdrop-blur-xl font-sans">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 glass px-5 py-3.5 rounded-2xl border border-white/30 shadow-2xl flex items-center gap-5 animate-fade-in backdrop-blur-xl font-sans">
           <div className="flex items-center gap-2">
             <span className="text-sm font-extrabold text-white font-sans">
               {t('compareBarTitle', { count: selectedForCompare.length })}
@@ -573,9 +629,9 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
             <button
               type="button"
               onClick={() => setIsConfirmModalOpen(true)}
-              className="px-4 py-2 rounded-xl bg-white text-black font-extrabold text-xs hover:bg-white/90 transition-all shadow-lg cursor-pointer font-sans scale-105"
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-black font-extrabold text-xs hover:brightness-110 transition-all shadow-xl cursor-pointer font-sans scale-105"
             >
-              ⚡ {t('compareBtn')}
+              ⚡ {t('compareBtn')} ({selectedForCompare.length})
             </button>
           </div>
         </div>
