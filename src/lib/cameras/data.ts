@@ -5,7 +5,7 @@ import type { ProductCategory, SonyCamera } from './types';
 
 let cachedSeedCameras: SonyCamera[] | null = null;
 
-export function getSeedCameras(): SonyCamera[] {
+function getSeedCameras(): SonyCamera[] {
   if (cachedSeedCameras) return cachedSeedCameras;
   try {
     const filePath = join(process.cwd(), 'data', 'sony-cameras.seed.json');

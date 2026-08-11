@@ -11,7 +11,7 @@ import { Link, useRouter } from '@/i18n/navigation';
 import { routing } from '@/i18n/routing';
 import { CREATIVE_LOOKS } from '@/lib/camera/constants';
 
-export interface TagItem {
+interface TagItem {
   tag: string;
   count: number;
 }

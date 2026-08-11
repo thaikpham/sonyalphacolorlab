@@ -264,27 +264,6 @@ export async function listSlugs(): Promise<string[]> {
   }, seed);
 }
 
-/**
- * Every legacy id paired with its new slug, for the redirect map.
- * Links already shared in Facebook groups point at the old ids.
- */
-export async function listLegacyMap(): Promise<{ legacyId: string; slug: string }[]> {
-  if (!isSupabaseConfigured()) {
-    return seedRecipes
-      .filter((r) => r.published && r.legacyId)
-      .map((r) => ({ legacyId: r.legacyId, slug: r.slug }));
-  }
-  const { data, error } = await supabaseRead()
-    .from('recipes')
-    .select('legacy_id, slug')
-    .eq('published', true)
-    .not('legacy_id', 'is', null);
-  if (error) throw new Error(`listLegacyMap: ${error.message}`);
-  return ((data ?? []) as { legacy_id: string; slug: string }[]).map((r) => ({
-    legacyId: r.legacy_id,
-    slug: r.slug,
-  }));
-}
 
 /** Tags in use, most common first — drives the filter bar. */
 export async function listTags(limit = 14): Promise<{ tag: string; count: number }[]> {
