@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { OPEN_PROPOSAL_EVENT, OPEN_TWEAK_EVENT } from '@/lib/community/events';
+import { isCommunityErrorCode } from '@/lib/community/errors';
 import {
   getLocalCredits,
   getLocalPhotos,
@@ -214,6 +215,10 @@ function ActionTile({
  */
 export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
   const t = useTranslations('recipe');
+  /* Deliberately the whole `community` namespace, not `community.errors`:
+     messages.test.ts asserts the layout ships `<ns>: messages.<ns>` for every
+     namespace a client asks for, and a dotted one has no such entry to ship. */
+  const tCommunity = useTranslations('community');
 
   const localPhotos = useSyncExternalStore(
     subscribeLocalPhotos,
@@ -357,8 +362,13 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
         }),
       });
       if (!res.ok) {
+        /* The body carries a code, never a sentence. Rendering `data.error`
+           directly is what put a Vietnamese string in front of English readers
+           on every rate-limited share. Anything unrecognised falls back rather
+           than reaching the screen raw. */
         const data = await res.json().catch(() => null);
-        setErrorMsg(data?.error ?? t('errShareFailed'));
+        const code = isCommunityErrorCode(data?.error) ? data.error : 'unknown';
+        setErrorMsg(tCommunity(`errors.${code}`));
       }
     } catch {
       setErrorMsg(t('errShareFailed'));

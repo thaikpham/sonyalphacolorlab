@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { isSupabaseConfigured, supabaseAdmin, supabaseRead } from '@/lib/supabase/server';
 import { requireUser, UNAUTHENTICATED } from '@/lib/auth/require-user';
 import { checkRateLimit } from '@/lib/ai/rate-limit';
+import { communityErrorBody } from '@/lib/community/errors';
 
 /**
  * PostgREST rejects with a plain object, not an Error, so `String(err)` gave
@@ -54,7 +55,7 @@ export async function GET(request: Request) {
   const slug = searchParams.get('slug');
 
   if (!slug) {
-    return NextResponse.json({ error: 'Missing slug parameter' }, { status: 400 });
+    return NextResponse.json(communityErrorBody('missingFields'), { status: 400 });
   }
 
   if (!isSupabaseConfigured()) {
@@ -102,7 +103,7 @@ export async function POST(request: Request) {
     const limit = checkRateLimit(`comment:${user.email}`, Date.now(), 10);
     if (!limit.allowed) {
       return NextResponse.json(
-        { error: 'Bạn đang bình luận quá nhanh. Thử lại sau ít giây.' },
+        communityErrorBody('rateLimited'),
         { status: 429, headers: { 'Retry-After': String(limit.retryAfterSeconds) } },
       );
     }
@@ -111,7 +112,7 @@ export async function POST(request: Request) {
     const { recipeSlug, content } = body;
 
     if (!recipeSlug || !content || typeof content !== 'string' || !content.trim()) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return NextResponse.json(communityErrorBody('missingFields'), { status: 400 });
     }
 
     const newComment: CommentItem = {
@@ -157,6 +158,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ comment: savedComment, source: 'supabase' });
   } catch (err) {
     logFallback('comments', err);
-    return NextResponse.json({ error: 'Failed to post comment' }, { status: 500 });
+    return NextResponse.json(communityErrorBody('saveFailed'), { status: 500 });
   }
 }

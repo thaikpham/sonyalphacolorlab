@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { checkRateLimit } from '@/lib/ai/rate-limit';
 import { isSupabaseConfigured, supabaseAdmin, supabaseRead } from '@/lib/supabase/server';
 import { listSlugs } from '@/lib/recipes/source';
+import { communityErrorBody } from '@/lib/community/errors';
 
 /**
  * Community photo URLs & Author credits.
@@ -39,7 +40,7 @@ const clientKey = (req: Request) =>
 export async function GET(req: Request) {
   const parsed = slugSchema.safeParse(new URL(req.url).searchParams.get('slug'));
   if (!parsed.success) {
-    return NextResponse.json({ ok: false, error: 'Slug parameter required' }, { status: 400 });
+    return NextResponse.json(communityErrorBody('missingFields'), { status: 400 });
   }
 
   if (!isSupabaseConfigured()) {
@@ -86,7 +87,7 @@ export async function POST(req: Request) {
   const limit = checkRateLimit(`photos:${clientKey(req)}`);
   if (!limit.allowed) {
     return NextResponse.json(
-      { ok: false, error: 'Bạn đang gửi quá nhanh. Thử lại sau ít phút.' },
+      communityErrorBody('rateLimited'),
       { status: 429, headers: { 'Retry-After': String(limit.retryAfterSeconds) } },
     );
   }
@@ -96,7 +97,7 @@ export async function POST(req: Request) {
     body = postBody.parse(await req.json());
   } catch {
     return NextResponse.json(
-      { ok: false, error: 'URL ảnh không hợp lệ. Đường dẫn phải bắt đầu bằng https://' },
+      communityErrorBody('invalidImageUrl'),
       { status: 400 },
     );
   }
@@ -107,7 +108,7 @@ export async function POST(req: Request) {
 
   const slugs = await listSlugs();
   if (!slugs.includes(body.slug)) {
-    return NextResponse.json({ ok: false, error: 'Không tìm thấy công thức.' }, { status: 404 });
+    return NextResponse.json(communityErrorBody('recipeNotFound'), { status: 404 });
   }
 
   try {
@@ -121,7 +122,7 @@ export async function POST(req: Request) {
 
     if ((count ?? 0) >= MAX_PHOTOS_PER_RECIPE) {
       return NextResponse.json(
-        { ok: false, error: 'Công thức này đã đủ số ảnh cộng đồng.' },
+        communityErrorBody('photoLimitReached'),
         { status: 409 },
       );
     }
@@ -143,12 +144,12 @@ export async function POST(req: Request) {
         return NextResponse.json({ ok: true, saved: true, duplicate: true });
       }
       console.error('[community-photos POST]', error.message);
-      return NextResponse.json({ ok: false, error: 'Không lưu được ảnh.' }, { status: 500 });
+      return NextResponse.json(communityErrorBody('saveFailed'), { status: 500 });
     }
 
     return NextResponse.json({ ok: true, saved: true, source: 'supabase' });
   } catch (e) {
     console.error('[community-photos POST]', e);
-    return NextResponse.json({ ok: false, error: 'Không lưu được ảnh.' }, { status: 500 });
+    return NextResponse.json(communityErrorBody('saveFailed'), { status: 500 });
   }
 }

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { isSupabaseConfigured, supabaseAdmin } from '@/lib/supabase/server';
 import { requireUser, UNAUTHENTICATED } from '@/lib/auth/require-user';
 import { checkRateLimit } from '@/lib/ai/rate-limit';
+import { communityErrorBody } from '@/lib/community/errors';
 
 export async function POST(request: Request) {
   try {
@@ -14,7 +15,7 @@ export async function POST(request: Request) {
     const limit = checkRateLimit(`vote:${user.email}`, Date.now(), 30);
     if (!limit.allowed) {
       return NextResponse.json(
-        { error: 'Bạn đang vote quá nhanh. Thử lại sau ít giây.' },
+        communityErrorBody('rateLimited'),
         { status: 429, headers: { 'Retry-After': String(limit.retryAfterSeconds) } },
       );
     }
@@ -24,7 +25,7 @@ export async function POST(request: Request) {
     const userEmail = user.email;
 
     if (!proposalId) {
-      return NextResponse.json({ error: 'Missing proposalId' }, { status: 400 });
+      return NextResponse.json(communityErrorBody('missingFields'), { status: 400 });
     }
 
     if (!isSupabaseConfigured()) {
@@ -75,6 +76,6 @@ export async function POST(request: Request) {
        body, which hands an unauthenticated caller the Postgres error text —
        table and column names included. The client only learns the write failed. */
     console.error('[proposals/vote] failed:', err instanceof Error ? err.message : err);
-    return NextResponse.json({ error: 'Failed to process vote' }, { status: 500 });
+    return NextResponse.json(communityErrorBody('saveFailed'), { status: 500 });
   }
 }

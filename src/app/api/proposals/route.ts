@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { isSupabaseConfigured, supabaseAdmin, supabaseRead } from '@/lib/supabase/server';
 import { requireUser, UNAUTHENTICATED } from '@/lib/auth/require-user';
 import { checkRateLimit } from '@/lib/ai/rate-limit';
+import { communityErrorBody } from '@/lib/community/errors';
 
 /**
  * PostgREST rejects with a plain object, not an Error, so `String(err)` gave
@@ -91,7 +92,7 @@ export async function GET(request: Request) {
   const viewer = (await requireUser(request))?.email ?? null;
 
   if (!slug) {
-    return NextResponse.json({ error: 'Missing slug parameter' }, { status: 400 });
+    return NextResponse.json(communityErrorBody('missingFields'), { status: 400 });
   }
 
   if (!isSupabaseConfigured()) {
@@ -162,7 +163,7 @@ export async function POST(request: Request) {
     const limit = checkRateLimit(`proposal:${user.email}`, Date.now(), 5);
     if (!limit.allowed) {
       return NextResponse.json(
-        { error: 'Bạn đang gửi đề xuất quá nhanh. Thử lại sau ít giây.' },
+        communityErrorBody('rateLimited'),
         { status: 429, headers: { 'Retry-After': String(limit.retryAfterSeconds) } },
       );
     }
@@ -171,7 +172,7 @@ export async function POST(request: Request) {
     const { recipeSlug, title, sampleImageUrl, settings, whiteBalance } = body;
 
     if (!recipeSlug || !title || !sampleImageUrl || !settings || !whiteBalance) {
-      return NextResponse.json({ error: 'URL ảnh demo mẫu thực tế là bắt buộc.' }, { status: 400 });
+      return NextResponse.json(communityErrorBody('sampleUrlRequired'), { status: 400 });
     }
 
     const newProposal: ProposalItem = {
@@ -247,6 +248,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ proposal: savedProposal, source: 'supabase' });
   } catch (err) {
     logFallback('proposals', err);
-    return NextResponse.json({ error: 'Failed to create proposal' }, { status: 500 });
+    return NextResponse.json(communityErrorBody('saveFailed'), { status: 500 });
   }
 }

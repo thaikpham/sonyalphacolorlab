@@ -47,3 +47,16 @@ export type CommunityErrorBody = { ok: false; error: CommunityErrorCode };
 export function communityErrorBody(code: CommunityErrorCode): CommunityErrorBody {
   return { ok: false, error: code };
 }
+
+/**
+ * Narrows a value off the wire to a code this bundle knows.
+ *
+ * The client reads `error` from a body it did not build: an older deploy, a
+ * proxy's own error page, or a code added after this bundle shipped. Anything
+ * unrecognised must fall back to `community.errors.unknown` — rendering the raw
+ * value instead would put an untranslated string on screen, which is the exact
+ * failure this module exists to prevent.
+ */
+export function isCommunityErrorCode(value: unknown): value is CommunityErrorCode {
+  return typeof value === 'string' && value in COMMUNITY_ERRORS;
+}

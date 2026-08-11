@@ -1,5 +1,6 @@
 import 'server-only';
 import { supabaseAdmin, isSupabaseConfigured } from '@/lib/supabase/server';
+import { communityErrorBody } from '@/lib/community/errors';
 
 /**
  * Resolves the caller from a verified Supabase session, never from the request
@@ -59,5 +60,11 @@ export async function requireUser(request: Request): Promise<AuthedUser | null> 
   }
 }
 
-/** The 401 body every community write path returns, so they stay consistent. */
-export const UNAUTHENTICATED = { error: 'Bạn cần đăng nhập để thực hiện thao tác này.' };
+/**
+ * The 401 body every community write path returns, so they stay consistent.
+ *
+ * A code, not a sentence: this used to be a Vietnamese literal, which renders
+ * untranslated to an English reader and is invisible to the message parity
+ * test. The client looks the code up in `community.errors.*`.
+ */
+export const UNAUTHENTICATED = communityErrorBody('unauthenticated');
