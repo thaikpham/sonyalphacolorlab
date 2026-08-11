@@ -211,6 +211,35 @@
     "idealUseCaseLabel": "Ideal Use Cases",
     "addToCompare": "⚡ Add to Compare",
     "removeFromCompare": "✓ In Compare List",
-    "specSummary": "Product Overview"
+    "specSummary": "Product Overview",
+    "specs": {
+      "specsHeading": "Core specifications",
+      "specsSourceLabel": "Source",
+      "specsNotPublished": "Not published",
+      "sensor": "Sensor",
+      "effectivePixels": "Effective pixels",
+      "isoRange": "ISO range",
+      "lensMount": "Mount",
+      "autofocus": "Autofocus",
+      "video": "Video",
+      "stabilization": "Stabilization",
+      "viewfinder": "Viewfinder",
+      "lcd": "LCD",
+      "mediaSlots": "Media slots",
+      "battery": "Battery life",
+      "weight": "Weight",
+      "dimensions": "Dimensions",
+      "format": "Format",
+      "focalLength": "Focal length",
+      "maxAperture": "Max aperture",
+      "minAperture": "Min aperture",
+      "construction": "Construction",
+      "angleOfView": "Angle of view",
+      "minFocusDistance": "Min focus distance",
+      "maxMagnification": "Max magnification",
+      "filterDiameter": "Filter diameter",
+      "apertureBlades": "Aperture blades",
+      "compatibility": "Compatibility"
+    }
   }
 }

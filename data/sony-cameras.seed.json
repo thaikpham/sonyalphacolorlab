@@ -15,7 +15,29 @@
       "Chiếc máy quay full-frame được thiết kế để mở ra cánh cổng đến sự nghiệp làm phim chuyên nghiệp",
       "Biểu đạt đậm chất điện ảnh và sức mạnh kế thừa từ máy quay điện ảnh của Sony",
       "Được thiết kế để quay phim độc lập với khả năng thao tác vượt trội"
-    ]
+    ],
+    "specs": {
+      "kind": "camera",
+      "sensor": "Full-frame 35 mm (35,9 x 23,9 mm) Exmor R CMOS",
+      "effectivePixels": "33,0 MP",
+      "isoRange": "100–51200 (mở rộng 50–204800)",
+      "lensMount": "Sony E-mount",
+      "autofocus": "759 điểm",
+      "video": "4K 60p",
+      "stabilization": null,
+      "viewfinder": null,
+      "lcd": "7,5 cm (3,0 inch) TFT, 1,03 triệu điểm",
+      "mediaSlots": "CFexpress Type A / SD (UHS-II) x2",
+      "battery": null,
+      "weight": "679 g (kèm pin và thẻ); 594 g (chỉ thân máy)",
+      "dimensions": "129,7 x 77,8 x 103,7 mm",
+      "specsSource": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilme-fx2/specifications",
+      "specsMissing": [
+        "stabilization",
+        "viewfinder",
+        "battery"
+      ]
+    }
   },
   {
     "id": "sony-ilme-fx3a-q-ap2",
@@ -195,7 +217,28 @@
       "Ống kính E-Mount dành riêng cho cảm biến APS-C",
       "Ống kính G zoom chuẩn APS-C F2.8 nhỏ gọn",
       "Độ phân giải cao trên toàn bộ phạm vi zoom ngay cả ở khẩu độ F2.8"
-    ]
+    ],
+    "specs": {
+      "kind": "lens",
+      "lensMount": "Sony E-mount",
+      "format": "APS-C",
+      "focalLength": "16–55 mm",
+      "maxAperture": "F2.8",
+      "minAperture": "F22",
+      "construction": "17 thành phần / 12 nhóm",
+      "angleOfView": "83°–29°",
+      "minFocusDistance": "0,33 m",
+      "maxMagnification": "0,2x",
+      "filterDiameter": "67 mm",
+      "apertureBlades": "9 (khẩu tròn)",
+      "stabilization": null,
+      "weight": "494 g",
+      "dimensions": "73 x 100 mm",
+      "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel1655g/specifications",
+      "specsMissing": [
+        "stabilization"
+      ]
+    }
   },
   {
     "id": "sony-selp18105g-ae",

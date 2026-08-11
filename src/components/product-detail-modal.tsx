@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import type { SonyCamera } from '@/lib/cameras/types';
+import type { ProductSpecs, SonyCamera } from '@/lib/cameras/types';
 
 interface ProductDetailModalProps {
   product: SonyCamera | null;
@@ -203,8 +203,73 @@ export function ProductDetailModal({
               ))}
             </ul>
           </div>
+
+          {product.specs && <SpecTable specs={product.specs} />}
         </div>
       </div>
+    </div>
+  );
+}
+
+/** The rows each category shows, in display order. */
+const SPEC_ROWS: Record<ProductSpecs['kind'], string[]> = {
+  camera: [
+    'sensor', 'effectivePixels', 'isoRange', 'lensMount', 'autofocus', 'video',
+    'stabilization', 'viewfinder', 'lcd', 'mediaSlots', 'battery', 'weight', 'dimensions',
+  ],
+  lens: [
+    'lensMount', 'format', 'focalLength', 'maxAperture', 'minAperture', 'construction',
+    'angleOfView', 'minFocusDistance', 'maxMagnification', 'filterDiameter',
+    'apertureBlades', 'stabilization', 'weight', 'dimensions',
+  ],
+  accessory: ['compatibility', 'weight', 'dimensions'],
+};
+
+function SpecTable({ specs }: { specs: ProductSpecs }) {
+  const t = useTranslations('cameras');
+  const row = specs as unknown as Record<string, string | null>;
+
+  /* An unstated spec renders as "not published" rather than being hidden. A
+     hidden row and an absent one look identical, and this data is scraped from
+     pages that vary in completeness — the gap is information. */
+  const rows = SPEC_ROWS[specs.kind].map((key) => [key, row[key] ?? null] as const);
+  const extra = specs.kind === 'accessory' ? specs.keySpecs : [];
+
+  return (
+    <div className="bg-[#25262c] p-5 rounded-2xl border border-white/15 shadow-lg flex flex-col gap-3">
+      <h3 className="font-extrabold text-sm uppercase text-sky-300 font-mono tracking-wider flex items-center gap-2">
+        ▦ {t('specs.specsHeading')}
+      </h3>
+
+      <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-0 text-xs">
+        {extra.map((s) => (
+          <div key={s.label} className="flex justify-between gap-3 py-2 border-b border-white/10">
+            <dt className="text-white/60 font-medium shrink-0">{s.label}</dt>
+            <dd className="text-white/95 font-semibold text-right">{s.value}</dd>
+          </div>
+        ))}
+        {rows.map(([key, value]) => (
+          <div key={key} className="flex justify-between gap-3 py-2 border-b border-white/10">
+            <dt className="text-white/60 font-medium shrink-0">{t(`specs.${key}`)}</dt>
+            <dd
+              className={
+                value ? 'text-white/95 font-semibold text-right' : 'text-white/30 italic text-right'
+              }
+            >
+              {value ?? t('specs.specsNotPublished')}
+            </dd>
+          </div>
+        ))}
+      </dl>
+
+      <a
+        href={specs.specsSource}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-[11px] text-white/40 hover:text-white/70 transition-colors font-mono truncate"
+      >
+        {t('specs.specsSourceLabel')}: {specs.specsSource}
+      </a>
     </div>
   );
 }

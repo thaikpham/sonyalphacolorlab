@@ -211,6 +211,35 @@
     "idealUseCaseLabel": "Phù hợp cho nhu cầu",
     "addToCompare": "⚡ Thêm vào danh sách so sánh",
     "removeFromCompare": "✓ Đã có trong danh sách so sánh",
-    "specSummary": "Tổng quan sản phẩm"
+    "specSummary": "Tổng quan sản phẩm",
+    "specs": {
+      "specsHeading": "Thông số cốt lõi",
+      "specsSourceLabel": "Nguồn",
+      "specsNotPublished": "Nguồn không công bố",
+      "sensor": "Cảm biến",
+      "effectivePixels": "Điểm ảnh hiệu dụng",
+      "isoRange": "Dải ISO",
+      "lensMount": "Ngàm",
+      "autofocus": "Lấy nét",
+      "video": "Quay phim",
+      "stabilization": "Chống rung",
+      "viewfinder": "Khung ngắm",
+      "lcd": "Màn hình",
+      "mediaSlots": "Khe thẻ nhớ",
+      "battery": "Thời lượng pin",
+      "weight": "Trọng lượng",
+      "dimensions": "Kích thước",
+      "format": "Khổ ảnh",
+      "focalLength": "Tiêu cự",
+      "maxAperture": "Khẩu lớn nhất",
+      "minAperture": "Khẩu nhỏ nhất",
+      "construction": "Cấu trúc quang học",
+      "angleOfView": "Góc nhìn",
+      "minFocusDistance": "Khoảng lấy nét gần nhất",
+      "maxMagnification": "Tỉ lệ phóng đại",
+      "filterDiameter": "Đường kính filter",
+      "apertureBlades": "Lá khẩu",
+      "compatibility": "Tương thích"
+    }
   }
 }
