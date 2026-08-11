@@ -44,7 +44,6 @@
     "urlLabel": "Sample photo URL (direct image URL)",
     "urlPlaceholder": "https://images.unsplash.com/photo-… or https://…",
     "authorLabel": "Photographer / author credit (optional)",
-    "authorPlaceholder": "e.g. Nguyễn Văn A / Alex Pham",
     "socialLabel": "Social link (Instagram, Facebook…) (optional)",
     "previewLabel": "Live preview:",
     "addToGallery": "Add to gallery",

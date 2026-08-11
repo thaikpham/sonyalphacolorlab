@@ -17,6 +17,7 @@ import { describe, expect, it } from 'vitest';
 
 const WRITE_ROUTES = [
   'src/app/api/comments/route.ts',
+  'src/app/api/community-photos/route.ts',
   'src/app/api/proposals/route.ts',
   'src/app/api/proposals/vote/route.ts',
 ];
@@ -25,7 +26,8 @@ describe.each(WRITE_ROUTES)('%s', (path) => {
   const source = readFileSync(path, 'utf8');
 
   it('rejects unauthenticated callers', () => {
-    expect(source).toContain('requireUser(request)');
+    // Either parameter name — community-photos calls its argument `req`.
+    expect(source).toMatch(/requireUser\(\s*req(uest)?\s*\)/);
     expect(source).toMatch(/status:\s*401/);
   });
 
@@ -48,6 +50,32 @@ describe.each(WRITE_ROUTES)('%s', (path) => {
   it('rate limits the endpoint', () => {
     expect(source).toContain('checkRateLimit');
     expect(source).toMatch(/status:\s*429/);
+  });
+});
+
+describe('community photos POST', () => {
+  const source = readFileSync('src/app/api/community-photos/route.ts', 'utf8');
+
+  it('does not accept a contributor name in the payload', () => {
+    /* This route had no session check at all: anyone could POST a photo URL
+       onto any recipe and credit it to any name, and the rate limit keyed on
+       `x-forwarded-for`, which the caller sets. The credit is the session's
+       name now, so the schema must not offer a field to override it. */
+    expect(source).not.toMatch(/authorName:\s*z\./);
+    expect(source).not.toContain('body.authorName');
+    expect(source).toContain('author_name: user.name');
+  });
+
+  it('rate limits per verified address, not per client-supplied header', () => {
+    expect(source).toMatch(/checkRateLimit\(`photos:\$\{user\.email\}`\)/);
+  });
+
+  it('keeps an email out of the ungranted submitted_by column', () => {
+    /* community_photos has no column-level grant — unlike recipe_comments and
+       recipe_proposals in 0004 — so RLS alone leaves every column readable by
+       anon. An email here would be a fresh leak, not a stored secret. */
+    expect(source).not.toMatch(/submitted_by:\s*user\.email/);
+    expect(source).toContain('submitted_by: clientKey(req)');
   });
 });
 

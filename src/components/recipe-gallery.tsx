@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { OPEN_PROPOSAL_EVENT, OPEN_TWEAK_EVENT } from '@/lib/community/events';
 import { isCommunityErrorCode } from '@/lib/community/errors';
+import { useAuth } from '@/components/auth-context';
 import {
   getLocalCredits,
   getLocalPhotos,
@@ -215,6 +216,7 @@ function ActionTile({
  */
 export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
   const t = useTranslations('recipe');
+  const { user, openLoginModal, accessToken } = useAuth();
   /* Deliberately the whole `community` namespace, not `community.errors`:
      messages.test.ts asserts the layout ships `<ns>: messages.<ns>` for every
      namespace a client asks for, and a dotted one has no such entry to ship. */
@@ -241,7 +243,6 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
 
   // Contribution Form state
   const [inputUrl, setInputUrl] = useState('');
-  const [authorName, setAuthorName] = useState('');
   const [authorSocial, setAuthorSocial] = useState('');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -317,8 +318,14 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
 
   const handleAddPhoto = async (e: React.FormEvent) => {
     e.preventDefault();
+    /* The route 401s without a session, and the photo is saved to the device
+       before the request goes out — submitting while signed out would leave it
+       looking shared when nothing was. Ask for sign-in first. */
+    if (!user) {
+      openLoginModal();
+      return;
+    }
     const cleanUrl = inputUrl.trim();
-    const cleanName = authorName.trim();
     const cleanSocial = authorSocial.trim();
 
     if (!cleanUrl) {
@@ -334,30 +341,31 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
       return;
     }
 
-    // Save credit & photo locally
+    // Save credit & photo locally, under the same name the server will store,
+    // so the credit does not change when the page is reloaded from Supabase.
     setLocalPhotos(slug, [...new Set([cleanUrl, ...localPhotos])]);
-    if (cleanName || cleanSocial) {
-      setLocalCredit(slug, {
-        url: cleanUrl,
-        authorName: cleanName || undefined,
-        authorSocial: cleanSocial || undefined,
-      });
-    }
+    setLocalCredit(slug, {
+      url: cleanUrl,
+      authorName: user.name,
+      authorSocial: cleanSocial || undefined,
+    });
 
     setInputUrl('');
-    setAuthorName('');
     setAuthorSocial('');
     setPreviewUrl(null);
     setIsFormOpen(false);
 
     try {
+      const token = accessToken();
       const res = await fetch('/api/community-photos', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
           slug,
           imageUrl: cleanUrl,
-          authorName: cleanName || undefined,
           authorSocial: cleanSocial || undefined,
         }),
       });
@@ -587,20 +595,17 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
             />
           </div>
 
-          {/* 2. Contributor Name & Social Network Link (Optional) */}
+          {/* 2. Credit — the name is the signed-in account, not a free-text
+              field, so a photo cannot be credited to someone who did not post
+              it. Only the social link is the contributor's to fill in. */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="author-name-input" className="block mb-1.5 text-white/80 text-xs font-semibold font-sans">
+              <span className="block mb-1.5 text-white/80 text-xs font-semibold font-sans">
                 {t('authorLabel')}
-              </label>
-              <input
-                id="author-name-input"
-                type="text"
-                value={authorName}
-                onChange={(e) => setAuthorName(e.target.value)}
-                placeholder={t('authorPlaceholder')}
-                className="w-full px-4 py-2.5 rounded-xl bg-black/70 border-0 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-white/40 font-sans transition-all shadow-inner"
-              />
+              </span>
+              <p className="w-full px-4 py-2.5 rounded-xl bg-black/40 text-sm text-white/70 font-sans shadow-inner">
+                {user?.name ?? ''}
+              </p>
             </div>
 
             <div>

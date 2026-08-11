@@ -4,6 +4,7 @@ import { checkRateLimit } from '@/lib/ai/rate-limit';
 import { isSupabaseConfigured, supabaseAdmin, supabaseRead } from '@/lib/supabase/server';
 import { listSlugs } from '@/lib/recipes/source';
 import { communityErrorBody } from '@/lib/community/errors';
+import { requireUser, UNAUTHENTICATED } from '@/lib/auth/require-user';
 
 /**
  * Community photo URLs & Author credits.
@@ -20,6 +21,9 @@ const slugSchema = z
   .max(120)
   .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'Invalid slug');
 
+/* No authorName: the credit is the verified session's name. It used to be
+   taken from the payload, so an unauthenticated caller could credit a photo to
+   anyone at all — the same hole the comment and vote routes already closed. */
 const postBody = z.object({
   slug: slugSchema,
   imageUrl: z
@@ -27,7 +31,6 @@ const postBody = z.object({
     .url()
     .max(2048)
     .refine((u) => u.startsWith('https://'), { message: 'Image URL must use https://' }),
-  authorName: z.string().max(100).optional(),
   authorSocial: z.string().url().max(2048).optional(),
 });
 
@@ -84,7 +87,13 @@ export async function GET(req: Request) {
 
 /** POST /api/community-photos */
 export async function POST(req: Request) {
-  const limit = checkRateLimit(`photos:${clientKey(req)}`);
+  /* This route writes on a reader's behalf, so it needs a verified session.
+     It had none: anyone could POST a photo URL onto any recipe, and the rate
+     limit keyed on a spoofable `x-forwarded-for` rather than on a person. */
+  const user = await requireUser(req);
+  if (!user) return NextResponse.json(UNAUTHENTICATED, { status: 401 });
+
+  const limit = checkRateLimit(`photos:${user.email}`);
   if (!limit.allowed) {
     return NextResponse.json(
       communityErrorBody('rateLimited'),
@@ -132,8 +141,10 @@ export async function POST(req: Request) {
       .insert({
         recipe_slug: body.slug,
         image_url: body.imageUrl,
-        author_name: body.authorName || null,
+        author_name: user.name,
         author_social: body.authorSocial || null,
+        // Coarse origin marker, deliberately still the IP: this table has no
+        // column-level grant, so an email here would be readable by anon.
         submitted_by: clientKey(req),
       })
       .select('id')
