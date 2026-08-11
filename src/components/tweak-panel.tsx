@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { OPEN_TWEAK_EVENT } from '@/lib/community/events';
+import { isTweakErrorCode } from '@/lib/ai/errors';
 import { formatWhiteBalance } from '@/lib/camera/format';
 import type { WhiteBalance } from '@/lib/camera/schema';
 
@@ -82,7 +83,10 @@ export function TweakPanel({ slug, locale, currentWb, currentSettings }: Props) 
         body: JSON.stringify({ slug, request: request.trim(), locale }),
       });
       const data = await res.json();
-      if (!res.ok) setError(data.error ?? t('failed'));
+      /* The body carries a code, never a sentence. Rendering `data.error`
+         directly is what put English on screen for Vietnamese readers, and once
+         put a Zod validation message there naming internal fields. */
+      if (!res.ok) setError(t(`errors.${isTweakErrorCode(data?.error) ? data.error : 'unknown'}`));
       else setResult(data as Result);
     } catch {
       setError(t('failed'));

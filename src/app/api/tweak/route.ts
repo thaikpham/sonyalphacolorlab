@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { checkDailyBudget, checkRateLimit } from '@/lib/ai/rate-limit';
 import { tweakRecipe } from '@/lib/ai/tweak';
 import { getRecipe } from '@/lib/recipes/source';
+import { tweakErrorBody } from '@/lib/ai/errors';
 
 /**
  * POST /api/tweak — adjust a recipe from a natural-language request.
@@ -29,7 +30,7 @@ export async function POST(req: Request) {
   const limit = checkRateLimit(ip);
   if (!limit.allowed) {
     return NextResponse.json(
-      { error: 'Too many requests. Try again shortly.' },
+      tweakErrorBody('rateLimited'),
       { status: 429, headers: { 'Retry-After': String(limit.retryAfterSeconds) } },
     );
   }
@@ -39,7 +40,7 @@ export async function POST(req: Request) {
   const budget = checkDailyBudget();
   if (!budget.allowed) {
     return NextResponse.json(
-      { error: 'The daily AI budget is used up. Try again tomorrow.' },
+      tweakErrorBody('budgetExhausted'),
       { status: 429, headers: { 'Retry-After': '3600' } },
     );
   }
@@ -48,15 +49,15 @@ export async function POST(req: Request) {
   try {
     input = body.parse(await req.json());
   } catch {
-    return NextResponse.json({ error: 'Invalid request.' }, { status: 400 });
+    return NextResponse.json(tweakErrorBody('invalidRequest'), { status: 400 });
   }
 
   const recipe = await getRecipe(input.slug, input.locale);
-  if (!recipe) return NextResponse.json({ error: 'Recipe not found.' }, { status: 404 });
+  if (!recipe) return NextResponse.json(tweakErrorBody('recipeNotFound'), { status: 404 });
 
   try {
     const result = await tweakRecipe(recipe, input.request, input.locale);
-    if (!result.ok) return NextResponse.json({ error: result.error }, { status: 422 });
+    if (!result.ok) return NextResponse.json(tweakErrorBody(result.error), { status: 422 });
 
     return NextResponse.json(
       {
@@ -69,6 +70,6 @@ export async function POST(req: Request) {
   } catch (e) {
     // Never leak the upstream error text — it can carry request details.
     console.error('[tweak]', e);
-    return NextResponse.json({ error: 'The AI service is unavailable.' }, { status: 502 });
+    return NextResponse.json(tweakErrorBody('unavailable'), { status: 502 });
   }
 }

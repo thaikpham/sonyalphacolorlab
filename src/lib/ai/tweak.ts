@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { clSettingsSchema, ppSettingsSchema, whiteBalanceSchema } from '../camera/schema';
 import { formatWhiteBalance } from '../camera/format';
 import { constraintsFor } from './constraints';
+import type { TweakErrorCode } from './errors';
 import type { RecipeView } from '../recipes/source';
 
 /**
@@ -34,7 +35,7 @@ const tweakResult = <T extends z.ZodTypeAny>(settings: T) =>
 
 export type TweakOutcome =
   | { ok: true; whiteBalance: unknown; settings: unknown; summary: string; attempts: number }
-  | { ok: false; error: string; attempts: number };
+  | { ok: false; error: TweakErrorCode; attempts: number };
 
 const SYSTEM = `You adjust colour recipes for Sony Alpha cameras.
 
@@ -72,7 +73,7 @@ export async function tweakRecipe(
   locale = 'en',
 ): Promise<TweakOutcome> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return { ok: false, error: 'AI tweaking is not configured.', attempts: 0 };
+  if (!apiKey) return { ok: false, error: 'notConfigured', attempts: 0 };
 
   const client = new Anthropic({ apiKey });
   const schema = tweakResult(recipe.format === 'pp' ? ppSettingsSchema : clSettingsSchema);
@@ -92,7 +93,7 @@ export async function tweakRecipe(
     });
 
     if (response.stop_reason === 'refusal') {
-      return { ok: false, error: 'The request was declined.', attempts: attempt };
+      return { ok: false, error: 'declined', attempts: attempt };
     }
 
     const parsed = response.parsed_output;
@@ -115,9 +116,12 @@ Your previous answer was rejected because ${lastError}. Re-read the legal ranges
 above and return values that fall inside them.`;
   }
 
+  /* Server-side only. This used to be interpolated into the response body, so
+     a Zod message naming internal fields and legal ranges went to the browser. */
+  console.error('[tweak] no valid recipe after 2 attempts:', lastError);
   return {
     ok: false,
-    error: `Could not produce a valid recipe — ${lastError}.`,
+    error: 'invalidResult',
     attempts: 2,
   };
 }

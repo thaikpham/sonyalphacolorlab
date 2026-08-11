@@ -81,7 +81,18 @@
     "sampleWarm": "Ấm áp hơn",
     "sampleShadow": "Shadow mờ chuẩn phim",
     "sampleSkin": "Skintone mượt mà",
-    "sampleGolden": "Tone chiều Golden Hour"
+    "sampleGolden": "Tone chiều Golden Hour",
+    "errors": {
+      "rateLimited": "Bạn đang gửi quá nhanh. Thử lại sau ít phút.",
+      "budgetExhausted": "Hạn mức AI trong ngày đã hết. Thử lại vào ngày mai.",
+      "invalidRequest": "Không đọc được yêu cầu. Hãy diễn đạt lại.",
+      "recipeNotFound": "Không tìm thấy công thức.",
+      "notConfigured": "Bản triển khai này chưa cấu hình tính năng AI.",
+      "declined": "Yêu cầu đã bị từ chối.",
+      "invalidResult": "AI không tạo được công thức hợp lệ. Hãy diễn đạt lại yêu cầu.",
+      "unavailable": "Dịch vụ AI hiện không khả dụng.",
+      "unknown": "Đã có lỗi xảy ra. Vui lòng thử lại."
+    }
   },
   "community": {
     "title": "Cộng đồng & đề xuất tinh chỉnh",

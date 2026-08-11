@@ -81,7 +81,18 @@
     "sampleWarm": "Warmer tones",
     "sampleShadow": "Soft shadows",
     "sampleSkin": "Smooth skintones",
-    "sampleGolden": "Golden hour warmth"
+    "sampleGolden": "Golden hour warmth",
+    "errors": {
+      "rateLimited": "Too many requests. Try again shortly.",
+      "budgetExhausted": "The daily AI budget is used up. Try again tomorrow.",
+      "invalidRequest": "That request could not be read. Try rewording it.",
+      "recipeNotFound": "That recipe no longer exists.",
+      "notConfigured": "AI tweaking is not configured on this deploy.",
+      "declined": "The request was declined.",
+      "invalidResult": "The AI could not produce a valid recipe. Try rewording your request.",
+      "unavailable": "The AI service is unavailable.",
+      "unknown": "Something went wrong. Please try again."
+    }
   },
   "community": {
     "title": "Community & tweak proposals",
