@@ -760,6 +760,57 @@ body {
   animation: app-tile-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* ---------------------------------------------------------------------------
+   Floating Compare Bar 7-Color Static Rainbow Glow
+--------------------------------------------------------------------------- */
+
+.rainbow-glow-bar {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.rainbow-glow-bar::before {
+  content: "";
+  position: absolute;
+  inset: -12px;
+  border-radius: 1.75rem;
+  background: linear-gradient(
+    90deg,
+    #47f5d7,
+    #f5f147,
+    #9247f5,
+    #f57847,
+    #3ddc84,
+    #35d0e8,
+    #a86bff,
+    #47f5d7
+  );
+  filter: blur(24px) saturate(1.4);
+  opacity: 0.65;
+}
+
+.rainbow-glow-bar::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 1.25rem;
+  background: linear-gradient(
+    90deg,
+    #47f5d7,
+    #f5f147,
+    #9247f5,
+    #f57847,
+    #3ddc84,
+    #35d0e8,
+    #a86bff,
+    #47f5d7
+  );
+  filter: blur(8px) saturate(1.5);
+  opacity: 0.85;
+}
+
 .app-enter-1 { animation-delay: 0.02s; }
 .app-enter-2 { animation-delay: 0.08s; }
 .app-enter-3 { animation-delay: 0.14s; }

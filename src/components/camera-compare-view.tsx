@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from '@/i18n/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import type { SonyCamera } from '@/lib/cameras/types';
-import { featureList } from '@/lib/cameras/features';
+import { featureList, splitFeatures } from '@/lib/cameras/features';
 import { translateSpecValue } from '@/lib/cameras/spec-values';
 import {
   type CompareTabId,
@@ -38,6 +38,147 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
   const [searchAddQuery, setSearchAddQuery] = useState('');
   const [activeTab, setActiveTab] = useState<CompareTabId>('all');
   const [onlyDiffs, setOnlyDiffs] = useState(false);
+
+  // Admin Spec Editor State
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdminEditMode, setIsAdminEditMode] = useState(false);
+  const [editingCell, setEditingCell] = useState<{
+    camera: SonyCamera;
+    specKey: string;
+    label: string;
+    currentVal: string;
+  } | null>(null);
+  const [editInputValue, setEditInputValue] = useState('');
+  const [isSavingSpec, setIsSavingSpec] = useState(false);
+  const [saveFeedback, setSaveFeedback] = useState<string | null>(null);
+
+  // Admin Key Features Editor State
+  const [editingFeaturesCamera, setEditingFeaturesCamera] = useState<SonyCamera | null>(null);
+  const [featuresViText, setFeaturesViText] = useState('');
+  const [featuresEnText, setFeaturesEnText] = useState('');
+  const [isSavingFeatures, setIsSavingFeatures] = useState(false);
+  const [featuresSaveFeedback, setFeaturesSaveFeedback] = useState<string | null>(null);
+
+  // Check Admin Session on mount
+  React.useEffect(() => {
+    async function checkAdminSession() {
+      try {
+        const res = await fetch('/api/admin/session');
+        const data = await res.json();
+        if (data.isAdmin) {
+          setIsAdmin(true);
+        }
+      } catch {
+        // Not admin or offline
+      }
+    }
+    checkAdminSession();
+  }, []);
+
+  const openEditModal = (camera: SonyCamera, specKey: string, label: string) => {
+    const rawVal = getSpecValue(camera, specKey) ?? '';
+    setEditingCell({ camera, specKey, label, currentVal: rawVal });
+    setEditInputValue(rawVal);
+    setSaveFeedback(null);
+  };
+
+  const openFeaturesEditModal = (camera: SonyCamera) => {
+    setEditingFeaturesCamera(camera);
+    const { en, vi } = splitFeatures(camera.features);
+    setFeaturesViText(vi.join('\n'));
+    setFeaturesEnText(en.join('\n'));
+    setFeaturesSaveFeedback(null);
+  };
+
+  const handleSaveFeatures = async () => {
+    if (!editingFeaturesCamera) return;
+    setIsSavingFeatures(true);
+    setFeaturesSaveFeedback(null);
+
+    const viArray = featuresViText.split('\n').map((s) => s.trim()).filter(Boolean);
+    const enArray = featuresEnText.split('\n').map((s) => s.trim()).filter(Boolean);
+
+    try {
+      const res = await fetch(`/api/admin/products/${editingFeaturesCamera.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          features: {
+            vi: viArray,
+            en: enArray,
+          },
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        editingFeaturesCamera.features = data.features;
+        setActiveIds((prev) => [...prev]);
+
+        setFeaturesSaveFeedback('✓ Đã lưu điểm nổi bật vào Supabase!');
+        setTimeout(() => {
+          setEditingFeaturesCamera(null);
+          setFeaturesSaveFeedback(null);
+        }, 1200);
+      } else {
+        setFeaturesSaveFeedback(
+          data.error === 'notAdmin'
+            ? '❌ Thất bại: Tài khoản không có quyền Admin.'
+            : '❌ Lỗi lưu dữ liệu Supabase.',
+        );
+      }
+    } catch {
+      setFeaturesSaveFeedback('❌ Lỗi kết nối server.');
+    } finally {
+      setIsSavingFeatures(false);
+    }
+  };
+
+  const handleSaveSpec = async () => {
+    if (!editingCell) return;
+    const { camera, specKey } = editingCell;
+    setIsSavingSpec(true);
+    setSaveFeedback(null);
+
+    const valToSave = editInputValue.trim() === '' ? null : editInputValue.trim();
+    const currentSpecs = (camera.specs as unknown as Record<string, unknown>) || {};
+    const updatedSpecs = {
+      ...currentSpecs,
+      [specKey]: valToSave,
+    };
+
+    try {
+      const res = await fetch(`/api/admin/products/${camera.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ specs: updatedSpecs }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        // Update local camera object so UI reflects changes instantly
+        camera.specs = data.specs;
+        // Trigger re-render
+        setActiveIds((prev) => [...prev]);
+
+        setSaveFeedback('✓ Đã lưu thành công vào Supabase!');
+        setTimeout(() => {
+          setEditingCell(null);
+          setSaveFeedback(null);
+        }, 1200);
+      } else {
+        setSaveFeedback(
+          data.error === 'notAdmin'
+            ? '❌ Thất bại: Tài khoản không có quyền Admin.'
+            : '❌ Lỗi lưu dữ liệu Supabase.',
+        );
+      }
+    } catch {
+      setSaveFeedback('❌ Lỗi kết nối server.');
+    } finally {
+      setIsSavingSpec(false);
+    }
+  };
 
   // AI Chatbot State
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
@@ -162,6 +303,94 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
     }
   };
 
+  const getSectionThemeConfig = (sectionId: string) => {
+    switch (sectionId) {
+      case 'general':
+        return {
+          headerBg: 'bg-gradient-to-r from-cyan-950/90 via-[#161b22] to-cyan-950/40 border-l-4 border-cyan-400',
+          headerText: 'text-cyan-300',
+          border: 'border-cyan-500/30',
+          cardBg: 'bg-cyan-950/20 border-cyan-500/30 hover:border-cyan-400/60',
+          iconColor: 'text-cyan-400',
+        };
+      case 'pricing':
+        return {
+          headerBg: 'bg-gradient-to-r from-sky-950/90 via-[#161b22] to-sky-950/40 border-l-4 border-sky-400',
+          headerText: 'text-sky-300',
+          border: 'border-sky-500/30',
+          cardBg: 'bg-sky-950/20 border-sky-500/30 hover:border-sky-400/60',
+          iconColor: 'text-sky-400',
+        };
+      case 'highlights':
+        return {
+          headerBg: 'bg-gradient-to-r from-amber-950/90 via-[#161b22] to-amber-950/40 border-l-4 border-amber-400',
+          headerText: 'text-amber-300',
+          border: 'border-amber-500/30',
+          cardBg: 'bg-amber-950/20 border-amber-500/30 hover:border-amber-400/60',
+          iconColor: 'text-amber-400',
+        };
+      case 'sensorOptics':
+        return {
+          headerBg: 'bg-gradient-to-r from-purple-950/90 via-[#161b22] to-purple-950/40 border-l-4 border-purple-400',
+          headerText: 'text-purple-300',
+          border: 'border-purple-500/30',
+          cardBg: 'bg-purple-950/20 border-purple-500/30 hover:border-purple-400/60',
+          iconColor: 'text-purple-400',
+        };
+      case 'videoIso':
+        return {
+          headerBg: 'bg-gradient-to-r from-orange-950/90 via-[#161b22] to-orange-950/40 border-l-4 border-orange-400',
+          headerText: 'text-orange-300',
+          border: 'border-orange-500/30',
+          cardBg: 'bg-orange-950/20 border-orange-500/30 hover:border-orange-400/60',
+          iconColor: 'text-orange-400',
+        };
+      case 'afStab':
+        return {
+          headerBg: 'bg-gradient-to-r from-emerald-950/90 via-[#161b22] to-emerald-950/40 border-l-4 border-emerald-400',
+          headerText: 'text-emerald-300',
+          border: 'border-emerald-500/30',
+          cardBg: 'bg-emerald-950/20 border-emerald-500/30 hover:border-emerald-400/60',
+          iconColor: 'text-emerald-400',
+        };
+      case 'physical':
+        return {
+          headerBg: 'bg-gradient-to-r from-rose-950/90 via-[#161b22] to-rose-950/40 border-l-4 border-rose-400',
+          headerText: 'text-rose-300',
+          border: 'border-rose-500/30',
+          cardBg: 'bg-rose-950/20 border-rose-500/30 hover:border-rose-400/60',
+          iconColor: 'text-rose-400',
+        };
+      default:
+        return {
+          headerBg: 'bg-[#181a20] border-l-4 border-amber-400',
+          headerText: 'text-amber-300',
+          border: 'border-white/15',
+          cardBg: 'bg-white/5 border-white/10 hover:border-amber-400/30',
+          iconColor: 'text-amber-400',
+        };
+    }
+  };
+
+  const getTabActiveStyle = (tabId: CompareTabId) => {
+    switch (tabId) {
+      case 'all':
+        return 'bg-white text-black shadow-lg shadow-white/20 scale-[1.02] font-black';
+      case 'highlights':
+        return 'bg-amber-400 text-black shadow-lg shadow-amber-400/25 scale-[1.02] font-black';
+      case 'sensorOptics':
+        return 'bg-purple-500 text-white shadow-lg shadow-purple-500/30 scale-[1.02] font-black';
+      case 'videoIso':
+        return 'bg-orange-500 text-white shadow-lg shadow-orange-500/30 scale-[1.02] font-black';
+      case 'afStab':
+        return 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 scale-[1.02] font-black';
+      case 'physical':
+        return 'bg-rose-500 text-white shadow-lg shadow-rose-500/30 scale-[1.02] font-black';
+      default:
+        return 'bg-amber-400 text-black shadow-lg scale-[1.02] font-black';
+    }
+  };
+
   const activeSpecSections = useMemo(() => {
     return getActiveSpecSections(comparedCameras, activeTab);
   }, [comparedCameras, activeTab]);
@@ -224,7 +453,7 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                 onClick={() => setActiveTab(tab.id)}
                 className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
                   isActive
-                    ? 'bg-amber-400 text-black shadow-lg shadow-amber-400/20 scale-[1.02]'
+                    ? getTabActiveStyle(tab.id)
                     : 'bg-white/5 hover:bg-white/15 text-white/80 hover:text-white border border-white/10'
                 }`}
               >
@@ -235,8 +464,8 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
           })}
         </div>
 
-        {/* Difference Toggle Filter */}
-        <div className="flex items-center gap-3 shrink-0 border-t md:border-t-0 border-white/10 pt-3 md:pt-0">
+        {/* Difference & Admin Edit Toggle Controls */}
+        <div className="flex items-center gap-2.5 shrink-0 border-t md:border-t-0 border-white/10 pt-3 md:pt-0 flex-wrap">
           <button
             type="button"
             onClick={() => setOnlyDiffs((prev) => !prev)}
@@ -248,6 +477,21 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
           >
             <span className={`w-2.5 h-2.5 rounded-full ${onlyDiffs ? 'bg-amber-400 animate-pulse' : 'bg-white/30'}`} />
             <span>{onlyDiffs ? t('highlightDiffs') : t('showAllSpecs')}</span>
+          </button>
+
+          {/* Admin Mode Toggle Button */}
+          <button
+            type="button"
+            onClick={() => setIsAdminEditMode((prev) => !prev)}
+            title="Bật/Tắt chế độ chỉnh sửa thông số Admin trực tiếp"
+            className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-2 border ${
+              isAdminEditMode
+                ? 'bg-cyan-500/25 text-cyan-300 border-cyan-400/70 ring-1 ring-cyan-400/50 shadow-lg shadow-cyan-500/20'
+                : 'bg-white/5 text-white/70 hover:text-white border-white/15 hover:bg-white/10'
+            }`}
+          >
+            <span>✏️</span>
+            <span>{isAdminEditMode ? 'Tắt sửa Admin' : 'Chỉnh sửa (Admin)'}</span>
           </button>
         </div>
       </div>
@@ -363,8 +607,8 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
               {/* GENERAL INFO SECTION */}
               {(activeTab === 'all' || activeTab === 'sensorOptics') && (
                 <>
-                  <tr className="bg-[#181a20] font-mono text-[11px] uppercase tracking-wider text-amber-300 font-extrabold border-y border-white/15">
-                    <td colSpan={totalCols} className="p-3.5 bg-[#181a20]">
+                  <tr className="bg-gradient-to-r from-cyan-950/90 via-[#181a20] to-cyan-950/40 border-l-4 border-cyan-400 font-mono text-[11px] uppercase tracking-wider text-cyan-300 font-extrabold border-y border-cyan-500/30">
+                    <td colSpan={totalCols} className="p-3.5">
                       📂 {t('specCategory')}
                     </td>
                   </tr>
@@ -377,8 +621,8 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                       </td>
                       {comparedCameras.map((cam) => (
                         <td key={cam.id} className="p-4 border-r border-white/10 w-[18rem] min-w-[18rem] align-top">
-                          <div className="bg-white/5 p-2.5 rounded-xl border border-white/10 shadow-sm flex items-center gap-2">
-                            <span className="text-amber-400 text-sm">📦</span>
+                          <div className="bg-cyan-950/20 p-2.5 rounded-xl border border-cyan-500/30 hover:border-cyan-400/60 transition-all shadow-sm flex items-center gap-2">
+                            <span className="text-cyan-400 text-sm">📦</span>
                             <span className={`px-2.5 py-0.5 rounded-full text-[10px] border ${getCategoryBadgeColor(cam.category)}`}>
                               {cam.category.toUpperCase()}
                             </span>
@@ -397,8 +641,8 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                       </td>
                       {comparedCameras.map((cam) => (
                         <td key={cam.id} className="p-4 border-r border-white/10 w-[18rem] min-w-[18rem] align-top">
-                          <div className="bg-white/5 p-2.5 rounded-xl border border-white/10 hover:border-amber-400/30 transition-all flex items-start gap-2 shadow-sm text-xs font-bold text-white">
-                            <span className="text-amber-400 text-sm shrink-0">🏷️</span>
+                          <div className="bg-cyan-950/20 p-2.5 rounded-xl border border-cyan-500/30 hover:border-cyan-400/60 transition-all flex items-start gap-2 shadow-sm text-xs font-bold text-white">
+                            <span className="text-cyan-400 text-sm shrink-0">🏷️</span>
                             <span className="flex-1 leading-relaxed">{cam.subCategory1}</span>
                           </div>
                         </td>
@@ -415,8 +659,8 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                       </td>
                       {comparedCameras.map((cam) => (
                         <td key={cam.id} className="p-4 border-r border-white/10 w-[18rem] min-w-[18rem] align-top">
-                          <div className="bg-white/5 p-2.5 rounded-xl border border-white/10 hover:border-amber-400/30 transition-all flex items-start gap-2 shadow-sm text-xs font-mono text-white/80 font-semibold">
-                            <span className="text-amber-400 text-sm shrink-0">📂</span>
+                          <div className="bg-cyan-950/20 p-2.5 rounded-xl border border-cyan-500/30 hover:border-cyan-400/60 transition-all flex items-start gap-2 shadow-sm text-xs font-mono text-white/80 font-semibold">
+                            <span className="text-cyan-400 text-sm shrink-0">📂</span>
                             <span className="flex-1 leading-relaxed">{cam.subCategory2 || '—'}</span>
                           </div>
                         </td>
@@ -430,8 +674,8 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
               {/* PRICING & CODES SECTION */}
               {activeTab === 'all' && (
                 <>
-                  <tr className="bg-[#181a20] font-mono text-[11px] uppercase tracking-wider text-amber-300 font-extrabold border-y border-white/15">
-                    <td colSpan={totalCols} className="p-3.5 bg-[#181a20]">
+                  <tr className="bg-gradient-to-r from-sky-950/90 via-[#181a20] to-sky-950/40 border-l-4 border-sky-400 font-mono text-[11px] uppercase tracking-wider text-sky-300 font-extrabold border-y border-sky-500/30">
+                    <td colSpan={totalCols} className="p-3.5">
                       💳 {t('priceLabel')} & {t('skuLabel')}
                     </td>
                   </tr>
@@ -444,7 +688,7 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                       </td>
                       {comparedCameras.map((cam) => (
                         <td key={cam.id} className="p-4 border-r border-white/10 w-[18rem] min-w-[18rem] align-top">
-                          <div className="bg-white/5 p-2.5 rounded-xl border border-white/10 hover:border-sky-400/40 transition-all flex items-center gap-2 shadow-sm font-mono text-sm font-extrabold text-sky-400">
+                          <div className="bg-sky-950/20 p-2.5 rounded-xl border border-sky-500/30 hover:border-sky-400/60 transition-all flex items-center gap-2 shadow-sm font-mono text-sm font-extrabold text-sky-400">
                             <span className="text-sky-400 text-sm shrink-0">💳</span>
                             <span>{cam.priceFormatted}</span>
                           </div>
@@ -462,8 +706,8 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                       </td>
                       {comparedCameras.map((cam) => (
                         <td key={cam.id} className="p-4 border-r border-white/10 w-[18rem] min-w-[18rem] align-top">
-                          <div className="bg-white/5 p-2.5 rounded-xl border border-white/10 hover:border-amber-400/30 transition-all flex items-center gap-2 shadow-sm font-mono text-xs font-bold text-amber-300">
-                            <span className="text-amber-400 text-sm shrink-0">🏷️</span>
+                          <div className="bg-sky-950/20 p-2.5 rounded-xl border border-sky-500/30 hover:border-sky-400/60 transition-all flex items-center gap-2 shadow-sm font-mono text-xs font-bold text-sky-300">
+                            <span className="text-sky-400 text-sm shrink-0">🏷️</span>
                             <span className="truncate">{cam.sku}</span>
                           </div>
                         </td>
@@ -477,9 +721,9 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
               {/* KEY FEATURES SECTION */}
               {(activeTab === 'all' || activeTab === 'highlights') && (
                 <>
-                  <tr className="bg-[#181a20] font-mono text-[11px] uppercase tracking-wider text-amber-300 font-extrabold border-y border-white/15">
-                    <td colSpan={totalCols} className="p-3.5 bg-[#181a20]">
-                      {t('sectionHighlights')}
+                  <tr className="bg-gradient-to-r from-amber-950/90 via-[#181a20] to-amber-950/40 border-l-4 border-amber-400 font-mono text-[11px] uppercase tracking-wider text-amber-300 font-extrabold border-y border-amber-500/30">
+                    <td colSpan={totalCols} className="p-3.5">
+                      ⚡ {t('sectionHighlights')}
                     </td>
                   </tr>
 
@@ -490,102 +734,147 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                         <span className="text-[10px] text-white/40 font-normal">Điểm mạnh sản phẩm</span>
                       </div>
                     </td>
-                    {comparedCameras.map((cam) => (
-                      <td key={cam.id} className="p-4 border-r border-white/10 w-[18rem] min-w-[18rem] align-top">
-                        <ul className="space-y-2 text-xs text-white/95 font-medium leading-relaxed">
-                          {featureList(cam.features, locale).map((feat, idx) => (
-                            <li key={idx} className="flex items-start gap-2.5 whitespace-normal break-words bg-white/5 p-2.5 rounded-xl border border-white/10 shadow-sm hover:border-amber-400/30 transition-all">
-                              <span className="text-amber-400 font-bold shrink-0 text-sm leading-none mt-0.5">⚡</span>
-                              <span className="flex-1 text-[11px] sm:text-xs leading-relaxed">{feat}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </td>
-                    ))}
+                    {comparedCameras.map((cam) => {
+                      const feats = featureList(cam.features, locale);
+                      return (
+                        <td key={cam.id} className="p-4 border-r border-white/10 w-[18rem] min-w-[18rem] align-top">
+                          <div className="flex flex-col gap-2">
+                            {isAdminEditMode && (
+                              <button
+                                type="button"
+                                onClick={() => openFeaturesEditModal(cam)}
+                                className="w-full bg-amber-400/20 hover:bg-amber-400/35 border border-amber-400/50 text-amber-200 text-[11px] font-extrabold p-2 rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer mb-1"
+                              >
+                                <span>✏️</span>
+                                <span>Sửa điểm nổi bật (Features)</span>
+                              </button>
+                            )}
+
+                            {feats.length > 0 ? (
+                              <ul className="space-y-2 text-xs text-white/95 font-medium leading-relaxed">
+                                {feats.map((feat, idx) => (
+                                  <li key={idx} className="flex items-start gap-2.5 whitespace-normal break-words bg-amber-950/20 p-2.5 rounded-xl border border-amber-500/30 shadow-sm hover:border-amber-400/60 transition-all">
+                                    <span className="text-amber-400 font-bold shrink-0 text-sm leading-none mt-0.5">⚡</span>
+                                    <span className="flex-1 text-[11px] sm:text-xs leading-relaxed">{feat}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : (
+                              <div className="bg-white/[0.02] p-2.5 rounded-xl border border-white/5 text-white/30 text-[11px] font-mono">
+                                — Chưa có điểm nổi bật
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      );
+                    })}
                     {comparedCameras.length < 6 && <td className="p-4 w-[18rem] min-w-[18rem]"></td>}
                   </tr>
                 </>
               )}
 
               {/* DYNAMIC CATEGORIZED SPEC SECTIONS */}
-              {activeSpecSections.map((section) => (
-                <React.Fragment key={section.id}>
-                  {/* Section Title Header */}
-                  <tr className="bg-[#181a20] font-mono text-[11px] uppercase tracking-wider text-amber-300 font-extrabold border-y border-white/15">
-                    <td colSpan={totalCols} className="p-3.5 bg-[#181a20]">
-                      {t(section.labelKey)}
-                    </td>
-                  </tr>
+              {activeSpecSections.map((section) => {
+                const sectionTheme = getSectionThemeConfig(section.id);
+                return (
+                  <React.Fragment key={section.id}>
+                    {/* Section Title Header */}
+                    <tr className={`${sectionTheme.headerBg} font-mono text-[11px] uppercase tracking-wider ${sectionTheme.headerText} font-extrabold border-y ${sectionTheme.border}`}>
+                      <td colSpan={totalCols} className="p-3.5">
+                        {section.icon} {t(section.labelKey)}
+                      </td>
+                    </tr>
 
-                  {section.specKeys.map((specKey) => {
-                    const isDiff = isSpecDifferent(comparedCameras, specKey);
+                    {section.specKeys.map((specKey) => {
+                      const isDiff = isSpecDifferent(comparedCameras, specKey);
 
-                    // Skip if onlyDiffs toggle is enabled and this row has no diffs
-                    if (onlyDiffs && !isDiff) return null;
+                      // Skip if onlyDiffs toggle is enabled and this row has no diffs
+                      if (onlyDiffs && !isDiff) return null;
 
-                    // Skip if all cameras have null for this spec
-                    const hasAnyValue = comparedCameras.some(
-                      (c) => getSpecValue(c, specKey) !== null,
-                    );
-                    if (!hasAnyValue) return null;
+                      // Skip if all cameras have null for this spec
+                      const hasAnyValue = comparedCameras.some(
+                        (c) => getSpecValue(c, specKey) !== null,
+                      );
+                      if (!hasAnyValue) return null;
 
-                    const specIcon = SPEC_ICONS[specKey] || '⚡';
+                      const specIcon = SPEC_ICONS[specKey] || '⚡';
 
-                    return (
-                      <tr
-                        key={specKey}
-                        className={`transition-colors ${
-                          isDiff
-                            ? 'bg-amber-500/10 hover:bg-amber-500/15'
-                            : 'bg-[#1c1e24] hover:bg-white/5'
-                        }`}
-                      >
-                        <td className="p-4 font-bold text-white/80 border-r border-white/10 bg-[#16181d] align-top w-48 sm:w-60 min-w-[12rem] sm:min-w-[15rem]">
-                          <div className="flex items-center justify-between gap-2">
-                            <span>{t(`specs.${specKey}`)}</span>
-                            {isDiff && (
-                              <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30 shrink-0">
-                                {t('diffBadge')}
-                              </span>
-                            )}
-                          </div>
-                        </td>
-
-                        {comparedCameras.map((cam) => {
-                          const rawVal = getSpecValue(cam, specKey);
-                          const formattedVal = rawVal
-                            ? translateSpecValue(specKey, rawVal, locale)
-                            : null;
-
-                          return (
-                            <td
-                              key={cam.id}
-                              className="p-4 border-r border-white/10 w-[18rem] min-w-[18rem] align-top"
-                            >
-                              {formattedVal ? (
-                                <div className="bg-white/5 p-2.5 rounded-xl border border-white/10 hover:border-amber-400/30 transition-all flex items-start gap-2.5 shadow-sm">
-                                  <span className="text-amber-400 font-bold shrink-0 text-sm leading-none mt-0.5">
-                                    {specIcon}
-                                  </span>
-                                  <span className="flex-1 text-[11px] sm:text-xs text-white/95 font-medium leading-relaxed whitespace-normal break-words">
-                                    {formattedVal}
-                                  </span>
-                                </div>
-                              ) : (
-                                <div className="bg-white/[0.02] p-2.5 rounded-xl border border-white/5 text-white/30 text-[11px] font-mono">
-                                  —
-                                </div>
+                      return (
+                        <tr
+                          key={specKey}
+                          className={`transition-colors ${
+                            isDiff
+                              ? 'bg-amber-500/10 hover:bg-amber-500/15'
+                              : 'bg-[#1c1e24] hover:bg-white/5'
+                          }`}
+                        >
+                          <td className="p-4 font-bold text-white/80 border-r border-white/10 bg-[#16181d] align-top w-48 sm:w-60 min-w-[12rem] sm:min-w-[15rem]">
+                            <div className="flex items-center justify-between gap-2">
+                              <span>{t(`specs.${specKey}`)}</span>
+                              {isDiff && (
+                                <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-extrabold bg-amber-400/20 text-amber-300 border border-amber-400/40 shadow-sm shrink-0">
+                                  {t('diffBadge')}
+                                </span>
                               )}
-                            </td>
-                          );
-                        })}
+                            </div>
+                          </td>
 
-                        {comparedCameras.length < 6 && <td className="p-4 w-[18rem] min-w-[18rem]"></td>}
-                      </tr>
-                    );
-                  })}
-                </React.Fragment>
-              ))}
+                          {comparedCameras.map((cam) => {
+                            const rawVal = getSpecValue(cam, specKey);
+                            const formattedVal = rawVal
+                              ? translateSpecValue(specKey, rawVal, locale)
+                              : null;
+
+                            return (
+                              <td
+                                key={cam.id}
+                                className="p-4 border-r border-white/10 w-[18rem] min-w-[18rem] align-top"
+                              >
+                                {formattedVal ? (
+                                  <div className={`${sectionTheme.cardBg} p-2.5 rounded-xl transition-all flex items-start justify-between gap-2 shadow-sm group/cell`}>
+                                    <div className="flex items-start gap-2.5 flex-1">
+                                      <span className={`${sectionTheme.iconColor} font-bold shrink-0 text-sm leading-none mt-0.5`}>
+                                        {specIcon}
+                                      </span>
+                                      <span className="flex-1 text-[11px] sm:text-xs text-white/95 font-medium leading-relaxed whitespace-normal break-words">
+                                        {formattedVal}
+                                      </span>
+                                    </div>
+                                    {isAdminEditMode && (
+                                      <button
+                                        type="button"
+                                        onClick={() => openEditModal(cam, specKey, t(`specs.${specKey}`))}
+                                        title="Chỉnh sửa thông số này"
+                                        className="shrink-0 px-2 py-1 rounded-lg bg-cyan-400/20 hover:bg-cyan-400/40 text-cyan-300 border border-cyan-400/50 text-[10px] font-bold transition-all cursor-pointer"
+                                      >
+                                        ✏️ Sửa
+                                      </button>
+                                    )}
+                                  </div>
+                                ) : isAdminEditMode ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => openEditModal(cam, specKey, t(`specs.${specKey}`))}
+                                    className="w-full bg-cyan-950/40 hover:bg-cyan-900/60 p-2.5 rounded-xl border border-dashed border-cyan-400/50 text-cyan-300 text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
+                                  >
+                                    <span>+</span>
+                                    <span>Điền thông số</span>
+                                  </button>
+                                ) : (
+                                  <div className="bg-white/[0.02] p-2.5 rounded-xl border border-white/5 text-white/30 text-[11px] font-mono">
+                                    —
+                                  </div>
+                                )}
+                              </td>
+                            );
+                          })}
+                          {comparedCameras.length < 6 && <td className="p-4 w-[18rem] min-w-[18rem]"></td>}
+                        </tr>
+                      );
+                    })}
+                  </React.Fragment>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -732,6 +1021,209 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                   <span className="font-mono text-xs font-bold text-sky-400">{cam.priceFormatted}</span>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Admin Spec Edit Modal */}
+      {editingCell && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setEditingCell(null)}
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xl flex flex-col items-center justify-center p-4 animate-backdrop-blur font-sans"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-lg font-sans cursor-default animate-lightbox-zoom"
+          >
+            {/* 7-Color Static Rainbow Glow Halo */}
+            <span aria-hidden className="rainbow-glow-bar" />
+
+            <div className="relative z-10 glass w-full rounded-2xl p-6 flex flex-col gap-5 shadow-2xl border border-white/25 bg-[#1a1c22]/95 text-white font-sans">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between border-b border-white/15 pb-3 font-sans">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-xl">✏️</span>
+                  <div className="flex flex-col">
+                    <h3 className="font-extrabold text-sm text-white font-sans">
+                      Sửa / Điền thông số sản phẩm (Admin)
+                    </h3>
+                    <span className="text-xs text-amber-300 font-mono font-bold">
+                      {editingCell.camera.name} ({editingCell.camera.sku})
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEditingCell(null)}
+                  className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-xs transition-colors cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Spec Field Label */}
+              <div className="flex flex-col gap-2 font-sans">
+                <label className="text-xs font-bold text-white/80 flex items-center gap-1.5 flex-wrap">
+                  <span>Mục cần cập nhật:</span>
+                  <span className="text-cyan-300 font-extrabold">{editingCell.label}</span>
+                  <span className="font-mono text-[10px] text-white/50">({editingCell.specKey})</span>
+                </label>
+                <textarea
+                  rows={3}
+                  value={editInputValue}
+                  onChange={(e) => setEditInputValue(e.target.value)}
+                  placeholder="Nhập giá trị thông số kỹ thuật (ví dụ: Full-Frame Exmor R CMOS BSI)..."
+                  className="w-full bg-black/80 border border-white/25 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 rounded-xl p-3 text-xs text-white placeholder:text-white/40 focus:outline-none transition-all font-sans leading-relaxed"
+                />
+              </div>
+
+              {/* Status Feedback */}
+              {saveFeedback && (
+                <div
+                  className={`p-2.5 rounded-xl text-xs font-bold text-center font-sans ${
+                    saveFeedback.startsWith('✓')
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                      : 'bg-red-500/20 text-red-300 border border-red-500/40'
+                  }`}
+                >
+                  {saveFeedback}
+                </div>
+              )}
+
+              {/* Modal Action Buttons */}
+              <div className="flex items-center justify-between gap-3 pt-3 border-t border-white/15 font-sans">
+                <button
+                  type="button"
+                  onClick={() => setEditInputValue('')}
+                  className="text-xs text-white/60 hover:text-white underline transition-colors cursor-pointer"
+                >
+                  Xóa trống (Set NULL)
+                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditingCell(null)}
+                    className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-colors cursor-pointer"
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isSavingSpec}
+                    onClick={handleSaveSpec}
+                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 via-sky-400 to-emerald-400 text-black font-extrabold text-xs sm:text-sm shadow-lg hover:brightness-110 transition-all disabled:opacity-50 flex items-center gap-1.5 cursor-pointer scale-105"
+                  >
+                    {isSavingSpec ? '⏳ Đang lưu...' : '💾 Lưu vào Supabase'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Admin Features Edit Modal */}
+      {editingFeaturesCamera && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setEditingFeaturesCamera(null)}
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xl flex flex-col items-center justify-center p-4 animate-backdrop-blur font-sans"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-xl font-sans cursor-default animate-lightbox-zoom"
+          >
+            {/* 7-Color Static Rainbow Glow Halo */}
+            <span aria-hidden className="rainbow-glow-bar" />
+
+            <div className="relative z-10 glass w-full rounded-2xl p-6 flex flex-col gap-5 shadow-2xl border border-white/25 bg-[#1a1c22]/95 text-white font-sans">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between border-b border-white/15 pb-3 font-sans">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-xl">⚡</span>
+                  <div className="flex flex-col">
+                    <h3 className="font-extrabold text-sm text-white font-sans">
+                      Sửa điểm nổi bật sản phẩm (Key Features)
+                    </h3>
+                    <span className="text-xs text-amber-300 font-mono font-bold">
+                      {editingFeaturesCamera.name} ({editingFeaturesCamera.sku})
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEditingFeaturesCamera(null)}
+                  className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-xs transition-colors cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Vietnamese Features Input */}
+              <div className="flex flex-col gap-2 font-sans">
+                <label className="text-xs font-bold text-white/80 flex items-center justify-between">
+                  <span>Điểm nổi bật (Tiếng Việt) - Mỗi dòng 1 ý:</span>
+                  <span className="text-[10px] text-amber-300 font-mono">vi</span>
+                </label>
+                <textarea
+                  rows={4}
+                  value={featuresViText}
+                  onChange={(e) => setFeaturesViText(e.target.value)}
+                  placeholder="Nhập các điểm mạnh (mỗi dòng một ý)...&#10;Khẩu độ thay đổi từ f/5.6 đến f/8&#10;Thiết kế chống bụi và chống ẩm"
+                  className="w-full bg-black/80 border border-white/25 focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50 rounded-xl p-3 text-xs text-white placeholder:text-white/40 focus:outline-none transition-all font-sans leading-relaxed"
+                />
+              </div>
+
+              {/* English Features Input */}
+              <div className="flex flex-col gap-2 font-sans">
+                <label className="text-xs font-bold text-white/80 flex items-center justify-between">
+                  <span>Key Features (English) - One per line:</span>
+                  <span className="text-[10px] text-sky-300 font-mono">en</span>
+                </label>
+                <textarea
+                  rows={3}
+                  value={featuresEnText}
+                  onChange={(e) => setFeaturesEnText(e.target.value)}
+                  placeholder="Enter key features (one per line)..."
+                  className="w-full bg-black/80 border border-white/25 focus:border-sky-400 focus:ring-1 focus:ring-sky-400/50 rounded-xl p-3 text-xs text-white placeholder:text-white/40 focus:outline-none transition-all font-sans leading-relaxed"
+                />
+              </div>
+
+              {/* Status Feedback */}
+              {featuresSaveFeedback && (
+                <div
+                  className={`p-2.5 rounded-xl text-xs font-bold text-center font-sans ${
+                    featuresSaveFeedback.startsWith('✓')
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                      : 'bg-red-500/20 text-red-300 border border-red-500/40'
+                  }`}
+                >
+                  {featuresSaveFeedback}
+                </div>
+              )}
+
+              {/* Modal Action Buttons */}
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-white/15 font-sans">
+                <button
+                  type="button"
+                  onClick={() => setEditingFeaturesCamera(null)}
+                  className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs transition-colors cursor-pointer"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="button"
+                  disabled={isSavingFeatures}
+                  onClick={handleSaveFeatures}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 via-orange-400 to-yellow-400 text-black font-extrabold text-xs sm:text-sm shadow-lg hover:brightness-110 transition-all disabled:opacity-50 flex items-center gap-1.5 cursor-pointer scale-105"
+                >
+                  {isSavingFeatures ? '⏳ Đang lưu...' : '💾 Lưu điểm nổi bật'}
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -146,6 +146,7 @@
   "search": {
     "label": "Tìm công thức",
     "placeholder": "Tìm theo tên hoặc thẻ…",
+    "wikiPlaceholder": "Tìm máy ảnh, ống kính, thông số…",
     "submit": "Tìm",
     "clear": "Xóa tìm kiếm",
     "clearAll": "Xoá tất cả bộ lọc",

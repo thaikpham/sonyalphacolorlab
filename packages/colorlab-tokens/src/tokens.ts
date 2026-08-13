@@ -69,15 +69,18 @@ export const SIGNALS: TokenGroup = {
   comment:
     'Signal colours, named for meaning. Use with opacity modifiers\n' +
     '(bg-community/15, border-proposal/30) rather than reaching for a\n' +
-    'neighbouring step on some other scale.',
+    'neighbouring step on some other scale.\n' +
+    'Updated from Adobe Color "My Color Theme" (Happy Palette):\n' +
+    '#47F5D7 (Electric Mint Cyan), #F5F147 (Electric Happy Yellow),\n' +
+    '#9247F5 (Electric Purple), #F57847 (Coral Sunset Orange).',
   tokens: {
-    community: 'oklch(78% 0.19 155)',
-    proposal: 'oklch(72% 0.20 305)',
-    ai: 'oklch(83% 0.16 85)',
-    danger: 'oklch(70% 0.19 25)',
+    community: 'oklch(86.5% 0.175 174)',
+    proposal: 'oklch(60.5% 0.27 292)',
+    ai: 'oklch(91.5% 0.20 102)',
+    danger: 'oklch(68.5% 0.20 42)',
     // Separate from danger on purpose: a heart vote is the warmest thing a
     // reader can do, and it must not read as an error.
-    heart: 'oklch(68% 0.21 15)',
+    heart: 'oklch(68.5% 0.20 42)',
   },
 }
 

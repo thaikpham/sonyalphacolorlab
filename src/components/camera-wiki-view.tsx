@@ -2,10 +2,12 @@
 
 import { useMemo, useState } from 'react';
 import Image from 'next/image';
+import { useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import type { ProductCategory, SonyCamera } from '@/lib/cameras/types';
 import { featureList, splitFeatures } from '@/lib/cameras/features';
+import { calculateMatchScore } from '@/lib/search/fuzzy-search';
 
 interface CameraWikiViewProps {
   initialCameras: SonyCamera[];
@@ -15,15 +17,31 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
   const t = useTranslations('cameras');
   const locale = useLocale();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const [selectedCategory, setSelectedCategory] = useState<ProductCategory>('all');
-  const [selectedSub1, setSelectedSub1] = useState<string>('all');
-  const [selectedSub2, setSelectedSub2] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<'price-desc' | 'price-asc' | 'name' | 'sku'>('price-desc');
-  const [viewMode, setViewMode] = useState<'table' | 'grid'>('grid');
+  const selectedCategory = (searchParams?.get('cat') as ProductCategory) || 'all';
+  const selectedSub1 = searchParams?.get('sub1') || 'all';
+  const selectedSub2 = searchParams?.get('sub2') || 'all';
+  const searchQuery = searchParams?.get('q') || '';
+  const sortBy = (searchParams?.get('sort') as 'price-desc' | 'price-asc' | 'name' | 'sku') || 'price-desc';
+  const viewMode = (searchParams?.get('view') as 'table' | 'grid') || 'grid';
+
   const [selectedForCompare, setSelectedForCompare] = useState<string[]>([]);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+
+  const updateWikiParam = (patch: Record<string, string>) => {
+    const params = new URLSearchParams(Array.from(searchParams?.entries() ?? []));
+    for (const [key, value] of Object.entries(patch)) {
+      if (!value || value === 'all' || (key === 'sort' && value === 'price-desc') || (key === 'view' && value === 'grid')) {
+        params.delete(key);
+      } else {
+        params.set(key, value);
+      }
+    }
+    const qs = params.toString();
+    router.push(qs ? `/cameras?${qs}` : '/cameras', { scroll: false });
+  };
+
   /* A product opens its own page. It used to open a modal and fake the URL with
      pushState, which left the address bar pointing at a page that had never
      rendered — reload or share the link and you got the bare catalogue. */
@@ -82,18 +100,22 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
     }
 
     if (searchQuery.trim()) {
-      const q = searchQuery.trim().toLowerCase();
-      result = result.filter(
-        (c) =>
-          c.name.toLowerCase().includes(q) ||
-          c.fullName.toLowerCase().includes(q) ||
-          c.sku.toLowerCase().includes(q) ||
-          c.subCategory1.toLowerCase().includes(q) ||
-          c.subCategory2.toLowerCase().includes(q) ||
-          [...splitFeatures(c.features).en, ...splitFeatures(c.features).vi].some((f) =>
-            f.toLowerCase().includes(q),
-          ),
-      );
+      result = result
+        .map((c) => ({
+          camera: c,
+          score: calculateMatchScore(searchQuery, [
+            c.name,
+            c.fullName,
+            c.sku,
+            c.subCategory1,
+            c.subCategory2,
+            ...splitFeatures(c.features).en,
+            ...splitFeatures(c.features).vi,
+          ]),
+        }))
+        .filter((item) => item.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .map((item) => item.camera);
     }
 
     switch (sortBy) {
@@ -149,149 +171,74 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
     }
   };
 
+  const hasActiveWikiFilters = selectedCategory !== 'all' || selectedSub1 !== 'all' || selectedSub2 !== 'all' || Boolean(searchQuery);
+
   return (
     <div className="w-full flex flex-col gap-6 font-sans">
-      {/* Header Title & Description */}
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-3 flex-wrap">
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white font-sans">{t('title')}</h1>
-          <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-white/15 text-white border border-white/25 shadow-sm">
-            {filteredCameras.length} products
-          </span>
-        </div>
-        <p className="text-xs sm:text-sm text-white/90 max-w-3xl leading-relaxed font-sans">{t('subtitle')}</p>
-      </div>
-
-      {/* Control Bar: Search, Category Tabs, Sub-category filters, Sort, View Switcher */}
-      <div className="glass p-4 rounded-2xl flex flex-col gap-4 shadow-xl font-sans border border-white/15">
-        {/* Search Input */}
-        <div className="relative w-full">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={t('searchPlaceholder')}
-            className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-black/80 border border-white/25 text-sm text-white placeholder:text-white/50 focus:outline-none focus:ring-1 focus:ring-amber-400/60 transition-all font-sans font-medium"
-          />
-          <span className="absolute left-3.5 top-3 text-white/60 text-sm select-none">🔍</span>
-          {searchQuery && (
-            <button
-              type="button"
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-2.5 text-white/70 hover:text-white text-xs px-2 py-0.5 rounded bg-white/15 font-sans font-bold"
-            >
-              ✕
-            </button>
-          )}
-        </div>
-
-        {/* Main Category Tabs */}
-        <div className="flex items-center justify-between gap-4 flex-wrap border-b border-white/15 pb-3 font-sans">
-          <div className="flex items-center gap-2 overflow-x-auto py-1 max-w-full scrollbar-none">
-            {categories.map((cat) => (
+      {/* Active Filter Chips Bar (renders only when filters are active) */}
+      {hasActiveWikiFilters && (
+        <div className="flex items-center gap-2 flex-wrap px-1 font-sans text-xs">
+          {selectedCategory !== 'all' && (
+            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-400/20 text-amber-300 border border-amber-400/35 flex items-center gap-1.5">
+              <span>{t(selectedCategory === 'camera' ? 'catCamera' : selectedCategory === 'lens' ? 'catLens' : 'catAccessory')}</span>
               <button
-                key={cat.key}
                 type="button"
-                onClick={() => {
-                  setSelectedCategory(cat.key);
-                  setSelectedSub1('all');
-                  setSelectedSub2('all');
-                }}
-                className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-2 font-sans ${
-                  selectedCategory === cat.key
-                    ? 'bg-white text-black shadow-lg scale-105 font-extrabold'
-                    : 'bg-white/10 text-white/90 hover:bg-white/20 hover:text-white border border-white/15'
-                }`}
+                onClick={() => updateWikiParam({ cat: 'all' })}
+                className="hover:text-white ml-0.5 cursor-pointer"
               >
-                <span>{cat.icon}</span>
-                <span>{cat.label}</span>
+                ✕
               </button>
-            ))}
-          </div>
+            </span>
+          )}
 
-          {/* View Mode Switcher */}
-          <div className="flex items-center p-1 rounded-xl bg-black/70 border border-white/20 ml-auto font-sans">
-            <button
-              type="button"
-              onClick={() => setViewMode('table')}
-              title={t('viewTable')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer font-sans ${
-                viewMode === 'table' ? 'bg-white/30 text-white shadow-md' : 'text-white/60 hover:text-white'
-              }`}
-            >
-              📋 {t('viewTable')}
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode('grid')}
-              title={t('viewGrid')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer font-sans ${
-                viewMode === 'grid' ? 'bg-white/30 text-white shadow-md' : 'text-white/60 hover:text-white'
-              }`}
-            >
-              🔲 {t('viewGrid')}
-            </button>
-          </div>
-        </div>
-
-        {/* Sub-Category Filters & Sort Bar */}
-        <div className="flex items-center justify-between gap-3 flex-wrap text-xs font-sans">
-          <div className="flex items-center gap-3 flex-wrap">
-            {/* Sub-category 1 (Format / Sensor / Type) */}
-            <div className="flex items-center gap-1.5">
-              <span className="text-white/80 font-bold font-sans">{t('subCategoryLabel')}:</span>
-              <select
-                value={selectedSub1}
-                onChange={(e) => {
-                  setSelectedSub1(e.target.value);
-                  setSelectedSub2('all');
-                }}
-                className="px-3 py-1.5 rounded-xl bg-black/80 border border-white/25 text-xs text-white font-bold focus:outline-none cursor-pointer font-sans"
+          {selectedSub1 !== 'all' && (
+            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-white/15 text-white border border-white/25 flex items-center gap-1.5">
+              <span>{selectedSub1}</span>
+              <button
+                type="button"
+                onClick={() => updateWikiParam({ sub1: 'all' })}
+                className="hover:text-white ml-0.5 cursor-pointer"
               >
-                <option value="all">{t('sub1All')}</option>
-                {availableSub1List.map((sub1) => (
-                  <option key={sub1} value={sub1}>
-                    {sub1}
-                  </option>
-                ))}
-              </select>
-            </div>
+                ✕
+              </button>
+            </span>
+          )}
 
-            {/* Sub-category 2 (Series / Line) */}
-            {availableSub2List.length > 0 && (
-              <div className="flex items-center gap-1.5">
-                <select
-                  value={selectedSub2}
-                  onChange={(e) => setSelectedSub2(e.target.value)}
-                  className="px-3 py-1.5 rounded-xl bg-black/80 border border-white/25 text-xs text-white font-bold focus:outline-none cursor-pointer font-sans"
-                >
-                  <option value="all">{t('sub2All')}</option>
-                  {availableSub2List.map((sub2) => (
-                    <option key={sub2} value={sub2}>
-                      {sub2}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-          </div>
+          {selectedSub2 !== 'all' && (
+            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-white/15 text-white border border-white/25 flex items-center gap-1.5">
+              <span>{selectedSub2}</span>
+              <button
+                type="button"
+                onClick={() => updateWikiParam({ sub2: 'all' })}
+                className="hover:text-white ml-0.5 cursor-pointer"
+              >
+                ✕
+              </button>
+            </span>
+          )}
 
-          {/* Sort Dropdown */}
-          <div className="flex items-center gap-2 ml-auto">
-            <span className="text-white/80 font-bold hidden sm:inline font-sans">{t('sortBy')}:</span>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-              className="px-3 py-1.5 rounded-xl bg-black/80 border border-white/25 text-xs text-white font-bold focus:outline-none cursor-pointer font-sans"
-            >
-              <option value="price-desc">{t('sortPriceDesc')}</option>
-              <option value="price-asc">{t('sortPriceAsc')}</option>
-              <option value="name">{t('sortName')}</option>
-              <option value="sku">{t('sortSku')}</option>
-            </select>
-          </div>
+          {searchQuery && (
+            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-400/25 text-amber-200 border border-amber-400/40 flex items-center gap-1.5">
+              <span>&quot;{searchQuery}&quot;</span>
+              <button
+                type="button"
+                onClick={() => updateWikiParam({ q: '' })}
+                className="hover:text-white ml-0.5 cursor-pointer"
+              >
+                ✕
+              </button>
+            </span>
+          )}
+
+          <button
+            type="button"
+            onClick={() => router.push('/cameras', { scroll: false })}
+            className="text-white/60 hover:text-white underline underline-offset-2 ml-1 text-xs font-semibold cursor-pointer"
+          >
+            {t('emptyAction')}
+          </button>
         </div>
-      </div>
+      )}
 
       {/* Main Content Area */}
       {filteredCameras.length === 0 ? (
@@ -300,12 +247,7 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
           <h3 className="text-[1rem] font-bold text-white font-sans">{t('emptyTitle')}</h3>
           <button
             type="button"
-            onClick={() => {
-              setSearchQuery('');
-              setSelectedCategory('all');
-              setSelectedSub1('all');
-              setSelectedSub2('all');
-            }}
+            onClick={() => router.push('/cameras', { scroll: false })}
             className="text-xs font-bold text-amber-300 hover:underline mt-1 font-sans"
           >
             {t('emptyAction')}
@@ -555,36 +497,42 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
         </div>
       )}
 
-      {/* Floating Compare Action Overlay Layer (Pure Fixed Top Overlay — Floating directly on user screen) */}
+      {/* Floating Compare Action Overlay Layer (Pure Fixed Top Overlay with 7-Color Rainbow Glow) */}
       {selectedForCompare.length > 0 && (
-        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 bg-[#1c1d22]/95 px-6 py-4 rounded-2xl border-2 border-amber-400/70 shadow-[0_20px_60px_rgba(0,0,0,0.9),0_0_30px_rgba(251,191,36,0.4)] flex items-center gap-6 animate-fade-in backdrop-blur-2xl font-sans">
-          <div className="flex items-center gap-3">
-            <span className="text-xl">⚡</span>
-            <div className="flex flex-col">
-              <span className="text-sm font-extrabold text-white font-sans">
-                {t('compareBarTitle', { count: selectedForCompare.length })}
-              </span>
-              <span className="text-xs text-white/70 hidden sm:inline font-sans">
-                ({t('maxCompareHint')})
-              </span>
-            </div>
-          </div>
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 flex items-center justify-center animate-fade-in font-sans">
+          {/* 7-Color Spinning Rainbow Glow Layer */}
+          <span aria-hidden className="rainbow-glow-bar" />
 
-          <div className="flex items-center gap-3 font-sans">
-            <button
-              type="button"
-              onClick={() => setSelectedForCompare([])}
-              className="px-3 py-1.5 rounded-xl text-xs font-bold text-white/70 hover:text-white underline transition-colors cursor-pointer font-sans"
-            >
-              {t('clearCompare')}
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsConfirmModalOpen(true)}
-              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-black font-extrabold text-xs sm:text-sm hover:brightness-110 transition-all shadow-xl cursor-pointer font-sans scale-105"
-            >
-              ⚡ {t('compareBtn')} ({selectedForCompare.length})
-            </button>
+          {/* Main Floating Glass Bar */}
+          <div className="relative z-10 bg-[#1c1d22]/95 px-6 py-4 rounded-2xl border-2 border-amber-400/80 shadow-[0_20px_60px_rgba(0,0,0,0.95)] flex items-center gap-6 backdrop-blur-2xl font-sans">
+            <div className="flex items-center gap-3">
+              <span className="text-xl">⚡</span>
+              <div className="flex flex-col">
+                <span className="text-sm font-extrabold text-white font-sans">
+                  {t('compareBarTitle', { count: selectedForCompare.length })}
+                </span>
+                <span className="text-xs text-white/70 hidden sm:inline font-sans">
+                  ({t('maxCompareHint')})
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 font-sans">
+              <button
+                type="button"
+                onClick={() => setSelectedForCompare([])}
+                className="px-3 py-1.5 rounded-xl text-xs font-bold text-white/70 hover:text-white underline transition-colors cursor-pointer font-sans"
+              >
+                {t('clearCompare')}
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsConfirmModalOpen(true)}
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-black font-extrabold text-xs sm:text-sm hover:brightness-110 transition-all shadow-xl cursor-pointer font-sans scale-105"
+              >
+                ⚡ {t('compareBtn')} ({selectedForCompare.length})
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -599,8 +547,12 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="glass w-full max-w-4xl max-h-[90dvh] rounded-2xl p-6 flex flex-col gap-6 shadow-2xl border border-white/20 cursor-default font-sans"
+            className="relative w-full max-w-4xl max-h-[90dvh] font-sans cursor-default animate-lightbox-zoom"
           >
+            {/* 7-Color Static Rainbow Glow Layer */}
+            <span aria-hidden className="rainbow-glow-bar" />
+
+            <div className="relative z-10 glass w-full h-full rounded-2xl p-6 flex flex-col gap-6 shadow-2xl border border-white/25 font-sans">
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-white/15 pb-4 font-sans">
               <div className="flex flex-col gap-1">
@@ -686,6 +638,7 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
               >
                 {t('compareItemsBtn', { count: selectedForCompare.length })}
               </button>
+            </div>
             </div>
           </div>
         </div>

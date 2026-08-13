@@ -7,7 +7,7 @@ import { useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { LanguageToggle } from './language-toggle';
 import { useAuth } from './auth-context';
-import { Link, useRouter } from '@/i18n/navigation';
+import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import { routing } from '@/i18n/routing';
 import { CREATIVE_LOOKS } from '@/lib/camera/constants';
 
@@ -48,8 +48,11 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
   const t = useTranslations('search');
   const tNav = useTranslations('nav');
   const tAuth = useTranslations('auth');
+  const tCameras = useTranslations('cameras');
   const router = useRouter();
   const locale = useLocale();
+  const pathname = usePathname();
+  const isWiki = pathname === '/cameras' || pathname.startsWith('/cameras/');
   const searchParams = useSearchParams();
   const { user, loginWithGoogle, logout } = useAuth();
 
@@ -58,8 +61,16 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
   const currentLook = searchParams?.get('look') ?? '';
   const currentTag = searchParams?.get('tag') ?? '';
 
+  const wikiCat = searchParams?.get('cat') ?? 'all';
+  const wikiSub1 = searchParams?.get('sub1') ?? 'all';
+  const wikiSub2 = searchParams?.get('sub2') ?? 'all';
+  const wikiSort = searchParams?.get('sort') ?? 'price-desc';
+  const wikiView = searchParams?.get('view') ?? 'grid';
+
   const tagList = providedTags && providedTags.length > 0 ? providedTags : FALLBACK_TAGS;
-  const hasActiveFilters = Boolean(currentQ || currentFormat || currentLook || currentTag);
+  const hasActiveFilters = isWiki
+    ? Boolean(currentQ || wikiCat !== 'all' || wikiSub1 !== 'all' || wikiSub2 !== 'all' || wikiSort !== 'price-desc')
+    : Boolean(currentQ || currentFormat || currentLook || currentTag);
 
   const [isHidden, setIsHidden] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(hasActiveFilters);
@@ -70,6 +81,72 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
   const ecosystemRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
   const portalRef = useRef<HTMLDivElement>(null);
+
+  interface PredictiveItem {
+    id: string;
+    title: string;
+    subtitle: string;
+    badge?: string;
+    price?: string;
+    url: string;
+    imageUrl?: string;
+    accentHex?: string;
+  }
+
+  const [predictiveResults, setPredictiveResults] = useState<PredictiveItem[]>([]);
+  const [isPredictiveLoading, setIsPredictiveLoading] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [isPredictiveOpen, setIsPredictiveOpen] = useState(false);
+
+  useEffect(() => {
+    if (!query.trim()) {
+      setPredictiveResults([]);
+      setIsPredictiveOpen(false);
+      return;
+    }
+
+    let active = true;
+    setIsPredictiveLoading(true);
+    setIsPredictiveOpen(true);
+    setSelectedIndex(-1);
+
+    const mode = isWiki ? 'wiki' : 'colorlab';
+    fetch(`/api/search/predictive?q=${encodeURIComponent(query)}&mode=${mode}&locale=${locale}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (active && data.results) {
+          setPredictiveResults(data.results);
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (active) setIsPredictiveLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [query, isWiki, locale]);
+
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!isPredictiveOpen || predictiveResults.length === 0) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev < predictiveResults.length - 1 ? prev + 1 : 0));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev > 0 ? prev - 1 : predictiveResults.length - 1));
+    } else if (e.key === 'Enter' && selectedIndex >= 0 && predictiveResults[selectedIndex]) {
+      e.preventDefault();
+      const target = predictiveResults[selectedIndex];
+      setIsSearchOpen(false);
+      setIsPredictiveOpen(false);
+      router.push(target.url);
+    } else if (e.key === 'Escape') {
+      setIsPredictiveOpen(false);
+    }
+  };
 
   /**
    * False on the server and during hydration, true afterwards — the guard the
@@ -211,23 +288,58 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
 
   const updateFilters = useCallback(
     (patch: { q?: string; format?: string; look?: string; tag?: string }) => {
-      const next: Record<string, string> = {};
+      const newQ = patch.q !== undefined ? patch.q : currentQ;
+
+      if (isWiki) {
+        const qs = new URLSearchParams(newQ.trim() ? { q: newQ.trim() } : {}).toString();
+        router.push(qs ? `/cameras?${qs}` : '/cameras', { scroll: false });
+      } else {
+        const next: Record<string, string> = {};
+        const newFormat = patch.format !== undefined ? patch.format : currentFormat;
+        const newLook = patch.look !== undefined ? patch.look : currentLook;
+        const newTag = patch.tag !== undefined ? patch.tag : currentTag;
+
+        if (newQ.trim()) next.q = newQ.trim();
+        if (newFormat) next.format = newFormat;
+        if (newLook && newFormat === 'cl') next.look = newLook;
+        if (newTag) next.tag = newTag;
+
+        const qs = new URLSearchParams(next).toString();
+        router.push(qs ? `/?${qs}` : '/', { scroll: false });
+      }
+    },
+    [currentQ, currentFormat, currentLook, currentTag, isWiki, router],
+  );
+
+  const updateWikiFilters = useCallback(
+    (patch: {
+      q?: string;
+      cat?: string;
+      sub1?: string;
+      sub2?: string;
+      sort?: string;
+      view?: string;
+    }) => {
+      const next = new URLSearchParams();
 
       const newQ = patch.q !== undefined ? patch.q : currentQ;
-      const newFormat = patch.format !== undefined ? patch.format : currentFormat;
-      const newLook = patch.look !== undefined ? patch.look : currentLook;
-      const newTag = patch.tag !== undefined ? patch.tag : currentTag;
+      const newCat = patch.cat !== undefined ? patch.cat : wikiCat;
+      const newSub1 = patch.sub1 !== undefined ? patch.sub1 : wikiSub1;
+      const newSub2 = patch.sub2 !== undefined ? patch.sub2 : wikiSub2;
+      const newSort = patch.sort !== undefined ? patch.sort : wikiSort;
+      const newView = patch.view !== undefined ? patch.view : wikiView;
 
-      if (newQ.trim()) next.q = newQ.trim();
-      if (newFormat) next.format = newFormat;
-      if (newLook && newFormat === 'cl') next.look = newLook;
-      if (newTag) next.tag = newTag;
+      if (newQ.trim()) next.set('q', newQ.trim());
+      if (newCat && newCat !== 'all') next.set('cat', newCat);
+      if (newSub1 && newSub1 !== 'all') next.set('sub1', newSub1);
+      if (newSub2 && newSub2 !== 'all') next.set('sub2', newSub2);
+      if (newSort && newSort !== 'price-desc') next.set('sort', newSort);
+      if (newView && newView !== 'grid') next.set('view', newView);
 
-      // Filtering always lands on the grid, whatever page we came from.
-      const qs = new URLSearchParams(next).toString();
-      router.push(qs ? `/?${qs}` : '/', { scroll: false });
+      const qs = next.toString();
+      router.push(qs ? `/cameras?${qs}` : '/cameras', { scroll: false });
     },
-    [currentQ, currentFormat, currentLook, currentTag, router],
+    [currentQ, wikiCat, wikiSub1, wikiSub2, wikiSort, wikiView, router],
   );
 
   /**
@@ -261,7 +373,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
 
   const handleResetAll = () => {
     setQuery('');
-    router.push('/', { scroll: false });
+    router.push(isWiki ? '/cameras' : '/', { scroll: false });
   };
 
   return (
@@ -317,19 +429,38 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                 keeps its full size wherever there is room and letterboxes down
                 inside the same 36/40px rail where there is not. */}
             <div className="relative flex min-w-0 items-center gap-2 sm:gap-2.5" ref={ecosystemRef}>
-              <Link
-                href="/"
-                className="group flex h-9 sm:h-10 min-w-0 items-center transition-transform duration-300 hover:scale-105 active:scale-95"
-              >
-                <Image
-                  src="/logo.png"
-                  alt="Alpha ColorLab Logo"
-                  width={1780}
-                  height={499}
-                  priority
-                  className="h-9 sm:h-10 w-auto max-w-full object-contain object-left transition-all duration-300"
-                />
-              </Link>
+              {isWiki ? (
+                <Link
+                  href="/cameras"
+                  className="group flex h-9 sm:h-10 min-w-0 items-center gap-2 sm:gap-2.5 transition-transform duration-300 hover:scale-105 active:scale-95"
+                >
+                  <Image
+                    src="/sony-wiki-icon.png"
+                    alt="Sony Wiki Logo"
+                    width={512}
+                    height={512}
+                    priority
+                    className="h-8 sm:h-9 w-8 sm:w-9 rounded-xl object-contain transition-all duration-300 shadow-md border border-white/20 shrink-0"
+                  />
+                  <span className="font-black text-base sm:text-lg tracking-wider text-white uppercase font-sans whitespace-nowrap flex items-center gap-1.5">
+                    SONY <span className="text-amber-400 font-mono font-bold tracking-normal">WIKI</span>
+                  </span>
+                </Link>
+              ) : (
+                <Link
+                  href="/"
+                  className="group flex h-9 sm:h-10 min-w-0 items-center transition-transform duration-300 hover:scale-105 active:scale-95"
+                >
+                  <Image
+                    src="/logo.png"
+                    alt="Alpha ColorLab Logo"
+                    width={1780}
+                    height={499}
+                    priority
+                    className="h-9 sm:h-10 w-auto max-w-full object-contain object-left transition-all duration-300"
+                  />
+                </Link>
+              )}
 
               {/* 4-Square Grid Expand Button (Bigger Rounded Square) */}
               <button
@@ -388,33 +519,44 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                   onClick={() => setIsSearchOpen(true)}
                   aria-expanded="false"
                   aria-label={t('label')}
-                  className="w-full h-9 sm:h-10 flex items-center justify-between gap-3 px-4 rounded-full bg-black/50 text-white/90 hover:text-white text-xs sm:text-sm transition-all duration-300 group cursor-pointer shadow-sm"
+                  className={`w-full h-9 sm:h-10 flex items-center justify-between gap-3 px-4 rounded-full transition-all duration-300 group cursor-pointer shadow-sm ${
+                    isWiki
+                      ? 'bg-black/70 border border-amber-400/30 text-amber-200 hover:border-amber-400/50'
+                      : 'bg-black/50 border border-white/10 text-white/90 hover:text-white'
+                  }`}
                 >
                   <span className="flex items-center gap-2 truncate">
-                    <svg
-                      aria-hidden="true"
-                      className="w-3.5 h-3.5 text-white/60 group-hover:text-white transition-colors shrink-0"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                      />
-                    </svg>
+                    {isWiki ? (
+                      <span className="text-xs font-mono font-bold text-amber-300 flex items-center gap-1 shrink-0">
+                        <span>📷</span>
+                        <span className="hidden xs:inline">WIKI</span>
+                      </span>
+                    ) : (
+                      <svg
+                        aria-hidden="true"
+                        className="w-3.5 h-3.5 text-white/60 group-hover:text-white transition-colors shrink-0"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                        />
+                      </svg>
+                    )}
                     <span className="truncate">
                       {query ? (
                         <strong className="text-white">&quot;{query}&quot;</strong>
                       ) : (
-                        t('placeholder')
+                        isWiki ? t('wikiPlaceholder') : t('placeholder')
                       )}
                     </span>
 
-                    {/* Active Filter Badges in Compact Bar */}
-                    {currentFormat && (
+                    {/* Active Filter Badges in Compact Bar (ColorLab mode) */}
+                    {!isWiki && currentFormat && (
                       <span className="eyebrow text-[10px] px-2 py-0.5 rounded-full bg-white/20 text-white font-semibold">
                         {currentFormat === 'pp'
                           ? 'PP'
@@ -423,7 +565,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                           : 'CL'}
                       </span>
                     )}
-                    {currentTag && (
+                    {!isWiki && currentTag && (
                       <span className="eyebrow text-[10px] px-2 py-0.5 rounded-full bg-white/20 text-white font-semibold truncate max-w-[5rem]">
                         #{currentTag}
                       </span>
@@ -445,37 +587,49 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                    searching silently clears them. */
                 <form
                   role="search"
-                  action={locale === routing.defaultLocale ? '/' : `/${locale}`}
+                  action={
+                    isWiki
+                      ? (locale === routing.defaultLocale ? '/cameras' : `/${locale}/cameras`)
+                      : (locale === routing.defaultLocale ? '/' : `/${locale}`)
+                  }
                   method="get"
                   onSubmit={handleSubmit}
                   className="relative flex h-9 sm:h-10 items-center w-full animate-fade-in"
                 >
-                  {Object.entries({
-                    format: currentFormat,
-                    look: currentFormat === 'cl' ? currentLook : '',
-                    tag: currentTag,
-                  }).map(([key, value]) =>
-                    value ? <input key={key} type="hidden" name={key} value={value} /> : null,
-                  )}
+                  {!isWiki &&
+                    Object.entries({
+                      format: currentFormat,
+                      look: currentFormat === 'cl' ? currentLook : '',
+                      tag: currentTag,
+                    }).map(([key, value]) =>
+                      value ? <input key={key} type="hidden" name={key} value={value} /> : null,
+                    )}
                   <label htmlFor="header-search-input" className="sr-only">
                     {t('label')}
                   </label>
 
                   <div className="relative flex h-full items-center w-full">
-                    <svg
-                      aria-hidden="true"
-                      className="absolute left-3.5 w-4 h-4 text-white/70 pointer-events-none"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                      />
-                    </svg>
+                    {isWiki ? (
+                      <span className="absolute left-3 flex items-center gap-1 text-[11px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/35 shrink-0 pointer-events-none select-none">
+                        <span>📷</span>
+                        <span>WIKI</span>
+                      </span>
+                    ) : (
+                      <svg
+                        aria-hidden="true"
+                        className="absolute left-3.5 w-4 h-4 text-white/70 pointer-events-none"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                        />
+                      </svg>
+                    )}
 
                     <input
                       id="header-search-input"
@@ -484,34 +638,125 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                       name="q"
                       value={query}
                       onChange={(e) => queueSearch(e.target.value)}
-                      placeholder={t('placeholder')}
+                      onKeyDown={handleInputKeyDown}
+                      placeholder={isWiki ? t('wikiPlaceholder') : t('placeholder')}
                       autoComplete="off"
-                      className="w-full h-full pl-9 pr-16 text-xs sm:text-sm rounded-full bg-black/70 text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-white/40 transition-all shadow-md"
+                      className={`w-full h-full text-xs sm:text-sm rounded-full bg-black/80 text-white placeholder:text-white/40 focus:outline-none transition-all shadow-md [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none ${
+                        isWiki
+                          ? 'pl-20 sm:pl-24 pr-10 border border-amber-400/40 focus:ring-1 focus:ring-amber-400/70 focus:border-amber-400/70'
+                          : 'pl-9 pr-10 border border-white/20 focus:ring-1 focus:ring-white/40'
+                      }`}
                     />
-
-                    {query && (
-                      <button
-                        type="button"
-                        onClick={handleClearQuery}
-                        title={t('clear')}
-                        aria-label={t('clear')}
-                        className="absolute right-9 p-1 rounded-full text-white/70 hover:text-white transition-colors cursor-pointer"
-                      >
-                        <span aria-hidden className="text-xs">
-                          ✕
-                        </span>
-                      </button>
-                    )}
 
                     <button
                       type="button"
-                      onClick={() => setIsSearchOpen(false)}
-                      title={t('close')}
-                      aria-label={t('close')}
-                      className="absolute right-2 p-1 text-xs text-white/70 hover:text-white transition-colors rounded-full cursor-pointer"
+                      onClick={() => {
+                        if (query) {
+                          handleClearQuery();
+                        } else {
+                          setIsSearchOpen(false);
+                        }
+                      }}
+                      title={query ? t('clear') : t('close')}
+                      aria-label={query ? t('clear') : t('close')}
+                      className="absolute right-3 p-1 rounded-full text-white/60 hover:text-white transition-colors cursor-pointer"
                     >
-                      <span aria-hidden>✕</span>
+                      <span aria-hidden className="text-xs">
+                        ✕
+                      </span>
                     </button>
+
+                    {/* Live Predictive Search Auto-complete Popup */}
+                    {isPredictiveOpen && query.trim().length > 0 && (
+                      <div className="absolute left-0 right-0 top-full mt-2 z-[9999] overflow-hidden rounded-2xl border border-white/25 bg-void/95 shadow-2xl backdrop-blur-2xl animate-fade-in font-sans">
+                        {isPredictiveLoading && predictiveResults.length === 0 ? (
+                          <div className="p-3 text-xs text-white/60 flex items-center gap-2 font-mono">
+                            <span className="animate-spin">⏳</span>
+                            <span>{locale === 'vi' ? 'Đang tìm gợi ý phù hợp…' : 'Finding instant matches…'}</span>
+                          </div>
+                        ) : predictiveResults.length > 0 ? (
+                          <div className="p-2 flex flex-col gap-1">
+                            <div className="px-3 py-1 text-[10px] font-mono font-bold text-white/50 uppercase tracking-widest flex items-center justify-between border-b border-white/10 pb-1.5 mb-0.5">
+                              <span>{isWiki ? (locale === 'vi' ? 'Sản Phẩm Khớp Nhanh' : 'Matching Products') : (locale === 'vi' ? 'Công Thức Khớp Nhanh' : 'Matching Recipes')}</span>
+                              <span className="text-amber-300 font-mono">{predictiveResults.length} {locale === 'vi' ? 'gợi ý' : 'matches'}</span>
+                            </div>
+
+                            {predictiveResults.map((item, idx) => (
+                              <Link
+                                key={item.id}
+                                href={item.url}
+                                onClick={() => {
+                                  setIsSearchOpen(false);
+                                  setIsPredictiveOpen(false);
+                                }}
+                                className={`flex items-center gap-3 p-2 rounded-xl transition-all ${
+                                  selectedIndex === idx
+                                    ? 'bg-amber-400/20 text-white shadow-md border border-amber-400/40 scale-[1.01]'
+                                    : 'hover:bg-white/10 text-white/90 hover:text-white'
+                                }`}
+                              >
+                                {item.imageUrl ? (
+                                  <img
+                                    src={item.imageUrl}
+                                    alt=""
+                                    className="w-9 h-9 rounded-lg object-cover bg-black/60 border border-white/15 shrink-0"
+                                  />
+                                ) : (
+                                  <div
+                                    className="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 border border-white/20"
+                                    style={{ backgroundColor: item.accentHex || 'rgba(255,255,255,0.1)' }}
+                                  >
+                                    {isWiki ? '📷' : '🎨'}
+                                  </div>
+                                )}
+
+                                <div className="flex-1 min-w-0 flex flex-col justify-center leading-snug">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="font-bold text-xs sm:text-sm text-white truncate font-sans">
+                                      {item.title}
+                                    </span>
+                                    {item.badge && (
+                                      <span className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold shrink-0 ${
+                                        isWiki
+                                          ? 'bg-amber-400/20 text-amber-300 border border-amber-400/35'
+                                          : 'bg-white/20 text-white border border-white/25'
+                                      }`}>
+                                        {item.badge}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <span className="text-[11px] text-white/60 truncate font-mono mt-0.5">
+                                    {item.subtitle}
+                                  </span>
+                                </div>
+
+                                {item.price && (
+                                  <span className="text-xs font-mono font-bold text-amber-300 shrink-0 ml-auto">
+                                    {item.price}
+                                  </span>
+                                )}
+                              </Link>
+                            ))}
+
+                            <button
+                              type="button"
+                              onClick={handleSubmit}
+                              className="w-full text-center py-1.5 text-xs font-bold text-amber-300 hover:text-amber-200 border-t border-white/10 mt-1 cursor-pointer font-sans"
+                            >
+                              {locale === 'vi'
+                                ? `Nhấn Enter để xem tất cả kết quả cho "${query}" →`
+                                : `Press Enter to view all results for "${query}" →`}
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="p-3 text-center text-xs text-white/60 font-sans">
+                            {locale === 'vi'
+                              ? `Không có gợi ý khớp ngay lập tức. Nhấn Enter để tìm kiếm sâu.`
+                              : `No instant matches. Press Enter for deep search.`}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </form>
               )}
@@ -645,167 +890,289 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
             </div>
           </div>
 
-          {/* Expanded Glass Console for Filters & Tags (Smooth Height Transition) */}
+          {/* Expanded Glass Console for Filters & Controls */}
           <div
-            /* `mt-2.5` replaces the column gap that used to sit here whether or
-               not this was open; the rule is the same 10px above the divider,
-               it just costs nothing when closed. */
             className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${
               isSearchOpen
                 ? 'grid-rows-[1fr] opacity-100 mt-2.5 pt-2 border-t border-white/10'
                 : 'grid-rows-[0fr] opacity-0 pointer-events-none'
             }`}
           >
-            <div className="overflow-hidden flex flex-col gap-1.5 text-xs">
-              {/* Each row is a two-column rail: a fixed-width label, then the
-                  chips in their own flex box. The label used to be a sibling of
-                  the chips in one wrapping flex row, so the moment the chips
-                  wrapped, line two started at x=0 and ran under the label — the
-                  left edge only lined up when everything happened to fit on one
-                  line. The chip boxes carry `py-1` because their hover state
-                  lifts them 2px and `overflow-x-auto` computes `overflow-y` to
-                  `auto`, which clipped the lift and flickered a scrollbar. */}
+            <div className="overflow-hidden flex flex-col gap-2 text-xs">
+              {isWiki ? (
+                /* Sony Wiki Controls */
+                <div className="flex flex-col gap-2.5 py-1 font-sans">
+                  {/* Row 1: Category Tabs & View Switcher */}
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <div className="flex items-center gap-1.5 overflow-x-auto py-1 max-w-full scrollbar-none">
+                      {[
+                        { key: 'all', label: tCameras('catAll'), icon: '📦' },
+                        { key: 'camera', label: tCameras('catCamera'), icon: '📷' },
+                        { key: 'lens', label: tCameras('catLens'), icon: '🔍' },
+                        { key: 'accessory', label: tCameras('catAccessory'), icon: '🎙️' },
+                      ].map((cat) => (
+                        <button
+                          key={cat.key}
+                          type="button"
+                          onClick={() => updateWikiFilters({ cat: cat.key, sub1: 'all', sub2: 'all' })}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 font-sans ${
+                            wikiCat === cat.key
+                              ? 'bg-amber-400 text-black shadow-md font-extrabold scale-105'
+                              : 'glass-flat text-white/80 hover:bg-white/20 hover:text-white border border-white/15'
+                          }`}
+                        >
+                          <span>{cat.icon}</span>
+                          <span>{cat.label}</span>
+                        </button>
+                      ))}
+                    </div>
 
-              {/* Row 1: Format Filters */}
-              <div className="flex items-start gap-2">
-                <span className="eyebrow text-[11px] text-white/80 uppercase w-14 shrink-0 font-bold leading-6">
-                  Format
-                </span>
-
-                <div className="flex flex-wrap items-center gap-1.5 min-w-0 py-1">
-                  <button
-                    type="button"
-                    onClick={() => updateFilters({ format: '', look: '' })}
-                    aria-current={!currentFormat ? 'true' : undefined}
-                    className={`eyebrow rounded-full px-3 py-1 text-xs transition-all duration-200 ease-out hover:scale-105 hover:-translate-y-0.5 active:scale-95 cursor-pointer ${
-                      !currentFormat
-                        ? '!text-black bg-white font-bold scale-105 shadow-[0_4px_16px_rgba(0,0,0,0.3)]'
-                        : 'glass-flat !text-white/80 hover:!text-white hover:bg-white/20 font-semibold'
-                    }`}
-                  >
-                    All
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      updateFilters({ format: currentFormat === 'pp' ? '' : 'pp', look: '' })
-                    }
-                    aria-current={currentFormat === 'pp' ? 'true' : undefined}
-                    className={`eyebrow rounded-full px-3 py-1 text-xs transition-all duration-200 ease-out hover:scale-105 hover:-translate-y-0.5 active:scale-95 cursor-pointer ${
-                      currentFormat === 'pp'
-                        ? '!text-black bg-white font-bold scale-105 shadow-[0_4px_16px_rgba(0,0,0,0.3)]'
-                        : 'glass-flat !text-white/80 hover:!text-white hover:bg-white/20 font-semibold'
-                    }`}
-                  >
-                    Picture Profile
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => updateFilters({ format: currentFormat === 'cl' ? '' : 'cl' })}
-                    aria-current={currentFormat === 'cl' ? 'true' : undefined}
-                    className={`eyebrow rounded-full px-3 py-1 text-xs transition-all duration-200 ease-out hover:scale-105 hover:-translate-y-0.5 active:scale-95 cursor-pointer ${
-                      currentFormat === 'cl'
-                        ? '!text-black bg-white font-bold scale-105 shadow-[0_4px_16px_rgba(0,0,0,0.3)]'
-                        : 'glass-flat !text-white/80 hover:!text-white hover:bg-white/20 font-semibold'
-                    }`}
-                  >
-                    Creative Look
-                  </button>
-                </div>
-              </div>
-
-              {/* Row 2: Creative Look Sub-Filters (only visible when format=cl) */}
-              {currentFormat === 'cl' && (
-                <div className="flex items-start gap-2 transition-all duration-300">
-                  <span className="eyebrow text-[11px] text-white/80 uppercase w-14 shrink-0 font-bold leading-6">
-                    Look
-                  </span>
-
-                  <div className="flex flex-wrap items-center gap-1.5 min-w-0 py-1">
-                    <button
-                      type="button"
-                      onClick={() => updateFilters({ look: '' })}
-                      aria-current={!currentLook ? 'true' : undefined}
-                      className={`eyebrow rounded-full px-2.5 py-0.5 text-[11px] transition-all duration-200 ease-out hover:scale-105 hover:-translate-y-0.5 active:scale-95 cursor-pointer ${
-                        !currentLook
-                          ? '!text-black bg-white font-bold scale-105 shadow-[0_4px_14px_rgba(0,0,0,0.3)]'
-                          : 'glass-flat !text-white/80 hover:!text-white hover:bg-white/20 font-semibold'
-                      }`}
-                    >
-                      All
-                    </button>
-
-                    {CREATIVE_LOOKS.map((l) => (
+                    {/* View Mode Switcher */}
+                    <div className="flex items-center p-1 rounded-xl bg-black/70 border border-white/20 ml-auto shrink-0 font-sans">
                       <button
-                        key={l.code}
                         type="button"
-                        onClick={() => updateFilters({ look: currentLook === l.code ? '' : l.code })}
-                        aria-current={currentLook === l.code ? 'true' : undefined}
-                        className={`eyebrow rounded-full px-2.5 py-0.5 text-[11px] transition-all duration-200 ease-out hover:scale-105 hover:-translate-y-0.5 active:scale-95 cursor-pointer ${
-                          currentLook === l.code
-                            ? '!text-black bg-white font-bold scale-105 shadow-[0_4px_14px_rgba(0,0,0,0.3)]'
+                        onClick={() => updateWikiFilters({ view: 'table' })}
+                        title={tCameras('viewTable')}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer font-sans ${
+                          wikiView === 'table' ? 'bg-amber-400 text-black font-extrabold shadow-md' : 'text-white/60 hover:text-white'
+                        }`}
+                      >
+                        📋 {tCameras('viewTable')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => updateWikiFilters({ view: 'grid' })}
+                        title={tCameras('viewGrid')}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer font-sans ${
+                          wikiView === 'grid' ? 'bg-amber-400 text-black font-extrabold shadow-md' : 'text-white/60 hover:text-white'
+                        }`}
+                      >
+                        🔲 {tCameras('viewGrid')}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Row 2: Sub-category Dropdowns & Sort */}
+                  <div className="flex items-center justify-between gap-3 flex-wrap text-xs font-sans border-t border-white/10 pt-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {/* Digital Clock Style Product Counter Badge */}
+                      <span className="px-3 py-1 rounded-xl bg-black/90 border border-amber-400/50 text-amber-300 shadow-[0_0_12px_rgba(251,191,36,0.25)] font-mono font-extrabold text-xs tracking-wider flex items-center gap-2 select-none shrink-0">
+                        <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shadow-[0_0_6px_#fbbf24]" />
+                        <span>94 PRODUCTS</span>
+                      </span>
+
+                      <select
+                        value={wikiSub1}
+                        onChange={(e) => updateWikiFilters({ sub1: e.target.value, sub2: 'all' })}
+                        className="px-3 py-1.5 rounded-xl bg-black/80 border border-white/25 text-xs text-white font-bold focus:outline-none focus:ring-1 focus:ring-amber-400/60 cursor-pointer font-sans"
+                      >
+                        <option value="all">{tCameras('sub1All')}</option>
+                        {['1-Inch', 'APS-C', 'Adapter', 'Audio', 'Full Frame', 'Grip / Tripod', 'Power'].map((sub1) => (
+                          <option key={sub1} value={sub1}>
+                            {sub1}
+                          </option>
+                        ))}
+                      </select>
+
+                      <select
+                        value={wikiSub2}
+                        onChange={(e) => updateWikiFilters({ sub2: e.target.value })}
+                        className="px-3 py-1.5 rounded-xl bg-black/80 border border-white/25 text-xs text-white font-bold focus:outline-none focus:ring-1 focus:ring-amber-400/60 cursor-pointer font-sans"
+                      >
+                        <option value="all">{tCameras('sub2All')}</option>
+                        {[
+                          'Battery',
+                          'Cinema Line',
+                          'DSC',
+                          'G',
+                          'GM',
+                          'Lens Mount',
+                          'Microphone',
+                          'Máy ảnh Alpha',
+                          'SEL',
+                          'Vlog',
+                          'Vlog Accessory',
+                        ].map((sub2) => (
+                          <option key={sub2} value={sub2}>
+                            {sub2}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="flex items-center gap-2 ml-auto">
+                      <span className="text-white/80 font-bold hidden sm:inline font-sans">{tCameras('sortBy')}:</span>
+                      <select
+                        value={wikiSort}
+                        onChange={(e) => updateWikiFilters({ sort: e.target.value })}
+                        className="px-3 py-1.5 rounded-xl bg-black/80 border border-white/25 text-xs text-white font-bold focus:outline-none focus:ring-1 focus:ring-amber-400/60 cursor-pointer font-sans"
+                      >
+                        <option value="price-desc">{tCameras('sortPriceDesc')}</option>
+                        <option value="price-asc">{tCameras('sortPriceAsc')}</option>
+                        <option value="name">{tCameras('sortName')}</option>
+                        <option value="sku">{tCameras('sortSku')}</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {hasActiveFilters && (
+                    <div className="flex items-center justify-between pt-1 border-t border-white/10 text-[10px] text-ink-faint">
+                      <button
+                        type="button"
+                        onClick={handleResetAll}
+                        className="eyebrow text-[10px] text-amber-300 hover:text-amber-200 transition-colors cursor-pointer underline underline-offset-2"
+                      >
+                        {t('clearAll')}
+                      </button>
+                      <span className="font-mono hidden sm:inline">{t('escHint')}</span>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                /* ColorLab Recipe Controls */
+                <>
+                  {/* Row 1: Format Filters */}
+                  <div className="flex items-start gap-2">
+                    <span className="eyebrow text-[11px] text-white/80 uppercase w-14 shrink-0 font-bold leading-6">
+                      Format
+                    </span>
+
+                    <div className="flex flex-wrap items-center gap-1.5 min-w-0 py-1">
+                      <button
+                        type="button"
+                        onClick={() => updateFilters({ format: '', look: '' })}
+                        aria-current={!currentFormat ? 'true' : undefined}
+                        className={`eyebrow rounded-full px-3 py-1 text-xs transition-all duration-200 ease-out hover:scale-105 hover:-translate-y-0.5 active:scale-95 cursor-pointer ${
+                          !currentFormat
+                            ? '!text-black bg-white font-bold scale-105 shadow-[0_4px_16px_rgba(0,0,0,0.3)]'
                             : 'glass-flat !text-white/80 hover:!text-white hover:bg-white/20 font-semibold'
                         }`}
                       >
-                        {l.code}
+                        All
                       </button>
-                    ))}
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updateFilters({ format: currentFormat === 'pp' ? '' : 'pp', look: '' })
+                        }
+                        aria-current={currentFormat === 'pp' ? 'true' : undefined}
+                        className={`eyebrow rounded-full px-3 py-1 text-xs transition-all duration-200 ease-out hover:scale-105 hover:-translate-y-0.5 active:scale-95 cursor-pointer ${
+                          currentFormat === 'pp'
+                            ? '!text-black bg-white font-bold scale-105 shadow-[0_4px_16px_rgba(0,0,0,0.3)]'
+                            : 'glass-flat !text-white/80 hover:!text-white hover:bg-white/20 font-semibold'
+                        }`}
+                      >
+                        Picture Profile
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => updateFilters({ format: currentFormat === 'cl' ? '' : 'cl' })}
+                        aria-current={currentFormat === 'cl' ? 'true' : undefined}
+                        className={`eyebrow rounded-full px-3 py-1 text-xs transition-all duration-200 ease-out hover:scale-105 hover:-translate-y-0.5 active:scale-95 cursor-pointer ${
+                          currentFormat === 'cl'
+                            ? '!text-black bg-white font-bold scale-105 shadow-[0_4px_16px_rgba(0,0,0,0.3)]'
+                            : 'glass-flat !text-white/80 hover:!text-white hover:bg-white/20 font-semibold'
+                        }`}
+                      >
+                        Creative Look
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )}
 
-              {/* Row 3: Tag Chips Bar */}
-              <div className="flex items-start gap-2">
-                <span className="eyebrow text-[11px] text-white/80 uppercase w-14 shrink-0 font-bold leading-6">
-                  Tags
-                </span>
+                  {/* Row 2: Creative Look Sub-Filters (only visible when format=cl) */}
+                  {currentFormat === 'cl' && (
+                    <div className="flex items-start gap-2 transition-all duration-300">
+                      <span className="eyebrow text-[11px] text-white/80 uppercase w-14 shrink-0 font-bold leading-6">
+                        Look
+                      </span>
 
-                <div className="flex items-center gap-1.5 min-w-0 overflow-x-auto py-1 scrollbar-none">
-                  <button
-                    type="button"
-                    onClick={() => updateFilters({ tag: '' })}
-                    aria-current={!currentTag ? 'true' : undefined}
-                    className={`eyebrow shrink-0 rounded-full px-3 py-1 text-xs transition-all duration-200 ease-out hover:scale-105 hover:-translate-y-0.5 active:scale-95 cursor-pointer ${
-                      !currentTag
-                        ? '!text-black bg-white font-bold scale-105 shadow-[0_4px_16px_rgba(0,0,0,0.3)]'
-                        : 'glass-flat !text-white/80 hover:!text-white hover:bg-white/20 font-semibold'
-                    }`}
-                  >
-                    All
-                  </button>
+                      <div className="flex flex-wrap items-center gap-1.5 min-w-0 py-1">
+                        <button
+                          type="button"
+                          onClick={() => updateFilters({ look: '' })}
+                          aria-current={!currentLook ? 'true' : undefined}
+                          className={`eyebrow rounded-full px-2.5 py-0.5 text-[11px] transition-all duration-200 ease-out hover:scale-105 hover:-translate-y-0.5 active:scale-95 cursor-pointer ${
+                            !currentLook
+                              ? '!text-black bg-white font-bold scale-105 shadow-[0_4px_14px_rgba(0,0,0,0.3)]'
+                              : 'glass-flat !text-white/80 hover:!text-white hover:bg-white/20 font-semibold'
+                          }`}
+                        >
+                          All
+                        </button>
 
-                  {tagList.map((item) => (
-                    <button
-                      key={item.tag}
-                      type="button"
-                      onClick={() => updateFilters({ tag: currentTag === item.tag ? '' : item.tag })}
-                      aria-current={currentTag === item.tag ? 'true' : undefined}
-                      className={`eyebrow shrink-0 rounded-full px-3 py-1 text-xs transition-all duration-200 ease-out hover:scale-105 hover:-translate-y-0.5 active:scale-95 cursor-pointer ${
-                        currentTag === item.tag
-                          ? '!text-black bg-white font-bold scale-105 shadow-[0_4px_16px_rgba(0,0,0,0.3)]'
-                          : 'glass-flat !text-white/80 hover:!text-white hover:bg-white/20 font-semibold'
-                      }`}
-                    >
-                      {item.tag}
-                    </button>
-                  ))}
-                </div>
-              </div>
+                        {CREATIVE_LOOKS.map((l) => (
+                          <button
+                            key={l.code}
+                            type="button"
+                            onClick={() => updateFilters({ look: currentLook === l.code ? '' : l.code })}
+                            aria-current={currentLook === l.code ? 'true' : undefined}
+                            className={`eyebrow rounded-full px-2.5 py-0.5 text-[11px] transition-all duration-200 ease-out hover:scale-105 hover:-translate-y-0.5 active:scale-95 cursor-pointer ${
+                              currentLook === l.code
+                                ? '!text-black bg-white font-bold scale-105 shadow-[0_4px_14px_rgba(0,0,0,0.3)]'
+                                : 'glass-flat !text-white/80 hover:!text-white hover:bg-white/20 font-semibold'
+                            }`}
+                          >
+                            {l.code}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-              {/* Footer row: Clear all filters & Shortcut hint */}
-              {hasActiveFilters && (
-                <div className="flex items-center justify-between pt-2 mt-0.5 border-t border-white/10 text-[10px] text-ink-faint">
-                  <button
-                    type="button"
-                    onClick={handleResetAll}
-                    className="eyebrow text-[10px] text-danger/85 hover:text-danger transition-colors cursor-pointer underline underline-offset-2"
-                  >
-                    {t('clearAll')}
-                  </button>
-                  <span className="font-mono hidden sm:inline">{t('escHint')}</span>
-                </div>
+                  {/* Row 3: Tag Chips Bar */}
+                  <div className="flex items-start gap-2">
+                    <span className="eyebrow text-[11px] text-white/80 uppercase w-14 shrink-0 font-bold leading-6">
+                      Tags
+                    </span>
+
+                    <div className="flex items-center gap-1.5 min-w-0 overflow-x-auto py-1 scrollbar-none">
+                      <button
+                        type="button"
+                        onClick={() => updateFilters({ tag: '' })}
+                        aria-current={!currentTag ? 'true' : undefined}
+                        className={`eyebrow shrink-0 rounded-full px-3 py-1 text-xs transition-all duration-200 ease-out hover:scale-105 hover:-translate-y-0.5 active:scale-95 cursor-pointer ${
+                          !currentTag
+                            ? '!text-black bg-white font-bold scale-105 shadow-[0_4px_16px_rgba(0,0,0,0.3)]'
+                            : 'glass-flat !text-white/80 hover:!text-white hover:bg-white/20 font-semibold'
+                        }`}
+                      >
+                        All
+                      </button>
+
+                      {tagList.map((item) => (
+                        <button
+                          key={item.tag}
+                          type="button"
+                          onClick={() => updateFilters({ tag: currentTag === item.tag ? '' : item.tag })}
+                          aria-current={currentTag === item.tag ? 'true' : undefined}
+                          className={`eyebrow shrink-0 rounded-full px-3 py-1 text-xs transition-all duration-200 ease-out hover:scale-105 hover:-translate-y-0.5 active:scale-95 cursor-pointer ${
+                            currentTag === item.tag
+                              ? '!text-black bg-white font-bold scale-105 shadow-[0_4px_16px_rgba(0,0,0,0.3)]'
+                              : 'glass-flat !text-white/80 hover:!text-white hover:bg-white/20 font-semibold'
+                          }`}
+                        >
+                          {item.tag}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Footer row: Clear all filters & Shortcut hint */}
+                  {hasActiveFilters && (
+                    <div className="flex items-center justify-between pt-2 mt-0.5 border-t border-white/10 text-[10px] text-ink-faint">
+                      <button
+                        type="button"
+                        onClick={handleResetAll}
+                        className="eyebrow text-[10px] text-danger/85 hover:text-danger transition-colors cursor-pointer underline underline-offset-2"
+                      >
+                        {t('clearAll')}
+                      </button>
+                      <span className="font-mono hidden sm:inline">{t('escHint')}</span>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>

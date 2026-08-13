@@ -30,12 +30,15 @@
 
   /* Signal colours, named for meaning. Use with opacity modifiers
      (bg-community/15, border-proposal/30) rather than reaching for a
-     neighbouring step on some other scale. */
-  --color-community: oklch(78% 0.19 155);
-  --color-proposal: oklch(72% 0.20 305);
-  --color-ai: oklch(83% 0.16 85);
-  --color-danger: oklch(70% 0.19 25);
-  --color-heart: oklch(68% 0.21 15);
+     neighbouring step on some other scale.
+     Updated from Adobe Color "My Color Theme" (Happy Palette):
+     #47F5D7 (Electric Mint Cyan), #F5F147 (Electric Happy Yellow),
+     #9247F5 (Electric Purple), #F57847 (Coral Sunset Orange). */
+  --color-community: oklch(86.5% 0.175 174);
+  --color-proposal: oklch(60.5% 0.27 292);
+  --color-ai: oklch(91.5% 0.20 102);
+  --color-danger: oklch(68.5% 0.20 42);
+  --color-heart: oklch(68.5% 0.20 42);
 
   /* Font stacks. The family names are what @font-face declares; each app
      supplies the faces itself, latin + vietnamese subsets only — never

@@ -146,6 +146,7 @@
   "search": {
     "label": "Search recipes",
     "placeholder": "Search by name or tag…",
+    "wikiPlaceholder": "Search cameras, lenses, specs…",
     "submit": "Search",
     "clear": "Clear search",
     "clearAll": "Clear all filters",
