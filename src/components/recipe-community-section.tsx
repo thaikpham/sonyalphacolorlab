@@ -623,7 +623,7 @@ export function RecipeCommunitySection({
               </form>
             ) : (
               <div className="flex items-center gap-3 bg-black/40 p-3.5 rounded-xl border border-white/10 text-xs text-white/70 font-sans">
-                <span className="text-base shrink-0">💬</span>
+                <span className="text-[1rem] shrink-0">💬</span>
                 <span>
                   {t.rich('loginPrompt', {
                     a: (chunks) => (

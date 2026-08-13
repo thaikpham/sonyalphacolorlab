@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { isSupabaseConfigured, supabaseRead } from '@/lib/supabase/server';
 import type { ProductCategory, SonyCamera } from './types';
+import { splitFeatures } from './features';
 
 let cachedSeedCameras: SonyCamera[] | null = null;
 
@@ -33,9 +34,15 @@ export async function getSonyCameras(options?: {
     try {
       const { data, error } = await supabaseRead()
         .from('sony_cameras')
-        .select('id, sku, name, full_name, category, sub_category_1, sub_category_2, price_vnd, price_formatted, url, image_url, features')
+        /* Columns named, never `*`. `updated_by` is an email and this query runs
+           under the anon key, which ships in the browser bundle — the same rule
+           `no-email-leak.test.ts` pins for the community tables. */
+        .select(
+          'id, sku, name, full_name, category, sub_category_1, sub_category_2, price_vnd, price_formatted, url, image_url, features, specs',
+        )
         .order('price_vnd', { ascending: false });
 
+      const seedById = new Map(seed.map((c) => [c.id, c]));
       if (!error && Array.isArray(data) && data.length > 0) {
         cameras = data.map((row) => ({
           id: row.id,
@@ -49,7 +56,13 @@ export async function getSonyCameras(options?: {
           priceFormatted: row.price_formatted,
           url: row.url,
           imageUrl: row.image_url,
-          features: Array.isArray(row.features) ? (row.features as string[]) : [],
+          /* Either shape passes through untouched; `featureList()` resolves it
+             at render. Coercing to `string[]` here would flatten the admin's
+             Vietnamese away. */
+          features: (row.features ?? []) as SonyCamera['features'],
+          /* A row edited before migration 0008 has no specs column value; the
+             seed's block is the fallback so the table does not empty out. */
+          specs: (row.specs as SonyCamera['specs']) ?? seedById.get(row.id)?.specs,
         }));
       } else {
         cameras = seed;
@@ -86,7 +99,11 @@ export async function getSonyCameras(options?: {
         c.sku.toLowerCase().includes(query) ||
         c.subCategory1.toLowerCase().includes(query) ||
         c.subCategory2.toLowerCase().includes(query) ||
-        c.features.some((f) => f.toLowerCase().includes(query)),
+        /* Both locales, not just the active one: a Vietnamese query should still
+           reach a product whose bullets have only been written in English. */
+        [...splitFeatures(c.features).en, ...splitFeatures(c.features).vi].some((f) =>
+          f.toLowerCase().includes(query),
+        ),
     );
   }
 
@@ -109,4 +126,9 @@ export async function getSonyCameras(options?: {
   }
 
   return cameras;
+}
+
+export async function getSonyCameraById(id: string): Promise<SonyCamera | null> {
+  const cameras = await getSonyCameras();
+  return cameras.find((c) => c.id === id) || null;
 }

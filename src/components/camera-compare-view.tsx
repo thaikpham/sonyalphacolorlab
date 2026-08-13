@@ -1,12 +1,21 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import type { SonyCamera } from '@/lib/cameras/types';
-import { ProductDetailModal } from '@/components/product-detail-modal';
+import { featureList } from '@/lib/cameras/features';
+import { translateSpecValue } from '@/lib/cameras/spec-values';
+import {
+  type CompareTabId,
+  SPEC_SECTION_GROUPS,
+  SPEC_ICONS,
+  getSpecValue,
+  isSpecDifferent,
+  getActiveSpecSections,
+} from '@/lib/cameras/compare-grouping';
 
 interface CameraCompareViewProps {
   initialCameras: SonyCamera[];
@@ -27,7 +36,8 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
   const [activeIds, setActiveIds] = useState<string[]>(selectedIds);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [searchAddQuery, setSearchAddQuery] = useState('');
-  const [detailProduct, setDetailProduct] = useState<SonyCamera | null>(null);
+  const [activeTab, setActiveTab] = useState<CompareTabId>('all');
+  const [onlyDiffs, setOnlyDiffs] = useState(false);
 
   // AI Chatbot State
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
@@ -45,6 +55,10 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
     return initialCameras.filter((c) => activeIds.includes(c.id));
   }, [initialCameras, activeIds]);
 
+  const totalCols = useMemo(() => {
+    return comparedCameras.length + (comparedCameras.length < 6 ? 2 : 1);
+  }, [comparedCameras.length]);
+
   // Unselected cameras available to add
   const availableToAdd = useMemo(() => {
     const remaining = initialCameras.filter((c) => !activeIds.includes(c.id));
@@ -61,11 +75,10 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
   const removeCamera = (id: string) => {
     const next = activeIds.filter((item) => item !== id);
     setActiveIds(next);
-    // Update URL query string
     if (next.length > 0) {
-      router.replace(`/${locale}/cameras/compare?ids=${next.join(',')}`);
+      router.replace(`/cameras/compare?ids=${next.join(',')}`);
     } else {
-      router.push(`/${locale}/cameras`);
+      router.push(`/cameras`);
     }
   };
 
@@ -75,15 +88,7 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
     setActiveIds(next);
     setIsAddModalOpen(false);
     setSearchAddQuery('');
-    router.replace(`/${locale}/cameras/compare?ids=${next.join(',')}`);
-  };
-
-  const toggleCompare = (id: string) => {
-    if (activeIds.includes(id)) {
-      removeCamera(id);
-    } else {
-      addCamera(id);
-    }
+    router.replace(`/cameras/compare?ids=${next.join(',')}`);
   };
 
   const askAiSpecialist = async (questionText: string) => {
@@ -126,7 +131,7 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
           {
             id: crypto.randomUUID(),
             sender: 'specialist',
-            text: 'Rất tiếc, đã xảy ra lỗi khi tạo câu trả lời. Vui lòng thử lại!',
+            text: t('aiErrorResponse'),
           },
         ]);
       }
@@ -136,7 +141,7 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
         {
           id: crypto.randomUUID(),
           sender: 'specialist',
-          text: 'Không thể kết nối tới máy chủ tư vấn.',
+          text: t('aiConnectionError'),
         },
       ]);
     } finally {
@@ -157,9 +162,22 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
     }
   };
 
+  const activeSpecSections = useMemo(() => {
+    return getActiveSpecSections(comparedCameras, activeTab);
+  }, [comparedCameras, activeTab]);
+
+  const tabs: { id: CompareTabId; label: string; icon: string }[] = [
+    { id: 'all', label: t('tabAll'), icon: '🔲' },
+    { id: 'highlights', label: t('tabHighlights'), icon: '⚡' },
+    { id: 'sensorOptics', label: t('tabSensorOptics'), icon: '📷' },
+    { id: 'videoIso', label: t('tabVideoIso'), icon: '🎥' },
+    { id: 'afStab', label: t('tabAfStab'), icon: '🎯' },
+    { id: 'physical', label: t('tabPhysical'), icon: '📐' },
+  ];
+
   return (
-    <div className="w-full flex flex-col gap-8 font-sans pb-16">
-      {/* Top Header Bar */}
+    <div className="w-full flex flex-col gap-6 font-sans pb-16">
+      {/* Navigation Header */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <Link
@@ -169,47 +187,100 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
             {t('backToCatalog')}
           </Link>
 
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white/80 hover:text-white font-bold text-xs border border-white/15 transition-all cursor-pointer"
-          >
-            🖨️ {t('printCompare')}
-          </button>
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-xs font-bold text-amber-300 bg-amber-400/10 px-3 py-1.5 rounded-xl border border-amber-400/30">
+              {t('compareSummary', { count: comparedCameras.length })}
+            </span>
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white/80 hover:text-white font-bold text-xs border border-white/15 transition-all cursor-pointer"
+            >
+              🖨️ {t('printCompare')}
+            </button>
+          </div>
         </div>
 
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
             {t('comparePageTitle')}
           </h1>
-          <p className="text-xs sm:text-sm text-white/70">
+          <p className="text-xs sm:text-sm text-white/70 truncate">
             {comparedCameras.map((c) => c.name).join('  vs  ')}
           </p>
         </div>
       </div>
 
+      {/* Pocket-Guide Inspired Category Filter Tab Bar & Controls */}
+      <div className="glass p-3 sm:p-4 rounded-2xl flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 border border-white/15 shadow-xl bg-[#181a1f]/90">
+        {/* Category Tabs */}
+        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1 md:pb-0">
+          {tabs.map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+                  isActive
+                    ? 'bg-amber-400 text-black shadow-lg shadow-amber-400/20 scale-[1.02]'
+                    : 'bg-white/5 hover:bg-white/15 text-white/80 hover:text-white border border-white/10'
+                }`}
+              >
+                <span>{tab.icon}</span>
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Difference Toggle Filter */}
+        <div className="flex items-center gap-3 shrink-0 border-t md:border-t-0 border-white/10 pt-3 md:pt-0">
+          <button
+            type="button"
+            onClick={() => setOnlyDiffs((prev) => !prev)}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 border ${
+              onlyDiffs
+                ? 'bg-amber-500/20 text-amber-300 border-amber-400/60 ring-1 ring-amber-400/40'
+                : 'bg-white/5 text-white/70 hover:text-white border-white/15 hover:bg-white/10'
+            }`}
+          >
+            <span className={`w-2.5 h-2.5 rounded-full ${onlyDiffs ? 'bg-amber-400 animate-pulse' : 'bg-white/30'}`} />
+            <span>{onlyDiffs ? t('highlightDiffs') : t('showAllSpecs')}</span>
+          </button>
+        </div>
+      </div>
+
       {/* Main Side-by-Side Spec Matrix */}
-      <div className="glass rounded-2xl overflow-hidden shadow-2xl border border-white/15 font-sans">
+      <div className="glass rounded-2xl overflow-hidden shadow-2xl border border-white/15 font-sans bg-[#131519]">
         <div className="overflow-x-auto scrollbar-none">
           <table className="w-full text-left border-collapse table-fixed">
             <colgroup>
-              <col className="w-48 sm:w-56" />
+              <col className="w-48 sm:w-60 min-w-[12rem] sm:min-w-[15rem]" />
               {comparedCameras.map((cam) => (
-                <col key={cam.id} className="w-[18rem]" />
+                <col key={cam.id} className="w-[18rem] min-w-[18rem]" />
               ))}
-              {comparedCameras.length < 6 && <col className="w-[18rem]" />}
+              {comparedCameras.length < 6 && <col className="w-[18rem] min-w-[18rem]" />}
             </colgroup>
 
             {/* Header Row: Sticky Product Cards */}
-            <thead className="bg-[#1e2025] sticky top-0 z-20 border-b border-white/15">
+            <thead className="bg-[#1a1c22] sticky top-0 z-20 border-b border-white/15 shadow-md">
               <tr>
-                <th scope="col" className="p-4 w-48 sm:w-56 bg-[#1e2025] border-r border-white/10 text-xs font-extrabold uppercase text-white/60 font-mono">
-                  {t('sensorLabel')}
+                <th scope="col" className="p-4 w-48 sm:w-60 min-w-[12rem] sm:min-w-[15rem] bg-[#1a1c22] border-r border-white/10 align-middle">
+                  <div className="flex flex-col gap-1">
+                    <span className="font-mono text-[11px] font-extrabold uppercase text-amber-400/90 tracking-wider">
+                      Sản phẩm
+                    </span>
+                    <span className="text-xs text-white/50 font-normal">
+                      So sánh song song
+                    </span>
+                  </div>
                 </th>
 
                 {comparedCameras.map((cam) => (
-                  <th key={cam.id} scope="col" className="p-4 w-[18rem] bg-[#1e2025] border-r border-white/10 align-top">
-                    <div className="relative bg-[#28292e] p-4 rounded-xl flex flex-col gap-3 shadow-lg h-full justify-between">
+                  <th key={cam.id} scope="col" className="p-4 w-[18rem] min-w-[18rem] bg-[#1a1c22] border-r border-white/10 align-top">
+                    <div className="relative bg-[#23252c] p-4 rounded-xl flex flex-col gap-3 shadow-lg h-full justify-between border border-white/10">
                       {/* Remove Button */}
                       <button
                         type="button"
@@ -220,9 +291,9 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                         ✕
                       </button>
 
-                      {/* Photo on Clean WHITE Background (Click opens Detail Modal) */}
+                      {/* Photo on Clean WHITE Background */}
                       <div
-                        onClick={() => setDetailProduct(cam)}
+                        onClick={() => router.push(`/cameras/${cam.id}`)}
                         className="relative w-full aspect-[4/3] rounded-xl bg-white p-2 flex items-center justify-center shadow-md overflow-hidden cursor-pointer group shrink-0"
                       >
                         <Image
@@ -234,12 +305,19 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                         />
                       </div>
 
-                      {/* Info (Click opens Detail Modal) */}
+                      {/* Info */}
                       <div
-                        onClick={() => setDetailProduct(cam)}
+                        onClick={() => router.push(`/cameras/${cam.id}`)}
                         className="flex flex-col gap-1 cursor-pointer group"
                       >
-                        <h3 className="font-extrabold text-sm text-white group-hover:text-amber-300 transition-colors line-clamp-1">{cam.name}</h3>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className={`px-2 py-0.5 rounded text-[9px] border ${getCategoryBadgeColor(cam.category)}`}>
+                            {cam.category.toUpperCase()}
+                          </span>
+                        </div>
+                        <h3 className="font-extrabold text-sm text-white group-hover:text-amber-300 transition-colors line-clamp-1">
+                          {cam.name}
+                        </h3>
                         <span className="font-mono text-[11px] font-bold text-amber-300 bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/25 w-fit truncate">
                           {cam.sku}
                         </span>
@@ -263,7 +341,7 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
 
                 {/* Slot to Add More Products (Up to 6) */}
                 {comparedCameras.length < 6 && (
-                  <th scope="col" className="p-4 w-[18rem] bg-[#1e2025] align-top">
+                  <th scope="col" className="p-4 w-[18rem] min-w-[18rem] bg-[#1a1c22] align-top">
                     <button
                       type="button"
                       onClick={() => setIsAddModalOpen(true)}
@@ -282,120 +360,239 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
             </thead>
 
             <tbody className="divide-y divide-white/10 text-xs text-white">
-              {/* SECTION 1: GENERAL INFO */}
-              <tr className="bg-black/60 font-mono text-[11px] uppercase tracking-wider text-amber-300/90 font-extrabold">
-                <td colSpan={comparedCameras.length + (comparedCameras.length < 6 ? 2 : 1)} className="p-3">
-                  📂 {t('specCategory')}
-                </td>
-              </tr>
+              {/* GENERAL INFO SECTION */}
+              {(activeTab === 'all' || activeTab === 'sensorOptics') && (
+                <>
+                  <tr className="bg-[#181a20] font-mono text-[11px] uppercase tracking-wider text-amber-300 font-extrabold border-y border-white/15">
+                    <td colSpan={totalCols} className="p-3.5 bg-[#181a20]">
+                      📂 {t('specCategory')}
+                    </td>
+                  </tr>
 
-              {/* Category Row */}
-              <tr className="bg-[#28292e]/90 hover:bg-white/5 transition-colors">
-                <td className="p-4 font-bold text-white/70 border-r border-white/10 bg-[#222429]">
-                  {t('categoryLabel')}
-                </td>
-                {comparedCameras.map((cam) => (
-                  <td key={cam.id} className="p-4 border-r border-white/10 w-[18rem]">
-                    <span className={`px-2.5 py-1 rounded-full text-[10px] border ${getCategoryBadgeColor(cam.category)}`}>
-                      {cam.category.toUpperCase()}
-                    </span>
-                  </td>
-                ))}
-                {comparedCameras.length < 6 && <td className="p-4 w-[18rem]"></td>}
-              </tr>
-
-              {/* Sensor / Format Row */}
-              <tr className="bg-[#28292e]/90 hover:bg-white/5 transition-colors">
-                <td className="p-4 font-bold text-white/70 border-r border-white/10 bg-[#222429]">
-                  {t('specSub1')}
-                </td>
-                {comparedCameras.map((cam) => (
-                  <td key={cam.id} className="p-4 border-r border-white/10 w-[18rem] font-bold text-white">
-                    {cam.subCategory1}
-                  </td>
-                ))}
-                {comparedCameras.length < 6 && <td className="p-4 w-[18rem]"></td>}
-              </tr>
-
-              {/* Series Row */}
-              <tr className="bg-[#28292e]/90 hover:bg-white/5 transition-colors">
-                <td className="p-4 font-bold text-white/70 border-r border-white/10 bg-[#222429]">
-                  {t('specSub2')}
-                </td>
-                {comparedCameras.map((cam) => (
-                  <td key={cam.id} className="p-4 border-r border-white/10 w-[18rem] font-mono text-white/80 font-semibold">
-                    {cam.subCategory2 || '—'}
-                  </td>
-                ))}
-                {comparedCameras.length < 6 && <td className="p-4 w-[18rem]"></td>}
-              </tr>
-
-              {/* SECTION 2: PRICING & CODES */}
-              <tr className="bg-black/60 font-mono text-[11px] uppercase tracking-wider text-amber-300/90 font-extrabold">
-                <td colSpan={comparedCameras.length + (comparedCameras.length < 6 ? 2 : 1)} className="p-3">
-                  💳 {t('priceLabel')} & {t('skuLabel')}
-                </td>
-              </tr>
-
-              {/* Price Row */}
-              <tr className="bg-[#28292e]/90 hover:bg-white/5 transition-colors">
-                <td className="p-4 font-bold text-white/70 border-r border-white/10 bg-[#222429]">
-                  {t('specPrice')}
-                </td>
-                {comparedCameras.map((cam) => (
-                  <td key={cam.id} className="p-4 border-r border-white/10 w-[18rem] font-mono text-base font-extrabold text-sky-400">
-                    {cam.priceFormatted}
-                  </td>
-                ))}
-                {comparedCameras.length < 6 && <td className="p-4 w-[18rem]"></td>}
-              </tr>
-
-              {/* SKU Row */}
-              <tr className="bg-[#28292e]/90 hover:bg-white/5 transition-colors">
-                <td className="p-4 font-bold text-white/70 border-r border-white/10 bg-[#222429]">
-                  {t('specSku')}
-                </td>
-                {comparedCameras.map((cam) => (
-                  <td key={cam.id} className="p-4 border-r border-white/10 w-[18rem] font-mono font-bold text-amber-300 truncate">
-                    {cam.sku}
-                  </td>
-                ))}
-                {comparedCameras.length < 6 && <td className="p-4 w-[18rem]"></td>}
-              </tr>
-
-              {/* SECTION 3: KEY FEATURES & HIGHLIGHTS */}
-              <tr className="bg-black/60 font-mono text-[11px] uppercase tracking-wider text-amber-300/90 font-extrabold">
-                <td colSpan={comparedCameras.length + (comparedCameras.length < 6 ? 2 : 1)} className="p-3">
-                  ⚡ {t('specFeatures')}
-                </td>
-              </tr>
-
-              {/* Features List Row */}
-              <tr className="bg-[#28292e]/90 hover:bg-white/5 transition-colors">
-                <td className="p-4 font-bold text-white/70 border-r border-white/10 bg-[#222429]">
-                  {t('featuresLabel')}
-                </td>
-                {comparedCameras.map((cam) => (
-                  <td key={cam.id} className="p-4 border-r border-white/10 w-[18rem] align-top">
-                    <ul className="space-y-2 text-xs text-white/95 font-medium leading-relaxed">
-                      {cam.features.map((feat, idx) => (
-                        <li key={idx} className="flex items-start gap-2 whitespace-normal break-words">
-                          <span className="text-emerald-400 font-bold shrink-0 text-sm leading-none">•</span>
-                          <span className="flex-1">{feat}</span>
-                        </li>
+                  {/* Category Row */}
+                  {(!onlyDiffs || isSpecDifferent(comparedCameras, 'category')) && (
+                    <tr className="bg-[#1c1e24] hover:bg-white/5 transition-colors">
+                      <td className="p-4 font-bold text-white/80 border-r border-white/10 bg-[#16181d] align-top w-48 sm:w-60 min-w-[12rem] sm:min-w-[15rem]">
+                        {t('categoryLabel')}
+                      </td>
+                      {comparedCameras.map((cam) => (
+                        <td key={cam.id} className="p-4 border-r border-white/10 w-[18rem] min-w-[18rem] align-top">
+                          <div className="bg-white/5 p-2.5 rounded-xl border border-white/10 shadow-sm flex items-center gap-2">
+                            <span className="text-amber-400 text-sm">📦</span>
+                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] border ${getCategoryBadgeColor(cam.category)}`}>
+                              {cam.category.toUpperCase()}
+                            </span>
+                          </div>
+                        </td>
                       ))}
-                    </ul>
-                  </td>
-                ))}
-                {comparedCameras.length < 6 && <td className="p-4 w-[18rem]"></td>}
-              </tr>
+                      {comparedCameras.length < 6 && <td className="p-4 w-[18rem] min-w-[18rem]"></td>}
+                    </tr>
+                  )}
+
+                  {/* SubCategory 1 Row */}
+                  {(!onlyDiffs || isSpecDifferent(comparedCameras, 'subCategory1')) && (
+                    <tr className="bg-[#1c1e24] hover:bg-white/5 transition-colors">
+                      <td className="p-4 font-bold text-white/80 border-r border-white/10 bg-[#16181d] align-top w-48 sm:w-60 min-w-[12rem] sm:min-w-[15rem]">
+                        {t('specSub1')}
+                      </td>
+                      {comparedCameras.map((cam) => (
+                        <td key={cam.id} className="p-4 border-r border-white/10 w-[18rem] min-w-[18rem] align-top">
+                          <div className="bg-white/5 p-2.5 rounded-xl border border-white/10 hover:border-amber-400/30 transition-all flex items-start gap-2 shadow-sm text-xs font-bold text-white">
+                            <span className="text-amber-400 text-sm shrink-0">🏷️</span>
+                            <span className="flex-1 leading-relaxed">{cam.subCategory1}</span>
+                          </div>
+                        </td>
+                      ))}
+                      {comparedCameras.length < 6 && <td className="p-4 w-[18rem] min-w-[18rem]"></td>}
+                    </tr>
+                  )}
+
+                  {/* SubCategory 2 Row */}
+                  {(!onlyDiffs || isSpecDifferent(comparedCameras, 'subCategory2')) && (
+                    <tr className="bg-[#1c1e24] hover:bg-white/5 transition-colors">
+                      <td className="p-4 font-bold text-white/80 border-r border-white/10 bg-[#16181d] align-top w-48 sm:w-60 min-w-[12rem] sm:min-w-[15rem]">
+                        {t('specSub2')}
+                      </td>
+                      {comparedCameras.map((cam) => (
+                        <td key={cam.id} className="p-4 border-r border-white/10 w-[18rem] min-w-[18rem] align-top">
+                          <div className="bg-white/5 p-2.5 rounded-xl border border-white/10 hover:border-amber-400/30 transition-all flex items-start gap-2 shadow-sm text-xs font-mono text-white/80 font-semibold">
+                            <span className="text-amber-400 text-sm shrink-0">📂</span>
+                            <span className="flex-1 leading-relaxed">{cam.subCategory2 || '—'}</span>
+                          </div>
+                        </td>
+                      ))}
+                      {comparedCameras.length < 6 && <td className="p-4 w-[18rem] min-w-[18rem]"></td>}
+                    </tr>
+                  )}
+                </>
+              )}
+
+              {/* PRICING & CODES SECTION */}
+              {activeTab === 'all' && (
+                <>
+                  <tr className="bg-[#181a20] font-mono text-[11px] uppercase tracking-wider text-amber-300 font-extrabold border-y border-white/15">
+                    <td colSpan={totalCols} className="p-3.5 bg-[#181a20]">
+                      💳 {t('priceLabel')} & {t('skuLabel')}
+                    </td>
+                  </tr>
+
+                  {/* Price Row */}
+                  {(!onlyDiffs || isSpecDifferent(comparedCameras, 'priceFormatted')) && (
+                    <tr className="bg-[#1c1e24] hover:bg-white/5 transition-colors">
+                      <td className="p-4 font-bold text-white/80 border-r border-white/10 bg-[#16181d] align-top w-48 sm:w-60 min-w-[12rem] sm:min-w-[15rem]">
+                        {t('specPrice')}
+                      </td>
+                      {comparedCameras.map((cam) => (
+                        <td key={cam.id} className="p-4 border-r border-white/10 w-[18rem] min-w-[18rem] align-top">
+                          <div className="bg-white/5 p-2.5 rounded-xl border border-white/10 hover:border-sky-400/40 transition-all flex items-center gap-2 shadow-sm font-mono text-sm font-extrabold text-sky-400">
+                            <span className="text-sky-400 text-sm shrink-0">💳</span>
+                            <span>{cam.priceFormatted}</span>
+                          </div>
+                        </td>
+                      ))}
+                      {comparedCameras.length < 6 && <td className="p-4 w-[18rem] min-w-[18rem]"></td>}
+                    </tr>
+                  )}
+
+                  {/* SKU Row */}
+                  {(!onlyDiffs || isSpecDifferent(comparedCameras, 'sku')) && (
+                    <tr className="bg-[#1c1e24] hover:bg-white/5 transition-colors">
+                      <td className="p-4 font-bold text-white/80 border-r border-white/10 bg-[#16181d] align-top w-48 sm:w-60 min-w-[12rem] sm:min-w-[15rem]">
+                        {t('specSku')}
+                      </td>
+                      {comparedCameras.map((cam) => (
+                        <td key={cam.id} className="p-4 border-r border-white/10 w-[18rem] min-w-[18rem] align-top">
+                          <div className="bg-white/5 p-2.5 rounded-xl border border-white/10 hover:border-amber-400/30 transition-all flex items-center gap-2 shadow-sm font-mono text-xs font-bold text-amber-300">
+                            <span className="text-amber-400 text-sm shrink-0">🏷️</span>
+                            <span className="truncate">{cam.sku}</span>
+                          </div>
+                        </td>
+                      ))}
+                      {comparedCameras.length < 6 && <td className="p-4 w-[18rem] min-w-[18rem]"></td>}
+                    </tr>
+                  )}
+                </>
+              )}
+
+              {/* KEY FEATURES SECTION */}
+              {(activeTab === 'all' || activeTab === 'highlights') && (
+                <>
+                  <tr className="bg-[#181a20] font-mono text-[11px] uppercase tracking-wider text-amber-300 font-extrabold border-y border-white/15">
+                    <td colSpan={totalCols} className="p-3.5 bg-[#181a20]">
+                      {t('sectionHighlights')}
+                    </td>
+                  </tr>
+
+                  <tr className="bg-[#1c1e24] hover:bg-white/5 transition-colors">
+                    <td className="p-4 font-bold text-white/80 border-r border-white/10 bg-[#16181d] align-top w-48 sm:w-60 min-w-[12rem] sm:min-w-[15rem]">
+                      <div className="flex flex-col gap-1">
+                        <span>{t('featuresLabel')}</span>
+                        <span className="text-[10px] text-white/40 font-normal">Điểm mạnh sản phẩm</span>
+                      </div>
+                    </td>
+                    {comparedCameras.map((cam) => (
+                      <td key={cam.id} className="p-4 border-r border-white/10 w-[18rem] min-w-[18rem] align-top">
+                        <ul className="space-y-2 text-xs text-white/95 font-medium leading-relaxed">
+                          {featureList(cam.features, locale).map((feat, idx) => (
+                            <li key={idx} className="flex items-start gap-2.5 whitespace-normal break-words bg-white/5 p-2.5 rounded-xl border border-white/10 shadow-sm hover:border-amber-400/30 transition-all">
+                              <span className="text-amber-400 font-bold shrink-0 text-sm leading-none mt-0.5">⚡</span>
+                              <span className="flex-1 text-[11px] sm:text-xs leading-relaxed">{feat}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </td>
+                    ))}
+                    {comparedCameras.length < 6 && <td className="p-4 w-[18rem] min-w-[18rem]"></td>}
+                  </tr>
+                </>
+              )}
+
+              {/* DYNAMIC CATEGORIZED SPEC SECTIONS */}
+              {activeSpecSections.map((section) => (
+                <React.Fragment key={section.id}>
+                  {/* Section Title Header */}
+                  <tr className="bg-[#181a20] font-mono text-[11px] uppercase tracking-wider text-amber-300 font-extrabold border-y border-white/15">
+                    <td colSpan={totalCols} className="p-3.5 bg-[#181a20]">
+                      {t(section.labelKey)}
+                    </td>
+                  </tr>
+
+                  {section.specKeys.map((specKey) => {
+                    const isDiff = isSpecDifferent(comparedCameras, specKey);
+
+                    // Skip if onlyDiffs toggle is enabled and this row has no diffs
+                    if (onlyDiffs && !isDiff) return null;
+
+                    // Skip if all cameras have null for this spec
+                    const hasAnyValue = comparedCameras.some(
+                      (c) => getSpecValue(c, specKey) !== null,
+                    );
+                    if (!hasAnyValue) return null;
+
+                    const specIcon = SPEC_ICONS[specKey] || '⚡';
+
+                    return (
+                      <tr
+                        key={specKey}
+                        className={`transition-colors ${
+                          isDiff
+                            ? 'bg-amber-500/10 hover:bg-amber-500/15'
+                            : 'bg-[#1c1e24] hover:bg-white/5'
+                        }`}
+                      >
+                        <td className="p-4 font-bold text-white/80 border-r border-white/10 bg-[#16181d] align-top w-48 sm:w-60 min-w-[12rem] sm:min-w-[15rem]">
+                          <div className="flex items-center justify-between gap-2">
+                            <span>{t(`specs.${specKey}`)}</span>
+                            {isDiff && (
+                              <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30 shrink-0">
+                                {t('diffBadge')}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+
+                        {comparedCameras.map((cam) => {
+                          const rawVal = getSpecValue(cam, specKey);
+                          const formattedVal = rawVal
+                            ? translateSpecValue(specKey, rawVal, locale)
+                            : null;
+
+                          return (
+                            <td
+                              key={cam.id}
+                              className="p-4 border-r border-white/10 w-[18rem] min-w-[18rem] align-top"
+                            >
+                              {formattedVal ? (
+                                <div className="bg-white/5 p-2.5 rounded-xl border border-white/10 hover:border-amber-400/30 transition-all flex items-start gap-2.5 shadow-sm">
+                                  <span className="text-amber-400 font-bold shrink-0 text-sm leading-none mt-0.5">
+                                    {specIcon}
+                                  </span>
+                                  <span className="flex-1 text-[11px] sm:text-xs text-white/95 font-medium leading-relaxed whitespace-normal break-words">
+                                    {formattedVal}
+                                  </span>
+                                </div>
+                              ) : (
+                                <div className="bg-white/[0.02] p-2.5 rounded-xl border border-white/5 text-white/30 text-[11px] font-mono">
+                                  —
+                                </div>
+                              )}
+                            </td>
+                          );
+                        })}
+
+                        {comparedCameras.length < 6 && <td className="p-4 w-[18rem] min-w-[18rem]"></td>}
+                      </tr>
+                    );
+                  })}
+                </React.Fragment>
+              ))}
             </tbody>
           </table>
         </div>
       </div>
 
       {/* SONY AI SPECIALIST CHATBOT INTEGRATION */}
-      <div className="glass p-6 rounded-2xl flex flex-col gap-5 border border-white/20 shadow-2xl bg-[#1e2025]/90">
+      <div className="glass p-6 rounded-2xl flex flex-col gap-5 border border-white/20 shadow-2xl bg-[#181a1f]/90">
         <div className="flex items-center gap-3 border-b border-white/15 pb-4">
           <div className="w-10 h-10 rounded-xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center text-xl shrink-0">
             🤖
@@ -488,10 +685,10 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="glass w-full max-w-2xl max-h-[80dvh] rounded-2xl p-6 flex flex-col gap-4 shadow-2xl border border-white/20"
+            className="glass w-full max-w-2xl max-h-[80dvh] rounded-2xl p-6 flex flex-col gap-4 shadow-2xl border border-white/20 bg-[#181a1f]"
           >
             <div className="flex items-center justify-between border-b border-white/15 pb-3">
-              <h3 className="font-extrabold text-base text-white">{t('selectProductTitle')}</h3>
+              <h3 className="font-extrabold text-[1rem] text-white">{t('selectProductTitle')}</h3>
               <button
                 type="button"
                 onClick={() => setIsAddModalOpen(false)}
@@ -539,14 +736,6 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
           </div>
         </div>
       )}
-
-      {/* Product Specification Detail Modal */}
-      <ProductDetailModal
-        product={detailProduct}
-        onClose={() => setDetailProduct(null)}
-        isCompared={detailProduct ? activeIds.includes(detailProduct.id) : false}
-        onToggleCompare={(id) => toggleCompare(id)}
-      />
     </div>
   );
 }

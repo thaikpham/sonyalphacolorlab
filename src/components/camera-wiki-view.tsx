@@ -2,10 +2,10 @@
 
 import { useMemo, useState } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { useTranslations, useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import { useRouter } from '@/i18n/navigation';
 import type { ProductCategory, SonyCamera } from '@/lib/cameras/types';
-import { ProductDetailModal } from '@/components/product-detail-modal';
+import { featureList, splitFeatures } from '@/lib/cameras/features';
 
 interface CameraWikiViewProps {
   initialCameras: SonyCamera[];
@@ -24,7 +24,10 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('grid');
   const [selectedForCompare, setSelectedForCompare] = useState<string[]>([]);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-  const [detailProduct, setDetailProduct] = useState<SonyCamera | null>(null);
+  /* A product opens its own page. It used to open a modal and fake the URL with
+     pushState, which left the address bar pointing at a page that had never
+     rendered — reload or share the link and you got the bare catalogue. */
+  const openProduct = (cam: SonyCamera) => router.push(`/cameras/${cam.id}`);
 
   // Main Categories
   const categories: { key: ProductCategory; label: string; icon: string }[] = [
@@ -87,7 +90,9 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
           c.sku.toLowerCase().includes(q) ||
           c.subCategory1.toLowerCase().includes(q) ||
           c.subCategory2.toLowerCase().includes(q) ||
-          c.features.some((f) => f.toLowerCase().includes(q)),
+          [...splitFeatures(c.features).en, ...splitFeatures(c.features).vi].some((f) =>
+            f.toLowerCase().includes(q),
+          ),
       );
     }
 
@@ -128,7 +133,7 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
   const navigateToComparePage = () => {
     if (selectedForCompare.length === 0) return;
     setIsConfirmModalOpen(false);
-    router.push(`/${locale}/cameras/compare?ids=${selectedForCompare.join(',')}`);
+    router.push(`/cameras/compare?ids=${selectedForCompare.join(',')}`);
   };
 
   const getCategoryBadgeColor = (cat: SonyCamera['category']) => {
@@ -292,7 +297,7 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
       {filteredCameras.length === 0 ? (
         <div className="glass p-12 rounded-2xl text-center flex flex-col items-center justify-center gap-3 font-sans border border-white/15">
           <span className="text-3xl">📷</span>
-          <h3 className="text-base font-bold text-white font-sans">{t('emptyTitle')}</h3>
+          <h3 className="text-[1rem] font-bold text-white font-sans">{t('emptyTitle')}</h3>
           <button
             type="button"
             onClick={() => {
@@ -359,10 +364,10 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                         />
                       </td>
 
-                      {/* Photo & Name (Product image click opens Detail Modal) */}
+                      {/* Photo & Name (click opens the product page) */}
                       <td className="p-3.5">
                         <div
-                          onClick={() => setDetailProduct(cam)}
+                          onClick={() => openProduct(cam)}
                           className="flex items-center gap-3 cursor-pointer group"
                         >
                           <div className="relative w-14 h-14 shrink-0 rounded-xl overflow-hidden bg-white border border-white/30 p-1 flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
@@ -416,7 +421,7 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                       {/* Features (Expanded width with word-wrap) */}
                       <td className="p-3.5 font-sans min-w-[28rem] lg:min-w-[36rem]">
                         <ul className="space-y-1.5 text-xs text-white/95 font-medium leading-relaxed">
-                          {cam.features.map((feat, idx) => (
+                          {featureList(cam.features, locale).map((feat, idx) => (
                             <li key={idx} className="flex items-start gap-2 whitespace-normal break-words font-sans">
                               <span className="text-emerald-400 font-bold shrink-0 text-sm leading-none">•</span>
                               <span className="flex-1 font-sans">{feat}</span>
@@ -484,9 +489,9 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                     </label>
                   </div>
 
-                  {/* Photo on Clean WHITE Background (Click opens Detail Modal) */}
+                  {/* Photo on Clean WHITE Background (click opens the product page) */}
                   <div
-                    onClick={() => setDetailProduct(cam)}
+                    onClick={() => openProduct(cam)}
                     className="relative w-full aspect-[4/3] rounded-xl bg-white p-3 flex items-center justify-center mb-3.5 shadow-md overflow-hidden cursor-pointer group"
                   >
                     <Image
@@ -498,12 +503,12 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                     />
                   </div>
 
-                  {/* Name & SKU (Click opens Detail Modal) */}
+                  {/* Name & SKU (click opens the product page) */}
                   <div
-                    onClick={() => setDetailProduct(cam)}
+                    onClick={() => openProduct(cam)}
                     className="flex flex-col gap-1 mb-3 font-sans cursor-pointer group"
                   >
-                    <h4 className="font-extrabold text-base text-white group-hover:text-amber-300 transition-colors font-sans tracking-tight">
+                    <h4 className="font-extrabold text-[1rem] text-white group-hover:text-amber-300 transition-colors font-sans tracking-tight">
                       {cam.name}
                     </h4>
                     <div className="flex items-center gap-2 flex-wrap">
@@ -521,7 +526,7 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
 
                   {/* Features List */}
                   <ul className="space-y-1.5 mb-4 font-sans">
-                    {cam.features.map((feat, idx) => (
+                    {featureList(cam.features, locale).map((feat, idx) => (
                       <li key={idx} className="text-xs text-white/90 font-medium flex items-start gap-2 font-sans leading-snug">
                         <span className="text-emerald-400 font-bold shrink-0 text-sm leading-none">•</span>
                         <span className="line-clamp-2 font-sans">{feat}</span>
@@ -532,7 +537,7 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
 
                 {/* Price & Link */}
                 <div className="pt-2 flex items-center justify-between gap-2">
-                  <span className="font-mono text-base font-extrabold text-sky-400 drop-shadow-sm">
+                  <span className="font-mono text-[1rem] font-extrabold text-sky-400 drop-shadow-sm">
                     {cam.priceFormatted}
                   </span>
                   <a
@@ -634,7 +639,7 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
 
                   {/* Photo on Clean WHITE Background */}
                   <div
-                    onClick={() => setDetailProduct(cam)}
+                    onClick={() => openProduct(cam)}
                     className="relative w-full aspect-[4/3] rounded-lg bg-white border border-white/20 p-2 flex items-center justify-center shadow-sm overflow-hidden cursor-pointer"
                   >
                     <Image
@@ -649,7 +654,7 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                   {/* Name & SKU */}
                   <div className="flex flex-col gap-0.5 font-sans">
                     <h4
-                      onClick={() => setDetailProduct(cam)}
+                      onClick={() => openProduct(cam)}
                       className="font-extrabold text-xs text-white line-clamp-2 leading-snug cursor-pointer hover:text-amber-300"
                     >
                       {cam.name}
@@ -685,14 +690,6 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
           </div>
         </div>
       )}
-
-      {/* Product Specification Detail Modal */}
-      <ProductDetailModal
-        product={detailProduct}
-        onClose={() => setDetailProduct(null)}
-        isCompared={detailProduct ? selectedForCompare.includes(detailProduct.id) : false}
-        onToggleCompare={(id) => toggleCompare(id)}
-      />
     </div>
   );
 }

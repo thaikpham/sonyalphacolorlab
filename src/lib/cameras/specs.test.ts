@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import type { ProductSpecs, SonyCamera } from './types';
+import { SPEC_ROWS, type ProductSpecs, type SonyCamera } from './types';
 
 /**
  * The catalogue is scraped from Sony's own product pages, which vary in how
@@ -109,11 +109,33 @@ describe('spec label catalogue', () => {
 
   it('defines a label for every field any template renders', () => {
     // Nested below the namespace, so messages.test.ts cannot see these.
-    const rendered = readFileSync('src/components/product-detail-modal.tsx', 'utf8');
-    const keys = [...rendered.matchAll(/'(\w+)', /g)];
-    expect(keys.length).toBeGreaterThan(0);
     for (const field of new Set(withSpecs.flatMap((p) => valueFields(p.specs!).map(([k]) => k)))) {
       expect(en.cameras.specs, `no label for spec field "${field}"`).toHaveProperty(field);
+    }
+  });
+
+  /*
+   * This used to scrape the modal component for quoted keys, which asserted
+   * only that the file was non-empty — it kept passing when the row list drifted,
+   * and broke outright when the component moved. Both surfaces now read one
+   * exported SPEC_ROWS, so the ordering itself is what gets checked.
+   */
+  it('gives every row in SPEC_ROWS a label', () => {
+    for (const [kind, rows] of Object.entries(SPEC_ROWS)) {
+      for (const field of rows) {
+        expect(en.cameras.specs, `${kind} row "${field}" has no label`).toHaveProperty(field);
+      }
+    }
+  });
+
+  it('names only fields the specs of that kind actually carry', () => {
+    for (const [kind, rows] of Object.entries(SPEC_ROWS)) {
+      const sample = withSpecs.find((p) => p.specs!.kind === kind);
+      if (!sample) continue; // no product of this kind is extracted yet
+      for (const field of rows) {
+        expect(sample.specs, `${kind} row "${field}" is not a field of ${kind} specs`)
+          .toHaveProperty(field);
+      }
     }
   });
 });

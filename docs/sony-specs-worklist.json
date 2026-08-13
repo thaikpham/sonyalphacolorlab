@@ -5,7 +5,11 @@
     "category": "camera",
     "sku": "ILME-FX2B/Q AP2",
     "baseUrl": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilme-fx2",
-    "done": true
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilme-fx2/specifications",
+    "gaps": [
+      "battery"
+    ]
   },
   {
     "id": "sony-ilme-fx3a-q-ap2",
@@ -13,7 +17,11 @@
     "category": "camera",
     "sku": "ILME-FX3A/Q AP2",
     "baseUrl": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilme-fx3a",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilme-fx3a/specifications",
+    "gaps": [
+      "viewfinder"
+    ]
   },
   {
     "id": "sony-ilme-fx30b-qap2",
@@ -21,7 +29,11 @@
     "category": "camera",
     "sku": "ILME-FX30B/QAP2",
     "baseUrl": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilme-fx30",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilme-fx30/spec?sku=ILME-FX30B%2FQAP2",
+    "gaps": [
+      "viewfinder"
+    ]
   },
   {
     "id": "sony-ilme-fx5b-q-fs1",
@@ -29,7 +41,12 @@
     "category": "camera",
     "sku": "ILME-FX5B/Q FS1",
     "baseUrl": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilme-fx5",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilme-fx5/specifications",
+    "gaps": [
+      "video",
+      "viewfinder"
+    ]
   },
   {
     "id": "sony-ilme-fx6v-cap2",
@@ -37,7 +54,14 @@
     "category": "camera",
     "sku": "ILME-FX6V//CAP2",
     "baseUrl": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilme-fx6",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilme-fx6/spec?sku=ILME-FX6V%2F%2FCAP2",
+    "gaps": [
+      "autofocus",
+      "isoRange",
+      "stabilization",
+      "viewfinder"
+    ]
   },
   {
     "id": "sony-ilme-fr7-c-ap2",
@@ -45,7 +69,15 @@
     "category": "camera",
     "sku": "ILME-FR7//C AP2",
     "baseUrl": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilme-fr7",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilme-fr7/spec?sku=ILME-FR7%2F%2FC%20AP2",
+    "gaps": [
+      "battery",
+      "isoRange",
+      "lcd",
+      "stabilization",
+      "viewfinder"
+    ]
   },
   {
     "id": "sony-dsc-rx10m5bcap2",
@@ -53,7 +85,11 @@
     "category": "camera",
     "sku": "DSC-RX10M5BCAP2",
     "baseUrl": "https://www.sony.com.vn/image/362957ebe1ae1ad73023d9d982fb9065\nhttps://cdn.shopify.com/s/files/1/0298/6259/2571/files/rx10_1584xx1083.jpg\nhttps://www.sony.com.vn/image/5e4d898229914cea5916a78705ea53d2\nhttps://www.sony.com.vn/image/b0a8bee73b515a60d745a5e76985cb7e\nhttps://www.sony.com.vn/image/9ac0498af943d392023c5bc3b9c6407e\nhttps://www.sony.com.vn/image/d70d6edf99a281b0d01b870439c77d17\nhttps://www.sony.com.vn/image/afe5bb70f505c6e192463f69b12fa264\nhttps://www.sony.com.vn/image/83994fd0d9a1ae5030dfd884e10adbc3\nhttps://www.sony.com.vn/image/dc805ee12802447087cb2af33233dfbf\nhttps://www.sony.com.vn/image/df99388aa0669f984157aad1d223ae7b\nhttps://www.sony.com.vn/image/0336944679067bc10f8fd947cddf9080\nhttps://www.sony.com.vn/image/362957ebe1ae1ad73023d9d982fb9065\nhttps://cdn.shopify.com/s/files/1/0298/6259/2571/files/rx10_1584xx1083.jpg",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/may-anh-nho-gon-cyber-shot/dsc-rx10m5/specifications",
+    "gaps": [
+      "stabilization"
+    ]
   },
   {
     "id": "sony-dsc-rx100m7-e32",
@@ -61,7 +97,12 @@
     "category": "camera",
     "sku": "DSC-RX100M7/E32",
     "baseUrl": "https://www.sony.com.vn/image/7dfe1883c81b07329241249057a11fbc\nhttps://www.sony.com.vn/image/288004d76ab8ef84b7117ef3c81cc043\nhttps://www.sony.com.vn/image/9893c68cef112e7879dbd6187512ece3\nhttps://www.sony.com.vn/image/7b1fb76085e269e8b404f18b3b3d8ede\nhttps://www.sony.com.vn/image/171ea9762591e8772dab7e5b44054615\nhttps://www.sony.com.vn/image/1c3671332ccf05d68f7bc1a4b47d2722\nhttps://www.sony.com.vn/image/70ff53d5fe8b22cfe440480e4dcd6a04\nhttps://www.sony.com.vn/image/d80f0c50b3437c2f4ae48e2faa59d719\nhttps://www.sony.com.vn/image/cc518d644a5bc09852753a914dc56f40\nhttps://www.sony.com.vn/image/65f1858fbbccb080009b334435cf9515\nhttps://www.sony.com.vn/image/c0712b94b490e37fc8ed824613024666\nhttps://www.sony.com.vn/image/50b3c075fdab26a5959de4ab6af53d72\nhttps://www.sony.com.vn/image/7dfe1883c81b07329241249057a11fbc\nhttps://www.sony.com.vn/image/288004d76ab8ef84b7117ef3c81cc043\nhttps://www.sony.com.vn/image/34a902e4f30b7d9c4d495a471b393fd1\nhttps://www.sony.com.vn/image/52963ec2b2ce42f42253226a181e152f",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony-asia.com/electronics/cyber-shot-compact-cameras/dsc-rx100m7/specifications",
+    "gaps": [
+      "isoRange",
+      "lensMount"
+    ]
   },
   {
     "id": "sony-dsc-rx1rm3-ap2",
@@ -69,7 +110,12 @@
     "category": "camera",
     "sku": "DSC-RX1RM3  AP2",
     "baseUrl": "https://www.sony.com.vn/image/4db5cb1fcf964dacb55b61345f5d18a9\nhttps://www.sony.com.vn/image/55c9750638da41243ec4c637bb58fb62\nhttps://www.sony.com.vn/image/c8e8ed6e297f1d54cae82066965b39b2\nhttps://www.sony.com.vn/image/b34614591d297013be001e1cfe50761a\nhttps://www.sony.com.vn/image/109821866b6c59b694b70d2206e1d485\nhttps://www.sony.com.vn/image/a6db2f0b5e8d23770eed1a28c5339ef6\nhttps://www.sony.com.vn/image/0e713f0e10255d12067dfdbfb8538573\nhttps://www.sony.com.vn/image/210addc6678b4423afa0c9444288a502\nhttps://www.sony.com.vn/image/4db5cb1fcf964dacb55b61345f5d18a9\nhttps://www.sony.com.vn/image/9fa79e6e274fcd2d56954c5a6bb50025\nhttps://www.sony.com.vn/image/4db5cb1fcf964dacb55b61345f5d18a9\nhttps://www.sony.com.vn/image/55c9750638da41243ec4c637bb58fb62",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony-asia.com/electronics/cyber-shot-compact-cameras/dsc-rx1rm2/specifications",
+    "gaps": [
+      "lensMount",
+      "stabilization"
+    ]
   },
   {
     "id": "sony-selp1020g-csyx",
@@ -77,7 +123,11 @@
     "category": "lens",
     "sku": "SELP1020G//CSYX",
     "baseUrl": "https://www.sony.com.vn/permalink/product/selp1020g",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/lenses/products/selp1020g/spec?sku=SELP1020G%2F%2FCSYX",
+    "gaps": [
+      "stabilization"
+    ]
   },
   {
     "id": "sony-sel1655g-c-syx",
@@ -85,7 +135,11 @@
     "category": "lens",
     "sku": "SEL1655G//C SYX",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel1655g",
-    "done": true
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel1655g/specifications",
+    "gaps": [
+      "stabilization"
+    ]
   },
   {
     "id": "sony-selp18105g-ae",
@@ -93,7 +147,9 @@
     "category": "lens",
     "sku": "SELP18105G  AE",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/selp18105g",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/selp18105g/specifications",
+    "gaps": []
   },
   {
     "id": "sony-sel70350g-csyx",
@@ -101,7 +157,9 @@
     "category": "lens",
     "sku": "SEL70350G//CSYX",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel70350g",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel70350g/specifications",
+    "gaps": []
   },
   {
     "id": "sony-sel1224g-syx",
@@ -109,7 +167,12 @@
     "category": "lens",
     "sku": "SEL1224G    SYX",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel1224g",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel1224g/specifications",
+    "gaps": [
+      "filterDiameter",
+      "stabilization"
+    ]
   },
   {
     "id": "sony-sel16f18g-qsyx",
@@ -117,7 +180,11 @@
     "category": "lens",
     "sku": "SEL16F18G//QSYX",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel16f18g",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel16f18g/specifications",
+    "gaps": [
+      "stabilization"
+    ]
   },
   {
     "id": "sony-selp1635g-qsyx",
@@ -125,7 +192,12 @@
     "category": "lens",
     "sku": "SELP1635G//QSYX",
     "baseUrl": "https://www.sony.com.vn/lenses/products/selp1635g",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/lenses/products/selp1635g/spec?sku=SELP1635G%2F%2FQSYX",
+    "gaps": [
+      "dimensions",
+      "stabilization"
+    ]
   },
   {
     "id": "sony-selc1635g-syx",
@@ -133,7 +205,12 @@
     "category": "lens",
     "sku": "SELC1635G SYX",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/selc1635g",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/selc1635g/specifications",
+    "gaps": [
+      "filterDiameter",
+      "stabilization"
+    ]
   },
   {
     "id": "sony-sel1625g-z-syx",
@@ -141,7 +218,11 @@
     "category": "lens",
     "sku": "SEL1625G//Z SYX",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel1625g",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel1625g/specifications",
+    "gaps": [
+      "stabilization"
+    ]
   },
   {
     "id": "sony-sel20f18g-qsyx",
@@ -149,7 +230,12 @@
     "category": "lens",
     "sku": "SEL20F18G//QSYX",
     "baseUrl": "https://www.sony.com.vn/lenses/products/sel20f18g",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/lenses/products/sel20f18g/spec?sku=SEL20F18G%2F%2FQSYX",
+    "gaps": [
+      "dimensions",
+      "stabilization"
+    ]
   },
   {
     "id": "sony-sel2070g-q-syx",
@@ -157,7 +243,11 @@
     "category": "lens",
     "sku": "SEL2070G//Q SYX",
     "baseUrl": "https://www.sony.com.vn/permalink/product/sel2070g",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/lenses/products/sel2070g/spec?sku=SEL2070G%2F%2FQ%20SYX",
+    "gaps": [
+      "stabilization"
+    ]
   },
   {
     "id": "sony-sel200600g-csyx",
@@ -165,7 +255,9 @@
     "category": "lens",
     "sku": "SEL200600G/CSYX",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel200600g",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony-asia.com/electronics/camera-lenses/sel200600g/specifications",
+    "gaps": []
   },
   {
     "id": "sony-sel24f28g-csyx",
@@ -173,7 +265,11 @@
     "category": "lens",
     "sku": "SEL24F28G//CSYX",
     "baseUrl": "https://www.sony.com.vn/permalink/product/sel24f28g",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/lenses/products/sel24f28g/spec?sku=SEL24F28G%2F%2FCSYX",
+    "gaps": [
+      "stabilization"
+    ]
   },
   {
     "id": "sony-sel24105g-qsyx",
@@ -181,7 +277,9 @@
     "category": "lens",
     "sku": "SEL24105G//QSYX",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel24105g",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel24105g/specifications",
+    "gaps": []
   },
   {
     "id": "sony-sel2450g-z-syx",
@@ -189,7 +287,11 @@
     "category": "lens",
     "sku": "SEL2450G//Z SYX",
     "baseUrl": "https://www.sony.com.vn/lenses/products/sel2450g",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/lenses/products/sel2450g/spec?sku=SEL2450G%2F%2FZ%20SYX",
+    "gaps": [
+      "stabilization"
+    ]
   },
   {
     "id": "sony-selp28135g-csyx",
@@ -197,7 +299,9 @@
     "category": "lens",
     "sku": "SELP28135G/CSYX",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/selp28135g",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/selp28135g/specifications",
+    "gaps": []
   },
   {
     "id": "sony-sel40f25g-csyx",
@@ -205,7 +309,11 @@
     "category": "lens",
     "sku": "SEL40F25G//CSYX",
     "baseUrl": "https://www.sony.com.vn/lenses/products/sel40f25g",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/lenses/products/sel40f25g/spec?sku=SEL40F25G%2F%2FCSYX",
+    "gaps": [
+      "stabilization"
+    ]
   },
   {
     "id": "sony-sel400800g-csyx",
@@ -213,7 +321,9 @@
     "category": "lens",
     "sku": "SEL400800G/CSYX",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel400800g",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel400800g/specifications",
+    "gaps": []
   },
   {
     "id": "sony-sel50f25g-csyx",
@@ -221,7 +331,11 @@
     "category": "lens",
     "sku": "SEL50F25G//CSYX",
     "baseUrl": "https://www.sony.com.vn/permalink/product/sel50f25g",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/lenses/products/sel50f25g/spec?sku=SEL50F25G%2F%2FCSYX",
+    "gaps": [
+      "stabilization"
+    ]
   },
   {
     "id": "sony-sel70200g2-csyx",
@@ -229,7 +343,9 @@
     "category": "lens",
     "sku": "SEL70200G2/CSYX",
     "baseUrl": "https://www.sony.com.vn/lenses/products/sel70200g2",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/lenses/products/sel70200g2/spec?sku=SEL70200G2%2FCSYX",
+    "gaps": []
   },
   {
     "id": "sony-sel90m28g-qsyx",
@@ -237,7 +353,9 @@
     "category": "lens",
     "sku": "SEL90M28G//QSYX",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel90m28g",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel90m28g/specifications",
+    "gaps": []
   },
   {
     "id": "sony-sel100m28gmqsyx",
@@ -245,7 +363,9 @@
     "category": "lens",
     "sku": "SEL100M28GMQSYX",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel100m28gm",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony-asia.com/electronics/camera-lenses/sel100f28gm/specifications",
+    "gaps": []
   },
   {
     "id": "sony-sel100400mcqsyx",
@@ -253,7 +373,9 @@
     "category": "lens",
     "sku": "SEL100400MCQSYX",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel100400mc",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel100400mc/specifications",
+    "gaps": []
   },
   {
     "id": "sony-sel100400gm-syx",
@@ -261,7 +383,9 @@
     "category": "lens",
     "sku": "SEL100400GM SYX",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel100400gm",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel100400gm/specifications",
+    "gaps": []
   },
   {
     "id": "sony-sel100f28gm-syx",
@@ -269,7 +393,9 @@
     "category": "lens",
     "sku": "SEL100F28GM SYX",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel100f28gm",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel100f28gm/specifications",
+    "gaps": []
   },
   {
     "id": "sony-sel1224gm-jsyx",
@@ -277,7 +403,12 @@
     "category": "lens",
     "sku": "SEL1224GM//JSYX",
     "baseUrl": "https://www.sony.com.vn/permalink/product/sel1224gm",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/lenses/products/sel1224gm/spec?sku=SEL1224GM%2F%2FJSYX",
+    "gaps": [
+      "filterDiameter",
+      "stabilization"
+    ]
   },
   {
     "id": "sony-sel135f18gm-syx",
@@ -285,7 +416,11 @@
     "category": "lens",
     "sku": "SEL135F18GM SYX",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel135f18gm",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel135f18gm/specifications",
+    "gaps": [
+      "stabilization"
+    ]
   },
   {
     "id": "sony-sel14f18gm-jsyx",
@@ -293,7 +428,13 @@
     "category": "lens",
     "sku": "SEL14F18GM/JSYX",
     "baseUrl": "https://www.sony.com.vn/permalink/product/sel14f18gm",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/lenses/products/sel14f18gm/spec?sku=SEL14F18GM%2FJSYX",
+    "gaps": [
+      "dimensions",
+      "filterDiameter",
+      "stabilization"
+    ]
   },
   {
     "id": "sony-sel1635gm2-qsyx",
@@ -301,7 +442,11 @@
     "category": "lens",
     "sku": "SEL1635GM2/QSYX",
     "baseUrl": "https://www.sony.com.vn/lenses/products/sel1635gm2",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/lenses/products/sel1635gm2/spec?sku=SEL1635GM2%2FQSYX",
+    "gaps": [
+      "stabilization"
+    ]
   },
   {
     "id": "sony-sel2470gm2-qsyx",
@@ -309,7 +454,11 @@
     "category": "lens",
     "sku": "SEL2470GM2/QSYX",
     "baseUrl": "https://www.sony.com.vn/permalink/product/sel2470gm2",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/lenses/products/sel2470gm2/spec?sku=SEL2470GM2%2FQSYX",
+    "gaps": [
+      "stabilization"
+    ]
   },
   {
     "id": "sony-sel2470gm-qsyx",
@@ -317,7 +466,11 @@
     "category": "lens",
     "sku": "SEL2470GM//QSYX",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel2470gm",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel2470gm/specifications",
+    "gaps": [
+      "stabilization"
+    ]
   },
   {
     "id": "sony-sel24f14gm-syx",
@@ -325,7 +478,11 @@
     "category": "lens",
     "sku": "SEL24F14GM SYX",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel24f14gm",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel24f14gm/specifications",
+    "gaps": [
+      "stabilization"
+    ]
   },
   {
     "id": "sony-sel2870gm-qsyx",
@@ -333,7 +490,11 @@
     "category": "lens",
     "sku": "SEL2870GM//QSYX",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-e-mount/sel2870gm",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-e-mount/sel2870gm/specifications",
+    "gaps": [
+      "stabilization"
+    ]
   },
   {
     "id": "sony-sel300f28gm-syx",
@@ -341,7 +502,9 @@
     "category": "lens",
     "sku": "SEL300F28GM/SYX",
     "baseUrl": "https://www.sony.com.vn/lenses/products/sel300f28gm",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/lenses/products/sel300f28gm/spec?sku=SEL300F28GM%2FSYX",
+    "gaps": []
   },
   {
     "id": "sony-sel35f14gm-qsyx",
@@ -349,7 +512,11 @@
     "category": "lens",
     "sku": "SEL35F14GM/QSYX",
     "baseUrl": "https://www.sony.com.vn/permalink/product/sel35f14gm",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/lenses/products/sel35f14gm/spec?sku=SEL35F14GM%2FQSYX",
+    "gaps": [
+      "stabilization"
+    ]
   },
   {
     "id": "sony-sel50f14gm-jsyx",
@@ -357,7 +524,11 @@
     "category": "lens",
     "sku": "SEL50F14GM/JSYX",
     "baseUrl": "https://www.sony.com.vn/permalink/product/sel50f14gm",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony-asia.com/lenses/products/sel50f14gm/spec",
+    "gaps": [
+      "stabilization"
+    ]
   },
   {
     "id": "sony-sel50150gm-qsyx",
@@ -365,7 +536,11 @@
     "category": "lens",
     "sku": "SEL50150GM/QSYX",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel50150gm",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel50150gm/specifications",
+    "gaps": [
+      "stabilization"
+    ]
   },
   {
     "id": "sony-sel50f12gm-qsyx",
@@ -373,7 +548,11 @@
     "category": "lens",
     "sku": "SEL50F12GM/QSYX",
     "baseUrl": "https://www.sony.com.vn/permalink/product/sel50f12gm",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/lenses/products/sel50f12gm/spec?sku=SEL50F12GM%2FQSYX",
+    "gaps": [
+      "stabilization"
+    ]
   },
   {
     "id": "sony-sel600f40gmjsyx",
@@ -381,7 +560,9 @@
     "category": "lens",
     "sku": "SEL600F40GMJSYX",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel600f40gm",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel600f40gm/specifications",
+    "gaps": []
   },
   {
     "id": "sony-sel70200gm2qsyx",
@@ -389,7 +570,9 @@
     "category": "lens",
     "sku": "SEL70200GM2QSYX",
     "baseUrl": "https://www.sony.com.vn/lenses/products/sel70200gm2",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/lenses/products/sel70200gm2/spec?sku=SEL70200GM2QSYX",
+    "gaps": []
   },
   {
     "id": "sony-sel85f14gm-qsyx-mysonycarelens6mpackb",
@@ -397,7 +580,11 @@
     "category": "lens",
     "sku": "SEL85F14GM/QSYX+MYSONYCARELENS6MPACKB",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel85f14gm2",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel85f14gm/specifications",
+    "gaps": [
+      "stabilization"
+    ]
   },
   {
     "id": "sony-sel85f14gm-qsyx",
@@ -405,7 +592,11 @@
     "category": "lens",
     "sku": "SEL85F14GM/QSYX",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel85f14gm",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel85f14gm/specifications",
+    "gaps": [
+      "stabilization"
+    ]
   },
   {
     "id": "sony-ilce-1-bq-ap2",
@@ -413,7 +604,13 @@
     "category": "camera",
     "sku": "ILCE-1/BQ   AP2",
     "baseUrl": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-1",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-1/spec?sku=ILCE-1%2FBQ%20%20%20AP2",
+    "gaps": [
+      "battery",
+      "isoRange",
+      "video"
+    ]
   },
   {
     "id": "sony-ilce-1m2-bq-ap2",
@@ -421,7 +618,11 @@
     "category": "camera",
     "sku": "ILCE-1M2/BQ AP2",
     "baseUrl": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilce-1m2",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilce-1m2/specifications",
+    "gaps": [
+      "battery"
+    ]
   },
   {
     "id": "sony-ilce-6400-b-ap2",
@@ -429,7 +630,14 @@
     "category": "camera",
     "sku": "ILCE-6400/B AP2",
     "baseUrl": "https://www.sony.com.vn/permalink/product/ilce-6400",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-6400/spec?sku=ILCE-6400%2FB%20AP2",
+    "gaps": [
+      "battery",
+      "isoRange",
+      "stabilization",
+      "video"
+    ]
   },
   {
     "id": "sony-ilce-6700-bqap2",
@@ -437,7 +645,11 @@
     "category": "camera",
     "sku": "ILCE-6700/BQAP2",
     "baseUrl": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-6700",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-6700/spec?sku=ILCE-6700%2FBQAP2",
+    "gaps": [
+      "battery"
+    ]
   },
   {
     "id": "sony-ilce-7m3-bq-ap2",
@@ -445,7 +657,13 @@
     "category": "camera",
     "sku": "ILCE-7M3/BQ AP2",
     "baseUrl": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-7m3-body-kit",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-7m3-body-kit/spec?sku=ILCE-7M3%2FBQ%20AP2",
+    "gaps": [
+      "battery",
+      "isoRange",
+      "video"
+    ]
   },
   {
     "id": "sony-ilce-7m4-bq-ap2",
@@ -453,7 +671,13 @@
     "category": "camera",
     "sku": "ILCE-7M4/BQ AP2",
     "baseUrl": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-7m4",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-7m4/spec?sku=ILCE-7M4%2FBQ%20AP2",
+    "gaps": [
+      "battery",
+      "isoRange",
+      "video"
+    ]
   },
   {
     "id": "sony-ilce-7m5-bq-fs1",
@@ -461,7 +685,11 @@
     "category": "camera",
     "sku": "ILCE-7M5/BQ FS1",
     "baseUrl": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilce-7m5",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilce-7m5/specifications",
+    "gaps": [
+      "battery"
+    ]
   },
   {
     "id": "sony-ilce-7c-sq-ap2",
@@ -469,7 +697,13 @@
     "category": "camera",
     "sku": "ILCE-7C/SQ  AP2",
     "baseUrl": "https://www.sony.com.vn/permalink/product/ilce-7c",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-7c/spec?sku=ILCE-7C%2FSQ%20%20AP2",
+    "gaps": [
+      "battery",
+      "isoRange",
+      "video"
+    ]
   },
   {
     "id": "sony-ilce-7cm2-sqap2",
@@ -477,7 +711,11 @@
     "category": "camera",
     "sku": "ILCE-7CM2/SQAP2",
     "baseUrl": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-7cm2",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-7cm2/spec?sku=ILCE-7CM2%2FSQAP2",
+    "gaps": [
+      "battery"
+    ]
   },
   {
     "id": "sony-ilce-7cr-bq-ap2",
@@ -485,7 +723,11 @@
     "category": "camera",
     "sku": "ILCE-7CR/BQ AP2",
     "baseUrl": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-7cr",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-7cr/spec?sku=ILCE-7CR%2FBQ%20AP2",
+    "gaps": [
+      "battery"
+    ]
   },
   {
     "id": "sony-ilce-7rm3a-cap2",
@@ -493,7 +735,11 @@
     "category": "camera",
     "sku": "ILCE-7RM3A/CAP2",
     "baseUrl": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilce-7rm3a",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilce-7rm3a/specifications",
+    "gaps": [
+      "battery"
+    ]
   },
   {
     "id": "sony-ilce-7rm4a-qap2",
@@ -501,7 +747,11 @@
     "category": "camera",
     "sku": "ILCE-7RM4A/QAP2",
     "baseUrl": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilce-7rm4a",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilce-7rm4a/specifications",
+    "gaps": [
+      "battery"
+    ]
   },
   {
     "id": "sony-ilce-7rm5-bqap2",
@@ -509,7 +759,12 @@
     "category": "camera",
     "sku": "ILCE-7RM5/BQAP2",
     "baseUrl": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-7rm5",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-7rm5/spec?sku=ILCE-7RM5%2FBQAP2",
+    "gaps": [
+      "battery",
+      "video"
+    ]
   },
   {
     "id": "sony-ilce-7rm6-bqfs1",
@@ -517,7 +772,9 @@
     "category": "camera",
     "sku": "ILCE-7RM6/BQFS1",
     "baseUrl": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilce-7rm6",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilce-7rm6/specifications",
+    "gaps": []
   },
   {
     "id": "sony-ilce-7sm3-bqap2",
@@ -525,7 +782,13 @@
     "category": "camera",
     "sku": "ILCE-7SM3/BQAP2",
     "baseUrl": "https://www.sony.com.vn/permalink/product/ilce-7sm3",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-7sm3/spec?sku=ILCE-7SM3%2FBQAP2",
+    "gaps": [
+      "battery",
+      "isoRange",
+      "video"
+    ]
   },
   {
     "id": "sony-ilce-9m3-bq-ap2",
@@ -533,7 +796,11 @@
     "category": "camera",
     "sku": "ILCE-9M3/BQ AP2",
     "baseUrl": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-9m3",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-9m3/spec?sku=ILCE-9M3%2FBQ%20AP2",
+    "gaps": [
+      "battery"
+    ]
   },
   {
     "id": "sony-sel1018-c-ae",
@@ -541,7 +808,9 @@
     "category": "lens",
     "sku": "SEL1018//C  AE",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel1018",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel1018/specifications",
+    "gaps": []
   },
   {
     "id": "sony-sel11f18-c-syx",
@@ -549,7 +818,11 @@
     "category": "lens",
     "sku": "SEL11F18//C SYX",
     "baseUrl": "https://www.sony.com.vn/permalink/product/sel11f18",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/lenses/products/sel11f18/spec?sku=SEL11F18%2F%2FC%20SYX",
+    "gaps": [
+      "stabilization"
+    ]
   },
   {
     "id": "sony-sel15f14g-csyx",
@@ -557,7 +830,11 @@
     "category": "lens",
     "sku": "SEL15F14G//CSYX",
     "baseUrl": "https://www.sony.com.vn/permalink/product/sel15f14g",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/lenses/products/sel15f14g/spec?sku=SEL15F14G%2F%2FCSYX",
+    "gaps": [
+      "stabilization"
+    ]
   },
   {
     "id": "sony-sel18200le-syx",
@@ -565,7 +842,9 @@
     "category": "lens",
     "sku": "SEL18200LE  SYX",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel18200le",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel18200le/specifications",
+    "gaps": []
   },
   {
     "id": "sony-sel30m35-c-syx",
@@ -573,7 +852,11 @@
     "category": "lens",
     "sku": "SEL30M35//C SYX",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel30m35",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel30m35/specifications",
+    "gaps": [
+      "stabilization"
+    ]
   },
   {
     "id": "sony-sel35f18-c-syx",
@@ -581,7 +864,9 @@
     "category": "lens",
     "sku": "SEL35F18//C SYX",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel35f18",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel35f18/specifications",
+    "gaps": []
   },
   {
     "id": "sony-sel50f18-bc-syx",
@@ -589,7 +874,9 @@
     "category": "lens",
     "sku": "SEL50F18/BC SYX",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel50f18",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel50f18/specifications",
+    "gaps": []
   },
   {
     "id": "sony-sel24240-c-syx",
@@ -597,7 +884,9 @@
     "category": "lens",
     "sku": "SEL24240//C SYX",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel24240",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel24240/specifications",
+    "gaps": []
   },
   {
     "id": "sony-sel28f20-q-syx",
@@ -605,7 +894,11 @@
     "category": "lens",
     "sku": "SEL28F20//Q SYX",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel28f20-series",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel28f20-series/specifications",
+    "gaps": [
+      "stabilization"
+    ]
   },
   {
     "id": "sony-sel35f18f-csyx",
@@ -613,7 +906,11 @@
     "category": "lens",
     "sku": "SEL35F18F//CSYX",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel35f18f",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel35f18f/specifications",
+    "gaps": [
+      "stabilization"
+    ]
   },
   {
     "id": "sony-sel50f18f-csyx",
@@ -621,7 +918,11 @@
     "category": "lens",
     "sku": "SEL50F18F//CSYX",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel50f18f",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel50f18f/specifications",
+    "gaps": [
+      "stabilization"
+    ]
   },
   {
     "id": "sony-sel50m28-c-syx",
@@ -629,7 +930,11 @@
     "category": "lens",
     "sku": "SEL50M28//C SYX",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel50m28",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel50m28/specifications",
+    "gaps": [
+      "stabilization"
+    ]
   },
   {
     "id": "sony-sel85f18-syx",
@@ -637,7 +942,11 @@
     "category": "lens",
     "sku": "SEL85F18    SYX",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel85f18",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel85f18/specifications",
+    "gaps": [
+      "stabilization"
+    ]
   },
   {
     "id": "sony-sel14tc-q-syx",
@@ -645,7 +954,19 @@
     "category": "lens",
     "sku": "SEL14TC//Q  SYX",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel14tc",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel14tc/specifications",
+    "gaps": [
+      "angleOfView",
+      "apertureBlades",
+      "filterDiameter",
+      "focalLength",
+      "maxAperture",
+      "maxMagnification",
+      "minAperture",
+      "minFocusDistance",
+      "stabilization"
+    ]
   },
   {
     "id": "sony-sel20tc-q-syx",
@@ -653,7 +974,19 @@
     "category": "lens",
     "sku": "SEL20TC//Q  SYX",
     "baseUrl": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel20tc",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel20tc/specifications",
+    "gaps": [
+      "angleOfView",
+      "apertureBlades",
+      "filterDiameter",
+      "focalLength",
+      "maxAperture",
+      "maxMagnification",
+      "minAperture",
+      "minFocusDistance",
+      "stabilization"
+    ]
   },
   {
     "id": "sony-zv-1-wq-e32",
@@ -661,7 +994,13 @@
     "category": "camera",
     "sku": "ZV-1/WQ E32",
     "baseUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/slide5_Mobile_white\nhttps://cdn.shopify.com/s/files/1/0298/6259/2571/files/ZV-1.png\nhttps://cdn.shopify.com/s/files/1/0298/6259/2571/files/ZV-1_1_1_9860a3e5-15ab-47c1-9b61-d54e9d573aa6.png\nhttps://cdn.shopify.com/s/files/1/0298/6259/2571/files/3_60ba6fa4-5b8a-427d-8b8b-9f8bcc8c2e29.png\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/SEA_Localisation_1584_980_mobile\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/slide1_Mobile_white-1\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/slide3_1_Mobile_white\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/slide3_2_Mobile_white\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/slide4_Mobile_white-1\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/slide5_Mobile_white\nhttps://cdn.shopify.com/s/files/1/0298/6259/2571/files/ZV-1.png\nhttps://www.sony.com.vn/content/dam/sony/contents/global/cameras/compact-cameras/year2022/model-zv-1-migrated/product-summary/reddotwinner2021-100.jpg\nhttps://www.sony.com.vn/content/dam/sony/contents/global/cameras/compact-cameras/year2022/model-zv-1-migrated/product-summary/DesignAward2021-100.png\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/VN_1862_640_all_spans\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/primary_image\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-19\nhttps://www.sony.com/image/42e1383ea62c154f5fa8a65bd56f19a1\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-17\nhttps://www.sony.com/image/df480ae041307410b9aae9e3ecc4b502\nhttps://www.sony.com/image/a1c971f3f7dacdd2015af652a1eca2a2\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image_black-1\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/primary_image-2\nhttps://www.sony.com/image/94df45302e30919e157ef9aaa3b1dba6\nhttps://www.sony.com/image/593ee9bef1a5a280aa597a32b3eec684\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/primary_image-1\nhttps://www.sony.com/image/2ea19010a696190117f57f7a666e7230\nhttps://www.sony.com/image/52bc10e41acc5ec0326749525d4b265e\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-15\nhttps://www.sony.com/image/09c30323209c58ac8ebc7b2f6ae7fd8a\nhttps://www.sony.com/image/fa5e09f443737954476853d67fb65a13\nhttps://www.sony.com/image/97853a17952f240620b83732595b0e87\nhttps://www.sony.com/image/22e0aabe6ad2b57a55e5153c45ad9380",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony-asia.com/compact-cameras/products/zv-1/spec",
+    "gaps": [
+      "isoRange",
+      "lensMount",
+      "viewfinder"
+    ]
   },
   {
     "id": "sony-zv-1m2-wq-e32",
@@ -669,7 +1008,15 @@
     "category": "camera",
     "sku": "ZV-1M2/WQ   E32",
     "baseUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/SlideShow_10_Mobile\nhttps://cdn.shopify.com/s/files/1/0298/6259/2571/files/ZV-1ii.png\nhttps://cdn.shopify.com/s/files/1/0298/6259/2571/files/may-anh-sony-vlog-ong-kinh-roi_zv-1ii.jpg\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/SlideShow_2_Mobile-2\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/SlideShow_4_Mobile-2\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/SlideShow_6_Mobile-2\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/SlideShow_8_Mobile-2\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/SlideShow_10_Mobile\nhttps://cdn.shopify.com/s/files/1/0298/6259/2571/files/ZV-1ii.png\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/primary_image\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-19\nhttps://www.sony.com/image/42e1383ea62c154f5fa8a65bd56f19a1\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-17\nhttps://www.sony.com/image/df480ae041307410b9aae9e3ecc4b502\nhttps://www.sony.com/image/a1c971f3f7dacdd2015af652a1eca2a2\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image_black-1\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/primary_image-2\nhttps://www.sony.com/image/94df45302e30919e157ef9aaa3b1dba6\nhttps://www.sony.com/image/593ee9bef1a5a280aa597a32b3eec684\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/primary_image-1\nhttps://www.sony.com/image/2ea19010a696190117f57f7a666e7230\nhttps://www.sony.com/image/52bc10e41acc5ec0326749525d4b265e\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-15\nhttps://www.sony.com/image/09c30323209c58ac8ebc7b2f6ae7fd8a\nhttps://www.sony.com/image/fa5e09f443737954476853d67fb65a13\nhttps://www.sony.com/image/97853a17952f240620b83732595b0e87\nhttps://www.sony.com/image/22e0aabe6ad2b57a55e5153c45ad9380",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony-asia.com/compact-cameras/products/zv-1m2/spec",
+    "gaps": [
+      "battery",
+      "lensMount",
+      "stabilization",
+      "video",
+      "viewfinder"
+    ]
   },
   {
     "id": "sony-zv-1f-wq-e32",
@@ -677,7 +1024,13 @@
     "category": "camera",
     "sku": "ZV-1F/WQ    E32",
     "baseUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/slide12_Mobile\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/slide02_Mobile\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/slide04_Mobile\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/slide06_Mobile\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/slide08_Mobile\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/slide10_Mobile\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/slide12_Mobile\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/slide02_Mobile\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/primary_image\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-19\nhttps://www.sony.com/image/42e1383ea62c154f5fa8a65bd56f19a1\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-17\nhttps://www.sony.com/image/df480ae041307410b9aae9e3ecc4b502\nhttps://www.sony.com/image/a1c971f3f7dacdd2015af652a1eca2a2\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image_black-1\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/primary_image-2\nhttps://www.sony.com/image/94df45302e30919e157ef9aaa3b1dba6\nhttps://www.sony.com/image/593ee9bef1a5a280aa597a32b3eec684\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/primary_image-1\nhttps://www.sony.com/image/2ea19010a696190117f57f7a666e7230\nhttps://www.sony.com/image/52bc10e41acc5ec0326749525d4b265e\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-15\nhttps://www.sony.com/image/09c30323209c58ac8ebc7b2f6ae7fd8a\nhttps://www.sony.com/image/fa5e09f443737954476853d67fb65a13\nhttps://www.sony.com/image/97853a17952f240620b83732595b0e87\nhttps://www.sony.com/image/22e0aabe6ad2b57a55e5153c45ad9380",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony-asia.com/compact-cameras/products/zv-1f/spec",
+    "gaps": [
+      "isoRange",
+      "lensMount",
+      "viewfinder"
+    ]
   },
   {
     "id": "sony-zv-e1-bq-ap2",
@@ -685,7 +1038,15 @@
     "category": "camera",
     "sku": "ZV-E1/BQ    AP2",
     "baseUrl": "https://www.sony.com.vn/interchangeable-lens-cameras/products/zv-e1",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/interchangeable-lens-cameras/products/zv-e1/spec?sku=ZV-E1%2FBQ%20%20%20%20AP2",
+    "gaps": [
+      "battery",
+      "sensor",
+      "stabilization",
+      "viewfinder",
+      "weight"
+    ]
   },
   {
     "id": "sony-zv-e10-bq-ap2",
@@ -693,7 +1054,15 @@
     "category": "camera",
     "sku": "ZV-E10/BQ   AP2",
     "baseUrl": "https://www.sony.com.vn/interchangeable-lens-cameras/products/zv-e10",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony.com.vn/interchangeable-lens-cameras/products/zv-e10/spec?sku=ZV-E10%2FBQ%20%20%20AP2",
+    "gaps": [
+      "battery",
+      "isoRange",
+      "stabilization",
+      "video",
+      "viewfinder"
+    ]
   },
   {
     "id": "sony-zv-e10m2-bq-ap2",
@@ -701,7 +1070,14 @@
     "category": "camera",
     "sku": "ZV-E10M2/BQ AP2",
     "baseUrl": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/zv-e10m2",
-    "done": false
+    "done": true,
+    "specsSource": "https://www.sony-asia.com/electronics/interchangeable-lens-cameras/zv-e10m2/specifications",
+    "gaps": [
+      "battery",
+      "stabilization",
+      "viewfinder",
+      "weight"
+    ]
   },
   {
     "id": "sony-ecm-m1",

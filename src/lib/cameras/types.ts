@@ -1,3 +1,4 @@
+import type { LocalizedFeatures } from './features';
 export type ProductCategory = 'all' | 'camera' | 'lens' | 'accessory';
 
 /**
@@ -33,7 +34,6 @@ export interface CameraSpecs extends SpecProvenance {
   effectivePixels: string | null;
   /** Native range, with the expanded range in parentheses if published. */
   isoRange: string | null;
-  lensMount: string | null;
   /** Point count and system, e.g. "759 điểm phase-detection". */
   autofocus: string | null;
   /** Headline mode only, e.g. "4K 60p". */
@@ -53,7 +53,6 @@ export interface CameraSpecs extends SpecProvenance {
 
 export interface LensSpecs extends SpecProvenance {
   kind: 'lens';
-  lensMount: string | null;
   /** Coverage the lens is designed for: "Full-frame" | "APS-C". */
   format: string | null;
   focalLength: string | null;
@@ -89,6 +88,32 @@ export interface AccessorySpecs extends SpecProvenance {
 
 export type ProductSpecs = CameraSpecs | LensSpecs | AccessorySpecs;
 
+/**
+ * Row order for the spec tables, per category.
+ *
+ * It lives beside the types because it is the schema's reading order, and
+ * because two surfaces render it — the catalogue modal and the dedicated
+ * product route. They had drifted into separate hardcoded lists, so the route
+ * silently dropped every field the modal had and labelled the rest with
+ * Vietnamese strings inlined in JSX, outside `messages/*.json`. One list, one
+ * set of translated labels.
+ *
+ * Each entry is a key of the matching specs object and a key under
+ * `cameras.specs.*` in the message catalogues.
+ */
+export const SPEC_ROWS: Record<ProductSpecs['kind'], readonly string[]> = {
+  camera: [
+    'sensor', 'effectivePixels', 'isoRange', 'autofocus', 'video',
+    'stabilization', 'viewfinder', 'lcd', 'mediaSlots', 'battery', 'weight', 'dimensions',
+  ],
+  lens: [
+    'format', 'focalLength', 'maxAperture', 'minAperture', 'construction',
+    'angleOfView', 'minFocusDistance', 'maxMagnification', 'filterDiameter',
+    'apertureBlades', 'stabilization', 'weight', 'dimensions',
+  ],
+  accessory: ['compatibility', 'weight', 'dimensions'],
+} as const;
+
 export interface SonyCamera {
   id: string;
   sku: string;
@@ -101,7 +126,14 @@ export interface SonyCamera {
   priceFormatted: string;
   url: string;
   imageUrl: string;
-  features: string[];
+  /** Additional product photography, where the catalogue carries more than one shot. */
+  galleryUrls?: string[];
+  /**
+   * Marketing bullets. A flat array is English (the seed's shape); the admin UI
+   * writes `{ en, vi }`. Always read through `featureList()` — indexing this
+   * directly is what silently renders an object as `[object Object]`.
+   */
+  features: LocalizedFeatures;
   /** Absent until the product has been extracted from its official page. */
   specs?: ProductSpecs;
 }

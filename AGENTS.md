@@ -78,6 +78,19 @@ gamma/colour-mode names, WB values. These live in `constants.ts`, outside the
 message catalogues, so they cannot be translated by accident. Do not copy a
 technical label into a translation file to "make it easier".
 
+Product marketing bullets (camera & lens features in `data/sony-cameras.seed.json`)
+are stored as bilingual `{ en, vi }`. Technical terms (ED Elements, Aspherical Elements,
+Optical SteadyShot, Focus Hold Button, Full-Frame, APS-C, EVF, etc.) stay in
+their original form, while descriptive phrases follow standard Vietnamese phrasing:
+- `f/5.6 to f/8 Variable Aperture` → `Khẩu độ thay đổi từ f/5.6 đến f/8`
+- `150-600mm Equivalent on APS-C` → `150-600mm tương đương APS-C`
+- `Two ED Elements & Two Aspherical Elements` → `2 ED Elements & 2 Aspherical Elements`
+- `Focus Range Limiter & Focus Hold Button` → `Chức năng giới hạn khoảng lấy nét & Nút giữ lấy nét Focus Hold Button`
+- `Dust & Moisture-Resistant Design` → `Thiết kế chống bụi và chống ẩm`
+- `9-Blade Circular Diaphragm` → `Cấu tạo 9 lá khẩu tròn`
+
+Camera sensor specs (`specs.sensor`) are strictly formatted as `[sensor size] + [sensor model] + [sensor tech]` without physical dimensions in mm (e.g. `Full-Frame Exmor R CMOS BSI`, `APS-C Exmor R CMOS BSI`, `1"-Type Exmor RS Stacked CMOS`, `Full-Frame Exmor RS Global Shutter CMOS`).
+
 **Every user-visible string goes in `messages/*.json`.** Not a literal in JSX,
 not a `locale === 'vi' ? … : …` ternary. Both spellings hide copy from the parity
 test, and the failure is one-directional and silent: a Vietnamese literal renders

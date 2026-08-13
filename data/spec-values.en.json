@@ -1,0 +1,145 @@
+{
+  "$comment": [
+    "English renderings for the Vietnamese words that appear inside spec VALUES.",
+    "",
+    "The seed is extracted from Sony Vietnam's specification pages, so a value",
+    "keeps that page's wording and punctuation — see the Do/Don't table in",
+    "docs/HANDOVER-sony-product-specs.md. Numbers, units and Sony's decimal",
+    "comma are language-neutral and are never touched here; only the words are.",
+    "",
+    "Keyed by FIELD, because the same word is not the same word in two rows:",
+    "`điểm` is autofocus POINTS under `autofocus` and screen DOTS under `lcd`",
+    "and `viewfinder`. A global dictionary would silently mistranslate one of",
+    "them, so there is no global dictionary.",
+    "",
+    "`literals` is an exact whole-value match and wins over `replace`.",
+    "`replace` is an ordered list of substring swaps — longest first, because",
+    "`triệu điểm` has to be spent before `điểm` can match inside it.",
+    "",
+    "Vietnamese is the canonical value. This file only renders it for `en`."
+  ],
+  "sensor": {
+    "literals": {
+      "hình ảnh CMOS full-frame 35 mm một chip": "Single-chip 35 mm full-frame CMOS image sensor"
+    }
+  },
+  "autofocus": {
+    "replace": [
+      [
+        "điểm",
+        "points"
+      ]
+    ]
+  },
+  "viewfinder": {
+    "replace": [
+      [
+        "điểm ảnh",
+        "dots"
+      ],
+      [
+        "điểm",
+        "dots"
+      ]
+    ]
+  },
+  "lcd": {
+    "replace": [
+      [
+        "TFT rộng",
+        "Wide TFT"
+      ],
+      [
+        "triệu điểm",
+        "million dots"
+      ],
+      [
+        "điểm",
+        "dots"
+      ]
+    ]
+  },
+  "isoRange": {
+    "replace": [
+      [
+        "mở rộng",
+        "expanded"
+      ]
+    ]
+  },
+  "battery": {
+    "replace": [
+      [
+        "phút",
+        "min"
+      ],
+      [
+        "ảnh",
+        "shots"
+      ]
+    ]
+  },
+  "weight": {
+    "replace": [
+      [
+        "có pin và thẻ nhớ",
+        "with battery and card"
+      ],
+      [
+        "chỉ tính thân máy",
+        "body only"
+      ],
+      [
+        "chỉ thân máy",
+        "body only"
+      ],
+      [
+        "Không có đế gắn chân máy",
+        "without tripod mount"
+      ]
+    ]
+  },
+  "stabilization": {
+    "literals": {
+      "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục": "Image sensor-shift mechanism with 5-axis compensation",
+      "Chống rung quang học SteadyShot": "Optical SteadyShot",
+      "Không hỗ trợ (hỗ trợ ổn định hình ảnh bằng ống kính)": "Not supported (lens-based stabilisation supported)"
+    }
+  },
+  "construction": {
+    "replace": [
+      [
+        "thành phần",
+        "elements"
+      ],
+      [
+        "nhóm",
+        "groups"
+      ]
+    ]
+  },
+  "minFocusDistance": {
+    "replace": [
+      [
+        "ở vị trí",
+        "at position"
+      ],
+      [
+        "Rộng",
+        "Wide"
+      ],
+      [
+        "rộng",
+        "wide"
+      ]
+    ]
+  },
+  "apertureBlades": {
+    "replace": [
+      [
+        "khẩu tròn",
+        "circular"
+      ]
+    ]
+  }
+}

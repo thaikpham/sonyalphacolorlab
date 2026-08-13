@@ -130,7 +130,7 @@ export default async function RecipePage({
                 {title}
               </h1>
 
-              <p className="mt-4 whitespace-pre-line leading-relaxed text-ink-muted text-base sm:text-lg">
+              <p className="mt-4 whitespace-pre-line leading-relaxed text-ink-muted text-[1rem] sm:text-lg">
                 {recipe.description}
               </p>
 

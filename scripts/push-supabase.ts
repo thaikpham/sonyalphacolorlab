@@ -15,6 +15,7 @@ import { readFileSync } from 'node:fs';
 import { adminClient } from './lib/db';
 import { recipeSchema } from '../src/lib/camera/schema';
 import { toRow } from '../src/lib/recipes/row';
+import type { SonyCamera } from '../src/lib/cameras/types';
 
 type SeedRecipe = { legacyId: string } & Record<string, unknown>;
 type SeedTranslation = { recipeId: string; locale: string; description: string };
@@ -28,6 +29,7 @@ const images = JSON.parse(readFileSync('data/images.seed.json', 'utf8')) as {
   storagePath: string;
   sort: number;
 }[];
+const cameras = JSON.parse(readFileSync('data/sony-cameras.seed.json', 'utf8')) as SonyCamera[];
 
 async function main() {
   // Validate everything before touching the database. A partial write is worse
@@ -77,11 +79,41 @@ async function main() {
     console.log(`✓ ${imageRows.length} image links upserted`);
   }
 
+  // Keep the product catalogue in the same remote database as its admin editor.
+  // Like recipes, this is deliberately upsert-only: deleting a product must be
+  // an explicit administrative action, never an incidental seed sync.
+  const cameraRows = cameras.map((camera) => ({
+    id: camera.id,
+    sku: camera.sku,
+    name: camera.name,
+    full_name: camera.fullName,
+    category: camera.category,
+    sub_category_1: camera.subCategory1,
+    sub_category_2: camera.subCategory2,
+    price_vnd: camera.priceVnd,
+    price_formatted: camera.priceFormatted,
+    url: camera.url,
+    image_url: camera.imageUrl,
+    features: camera.features,
+    specs: camera.specs,
+  }));
+  const { error: cameraError } = await db
+    .from('sony_cameras')
+    .upsert(cameraRows, { onConflict: 'id' });
+  if (cameraError) throw new Error(`sony_cameras upsert: ${cameraError.message}`);
+  console.log(`✓ ${cameraRows.length} products upserted`);
+
   const { count, error: countError } = await db
     .from('recipes')
     .select('id', { count: 'exact', head: true });
   if (countError) throw new Error(`verify: ${countError.message}`);
   console.log(`✓ ${count} recipes now in Supabase`);
+
+  const { count: cameraCount, error: cameraCountError } = await db
+    .from('sony_cameras')
+    .select('id', { count: 'exact', head: true });
+  if (cameraCountError) throw new Error(`verify sony_cameras: ${cameraCountError.message}`);
+  console.log(`✓ ${cameraCount} products now in Supabase`);
 }
 
 main().catch((e: unknown) => {

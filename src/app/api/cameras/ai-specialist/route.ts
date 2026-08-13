@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { getSonyCameras } from '@/lib/cameras/data';
+import { featureList } from '@/lib/cameras/features';
 
 const MODEL = 'claude-sonnet-5';
 
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
       const productsSummary = selectedProducts
         .map(
           (p) =>
-            `- Name: ${p.name} (${p.fullName})\n  SKU: ${p.sku}\n  Category: ${p.category}\n  Format/Sensor: ${p.subCategory1}\n  Series: ${p.subCategory2}\n  Price: ${p.priceFormatted}\n  Features: ${p.features.join('; ')}`,
+            `- Name: ${p.name} (${p.fullName})\n  SKU: ${p.sku}\n  Category: ${p.category}\n  Format/Sensor: ${p.subCategory1}\n  Series: ${p.subCategory2}\n  Price: ${p.priceFormatted}\n  Features: ${featureList(p.features, locale).join('; ')}`,
         )
         .join('\n\n');
 
@@ -78,7 +79,7 @@ Keep your response structured (using bolding and bullet points), clear, concise,
         selectedProducts
           .map(
             (p) =>
-              `- **${p.name}** (${p.subCategory1} / ${p.subCategory2}): ${p.features.slice(0, 2).join('; ')}.`,
+              `- **${p.name}** (${p.subCategory1} / ${p.subCategory2}): ${featureList(p.features, locale).slice(0, 2).join('; ')}.`,
           )
           .join('\n') +
         `\n\n💡 *Lời khuyên từ Sony Specialist*: Tùy thuộc vào nhu cầu thực tế của bạn — nếu tập trung quay phim Vlogging/Cinema nên chọn dòng FX / ZV / Alpha hỗ trợ quay phim mạnh; nếu chụp ảnh thương mại độ phân giải cao nên ưu tiên dòng Alpha R hoặc Alpha 1.`
@@ -89,7 +90,7 @@ Keep your response structured (using bolding and bullet points), clear, concise,
         selectedProducts
           .map(
             (p) =>
-              `- **${p.name}** (${p.subCategory1}): ${p.features.slice(0, 2).join('; ')}.`,
+              `- **${p.name}** (${p.subCategory1}): ${featureList(p.features, locale).slice(0, 2).join('; ')}.`,
           )
           .join('\n');
 

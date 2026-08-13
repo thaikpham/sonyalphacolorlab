@@ -154,7 +154,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <GoogleMark className="w-5 h-5" />
-                  <h3 id="google-login-title" className="text-base font-bold text-white">
+                  <h3 id="google-login-title" className="text-[1rem] font-bold text-white">
                     {t('modalTitle')}
                   </h3>
                 </div>

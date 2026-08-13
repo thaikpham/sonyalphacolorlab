@@ -996,7 +996,7 @@ function EcosystemApp({
         </div>
       </div>
       <h4
-        className={`text-base sm:text-lg font-bold text-white transition-colors tracking-wide drop-shadow-md ${accent}`}
+        className={`text-[1rem] sm:text-lg font-bold text-white transition-colors tracking-wide drop-shadow-md ${accent}`}
       >
         {name}
       </h4>
