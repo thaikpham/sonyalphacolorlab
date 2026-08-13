@@ -5,20 +5,42 @@ import { useTranslations } from 'next-intl';
 import { useAuth } from '@/components/auth-context';
 import { splitFeatures, needsTranslation } from '@/lib/cameras/features';
 import { SPEC_ROWS, type SonyCamera } from '@/lib/cameras/types';
-import { getSpecMeta, type SpecDataType } from '@/lib/cameras/spec-meta';
+import { getSpecMeta } from '@/lib/cameras/spec-meta';
 
-type Props = { products: SonyCamera[] };
-type Draft = { en: string; vi: string; specs: Record<string, string>; source: string };
+type Props = {
+  products: SonyCamera[];
+  initialTab?: 'di' | 'pe';
+};
+
+type Draft = {
+  name: string;
+  fullName: string;
+  imageUrl: string;
+  galleryUrls: string;
+  en: string;
+  vi: string;
+  specs: Record<string, string>;
+  source: string;
+};
 
 const asDraft = (p: SonyCamera): Draft => {
   const f = splitFeatures(p.features);
   const specs: Record<string, string> = {};
   const row = (p.specs ?? {}) as unknown as Record<string, string | null>;
   if (p.specs) for (const k of SPEC_ROWS[p.specs.kind]) specs[k] = row[k] ?? '';
-  return { en: f.en.join('\n'), vi: f.vi.join('\n'), specs, source: p.specs?.specsSource ?? '' };
+  return {
+    name: p.name ?? '',
+    fullName: p.fullName ?? '',
+    imageUrl: p.imageUrl ?? '',
+    galleryUrls: (p.galleryUrls ?? []).join('\n'),
+    en: f.en.join('\n'),
+    vi: f.vi.join('\n'),
+    specs,
+    source: p.specs?.specsSource ?? '',
+  };
 };
 
-const lines = (s: string) => s.split('\n').map((l) => l.trim()).filter(Boolean);
+const lines = (s?: string | null) => (s ?? '').split('\n').map((l) => l.trim()).filter(Boolean);
 
 const SUB1_OPTIONS: Record<'camera' | 'lens' | 'accessory', string[]> = {
   camera: ['Mirrorless Full-Frame', 'Mirrorless APS-C', 'Cinema Line', 'Compact', 'PTZ Camera'],
@@ -26,7 +48,7 @@ const SUB1_OPTIONS: Record<'camera' | 'lens' | 'accessory', string[]> = {
   accessory: ['Audio', 'Power', 'Grip & Mount', 'Adaptor'],
 };
 
-export function AdminEditor({ products: initialProducts }: Props) {
+export function AdminEditor({ products: initialProducts, initialTab }: Props) {
   const t = useTranslations('admin');
   const tSpec = useTranslations('cameras.specs');
   const { accessToken } = useAuth();
@@ -53,6 +75,8 @@ export function AdminEditor({ products: initialProducts }: Props) {
   const [products, setProducts] = useState<SonyCamera[]>(initialProducts);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [email, setEmail] = useState('');
+  const [adminRole, setAdminRole] = useState<'super' | 'di' | 'pe'>('super');
+  const [activeTab, setActiveTab] = useState<'di' | 'pe'>(initialTab ?? 'di');
   const [query, setQuery] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
@@ -75,6 +99,7 @@ export function AdminEditor({ products: initialProducts }: Props) {
   const [newPriceFormatted, setNewPriceFormatted] = useState('');
   const [newUrl, setNewUrl] = useState('');
   const [newImageUrl, setNewImageUrl] = useState('');
+  const [newGalleryUrls, setNewGalleryUrls] = useState('');
   const [newFeaturesEn, setNewFeaturesEn] = useState('');
   const [newFeaturesVi, setNewFeaturesVi] = useState('');
   const [createError, setCreateError] = useState('');
@@ -92,10 +117,15 @@ export function AdminEditor({ products: initialProducts }: Props) {
     (async () => {
       try {
         const res = await fetch('/api/admin/session', { headers: authed() });
-        const data = (await res.json()) as { isAdmin: boolean; email?: string };
+        const data = (await res.json()) as { isAdmin: boolean; email?: string; role?: 'super' | 'di' | 'pe' };
         if (!live) return;
         setIsAdmin(data.isAdmin);
         setEmail(data.email ?? '');
+        const role = data.role ?? 'super';
+        setAdminRole(role);
+        if (role === 'pe') setActiveTab('pe');
+        else if (role === 'di') setActiveTab('di');
+        else if (initialTab) setActiveTab(initialTab);
       } catch {
         if (live) setIsAdmin(false);
       }
@@ -110,13 +140,20 @@ export function AdminEditor({ products: initialProducts }: Props) {
     [products, selectedId],
   );
 
+  const categoryFiltered = useMemo(() => {
+    if (activeTab === 'di') {
+      return products.filter((p) => p.category !== 'audio');
+    }
+    return products.filter((p) => p.category === 'audio');
+  }, [products, activeTab]);
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return products;
-    return products.filter((p) =>
+    if (!q) return categoryFiltered;
+    return categoryFiltered.filter((p) =>
       [p.name, p.sku, p.fullName, p.category, p.subCategory1].some((v) => v.toLowerCase().includes(q)),
     );
-  }, [products, query]);
+  }, [categoryFiltered, query]);
 
   const select = (p: SonyCamera) => {
     setSelectedId(p.id);
@@ -163,18 +200,42 @@ export function AdminEditor({ products: initialProducts }: Props) {
     if (!draft || !selected) return;
     setBusy('saving');
     setStatus(null);
+
+    const galleryList = lines(draft.galleryUrls);
+    const primaryImg = draft.imageUrl.trim() || galleryList[0] || selected.imageUrl;
+
     try {
       const res = await fetch(`/api/admin/products/${encodeURIComponent(selected.id)}`, {
         method: 'PATCH',
         headers: authed(),
         body: JSON.stringify({
+          name: draft.name.trim() || selected.name,
+          fullName: draft.fullName.trim() || selected.fullName,
+          imageUrl: primaryImg,
+          galleryUrls: galleryList,
           features: { en: lines(draft.en), vi: lines(draft.vi) },
           ...(selected.specs ? { specs: { ...draft.specs, specsSource: draft.source } } : {}),
         }),
       });
       const data = (await res.json()) as { ok?: boolean; error?: string };
-      if (!res.ok || !data.ok) setStatus({ kind: 'err', msg: err(data.error ?? 'saveFailed') });
-      else setStatus({ kind: 'ok', msg: tSafe('saved', 'Đã lưu') });
+      if (!res.ok || !data.ok) {
+        setStatus({ kind: 'err', msg: err(data.error ?? 'saveFailed') });
+      } else {
+        setProducts((prev) =>
+          prev.map((p) =>
+            p.id === selected.id
+              ? {
+                  ...p,
+                  name: draft.name.trim() || p.name,
+                  fullName: draft.fullName.trim() || p.fullName,
+                  imageUrl: primaryImg,
+                  galleryUrls: galleryList,
+                }
+              : p,
+          ),
+        );
+        setStatus({ kind: 'ok', msg: tSafe('saved', 'Đã lưu') });
+      }
     } catch {
       setStatus({ kind: 'err', msg: err('saveFailed') });
     } finally {
@@ -197,6 +258,9 @@ export function AdminEditor({ products: initialProducts }: Props) {
 
     setBusy('creating');
     try {
+      const galleryList = lines(newGalleryUrls);
+      const primaryImg = newImageUrl.trim() || galleryList[0] || '/logo.png';
+
       const res = await fetch('/api/admin/products', {
         method: 'POST',
         headers: authed(),
@@ -210,7 +274,8 @@ export function AdminEditor({ products: initialProducts }: Props) {
           priceVnd: Number(newPriceVnd) || 0,
           priceFormatted: newPriceFormatted.trim(),
           url: newUrl.trim(),
-          imageUrl: newImageUrl.trim(),
+          imageUrl: primaryImg,
+          galleryUrls: galleryList,
           features: { en: lines(newFeaturesEn), vi: lines(newFeaturesVi) },
         }),
       });
@@ -231,6 +296,7 @@ export function AdminEditor({ products: initialProducts }: Props) {
         setNewPriceFormatted('');
         setNewUrl('');
         setNewImageUrl('');
+        setNewGalleryUrls('');
         setNewFeaturesEn('');
         setNewFeaturesVi('');
       }
@@ -307,6 +373,71 @@ export function AdminEditor({ products: initialProducts }: Props) {
         </div>
       </header>
 
+      {/* Category Division Navigation Tabs & Admin Role Badge */}
+      <div className="flex flex-wrap items-center justify-between gap-4 p-3.5 rounded-2xl bg-[#1c1d22] border border-white/15 shadow-lg">
+        {/* Category Switcher Tabs */}
+        <div className="flex items-center p-1 rounded-xl bg-black/70 border border-white/20 font-sans">
+          <button
+            type="button"
+            onClick={() => {
+              if (adminRole === 'pe') return;
+              setActiveTab('di');
+              setSelectedId(null);
+              setDraft(null);
+            }}
+            disabled={adminRole === 'pe'}
+            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all font-sans flex items-center gap-2 ${
+              activeTab === 'di'
+                ? 'bg-amber-400 text-black font-extrabold shadow-md'
+                : 'text-white/60 hover:text-white'
+            } ${adminRole === 'pe' ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
+            title={adminRole === 'pe' ? 'Tài khoản của bạn có quyền quản lý ngành hàng PE' : undefined}
+          >
+            <span>📷</span>
+            <span>DI · Digital Imaging (Máy ảnh & Ống kính)</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (adminRole === 'di') return;
+              setActiveTab('pe');
+              setSelectedId(null);
+              setDraft(null);
+            }}
+            disabled={adminRole === 'di'}
+            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all font-sans flex items-center gap-2 ${
+              activeTab === 'pe'
+                ? 'bg-cyan-400 text-black font-extrabold shadow-md'
+                : 'text-white/60 hover:text-white'
+            } ${adminRole === 'di' ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
+            title={adminRole === 'di' ? 'Tài khoản của bạn có quyền quản lý ngành hàng DI' : undefined}
+          >
+            <span>🎧</span>
+            <span>PE · Personal Entertainment (Âm thanh & Loa)</span>
+          </button>
+        </div>
+
+        {/* Role Badge */}
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/40 border border-white/10 font-mono text-xs">
+          <span className="text-white/60">Phân quyền:</span>
+          {adminRole === 'super' && (
+            <span className="px-2.5 py-1 rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/40 text-xs font-bold">
+              👑 SUPER DEV (Quản lý toàn bộ trang web)
+            </span>
+          )}
+          {adminRole === 'di' && (
+            <span className="px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold">
+              📷 DI ADMIN (Digital Imaging)
+            </span>
+          )}
+          {adminRole === 'pe' && (
+            <span className="px-2.5 py-1 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-xs font-bold">
+              🎧 PE ADMIN (Personal Entertainment)
+            </span>
+          )}
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
         {/* Product list */}
         <div className="lg:col-span-4 xl:col-span-3 flex flex-col gap-3 bg-[#1c1d22] p-4 rounded-2xl border border-white/15">
@@ -380,6 +511,109 @@ export function AdminEditor({ products: initialProducts }: Props) {
             </div>
           ) : (
             <>
+              {/* Product Basic Info & Gallery Images Section */}
+              <div className="bg-[#1c1d22] p-5 rounded-2xl border border-white/15 flex flex-col gap-4">
+                <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-3 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <h2 className="font-extrabold text-sm uppercase text-amber-300 font-mono tracking-wider">
+                      🏷️ {tSafe('basicInfoHeading', 'Tên sản phẩm & Bộ sưu tập ảnh')}
+                    </h2>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/10 text-white/80 uppercase">
+                      SKU: {selected.sku || 'N/A'}
+                    </span>
+                  </div>
+                  <span className="text-[0.65rem] text-slate-300 font-medium">
+                    {tSafe('basicInfoHint', 'Chỉnh sửa tên hiển thị, tên đầy đủ và danh sách URL ảnh minh họa.')}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Product Name Inputs */}
+                  <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-1">
+                      <label htmlFor="prod-name" className="font-mono text-[0.65rem] font-extrabold uppercase tracking-wider text-amber-300">
+                        {tSafe('nameLabel', 'Tên ngắn hiển thị (Name)')}
+                      </label>
+                      <input
+                        id="prod-name"
+                        type="text"
+                        value={draft.name}
+                        onChange={(e) => setDraft({ ...draft, name: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl bg-black/50 border border-white/20 text-white font-bold text-xs"
+                        placeholder="Ví dụ: FX3, WH-1000XM5, A7 IV..."
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                      <label htmlFor="prod-fullname" className="font-mono text-[0.65rem] font-extrabold uppercase tracking-wider text-amber-300">
+                        {tSafe('fullNameLabel', 'Tên đầy đủ chính thức (Full Name)')}
+                      </label>
+                      <input
+                        id="prod-fullname"
+                        type="text"
+                        value={draft.fullName}
+                        onChange={(e) => setDraft({ ...draft, fullName: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl bg-black/50 border border-white/20 text-white font-medium text-xs"
+                        placeholder="Ví dụ: Máy ảnh Sony Cinema Line FX3..."
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                      <label htmlFor="prod-imageurl" className="font-mono text-[0.65rem] font-extrabold uppercase tracking-wider text-sky-300">
+                        {tSafe('primaryImageLabel', 'URL ảnh đại diện chính (Primary Image URL)')}
+                      </label>
+                      <input
+                        id="prod-imageurl"
+                        type="text"
+                        value={draft.imageUrl}
+                        onChange={(e) => setDraft({ ...draft, imageUrl: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl bg-black/50 border border-white/20 text-white font-medium text-xs"
+                        placeholder="https://static.bhphoto.com/images/..."
+                      />
+                    </div>
+                  </div>
+
+                  {/* Gallery Image URLs Textarea */}
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <label htmlFor="prod-galleryurls" className="font-mono text-[0.65rem] font-extrabold uppercase tracking-wider text-sky-300">
+                        {tSafe('galleryUrlsLabel', 'Danh sách URL ảnh minh họa / Gallery (Mỗi URL 1 dòng)')}
+                      </label>
+                      <span className="text-[10px] font-mono text-slate-300 font-bold bg-white/10 px-2 py-0.5 rounded">
+                        {lines(draft.galleryUrls).length} {tSafe('photosCount', 'ảnh')}
+                      </span>
+                    </div>
+                    <textarea
+                      id="prod-galleryurls"
+                      value={draft.galleryUrls}
+                      onChange={(e) => setDraft({ ...draft, galleryUrls: e.target.value })}
+                      rows={6}
+                      className="w-full px-3 py-2 rounded-xl bg-black/50 border border-white/20 text-white font-mono text-xs leading-relaxed resize-y placeholder:text-slate-300"
+                      placeholder="https://static.bhphoto.com/images/images1000x1000/1.jpg&#10;https://static.bhphoto.com/images/images1000x1000/2.jpg"
+                    />
+                  </div>
+                </div>
+
+                {/* Live Thumbnail Preview Grid */}
+                {lines(draft.galleryUrls).length > 0 && (
+                  <div className="flex flex-col gap-2 mt-1 pt-3 border-t border-white/10">
+                    <span className="font-mono text-[0.65rem] font-extrabold uppercase tracking-wider text-slate-300">
+                      🖼️ {tSafe('galleryPreviewHeading', 'Xem trước ảnh minh họa trong Gallery:')}
+                    </span>
+                    <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin">
+                      {lines(draft.galleryUrls).map((url, idx) => (
+                        <div key={idx} className="relative group shrink-0 w-16 h-16 rounded-xl border border-white/20 overflow-hidden bg-black/60">
+                          <img src={url} alt={`Gallery thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+                          <span className="absolute bottom-0 inset-x-0 bg-black/75 text-[9px] font-mono text-white text-center py-0.5">
+                            #{idx + 1}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Features section */}
               <div className="bg-[#1c1d22] p-5 rounded-2xl border border-white/15 flex flex-col gap-4">
                 <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -849,14 +1083,25 @@ export function AdminEditor({ products: initialProducts }: Props) {
                   />
                 </div>
 
-                <div className="flex flex-col gap-1.5">
-                  <label className="font-bold text-white/90">{tSafe('imageUrlLabel', 'Link ảnh sản phẩm (Image CDN URL)')}</label>
+                <div className="flex flex-col gap-1.5 sm:col-span-2">
+                  <label className="font-bold text-white/90">{tSafe('imageUrlLabel', 'Link ảnh sản phẩm đại diện chính (Primary Image URL)')}</label>
                   <input
                     type="text"
                     value={newImageUrl}
                     onChange={(e) => setNewImageUrl(e.target.value)}
                     placeholder="/logo.png hoặc URL ảnh CDN"
                     className="w-full px-3 py-2 rounded-lg bg-black/60 border border-white/20 text-white text-xs"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5 sm:col-span-2">
+                  <label className="font-bold text-sky-300">{tSafe('galleryUrlsLabel', 'Danh sách URL ảnh minh họa / Gallery (Mỗi URL 1 dòng)')}</label>
+                  <textarea
+                    value={newGalleryUrls}
+                    onChange={(e) => setNewGalleryUrls(e.target.value)}
+                    rows={4}
+                    placeholder="https://static.bhphoto.com/images/1.jpg&#10;https://static.bhphoto.com/images/2.jpg"
+                    className="w-full px-3 py-2 rounded-lg bg-black/60 border border-white/20 text-white font-mono text-xs"
                   />
                 </div>
               </div>

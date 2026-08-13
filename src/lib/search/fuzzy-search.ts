@@ -16,34 +16,52 @@ export function normalizeSearchTerm(str: string): string {
     .replace(/[^a-z0-9]/g, '');
 }
 
-export function levenshteinDistance(a: string, b: string): number {
+/**
+ * Edit distance between two strings.
+ *
+ * Two rows rather than the full `b.length x a.length` matrix: each row depends
+ * only on the one above it, so the rest is garbage the moment it is written.
+ * This runs in the innermost loop of `calculateMatchScore`, which the predictive
+ * endpoint calls once per field per product on every keystroke — the matrix
+ * version allocated an array of arrays for each of those.
+ *
+ * `maxDistance` lets a caller that only cares about near-misses stop early. Once
+ * every cell in a row exceeds it the answer can no longer come back under it, so
+ * the return is simply *some* value above `maxDistance`, not the true distance.
+ */
+export function levenshteinDistance(a: string, b: string, maxDistance = Infinity): number {
+  if (a === b) return 0;
   if (a.length === 0) return b.length;
   if (b.length === 0) return a.length;
+  // One string cannot be reached from the other in fewer edits than the
+  // difference in their lengths, so this rejects most pairs without any work.
+  if (Math.abs(a.length - b.length) > maxDistance) return maxDistance + 1;
 
-  const matrix: number[][] = [];
-
-  for (let i = 0; i <= b.length; i++) {
-    matrix[i] = [i];
-  }
-  for (let j = 0; j <= a.length; j++) {
-    matrix[0][j] = j;
-  }
+  let prev = new Array<number>(a.length + 1);
+  let curr = new Array<number>(a.length + 1);
+  for (let j = 0; j <= a.length; j++) prev[j] = j;
 
   for (let i = 1; i <= b.length; i++) {
+    curr[0] = i;
+    const bCode = b.charCodeAt(i - 1);
+    let rowMin = curr[0];
     for (let j = 1; j <= a.length; j++) {
-      if (b.charAt(i - 1) === a.charAt(j - 1)) {
-        matrix[i][j] = matrix[i - 1][j - 1];
-      } else {
-        matrix[i][j] = Math.min(
-          matrix[i - 1][j - 1] + 1, // substitution
-          matrix[i][j - 1] + 1,     // insertion
-          matrix[i - 1][j] + 1,     // deletion
-        );
-      }
+      const cost = bCode === a.charCodeAt(j - 1) ? 0 : 1;
+      const v = Math.min(
+        prev[j - 1] + cost, // substitution
+        curr[j - 1] + 1,    // insertion
+        prev[j] + 1,        // deletion
+      );
+      curr[j] = v;
+      if (v < rowMin) rowMin = v;
     }
+    if (rowMin > maxDistance) return maxDistance + 1;
+    const swap = prev;
+    prev = curr;
+    curr = swap;
   }
 
-  return matrix[b.length][a.length];
+  return prev[a.length];
 }
 
 const COMMON_ALIASES: Record<string, string[]> = {
@@ -129,7 +147,7 @@ export function calculateMatchScore(query: string, fields: (string | undefined |
           matchedTokens += 1;
           break;
         } else if (qTok.length >= 3 && fTok.length >= 3) {
-          const dist = levenshteinDistance(qTok, fTok);
+          const dist = levenshteinDistance(qTok, fTok, 1);
           if (dist <= 1) {
             matchedTokens += 1;
             break;
@@ -147,7 +165,7 @@ export function calculateMatchScore(query: string, fields: (string | undefined |
     if (queryTokens.length === 1 && queryTokens[0].length >= 3) {
       for (const fTok of fieldTokens) {
         if (fTok.length >= 3 && Math.abs(fTok.length - queryTokens[0].length) <= 2) {
-          const dist = levenshteinDistance(queryTokens[0], fTok);
+          const dist = levenshteinDistance(queryTokens[0], fTok, 2);
           if (dist === 1) {
             maxScore = Math.max(maxScore, 65);
           } else if (dist <= 2 && (queryTokens[0].length >= 4 || fTok.length >= 4)) {

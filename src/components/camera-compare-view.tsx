@@ -10,7 +10,6 @@ import { featureList, splitFeatures } from '@/lib/cameras/features';
 import { translateSpecValue } from '@/lib/cameras/spec-values';
 import {
   type CompareTabId,
-  SPEC_SECTION_GROUPS,
   SPEC_ICONS,
   getSpecValue,
   isSpecDifferent,
@@ -34,6 +33,34 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
   const router = useRouter();
 
   const [activeIds, setActiveIds] = useState<string[]>(selectedIds);
+
+  /**
+   * The catalogue this view renders.
+   *
+   * Held in state because the two admin editors below write to it. They used to
+   * assign straight into the camera object — `camera.specs = data.specs` — and
+   * then force a repaint with `setActiveIds([...prev])`. That worked only by
+   * side effect: the new array identity invalidated the memo underneath, which
+   * re-read the object that had just been mutated behind React's back.
+   *
+   * It is also a prop, so the write landed in the Server Component's payload:
+   * the same array backs the RSC cache, and an edit that failed to persist
+   * still looked saved until a hard reload. Replacing one row immutably keeps
+   * every other row's identity stable, so nothing else re-renders either.
+   */
+  const [cameras, setCameras] = useState<SonyCamera[]>(initialCameras);
+  const [syncedCameras, setSyncedCameras] = useState<SonyCamera[]>(initialCameras);
+  if (syncedCameras !== initialCameras) {
+    // A navigation delivered a fresh catalogue; adopt it and drop local edits,
+    // which are already persisted server-side by the time they are visible.
+    setSyncedCameras(initialCameras);
+    setCameras(initialCameras);
+  }
+
+  /** Replaces one product, leaving every other row's identity untouched. */
+  const patchCamera = (id: string, patch: Partial<SonyCamera>) =>
+    setCameras((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
+
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [searchAddQuery, setSearchAddQuery] = useState('');
   const [activeTab, setActiveTab] = useState<CompareTabId>('all');
@@ -41,7 +68,25 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
 
   // Admin Spec Editor State
   const [isAdmin, setIsAdmin] = useState(false);
+  const [adminRole, setAdminRole] = useState<'super' | 'di' | 'pe'>('super');
   const [isAdminEditMode, setIsAdminEditMode] = useState(false);
+  /**
+   * Both conditions, everywhere an edit affordance is drawn.
+   *
+   * Deriving rather than gating on the toggle alone means the session check is
+   * the single source of truth: if it has not answered yet, or comes back
+   * negative, no pencil renders even when the toggle was somehow left on.
+   */
+  const canEditSpecs = isAdmin && isAdminEditMode;
+
+  const canEditCamera = (cam: SonyCamera) => {
+    if (!canEditSpecs) return false;
+    if (adminRole === 'super') return true;
+    if (adminRole === 'di') return cam.category !== 'audio';
+    if (adminRole === 'pe') return cam.category === 'audio';
+    return false;
+  };
+
   const [editingCell, setEditingCell] = useState<{
     camera: SonyCamera;
     specKey: string;
@@ -67,6 +112,7 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
         const data = await res.json();
         if (data.isAdmin) {
           setIsAdmin(true);
+          setAdminRole(data.role ?? 'super');
         }
       } catch {
         // Not admin or offline
@@ -112,9 +158,7 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
 
       const data = await res.json();
       if (res.ok && data.ok) {
-        editingFeaturesCamera.features = data.features;
-        setActiveIds((prev) => [...prev]);
-
+        patchCamera(editingFeaturesCamera.id, { features: data.features });
         setFeaturesSaveFeedback('✓ Đã lưu điểm nổi bật vào Supabase!');
         setTimeout(() => {
           setEditingFeaturesCamera(null);
@@ -156,11 +200,8 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
 
       const data = await res.json();
       if (res.ok && data.ok) {
-        // Update local camera object so UI reflects changes instantly
-        camera.specs = data.specs;
-        // Trigger re-render
-        setActiveIds((prev) => [...prev]);
-
+        // Reflect the saved value immediately, without a refetch.
+        patchCamera(camera.id, { specs: data.specs });
         setSaveFeedback('✓ Đã lưu thành công vào Supabase!');
         setTimeout(() => {
           setEditingCell(null);
@@ -193,8 +234,8 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
 
   // Selected camera objects
   const comparedCameras = useMemo(() => {
-    return initialCameras.filter((c) => activeIds.includes(c.id));
-  }, [initialCameras, activeIds]);
+    return cameras.filter((c) => activeIds.includes(c.id));
+  }, [cameras, activeIds]);
 
   const totalCols = useMemo(() => {
     return comparedCameras.length + (comparedCameras.length < 6 ? 2 : 1);
@@ -202,7 +243,7 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
 
   // Unselected cameras available to add
   const availableToAdd = useMemo(() => {
-    const remaining = initialCameras.filter((c) => !activeIds.includes(c.id));
+    const remaining = cameras.filter((c) => !activeIds.includes(c.id));
     if (!searchAddQuery.trim()) return remaining;
     const q = searchAddQuery.trim().toLowerCase();
     return remaining.filter(
@@ -211,7 +252,7 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
         c.sku.toLowerCase().includes(q) ||
         c.subCategory1.toLowerCase().includes(q),
     );
-  }, [initialCameras, activeIds, searchAddQuery]);
+  }, [cameras, activeIds, searchAddQuery]);
 
   const removeCamera = (id: string) => {
     const next = activeIds.filter((item) => item !== id);
@@ -479,20 +520,31 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
             <span>{onlyDiffs ? t('highlightDiffs') : t('showAllSpecs')}</span>
           </button>
 
-          {/* Admin Mode Toggle Button */}
-          <button
-            type="button"
-            onClick={() => setIsAdminEditMode((prev) => !prev)}
-            title="Bật/Tắt chế độ chỉnh sửa thông số Admin trực tiếp"
-            className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-2 border ${
-              isAdminEditMode
-                ? 'bg-cyan-500/25 text-cyan-300 border-cyan-400/70 ring-1 ring-cyan-400/50 shadow-lg shadow-cyan-500/20'
-                : 'bg-white/5 text-white/70 hover:text-white border-white/15 hover:bg-white/10'
-            }`}
-          >
-            <span>✏️</span>
-            <span>{isAdminEditMode ? 'Tắt sửa Admin' : 'Chỉnh sửa (Admin)'}</span>
-          </button>
+          {/* Admin Mode Toggle Button — only for a verified admin session.
+              `isAdmin` was fetched and then never read, so every visitor was
+              offered this toggle and could open the edit modals. The PATCH
+              route rejects them (`notAdmin`), so nothing leaked; what they got
+              was admin chrome that answered every save with an error. */}
+          {isAdmin && (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsAdminEditMode((prev) => !prev)}
+                title="Bật/Tắt chế độ chỉnh sửa thông số Admin trực tiếp"
+                className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center gap-2 border ${
+                  isAdminEditMode
+                    ? 'bg-cyan-500/25 text-cyan-300 border-cyan-400/70 ring-1 ring-cyan-400/50 shadow-lg shadow-cyan-500/20'
+                    : 'bg-white/5 text-white/70 hover:text-white border-white/15 hover:bg-white/10'
+                }`}
+              >
+                <span>✏️</span>
+                <span>{isAdminEditMode ? 'Tắt sửa Admin' : 'Chỉnh sửa (Admin)'}</span>
+              </button>
+              <span className="font-mono text-[11px] font-bold px-2.5 py-1 rounded-lg bg-black/50 border border-white/15 text-slate-200">
+                {adminRole === 'super' ? '👑 Super Dev' : adminRole === 'di' ? '📷 DI Admin' : '🎧 PE Admin'}
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -544,8 +596,9 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                           src={cam.imageUrl}
                           alt={cam.name}
                           fill
+                          // At most six columns side by side, so never wide.
+                          sizes="(max-width: 768px) 50vw, 16vw"
                           className="object-contain p-2 group-hover:scale-105 transition-transform"
-                          unoptimized
                         />
                       </div>
 
@@ -739,7 +792,7 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                       return (
                         <td key={cam.id} className="p-4 border-r border-white/10 w-[18rem] min-w-[18rem] align-top">
                           <div className="flex flex-col gap-2">
-                            {isAdminEditMode && (
+                            {canEditCamera(cam) && (
                               <button
                                 type="button"
                                 onClick={() => openFeaturesEditModal(cam)}
@@ -840,7 +893,7 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                                         {formattedVal}
                                       </span>
                                     </div>
-                                    {isAdminEditMode && (
+                                    {canEditCamera(cam) && (
                                       <button
                                         type="button"
                                         onClick={() => openEditModal(cam, specKey, t(`specs.${specKey}`))}
@@ -851,7 +904,7 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                                       </button>
                                     )}
                                   </div>
-                                ) : isAdminEditMode ? (
+                                ) : canEditCamera(cam) ? (
                                   <button
                                     type="button"
                                     onClick={() => openEditModal(cam, specKey, t(`specs.${specKey}`))}
@@ -1010,7 +1063,6 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                         width={40}
                         height={40}
                         className="object-contain"
-                        unoptimized
                       />
                     </div>
                     <div className="flex flex-col">

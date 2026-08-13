@@ -9,6 +9,7 @@ import { ProductCommunityDrawer } from '@/components/product-community-drawer';
 import { SUBREDDIT_HANDLE } from '@/lib/reddit/config';
 import { SiteHeader } from '@/components/site-header';
 import { ProductSpecTable } from '@/components/product-spec-table';
+import { ProductGalleryViewer } from '@/components/product-gallery-viewer';
 import { featureList } from '@/lib/cameras/features';
 
 export async function generateStaticParams() {
@@ -130,19 +131,11 @@ export default async function ProductDetailPage({
               out 221px tall against a 522px photo and `items-center` split the
               300px difference into dead space above and below it. */}
           <section className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-            <div className="lg:col-span-4 relative w-full aspect-[4/3] lg:aspect-auto lg:min-h-[18rem] rounded-2xl bg-white border border-white/20 p-5 shadow-xl overflow-hidden">
-              {/* One layer of padding. The wrapper's `p-6` and the image's own
-                  `p-4` used to compound, shrinking the body to ~45% of the card. */}
-              {/* The LCP element on this route: a third of the width on
-                  desktop, full width stacked. `priority` so it is not
-                  discovered late in the document. */}
-              <Image
-                src={product.imageUrl}
-                alt={product.name}
-                fill
-                sizes="(max-width: 1024px) 100vw, 33vw"
-                priority
-                className="object-contain p-2"
+            <div className="lg:col-span-4 w-full">
+              <ProductGalleryViewer
+                primaryImageUrl={product.imageUrl}
+                galleryUrls={product.galleryUrls}
+                productName={product.name}
               />
             </div>
 

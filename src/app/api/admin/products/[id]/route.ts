@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireAdmin, NOT_ADMIN } from '@/lib/auth/require-admin';
+import { requireAdmin, canManageCategory, NOT_ADMIN } from '@/lib/auth/require-admin';
 import { supabaseAdmin, isSupabaseConfigured } from '@/lib/supabase/server';
 import { getSonyCameraById } from '@/lib/cameras/data';
 import { SPEC_ROWS, type ProductSpecs } from '@/lib/cameras/types';
@@ -16,6 +16,10 @@ import { SPEC_ROWS, type ProductSpecs } from '@/lib/cameras/types';
  */
 
 type Body = {
+  name?: unknown;
+  fullName?: unknown;
+  imageUrl?: unknown;
+  galleryUrls?: unknown;
   specs?: Record<string, unknown>;
   features?: { en?: unknown; vi?: unknown };
 };
@@ -31,32 +35,26 @@ const asLines = (x: unknown): string[] =>
  * to stay the same shape, because `pull:supabase` writes one back into the
  * other and a stray key would survive into the file the tests read.
  */
-function sanitizeSpecs(input: Record<string, unknown>, existing: ProductSpecs): ProductSpecs {
+export function sanitizeSpecs(input: Record<string, unknown>, existing: ProductSpecs): ProductSpecs {
   const kind = existing.kind;
   const out: Record<string, unknown> = { ...existing };
-  const missing: string[] = [];
 
   for (const field of SPEC_ROWS[kind]) {
+    if (!(field in input)) continue;
     const raw = input[field];
-    if (raw === null || raw === undefined || (typeof raw === 'string' && raw.trim() === '')) {
+    if (raw === null || (typeof raw === 'string' && raw.trim() === '')) {
       out[field] = null;
-      missing.push(field);
       continue;
     }
     if (typeof raw !== 'string') continue;
-    /* Sony's own prose qualifiers, the ones `specs.test.ts` rejects. Stripping
-       them here means an admin pasting a row straight off the spec page gets a
-       clean value instead of a red test run later. */
     out[field] = raw.replace(/\b(Xấp xỉ|Khoảng)\s+/gi, '').trim().slice(0, 300);
   }
 
   if (typeof input.specsSource === 'string' && /^https?:\/\//.test(input.specsSource)) {
     out.specsSource = input.specsSource.trim().slice(0, 500);
   }
-  /* Derived, never accepted from the body: it must always describe the values
-     actually stored, and a client that sends a stale list would make a filled
-     row read as unpublished. */
-  out.specsMissing = missing.sort();
+
+  out.specsMissing = SPEC_ROWS[kind].filter((f) => out[f] === null || out[f] === undefined).sort();
   return out as unknown as ProductSpecs;
 }
 
@@ -70,6 +68,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const { id } = await params;
   const product = await getSonyCameraById(id);
   if (!product) return NextResponse.json({ error: 'notFound' }, { status: 404 });
+  if (!canManageCategory(admin.role, product.category)) {
+    return NextResponse.json({ error: 'notAllowedForCategory' }, { status: 403 });
+  }
 
   let body: Body;
   try {
@@ -82,6 +83,25 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     updated_at: new Date().toISOString(),
     updated_by: admin.email,
   };
+
+  if (typeof body.name === 'string' && body.name.trim()) {
+    update.name = body.name.trim().slice(0, 200);
+  }
+
+  if (typeof body.fullName === 'string' && body.fullName.trim()) {
+    update.full_name = body.fullName.trim().slice(0, 300);
+  }
+
+  if (typeof body.imageUrl === 'string' && body.imageUrl.trim()) {
+    update.image_url = body.imageUrl.trim().slice(0, 500);
+  }
+
+  if (Array.isArray(body.galleryUrls)) {
+    update.gallery_urls = body.galleryUrls
+      .filter((u): u is string => typeof u === 'string' && u.trim().length > 0)
+      .map((u) => u.trim())
+      .slice(0, 100);
+  }
 
   if (body.specs && typeof body.specs === 'object') {
     if (!product.specs) return NextResponse.json({ error: 'noSpecBlock' }, { status: 409 });

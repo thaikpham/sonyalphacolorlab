@@ -94,6 +94,7 @@ async function main() {
     price_formatted: camera.priceFormatted,
     url: camera.url,
     image_url: camera.imageUrl,
+    gallery_urls: camera.galleryUrls ?? [],
     features: camera.features,
     specs: camera.specs,
   }));

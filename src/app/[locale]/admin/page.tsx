@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { NextIntlClientProvider } from 'next-intl';
 import { getSonyCameras } from '@/lib/cameras/data';
+import { getSonyAudio } from '@/lib/audio/data';
 import { SiteHeader } from '@/components/site-header';
 import { AdminEditor } from '@/components/admin/admin-editor';
 
@@ -25,7 +26,7 @@ export default async function AdminPage({ params }: { params: Promise<{ locale: 
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const products = await getSonyCameras();
+  const products = [...(await getSonyCameras()), ...(await getSonyAudio())];
   const messages = await getMessages();
 
   /* Explicit namespaces, not the whole catalogue: the default ships every

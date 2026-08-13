@@ -41,10 +41,11 @@ function readSources(dir: string): string {
  * namespace would simply be invisible to this test.
  */
 function clientComponents(): string[] {
-  return readdirSync('src/components')
+  const componentSources = readdirSync('src/components')
     .filter((f) => f.endsWith('.tsx'))
-    .map((f) => readFileSync(`src/components/${f}`, 'utf8'))
-    .filter((src) => src.includes("'use client'"));
+    .map((f) => readFileSync(`src/components/${f}`, 'utf8'));
+
+  return [...componentSources, readSources('src/app')].filter((src) => src.includes("'use client'"));
 }
 
 /** Namespaces requested by any 'use client' component. */

@@ -14,6 +14,7 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "seed:emit": "tsx scripts/emit-seed.ts",
+    "doctor": "tsx scripts/doctor.ts",
     "tokens:emit": "tsx packages/colorlab-tokens/src/emit.ts",
     "//": "The gate. This is what CI runs and what a developer runs before assuming a change is safe. It chained two more `-w apps/*` gates while CheeseBooth and Sony Live SOP were workspaces here; they are their own repos now and gate themselves.",
     "verify": "npm run lint && npm run typecheck && npm run test",

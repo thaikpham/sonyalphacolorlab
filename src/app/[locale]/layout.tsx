@@ -4,6 +4,7 @@ import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { routing } from '@/i18n/routing';
 import { AuthProvider } from '@/components/auth-context';
+import { HtmlLang } from '@/components/html-lang';
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -46,6 +47,7 @@ export default async function LocaleLayout({
     auth: messages.auth,
     cameras: messages.cameras,
     community: messages.community,
+    error: messages.error,
     language: messages.language,
     nav: messages.nav,
     recipe: messages.recipe,
@@ -55,6 +57,9 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider messages={clientMessages}>
+      {/* `<html>` lives in the root layout, above this segment, so a soft
+          navigation between locales never re-renders its `lang`. */}
+      <HtmlLang />
       <AuthProvider>{children}</AuthProvider>
     </NextIntlClientProvider>
   );

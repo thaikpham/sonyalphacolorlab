@@ -521,42 +521,36 @@ export function CameraWikiView({ initialCameras, basePath = '/cameras' }: Camera
         </div>
       )}
 
-      {/* Floating Compare Action Overlay Layer (Pure Fixed Top Overlay with 7-Color Rainbow Glow) */}
+      {/* Floating Compare Action Overlay Dock (Fixed Bottom-Right Corner) */}
       {selectedForCompare.length > 0 && (
-        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 flex items-center justify-center animate-fade-in font-sans">
-          {/* 7-Color Spinning Rainbow Glow Layer */}
+        <div className="fixed bottom-6 right-6 z-[9990] flex items-center gap-2 animate-fade-in font-sans pb-safe pr-safe">
+          {/* 7-Color Rainbow Glow Layer */}
           <span aria-hidden className="rainbow-glow-bar" />
 
-          {/* Main Floating Glass Bar */}
-          <div className="relative z-10 bg-[#1c1d22]/95 px-6 py-4 rounded-2xl border-2 border-amber-400/80 shadow-[0_20px_60px_rgba(0,0,0,0.95)] flex items-center gap-6 backdrop-blur-2xl font-sans">
-            <div className="flex items-center gap-3">
-              <span className="text-xl">⚡</span>
-              <div className="flex flex-col">
-                <span className="text-sm font-extrabold text-white font-sans">
-                  {t('compareBarTitle', { count: selectedForCompare.length })}
-                </span>
-                <span className="text-xs text-white/70 hidden sm:inline font-sans">
-                  ({t('maxCompareHint')})
-                </span>
-              </div>
-            </div>
+          {/* Main Floating Compact Glass Dock */}
+          <div className="relative z-10 bg-[#14161b]/95 p-2 sm:p-2.5 rounded-2xl border-2 border-amber-400/80 shadow-[0_16px_40px_rgba(0,0,0,0.9)] flex items-center gap-2 sm:gap-3 backdrop-blur-2xl">
+            {/* Direct Open Compare Button */}
+            <button
+              type="button"
+              onClick={() => setIsConfirmModalOpen(true)}
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-black font-extrabold text-xs sm:text-sm hover:brightness-110 transition-all shadow-lg cursor-pointer flex items-center gap-2"
+            >
+              <span>⚡</span>
+              <span>{t('compareBtn')}</span>
+              <span className="bg-black/20 px-2 py-0.5 rounded-full text-xs font-mono font-bold">
+                {selectedForCompare.length}
+              </span>
+            </button>
 
-            <div className="flex items-center gap-3 font-sans">
-              <button
-                type="button"
-                onClick={() => setSelectedForCompare([])}
-                className="px-3 py-1.5 rounded-xl text-xs font-bold text-white/70 hover:text-white underline transition-colors cursor-pointer font-sans"
-              >
-                {t('clearCompare')}
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsConfirmModalOpen(true)}
-                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-black font-extrabold text-xs sm:text-sm hover:brightness-110 transition-all shadow-xl cursor-pointer font-sans scale-105"
-              >
-                ⚡ {t('compareBtn')} ({selectedForCompare.length})
-              </button>
-            </div>
+            {/* Clear Button */}
+            <button
+              type="button"
+              onClick={() => setSelectedForCompare([])}
+              title={t('clearCompare')}
+              className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 text-white/70 hover:text-white font-bold text-xs transition-colors cursor-pointer flex items-center justify-center border border-white/10"
+            >
+              ✕
+            </button>
           </div>
         </div>
       )}

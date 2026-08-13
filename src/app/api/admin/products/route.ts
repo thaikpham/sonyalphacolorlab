@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireAdmin, NOT_ADMIN } from '@/lib/auth/require-admin';
+import { requireAdmin, canManageCategory, NOT_ADMIN } from '@/lib/auth/require-admin';
 import { supabaseAdmin, isSupabaseConfigured } from '@/lib/supabase/server';
 import { SPEC_ROWS, type ProductSpecs, type SonyCamera } from '@/lib/cameras/types';
 
@@ -21,6 +21,7 @@ type CreateBody = {
   priceFormatted?: string;
   url?: string;
   imageUrl?: string;
+  galleryUrls?: unknown;
   features?: { en?: unknown; vi?: unknown };
   specs?: Record<string, unknown>;
 };
@@ -79,12 +80,18 @@ export async function POST(request: Request) {
   const name = (body.name ?? '').trim();
   const fullName = (body.fullName ?? name).trim();
   const category = body.category;
+  if (!category || !canManageCategory(admin.role, category)) {
+    return NextResponse.json({ error: 'notAllowedForCategory' }, { status: 403 });
+  }
   const subCategory1 = (body.subCategory1 ?? '').trim();
   const subCategory2 = (body.subCategory2 ?? '').trim();
   const priceVnd = typeof body.priceVnd === 'number' ? body.priceVnd : 0;
   const priceFormatted = (body.priceFormatted ?? '').trim() || (priceVnd > 0 ? `${priceVnd.toLocaleString('vi-VN')} ₫` : 'Liên hệ');
   const url = (body.url ?? '').trim() || 'https://www.sony.com.vn';
   const imageUrl = (body.imageUrl ?? '').trim() || '/logo.png';
+  const galleryUrls = Array.isArray(body.galleryUrls)
+    ? body.galleryUrls.filter((u): u is string => typeof u === 'string' && u.trim().length > 0).map((u) => u.trim())
+    : [imageUrl].filter((u) => u && u !== '/logo.png');
 
   if (!sku || !name || !category || !subCategory1) {
     return NextResponse.json({ error: 'badRequest' }, { status: 400 });
@@ -116,6 +123,7 @@ export async function POST(request: Request) {
     priceFormatted,
     url,
     imageUrl,
+    galleryUrls,
     features,
     specs,
   };
@@ -132,6 +140,7 @@ export async function POST(request: Request) {
     price_formatted: newProduct.priceFormatted,
     url: newProduct.url,
     image_url: newProduct.imageUrl,
+    gallery_urls: newProduct.galleryUrls,
     features: newProduct.features,
     specs: newProduct.specs,
     created_at: new Date().toISOString(),

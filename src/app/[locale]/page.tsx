@@ -1,60 +1,60 @@
+import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { SiteStructuredData } from '@/components/structured-data';
-import { RecipeCard } from '@/components/recipe-card';
-import { SiteHeader } from '@/components/site-header';
-import { Link } from '@/i18n/navigation';
+import { LauncherGrid } from '@/components/launcher-grid';
 import type { Locale } from '@/i18n/routing';
-import { listRecipes, listTags } from '@/lib/recipes/source';
+import { ECOSYSTEM_APPS } from '@/lib/ecosystem';
 
-export default async function Home({
+export async function generateMetadata({
   params,
-  searchParams,
 }: {
   params: Promise<{ locale: Locale }>;
-  searchParams: Promise<{ format?: string; look?: string; tag?: string; q?: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'launcher' });
+  return { title: t('title'), description: t('subtitle') };
+}
+
+/**
+ * The launcher — the landing page for the whole ecosystem.
+ *
+ * Deliberately without the site header and footer. Every other route carries
+ * that chrome because it is a place inside one app; this is the doorway to four
+ * of them, and a header advertising one of the four would be picking a winner
+ * before the reader has chosen. The tiles are the only navigation.
+ *
+ * A Server Component, and so is `EcosystemApp`, so the page itself contributes
+ * no client JavaScript — only the layout's `AuthProvider` does. The entrance
+ * stagger and hover glow are CSS (`app-enter-*`, `app-glow` in the VFX
+ * stylesheet), so none of it needs hydration to move.
+ *
+ * The recipe catalogue that used to live here is at `/colorlab`.
+ */
+export default async function LauncherPage({
+  params,
+}: {
+  params: Promise<{ locale: Locale }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-
-  const sp = await searchParams;
-  const format = sp.format === 'pp' || sp.format === 'cl' ? sp.format : undefined;
-
-  const [t, all, recipes, tags] = await Promise.all([
-    getTranslations('home'),
-    listRecipes(locale),
-    listRecipes(locale, { format, look: sp.look, tag: sp.tag, q: sp.q }),
-    listTags(),
-  ]);
+  const t = await getTranslations('launcher');
 
   return (
-    <>
-      <SiteHeader tags={tags} />
-      <SiteStructuredData locale={locale} />
+    /* `100dvh`, never `100vh` — mobile browser chrome makes `vh` overshoot and
+       would push the bottom row under the address bar. `overflow-y-auto` so a
+       short landscape phone can still reach the fourth tile rather than having
+       it clipped. */
+    <main className="relative flex min-h-[100dvh] w-full flex-col items-center justify-center overflow-y-auto inset-safe px-6 py-14 sm:px-10">
+      {/* The tiles are the page. No visible title, no tagline, no rule — the
+          four icons say what this is faster than a heading does.
+          `sr-only`, not deleted: a page with four `h2`s and no `h1` fails axe,
+          and this is the only text a screen reader or a search result has to go
+          on. Same device the recipe grid uses for its own heading. */}
+      <h1 className="sr-only">{t('title')}</h1>
 
-      <main className="mx-auto w-full max-w-[160rem] flex-1 inset-safe pt-4 pb-24 px-4 sm:px-6 lg:px-8">
-        <h1 className="sr-only">Alpha ColorLab — Sony Alpha Colour Recipes</h1>
+      {/* Two by two at every size. Four tiles read as a grid, not a list, and a
+          single column on a phone would put the last one two screens down. */}
+      <LauncherGrid size="lg" />
 
-        {recipes.length === 0 ? (
-          <p className="py-20 text-center text-ink-muted">
-            {t('emptyTitle')}{' '}
-            <Link href="/" className="text-ink underline underline-offset-4">
-              {t('emptyAction')}
-            </Link>{' '}
-            {t('emptyTail', { total: all.length })}
-          </p>
-        ) : (
-          <>
-            <h2 className="sr-only">{t('resultCount', { count: recipes.length })}</h2>
-            <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 3xl:grid-cols-5 4xl:grid-cols-6">
-              {recipes.map((r) => (
-                <li key={r.id}>
-                  <RecipeCard recipe={r} />
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
-      </main>
-    </>
+    </main>
   );
 }

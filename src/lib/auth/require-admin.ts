@@ -22,11 +22,44 @@ import { requireUser, type AuthedUser } from './require-user';
  * address is not an admin" is itself a disclosure.
  */
 
-export async function requireAdmin(request: Request): Promise<AuthedUser | null> {
-  if (!isSupabaseConfigured()) return null;
+export type AdminRole = 'super' | 'di' | 'pe';
+
+export type AdminUser = AuthedUser & {
+  role: AdminRole;
+};
+
+const HARDCODED_ADMINS: Record<string, AdminRole> = {
+  'thaikphams@gmail.com': 'super',
+  'thaikpham.art@gmail.com': 'super',
+  'trungnguyen.fwr@gmail.com': 'di',
+  'nghiemtrancong.sony@gmail.com': 'pe',
+};
+
+export function canManageCategory(role: AdminRole, category: string): boolean {
+  if (role === 'super') return true;
+  if (role === 'di') return category !== 'audio';
+  if (role === 'pe') return category === 'audio';
+  return false;
+}
+
+export async function requireAdmin(request: Request): Promise<AdminUser | null> {
+  // In offline local development mode without Supabase env vars, provide a local dev admin session
+  if (!isSupabaseConfigured()) {
+    if (process.env.NODE_ENV === 'development') {
+      return {
+        email: 'thaikphams@gmail.com',
+        name: 'Thái K. Phạm (Dev)',
+        avatarUrl: null,
+        role: 'super',
+      };
+    }
+    return null;
+  }
 
   const user = await requireUser(request);
   if (!user?.email) return null;
+
+  const normalizedEmail = user.email.toLowerCase();
 
   try {
     /* Compared lowercased: Supabase stores the address as the provider sent it,
@@ -34,15 +67,24 @@ export async function requireAdmin(request: Request): Promise<AuthedUser | null>
        lowercased is not enough on its own — the JWT side has to be folded too. */
     const { data, error } = await supabaseAdmin()
       .from('admin_emails')
-      .select('email')
-      .eq('email', user.email.toLowerCase())
+      .select('email, role')
+      .eq('email', normalizedEmail)
       .maybeSingle();
 
-    if (error || !data) return null;
-    return user;
+    if (!error && data) {
+      const role = (data.role as AdminRole) || 'super';
+      return { ...user, role };
+    }
   } catch {
-    return null;
+    // Ignore query error and fallback to hardcoded list below
   }
+
+  // Fallback check against hardcoded list so admins are never locked out
+  if (normalizedEmail in HARDCODED_ADMINS) {
+    return { ...user, role: HARDCODED_ADMINS[normalizedEmail] };
+  }
+
+  return null;
 }
 
 /**

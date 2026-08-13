@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
 import { getSonyCameras } from '@/lib/cameras/data';
+import { toCameraCard } from '@/lib/cameras/types';
 import { CameraWikiView } from '@/components/camera-wiki-view';
 import { SiteHeader } from '@/components/site-header';
 
@@ -27,7 +28,10 @@ export default async function CamerasPage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const initialCameras = await getSonyCameras();
+  /* Projected to cards before crossing into the Client Component: everything
+     passed across that boundary is serialised into the RSC payload and the
+     prerendered HTML, and the grid reads none of the spec fields. */
+  const initialCameras = (await getSonyCameras()).map(toCameraCard);
 
   return (
     <>

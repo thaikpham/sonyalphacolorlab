@@ -15,5 +15,5 @@ import { requireAdmin } from '@/lib/auth/require-admin';
 export async function GET(request: Request) {
   const admin = await requireAdmin(request);
   if (!admin) return NextResponse.json({ isAdmin: false }, { status: 200 });
-  return NextResponse.json({ isAdmin: true, email: admin.email, name: admin.name });
+  return NextResponse.json({ isAdmin: true, email: admin.email, name: admin.name, role: admin.role });
 }

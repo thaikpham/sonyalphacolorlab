@@ -85,8 +85,9 @@ export default async function RecipePage({
       <main className="mx-auto w-full max-w-[160rem] flex-1 inset-safe pb-24 px-4 sm:px-8 lg:px-12">
         {/* Top Back Navigation */}
         <nav className="py-6">
+          {/* Back to the catalogue this recipe belongs to, not the launcher. */}
           <Link
-            href="/"
+            href="/colorlab"
             className="group inline-flex items-center gap-2.5 px-4 py-2 rounded-full glass-flat text-xs font-bold font-sans text-white/90 hover:text-white hover:bg-white/20 transition-all duration-300 hover:scale-105 active:scale-95 shadow-md hover:shadow-[0_8px_25px_rgba(0,0,0,0.5)] cursor-pointer"
           >
             {/* 4-Square 2x2 Grid Icon */}

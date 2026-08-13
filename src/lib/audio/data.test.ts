@@ -57,12 +57,11 @@ describe('sony audio catalogue', () => {
     }
   });
 
-  it('never invents a SKU, a URL or an image, and says so', () => {
+  it('has URLs and images populated from B&H Photo Video', () => {
     for (const p of products) {
       expect(p.sku).toBe('');
-      expect(p.url).toBe('');
-      expect(p.imageUrl).toBe('');
-      expect(p.specs?.specsMissing).toEqual(expect.arrayContaining(['sku', 'url', 'imageUrl']));
+      expect(p.url).not.toBe('');
+      expect(p.imageUrl).not.toBe('');
     }
   });
 

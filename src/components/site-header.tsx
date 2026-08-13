@@ -8,6 +8,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { LanguageToggle } from './language-toggle';
 import { useAuth } from './auth-context';
 import { EcosystemApp } from './ecosystem-app';
+import { LauncherGrid } from './launcher-grid';
 import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import { routing } from '@/i18n/routing';
 import { CREATIVE_LOOKS } from '@/lib/camera/constants';
@@ -1009,30 +1010,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                       ))}
                     </div>
 
-                    {/* Catalogue switcher.
-                        Without it the audio wiki is reachable only by typing
-                        the URL: the brand link, the tabs and the reset control
-                        all stay inside whichever catalogue you are already in,
-                        so a reader on `/cameras` had no path to the other 25
-                        products. */}
-                    <div className="flex items-center p-1 rounded-xl bg-black/70 border border-white/20 shrink-0 font-sans">
-                      <Link
-                        href="/cameras"
-                        className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all font-sans ${
-                          isAudioWiki ? 'text-white/60 hover:text-white' : 'bg-amber-400 text-black font-extrabold shadow-md'
-                        }`}
-                      >
-                        📷 {tCameras('title')}
-                      </Link>
-                      <Link
-                        href="/audio"
-                        className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all font-sans ${
-                          isAudioWiki ? 'bg-amber-400 text-black font-extrabold shadow-md' : 'text-white/60 hover:text-white'
-                        }`}
-                      >
-                        🎧 {tCameras('catAudio')}
-                      </Link>
-                    </div>
+
 
                     {/* View Mode Switcher */}
                     <div className="flex items-center p-1 rounded-xl bg-black/70 border border-white/20 ml-auto shrink-0 font-sans">
@@ -1361,15 +1339,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                 an iframe; that only ever worked because the destination was
                 already external, and it cost the reader the app's own chrome,
                 its URL bar and its deep links. Send them to the real origin. */}
-            <div className="w-full max-w-2xl grid grid-cols-2 gap-x-8 gap-y-14 sm:gap-x-16 sm:gap-y-20 justify-items-center items-center">
-              {ECOSYSTEM_APPS.map((app) => (
-                <EcosystemApp
-                  key={app.key}
-                  app={app}
-                  onNavigate={() => setIsEcosystemOpen(false)}
-                />
-              ))}
-            </div>
+            <LauncherGrid size="md" onNavigate={() => setIsEcosystemOpen(false)} />
           </div>
         </div>
       </div>,

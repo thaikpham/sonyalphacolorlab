@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { isSupabaseConfigured, supabaseRead } from '@/lib/supabase/server';
-import type { ProductCategory, SonyCamera } from './types';
+import { compareCameras, type ProductCategory, type SonyCamera, type WikiSort } from './types';
 import { splitFeatures } from './features';
 
 let cachedSeedCameras: SonyCamera[] | null = null;
@@ -24,7 +24,7 @@ export async function getSonyCameras(options?: {
   subCategory1?: string;
   subCategory2?: string;
   search?: string;
-  sortBy?: 'price-asc' | 'price-desc' | 'name' | 'sku';
+  sortBy?: WikiSort;
 }): Promise<SonyCamera[]> {
   const seed = getSeedCameras();
 
@@ -60,9 +60,8 @@ export async function getSonyCameras(options?: {
              at render. Coercing to `string[]` here would flatten the admin's
              Vietnamese away. */
           features: (row.features ?? []) as SonyCamera['features'],
-          /* A row edited before migration 0008 has no specs column value; the
-             seed's block is the fallback so the table does not empty out. */
           specs: (row.specs as SonyCamera['specs']) ?? seedById.get(row.id)?.specs,
+          galleryUrls: seedById.get(row.id)?.galleryUrls,
         }));
       } else {
         cameras = seed;
@@ -92,37 +91,38 @@ export async function getSonyCameras(options?: {
   // Apply Search Filter
   if (options?.search && options.search.trim()) {
     const query = options.search.trim().toLowerCase();
-    cameras = cameras.filter(
-      (c) =>
+    cameras = cameras.filter((c) => {
+      if (
         c.name.toLowerCase().includes(query) ||
         c.fullName.toLowerCase().includes(query) ||
         c.sku.toLowerCase().includes(query) ||
         c.subCategory1.toLowerCase().includes(query) ||
-        c.subCategory2.toLowerCase().includes(query) ||
-        /* Both locales, not just the active one: a Vietnamese query should still
-           reach a product whose bullets have only been written in English. */
-        [...splitFeatures(c.features).en, ...splitFeatures(c.features).vi].some((f) =>
-          f.toLowerCase().includes(query),
-        ),
-    );
+        c.subCategory2.toLowerCase().includes(query)
+      ) {
+        return true;
+      }
+      /* Both locales, not just the active one: a Vietnamese query should still
+         reach a product whose bullets have only been written in English. */
+      const { en, vi } = splitFeatures(c.features);
+      return (
+        en.some((f) => f.toLowerCase().includes(query)) ||
+        vi.some((f) => f.toLowerCase().includes(query))
+      );
+    });
   }
 
   // Apply Sort
   if (options?.sortBy) {
-    switch (options.sortBy) {
-      case 'price-asc':
-        cameras.sort((a, b) => a.priceVnd - b.priceVnd);
-        break;
-      case 'price-desc':
-        cameras.sort((a, b) => b.priceVnd - a.priceVnd);
-        break;
-      case 'name':
-        cameras.sort((a, b) => a.name.localeCompare(b.name));
-        break;
-      case 'sku':
-        cameras.sort((a, b) => a.sku.localeCompare(b.sku));
-        break;
-    }
+    /* On a copy, always.
+     *
+     * Every branch above can leave `cameras` aliased to `cachedSeedCameras` —
+     * that is the whole point of the cache, and `filter` only breaks the alias
+     * when a filter is actually asked for. `sort` mutates in place, so a single
+     * request for `?sort=name` permanently reordered the module-level seed for
+     * every later request in that process, and the catalogue's base order
+     * silently became whatever the last sorter wanted. */
+    cameras = [...cameras];
+    cameras.sort(compareCameras(options.sortBy));
   }
 
   return cameras;

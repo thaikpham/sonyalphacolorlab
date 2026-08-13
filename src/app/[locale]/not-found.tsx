@@ -17,8 +17,11 @@ export default async function NotFound() {
         </pre>
         <h1 className="mt-6 text-3xl font-semibold tracking-tight">{t('title')}</h1>
         <p className="mt-3 max-w-md text-ink-muted">{t('body')}</p>
+        {/* The copy promises the catalogue ("Browse all recipes"), so it has to
+            land there. `/` is the ecosystem launcher and would answer a missing
+            recipe with four app tiles. */}
         <Link
-          href="/"
+          href="/colorlab"
           className="eyebrow glass-flat mt-8 rounded-full px-4 py-2 hover:!text-ink transition-colors"
         >
           {t('action')}
