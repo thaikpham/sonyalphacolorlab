@@ -1,0 +1,1441 @@
+[
+  {
+    "id": "sony-wh-1000xm6",
+    "sku": "",
+    "name": "WH-1000XM6",
+    "fullName": "Sony WH-1000XM6",
+    "category": "audio",
+    "subCategory1": "Tai nghe",
+    "subCategory2": "Choàng đầu",
+    "priceVnd": 10990000,
+    "priceFormatted": "10.990.000 đ",
+    "url": "",
+    "imageUrl": "",
+    "features": {
+      "en": [
+        "Carbon fibre Dynamic Driver X 30mm, 4 Hz – 40000 Hz",
+        "QN3 + V2 processors with 12 microphones and wind noise reduction",
+        "Hi-Res Audio Wireless with LDAC and DSEE Extreme",
+        "Bluetooth 5.3 with LE Audio and multipoint for two devices",
+        "30 h with ANC, 40 h without; 3 min charge for 60 min playback",
+        "Folding and swivelling design with detachable earpads"
+      ],
+      "vi": [
+        "Màng loa sợi Carbon Dynamic Driver X 30mm, dải tần 4 Hz – 40000 Hz",
+        "Vi xử lý QN3 + V2 với 12 micro và bộ lọc ồn gió",
+        "Hi-Res Audio Wireless, hỗ trợ LDAC và DSEE Extreme",
+        "Bluetooth 5.3 với LE Audio, kết nối 2 thiết bị cùng lúc",
+        "Pin 30 giờ khi bật chống ồn, 40 giờ khi tắt; sạc 3 phút nghe 60 phút",
+        "Thiết kế gập + xoay, earpad tháo rời"
+      ]
+    },
+    "specs": {
+      "kind": "headphone",
+      "designType": "Tai nghe choàng đầu không dây",
+      "design": "Gập + xoay | Earpad tháo rời | Case đựng nam châm",
+      "noiseCancelling": "Chống ồn | Xuyên âm",
+      "driver": "Màng loa sợi Carbon Dynamic Driver X 30mm",
+      "frequencyResponse": "4 Hz – 40000 Hz",
+      "audioTech": "Hi-Res Audio | Hi-Res Audio Wireless | LDAC | DSEE Extreme | 360 Reality Audio",
+      "processor": "Chip QN3 + V2",
+      "microphones": "12 micro 2 bên tai + lọc ồn gió",
+      "connectivity": "Bluetooth 5.3 | LE Audio | Kết nối 2 thiết bị cùng lúc",
+      "battery": "30 giờ + 40 giờ",
+      "fastCharge": "3 phút → 60 phút",
+      "smartFeatures": "Speak-To-Chat | Quick Attention | Head Gesture | Cảm biến đeo | Touch control",
+      "spatialSound": null,
+      "gameModes": null,
+      "includedAccessories": null,
+      "weight": "254 g",
+      "specsSource": "Sony Vietnam FY26 — Các sản phẩm tai nghe & Loa (100426), bảng so sánh",
+      "specsMissing": [
+        "sku",
+        "url",
+        "imageUrl",
+        "colors",
+        "spatialSound",
+        "gameModes",
+        "includedAccessories"
+      ]
+    }
+  },
+  {
+    "id": "sony-wh-1000xm5",
+    "sku": "",
+    "name": "WH-1000XM5",
+    "fullName": "Sony WH-1000XM5",
+    "category": "audio",
+    "subCategory1": "Tai nghe",
+    "subCategory2": "Choàng đầu",
+    "priceVnd": 7390000,
+    "priceFormatted": "7.390.000 đ",
+    "url": "",
+    "imageUrl": "",
+    "features": {
+      "en": [
+        "Carbon fibre Dynamic Driver X 30mm, 4 Hz – 40000 Hz",
+        "QN1 + V1 processors with 8 microphones and wind noise reduction",
+        "Hi-Res Audio Wireless with LDAC and DSEE Extreme",
+        "Bluetooth 5.2 with multipoint for two devices",
+        "30 h with ANC, 40 h without; 3 min charge for 60 min playback"
+      ],
+      "vi": [
+        "Màng loa sợi Carbon Dynamic Driver X 30mm, dải tần 4 Hz – 40000 Hz",
+        "Vi xử lý QN1 + V1 với 8 micro và bộ lọc ồn gió",
+        "Hi-Res Audio Wireless, hỗ trợ LDAC và DSEE Extreme",
+        "Bluetooth 5.2, kết nối 2 thiết bị cùng lúc",
+        "Pin 30 giờ khi bật chống ồn, 40 giờ khi tắt; sạc 3 phút nghe 60 phút"
+      ]
+    },
+    "specs": {
+      "kind": "headphone",
+      "designType": "Tai nghe choàng đầu không dây",
+      "design": "Xoay | Case đựng dây kéo",
+      "noiseCancelling": "Chống ồn | Xuyên âm",
+      "driver": "Màng loa sợi Carbon Dynamic Driver X 30mm",
+      "frequencyResponse": "4 Hz – 40000 Hz",
+      "audioTech": "Hi-Res Audio | Hi-Res Audio Wireless | LDAC | DSEE Extreme | 360 Reality Audio",
+      "processor": "Chip QN1 + V1",
+      "microphones": "8 micro 2 bên tai + lọc ồn gió",
+      "connectivity": "Bluetooth 5.2 | LDAC | Kết nối 2 thiết bị cùng lúc",
+      "battery": "30 giờ + 40 giờ",
+      "fastCharge": "3 phút → 60 phút",
+      "smartFeatures": "Speak-To-Chat | Quick Attention | Cảm biến đeo | Touch control",
+      "spatialSound": null,
+      "gameModes": null,
+      "includedAccessories": null,
+      "weight": "250 g",
+      "specsSource": "Sony Vietnam FY26 — Các sản phẩm tai nghe & Loa (100426), bảng so sánh",
+      "specsMissing": [
+        "sku",
+        "url",
+        "imageUrl",
+        "colors",
+        "spatialSound",
+        "gameModes",
+        "includedAccessories"
+      ]
+    }
+  },
+  {
+    "id": "sony-wh-ult900n",
+    "sku": "",
+    "name": "WH-ULT900N",
+    "fullName": "Sony WH-ULT900N (ULT WEAR)",
+    "category": "audio",
+    "subCategory1": "Tai nghe",
+    "subCategory2": "Choàng đầu",
+    "priceVnd": 4490000,
+    "priceFormatted": "4.490.000 đ",
+    "url": "",
+    "imageUrl": "",
+    "features": {
+      "en": [
+        "40mm driver with ULT POWER SOUND bass boost",
+        "V1 processor with 4 microphones and wind noise reduction",
+        "LDAC, DSEE and 360 Reality Audio",
+        "Bluetooth 5.2 with multipoint for two devices",
+        "30 h with ANC, 50 h without; 3 min charge for 90 min playback"
+      ],
+      "vi": [
+        "Màng loa 40mm với ULT POWER SOUND tăng âm bass",
+        "Vi xử lý V1 với 4 micro và bộ lọc ồn gió",
+        "Hỗ trợ LDAC, DSEE và 360 Reality Audio",
+        "Bluetooth 5.2, kết nối 2 thiết bị cùng lúc",
+        "Pin 30 giờ khi bật chống ồn, 50 giờ khi tắt; sạc 3 phút nghe 90 phút"
+      ]
+    },
+    "specs": {
+      "kind": "headphone",
+      "designType": "Tai nghe choàng đầu không dây",
+      "design": "Gập + xoay | Case đựng dây kéo",
+      "noiseCancelling": "Chống ồn | Xuyên âm",
+      "driver": "Màng loa 40mm",
+      "frequencyResponse": "5 Hz – 20000 Hz",
+      "audioTech": "ULT POWER SOUND | LDAC | DSEE | 360 Reality Audio",
+      "processor": "Chip V1",
+      "microphones": "4 micro 2 bên tai + lọc ồn gió",
+      "connectivity": "Bluetooth 5.2 | LDAC | Kết nối 2 thiết bị cùng lúc",
+      "battery": "30 giờ + 50 giờ",
+      "fastCharge": "3 phút → 90 phút",
+      "smartFeatures": "Quick Attention | Cảm biến đeo | Touch control",
+      "spatialSound": null,
+      "gameModes": null,
+      "includedAccessories": null,
+      "weight": "255 g",
+      "specsSource": "Sony Vietnam FY26 — Các sản phẩm tai nghe & Loa (100426), bảng so sánh",
+      "specsMissing": [
+        "sku",
+        "url",
+        "imageUrl",
+        "colors",
+        "spatialSound",
+        "gameModes",
+        "includedAccessories"
+      ]
+    }
+  },
+  {
+    "id": "sony-wh-ch720n",
+    "sku": "",
+    "name": "WH-CH720N",
+    "fullName": "Sony WH-CH720N",
+    "category": "audio",
+    "subCategory1": "Tai nghe",
+    "subCategory2": "Choàng đầu",
+    "priceVnd": 2490000,
+    "priceFormatted": "2.490.000 đ",
+    "url": "",
+    "imageUrl": "",
+    "features": {
+      "en": [
+        "30mm driver, 7 Hz – 20000 Hz",
+        "V1 processor with 4 microphones and wind noise reduction",
+        "Bluetooth 5.2 with multipoint for two devices",
+        "35 h with ANC, 50 h without; 3 min charge for 60 min playback",
+        "192 g — the lightest ANC over-ear in the range"
+      ],
+      "vi": [
+        "Màng loa 30mm, dải tần 7 Hz – 20000 Hz",
+        "Vi xử lý V1 với 4 micro và bộ lọc ồn gió",
+        "Bluetooth 5.2, kết nối 2 thiết bị cùng lúc",
+        "Pin 35 giờ khi bật chống ồn, 50 giờ khi tắt; sạc 3 phút nghe 60 phút",
+        "Trọng lượng 192 g, nhẹ nhất trong nhóm choàng đầu có chống ồn"
+      ]
+    },
+    "specs": {
+      "kind": "headphone",
+      "designType": "Tai nghe choàng đầu không dây",
+      "design": "Xoay | Case đựng dây kéo",
+      "noiseCancelling": "Chống ồn | Xuyên âm",
+      "driver": "Màng loa 30mm",
+      "frequencyResponse": "7 Hz – 20000 Hz",
+      "audioTech": "DSEE | 360 Reality Audio",
+      "processor": "Chip V1",
+      "microphones": "4 micro 2 bên tai + lọc ồn gió",
+      "connectivity": "Bluetooth 5.2 | Kết nối 2 thiết bị cùng lúc",
+      "battery": "35 giờ + 50 giờ",
+      "fastCharge": "3 phút → 60 phút",
+      "smartFeatures": null,
+      "spatialSound": null,
+      "gameModes": null,
+      "includedAccessories": null,
+      "weight": "192 g",
+      "specsSource": "Sony Vietnam FY26 — Các sản phẩm tai nghe & Loa (100426), bảng so sánh",
+      "specsMissing": [
+        "sku",
+        "url",
+        "imageUrl",
+        "colors",
+        "smartFeatures",
+        "spatialSound",
+        "gameModes",
+        "includedAccessories"
+      ]
+    }
+  },
+  {
+    "id": "sony-wh-ch520",
+    "sku": "",
+    "name": "WH-CH520",
+    "fullName": "Sony WH-CH520",
+    "category": "audio",
+    "subCategory1": "Tai nghe",
+    "subCategory2": "Choàng đầu",
+    "priceVnd": 1290000,
+    "priceFormatted": "1.290.000 đ",
+    "url": "",
+    "imageUrl": "",
+    "features": {
+      "en": [
+        "30mm driver, 20 Hz – 20000 Hz",
+        "DSEE and 360 Reality Audio",
+        "Bluetooth 5.2 with multipoint for two devices",
+        "50 h battery; 3 min charge for 90 min playback",
+        "147 g"
+      ],
+      "vi": [
+        "Màng loa 30mm, dải tần 20 Hz – 20000 Hz",
+        "Hỗ trợ DSEE và 360 Reality Audio",
+        "Bluetooth 5.2, kết nối 2 thiết bị cùng lúc",
+        "Pin 50 giờ; sạc 3 phút nghe 90 phút",
+        "Trọng lượng 147 g"
+      ]
+    },
+    "specs": {
+      "kind": "headphone",
+      "designType": "Tai nghe choàng đầu không dây",
+      "design": "Xoay",
+      "noiseCancelling": null,
+      "driver": "Màng loa 30mm",
+      "frequencyResponse": "20 Hz – 20000 Hz",
+      "audioTech": "DSEE | 360 Reality Audio",
+      "processor": null,
+      "microphones": "2 micro 2 bên tai",
+      "connectivity": "Bluetooth 5.2 | Kết nối 2 thiết bị cùng lúc",
+      "battery": "50 giờ",
+      "fastCharge": "3 phút → 90 phút",
+      "smartFeatures": null,
+      "spatialSound": null,
+      "gameModes": null,
+      "includedAccessories": null,
+      "weight": "147 g",
+      "specsSource": "Sony Vietnam FY26 — Các sản phẩm tai nghe & Loa (100426), bảng so sánh",
+      "specsMissing": [
+        "sku",
+        "url",
+        "imageUrl",
+        "colors",
+        "noiseCancelling",
+        "processor",
+        "smartFeatures",
+        "spatialSound",
+        "gameModes",
+        "includedAccessories"
+      ]
+    }
+  },
+  {
+    "id": "sony-wf-1000xm6",
+    "sku": "",
+    "name": "WF-1000XM6",
+    "fullName": "Sony WF-1000XM6",
+    "category": "audio",
+    "subCategory1": "Tai nghe",
+    "subCategory2": "Nhét tai",
+    "priceVnd": 7990000,
+    "priceFormatted": "7.990.000 đ",
+    "url": "",
+    "imageUrl": "",
+    "features": {
+      "en": [
+        "Dynamic Driver X 8.4mm, 20 Hz – 40000 Hz",
+        "QN3e + V2 processors with 8 microphones and wind noise reduction",
+        "32-bit LDAC, Hi-Res Audio Wireless",
+        "Bluetooth 5.3 with LE Audio and multipoint",
+        "8 h in the buds plus 16 h in the case, wireless charging",
+        "Speak-To-Chat, Head Gesture, Voice Control with Gemini"
+      ],
+      "vi": [
+        "Màng loa Dynamic Driver X 8.4mm, dải tần 20 Hz – 40000 Hz",
+        "Vi xử lý QN3e + V2 với 8 micro và bộ lọc ồn gió",
+        "LDAC 32 bit, Hi-Res Audio Wireless",
+        "Bluetooth 5.3 với LE Audio, kết nối 2 thiết bị cùng lúc",
+        "Pin 8 giờ trên tai nghe và 16 giờ trong hộp sạc, hỗ trợ sạc không dây",
+        "Speak-To-Chat, Head Gesture, Voice Control với Gemini"
+      ]
+    },
+    "specs": {
+      "kind": "headphone",
+      "designType": "Tai nghe nhét tai dạng kín",
+      "design": "Cảm ứng chạm | Cảm biến đeo | Típ tai bọt biển",
+      "noiseCancelling": "Chống ồn | Xuyên âm",
+      "driver": "Màng loa Dynamic Driver X 8.4mm",
+      "frequencyResponse": "20 Hz – 40000 Hz",
+      "audioTech": "Hi-Res Audio Wireless | LDAC 32 bit | DSEE | 360 Reality Audio",
+      "processor": "Chip QN3e + V2",
+      "microphones": "8 micro 2 bên tai + lọc ồn gió",
+      "connectivity": "Bluetooth 5.3 | LE Audio | Kết nối 2 thiết bị cùng lúc",
+      "battery": "8 giờ + 16 giờ",
+      "fastCharge": "3 phút → 60 phút | Sạc không dây",
+      "smartFeatures": "Speak-To-Chat | Quick Attention | Head Gesture | Cảm biến đeo | Touch control | Voice Control/Gemini",
+      "spatialSound": null,
+      "gameModes": null,
+      "includedAccessories": null,
+      "weight": "47 g (tai nghe 6.5 g x 2)",
+      "specsSource": "Sony Vietnam FY26 — Các sản phẩm tai nghe & Loa (100426), bảng so sánh",
+      "specsMissing": [
+        "sku",
+        "url",
+        "imageUrl",
+        "colors",
+        "spatialSound",
+        "gameModes",
+        "includedAccessories"
+      ]
+    }
+  },
+  {
+    "id": "sony-wf-1000xm5",
+    "sku": "",
+    "name": "WF-1000XM5",
+    "fullName": "Sony WF-1000XM5",
+    "category": "audio",
+    "subCategory1": "Tai nghe",
+    "subCategory2": "Nhét tai",
+    "priceVnd": 6990000,
+    "priceFormatted": "6.990.000 đ",
+    "url": "",
+    "imageUrl": "",
+    "features": {
+      "en": [
+        "Dynamic Driver X 8.4mm, 20 Hz – 40000 Hz",
+        "QN2e + V2 processors with 6 microphones and wind noise reduction",
+        "LDAC, Hi-Res Audio Wireless",
+        "Bluetooth 5.3 with LE Audio and multipoint",
+        "8 h in the buds plus 16 h in the case, wireless charging"
+      ],
+      "vi": [
+        "Màng loa Dynamic Driver X 8.4mm, dải tần 20 Hz – 40000 Hz",
+        "Vi xử lý QN2e + V2 với 6 micro và bộ lọc ồn gió",
+        "Hỗ trợ LDAC, Hi-Res Audio Wireless",
+        "Bluetooth 5.3 với LE Audio, kết nối 2 thiết bị cùng lúc",
+        "Pin 8 giờ trên tai nghe và 16 giờ trong hộp sạc, hỗ trợ sạc không dây"
+      ]
+    },
+    "specs": {
+      "kind": "headphone",
+      "designType": "Tai nghe nhét tai dạng kín",
+      "design": "Cảm ứng chạm | Cảm biến đeo | Típ tai bọt biển",
+      "noiseCancelling": "Chống ồn | Xuyên âm",
+      "driver": "Màng loa Dynamic Driver X 8.4mm",
+      "frequencyResponse": "20 Hz – 40000 Hz",
+      "audioTech": "Hi-Res Audio Wireless | LDAC | DSEE | 360 Reality Audio",
+      "processor": "Chip QN2e + V2",
+      "microphones": "6 micro 2 bên tai + lọc ồn gió",
+      "connectivity": "Bluetooth 5.3 | LE Audio | Kết nối 2 thiết bị cùng lúc",
+      "battery": "8 giờ + 16 giờ",
+      "fastCharge": "3 phút → 60 phút | Sạc không dây",
+      "smartFeatures": "Speak-To-Chat | Quick Attention | Head Gesture | Cảm biến đeo | Touch control",
+      "spatialSound": null,
+      "gameModes": null,
+      "includedAccessories": null,
+      "weight": "39 g (tai nghe 5.9 g x 2)",
+      "specsSource": "Sony Vietnam FY26 — Các sản phẩm tai nghe & Loa (100426), bảng so sánh",
+      "specsMissing": [
+        "sku",
+        "url",
+        "imageUrl",
+        "colors",
+        "spatialSound",
+        "gameModes",
+        "includedAccessories"
+      ]
+    }
+  },
+  {
+    "id": "sony-wf-lc900",
+    "sku": "",
+    "name": "WF-LC900",
+    "fullName": "Sony LinkBuds Clip WF-LC900",
+    "category": "audio",
+    "subCategory1": "Tai nghe",
+    "subCategory2": "Nhét tai",
+    "priceVnd": 4990000,
+    "priceFormatted": "4.990.000 đ",
+    "url": "",
+    "imageUrl": "",
+    "features": {
+      "en": [
+        "Open clip-on design with silicone ear cushions",
+        "10mm driver, 20 Hz – 20000 Hz",
+        "Natural ambient sound rather than active cancellation",
+        "Bluetooth 5.3 with multipoint for two devices",
+        "9 h in the buds plus 28 h in the case",
+        "Voice Control with Google Gemini"
+      ],
+      "vi": [
+        "Thiết kế kẹp tai dạng mở với đệm silicon",
+        "Màng loa 10mm, dải tần 20 Hz – 20000 Hz",
+        "Âm thanh môi trường tự nhiên thay cho chống ồn chủ động",
+        "Bluetooth 5.3, kết nối 2 thiết bị cùng lúc",
+        "Pin 9 giờ trên tai nghe và 28 giờ trong hộp sạc",
+        "Voice Control với trợ lý Google Gemini"
+      ]
+    },
+    "specs": {
+      "kind": "headphone",
+      "designType": "Tai nghe kẹp tai dạng mở",
+      "design": "Cảm ứng chạm | Đệm kẹp tai silicon",
+      "noiseCancelling": "Âm thanh môi trường tự nhiên",
+      "driver": "Màng loa 10mm",
+      "frequencyResponse": "20 Hz – 20000 Hz",
+      "audioTech": "DSEE | 360 Reality Audio",
+      "processor": null,
+      "microphones": "6 micro 2 bên tai",
+      "connectivity": "Bluetooth 5.3 | Kết nối 2 thiết bị cùng lúc",
+      "battery": "9 giờ + 28 giờ",
+      "fastCharge": "3 phút → 60 phút",
+      "smartFeatures": "Voice Control | Chế độ nghe Tiêu chuẩn | Tăng tường giọng hát, giọng nói | Giảm rò rỉ âm thanh | Trợ lý Google Gemini",
+      "spatialSound": null,
+      "gameModes": null,
+      "includedAccessories": null,
+      "weight": "42 g (tai nghe 6.4 g x 2)",
+      "specsSource": "Sony Vietnam FY26 — Các sản phẩm tai nghe & Loa (100426), bảng so sánh",
+      "specsMissing": [
+        "sku",
+        "url",
+        "imageUrl",
+        "colors",
+        "processor",
+        "spatialSound",
+        "gameModes",
+        "includedAccessories"
+      ]
+    }
+  },
+  {
+    "id": "sony-wf-c710n",
+    "sku": "",
+    "name": "WF-C710N",
+    "fullName": "Sony WF-C710N",
+    "category": "audio",
+    "subCategory1": "Tai nghe",
+    "subCategory2": "Nhét tai",
+    "priceVnd": 2250000,
+    "priceFormatted": "2.250.000 đ",
+    "url": "",
+    "imageUrl": "",
+    "features": {
+      "en": [
+        "V1 processor with 4 microphones and wind noise reduction",
+        "5mm driver, 20 Hz – 20000 Hz",
+        "Bluetooth 5.3 with multipoint for two devices",
+        "8.5 h in the buds and 21.5 h with the case",
+        "5 min charge for 60 min playback"
+      ],
+      "vi": [
+        "Vi xử lý V1 với 4 micro và bộ lọc ồn gió",
+        "Màng loa 5mm, dải tần 20 Hz – 20000 Hz",
+        "Bluetooth 5.3, kết nối 2 thiết bị cùng lúc",
+        "Pin 8.5 giờ trên tai nghe và 21.5 giờ cùng hộp sạc",
+        "Sạc 5 phút nghe 60 phút"
+      ]
+    },
+    "specs": {
+      "kind": "headphone",
+      "designType": "Tai nghe nhét tai dạng kín",
+      "design": "Cảm ứng chạm | Cảm biến đeo | Típ tai silicon",
+      "noiseCancelling": "Chống ồn | Xuyên âm",
+      "driver": "Màng loa 5mm",
+      "frequencyResponse": "20 Hz – 20000 Hz",
+      "audioTech": "DSEE | 360 Reality Audio",
+      "processor": "Chip V1",
+      "microphones": "4 micro 2 bên tai + lọc ồn gió",
+      "connectivity": "Bluetooth 5.3 | Kết nối 2 thiết bị cùng lúc",
+      "battery": "8.5 giờ & 21.5 giờ",
+      "fastCharge": "5 phút → 60 phút",
+      "smartFeatures": "Quick Access",
+      "spatialSound": null,
+      "gameModes": null,
+      "includedAccessories": null,
+      "weight": "38 g (tai nghe 5.2 g x 2)",
+      "specsSource": "Sony Vietnam FY26 — Các sản phẩm tai nghe & Loa (100426), bảng so sánh",
+      "specsMissing": [
+        "sku",
+        "url",
+        "imageUrl",
+        "colors",
+        "spatialSound",
+        "gameModes",
+        "includedAccessories"
+      ]
+    }
+  },
+  {
+    "id": "sony-wf-c510",
+    "sku": "",
+    "name": "WF-C510",
+    "fullName": "Sony WF-C510",
+    "category": "audio",
+    "subCategory1": "Tai nghe",
+    "subCategory2": "Nhét tai",
+    "priceVnd": 1069000,
+    "priceFormatted": "1.069.000 đ",
+    "url": "",
+    "imageUrl": "",
+    "features": {
+      "en": [
+        "6mm driver, 20 Hz – 20000 Hz",
+        "Ambient sound mode",
+        "Bluetooth 5.2 with multipoint for two devices",
+        "11 h in the buds plus 11 h in the case",
+        "31 g total"
+      ],
+      "vi": [
+        "Màng loa 6mm, dải tần 20 Hz – 20000 Hz",
+        "Chế độ xuyên âm",
+        "Bluetooth 5.2, kết nối 2 thiết bị cùng lúc",
+        "Pin 11 giờ trên tai nghe và 11 giờ trong hộp sạc",
+        "Tổng trọng lượng 31 g"
+      ]
+    },
+    "specs": {
+      "kind": "headphone",
+      "designType": "Tai nghe nhét tai dạng kín",
+      "design": "Phím nhấn | Típ tai silicon",
+      "noiseCancelling": "Xuyên âm",
+      "driver": "Màng loa 6mm",
+      "frequencyResponse": "20 Hz – 20000 Hz",
+      "audioTech": "DSEE | 360 Reality Audio",
+      "processor": null,
+      "microphones": "2 micro 2 bên tai",
+      "connectivity": "Bluetooth 5.2 | Kết nối 2 thiết bị cùng lúc",
+      "battery": "11 giờ + 11 giờ",
+      "fastCharge": "3 phút → 90 phút",
+      "smartFeatures": null,
+      "spatialSound": null,
+      "gameModes": null,
+      "includedAccessories": null,
+      "weight": "31 g (tai nghe 4.6 g x 2)",
+      "specsSource": "Sony Vietnam FY26 — Các sản phẩm tai nghe & Loa (100426), bảng so sánh",
+      "specsMissing": [
+        "sku",
+        "url",
+        "imageUrl",
+        "colors",
+        "processor",
+        "smartFeatures",
+        "spatialSound",
+        "gameModes",
+        "includedAccessories"
+      ]
+    }
+  },
+  {
+    "id": "sony-inzone-h9-ii",
+    "sku": "",
+    "name": "INZONE H9 II",
+    "fullName": "Sony INZONE H9 II",
+    "category": "audio",
+    "subCategory1": "Tai nghe",
+    "subCategory2": "Gaming",
+    "priceVnd": 7990000,
+    "priceFormatted": "7.990.000 đ",
+    "url": "",
+    "imageUrl": "",
+    "features": {
+      "en": [
+        "Dynamic Driver X 30mm, 5 Hz – 20000 Hz",
+        "360 Spatial Sound for Gaming with FPS-1/2/3 profiles",
+        "Noise cancelling and ambient sound",
+        "Bluetooth 5.3, LE Audio and USB Type-C dongle, two devices at once",
+        "30 h battery; 5 min charge for 60 min play",
+        "Detachable boom mic with a physical mute key"
+      ],
+      "vi": [
+        "Dynamic Driver X 30mm, dải tần 5 Hz – 20000 Hz",
+        "360 Spatial Sound for Gaming với các chế độ FPS-1/2/3",
+        "Có chống ồn và xuyên âm",
+        "Bluetooth 5.3, LE Audio và Type C Dongle, kết nối 2 thiết bị cùng lúc",
+        "Pin 30 giờ; sạc 5 phút chơi 60 phút",
+        "Boom Mic tháo rời, phím nhấn bật/tắt mic"
+      ]
+    },
+    "specs": {
+      "kind": "headphone",
+      "designType": "Tai nghe Gaming không dây",
+      "design": null,
+      "noiseCancelling": "Chống ồn | Xuyên âm",
+      "driver": "Dynamic Driver X 30mm",
+      "frequencyResponse": "5 Hz – 20000 Hz",
+      "audioTech": null,
+      "processor": "Ứng dụng INZONE Hub | Sound Connect",
+      "microphones": "Boom Mic tháo rời | Bật/Tắt Mic: phím nhấn",
+      "connectivity": "Bluetooth 5.3 | LE Audio | Type C Dongle | Kết nối 2 thiết bị cùng lúc",
+      "battery": "30 giờ",
+      "fastCharge": "5 phút → 60 phút",
+      "smartFeatures": null,
+      "spatialSound": "360 Spatial Sound for Gaming",
+      "gameModes": "FPS-1 | FPS-2 | FPS-3",
+      "includedAccessories": "Túi vải | Dây cáp 3.5mm | Type C Dongle | Boom Mic | Cáp sạc",
+      "weight": "273 g",
+      "specsSource": "Sony Vietnam FY26 — INZONE Lineup, bảng so sánh",
+      "specsMissing": [
+        "sku",
+        "url",
+        "imageUrl",
+        "colors",
+        "design",
+        "audioTech",
+        "smartFeatures"
+      ]
+    }
+  },
+  {
+    "id": "sony-inzone-h6-air",
+    "sku": "",
+    "name": "INZONE H6 Air",
+    "fullName": "Sony INZONE H6 Air",
+    "category": "audio",
+    "subCategory1": "Tai nghe",
+    "subCategory2": "Gaming",
+    "priceVnd": 4990000,
+    "priceFormatted": "4.990.000 đ",
+    "url": "",
+    "imageUrl": "",
+    "features": {
+      "en": [
+        "40mm open-back driver, 10 Hz – 20000 Hz",
+        "360 Spatial Sound for Gaming with FPS-2, FPS-3 and RPG Aventure profiles",
+        "Detachable boom mic with a physical mute key",
+        "199 g — the lightest INZONE over-ear",
+        "Ships with a 3.5mm cable and a USB Type-C dongle"
+      ],
+      "vi": [
+        "Màng loa 40mm Open Back, dải tần 10 Hz – 20000 Hz",
+        "360 Spatial Sound for Gaming với chế độ FPS-2, FPS-3 và RPG Aventure",
+        "Boom Mic tháo rời, phím nhấn bật/tắt mic",
+        "Trọng lượng 199 g, nhẹ nhất trong nhóm INZONE choàng đầu",
+        "Kèm dây cáp 3.5mm và Type C Dongle"
+      ]
+    },
+    "specs": {
+      "kind": "headphone",
+      "designType": "Tai nghe Gaming có dây",
+      "design": null,
+      "noiseCancelling": null,
+      "driver": "Màng loa 40mm - Open Back",
+      "frequencyResponse": "10 Hz – 20000 Hz",
+      "audioTech": null,
+      "processor": "Ứng dụng INZONE Hub",
+      "microphones": "Boom Mic tháo rời | Bật/Tắt Mic: phím nhấn",
+      "connectivity": null,
+      "battery": null,
+      "fastCharge": null,
+      "smartFeatures": null,
+      "spatialSound": "360 Spatial Sound for Gaming",
+      "gameModes": "FPS-2 | FPS-3 | RPG Aventure",
+      "includedAccessories": "Dây cáp 3.5mm | Type C Dongle | Boom Mic | Cáp sạc",
+      "weight": "199 g",
+      "specsSource": "Sony Vietnam FY26 — INZONE Lineup, bảng so sánh",
+      "specsMissing": [
+        "sku",
+        "url",
+        "imageUrl",
+        "colors",
+        "design",
+        "noiseCancelling",
+        "audioTech",
+        "connectivity",
+        "battery",
+        "fastCharge",
+        "smartFeatures"
+      ]
+    }
+  },
+  {
+    "id": "sony-inzone-h5",
+    "sku": "",
+    "name": "INZONE H5",
+    "fullName": "Sony INZONE H5",
+    "category": "audio",
+    "subCategory1": "Tai nghe",
+    "subCategory2": "Gaming",
+    "priceVnd": 3790000,
+    "priceFormatted": "3.790.000 đ",
+    "url": "",
+    "imageUrl": "",
+    "features": {
+      "en": [
+        "40mm driver, 5 Hz – 20000 Hz",
+        "360 Spatial Sound for Gaming",
+        "USB dongle connection",
+        "28 h battery; 10 min charge for 180 min play",
+        "Flip-to-mute boom mic"
+      ],
+      "vi": [
+        "Màng loa 40mm, dải tần 5 Hz – 20000 Hz",
+        "360 Spatial Sound for Gaming",
+        "Kết nối qua USB Dongle",
+        "Pin 28 giờ; sạc 10 phút chơi 180 phút",
+        "Boom Mic bật/tắt linh hoạt"
+      ]
+    },
+    "specs": {
+      "kind": "headphone",
+      "designType": "Tai nghe Gaming không dây",
+      "design": null,
+      "noiseCancelling": null,
+      "driver": "Màng loa 40mm",
+      "frequencyResponse": "5 Hz – 20000 Hz",
+      "audioTech": null,
+      "processor": "Ứng dụng INZONE Hub",
+      "microphones": "Boom Mic | Bật/Tắt Mic linh hoạt",
+      "connectivity": "USB Dongle",
+      "battery": "28 giờ",
+      "fastCharge": "10 phút → 180 phút",
+      "smartFeatures": null,
+      "spatialSound": "360 Spatial Sound for Gaming",
+      "gameModes": null,
+      "includedAccessories": "Dây tai nghe 3.5mm | USB Dongle | Cáp sạc",
+      "weight": "260 g",
+      "specsSource": "Sony Vietnam FY26 — INZONE Lineup, bảng so sánh",
+      "specsMissing": [
+        "sku",
+        "url",
+        "imageUrl",
+        "colors",
+        "design",
+        "noiseCancelling",
+        "audioTech",
+        "smartFeatures",
+        "gameModes"
+      ]
+    }
+  },
+  {
+    "id": "sony-inzone-buds",
+    "sku": "",
+    "name": "INZONE BUDS",
+    "fullName": "Sony INZONE BUDS",
+    "category": "audio",
+    "subCategory1": "Tai nghe",
+    "subCategory2": "Gaming",
+    "priceVnd": 4790000,
+    "priceFormatted": "4.790.000 đ",
+    "url": "",
+    "imageUrl": "",
+    "features": {
+      "en": [
+        "8.4mm dynamic driver, 20 Hz – 20000 Hz",
+        "Noise cancelling and ambient sound",
+        "360 Spatial Sound for Gaming",
+        "Bluetooth 5.3, LE Audio and USB Type-C dongle, two devices at once",
+        "24 h in the buds and 48 h with the case"
+      ],
+      "vi": [
+        "Màng loa Dynamic 8.4 mm, dải tần 20 Hz – 20000 Hz",
+        "Có chống ồn và xuyên âm",
+        "360 Spatial Sound for Gaming",
+        "Bluetooth 5.3, LE Audio và Type C Dongle, kết nối 2 thiết bị cùng lúc",
+        "Pin 24 giờ trên tai nghe và 48 giờ cùng hộp sạc"
+      ]
+    },
+    "specs": {
+      "kind": "headphone",
+      "designType": "Tai nghe Gaming không dây",
+      "design": null,
+      "noiseCancelling": "Chống ồn | Xuyên âm",
+      "driver": "Màng loa Dynamic 8.4 mm",
+      "frequencyResponse": "20 Hz – 20000 Hz",
+      "audioTech": null,
+      "processor": "Ứng dụng INZONE Hub | Sound Connect",
+      "microphones": "Build-in Mic | Chạm giữ tai L",
+      "connectivity": "Bluetooth 5.3 | Type C Dongle | LE Audio | Kết nối 2 thiết bị cùng lúc",
+      "battery": "24 giờ & 48 giờ",
+      "fastCharge": "5 phút → 60 phút",
+      "smartFeatures": null,
+      "spatialSound": "360 Spatial Sound for Gaming",
+      "gameModes": null,
+      "includedAccessories": "Type C Dongle | Cáp sạc | Bộ tip tai nhiều kích cỡ",
+      "weight": "63 g",
+      "specsSource": "Sony Vietnam FY26 — INZONE Lineup, bảng so sánh",
+      "specsMissing": [
+        "sku",
+        "url",
+        "imageUrl",
+        "colors",
+        "design",
+        "audioTech",
+        "smartFeatures",
+        "gameModes"
+      ]
+    }
+  },
+  {
+    "id": "sony-inzone-e9",
+    "sku": "",
+    "name": "INZONE E9",
+    "fullName": "Sony INZONE E9",
+    "category": "audio",
+    "subCategory1": "Tai nghe",
+    "subCategory2": "Gaming",
+    "priceVnd": 3990000,
+    "priceFormatted": "3.990.000 đ",
+    "url": "",
+    "imageUrl": "",
+    "features": {
+      "en": [
+        "5mm dynamic driver, 10 Hz – 20000 Hz",
+        "360 Spatial Sound for Gaming with FPS-1/2/3 profiles",
+        "Wired in-ear, 25 g",
+        "Ships with an Audio Box and multiple ear tip sizes"
+      ],
+      "vi": [
+        "Màng loa Dynamic 5 mm, dải tần 10 Hz – 20000 Hz",
+        "360 Spatial Sound for Gaming với các chế độ FPS-1/2/3",
+        "Tai nghe gaming có dây, chỉ 25 g",
+        "Kèm Audio Box và bộ tip tai nhiều kích cỡ"
+      ]
+    },
+    "specs": {
+      "kind": "headphone",
+      "designType": "Tai nghe Gaming có dây",
+      "design": null,
+      "noiseCancelling": null,
+      "driver": "Màng loa Dynamic 5 mm",
+      "frequencyResponse": "10 Hz – 20000 Hz",
+      "audioTech": null,
+      "processor": "Ứng dụng INZONE Hub",
+      "microphones": null,
+      "connectivity": null,
+      "battery": null,
+      "fastCharge": null,
+      "smartFeatures": null,
+      "spatialSound": "360 Spatial Sound for Gaming",
+      "gameModes": "FPS-1 | FPS-2 | FPS-3",
+      "includedAccessories": "Túi đựng tai nghe | Audio Box | Bộ tip tai nhiều kích cỡ",
+      "weight": "25 g",
+      "specsSource": "Sony Vietnam FY26 — INZONE Lineup, bảng so sánh",
+      "specsMissing": [
+        "sku",
+        "url",
+        "imageUrl",
+        "colors",
+        "design",
+        "noiseCancelling",
+        "audioTech",
+        "microphones",
+        "connectivity",
+        "battery",
+        "fastCharge",
+        "smartFeatures"
+      ]
+    }
+  },
+  {
+    "id": "sony-inzone-h3",
+    "sku": "",
+    "name": "INZONE H3",
+    "fullName": "Sony INZONE H3",
+    "category": "audio",
+    "subCategory1": "Tai nghe",
+    "subCategory2": "Gaming",
+    "priceVnd": 1990000,
+    "priceFormatted": "1.990.000 đ",
+    "url": "",
+    "imageUrl": "",
+    "features": {
+      "en": [
+        "40mm driver, 10 Hz – 20000 Hz",
+        "360 Spatial Sound for Gaming",
+        "Wired gaming headset with a flip-to-mute boom mic",
+        "Ships with an Audio Box"
+      ],
+      "vi": [
+        "Màng loa 40mm, dải tần 10 Hz – 20000 Hz",
+        "360 Spatial Sound for Gaming",
+        "Tai nghe gaming có dây với Boom Mic bật/tắt linh hoạt",
+        "Kèm Audio Box"
+      ]
+    },
+    "specs": {
+      "kind": "headphone",
+      "designType": "Tai nghe Gaming có dây",
+      "design": null,
+      "noiseCancelling": null,
+      "driver": "Màng loa 40mm",
+      "frequencyResponse": "10 Hz – 20000 Hz",
+      "audioTech": null,
+      "processor": "Ứng dụng INZONE Hub",
+      "microphones": "Boom Mic | Bật/Tắt Mic linh hoạt",
+      "connectivity": null,
+      "battery": null,
+      "fastCharge": null,
+      "smartFeatures": null,
+      "spatialSound": "360 Spatial Sound for Gaming",
+      "gameModes": null,
+      "includedAccessories": "Audio Box",
+      "weight": "299 g",
+      "specsSource": "Sony Vietnam FY26 — INZONE Lineup, bảng so sánh",
+      "specsMissing": [
+        "sku",
+        "url",
+        "imageUrl",
+        "colors",
+        "design",
+        "noiseCancelling",
+        "audioTech",
+        "connectivity",
+        "battery",
+        "fastCharge",
+        "smartFeatures",
+        "gameModes"
+      ]
+    }
+  },
+  {
+    "id": "sony-ult-field-7",
+    "sku": "",
+    "name": "ULT FIELD 7",
+    "fullName": "Sony ULT FIELD 7 (SRS-ULT70)",
+    "category": "audio",
+    "subCategory1": "Loa",
+    "subCategory2": "Di động",
+    "priceVnd": 10990000,
+    "priceFormatted": "10.990.000 đ",
+    "url": "",
+    "imageUrl": "",
+    "features": {
+      "en": [
+        "180W output for rooms of 25–45 m²",
+        "Dual 114mm X-Balanced woofers, two 46mm tweeters, two passive radiators",
+        "ULT POWER SOUND with two bass levels",
+        "IP67 dust and water resistant, 360° party lighting",
+        "30 h battery; 10 min charge for 180 min play",
+        "Bluetooth 5.2 with LDAC, Stereo Pair and Party Connect",
+        "Karaoke with Key Control and Echo, one mic input and a guitar input"
+      ],
+      "vi": [
+        "Công suất 180W cho không gian 25–45 m²",
+        "2 Woofer X-Balanced 114mm, 2 Tweeter 46mm và 2 bộ tản âm",
+        "ULT POWER SOUND với 2 mức tăng âm bass",
+        "Kháng nước và bụi IP67, đèn tiệc 360°",
+        "Pin 30 giờ; sạc 10 phút nghe 180 phút",
+        "Bluetooth 5.2 hỗ trợ LDAC, Stereo Pair và Party Connect",
+        "Karaoke với Key Control và Echo, 1 cổng micro và 1 cổng guitar"
+      ]
+    },
+    "specs": {
+      "kind": "speaker",
+      "bassBoost": "TẮT ULT | BẬT ULT 1 | ULT 2",
+      "power": "180W | 25m² - 45m²",
+      "drivers": "Woofer X-Balanced 114mm x 114mm x 2 | Tweeters 46mm x 2 | Bộ tản âm x 2",
+      "battery": "30 giờ",
+      "fastCharge": "10 phút → 180 phút",
+      "connectivity": "Bluetooth 5.2 | LDAC | Stereo Pair | Fast Pair | Swift Pair | Party Connect",
+      "waterResistance": "Kháng nước/bụi IP67",
+      "utilities": "Sound Connect | Đèn tiệc 360° | Kết nối 2 thiết bị cùng lúc | Tay nắm 2 chiều | USB phát nhạc + sạc cho thiết bị khác | Karaoke | Key Control | Echo",
+      "includedMic": null,
+      "micPorts": "1 cổng Micro | 1 cổng Guitar",
+      "dimensions": "512 mm x 224 mm x 222 mm",
+      "weight": "6.3 kg",
+      "specsSource": "Sony Vietnam FY26 — Các sản phẩm tai nghe & Loa (100426), bảng so sánh (bảng Loa Di động; bảng Loa Karaoke in giá 11.990.000 cho cùng model — lấy giá bảng Loa Di động)",
+      "specsMissing": [
+        "sku",
+        "url",
+        "imageUrl",
+        "colors",
+        "includedMic"
+      ]
+    }
+  },
+  {
+    "id": "sony-ult-field-5",
+    "sku": "",
+    "name": "ULT FIELD 5",
+    "fullName": "Sony ULT FIELD 5 (SRS-ULT50)",
+    "category": "audio",
+    "subCategory1": "Loa",
+    "subCategory2": "Di động",
+    "priceVnd": 7690000,
+    "priceFormatted": "7.690.000 đ",
+    "url": "",
+    "imageUrl": "",
+    "features": {
+      "en": [
+        "110W output for rooms of 20–30 m²",
+        "79 x 107mm X-Balanced woofer, two 46mm tweeters, two passive radiators",
+        "IP67 dust and water resistant, 360° party lighting",
+        "25 h battery; 10 min charge for 100 min play",
+        "Bluetooth 5.3 with LDAC, Stereo Pair and Party Connect"
+      ],
+      "vi": [
+        "Công suất 110W cho không gian 20–30 m²",
+        "Woofer X-Balanced 79 x 107mm, 2 Tweeter 46mm và 2 bộ tản âm",
+        "Kháng nước và bụi IP67, đèn tiệc 360°",
+        "Pin 25 giờ; sạc 10 phút nghe 100 phút",
+        "Bluetooth 5.3 hỗ trợ LDAC, Stereo Pair và Party Connect"
+      ]
+    },
+    "specs": {
+      "kind": "speaker",
+      "bassBoost": "TẮT ULT | BẬT ULT 1 | ULT 2",
+      "power": "110W | 20m² - 30m²",
+      "drivers": "Woofer X-Balanced 79mm x 107mm x 1 | Tweeters 46mm x 2 | Bộ tản âm x 2",
+      "battery": "25 giờ",
+      "fastCharge": "10 phút → 100 phút",
+      "connectivity": "Bluetooth 5.3 | LDAC | Stereo Pair | Fast Pair | Swift Pair | Party Connect",
+      "waterResistance": "Kháng nước/bụi IP67",
+      "utilities": "Sound Connect | Đèn tiệc 360° | Kết nối 2 thiết bị cùng lúc | Dây đeo vai | USB Type C in/out",
+      "includedMic": null,
+      "micPorts": null,
+      "dimensions": "320 mm x 144 mm x 125 mm",
+      "weight": "3.3 kg",
+      "specsSource": "Sony Vietnam FY26 — Các sản phẩm tai nghe & Loa (100426), bảng so sánh",
+      "specsMissing": [
+        "sku",
+        "url",
+        "imageUrl",
+        "colors",
+        "includedMic",
+        "micPorts"
+      ]
+    }
+  },
+  {
+    "id": "sony-ult-field-3",
+    "sku": "",
+    "name": "ULT FIELD 3",
+    "fullName": "Sony ULT FIELD 3 (SRS-ULT30)",
+    "category": "audio",
+    "subCategory1": "Loa",
+    "subCategory2": "Di động",
+    "priceVnd": 4490000,
+    "priceFormatted": "4.490.000 đ",
+    "url": "",
+    "imageUrl": "",
+    "features": {
+      "en": [
+        "50W output for rooms of 12–20 m²",
+        "86 x 46mm woofer, 20mm tweeter, two passive radiators",
+        "IP67 dust and water resistant",
+        "24 h battery; 10 min charge for 120 min play",
+        "Bluetooth 5.2 with Stereo Pair and Party Connect"
+      ],
+      "vi": [
+        "Công suất 50W cho không gian 12–20 m²",
+        "Woofer 86 x 46mm, Tweeter 20mm và 2 bộ tản âm",
+        "Kháng nước và bụi IP67",
+        "Pin 24 giờ; sạc 10 phút nghe 120 phút",
+        "Bluetooth 5.2 hỗ trợ Stereo Pair và Party Connect"
+      ]
+    },
+    "specs": {
+      "kind": "speaker",
+      "bassBoost": "TẮT ULT | BẬT ULT",
+      "power": "50W | 12m² - 20m²",
+      "drivers": "Woofer 86mm x 46mm x 1 | Tweeters 20mm x 1 | Bộ tản âm x 2",
+      "battery": "24 giờ",
+      "fastCharge": "10 phút → 120 phút",
+      "connectivity": "Bluetooth 5.2 | Stereo Pair | Fast Pair | Swift Pair | Party Connect",
+      "waterResistance": "Kháng nước/bụi IP67",
+      "utilities": "Sound Connect | Kết nối 2 thiết bị cùng lúc | Dây đeo vai | USB Type C in/out",
+      "includedMic": null,
+      "micPorts": null,
+      "dimensions": "256 mm x 113 mm x 79 mm",
+      "weight": "1.2 kg",
+      "specsSource": "Sony Vietnam FY26 — Các sản phẩm tai nghe & Loa (100426), bảng so sánh",
+      "specsMissing": [
+        "sku",
+        "url",
+        "imageUrl",
+        "colors",
+        "includedMic",
+        "micPorts"
+      ]
+    }
+  },
+  {
+    "id": "sony-ult-field-1",
+    "sku": "",
+    "name": "ULT FIELD 1",
+    "fullName": "Sony ULT FIELD 1 (SRS-ULT10)",
+    "category": "audio",
+    "subCategory1": "Loa",
+    "subCategory2": "Di động",
+    "priceVnd": 2450000,
+    "priceFormatted": "2.450.000 đ",
+    "url": "",
+    "imageUrl": "",
+    "features": {
+      "en": [
+        "30W output for rooms of 10–15 m²",
+        "83 x 42mm woofer, 16mm tweeter, two passive radiators",
+        "IP67 dust and water resistant, multi-way strap",
+        "12 h battery",
+        "Bluetooth 5.3 with Stereo Pair and hands-free calling"
+      ],
+      "vi": [
+        "Công suất 30W cho không gian 10–15 m²",
+        "Woofer 83 x 42mm, Tweeter 16mm và 2 bộ tản âm",
+        "Kháng nước và bụi IP67, dây đeo loa đa hướng",
+        "Pin 12 giờ",
+        "Bluetooth 5.3 hỗ trợ Stereo Pair và đàm thoại rảnh tay"
+      ]
+    },
+    "specs": {
+      "kind": "speaker",
+      "bassBoost": "TẮT ULT | BẬT ULT",
+      "power": "30W | 10m² - 15m²",
+      "drivers": "Woofer 83mm x 42mm x 1 | Tweeters 16mm x 1 | Bộ tản âm x 2",
+      "battery": "12 giờ",
+      "fastCharge": null,
+      "connectivity": "Bluetooth 5.3 | Stereo Pair | Fast Pair | Swift Pair",
+      "waterResistance": "Kháng nước/bụi IP67",
+      "utilities": "Sound Connect | Kết nối 2 thiết bị cùng lúc | Dây đeo loa đa hướng | Hand-Free Call",
+      "includedMic": null,
+      "micPorts": null,
+      "dimensions": "206 mm x 77 mm x 76 mm",
+      "weight": "0.63 kg",
+      "specsSource": "Sony Vietnam FY26 — Các sản phẩm tai nghe & Loa (100426), bảng so sánh",
+      "specsMissing": [
+        "sku",
+        "url",
+        "imageUrl",
+        "colors",
+        "fastCharge",
+        "includedMic",
+        "micPorts"
+      ]
+    }
+  },
+  {
+    "id": "sony-srs-xb100",
+    "sku": "",
+    "name": "SRS-XB100",
+    "fullName": "Sony SRS-XB100",
+    "category": "audio",
+    "subCategory1": "Loa",
+    "subCategory2": "Di động",
+    "priceVnd": 1270000,
+    "priceFormatted": "1.270.000 đ",
+    "url": "",
+    "imageUrl": "",
+    "features": {
+      "en": [
+        "10W output for rooms of 5–10 m²",
+        "46mm full-range driver with a 360° passive radiator",
+        "IP67 dust and water resistant",
+        "16 h battery",
+        "274 g with a multi-way strap"
+      ],
+      "vi": [
+        "Công suất 10W cho không gian 5–10 m²",
+        "Màng loa Fullrange 46mm với bộ tản âm 360°",
+        "Kháng nước và bụi IP67",
+        "Pin 16 giờ",
+        "Chỉ 274 g, kèm dây đeo loa đa hướng"
+      ]
+    },
+    "specs": {
+      "kind": "speaker",
+      "bassBoost": null,
+      "power": "10W | 5m² - 10m²",
+      "drivers": "Fullrange 46mm x 1 | Bộ tản âm 360 x 1",
+      "battery": "16 giờ",
+      "fastCharge": null,
+      "connectivity": "Bluetooth 5.3 | Stereo Pair | Fast Pair | Swift Pair",
+      "waterResistance": "Kháng nước/bụi IP67",
+      "utilities": "Sound Connect | Kết nối 2 thiết bị cùng lúc | Dây đeo loa đa hướng | Hand-Free Call",
+      "includedMic": null,
+      "micPorts": null,
+      "dimensions": "Đường kính 76 mm x 95 mm",
+      "weight": "0.274 kg",
+      "specsSource": "Sony Vietnam FY26 — Các sản phẩm tai nghe & Loa (100426), bảng so sánh",
+      "specsMissing": [
+        "sku",
+        "url",
+        "imageUrl",
+        "colors",
+        "bassBoost",
+        "fastCharge",
+        "includedMic",
+        "micPorts"
+      ]
+    }
+  },
+  {
+    "id": "sony-ult-tower-10",
+    "sku": "",
+    "name": "ULT TOWER 10",
+    "fullName": "Sony ULT TOWER 10 (SRS-ULT1000)",
+    "category": "audio",
+    "subCategory1": "Loa",
+    "subCategory2": "Karaoke",
+    "priceVnd": 25990000,
+    "priceFormatted": "25.990.000 đ",
+    "url": "",
+    "imageUrl": "",
+    "features": {
+      "en": [
+        "1000W output for rooms of 80–100 m²",
+        "320mm X-Balanced woofer, two 80mm midranges, four 40mm tweeters",
+        "Karaoke with Key Control and Echo, two mic inputs and a guitar input",
+        "Ships with the Tower 10 wireless microphone",
+        "360° party lighting, IPx2 splash resistant",
+        "Bluetooth 5.2 with LDAC, Stereo Pair and Party Connect"
+      ],
+      "vi": [
+        "Công suất 1000W cho không gian 80–100 m²",
+        "Woofer X-Balanced 320mm, 2 Midrange 80mm và 4 Tweeter 40mm",
+        "Karaoke với Key Control và Echo, 2 cổng micro và 1 cổng guitar",
+        "Kèm micro không dây Tower 10",
+        "Đèn tiệc 360°, kháng nước IPx2",
+        "Bluetooth 5.2 hỗ trợ LDAC, Stereo Pair và Party Connect"
+      ]
+    },
+    "specs": {
+      "kind": "speaker",
+      "bassBoost": "ULT POWER SOUND",
+      "power": "1000W | 80m² - 100m²",
+      "drivers": "Woofer X-Balanced 320mm x 1 | Midrange 80mm x 2 | Tweeters 40mm x 4 | Bộ tản âm x 2",
+      "battery": null,
+      "fastCharge": null,
+      "connectivity": "Bluetooth 5.2 | LDAC | Stereo Pair | Party Connect",
+      "waterResistance": "Kháng nước IPx2",
+      "utilities": "Sound Connect | Đèn tiệc 360° | Cổng USB phát nhạc/sạc pin thiết bị ngoại vi | Karaoke | Key Control | Echo",
+      "includedMic": "Micro không dây Tower 10",
+      "micPorts": "2 cổng Micro | 1 cổng Guitar",
+      "dimensions": "418 mm x 1106 mm x 428 mm",
+      "weight": "29 kg (tay nắm – bánh xe)",
+      "specsSource": "Sony Vietnam FY26 — Các sản phẩm tai nghe & Loa (100426), bảng so sánh",
+      "specsMissing": [
+        "sku",
+        "url",
+        "imageUrl",
+        "colors",
+        "battery",
+        "fastCharge"
+      ]
+    }
+  },
+  {
+    "id": "sony-ult-tower-9",
+    "sku": "",
+    "name": "ULT TOWER 9",
+    "fullName": "Sony ULT TOWER 9 / 9AC (SRS-ULT900)",
+    "category": "audio",
+    "subCategory1": "Loa",
+    "subCategory2": "Karaoke",
+    "priceVnd": 26990000,
+    "priceFormatted": "26.990.000 đ",
+    "url": "",
+    "imageUrl": "",
+    "features": {
+      "en": [
+        "900W output for rooms of 50–80 m²",
+        "320mm X-Balanced woofer, two 120mm midranges, 50mm and 40mm tweeters",
+        "Karaoke with Key Control and Echo, two mic inputs and a guitar input",
+        "Ships with the ULT MIC",
+        "25 h battery; 10 min charge for 180 min play",
+        "Bluetooth 5.3 with LDAC, Stereo Pair and Party Connect"
+      ],
+      "vi": [
+        "Công suất 900W cho không gian 50–80 m²",
+        "Woofer X-Balanced 320mm, 2 Midrange 120mm, Tweeter 50mm và 40mm",
+        "Karaoke với Key Control và Echo, 2 cổng micro và 1 cổng guitar",
+        "Kèm ULT MIC",
+        "Pin 25 giờ; sạc 10 phút nghe 180 phút",
+        "Bluetooth 5.3 hỗ trợ LDAC, Stereo Pair và Party Connect"
+      ]
+    },
+    "specs": {
+      "kind": "speaker",
+      "bassBoost": "ULT POWER SOUND",
+      "power": "900W | 50m² - 80m²",
+      "drivers": "Woofer X-Balanced 320mm x 1 | Midrange 120mm x 2 | Tweeters 50mm x 2 | 40mm x 2 | Bộ tản âm ULT x 1",
+      "battery": "25 giờ",
+      "fastCharge": "10 phút → 180 phút",
+      "connectivity": "Bluetooth 5.3 | LDAC | Stereo Pair | Party Connect",
+      "waterResistance": "Kháng nước IPx2",
+      "utilities": "Sound Connect | Đèn tiệc 360° | Cổng USB phát nhạc/sạc pin thiết bị ngoại vi | Karaoke | Key Control | Echo",
+      "includedMic": "ULT MIC",
+      "micPorts": "2 cổng Micro | 1 cổng Guitar",
+      "dimensions": "410 mm x 910 mm x 456 mm",
+      "weight": "29.6 kg / 28.5 kg (tay nắm – bánh xe)",
+      "specsSource": "Sony Vietnam FY26 — Các sản phẩm tai nghe & Loa (100426), bảng so sánh",
+      "specsMissing": [
+        "sku",
+        "url",
+        "imageUrl",
+        "colors"
+      ]
+    }
+  },
+  {
+    "id": "sony-srs-xv800",
+    "sku": "",
+    "name": "SRS-XV800",
+    "fullName": "Sony SRS-XV800",
+    "category": "audio",
+    "subCategory1": "Loa",
+    "subCategory2": "Karaoke",
+    "priceVnd": 14990000,
+    "priceFormatted": "14.990.000 đ",
+    "url": "",
+    "imageUrl": "",
+    "features": {
+      "en": [
+        "280W output for rooms of 40–60 m²",
+        "Two 170mm X-Balanced woofers, 60mm and 40mm tweeters",
+        "Karaoke with Key Control and Echo, two mic inputs and a guitar input",
+        "25 h battery; 10 min charge for 180 min play",
+        "360° party lighting, IPx4 splash resistant"
+      ],
+      "vi": [
+        "Công suất 280W cho không gian 40–60 m²",
+        "2 Woofer X-Balanced 170mm, Tweeter 60mm và 40mm",
+        "Karaoke với Key Control và Echo, 2 cổng micro và 1 cổng guitar",
+        "Pin 25 giờ; sạc 10 phút nghe 180 phút",
+        "Đèn tiệc 360°, kháng nước IPx4"
+      ]
+    },
+    "specs": {
+      "kind": "speaker",
+      "bassBoost": "MEGA BASS",
+      "power": "280W | 40m² - 60m²",
+      "drivers": "Woofer X-Balanced 170mm x 2 | Tweeters 60mm x 2, 40mm x 2 | Bộ tản âm x 2",
+      "battery": "25 giờ",
+      "fastCharge": "10 phút → 180 phút",
+      "connectivity": "Bluetooth 5.2 | LDAC | Stereo Pair | Party Connect",
+      "waterResistance": "Kháng nước IPx4",
+      "utilities": "Sound Connect | Đèn tiệc 360° | Cổng USB phát nhạc/sạc pin thiết bị ngoại vi | Karaoke | Key Control | Echo",
+      "includedMic": null,
+      "micPorts": "2 cổng Micro | 1 cổng Guitar",
+      "dimensions": "317 mm x 720 mm x 375 mm",
+      "weight": "18.5 kg (tay nắm – bánh xe)",
+      "specsSource": "Sony Vietnam FY26 — Các sản phẩm tai nghe & Loa (100426), bảng so sánh",
+      "specsMissing": [
+        "sku",
+        "url",
+        "imageUrl",
+        "colors",
+        "includedMic"
+      ]
+    }
+  },
+  {
+    "id": "sony-srs-xv500",
+    "sku": "",
+    "name": "SRS-XV500",
+    "fullName": "Sony SRS-XV500",
+    "category": "audio",
+    "subCategory1": "Loa",
+    "subCategory2": "Karaoke",
+    "priceVnd": 9990000,
+    "priceFormatted": "9.990.000 đ",
+    "url": "",
+    "imageUrl": "",
+    "features": {
+      "en": [
+        "160W output for rooms of 25–45 m²",
+        "Two 140mm X-Balanced woofers and two 60mm tweeters",
+        "Karaoke with Key Control and Echo, two mic inputs and a guitar input",
+        "25 h battery; 10 min charge for 150 min play",
+        "360° party lighting, IPx4 splash resistant"
+      ],
+      "vi": [
+        "Công suất 160W cho không gian 25–45 m²",
+        "2 Woofer X-Balanced 140mm và 2 Tweeter 60mm",
+        "Karaoke với Key Control và Echo, 2 cổng micro và 1 cổng guitar",
+        "Pin 25 giờ; sạc 10 phút nghe 150 phút",
+        "Đèn tiệc 360°, kháng nước IPx4"
+      ]
+    },
+    "specs": {
+      "kind": "speaker",
+      "bassBoost": "MEGA BASS",
+      "power": "160W | 25m² - 45m²",
+      "drivers": "Woofer X-Balanced 140mm x 2 | Tweeters 60mm x 2 | Bộ tản âm x 2",
+      "battery": "25 giờ",
+      "fastCharge": "10 phút → 150 phút",
+      "connectivity": "Bluetooth 5.2 | LDAC | Stereo Pair | Party Connect",
+      "waterResistance": "Kháng nước IPx4",
+      "utilities": "Sound Connect | Đèn tiệc 360° | Cổng USB phát nhạc/sạc pin thiết bị ngoại vi | Karaoke | Key Control | Echo",
+      "includedMic": null,
+      "micPorts": "2 cổng Micro | 1 cổng Guitar",
+      "dimensions": "269 mm x 564 mm x 294 mm",
+      "weight": "11.2 kg (tay nắm)",
+      "specsSource": "Sony Vietnam FY26 — Các sản phẩm tai nghe & Loa (100426), bảng so sánh",
+      "specsMissing": [
+        "sku",
+        "url",
+        "imageUrl",
+        "colors",
+        "includedMic"
+      ]
+    }
+  }
+]

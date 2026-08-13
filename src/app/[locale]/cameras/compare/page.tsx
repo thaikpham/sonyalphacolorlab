@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
 import { getSonyCameras } from '@/lib/cameras/data';
+import { getSonyAudio } from '@/lib/audio/data';
 import { CameraCompareView } from '@/components/camera-compare-view';
 import { SiteHeader } from '@/components/site-header';
 
@@ -30,7 +31,11 @@ export default async function CameraComparePage({
   const { ids } = await searchParams;
   setRequestLocale(locale);
 
-  const initialCameras = await getSonyCameras();
+  /* Both catalogues. This is the only compare surface, and `?ids=` can name a
+     body and a headset in the same list — resolving against cameras alone
+     dropped every audio id silently, leaving a compare page with fewer columns
+     than the reader ticked. */
+  const initialCameras = [...(await getSonyCameras()), ...(await getSonyAudio())];
   const selectedIds = ids ? ids.split(',').filter(Boolean) : [];
 
   return (

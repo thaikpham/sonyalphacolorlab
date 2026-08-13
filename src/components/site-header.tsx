@@ -7,9 +7,12 @@ import { useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { LanguageToggle } from './language-toggle';
 import { useAuth } from './auth-context';
+import { EcosystemApp } from './ecosystem-app';
 import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import { routing } from '@/i18n/routing';
 import { CREATIVE_LOOKS } from '@/lib/camera/constants';
+import { DEFAULT_WIKI_SORT } from '@/lib/cameras/types';
+import { ECOSYSTEM_APPS } from '@/lib/ecosystem';
 
 interface TagItem {
   tag: string;
@@ -52,7 +55,16 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
   const router = useRouter();
   const locale = useLocale();
   const pathname = usePathname();
-  const isWiki = pathname === '/cameras' || pathname.startsWith('/cameras/');
+  /* Two catalogues share this chrome: the camera wiki and the headphone &
+     speaker wiki. `isWiki` decides whether the filter bar renders at all;
+     `wikiBase` decides which route its controls navigate to. They were one
+     flag and a hardcoded `/cameras`, so every control on `/audio` — search,
+     sort, view switcher, reset — silently threw the reader into the camera
+     catalogue. */
+  const isAudioWiki = pathname === '/audio' || pathname.startsWith('/audio/');
+  const isWiki =
+    pathname === '/cameras' || pathname.startsWith('/cameras/') || isAudioWiki;
+  const wikiBase = isAudioWiki ? '/audio' : '/cameras';
   const searchParams = useSearchParams();
   const { user, loginWithGoogle, logout } = useAuth();
 
@@ -64,12 +76,12 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
   const wikiCat = searchParams?.get('cat') ?? 'all';
   const wikiSub1 = searchParams?.get('sub1') ?? 'all';
   const wikiSub2 = searchParams?.get('sub2') ?? 'all';
-  const wikiSort = searchParams?.get('sort') ?? 'price-desc';
+  const wikiSort = searchParams?.get('sort') ?? DEFAULT_WIKI_SORT;
   const wikiView = searchParams?.get('view') ?? 'grid';
 
   const tagList = providedTags && providedTags.length > 0 ? providedTags : FALLBACK_TAGS;
   const hasActiveFilters = isWiki
-    ? Boolean(currentQ || wikiCat !== 'all' || wikiSub1 !== 'all' || wikiSub2 !== 'all' || wikiSort !== 'price-desc')
+    ? Boolean(currentQ || wikiCat !== 'all' || wikiSub1 !== 'all' || wikiSub2 !== 'all' || wikiSort !== DEFAULT_WIKI_SORT)
     : Boolean(currentQ || currentFormat || currentLook || currentTag);
 
   const [isHidden, setIsHidden] = useState(false);
@@ -97,36 +109,17 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
   const [isPredictiveLoading, setIsPredictiveLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [isPredictiveOpen, setIsPredictiveOpen] = useState(false);
-
-  useEffect(() => {
-    if (!query.trim()) {
-      setPredictiveResults([]);
-      setIsPredictiveOpen(false);
-      return;
-    }
-
-    let active = true;
-    setIsPredictiveLoading(true);
-    setIsPredictiveOpen(true);
-    setSelectedIndex(-1);
-
-    const mode = isWiki ? 'wiki' : 'colorlab';
-    fetch(`/api/search/predictive?q=${encodeURIComponent(query)}&mode=${mode}&locale=${locale}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (active && data.results) {
-          setPredictiveResults(data.results);
-        }
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (active) setIsPredictiveLoading(false);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [query, isWiki, locale]);
+  const predictiveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /**
+   * Monotonic id of the newest predictive request.
+   *
+   * The dropdown is fed by whichever response lands last, which is not
+   * necessarily the newest query — "a7" issued before "a7 iv" can resolve after
+   * it and repaint the older matches over the newer ones. Comparing against
+   * this on arrival drops any response that is no longer the current one, and
+   * bumping it is also how a cleared box cancels a request already in flight.
+   */
+  const predictiveSeq = useRef(0);
 
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!isPredictiveOpen || predictiveResults.length === 0) return;
@@ -178,6 +171,10 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
     setSyncedQ(currentQ);
     setQuery(currentQ);
     if (hasActiveFilters) setIsSearchOpen(true);
+    /* A navigation answers the query — the reader is now looking at results,
+       so the suggestions for that same text are stale chrome over them. This
+       does not fetch: arriving on a URL is not someone typing. */
+    setIsPredictiveOpen(false);
   }
 
   // Handle scroll auto-hide behavior
@@ -292,7 +289,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
 
       if (isWiki) {
         const qs = new URLSearchParams(newQ.trim() ? { q: newQ.trim() } : {}).toString();
-        router.push(qs ? `/cameras?${qs}` : '/cameras', { scroll: false });
+        router.push(qs ? `${wikiBase}?${qs}` : wikiBase, { scroll: false });
       } else {
         const next: Record<string, string> = {};
         const newFormat = patch.format !== undefined ? patch.format : currentFormat;
@@ -305,10 +302,13 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
         if (newTag) next.tag = newTag;
 
         const qs = new URLSearchParams(next).toString();
-        router.push(qs ? `/?${qs}` : '/', { scroll: false });
+        /* `/colorlab`, not `/` — the root is the ecosystem launcher now, and it
+           renders no grid, so every recipe search and filter here would have
+           navigated out of the app and shown four tiles instead of results. */
+        router.push(qs ? `/colorlab?${qs}` : '/colorlab', { scroll: false });
       }
     },
-    [currentQ, currentFormat, currentLook, currentTag, isWiki, router],
+    [currentQ, currentFormat, currentLook, currentTag, isWiki, wikiBase, router],
   );
 
   const updateWikiFilters = useCallback(
@@ -333,13 +333,13 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
       if (newCat && newCat !== 'all') next.set('cat', newCat);
       if (newSub1 && newSub1 !== 'all') next.set('sub1', newSub1);
       if (newSub2 && newSub2 !== 'all') next.set('sub2', newSub2);
-      if (newSort && newSort !== 'price-desc') next.set('sort', newSort);
+      if (newSort && newSort !== DEFAULT_WIKI_SORT) next.set('sort', newSort);
       if (newView && newView !== 'grid') next.set('view', newView);
 
       const qs = next.toString();
-      router.push(qs ? `/cameras?${qs}` : '/cameras', { scroll: false });
+      router.push(qs ? `${wikiBase}?${qs}` : wikiBase, { scroll: false });
     },
-    [currentQ, wikiCat, wikiSub1, wikiSub2, wikiSort, wikiView, router],
+    [currentQ, wikiCat, wikiSub1, wikiSub2, wikiSort, wikiView, wikiBase, router],
   );
 
   /**
@@ -350,13 +350,71 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
    * round trips and raced its own results. One push once typing settles.
    */
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  /**
+   * Suggestions for what is in the box, also debounced.
+   *
+   * This is an event response, not a synchronisation — it belongs here rather
+   * than in an effect keyed on `query`. As an effect it fired one request per
+   * keystroke (the 250ms above debounced only the route push, not this), so
+   * "a7 iv" cost five calls to `/api/search/predictive` and painted whichever
+   * came back last. It also could not avoid setting state synchronously in the
+   * effect body, which is the cascading-render pattern
+   * `react-hooks/set-state-in-effect` rejects.
+   *
+   * 120ms is shorter than the route debounce on purpose: the dropdown is the
+   * fast feedback a typist is waiting on, the grid behind it is not.
+   * https://react.dev/learn/you-might-not-need-an-effect
+   */
+  const queuePredictive = (value: string) => {
+    if (predictiveTimer.current) clearTimeout(predictiveTimer.current);
+    const q = value.trim();
+
+    if (!q) {
+      // Bumping the sequence orphans any in-flight response, so a request sent
+      // before the box was cleared cannot repopulate an empty dropdown.
+      predictiveSeq.current += 1;
+      setPredictiveResults([]);
+      setIsPredictiveOpen(false);
+      setIsPredictiveLoading(false);
+      setSelectedIndex(-1);
+      return;
+    }
+
+    setIsPredictiveOpen(true);
+    setIsPredictiveLoading(true);
+    setSelectedIndex(-1);
+
+    const seq = (predictiveSeq.current += 1);
+    const mode = isWiki ? 'wiki' : 'colorlab';
+    predictiveTimer.current = setTimeout(() => {
+      fetch(`/api/search/predictive?q=${encodeURIComponent(q)}&mode=${mode}&locale=${locale}`)
+        .then((res) => (res.ok ? res.json() : { results: [] }))
+        .then((data: { results?: PredictiveItem[] }) => {
+          if (seq !== predictiveSeq.current) return;
+          setPredictiveResults(Array.isArray(data.results) ? data.results : []);
+        })
+        /* An offline or 500 response leaves the previous query's matches on
+           screen otherwise, which reads as a result for what was just typed. */
+        .catch(() => {
+          if (seq === predictiveSeq.current) setPredictiveResults([]);
+        })
+        .finally(() => {
+          if (seq === predictiveSeq.current) setIsPredictiveLoading(false);
+        });
+    }, 120);
+  };
+
   const queueSearch = (value: string) => {
     setQuery(value);
+    queuePredictive(value);
     if (searchTimer.current) clearTimeout(searchTimer.current);
     searchTimer.current = setTimeout(() => updateFilters({ q: value }), 250);
   };
+
   useEffect(() => () => {
     if (searchTimer.current) clearTimeout(searchTimer.current);
+    if (predictiveTimer.current) clearTimeout(predictiveTimer.current);
   }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -367,13 +425,16 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
 
   const handleClearQuery = () => {
     setQuery('');
+    queuePredictive('');
     updateFilters({ q: '' });
     inputRef.current?.focus();
   };
 
   const handleResetAll = () => {
     setQuery('');
-    router.push(isWiki ? '/cameras' : '/', { scroll: false });
+    queuePredictive('');
+    // Clearing filters returns to the current app's own index, never the launcher.
+    router.push(isWiki ? wikiBase : '/colorlab', { scroll: false });
   };
 
   return (
@@ -431,7 +492,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
             <div className="relative flex min-w-0 items-center gap-2 sm:gap-2.5" ref={ecosystemRef}>
               {isWiki ? (
                 <Link
-                  href="/cameras"
+                  href={wikiBase}
                   className="group flex h-9 sm:h-10 min-w-0 items-center gap-2 sm:gap-2.5 transition-transform duration-300 hover:scale-105 active:scale-95"
                 >
                   <Image
@@ -589,7 +650,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                   role="search"
                   action={
                     isWiki
-                      ? (locale === routing.defaultLocale ? '/cameras' : `/${locale}/cameras`)
+                      ? (locale === routing.defaultLocale ? wikiBase : `/${locale}${wikiBase}`)
                       : (locale === routing.defaultLocale ? '/' : `/${locale}`)
                   }
                   method="get"
@@ -696,9 +757,15 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                                 }`}
                               >
                                 {item.imageUrl ? (
-                                  <img
+                                  /* 36px on screen. As a bare <img> this pulled
+                                     the full 1000x1000 original — ~139KB per
+                                     suggestion, on every keystroke that changed
+                                     the list. */
+                                  <Image
                                     src={item.imageUrl}
                                     alt=""
+                                    width={36}
+                                    height={36}
                                     className="w-9 h-9 rounded-lg object-cover bg-black/60 border border-white/15 shrink-0"
                                   />
                                 ) : (
@@ -905,18 +972,33 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                   {/* Row 1: Category Tabs & View Switcher */}
                   <div className="flex items-center justify-between gap-3 flex-wrap">
                     <div className="flex items-center gap-1.5 overflow-x-auto py-1 max-w-full scrollbar-none">
-                      {[
-                        { key: 'all', label: tCameras('catAll'), icon: '📦' },
-                        { key: 'camera', label: tCameras('catCamera'), icon: '📷' },
-                        { key: 'lens', label: tCameras('catLens'), icon: '🔍' },
-                        { key: 'accessory', label: tCameras('catAccessory'), icon: '🎙️' },
-                      ].map((cat) => (
+                      {/* Every product on `/audio` is one category, so tabs
+                          keyed on `cat` would be one live tab and three empty
+                          ones. There they select `sub1` — Tai nghe or Loa —
+                          which is the split a reader of that page is after. */}
+                      {(isAudioWiki
+                        ? [
+                            { key: 'all', label: tCameras('catAll'), icon: '📦' },
+                            { key: 'Tai nghe', label: 'Tai nghe', icon: '🎧' },
+                            { key: 'Loa', label: 'Loa', icon: '🔊' },
+                          ]
+                        : [
+                            { key: 'all', label: tCameras('catAll'), icon: '📦' },
+                            { key: 'camera', label: tCameras('catCamera'), icon: '📷' },
+                            { key: 'lens', label: tCameras('catLens'), icon: '🔍' },
+                            { key: 'accessory', label: tCameras('catAccessory'), icon: '🎙️' },
+                          ]
+                      ).map((cat) => (
                         <button
                           key={cat.key}
                           type="button"
-                          onClick={() => updateWikiFilters({ cat: cat.key, sub1: 'all', sub2: 'all' })}
+                          onClick={() =>
+                            isAudioWiki
+                              ? updateWikiFilters({ sub1: cat.key, sub2: 'all' })
+                              : updateWikiFilters({ cat: cat.key, sub1: 'all', sub2: 'all' })
+                          }
                           className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 font-sans ${
-                            wikiCat === cat.key
+                            (isAudioWiki ? wikiSub1 : wikiCat) === cat.key
                               ? 'bg-amber-400 text-black shadow-md font-extrabold scale-105'
                               : 'glass-flat text-white/80 hover:bg-white/20 hover:text-white border border-white/15'
                           }`}
@@ -925,6 +1007,31 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                           <span>{cat.label}</span>
                         </button>
                       ))}
+                    </div>
+
+                    {/* Catalogue switcher.
+                        Without it the audio wiki is reachable only by typing
+                        the URL: the brand link, the tabs and the reset control
+                        all stay inside whichever catalogue you are already in,
+                        so a reader on `/cameras` had no path to the other 25
+                        products. */}
+                    <div className="flex items-center p-1 rounded-xl bg-black/70 border border-white/20 shrink-0 font-sans">
+                      <Link
+                        href="/cameras"
+                        className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all font-sans ${
+                          isAudioWiki ? 'text-white/60 hover:text-white' : 'bg-amber-400 text-black font-extrabold shadow-md'
+                        }`}
+                      >
+                        📷 {tCameras('title')}
+                      </Link>
+                      <Link
+                        href="/audio"
+                        className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all font-sans ${
+                          isAudioWiki ? 'bg-amber-400 text-black font-extrabold shadow-md' : 'text-white/60 hover:text-white'
+                        }`}
+                      >
+                        🎧 {tCameras('catAudio')}
+                      </Link>
                     </div>
 
                     {/* View Mode Switcher */}
@@ -958,9 +1065,12 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                       {/* Digital Clock Style Product Counter Badge */}
                       <span className="px-3 py-1 rounded-xl bg-black/90 border border-amber-400/50 text-amber-300 shadow-[0_0_12px_rgba(251,191,36,0.25)] font-mono font-extrabold text-xs tracking-wider flex items-center gap-2 select-none shrink-0">
                         <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shadow-[0_0_6px_#fbbf24]" />
-                        <span>94 PRODUCTS</span>
+                        <span>{isAudioWiki ? '25 PRODUCTS' : '94 PRODUCTS'}</span>
                       </span>
 
+                      {/* `sub1` already has tabs on the audio route, so only
+                          the `sub2` dropdown shows there. */}
+                      {!isAudioWiki && (
                       <select
                         value={wikiSub1}
                         onChange={(e) => updateWikiFilters({ sub1: e.target.value, sub2: 'all' })}
@@ -973,6 +1083,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                           </option>
                         ))}
                       </select>
+                      )}
 
                       <select
                         value={wikiSub2}
@@ -980,19 +1091,22 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                         className="px-3 py-1.5 rounded-xl bg-black/80 border border-white/25 text-xs text-white font-bold focus:outline-none focus:ring-1 focus:ring-amber-400/60 cursor-pointer font-sans"
                       >
                         <option value="all">{tCameras('sub2All')}</option>
-                        {[
-                          'Battery',
-                          'Cinema Line',
-                          'DSC',
-                          'G',
-                          'GM',
-                          'Lens Mount',
-                          'Microphone',
-                          'Máy ảnh Alpha',
-                          'SEL',
-                          'Vlog',
-                          'Vlog Accessory',
-                        ].map((sub2) => (
+                        {(isAudioWiki
+                          ? ['Choàng đầu', 'Nhét tai', 'Gaming', 'Di động', 'Karaoke']
+                          : [
+                              'Battery',
+                              'Cinema Line',
+                              'DSC',
+                              'G',
+                              'GM',
+                              'Lens Mount',
+                              'Microphone',
+                              'Máy ảnh Alpha',
+                              'SEL',
+                              'Vlog',
+                              'Vlog Accessory',
+                            ]
+                        ).map((sub2) => (
                           <option key={sub2} value={sub2}>
                             {sub2}
                           </option>
@@ -1007,8 +1121,11 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                         onChange={(e) => updateWikiFilters({ sort: e.target.value })}
                         className="px-3 py-1.5 rounded-xl bg-black/80 border border-white/25 text-xs text-white font-bold focus:outline-none focus:ring-1 focus:ring-amber-400/60 cursor-pointer font-sans"
                       >
-                        <option value="price-desc">{tCameras('sortPriceDesc')}</option>
+                        {/* Cheapest first leads, because it is the default the
+                            page opens on — a select whose first option is not
+                            the one in effect reads as though it were reset. */}
                         <option value="price-asc">{tCameras('sortPriceAsc')}</option>
+                        <option value="price-desc">{tCameras('sortPriceDesc')}</option>
                         <option value="name">{tCameras('sortName')}</option>
                         <option value="sku">{tCameras('sortSku')}</option>
                       </select>
@@ -1233,55 +1350,25 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                 do. These values land all three on roughly 70% of the tile.
                 Percentages, not `p-4`, so they hold at both tile sizes without
                 a breakpoint. */}
+            {/* One list, two surfaces — see `ECOSYSTEM_APPS`. The landing page
+                at `/` renders the same four tiles from the same definitions, so
+                a new app appears in both without touching either. The two
+                external entries carry absolute URLs and deliberately not
+                routes: they are separate projects on their own repos and their
+                own Vercel deployments, so this app has no copy of their source
+                and no way to render them. They used to be reachable at
+                `/cheesebooth` and `/livesop`, which embedded each deployment in
+                an iframe; that only ever worked because the destination was
+                already external, and it cost the reader the app's own chrome,
+                its URL bar and its deep links. Send them to the real origin. */}
             <div className="w-full max-w-2xl grid grid-cols-2 gap-x-8 gap-y-14 sm:gap-x-16 sm:gap-y-20 justify-items-center items-center">
-              <EcosystemApp
-                name="ColorLab 2.0"
-                icon="/colorlab-icon.png"
-                href="/"
-                external={false}
-                iconInset="p-[13.5%]"
-                enter="app-enter-1"
-                onNavigate={() => setIsEcosystemOpen(false)}
-              />
-
-              <EcosystemApp
-                name="Sony Wiki"
-                icon="/sony-wiki-icon.png"
-                href="/cameras"
-                external={false}
-                iconInset="p-[10%]"
-                enter="app-enter-2"
-                accent="group-hover:text-amber-300"
-                onNavigate={() => setIsEcosystemOpen(false)}
-              />
-
-              {/* Absolute URLs, and deliberately not routes here. These two are
-                  separate projects on their own repos and their own Vercel
-                  deployments — this app has no copy of their source and no way
-                  to render them. They used to be reachable at `/cheesebooth`
-                  and `/livesop`, which embedded each deployment in an iframe;
-                  that only ever worked because the destination was already
-                  external, and it cost the reader the app's own chrome, its
-                  URL bar and its deep links. Send them to the real origin. */}
-              <EcosystemApp
-                name="CheeseBooth"
-                icon="/cheesebooth-icon.png"
-                href="https://cheese-booth.vercel.app/"
-                iconInset="p-[11%]"
-                enter="app-enter-3"
-                accent="group-hover:text-amber-300"
-                onNavigate={() => setIsEcosystemOpen(false)}
-              />
-
-              <EcosystemApp
-                name="Live Stream SOP"
-                icon="/livesop-icon.png"
-                href="https://sonylivesop.vercel.app/"
-                iconInset="p-[7.5%]"
-                enter="app-enter-4"
-                accent="group-hover:text-blue-300"
-                onNavigate={() => setIsEcosystemOpen(false)}
-              />
+              {ECOSYSTEM_APPS.map((app) => (
+                <EcosystemApp
+                  key={app.key}
+                  app={app}
+                  onNavigate={() => setIsEcosystemOpen(false)}
+                />
+              ))}
             </div>
           </div>
         </div>
@@ -1292,120 +1379,6 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
   );
 }
 
-/**
- * One app in the Sony Alpha ecosystem launcher.
- *
- * The current app renders as a plain tile; the others as external links.
- *
- * Three elements, and the split matters. The **shell** owns every transform —
- * the staggered entrance and the hover scale. The **glow** is its own absolutely
- * positioned layer *behind* the tile rather than a `z-index: -1` pseudo on the
- * tile, because a negative-z child only paints behind its parent while that
- * parent is not a stacking context: the moment the tile itself scaled on hover
- * it became one, and the blurred rainbow painted across the icon's face instead
- * of around it. The **tile** is the opaque squircle and does the clipping.
- *
- * Nothing here clips the shell's overflow — the glow lives outside the tile's
- * box by design, and `overflow-hidden` anywhere above it cuts away the only
- * part of it that is ever visible.
- */
-function EcosystemApp({
-  name,
-  icon,
-  href,
-  iconInset,
-  enter,
-  accent = '',
-  onNavigate,
-  external = true,
-}: {
-  name: string;
-  icon: string;
-  href?: string;
-  iconInset: string;
-  enter: string;
-  accent?: string;
-  onNavigate?: () => void;
-  /** The sibling apps live on other origins and open in a new tab. This one is
-      the app you are already in, so it navigates in place. */
-  external?: boolean;
-}) {
-  const body = (
-    <>
-      <div className="app-tile-shell w-32 h-32 sm:w-40 sm:h-40 mb-4">
-        <span aria-hidden className="app-glow" />
-        <div
-          className={`app-tile w-full h-full ${iconInset} flex items-center justify-center`}
-        >
-          <Image
-            src={icon}
-            /* Decorative: the visible name below is already the link's label,
-               and a duplicate here would have a screen reader read it twice. */
-            alt=""
-            width={200}
-            height={200}
-            /* Served straight from /public, never through /_next/image.
-               These three broke in production with
-               `402 OPTIMIZED_IMAGE_REQUEST_PAYMENT_REQUIRED` — the account's
-               image-optimization quota is spent, so only transforms already in
-               Vercel's cache still resolve. Every other image on the site kept
-               working purely because it had been optimized before the quota
-               ran out; these were added after it, so no cached variant existed
-               and all three rendered as broken icons.
-               The sources are now 256x256 and 6-11KB each, which is smaller
-               than the optimizer's own output would have been, so there is
-               nothing left to optimize away. This also makes the launcher
-               immune to the quota, which is the point: it is the one component
-               whose whole job is to look like the apps work. */
-            unoptimized
-            className="w-full h-full object-contain"
-          />
-        </div>
-      </div>
-      <h4
-        className={`text-[1rem] sm:text-lg font-bold text-white transition-colors tracking-wide drop-shadow-md ${accent}`}
-      >
-        {name}
-      </h4>
-    </>
-  );
-
-  const shell = `group app-enter ${enter} flex flex-col items-center text-center max-w-[240px]`;
-
-  // A tile with no href renders as a dead square: it looks identical to the
-  // two beside it, and clicking it does nothing at all — not even close the
-  // launcher. That is what "the links don't work" meant.
-  if (!href) {
-    return <div className={`${shell} cursor-default`}>{body}</div>;
-  }
-
-  if (external) {
-    return (
-      <a
-        href={href}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={() => {
-          // Delay unmounting so the browser can process the default link action
-          if (onNavigate) setTimeout(onNavigate, 200);
-        }}
-        className={`${shell} cursor-pointer`}
-      >
-        {body}
-      </a>
-    );
-  }
-
-  return (
-    <Link
-      href={href}
-      onClick={onNavigate}
-      className={`${shell} cursor-pointer`}
-    >
-      {body}
-    </Link>
-  );
-}
 
 export function SiteHeader(props: SiteHeaderProps) {
   return (

@@ -5,15 +5,59 @@ import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
-import type { ProductCategory, SonyCamera } from '@/lib/cameras/types';
+import {
+  compareCameras,
+  DEFAULT_WIKI_SORT,
+  type CameraCard,
+  type ProductCategory,
+  type SonyCamera,
+  type WikiSort,
+} from '@/lib/cameras/types';
 import { featureList, splitFeatures } from '@/lib/cameras/features';
 import { calculateMatchScore } from '@/lib/search/fuzzy-search';
 
-interface CameraWikiViewProps {
-  initialCameras: SonyCamera[];
+/**
+ * Category chip label, per category.
+ *
+ * A lookup rather than a chained ternary: the ternary had no branch for a
+ * fourth category, so `audio` fell through to the `catAccessory` label and the
+ * active-filter chip read "Phụ kiện" over a page of headphones.
+ */
+const CATEGORY_LABEL_KEY: Record<string, string> = {
+  camera: 'catCamera',
+  lens: 'catLens',
+  accessory: 'catAccessory',
+  audio: 'catAudio',
+};
+
+/** Stands in for product photography the source does not publish. */
+function NoPhoto({ label }: { label?: string }) {
+  return (
+    <span className="flex flex-col items-center justify-center gap-1 text-black/30">
+      <span className="text-2xl leading-none" aria-hidden>
+        ◫
+      </span>
+      {label && <span className="text-[10px] font-mono font-bold">{label}</span>}
+    </span>
+  );
 }
 
-export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
+interface CameraWikiViewProps {
+  /* Cards, not full products: the spec blocks would be a third of this page's
+     payload and nothing here renders them. See `CameraCard`. */
+  initialCameras: CameraCard[];
+  /**
+   * Route this grid belongs to — `/cameras` or `/audio`.
+   *
+   * Every navigation out of this component is built from it: the filter query
+   * string, a product page, the compare page. It was five hardcoded
+   * `/cameras` literals, which is why the second catalogue could not reuse the
+   * grid: picking a sort on `/audio` navigated to the camera catalogue.
+   */
+  basePath?: string;
+}
+
+export function CameraWikiView({ initialCameras, basePath = '/cameras' }: CameraWikiViewProps) {
   const t = useTranslations('cameras');
   const locale = useLocale();
   const router = useRouter();
@@ -23,7 +67,7 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
   const selectedSub1 = searchParams?.get('sub1') || 'all';
   const selectedSub2 = searchParams?.get('sub2') || 'all';
   const searchQuery = searchParams?.get('q') || '';
-  const sortBy = (searchParams?.get('sort') as 'price-desc' | 'price-asc' | 'name' | 'sku') || 'price-desc';
+  const sortBy = (searchParams?.get('sort') as WikiSort) || DEFAULT_WIKI_SORT;
   const viewMode = (searchParams?.get('view') as 'table' | 'grid') || 'grid';
 
   const [selectedForCompare, setSelectedForCompare] = useState<string[]>([]);
@@ -32,56 +76,27 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
   const updateWikiParam = (patch: Record<string, string>) => {
     const params = new URLSearchParams(Array.from(searchParams?.entries() ?? []));
     for (const [key, value] of Object.entries(patch)) {
-      if (!value || value === 'all' || (key === 'sort' && value === 'price-desc') || (key === 'view' && value === 'grid')) {
+      // The default ordering is the absence of `?sort=`, so it never goes in.
+      if (!value || value === 'all' || (key === 'sort' && value === DEFAULT_WIKI_SORT) || (key === 'view' && value === 'grid')) {
         params.delete(key);
       } else {
         params.set(key, value);
       }
     }
     const qs = params.toString();
-    router.push(qs ? `/cameras?${qs}` : '/cameras', { scroll: false });
+    router.push(qs ? `${basePath}?${qs}` : basePath, { scroll: false });
   };
 
   /* A product opens its own page. It used to open a modal and fake the URL with
      pushState, which left the address bar pointing at a page that had never
      rendered — reload or share the link and you got the bare catalogue. */
-  const openProduct = (cam: SonyCamera) => router.push(`/cameras/${cam.id}`);
+  const openProduct = (cam: SonyCamera) => router.push(`${basePath}/${cam.id}`);
 
-  // Main Categories
-  const categories: { key: ProductCategory; label: string; icon: string }[] = [
-    { key: 'all', label: t('catAll'), icon: '📦' },
-    { key: 'camera', label: t('catCamera'), icon: '📷' },
-    { key: 'lens', label: t('catLens'), icon: '🔍' },
-    { key: 'accessory', label: t('catAccessory'), icon: '🎙️' },
-  ];
-
-  // Dynamically compute sub-categories available for current main category selection
-  const availableSub1List = useMemo(() => {
-    let prods = initialCameras;
-    if (selectedCategory !== 'all') {
-      prods = prods.filter((p) => p.category === selectedCategory);
-    }
-    const set1 = new Set<string>();
-    for (const p of prods) {
-      if (p.subCategory1) set1.add(p.subCategory1);
-    }
-    return Array.from(set1).sort();
-  }, [initialCameras, selectedCategory]);
-
-  const availableSub2List = useMemo(() => {
-    let prods = initialCameras;
-    if (selectedCategory !== 'all') {
-      prods = prods.filter((p) => p.category === selectedCategory);
-    }
-    if (selectedSub1 !== 'all') {
-      prods = prods.filter((p) => p.subCategory1 === selectedSub1);
-    }
-    const set2 = new Set<string>();
-    for (const p of prods) {
-      if (p.subCategory2) set2.add(p.subCategory2);
-    }
-    return Array.from(set2).sort();
-  }, [initialCameras, selectedCategory, selectedSub1]);
+  /* The category chips and the two sub-category option lists that used to be
+     computed here now live in `site-header.tsx`, which owns the filter bar and
+     derives them from the same query params. They were left behind unread:
+     two `useMemo` passes over the whole catalogue, building Sets nothing
+     rendered, on every keystroke that re-rendered this view. */
 
   // Filtering & Sorting
   const filteredCameras = useMemo(() => {
@@ -118,20 +133,9 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
         .map((item) => item.camera);
     }
 
-    switch (sortBy) {
-      case 'price-desc':
-        result.sort((a, b) => b.priceVnd - a.priceVnd);
-        break;
-      case 'price-asc':
-        result.sort((a, b) => a.priceVnd - b.priceVnd);
-        break;
-      case 'name':
-        result.sort((a, b) => a.name.localeCompare(b.name));
-        break;
-      case 'sku':
-        result.sort((a, b) => a.sku.localeCompare(b.sku));
-        break;
-    }
+    // Same comparator the server list uses, so the order cannot change under
+    // the reader when this re-sorts after hydration.
+    result.sort(compareCameras(sortBy));
 
     return result;
   }, [initialCameras, selectedCategory, selectedSub1, selectedSub2, searchQuery, sortBy]);
@@ -155,6 +159,8 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
   const navigateToComparePage = () => {
     if (selectedForCompare.length === 0) return;
     setIsConfirmModalOpen(false);
+    /* One compare surface for both catalogues, so a reader can put a body and
+       a headset side by side. It resolves ids against cameras *and* audio. */
     router.push(`/cameras/compare?ids=${selectedForCompare.join(',')}`);
   };
 
@@ -166,6 +172,8 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
         return 'bg-sky-400/25 text-sky-200 border-sky-400/50 shadow-sm font-extrabold';
       case 'accessory':
         return 'bg-emerald-400/25 text-emerald-200 border-emerald-400/50 shadow-sm font-extrabold';
+      case 'audio':
+        return 'bg-fuchsia-400/25 text-fuchsia-200 border-fuchsia-400/50 shadow-sm font-extrabold';
       default:
         return 'bg-white/20 text-white border-white/30 font-bold';
     }
@@ -180,7 +188,7 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
         <div className="flex items-center gap-2 flex-wrap px-1 font-sans text-xs">
           {selectedCategory !== 'all' && (
             <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-400/20 text-amber-300 border border-amber-400/35 flex items-center gap-1.5">
-              <span>{t(selectedCategory === 'camera' ? 'catCamera' : selectedCategory === 'lens' ? 'catLens' : 'catAccessory')}</span>
+              <span>{t(CATEGORY_LABEL_KEY[selectedCategory] ?? 'catAll')}</span>
               <button
                 type="button"
                 onClick={() => updateWikiParam({ cat: 'all' })}
@@ -313,14 +321,17 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                           className="flex items-center gap-3 cursor-pointer group"
                         >
                           <div className="relative w-14 h-14 shrink-0 rounded-xl overflow-hidden bg-white border border-white/30 p-1 flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
-                            <Image
-                              src={cam.imageUrl}
-                              alt={cam.name}
-                              width={56}
-                              height={56}
-                              className="object-contain max-h-full"
-                              unoptimized
-                            />
+                            {cam.imageUrl ? (
+                              <Image
+                                src={cam.imageUrl}
+                                alt={cam.name}
+                                width={56}
+                                height={56}
+                                className="object-contain max-h-full"
+                              />
+                            ) : (
+                              <NoPhoto />
+                            )}
                           </div>
                           <div className="flex flex-col gap-0.5">
                             <span className="font-extrabold text-sm text-white group-hover:text-amber-300 transition-colors font-sans">{cam.name}</span>
@@ -331,7 +342,7 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
 
                       {/* SKU Code */}
                       <td className="p-3.5 font-mono text-xs font-bold text-amber-300 whitespace-nowrap">
-                        {cam.sku}
+                        {cam.sku || <span className="text-white/30 italic">—</span>}
                       </td>
 
                       {/* Main Category Badge */}
@@ -372,16 +383,20 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                         </ul>
                       </td>
 
-                      {/* Sony Link */}
+                      {/* Sony Link — absent for the audio sheets, which publish none. */}
                       <td className="p-3.5 text-right whitespace-nowrap font-sans">
-                        <a
-                          href={cam.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs text-white font-bold hover:text-amber-300 underline underline-offset-2 transition-colors font-sans"
-                        >
-                          Sony ↗
-                        </a>
+                        {cam.url ? (
+                          <a
+                            href={cam.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-white font-bold hover:text-amber-300 underline underline-offset-2 transition-colors font-sans"
+                          >
+                            Sony ↗
+                          </a>
+                        ) : (
+                          <span className="text-xs text-white/30 italic">—</span>
+                        )}
                       </td>
                     </tr>
                   );
@@ -436,13 +451,18 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                     onClick={() => openProduct(cam)}
                     className="relative w-full aspect-[4/3] rounded-xl bg-white p-3 flex items-center justify-center mb-3.5 shadow-md overflow-hidden cursor-pointer group"
                   >
-                    <Image
-                      src={cam.imageUrl}
-                      alt={cam.name}
-                      fill
-                      className="object-contain p-2 group-hover:scale-105 transition-transform"
-                      unoptimized
-                    />
+                    {cam.imageUrl ? (
+                      <Image
+                        src={cam.imageUrl}
+                        alt={cam.name}
+                        fill
+                        // Matches the grid above: 1 / 2 / 3 / 4 / 5 / 6 columns.
+                        sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1536px) 25vw, 20vw"
+                        className="object-contain p-2 group-hover:scale-105 transition-transform"
+                      />
+                    ) : (
+                      <NoPhoto label={t('noPhoto')} />
+                    )}
                   </div>
 
                   {/* Name & SKU (click opens the product page) */}
@@ -454,9 +474,11 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                       {cam.name}
                     </h4>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-mono text-[11px] font-bold text-amber-300 bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/25">
-                        {cam.sku}
-                      </span>
+                      {cam.sku && (
+                        <span className="font-mono text-[11px] font-bold text-amber-300 bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/25">
+                          {cam.sku}
+                        </span>
+                      )}
                       {cam.subCategory2 && (
                         <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-white/15 text-white border border-white/20">
                           {cam.subCategory2}
@@ -482,14 +504,16 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                   <span className="font-mono text-[1rem] font-extrabold text-sky-400 drop-shadow-sm">
                     {cam.priceFormatted}
                   </span>
-                  <a
-                    href={cam.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs font-bold text-white hover:text-amber-300 underline underline-offset-2 transition-colors font-sans"
-                  >
-                    Sony ↗
-                  </a>
+                  {cam.url && (
+                    <a
+                      href={cam.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs font-bold text-white hover:text-amber-300 underline underline-offset-2 transition-colors font-sans"
+                    >
+                      Sony ↗
+                    </a>
+                  )}
                 </div>
               </div>
             );
@@ -598,8 +622,8 @@ export function CameraWikiView({ initialCameras }: CameraWikiViewProps) {
                       src={cam.imageUrl}
                       alt={cam.name}
                       fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 16vw"
                       className="object-contain p-1"
-                      unoptimized
                     />
                   </div>
 
