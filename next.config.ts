@@ -39,27 +39,30 @@ const supabaseHost = process.env.NEXT_PUBLIC_SUPABASE_URL
   : undefined;
 
 /**
- * The three hosts the product catalogue's photography comes from.
+ * The hosts the product catalogue's photography comes from.
  *
  * Every one of them is named explicitly, and the list stays closed for the
  * reason the Supabase entry below already gives: an open pattern turns
  * `/_next/image` into a proxy for arbitrary URLs.
  *
- * Naming them here is what lets those images drop `unoptimized`. The catalogue
- * is 90 photos at 1000x1000 — ~139KB each, ~12MB in total — and every surface
- * that shows one renders it small: 56px in the wiki table, 36px in the search
- * suggestions, a card in the grid. Unoptimized, the browser downloaded the
- * full-resolution original for each of those and threw the pixels away.
+ * `remotePatterns` is not what serves these any more — `images.loader` below
+ * took `/_next/image` out of the path entirely — but the list is kept, and kept
+ * closed, because it is the only written record of which hosts the catalogue is
+ * allowed to reference. Restoring the optimizer means restoring its guard, and
+ * `www.bhphotovideo.com` is deliberately absent: it answers hotlinked requests
+ * with 403, and the 12 gallery URLs that named it now point at the CDN host
+ * that serves the same files.
  */
-const productImageHosts = [
-  'static.bhphoto.com',
-  'www.bhphotovideo.com',
-  'www.sony.com.vn',
-  'sony.scene7.com',
-];
+const productImageHosts = ['static.bhphoto.com', 'www.sony.com.vn', 'sony.scene7.com'];
 
 const nextConfig: NextConfig = {
   images: {
+    /* Vercel's optimizer is out of the path: its quota ran out and every
+       `/_next/image` request answered 402, breaking all 94 wiki photos at once
+       while the originals stayed 200 at the CDN. The loader asks B&H for the
+       size variant it already publishes instead. See the file's header. */
+    loader: 'custom',
+    loaderFile: './src/lib/images/catalogue-loader.ts',
     // Only the project's own Storage host, plus the catalogue's CDNs. Storage
     // is left out when Supabase is not configured, so a misconfigured deploy
     // cannot silently proxy arbitrary URLs.
