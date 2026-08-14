@@ -76,7 +76,6 @@ export function generate(): Record<string, string> {
     'theme.css': `${BANNER}\n@theme static {\n${sections().join('\n\n')}\n}\n`,
     'tokens.css': `${BANNER}\n:root {\n${sections().join('\n\n')}\n}\n`,
     'primitives.css': BANNER + readFileSync(join(HERE, 'primitives.css'), 'utf8'),
-    'vfx.css': BANNER + readFileSync(join(HERE, 'vfx.css'), 'utf8'),
   }
 }
 
@@ -109,9 +108,5 @@ export const TARGETS: ReadonlyArray<{
   {
     file: 'primitives.css',
     destinations: ['src/app/vendor/colorlab-tokens/primitives.css'],
-  },
-  {
-    file: 'vfx.css',
-    destinations: ['src/app/vendor/colorlab-tokens/vfx.css'],
   },
 ]

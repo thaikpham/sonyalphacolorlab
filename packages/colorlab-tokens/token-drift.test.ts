@@ -79,24 +79,41 @@ describe.each(TARGETS)('$file', ({ file, destinations }) => {
 
 describe('the app does not redefine a shared token', () => {
   /* Re-declaring one of these locally wins the cascade silently, which is the
-     failure mode this whole package exists to prevent. */
+     failure mode this whole package exists to prevent.
+
+     Derived from the source rather than listed by hand. The hand-written list
+     this replaced had gone stale the moment a group was added — it never named
+     `--font-sans`, `--layout-touch-target` or anything under `--text-*`, so a
+     local override of any of them was waved straight through by a test whose
+     whole job was to catch exactly that. A guard that has to be edited in step
+     with the thing it guards is a guard that will not be. */
+  /* Nothing is exempt any more, and that is the point of v2.
+     `--font-sans` used to be: ColorLab loaded its faces through next/font,
+     which hashes the family name into a per-app variable, so the app had to
+     restate the stack in terms of its own hash and no two apps in the
+     ecosystem could name the same face. That indirection IS what the feedback
+     called "font không đồng đều". The faces are now vendored into
+     public/fonts/noto-sans and declared with one literal family name, so
+     `--font-sans` is an ordinary shared token and an app-local copy of it is
+     the same silent cascade win as any other. `--font-mono` no longer exists. */
+  const EXEMPT = new Set<string>([])
+
   const OWNED = [
-    '--color-void',
-    '--color-base',
-    '--color-raised',
-    '--color-edge',
-    '--color-ink',
-    '--color-ink-muted',
-    '--color-ink-faint',
-    '--color-community',
-    '--color-proposal',
-    '--color-ai',
-    '--color-danger',
-    '--color-heart',
-    '--radius-glass',
-    '--breakpoint-3xl',
-    '--breakpoint-4xl',
-  ]
+    ...COLOR_GROUPS.flatMap((group) => Object.keys(group.tokens).map((name) => `--color-${name}`)),
+    ...NAMESPACED_GROUPS.flatMap(({ namespace, group }) =>
+      Object.keys(group.tokens).map((name) => `--${namespace}-${name}`),
+    ),
+  ].filter((token) => !EXEMPT.has(token))
+
+  it('is derived from the token source and is not empty', () => {
+    /* A `.filter()` that matched everything would make every assertion below
+       pass vacuously — the same shape of hole as the `if (!existsSync) return`
+       described at the top of this file. */
+    expect(OWNED.length).toBeGreaterThan(20)
+    expect(OWNED).toContain('--color-accent-400')
+    expect(OWNED).toContain('--text-meta')
+    expect(OWNED).toContain('--font-sans')
+  })
 
   /** The app's own stylesheet — the one place a redeclaration would hide. */
   const APP_STYLESHEETS = ['src/app/globals.css']
@@ -125,7 +142,10 @@ describe('the app does not redefine a shared token', () => {
 
 describe('the app imports the shared files', () => {
   const IMPORTERS: ReadonlyArray<[string, readonly string[]]> = [
-    ['src/app/globals.css', ['theme.css', 'primitives.css', 'vfx.css']],
+    /* `vfx.css` is gone — the whole effects layer (Y2K badges, holo lens, laser
+       grid, radar sweep, glitch text, floating cards, water ripples) was what
+       the feedback read as machine-generated, and it is not coming back. */
+    ['src/app/globals.css', ['theme.css', 'primitives.css']],
   ]
 
   it.each(IMPORTERS)('%s imports %s', (stylesheet, expectedImports) => {
