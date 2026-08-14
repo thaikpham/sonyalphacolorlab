@@ -133,7 +133,7 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
     return () => {
       live = false;
     };
-  }, [authed]);
+  }, [authed, initialTab]);
 
   const selected = useMemo(
     () => products.find((p) => p.id === selectedId) ?? null,
@@ -603,6 +603,7 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
                     <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin">
                       {lines(draft.galleryUrls).map((url, idx) => (
                         <div key={idx} className="relative group shrink-0 w-16 h-16 rounded-xl border border-white/20 overflow-hidden bg-black/60">
+                          {/* eslint-disable-next-line @next/next/no-img-element -- previews unsaved admin-entered URLs before allowlist validation. */}
                           <img src={url} alt={`Gallery thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
                           <span className="absolute bottom-0 inset-x-0 bg-black/75 text-[9px] font-mono text-white text-center py-0.5">
                             #{idx + 1}

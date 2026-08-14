@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { LauncherGrid } from '@/components/launcher-grid';
 import type { Locale } from '@/i18n/routing';
-import { ECOSYSTEM_APPS } from '@/lib/ecosystem';
 
 export async function generateMetadata({
   params,

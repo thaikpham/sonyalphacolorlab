@@ -7,13 +7,11 @@ import { useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { LanguageToggle } from './language-toggle';
 import { useAuth } from './auth-context';
-import { EcosystemApp } from './ecosystem-app';
 import { LauncherGrid } from './launcher-grid';
 import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import { routing } from '@/i18n/routing';
 import { CREATIVE_LOOKS } from '@/lib/camera/constants';
 import { DEFAULT_WIKI_SORT } from '@/lib/cameras/types';
-import { ECOSYSTEM_APPS } from '@/lib/ecosystem';
 
 interface TagItem {
   tag: string;
