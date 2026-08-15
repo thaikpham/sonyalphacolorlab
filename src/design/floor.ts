@@ -154,15 +154,39 @@ function collect(
   return found
 }
 
+/**
+ * Blanks out comment bodies, preserving newlines so every reported line number
+ * still points at the right line.
+ *
+ * A guard that fires on its own documentation gets muted, not obeyed — the same
+ * lesson `token-drift.test.ts` records, where a scan of the token source failed
+ * on `#040406` written inside a `comment:` string describing the page
+ * background. Without this, the three files that *explain* these rules were the
+ * last three files reported as breaking them: tokens.ts naming `text-[9px]`,
+ * `text-[10px]` and `text-[0.65rem]` in the sentence saying they fail the
+ * build; globals.css saying what replaced `--font-mono`; and color.ts recording
+ * that `text-amber-400` and `text-emerald-400` were deleted.
+ *
+ * Strings are deliberately NOT stripped. A Tailwind class always lives in one,
+ * so stripping them would blind the scanner to every real violation.
+ */
+function stripComments(source: string): string {
+  const blank = (text: string) => text.replace(/[^\n]/g, ' ')
+  return source
+    .replace(/\/\*[\s\S]*?\*\//g, blank)
+    .replace(/(^|[^:])\/\/[^\n]*/g, (match, lead: string) => lead + blank(match.slice(lead.length)))
+}
+
 export function scanSource(source: string, file: string): Violation[] {
   const underFloor = (match: RegExpExecArray) => toPx(match[1], match[2]) < FLOOR_PX
+  const code = stripComments(source)
 
   return [
-    ...collect(source, file, TAILWIND_NAMED_BELOW_FLOOR, 'belowFloor'),
-    ...collect(source, file, ARBITRARY_SIZE, 'belowFloor', underFloor),
-    ...collect(source, file, CSS_FONT_SIZE, 'belowFloor', underFloor),
-    ...collect(source, file, MONO, 'mono'),
-    ...collect(source, file, PALETTE, 'palette'),
+    ...collect(code, file, TAILWIND_NAMED_BELOW_FLOOR, 'belowFloor'),
+    ...collect(code, file, ARBITRARY_SIZE, 'belowFloor', underFloor),
+    ...collect(code, file, CSS_FONT_SIZE, 'belowFloor', underFloor),
+    ...collect(code, file, MONO, 'mono'),
+    ...collect(code, file, PALETTE, 'palette'),
   ].sort((a, b) => a.line - b.line)
 }
 

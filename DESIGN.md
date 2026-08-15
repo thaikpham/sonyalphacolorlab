@@ -178,8 +178,10 @@ rg -n 'border(-[trblxy])?-[0-9]|border-(solid|white|black)|\bring-[0-9]|outline-
 #    `.btn-glass` and the `glass` / `glass-raised` surface TOKENS survive and
 #    are filtered out — what was deleted is the `.glass` / `.glass-flat`
 #    primitive, which is why the filter names the survivors rather than
-#    narrowing the pattern.
-rg -n 'glass|y2k|holo-|water-|cyber-|radar|app-glow|rainbow-glow|eyebrow|\brule\b' src/ \
+#    narrowing the pattern. The deleted divider is matched as `\.rule` and not
+#    `\brule\b`: the bare word matched the English noun in forty comments,
+#    including every one explaining a rule of this design system.
+rg -n 'glass|y2k|holo-|water-|cyber-|radar|app-glow|rainbow-glow|eyebrow|\.rule\b' src/ \
   | rg -v 'btn-glass|glass-raised|bg-glass|--color-glass'
 
 # 7. Per-component scrollbar CSS (belongs in globals.css only)
