@@ -46,6 +46,15 @@
   padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
 }
 
+/* The right edge on its own, for a docked bar that pays its own insets rather
+   than inheriting `.inset-safe` from a parent. This class was being *used* by
+   the compare dock before it existed, so the dock had been paying no right
+   inset at all — invisible on every device without a landscape notch, which is
+   most of them, and clipped on the ones that have one. */
+.pr-safe {
+  padding-right: max(1.25rem, env(safe-area-inset-right));
+}
+
 .pt-safe {
   padding-top: max(0.75rem, env(safe-area-inset-top));
 }

@@ -27,44 +27,50 @@ export async function ProductSpecTable({
   /* An unstated spec renders as "not published" rather than as "N/A" or a
      hidden row. The gap is information: this data comes from sources that vary
      in completeness, and a placeholder that reads like a value hides which of
-     the two it is. */
+     the two it is. On screen that placeholder is an em dash — a blank cell
+     reads as a rendering bug — with the sentence kept for screen readers. */
   const rows = SPEC_ROWS[specs.kind].map((key) => [key, row[key] ?? null] as const);
   const extra = specs.kind === 'accessory' ? specs.keySpecs : [];
 
+  /* Rows separate by a 4% film on every other row, not by a line: on a dark
+     ground a hairline grid reads as noise. The two lists are one visual run, so
+     the accessory rows carry the offset into the spec rows' parity. */
+  const tint = (i: number) => (i % 2 === 1 ? 'row-tint' : '');
+  const cell = 'grid grid-cols-1 sm:grid-cols-[minmax(0,13rem)_1fr] sm:items-baseline px-4 py-3 gap-x-6 gap-y-1';
+
   return (
-    <div className="bg-[#1c1d22] p-5 rounded-2xl border border-white/15 shadow-lg flex flex-col gap-3">
-      <h3 className="font-extrabold text-sm uppercase text-sky-300 font-mono tracking-wider flex items-center gap-2">
-        📊 {t('specs.specsHeading')}
-      </h3>
+    <div className="surface p-5 flex flex-col gap-3">
+      <h3 className="label">{t('specs.specsHeading')}</h3>
 
       {/* A fixed label track, with the value starting where the label ends.
           `justify-between` pinned the value to the far right edge, so on a wide
           screen a two-word label and a two-word value sat ~1100px apart with
           nothing between them and the eye had to travel the gap on every row. */}
-      <dl className="flex flex-col border border-white/10 rounded-xl overflow-hidden divide-y divide-white/10 text-xs">
-        {extra.map((s) => (
-          <div
-            key={s.label}
-            className="grid grid-cols-1 sm:grid-cols-[minmax(0,13rem)_1fr] sm:items-baseline p-3 bg-black/30 gap-x-6 gap-y-1"
-          >
-            <dt className="font-bold text-white/70 font-sans">{s.label}</dt>
-            <dd className="font-mono text-white font-semibold">{s.value}</dd>
+      <dl className="flex flex-col gap-1 text-body-sm">
+        {extra.map((s, i) => (
+          <div key={s.label} className={`${cell} ${tint(i)}`}>
+            <dt className="font-semibold text-ink-muted">{s.label}</dt>
+            <dd className="font-medium text-ink tabular-nums">{s.value}</dd>
           </div>
         ))}
-        {rows.map(([key, value]) => (
-          <div
-            key={key}
-            className="grid grid-cols-1 sm:grid-cols-[minmax(0,13rem)_1fr] sm:items-baseline p-3 bg-black/30 gap-x-6 gap-y-1"
-          >
-            <dt className="font-bold text-white/70 font-sans">{t(`specs.${key}`)}</dt>
-            <dd className={value ? 'font-mono text-white font-semibold' : 'font-mono text-white/30 italic'}>
-              {value ? translateSpecValue(key, value, locale) : t('specs.specsNotPublished')}
+        {rows.map(([key, value], i) => (
+          <div key={key} className={`${cell} ${tint(extra.length + i)}`}>
+            <dt className="font-semibold text-ink-muted">{t(`specs.${key}`)}</dt>
+            <dd className={value ? 'font-medium text-ink tabular-nums' : 'text-ink-faint'}>
+              {value ? (
+                translateSpecValue(key, value, locale)
+              ) : (
+                <>
+                  <span aria-hidden="true">—</span>
+                  <span className="sr-only">{t('specs.specsNotPublished')}</span>
+                </>
+              )}
             </dd>
           </div>
         ))}
       </dl>
 
-      <p className="text-[11px] text-white/45 font-mono leading-relaxed">
+      <p className="meta leading-relaxed">
         {t('specs.specsSourceLabel')}: {specs.specsSource}
       </p>
     </div>

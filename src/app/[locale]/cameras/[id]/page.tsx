@@ -75,22 +75,28 @@ export default async function ProductDetailPage({
     tweak: messages.tweak,
   };
 
+  /* Product kind is not a signal. `community`, `proposal`, `ai` and `danger`
+     name what a piece of content *is*, so borrowing one of them for "lens"
+     would make the only classification colours in the ecosystem mean two
+     different things. The three kinds separate on steps of the accent ramp
+     instead — the same move the ink ramp makes for emphasis — and the fill is
+     a tint, never a stroke. Body text on the strongest tint is pure white. */
   const getCategoryBadgeColor = (cat: string) => {
     switch (cat) {
       case 'camera':
-        return 'bg-amber-400/25 text-amber-200 border-amber-400/50 shadow-sm font-extrabold';
+        return 'bg-accent-500/25 text-white';
       case 'lens':
-        return 'bg-sky-400/25 text-sky-200 border-sky-400/50 shadow-sm font-extrabold';
+        return 'bg-accent-500/15 text-ink';
       case 'accessory':
-        return 'bg-emerald-400/25 text-emerald-200 border-emerald-400/50 shadow-sm font-extrabold';
+        return 'bg-white/10 text-ink-muted';
       default:
-        return 'bg-white/20 text-white border-white/30 font-bold';
+        return 'bg-white/10 text-ink';
     }
   };
 
   return (
     <NextIntlClientProvider messages={clientMessages}>
-      <div className="min-h-screen flex flex-col bg-[#0b0d12] text-white font-sans">
+      <div className="min-h-screen flex flex-col bg-void text-ink">
         <SiteHeader />
 
         {/* A product page is a reading layout, not the browse grid. At the
@@ -98,27 +104,27 @@ export default async function ProductDetailPage({
             the label/value pair sat a screen apart. */}
         <main className="flex-1 w-full max-w-[110rem] mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6 flex flex-col gap-5">
           {/* Top Breadcrumb & Navigation */}
-          <div className="flex items-center justify-between gap-4 border-b border-white/10 pb-3">
-            <div className="flex items-center gap-2 text-xs text-slate-100 font-mono font-bold">
+          <div className="flex items-center justify-between gap-4 pb-3">
+            <div className="flex items-center gap-2 text-meta text-ink-muted">
               {/* The crumb is labelled "ColorLab", so it goes to ColorLab —
                   `/` is the launcher now and would read as a broken trail. */}
               <Link
                 href={isVi ? '/vi/colorlab' : '/colorlab'}
-                className="hover:text-amber-300 transition-colors"
+                className="hover:text-accent-400 transition-colors"
               >
                 ColorLab
               </Link>
-              <span>/</span>
-              <Link href={isVi ? '/vi/cameras' : '/cameras'} className="hover:text-amber-300 transition-colors">
+              <span className="text-ink-faint">/</span>
+              <Link href={isVi ? '/vi/cameras' : '/cameras'} className="hover:text-accent-400 transition-colors">
                 {t('title')}
               </Link>
-              <span>/</span>
-              <span className="text-amber-300 font-bold">{product.name}</span>
+              <span className="text-ink-faint">/</span>
+              <span className="text-ink font-semibold">{product.name}</span>
             </div>
 
             <Link
               href={isVi ? '/vi/cameras' : '/cameras'}
-              className="px-3.5 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-white text-xs font-bold transition-all border border-white/20 flex items-center gap-1.5 shadow-sm shrink-0"
+              className="btn-glass inline-flex items-center gap-1.5 shrink-0"
             >
               {t('backToCatalog')}
             </Link>
@@ -138,57 +144,72 @@ export default async function ProductDetailPage({
               />
             </div>
 
-            <div className="lg:col-span-8 flex flex-col gap-4 bg-[#1c1d22] p-5 sm:p-6 rounded-2xl border border-white/15 shadow-lg">
+            <div className="surface lg:col-span-8 flex flex-col gap-4 p-5 sm:p-6">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className={`px-3 py-1 rounded-full text-xs border ${getCategoryBadgeColor(product.category)}`}>
+                <span
+                  className={`px-3 py-1 rounded-sm text-label font-semibold tracking-[0.08em] uppercase ${getCategoryBadgeColor(product.category)}`}
+                >
                   {product.category.toUpperCase()}
                 </span>
-                <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-white/15 text-white border border-white/25 shadow-sm">
+                {/* The sub-categories are catalogue data, not our copy, so they
+                    are never uppercased: a Vietnamese series name loses its
+                    diacritic room, and the strings run past three words. */}
+                <span className="px-3 py-1 rounded-sm text-label font-semibold bg-white/10 text-ink">
                   {product.subCategory1}
                 </span>
                 {product.subCategory2 && (
-                  <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                  <span className="px-3 py-1 rounded-sm text-label font-semibold bg-white/10 text-ink-muted">
                     {product.subCategory2}
                   </span>
                 )}
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <h1 className="text-3xl sm:text-4xl xl:text-5xl font-extrabold text-white tracking-tight font-sans">
+                <h1 className="text-title-1 sm:text-display font-extrabold text-ink tracking-[-0.02em] leading-tight">
                   {product.name}
                 </h1>
-                <p className="text-sm sm:text-[1rem] text-slate-100 font-semibold font-sans leading-relaxed">
+                <p className="text-body sm:text-body-lg text-ink-muted leading-relaxed">
                   {product.fullName}
                 </p>
               </div>
 
-              <div className="mt-auto pt-4 border-t border-white/10 flex flex-wrap items-end gap-x-8 gap-y-4">
-                <div className="flex flex-col gap-1.5">
-                  <span className="text-[0.65rem] font-mono font-extrabold uppercase tracking-wider text-amber-200">
-                    {t('skuLabel')}
-                  </span>
-                  <span className="font-mono text-xs font-extrabold text-amber-300 bg-amber-400/20 px-2.5 py-1 rounded border border-amber-400/40 w-fit">
-                    {product.sku}
-                  </span>
-                </div>
+              {/* The commerce strip is a genuinely separate block from the
+                  identity above it, so it gets a seam — light fading out at
+                  both ends — rather than a hairline across the panel.
 
-                <div className="flex flex-col gap-1.5">
-                  <span className="text-[0.65rem] font-mono font-extrabold uppercase tracking-wider text-amber-200">
-                    {t('priceLabel')}
-                  </span>
-                  <span className="font-mono text-2xl sm:text-3xl font-black text-sky-300 drop-shadow-sm leading-none">
-                    {product.priceFormatted}
-                  </span>
-                </div>
+                  `mt-auto` lives on the wrapper, not on the <hr>: `.seam` is
+                  unlayered CSS and its `margin: 0` beats any margin utility on
+                  the same element. */}
+              <div className="mt-auto flex flex-col gap-4">
+                <hr className="seam" />
 
-                <a
-                  href={product.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="ml-auto py-2.5 px-5 rounded-xl bg-white text-black font-extrabold text-xs text-center hover:bg-white/90 transition-all shadow-md cursor-pointer"
-                >
-                  {t('officialUrl')}
-                </a>
+                <div className="flex flex-wrap items-end gap-x-8 gap-y-4">
+                  <div className="flex flex-col gap-1.5">
+                    <span className="label">{t('skuLabel')}</span>
+                    <span className="text-body-sm font-semibold text-ink bg-white/10 px-2.5 py-1 rounded-sm w-fit">
+                      {product.sku}
+                    </span>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <span className="label">{t('priceLabel')}</span>
+                    {/* An emphasised number: accent step 400, the on-dark text
+                        step. `tabular-nums` because the price sits in a column
+                        with the catalogue's other prices. */}
+                    <span className="text-title-2 sm:text-title-1 font-extrabold text-accent-400 leading-none tabular-nums">
+                      {product.priceFormatted}
+                    </span>
+                  </div>
+
+                  <a
+                    href={product.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-accent ml-auto inline-flex items-center cursor-pointer"
+                  >
+                    {t('officialUrl')}
+                  </a>
+                </div>
               </div>
             </div>
           </section>
@@ -198,15 +219,17 @@ export default async function ProductDetailPage({
             {/* Left Column: Features & Specifications */}
             <div className="lg:col-span-7 flex flex-col gap-5">
               {/* Key Features Section */}
-              <div className="bg-[#1c1d22] p-5 rounded-2xl border border-white/15 shadow-lg flex flex-col gap-3">
-                <h3 className="font-extrabold text-sm uppercase text-amber-300 font-mono tracking-wider flex items-center gap-2">
-                  ⚡ {t('featuresLabel')}
-                </h3>
+              <div className="surface p-5 flex flex-col gap-3">
+                {/* h2, not h3: the only heading above this one is the product
+                    name in the hero, and h1 → h3 is a level skip. */}
+                <h2 className="text-title-3 font-semibold text-ink tracking-[-0.02em]">
+                  {t('featuresLabel')}
+                </h2>
 
-                <ul className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-xs text-white/95 font-medium leading-relaxed">
+                <ul className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-body-sm text-ink-muted leading-relaxed">
                   {featureList(product.features, locale).map((feat: string, idx: number) => (
-                    <li key={idx} className="flex items-start gap-2.5 bg-black/40 p-3 rounded-xl border border-white/10">
-                      <span className="text-emerald-400 font-bold shrink-0 text-[1rem] leading-none">•</span>
+                    <li key={idx} className="row-tint flex items-start gap-2.5 p-3">
+                      <span className="text-accent-400 shrink-0 leading-none">•</span>
                       <span className="flex-1">{feat}</span>
                     </li>
                   ))}
@@ -227,8 +250,12 @@ export default async function ProductDetailPage({
           </div>
         </main>
 
-        <footer className="w-full py-6 text-center text-xs text-white/40 border-t border-white/10 font-mono mt-6">
-          Alpha ColorLab · Dedicated Product Route for {product.name}
+        <div className="w-full max-w-[110rem] mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+          <hr className="seam" />
+        </div>
+
+        <footer className="meta w-full py-6 text-center">
+          {t('footerCameraRoute', { name: product.name })}
         </footer>
       </div>
     </NextIntlClientProvider>

@@ -14,6 +14,12 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Verbatim copy of the original sonycolorlab dataset; deleted after cutover.
     "src/lib/legacy/*.legacy.js",
+    /* The design handoff bundle: HTML prototypes plus the vendored runtime
+       that renders them standalone. It is reference material, not source —
+       nothing here is imported, built or shipped, and linting someone else's
+       prototype runtime failed the gate on a deprecated `ReactDOM.render`
+       inside it. */
+    "Claude Design Plan/**",
   ]),
   {
     rules: {

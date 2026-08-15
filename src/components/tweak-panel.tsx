@@ -10,8 +10,11 @@ import type { WhiteBalance } from '@/lib/camera/schema';
 /**
  * "Tweak with AI".
  *
- * Clean dark glass card, warm spark accent, Noto Sans throughout, inline action
- * bar. The request goes to `claude-sonnet-5` — see `src/lib/ai/tweak.ts`.
+ * A panel that appears in place: `.surface` + `.animate-fade-in`, an inline
+ * action bar, and the `ai` orchid signal on the values the model actually
+ * changed — the one thing in the panel that classifies content rather than
+ * decorating it. The request goes to `claude-sonnet-5` — see
+ * `src/lib/ai/tweak.ts`.
  */
 
 type Result = { whiteBalance: WhiteBalance; settings: Record<string, unknown>; summary: string };
@@ -113,37 +116,30 @@ export function TweakPanel({ slug, locale, currentWb, currentSettings }: Props) 
     : [];
   const changedCount = rows.filter((r) => r.changed).length;
 
-  /*
-   * The opaque fill, border and shadow live on the outer wrapper, not on the
-   * glass panel. `.glass` is unlayered CSS written after `@import
-   * "tailwindcss"`, so it hard-sets `background` and `box-shadow` and declares
-   * `border: 0 !important` — every one of `bg-black/40`, `border-white/10`,
-   * `shadow-xl` and `rounded-2xl` was dead on that element and the panel
-   * floated fully translucent over the recipe photograph. Painting the colour
-   * underneath lets the glass gradient sit on top of it and still read as glass.
-   */
   /* Nothing at all until the reader asks for it. Returning null rather than
      hiding with a class keeps the AI form — and the request state inside it —
      off every recipe page that nobody tweaks. */
   if (!isOpen) return null;
 
+  /* `.surface` is unlayered CSS written after `@import "tailwindcss"`, so it
+     wins over every `bg-*`, `rounded-*` and `shadow-*` utility on its own
+     element. That is deliberate: an elevation is one whole recipe, so the panel
+     takes the level and nothing patches a single part of it. Padding lives on
+     the wrapper inside. */
   return (
-    <section
-      id="tweak-panel"
-      className="mt-8 overflow-hidden rounded-[var(--radius-glass)] border border-white/10 bg-black/40 shadow-xl font-sans animate-fade-in"
-    >
-      <div className="glass p-5 sm:p-6">
+    <section id="tweak-panel" className="surface animate-fade-in mt-8 overflow-hidden">
+      <div className="p-4 sm:p-6">
         {/* Header */}
-        <div className="flex items-start justify-between gap-3 mb-3">
+        <div className="mb-4 flex items-start justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="text-ai text-sm">✨</span>
+            <span aria-hidden className="text-body-lg text-ai">
+              ✨
+            </span>
             <div>
-              <h2 className="text-xs font-bold tracking-wider uppercase text-white/90 font-sans">
+              <h2 className="text-title-3 font-semibold tracking-[-0.02em] text-ink">
                 {t('title')}
               </h2>
-              <p className="text-xs text-white/50 font-sans mt-0.5">
-                {t('subtitle')}
-              </p>
+              <p className="meta mt-1">{t('subtitle')}</p>
             </div>
           </div>
 
@@ -152,17 +148,23 @@ export function TweakPanel({ slug, locale, currentWb, currentSettings }: Props) 
             onClick={() => setIsOpen(false)}
             title={t('close')}
             aria-label={t('close')}
-            className="shrink-0 w-7 h-7 flex items-center justify-center rounded-full text-white/50 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="flex min-h-[var(--layout-touch-target)] min-w-[var(--layout-touch-target)] shrink-0 cursor-pointer items-center justify-center rounded-md text-ink-faint transition-colors hover:bg-white/10 hover:text-ink"
           >
-            <span aria-hidden className="text-sm">✕</span>
+            <span aria-hidden className="text-body-lg">
+              ✕
+            </span>
           </button>
         </div>
 
-        <form onSubmit={submit} className="flex flex-col gap-3 font-sans">
+        <form onSubmit={submit} className="flex flex-col gap-4">
           <label htmlFor="tweak-request" className="sr-only">
             {t('placeholder')}
           </label>
-        
+
+          {/* An input is the one inverted elevation in the system: pressed into
+              the surface rather than raised out of it. The `:focus-visible`
+              outline is global and is the only stroke left in the app — it is
+              never re-declared or overridden here. */}
           <textarea
             id="tweak-request"
             value={request}
@@ -170,22 +172,20 @@ export function TweakPanel({ slug, locale, currentWb, currentSettings }: Props) 
             placeholder={t('placeholder')}
             rows={2}
             maxLength={500}
-            className="w-full resize-y rounded-xl bg-black/60 p-3.5 text-sm text-white placeholder:text-white/35 focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/30 font-sans shadow-inner transition-all border border-white/10"
+            className="surface-sunken w-full resize-y p-4 text-body text-ink placeholder:text-ink-faint"
           />
 
           {/* Bottom Row: Quick Prompts (Left) + Submit Button (Far Right) */}
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             {/* Quick Prompts */}
-            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-              <span className="text-xs text-white/45 font-sans mr-0.5">
-                {t('quickIdeas')}
-              </span>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="meta mr-1">{t('quickIdeas')}</span>
               {samplePrompts.map(({ icon, text }) => (
                 <button
                   key={text}
                   type="button"
                   onClick={() => setRequest(text)}
-                  className="text-xs font-sans px-3 py-1 rounded-full glass-flat text-white/70 hover:text-white hover:border-white/30 transition-all cursor-pointer"
+                  className="inline-flex min-h-[var(--layout-touch-target)] cursor-pointer items-center rounded-sm bg-white/8 px-3 text-body-sm text-ink-muted transition-colors hover:bg-white/13 hover:text-ink"
                 >
                   {icon} {text}
                 </button>
@@ -196,7 +196,7 @@ export function TweakPanel({ slug, locale, currentWb, currentSettings }: Props) 
             <button
               type="submit"
               disabled={busy || !request.trim()}
-              className="font-sans px-5 py-2 rounded-full bg-white text-black text-xs font-bold hover:bg-white/90 hover:scale-105 active:scale-95 transition-all shadow-md cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed disabled:hover:scale-100 shrink-0 ml-auto"
+              className="btn-accent ml-auto shrink-0 cursor-pointer disabled:cursor-not-allowed disabled:opacity-35"
             >
               {busy ? t('working') : t('submit')}
             </button>
@@ -204,36 +204,47 @@ export function TweakPanel({ slug, locale, currentWb, currentSettings }: Props) 
         </form>
 
         {error && (
-          <p role="alert" className="mt-4 text-xs text-danger font-sans font-medium">
+          <p role="alert" className="mt-4 text-body-sm font-medium text-danger">
             {error}
           </p>
         )}
 
         {result && (
-          <div className="mt-5 pt-4 border-t border-white/10 font-sans">
-            <p className="text-sm leading-relaxed text-white/80 font-sans">{result.summary}</p>
+          <div className="mt-6">
+            {/* Light, not a line: the divider fades out at both ends. */}
+            <hr className="seam mb-4" />
 
-            <p className="text-xs font-bold tracking-wide uppercase mt-4 mb-2 text-white/90 font-sans">
+            <p className="text-body leading-relaxed text-ink-muted">{result.summary}</p>
+
+            {/* Not `.label`: uppercase is capped at three words and the
+                Vietnamese plural runs to six. It recedes by weight and ink step
+                instead — never by size, never by contrast. */}
+            <p className="mt-4 mb-2 text-label font-semibold text-ink-faint">
               {t('changeCount', { count: changedCount })}
             </p>
-            <dl className="text-sm font-sans grid grid-cols-1 gap-1">
+            <dl className="grid grid-cols-1 gap-1">
               {rows.map((r) => (
                 <div
                   key={r.key}
-                  className={`flex items-baseline justify-between gap-4 border-b border-white/5 py-1.5 px-2 rounded transition-colors ${
-                    r.changed ? 'bg-white/5' : 'opacity-35'
+                  className={`flex items-baseline justify-between gap-4 px-3 py-2 ${
+                    r.changed ? 'row-tint' : ''
                   }`}
                 >
-                  <dt className="text-white/70 text-xs font-sans">{r.key}</dt>
-                  <dd className="tabular flex items-baseline gap-2 text-xs font-sans">
-                    {r.changed && <span className="text-white/40 line-through font-sans">{r.from}</span>}
-                    <span className="font-bold font-sans" style={r.changed ? { color: 'var(--accent)' } : undefined}>{r.to}</span>
+                  <dt className="text-body-sm text-ink-muted">{r.key}</dt>
+                  {/* A compare column, so the figures get `tabular-nums`
+                      explicitly. Noto Sans has true tabular figures — there is
+                      no second face to reach for. */}
+                  <dd className="flex items-baseline gap-2 text-body-sm tabular-nums">
+                    {r.changed && <span className="text-ink-faint line-through">{r.from}</span>}
+                    <span className={r.changed ? 'font-semibold text-ai' : 'text-ink-faint'}>
+                      {r.to}
+                    </span>
                   </dd>
                 </div>
               ))}
             </dl>
 
-            <p className="mt-3 text-xs leading-relaxed text-white/40 font-sans">{t('disclaimer')}</p>
+            <p className="meta mt-4 leading-relaxed">{t('disclaimer')}</p>
           </div>
         )}
       </div>

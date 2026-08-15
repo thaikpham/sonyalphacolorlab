@@ -160,23 +160,38 @@ body {
    token used directly.
 --------------------------------------------------------------------------- */
 
-/* Eyebrow / badge / table column head. The ONLY place uppercase is allowed,
-   and never for more than three words — Vietnamese diacritics need the
-   ascender room. */
-.label {
-  font-size: var(--text-label);
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--color-ink-faint);
-}
+/* These two are `@layer components` and the surfaces below are not, and the
+   difference is deliberate.
 
-/* Author, timestamp, counts. The floor: 13px. If it must recede further,
-   this is already the last step — reduce weight, not size or contrast. */
-.meta {
-  font-size: var(--text-meta);
-  font-weight: 400;
-  color: var(--color-ink-faint);
+   An unlayered rule beats every Tailwind utility on the same element whatever
+   the specificity. That is right for an elevation, which is a whole recipe —
+   patching one part of it is what made the old glass read as arbitrary. It is
+   wrong for a *type* treatment: `.label` is the system's one uppercase
+   eyebrow, and the reference sets it in `community` cyan on the gallery, in
+   `proposal` violet on the admin editor and in `ink-faint` everywhere else.
+   Unlayered, `text-community` on a `.label` was silently dead, and the tree
+   had grown `!text-ink-muted` workarounds to force it back. In the components
+   layer the default still applies and a utility can override it, which is what
+   a default means. */
+@layer components {
+  /* Eyebrow / badge / table column head. The ONLY place uppercase is allowed,
+     and never for more than three words — Vietnamese diacritics need the
+     ascender room. */
+  .label {
+    font-size: var(--text-label);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-ink-faint);
+  }
+
+  /* Author, timestamp, counts. The floor: 13px. If it must recede further,
+     this is already the last step — reduce weight, not size or contrast. */
+  .meta {
+    font-size: var(--text-meta);
+    font-weight: 400;
+    color: var(--color-ink-faint);
+  }
 }
 
 /* ---------------------------------------------------------------------------
@@ -235,6 +250,62 @@ body {
   border-radius: var(--radius-sm);
 }
 
+/* The current selection — a list row, a filter chip, a segmented option, a nav
+   item, a queue card. An accent-tinted FILL and never a stroke: a ring round
+   the selected row is the single most common way this interface used to grow a
+   border back.
+
+   It is a class rather than a utility because the recipe is a two-stop
+   gradient over a `color-mix()` plus a hue-matched shadow, which spells out to
+   ~190 characters of arbitrary value at every call site, and there are more
+   than a dozen. `--selected-hue` lets the admin queue tint with `proposal`
+   while everything else uses the accent. */
+.surface-selected {
+  --selected-hue: var(--color-accent-500);
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklch, var(--selected-hue) 20%, transparent),
+    color-mix(in oklch, var(--selected-hue) 7%, transparent)
+  );
+  border-radius: var(--radius-sm);
+  box-shadow:
+    0 2px 6px oklch(0% 0 0 / 0.4),
+    0 14px 34px -16px color-mix(in oklch, var(--selected-hue) 55%, transparent),
+    var(--elevation-spec);
+}
+
+/* The small chip: a tag on a recipe card, a spec chip on a camera row, a
+   filter in a rail. 13px is the floor and this is at it, so it recedes by
+   weight and ink step rather than by size. Its selected state is
+   `.surface-selected` with white text — never a darker step of its own fill. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.4375rem 0.6875rem;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-label);
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--color-ink-muted);
+  background: oklch(100% 0 0 / 0.08);
+  box-shadow: var(--elevation-spec);
+}
+
+/* An interactive chip is also a touch target. A static tag is not, which is
+   why the 44px floor is on this modifier and not on `.chip`. */
+.chip-action {
+  min-height: var(--layout-touch-target);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+.chip-action:hover {
+  background: oklch(100% 0 0 / 0.13);
+  color: var(--color-ink);
+}
+
 /* Where a divider genuinely helps — above a footer, under a panel header —
    it is light, not a line: a gradient that fades out at both ends. */
 .seam {
@@ -253,6 +324,13 @@ body {
 /* The primary action. Its bloom is the same hue as its fill, thrown
    downward — this is what replaced every decorative glow in the old design. */
 .btn-accent {
+  /* `inline-flex` + centring is part of the recipe, not the call site's job.
+     Without it these classes only look right on a `<button>`, whose UA
+     stylesheet centres its own content — on the `<Link>` in not-found.tsx the
+     label sat at the top of a 44px box with the extra height below it. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-height: var(--layout-touch-target);
   padding: 0.75rem 1.25rem;
   border: 0;
@@ -282,6 +360,9 @@ body {
 
 /* The secondary action is the same glass as everything else, one film up. */
 .btn-glass {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-height: var(--layout-touch-target);
   padding: 0.75rem 1.25rem;
   border: 0;

@@ -137,55 +137,63 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       {children}
 
       {isLoginModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm font-sans animate-fade-in">
-          {/* Opaque fill, border, radius and shadow on this wrapper; `.glass` on
-              the panel inside. `.glass` is unlayered CSS that hard-sets
-              `background`/`box-shadow` and declares `border: 0 !important`, so
-              `bg-void/90 rounded-2xl border-white/15 shadow-2xl` were all dead
-              on one element and the sign-in dialog sat nearly transparent over
-              the page behind it. */}
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+          {/* The scrim carries the position and the opaque wash; the sheet
+              itself carries the elevation. `.surface-raised` is unlayered CSS
+              written after `@import "tailwindcss"`, so `bg-*`, `rounded-*` and
+              `shadow-*` on the same element are silently dead — which is the
+              point: a sheet takes one whole elevation level rather than four
+              utilities that drift apart. It appears in place, so it fades in. */}
           <div
-            className="w-full max-w-md overflow-hidden rounded-[var(--radius-glass)] border border-white/15 bg-void/90 shadow-2xl"
+            className="surface-raised animate-fade-in w-full max-w-md overflow-hidden"
             role="dialog"
             aria-modal="true"
             aria-labelledby="google-login-title"
           >
-            <div className="glass p-6 flex flex-col gap-5 text-white">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <GoogleMark className="w-5 h-5" />
-                  <h3 id="google-login-title" className="text-[1rem] font-bold text-white">
+            <div className="flex flex-col gap-4 p-6">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <GoogleMark className="w-5 h-5 shrink-0" />
+                  <h3
+                    id="google-login-title"
+                    className="text-title-3 font-semibold tracking-[-0.02em] text-ink"
+                  >
                     {t('modalTitle')}
                   </h3>
                 </div>
                 <button
                   type="button"
                   onClick={closeLoginModal}
-                  className="text-white/50 hover:text-white text-lg font-bold p-1 rounded-lg transition-colors cursor-pointer"
+                  className="flex min-h-[var(--layout-touch-target)] min-w-[var(--layout-touch-target)] shrink-0 cursor-pointer items-center justify-center rounded-md text-ink-faint transition-colors hover:bg-white/10 hover:text-ink"
                   aria-label={t('closeModal')}
                 >
-                  ✕
+                  <span aria-hidden className="text-body-lg">
+                    ✕
+                  </span>
                 </button>
               </div>
 
-              <p className="text-xs text-white/70 leading-relaxed">{t('modalBody')}</p>
+              <p className="text-body leading-relaxed text-ink-muted">{t('modalBody')}</p>
 
+              {/* The primary action, so it is the accent fill — not a white
+                  slab. White ground with black type is the one contrast
+                  direction this system does not have. */}
               <button
                 type="button"
                 onClick={loginWithGoogle}
-                className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl bg-white text-black font-semibold text-sm hover:bg-white/90 hover:scale-[1.01] active:scale-[0.99] transition-all shadow-md cursor-pointer"
+                className="btn-accent flex w-full cursor-pointer items-center justify-center gap-3"
               >
                 <GoogleMark className="w-4 h-4 shrink-0" />
                 <span>{t('continueGoogle')}</span>
               </button>
 
               {error && (
-                <p role="alert" className="text-xs text-danger leading-relaxed">
+                <p role="alert" className="text-body-sm leading-relaxed text-danger">
                   {t(error)}
                 </p>
               )}
 
-              <p className="text-[10px] text-white/40 leading-relaxed">{t('privacy')}</p>
+              <p className="meta leading-relaxed">{t('privacy')}</p>
             </div>
           </div>
         </div>
@@ -194,6 +202,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+/**
+ * The four raw hexes below are the only ones left in this file and they are
+ * deliberate: this is Google's trademark, reproduced to their sign-in branding
+ * guidelines, not interface colour. The palette rules — no hex in a component,
+ * no red / yellow / green — are about the colours *this* interface chooses; a
+ * third party's logo is not one of those choices, and recolouring it to tokens
+ * would make it a different mark. Everything around it is tokens.
+ */
 function GoogleMark({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden="true">

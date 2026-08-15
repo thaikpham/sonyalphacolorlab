@@ -22,6 +22,7 @@ export default async function AudioPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: 'cameras' });
 
   /* Projected to cards before crossing into the Client Component — the grid
      reads no spec field, and shipping the blocks would put the whole
@@ -38,8 +39,14 @@ export default async function AudioPage({
         <CameraWikiView initialCameras={initialProducts} basePath="/audio" />
       </main>
 
-      <footer className="w-full py-8 text-center text-xs text-white/40 border-t border-white/10 font-mono">
-        Alpha ColorLab · Sony Headphone &amp; Speaker Wiki
+      {/* A divider that is light rather than a line — the one place this page
+          separates two blocks. */}
+      <div className="w-full max-w-[160rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12">
+        <hr className="seam" />
+      </div>
+
+      <footer className="meta w-full py-8 text-center">
+        {t('footerAudioRoute')}
       </footer>
     </>
   );
