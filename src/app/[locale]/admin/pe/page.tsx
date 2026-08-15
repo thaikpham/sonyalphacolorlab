@@ -29,7 +29,7 @@ export default async function AdminPePage({ params }: { params: Promise<{ locale
 
   return (
     <NextIntlClientProvider messages={clientMessages}>
-      <div className="min-h-screen flex flex-col bg-[#0b0d12] text-white font-sans">
+      <div className="min-h-screen flex flex-col bg-void text-ink font-sans">
         <SiteHeader />
         <AdminEditor products={products} initialTab="pe" />
       </div>

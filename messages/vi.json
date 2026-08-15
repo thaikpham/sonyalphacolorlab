@@ -144,7 +144,9 @@
       "sampleUrlRequired": "URL ảnh demo mẫu thực tế là bắt buộc.",
       "saveFailed": "Không lưu được. Vui lòng thử lại.",
       "unknown": "Đã có lỗi xảy ra. Vui lòng thử lại."
-    }
+    },
+    "sectionCl": "2. Thông số camera Creative Look",
+    "sectionPp": "2. Thiết lập chính Picture Profile"
   },
   "notFound": {
     "title": "Không tìm thấy công thức này.",
@@ -197,7 +199,6 @@
     "compareConfirmSub": "Kiểm tra danh sách các máy đã chọn trước khi mở chuyên trang so sánh thông số chi tiết.",
     "compareConfirmTitle": "Xác nhận so sánh sản phẩm",
     "compareItemsBtn": "So sánh ngay ({count} sản phẩm)",
-    "comparePageTitle": "Chuyên Trang So Sánh Chi Tiết Sản Phẩm Sony",
     "compareSummary": "{count} sản phẩm đang so sánh",
     "composeBodyPlaceholder": "Nội dung bạn muốn nói. Link sản phẩm sẽ được thêm sẵn.",
     "composeOnRedditBtn": "Soạn trên Reddit",
@@ -254,11 +255,11 @@
     "removeFromCompare": "✓ Đã có trong danh sách so sánh",
     "sameBadge": "Giống nhau",
     "searchPlaceholder": "Tìm kiếm tên sản phẩm, mã SKU (ví dụ: SEL70200GM2, FX3, ECM-M1), tính năng…",
-    "sectionAfStab": "🎯 Hệ thống lấy nét & Chống rung",
-    "sectionHighlights": "⚡ Tính năng nổi bật sản phẩm",
-    "sectionPhysical": "📐 Kích thước, Trọng lượng & Pin",
-    "sectionSensorOptics": "📷 Cảm biến & Thông số quang học",
-    "sectionVideoIso": "🎥 Khả năng quay phim & Dải ISO",
+    "sectionAfStab": "Hệ thống lấy nét & Chống rung",
+    "sectionHighlights": "Tính năng nổi bật sản phẩm",
+    "sectionPhysical": "Kích thước, Trọng lượng & Pin",
+    "sectionSensorOptics": "Cảm biến & Thông số quang học",
+    "sectionVideoIso": "Khả năng quay phim & Dải ISO",
     "selectProductTitle": "Chọn sản phẩm để thêm vào bảng so sánh",
     "sendQuestion": "Gửi câu hỏi",
     "sensorLabel": "Thông số kỹ thuật",
@@ -355,7 +356,12 @@
     "footerAudioRoute": "Alpha ColorLab · Bảng Tra Cứu Tai Nghe & Loa Sony",
     "camerasTitle": "Bảng Tra Cứu Máy Ảnh Sony",
     "camerasSubtitle": "Tra cứu và so sánh thông số kỹ thuật, giá niêm yết chính hãng hơn 35+ dòng máy ảnh Sony Alpha, Cinema Line và Vlog.",
-    "footerCameraWiki": "Alpha ColorLab · Bảng Tra Cứu & So Sánh Máy Ảnh Sony"
+    "footerCameraWiki": "Alpha ColorLab · Bảng Tra Cứu & So Sánh Máy Ảnh Sony",
+    "compareLegend": "Giá trị tốt hơn được tô accent; ô giống nhau để nguyên ink. Dấu — là thông số catalogue không công bố.",
+    "removeProduct": "Xóa khỏi bảng so sánh",
+    "closeDialog": "Đóng",
+    "chatYou": "Bạn",
+    "aiThinking": "Đang phân tích thông số các mẫu máy đã chọn…"
   },
   "admin": {
     "title": "Quản trị sản phẩm",
@@ -428,7 +434,13 @@
       "mismatch": "Bản dịch trả về sai số dòng. Chưa thay đổi gì.",
       "declined": "Mô hình từ chối đoạn văn bản đó.",
       "failed": "Dịch thất bại. Chưa thay đổi gì."
-    }
+    },
+    "basicInfoHeading": "Tên sản phẩm & Bộ sưu tập ảnh",
+    "basicInfoHint": "Chỉnh sửa tên hiển thị, tên đầy đủ và danh sách URL ảnh minh họa.",
+    "primaryImageLabel": "URL ảnh đại diện chính (Primary Image URL)",
+    "galleryUrlsLabel": "Danh sách URL ảnh minh họa / Gallery (Mỗi URL 1 dòng)",
+    "photosCount": "ảnh",
+    "galleryPreviewHeading": "Xem trước ảnh minh họa trong Gallery:"
   },
   "loading": {
     "status": "Đang tải công thức"

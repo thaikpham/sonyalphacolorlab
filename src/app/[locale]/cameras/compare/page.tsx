@@ -47,9 +47,12 @@ export default async function CameraComparePage({
         <CameraCompareView initialCameras={initialCameras} selectedIds={selectedIds} />
       </main>
 
-      <footer className="w-full py-8 text-center text-xs text-white/40 border-t border-white/10 font-mono">
-        {t('footerCameraWiki')}
-      </footer>
+      {/* Light, not a line — the same seam the two catalogue routes use. */}
+      <div className="w-full max-w-[160rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12">
+        <hr className="seam" />
+      </div>
+
+      <footer className="meta w-full py-8 text-center">{t('footerCameraWiki')}</footer>
     </>
   );
 }

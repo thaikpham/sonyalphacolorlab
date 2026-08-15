@@ -144,7 +144,9 @@
       "sampleUrlRequired": "A real sample photo URL is required.",
       "saveFailed": "Could not save that. Please try again.",
       "unknown": "Something went wrong. Please try again."
-    }
+    },
+    "sectionCl": "2. Creative Look camera parameters",
+    "sectionPp": "2. Picture Profile master settings"
   },
   "notFound": {
     "title": "That recipe isn't here.",
@@ -197,7 +199,6 @@
     "compareConfirmSub": "Review your selected items before proceeding to full specification comparison.",
     "compareConfirmTitle": "Compare Products",
     "compareItemsBtn": "Compare These Items ({count})",
-    "comparePageTitle": "Detailed Sony Product Comparison",
     "compareSummary": "Comparing {count} products",
     "composeBodyPlaceholder": "What you want to say. The product link is added for you.",
     "composeOnRedditBtn": "Compose on Reddit",
@@ -254,11 +255,11 @@
     "removeFromCompare": "✓ In Compare List",
     "sameBadge": "Same",
     "searchPlaceholder": "Search model, SKU (e.g. SEL70200GM2, FX3, ECM-M1), or feature…",
-    "sectionAfStab": "🎯 Autofocus & Image Stabilization",
-    "sectionHighlights": "⚡ Key Product Features",
-    "sectionPhysical": "📐 Dimensions, Weight & Power",
-    "sectionSensorOptics": "📷 Sensor & Optical Specifications",
-    "sectionVideoIso": "🎥 Video Capabilities & ISO Range",
+    "sectionAfStab": "Autofocus & Image Stabilization",
+    "sectionHighlights": "Key Product Features",
+    "sectionPhysical": "Dimensions, Weight & Power",
+    "sectionSensorOptics": "Sensor & Optical Specifications",
+    "sectionVideoIso": "Video Capabilities & ISO Range",
     "selectProductTitle": "Select Product to Compare",
     "sendQuestion": "Send Question",
     "sensorLabel": "Specifications",
@@ -355,7 +356,12 @@
     "footerAudioRoute": "Alpha ColorLab · Sony Headphone & Speaker Wiki",
     "camerasTitle": "Sony Camera Catalog Wiki",
     "camerasSubtitle": "Explore technical specs, official prices, and features of 35+ Sony Alpha and Cinema Line cameras.",
-    "footerCameraWiki": "Alpha ColorLab · Sony Camera Catalog & Spec Wiki"
+    "footerCameraWiki": "Alpha ColorLab · Sony Camera Catalog & Spec Wiki",
+    "compareLegend": "The better value is tinted with the accent; cells that match stay ink. An em dash is a spec the catalogue does not publish.",
+    "removeProduct": "Remove from comparison",
+    "closeDialog": "Close",
+    "chatYou": "You",
+    "aiThinking": "Analysing the specs of the selected models…"
   },
   "admin": {
     "title": "Product Admin",
@@ -428,7 +434,13 @@
       "mismatch": "The translation came back with the wrong number of lines. Nothing was changed.",
       "declined": "The model declined that text.",
       "failed": "Translation failed. Nothing was changed."
-    }
+    },
+    "basicInfoHeading": "Product name & gallery",
+    "basicInfoHint": "Edit the display name, the full name and the gallery image URLs.",
+    "primaryImageLabel": "Primary image URL",
+    "galleryUrlsLabel": "Gallery image URLs (one per line)",
+    "photosCount": "photos",
+    "galleryPreviewHeading": "Gallery preview"
   },
   "loading": {
     "status": "Loading recipes"

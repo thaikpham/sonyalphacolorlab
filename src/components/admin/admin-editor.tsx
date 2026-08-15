@@ -48,6 +48,24 @@ const SUB1_OPTIONS: Record<'camera' | 'lens' | 'accessory', string[]> = {
   accessory: ['Audio', 'Power', 'Grip & Mount', 'Adaptor'],
 };
 
+/**
+ * The four treatments this screen repeats.
+ *
+ * A control is SUNKEN — black 35% with an inset shadow and no stroke — which is
+ * what the ~40 stroked inputs in this file became. A tag is a
+ * 13px chip on a white film; it is written out rather than using `.chip` where
+ * the tint has to say what the row *is*, because `.chip` is unlayered CSS and
+ * silently beats a `text-*` utility on its own element.
+ */
+const TAG = 'text-label font-semibold px-2.5 py-1 rounded-sm shadow-[var(--elevation-spec)]';
+const TAG_NEUTRAL = `${TAG} bg-white/[0.08] text-ink-muted`;
+const FIELD =
+  'w-full px-4 min-h-[var(--layout-touch-target)] surface-sunken text-body text-ink placeholder:text-ink-faint';
+const FIELD_SM =
+  'w-full px-3 min-h-[var(--layout-touch-target)] surface-sunken text-body-sm text-ink placeholder:text-ink-faint';
+const AREA =
+  'w-full px-4 py-3 surface-sunken text-body text-ink leading-relaxed resize-y placeholder:text-ink-faint';
+
 export function AdminEditor({ products: initialProducts, initialTab }: Props) {
   const t = useTranslations('admin');
   const tSpec = useTranslations('cameras.specs');
@@ -344,39 +362,41 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
   if (isAdmin === false) {
     return (
       <main className="flex-1 w-full max-w-2xl mx-auto px-6 py-20 text-center flex flex-col gap-3">
-        <h1 className="text-2xl font-extrabold text-white">{tSafe('gateTitle', 'Chỉ dành cho admin')}</h1>
-        <p className="text-sm text-slate-100 font-medium leading-relaxed">{tSafe('gateBody', 'Đăng nhập bằng địa chỉ admin')}</p>
+        <h1 className="text-title-1 font-extrabold tracking-[-0.02em] text-ink">{tSafe('gateTitle', 'Chỉ dành cho admin')}</h1>
+        <p className="text-body text-ink-muted leading-relaxed">{tSafe('gateBody', 'Đăng nhập bằng địa chỉ admin')}</p>
       </main>
     );
   }
 
   return (
     <main className="flex-1 w-full max-w-[110rem] mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-5">
-      <header className="flex flex-wrap items-end justify-between gap-4 border-b border-white/10 pb-4">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">{tSafe('title', 'Quản trị sản phẩm')}</h1>
-          <p className="text-sm text-slate-100 font-medium">{tSafe('subtitle', 'Sửa thông số và tính năng sản phẩm')}</p>
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-title-1 font-extrabold text-ink tracking-[-0.02em]">{tSafe('title', 'Quản trị sản phẩm')}</h1>
+          <p className="meta">{tSafe('subtitle', 'Sửa thông số và tính năng sản phẩm')}</p>
         </div>
         <div className="flex items-center gap-4 flex-wrap">
           {email && (
-            <span className="font-mono text-xs font-bold text-amber-300">
+            <span className="meta">
               {tSafe('signedInAs', 'Đang đăng nhập: {email}', { email })}
             </span>
           )}
           <button
             type="button"
             onClick={() => setIsCreateOpen(true)}
-            className="px-4 py-2 rounded-xl bg-amber-400 text-black font-extrabold text-xs hover:bg-amber-300 shadow-md transition-all cursor-pointer flex items-center gap-1.5"
+            className="btn-accent gap-1.5 cursor-pointer"
           >
             {tSafe('createProductBtn', '＋ Thêm sản phẩm mới')}
           </button>
         </div>
       </header>
 
+      <div className="seam" />
+
       {/* Category Division Navigation Tabs & Admin Role Badge */}
-      <div className="flex flex-wrap items-center justify-between gap-4 p-3.5 rounded-2xl bg-[#1c1d22] border border-white/15 shadow-lg">
-        {/* Category Switcher Tabs */}
-        <div className="flex items-center p-1 rounded-xl bg-black/70 border border-white/20 font-sans">
+      <div className="surface flex flex-wrap items-center justify-between gap-4 p-3.5">
+        {/* Category Switcher Tabs — the rut is sunken, the choice is a fill. */}
+        <div className="surface-sunken flex items-center gap-1 p-1">
           <button
             type="button"
             onClick={() => {
@@ -386,10 +406,8 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
               setDraft(null);
             }}
             disabled={adminRole === 'pe'}
-            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all font-sans flex items-center gap-2 ${
-              activeTab === 'di'
-                ? 'bg-amber-400 text-black font-extrabold shadow-md'
-                : 'text-white/60 hover:text-white'
+            className={`px-4 min-h-[var(--layout-touch-target)] rounded-sm text-body-sm font-semibold transition-colors flex items-center gap-2 ${
+              activeTab === 'di' ? 'surface-selected text-ink' : 'text-ink-muted hover:text-ink'
             } ${adminRole === 'pe' ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
             title={adminRole === 'pe' ? 'Tài khoản của bạn có quyền quản lý ngành hàng PE' : undefined}
           >
@@ -405,10 +423,8 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
               setDraft(null);
             }}
             disabled={adminRole === 'di'}
-            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all font-sans flex items-center gap-2 ${
-              activeTab === 'pe'
-                ? 'bg-cyan-400 text-black font-extrabold shadow-md'
-                : 'text-white/60 hover:text-white'
+            className={`px-4 min-h-[var(--layout-touch-target)] rounded-sm text-body-sm font-semibold transition-colors flex items-center gap-2 ${
+              activeTab === 'pe' ? 'surface-selected text-ink' : 'text-ink-muted hover:text-ink'
             } ${adminRole === 'di' ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
             title={adminRole === 'di' ? 'Tài khoản của bạn có quyền quản lý ngành hàng DI' : undefined}
           >
@@ -417,21 +433,22 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
           </button>
         </div>
 
-        {/* Role Badge */}
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/40 border border-white/10 font-mono text-xs">
-          <span className="text-white/60">Phân quyền:</span>
+        {/* Role Badge — one signal per row: violet for the whole catalogue,
+            accent for DI, cyan for PE, and only ever one of the three. */}
+        <div className="flex items-center gap-2">
+          <span className="label">Phân quyền:</span>
           {adminRole === 'super' && (
-            <span className="px-2.5 py-1 rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/40 text-xs font-bold">
+            <span className={`${TAG} bg-proposal/15 text-proposal`}>
               👑 SUPER DEV (Quản lý toàn bộ trang web)
             </span>
           )}
           {adminRole === 'di' && (
-            <span className="px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold">
+            <span className={`${TAG} bg-accent-400/15 text-accent-400`}>
               📷 DI ADMIN (Digital Imaging)
             </span>
           )}
           {adminRole === 'pe' && (
-            <span className="px-2.5 py-1 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-xs font-bold">
+            <span className={`${TAG} bg-community/15 text-community`}>
               🎧 PE ADMIN (Personal Entertainment)
             </span>
           )}
@@ -439,50 +456,51 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-        {/* Product list */}
-        <div className="lg:col-span-4 xl:col-span-3 flex flex-col gap-3 bg-[#1c1d22] p-4 rounded-2xl border border-white/15">
+        {/* The review queue: a white 2.2% ground, surface cards on it, and the
+            item being edited tinted `proposal` — a fill, never a stroke. */}
+        <div className="lg:col-span-4 xl:col-span-3 flex flex-col gap-3 bg-white/[0.022] p-4 rounded-lg">
           <div className="flex items-center justify-between gap-2">
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={tSafe('searchPlaceholder', 'Lọc theo tên, SKU...')}
-              className="w-full px-3 py-2 rounded-xl bg-black/50 border border-white/20 text-white font-medium text-xs placeholder:text-slate-300"
+              className={FIELD}
             />
           </div>
-          <div className="flex items-center justify-between text-[0.65rem] font-bold text-slate-300">
-            <span>{tSafe('productCount', '{count} sản phẩm', { count: filtered.length })}</span>
+          <div className="flex items-center justify-between gap-2">
+            <span className="label tabular-nums">
+              {tSafe('productCount', '{count} sản phẩm', { count: filtered.length })}
+            </span>
             <button
               type="button"
               onClick={() => setIsCreateOpen(true)}
-              className="text-amber-300 hover:underline cursor-pointer"
+              className="text-label font-semibold text-accent-400 cursor-pointer"
             >
               {tSafe('createProductBtn', '＋ Thêm sản phẩm mới')}
             </button>
           </div>
-          <ul className="flex flex-col gap-1 max-h-[34rem] overflow-y-auto scrollbar-thin">
+          <ul className="flex flex-col gap-2.5 max-h-[34rem] scroll-area">
             {filtered.map((p) => (
               <li key={p.id}>
                 <button
                   type="button"
                   onClick={() => select(p)}
-                  className={`w-full text-left px-3 py-2 rounded-xl border transition-colors ${
+                  className={`w-full text-left flex flex-col gap-2 px-4 py-3.5 cursor-pointer transition-colors ${
                     p.id === selectedId
-                      ? 'bg-amber-400/20 border-amber-400/50'
-                      : 'bg-black/30 border-white/10 hover:bg-white/10'
+                      ? 'surface-selected [--selected-hue:var(--color-proposal)]'
+                      : 'surface'
                   }`}
                 >
-                  <div className="flex items-center justify-between gap-1">
-                    <span className="block text-xs font-bold text-white truncate">{p.name}</span>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/10 font-mono text-white/70 uppercase shrink-0">
-                      {p.category}
-                    </span>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="block text-body-sm font-semibold text-ink truncate">{p.name}</span>
+                    <span className={`${TAG_NEUTRAL} uppercase shrink-0`}>{p.category}</span>
                   </div>
-                  <span className="block font-mono text-[0.65rem] text-slate-300 truncate">{p.sku}</span>
-                  <div className="flex items-center justify-between gap-1 mt-1">
-                    <span className="text-[9px] font-mono text-slate-400 truncate">{p.subCategory1}</span>
+                  <span className="block text-meta text-ink-muted truncate">{p.sku}</span>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-meta text-ink-faint truncate">{p.subCategory1}</span>
                     <span
-                      className={`font-mono text-[0.6rem] font-bold ${
-                        needsTranslation(p.features) ? 'text-amber-300' : 'text-emerald-300'
+                      className={`text-label font-semibold shrink-0 ${
+                        needsTranslation(p.features) ? 'text-danger' : 'text-community'
                       }`}
                     >
                       {needsTranslation(p.features)
@@ -499,12 +517,12 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
         {/* Editor */}
         <div className="lg:col-span-8 xl:col-span-9 flex flex-col gap-5">
           {!selected || !draft ? (
-            <div className="bg-[#1c1d22] p-8 rounded-2xl border border-white/15 flex flex-col items-center gap-4 text-center">
-              <p className="text-sm text-slate-100 font-medium">{tSafe('selectPrompt', 'Chọn một sản phẩm bên trái để bắt đầu sửa.')}</p>
+            <div className="surface p-8 flex flex-col items-center gap-4 text-center">
+              <p className="text-body text-ink-muted">{tSafe('selectPrompt', 'Chọn một sản phẩm bên trái để bắt đầu sửa.')}</p>
               <button
                 type="button"
                 onClick={() => setIsCreateOpen(true)}
-                className="px-5 py-2.5 rounded-xl bg-amber-400 text-black font-extrabold text-xs hover:bg-amber-300 transition-all cursor-pointer shadow-lg"
+                className="btn-accent cursor-pointer"
               >
                 {tSafe('createProductBtn', '＋ Thêm sản phẩm mới')}
               </button>
@@ -512,26 +530,26 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
           ) : (
             <>
               {/* Product Basic Info & Gallery Images Section */}
-              <div className="bg-[#1c1d22] p-5 rounded-2xl border border-white/15 flex flex-col gap-4">
-                <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-3 flex-wrap">
+              <div className="surface p-5 flex flex-col gap-4">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
                   <div className="flex items-center gap-2">
-                    <h2 className="font-extrabold text-sm uppercase text-amber-300 font-mono tracking-wider">
+                    <h2 className="label text-proposal">
                       🏷️ {tSafe('basicInfoHeading', 'Tên sản phẩm & Bộ sưu tập ảnh')}
                     </h2>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/10 text-white/80 uppercase">
-                      SKU: {selected.sku || 'N/A'}
-                    </span>
+                    <span className={`${TAG_NEUTRAL} uppercase`}>SKU: {selected.sku || 'N/A'}</span>
                   </div>
-                  <span className="text-[0.65rem] text-slate-300 font-medium">
+                  <span className="meta">
                     {tSafe('basicInfoHint', 'Chỉnh sửa tên hiển thị, tên đầy đủ và danh sách URL ảnh minh họa.')}
                   </span>
                 </div>
 
+                <div className="seam" />
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Product Name Inputs */}
-                  <div className="flex flex-col gap-3">
-                    <div className="flex flex-col gap-1">
-                      <label htmlFor="prod-name" className="font-mono text-[0.65rem] font-extrabold uppercase tracking-wider text-amber-300">
+                  <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-2">
+                      <label htmlFor="prod-name" className="label">
                         {tSafe('nameLabel', 'Tên ngắn hiển thị (Name)')}
                       </label>
                       <input
@@ -539,13 +557,13 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
                         type="text"
                         value={draft.name}
                         onChange={(e) => setDraft({ ...draft, name: e.target.value })}
-                        className="w-full px-3 py-2 rounded-xl bg-black/50 border border-white/20 text-white font-bold text-xs"
+                        className={FIELD}
                         placeholder="Ví dụ: FX3, WH-1000XM5, A7 IV..."
                       />
                     </div>
 
-                    <div className="flex flex-col gap-1">
-                      <label htmlFor="prod-fullname" className="font-mono text-[0.65rem] font-extrabold uppercase tracking-wider text-amber-300">
+                    <div className="flex flex-col gap-2">
+                      <label htmlFor="prod-fullname" className="label">
                         {tSafe('fullNameLabel', 'Tên đầy đủ chính thức (Full Name)')}
                       </label>
                       <input
@@ -553,13 +571,13 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
                         type="text"
                         value={draft.fullName}
                         onChange={(e) => setDraft({ ...draft, fullName: e.target.value })}
-                        className="w-full px-3 py-2 rounded-xl bg-black/50 border border-white/20 text-white font-medium text-xs"
+                        className={FIELD}
                         placeholder="Ví dụ: Máy ảnh Sony Cinema Line FX3..."
                       />
                     </div>
 
-                    <div className="flex flex-col gap-1">
-                      <label htmlFor="prod-imageurl" className="font-mono text-[0.65rem] font-extrabold uppercase tracking-wider text-sky-300">
+                    <div className="flex flex-col gap-2">
+                      <label htmlFor="prod-imageurl" className="label">
                         {tSafe('primaryImageLabel', 'URL ảnh đại diện chính (Primary Image URL)')}
                       </label>
                       <input
@@ -567,7 +585,7 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
                         type="text"
                         value={draft.imageUrl}
                         onChange={(e) => setDraft({ ...draft, imageUrl: e.target.value })}
-                        className="w-full px-3 py-2 rounded-xl bg-black/50 border border-white/20 text-white font-medium text-xs"
+                        className={FIELD}
                         placeholder="https://static.bhphoto.com/images/..."
                       />
                     </div>
@@ -576,10 +594,10 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
                   {/* Gallery Image URLs Textarea */}
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center justify-between gap-2">
-                      <label htmlFor="prod-galleryurls" className="font-mono text-[0.65rem] font-extrabold uppercase tracking-wider text-sky-300">
+                      <label htmlFor="prod-galleryurls" className="label">
                         {tSafe('galleryUrlsLabel', 'Danh sách URL ảnh minh họa / Gallery (Mỗi URL 1 dòng)')}
                       </label>
-                      <span className="text-[10px] font-mono text-slate-300 font-bold bg-white/10 px-2 py-0.5 rounded">
+                      <span className={`${TAG_NEUTRAL} tabular-nums`}>
                         {lines(draft.galleryUrls).length} {tSafe('photosCount', 'ảnh')}
                       </span>
                     </div>
@@ -588,7 +606,7 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
                       value={draft.galleryUrls}
                       onChange={(e) => setDraft({ ...draft, galleryUrls: e.target.value })}
                       rows={6}
-                      className="w-full px-3 py-2 rounded-xl bg-black/50 border border-white/20 text-white font-mono text-xs leading-relaxed resize-y placeholder:text-slate-300"
+                      className={AREA}
                       placeholder="https://static.bhphoto.com/images/images1000x1000/1.jpg&#10;https://static.bhphoto.com/images/images1000x1000/2.jpg"
                     />
                   </div>
@@ -596,16 +614,17 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
 
                 {/* Live Thumbnail Preview Grid */}
                 {lines(draft.galleryUrls).length > 0 && (
-                  <div className="flex flex-col gap-2 mt-1 pt-3 border-t border-white/10">
-                    <span className="font-mono text-[0.65rem] font-extrabold uppercase tracking-wider text-slate-300">
+                  <div className="flex flex-col gap-3 mt-1">
+                    <div className="seam" />
+                    <span className="label">
                       🖼️ {tSafe('galleryPreviewHeading', 'Xem trước ảnh minh họa trong Gallery:')}
                     </span>
-                    <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin">
+                    <div className="flex items-center gap-2 pb-2 scroll-silent overflow-x-auto">
                       {lines(draft.galleryUrls).map((url, idx) => (
-                        <div key={idx} className="relative group shrink-0 w-16 h-16 rounded-xl border border-white/20 overflow-hidden bg-black/60">
+                        <div key={idx} className="relative group shrink-0 w-16 h-16 rounded-md overflow-hidden bg-sunken shadow-[var(--elevation-spec)]">
                           {/* eslint-disable-next-line @next/next/no-img-element -- previews unsaved admin-entered URLs before allowlist validation. */}
                           <img src={url} alt={`Gallery thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
-                          <span className="absolute bottom-0 inset-x-0 bg-black/75 text-[9px] font-mono text-white text-center py-0.5">
+                          <span className="absolute bottom-0 inset-x-0 bg-void/75 text-meta text-ink text-center tabular-nums">
                             #{idx + 1}
                           </span>
                         </div>
@@ -616,34 +635,31 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
               </div>
 
               {/* Features section */}
-              <div className="bg-[#1c1d22] p-5 rounded-2xl border border-white/15 flex flex-col gap-4">
+              <div className="surface p-5 flex flex-col gap-4">
                 <div className="flex items-center justify-between gap-3 flex-wrap">
                   <div className="flex items-center gap-2">
-                    <h2 className="font-extrabold text-sm uppercase text-amber-300 font-mono tracking-wider">
+                    <h2 className="label text-proposal">
                       ⚡ {tSafe('featuresHeading', 'Tính năng nổi bật')}
                     </h2>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/10 text-white/80 uppercase">
+                    <span className={`${TAG_NEUTRAL} uppercase`}>
                       {selected.category} · {selected.subCategory1}
                     </span>
                   </div>
-                  <span className="text-[0.65rem] text-slate-300 font-medium">{tSafe('featuresHint', 'Mỗi dòng một ý.')}</span>
+                  <span className="meta">{tSafe('featuresHint', 'Mỗi dòng một ý.')}</span>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {(['en', 'vi'] as const).map((side) => (
                     <div key={side} className="flex flex-col gap-2">
                       <div className="flex items-center justify-between gap-2">
-                        <label
-                          htmlFor={`feat-${side}`}
-                          className="font-mono text-[0.65rem] font-extrabold uppercase tracking-wider text-sky-300"
-                        >
+                        <label htmlFor={`feat-${side}`} className="label">
                           {tSafe(side === 'en' ? 'featuresEn' : 'featuresVi', side === 'en' ? 'Tiếng Anh' : 'Tiếng Việt')}
                         </label>
                         <button
                           type="button"
                           onClick={() => translate(side)}
                           disabled={busy !== ''}
-                          className="px-2.5 py-1 rounded-lg bg-white/15 hover:bg-white/25 disabled:opacity-40 text-white text-[0.65rem] font-bold border border-white/20"
+                          className="chip chip-action disabled:opacity-40"
                         >
                           {busy === 'translating'
                             ? tSafe('translating', 'Đang dịch…')
@@ -655,7 +671,7 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
                         value={draft[side]}
                         onChange={(e) => setDraft({ ...draft, [side]: e.target.value })}
                         rows={9}
-                        className="w-full px-3 py-2 rounded-xl bg-black/50 border border-white/20 text-white font-medium text-xs leading-relaxed resize-y"
+                        className={AREA}
                       />
                     </div>
                   ))}
@@ -663,26 +679,20 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
               </div>
 
               {/* CORE SPECS SECTION: GOOGLE SHEET & MARKDOWN EDITOR */}
-              <div className="bg-[#1c1d22] p-5 rounded-2xl border border-white/15 flex flex-col gap-4">
-                <div className="flex items-center justify-between gap-3 flex-wrap border-b border-white/10 pb-3">
+              <div className="surface p-5 flex flex-col gap-4">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
                   <div className="flex items-center gap-3">
-                    <h2 className="font-extrabold text-sm uppercase text-sky-300 font-mono tracking-wider">
-                      📊 {tSafe('specsHeading', 'Thông số cốt lõi')}
-                    </h2>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 font-bold">
-                      Google Sheet & Markdown Grid
-                    </span>
+                    <h2 className="label text-proposal">{tSafe('specsHeading', 'Thông số cốt lõi')}</h2>
+                    <span className={TAG_NEUTRAL}>Google Sheet &amp; Markdown Grid</span>
                   </div>
 
                   {/* Mode Selector Tabs */}
-                  <div className="flex items-center gap-1 bg-black/50 p-1 rounded-xl border border-white/15">
+                  <div className="surface-sunken flex items-center gap-1 p-1">
                     <button
                       type="button"
                       onClick={() => setSpecViewMode('sheet')}
-                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                        specViewMode === 'sheet'
-                          ? 'bg-amber-400 text-black shadow'
-                          : 'text-white/70 hover:text-white hover:bg-white/10'
+                      className={`px-3 min-h-[var(--layout-touch-target)] rounded-sm text-body-sm font-semibold transition-colors cursor-pointer ${
+                        specViewMode === 'sheet' ? 'surface-selected text-ink' : 'text-ink-muted hover:text-ink'
                       }`}
                     >
                       {tSafe('sheetModeBtn', '📊 Bảng tính Google Sheet')}
@@ -690,10 +700,8 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
                     <button
                       type="button"
                       onClick={() => setSpecViewMode('markdown')}
-                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                        specViewMode === 'markdown'
-                          ? 'bg-amber-400 text-black shadow'
-                          : 'text-white/70 hover:text-white hover:bg-white/10'
+                      className={`px-3 min-h-[var(--layout-touch-target)] rounded-sm text-body-sm font-semibold transition-colors cursor-pointer ${
+                        specViewMode === 'markdown' ? 'surface-selected text-ink' : 'text-ink-muted hover:text-ink'
                       }`}
                     >
                       {tSafe('markdownModeBtn', '📝 Xem & Sao chép Markdown')}
@@ -701,32 +709,35 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
                   </div>
                 </div>
 
+                <div className="seam" />
+
                 {!selected.specs ? (
-                  <p className="text-xs text-amber-300 font-bold">{tSafe('noSpecBlock', 'Sản phẩm này chưa có khối thông số.')}</p>
+                  <p className="text-body-sm text-danger">{tSafe('noSpecBlock', 'Sản phẩm này chưa có khối thông số.')}</p>
                 ) : specViewMode === 'sheet' ? (
                   /* GOOGLE SHEET SPREADSHEET TABLE GRID */
                   <div className="flex flex-col gap-3">
-                    <p className="text-[0.65rem] text-slate-300 font-medium leading-relaxed">
+                    <p className="meta leading-relaxed">
                       {tSafe('specsEmptyHint', 'Để trống ô mà nguồn không công bố — nó sẽ hiện "nguồn không công bố".')}
                     </p>
 
-                    <div className="overflow-x-auto rounded-xl border border-white/15 bg-black/40 scrollbar-thin">
-                      <table className="w-full text-left text-xs border-collapse">
+                    {/* Rows separate by an alternating film, never by a rule. */}
+                    <div className="overflow-x-auto rounded-md bg-white/[0.022]">
+                      <table className="w-full text-left text-body-sm border-collapse">
                         <thead>
-                          <tr className="bg-[#22242b] border-b border-white/15 text-slate-300 font-mono text-[11px] uppercase">
-                            <th className="py-2.5 px-3 w-12 text-center border-r border-white/10">
+                          <tr className="label bg-white/[0.04]">
+                            <th className="py-3 px-3 w-12 text-center font-semibold">
                               {tSafe('colIndex', 'STT')}
                             </th>
-                            <th className="py-2.5 px-4 w-48 border-r border-white/10">
+                            <th className="py-3 px-4 w-48 font-semibold">
                               {tSafe('colField', 'Thông số (Field)')}
                             </th>
-                            <th className="py-2.5 px-3 w-20 text-center border-r border-white/10">
+                            <th className="py-3 px-3 w-20 text-center font-semibold">
                               {tSafe('colType', 'Loại')}
                             </th>
-                            <th className="py-2.5 px-4">{tSafe('colValue', 'Giá trị (Value / Input Control)')}</th>
+                            <th className="py-3 px-4 font-semibold">{tSafe('colValue', 'Giá trị (Value / Input Control)')}</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-white/10 font-sans">
+                        <tbody>
                           {SPEC_ROWS[selected.specs.kind].map((field, idx) => {
                             const meta = getSpecMeta(field);
                             const val = draft.specs[field] ?? '';
@@ -738,32 +749,24 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
                             }
 
                             return (
-                              <tr key={field} className="hover:bg-white/5 transition-colors">
-                                <td className="py-2 px-3 text-center font-mono text-[10px] text-slate-400 border-r border-white/10">
+                              <tr key={field} className={idx % 2 === 1 ? 'row-tint' : ''}>
+                                <td className="py-2.5 px-3 text-center text-meta text-ink-faint tabular-nums">
                                   {idx + 1}
                                 </td>
-                                <td className="py-2 px-4 border-r border-white/10">
+                                <td className="py-2.5 px-4">
                                   <div className="flex flex-col">
-                                    <span className="font-bold text-white text-xs">
+                                    <span className="text-body-sm font-semibold text-ink">
                                       {label}
                                     </span>
-                                    <span className="font-mono text-[9px] text-slate-400">
+                                    <span className="text-meta text-ink-faint">
                                       {field}
                                     </span>
                                   </div>
                                 </td>
-                                <td className="py-2 px-3 text-center border-r border-white/10">
-                                  <span
-                                    className={`inline-block px-1.5 py-0.5 rounded font-mono text-[9px] font-extrabold uppercase ${
-                                      meta.type === 'dropdown'
-                                        ? 'bg-amber-500/20 text-amber-300'
-                                        : meta.type === 'number'
-                                          ? 'bg-emerald-500/20 text-emerald-300'
-                                          : meta.type === 'url'
-                                            ? 'bg-purple-500/20 text-purple-300'
-                                            : 'bg-sky-500/20 text-sky-300'
-                                    }`}
-                                  >
+                                <td className="py-2.5 px-3 text-center">
+                                  {/* The field's input type is metadata, not a
+                                      signal: one neutral chip for all four. */}
+                                  <span className={`inline-block ${TAG_NEUTRAL} uppercase`}>
                                     {meta.type === 'dropdown'
                                       ? tSafe('typeDropdown', 'DROP')
                                       : meta.type === 'number'
@@ -773,7 +776,7 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
                                           : tSafe('typeText', 'TEXT')}
                                   </span>
                                 </td>
-                                <td className="py-2 px-4">
+                                <td className="py-2.5 px-4">
                                   {meta.type === 'dropdown' && meta.options ? (
                                     <div className="flex items-center gap-2">
                                       <select
@@ -787,7 +790,7 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
                                             });
                                           }
                                         }}
-                                        className="px-2.5 py-1.5 rounded-lg bg-black/60 border border-white/20 text-white font-mono text-xs focus:border-amber-400 focus:outline-none"
+                                        className={FIELD_SM}
                                       >
                                         <option value="">-- Chưa công bố --</option>
                                         {meta.options.map((opt) => (
@@ -812,7 +815,7 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
                                             })
                                           }
                                           placeholder={meta.placeholder}
-                                          className="flex-1 px-2.5 py-1.5 rounded-lg bg-black/60 border border-white/20 text-white font-mono text-xs"
+                                          className={`${FIELD_SM} flex-1`}
                                         />
                                       )}
                                     </div>
@@ -828,13 +831,9 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
                                           })
                                         }
                                         placeholder={meta.placeholder}
-                                        className="w-full px-2.5 py-1.5 rounded-lg bg-black/60 border border-white/20 text-white font-mono text-xs"
+                                        className={`${FIELD_SM} tabular-nums`}
                                       />
-                                      {meta.unit && (
-                                        <span className="font-mono text-xs text-amber-300 font-bold bg-white/10 px-2 py-1 rounded">
-                                          {meta.unit}
-                                        </span>
-                                      )}
+                                      {meta.unit && <span className={TAG_NEUTRAL}>{meta.unit}</span>}
                                     </div>
                                   ) : (
                                     <input
@@ -847,7 +846,7 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
                                         })
                                       }
                                       placeholder={meta.placeholder}
-                                      className="w-full px-2.5 py-1.5 rounded-lg bg-black/60 border border-white/20 text-white font-mono text-xs"
+                                      className={FIELD_SM}
                                     />
                                   )}
                                 </td>
@@ -856,35 +855,35 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
                           })}
 
                           {/* Source URL Row */}
-                          <tr className="bg-white/[0.02]">
-                            <td className="py-2 px-3 text-center font-mono text-[10px] text-slate-400 border-r border-white/10">
+                          <tr className="row-tint">
+                            <td className="py-2.5 px-3 text-center text-meta text-ink-faint">
                               ★
                             </td>
-                            <td className="py-2 px-4 border-r border-white/10">
-                              <span className="font-bold text-amber-300 text-xs">
+                            <td className="py-2.5 px-4">
+                              <span className="text-body-sm font-semibold text-ink">
                                 {tSafe('specsSourceLabel', 'Trang nguồn')}
                               </span>
                             </td>
-                            <td className="py-2 px-3 text-center border-r border-white/10">
-                              <span className="inline-block px-1.5 py-0.5 rounded font-mono text-[9px] font-extrabold uppercase bg-purple-500/20 text-purple-300">
+                            <td className="py-2.5 px-3 text-center">
+                              <span className={`inline-block ${TAG_NEUTRAL} uppercase`}>
                                 {tSafe('typeUrl', 'URL')}
                               </span>
                             </td>
-                            <td className="py-2 px-4">
+                            <td className="py-2.5 px-4">
                               <div className="flex items-center gap-2">
                                 <input
                                   type="url"
                                   value={draft.source}
                                   onChange={(e) => setDraft({ ...draft, source: e.target.value })}
                                   placeholder="https://www.sony.com.vn/..."
-                                  className="w-full px-2.5 py-1.5 rounded-lg bg-black/60 border border-white/20 text-white font-mono text-xs"
+                                  className={FIELD_SM}
                                 />
                                 {draft.source && (
                                   <a
                                     href={draft.source}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-sky-300 text-xs font-bold shrink-0 border border-white/15 flex items-center gap-1"
+                                    className="chip chip-action shrink-0"
                                     title="Mở trang nguồn trong tab mới"
                                   >
                                     🔗 Mở link
@@ -900,20 +899,20 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
                 ) : (
                   /* MARKDOWN TABLE VIEW MODE */
                   <div className="flex flex-col gap-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-slate-300 font-medium">
+                    <div className="flex items-center justify-between gap-4 flex-wrap">
+                      <span className="meta">
                         Bảng Markdown định dạng GFM có thể sao chép trực tiếp:
                       </span>
                       <button
                         type="button"
                         onClick={copyMarkdown}
-                        className="px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-extrabold text-xs transition-all cursor-pointer shadow flex items-center gap-1.5"
+                        className="btn-glass gap-1.5 cursor-pointer"
                       >
                         {copiedMd ? tSafe('copiedMarkdown', '✓ Đã sao chép!') : tSafe('copyMarkdown', '📋 Sao chép Markdown')}
                       </button>
                     </div>
 
-                    <pre className="p-4 rounded-xl bg-black/80 border border-white/20 text-amber-300 font-mono text-xs overflow-x-auto leading-relaxed scrollbar-thin">
+                    <pre className="surface-sunken p-4 text-body-sm text-ink-muted overflow-x-auto leading-relaxed">
                       {generatedMarkdownTable}
                     </pre>
                   </div>
@@ -926,14 +925,15 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
                   type="button"
                   onClick={save}
                   disabled={busy !== ''}
-                  className="py-2.5 px-6 rounded-xl bg-white text-black font-extrabold text-xs hover:bg-white/90 disabled:opacity-40 shadow-lg cursor-pointer"
+                  className="btn-accent disabled:opacity-40 cursor-pointer"
                 >
                   {busy === 'saving' ? tSafe('saving', 'Đang lưu…') : tSafe('save', 'Lưu vào Supabase')}
                 </button>
+                {/* The save state is text, never a coloured field or a border. */}
                 {status && (
                   <span
                     role="status"
-                    className={`text-xs font-bold ${status.kind === 'ok' ? 'text-emerald-300' : 'text-amber-300'}`}
+                    className={`text-label font-semibold ${status.kind === 'ok' ? 'text-community' : 'text-danger'}`}
                   >
                     {status.msg}
                   </span>
@@ -950,35 +950,39 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
           role="dialog"
           aria-modal="true"
           onClick={() => setIsCreateOpen(false)}
-          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto"
+          className="fixed inset-0 z-50 bg-void/85 backdrop-blur-[30px] flex items-center justify-center p-4 overflow-y-auto animate-fade-in"
         >
+          {/* The sheet is the second raised layer. No stroke: the 40px blur and
+              the specular highlight are what separate it from the page. */}
           <div
             onClick={(e) => e.stopPropagation()}
-            className="glass w-full max-w-3xl max-h-[90dvh] rounded-2xl p-6 flex flex-col gap-5 shadow-2xl border border-white/20 bg-[#181a1f] overflow-y-auto"
+            className="surface-raised w-full max-w-3xl max-h-[90dvh] p-6 flex flex-col gap-5 cursor-default scroll-area"
           >
-            <div className="flex items-center justify-between border-b border-white/15 pb-3">
-              <div>
-                <h3 className="font-extrabold text-lg text-white">{tSafe('createModalTitle', 'Thêm sản phẩm mới')}</h3>
-                <p className="text-xs text-slate-300">{tSafe('createModalSub', 'Phân loại theo Category & SubCategory, khởi tạo thông số và lưu vào Supabase.')}</p>
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-col gap-1">
+                <h3 className="text-title-3 font-semibold text-ink">{tSafe('createModalTitle', 'Thêm sản phẩm mới')}</h3>
+                <p className="meta">{tSafe('createModalSub', 'Phân loại theo Category & SubCategory, khởi tạo thông số và lưu vào Supabase.')}</p>
               </div>
               <button
                 type="button"
                 onClick={() => setIsCreateOpen(false)}
-                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-xs cursor-pointer transition-colors"
+                className="w-11 min-h-[var(--layout-touch-target)] shrink-0 rounded-md bg-white/[0.08] hover:bg-white/[0.13] text-ink-muted shadow-[var(--elevation-spec)] flex items-center justify-center cursor-pointer transition-colors"
               >
                 ✕
               </button>
             </div>
 
-            <form onSubmit={handleCreateProduct} className="flex flex-col gap-4 font-sans text-xs">
+            <div className="seam" />
+
+            <form onSubmit={handleCreateProduct} className="flex flex-col gap-5">
               {/* Category & SubCategory Row */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-black/40 p-4 rounded-xl border border-white/10">
-                <div className="flex flex-col gap-1.5">
-                  <label className="font-bold text-amber-300 text-[11px]">{tSafe('categoryLabel', 'Danh mục (Category)')} *</label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white/[0.022] p-4 rounded-lg">
+                <div className="flex flex-col gap-2">
+                  <label className="label">{tSafe('categoryLabel', 'Danh mục (Category)')} *</label>
                   <select
                     value={newCat}
                     onChange={(e) => handleCategoryChange(e.target.value as 'camera' | 'lens' | 'accessory')}
-                    className="w-full px-3 py-2 rounded-lg bg-[#22242a] border border-white/20 text-white font-bold text-xs"
+                    className={FIELD}
                   >
                     <option value="camera">{tSafe('catCamera', 'Máy ảnh (Camera)')}</option>
                     <option value="lens">{tSafe('catLens', 'Ống kính (Lens)')}</option>
@@ -986,12 +990,12 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
                   </select>
                 </div>
 
-                <div className="flex flex-col gap-1.5">
-                  <label className="font-bold text-amber-300 text-[11px]">{tSafe('subCategory1Label', 'Phân nhóm chính (SubCategory 1)')} *</label>
+                <div className="flex flex-col gap-2">
+                  <label className="label">{tSafe('subCategory1Label', 'Phân nhóm chính (SubCategory 1)')} *</label>
                   <select
                     value={newSub1}
                     onChange={(e) => setNewSub1(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-[#22242a] border border-white/20 text-white font-bold text-xs"
+                    className={FIELD}
                   >
                     {SUB1_OPTIONS[newCat].map((opt) => (
                       <option key={opt} value={opt}>
@@ -1001,156 +1005,161 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
                   </select>
                 </div>
 
-                <div className="flex flex-col gap-1.5">
-                  <label className="font-bold text-slate-300 text-[11px]">{tSafe('subCategory2Label', 'Phân nhóm phụ (SubCategory 2)')}</label>
+                <div className="flex flex-col gap-2">
+                  <label className="label">{tSafe('subCategory2Label', 'Phân nhóm phụ (SubCategory 2)')}</label>
                   <input
                     type="text"
                     value={newSub2}
                     onChange={(e) => setNewSub2(e.target.value)}
                     placeholder="VD: Alpha 7 Series, G Master..."
-                    className="w-full px-3 py-2 rounded-lg bg-[#22242a] border border-white/20 text-white text-xs"
+                    className={FIELD}
                   />
                 </div>
               </div>
 
               {/* Product Basic Info */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1.5">
-                  <label className="font-bold text-white/90">{tSafe('skuLabel', 'Mã SKU sản phẩm')} *</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-2">
+                  <label className="label">{tSafe('skuLabel', 'Mã SKU sản phẩm')} *</label>
                   <input
                     type="text"
                     required
                     value={newSku}
                     onChange={(e) => setNewSku(e.target.value)}
                     placeholder="VD: ILCE-7M5/BQ hoặc SEL2470GM2"
-                    className="w-full px-3 py-2 rounded-lg bg-black/60 border border-white/20 text-white font-mono text-xs"
+                    className={FIELD}
                   />
                 </div>
 
-                <div className="flex flex-col gap-1.5">
-                  <label className="font-bold text-white/90">{tSafe('nameLabel', 'Tên ngắn sản phẩm')} *</label>
+                <div className="flex flex-col gap-2">
+                  <label className="label">{tSafe('nameLabel', 'Tên ngắn sản phẩm')} *</label>
                   <input
                     type="text"
                     required
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
                     placeholder="VD: 7 V hoặc FE 24-70mm f/2.8 GM II"
-                    className="w-full px-3 py-2 rounded-lg bg-black/60 border border-white/20 text-white text-xs font-bold"
+                    className={FIELD}
                   />
                 </div>
 
-                <div className="flex flex-col gap-1.5 sm:col-span-2">
-                  <label className="font-bold text-white/90">{tSafe('fullNameLabel', 'Tên đầy đủ sản phẩm')} *</label>
+                <div className="flex flex-col gap-2 sm:col-span-2">
+                  <label className="label">{tSafe('fullNameLabel', 'Tên đầy đủ sản phẩm')} *</label>
                   <input
                     type="text"
                     required
                     value={newFullName}
                     onChange={(e) => setNewFullName(e.target.value)}
                     placeholder="VD: Máy ảnh Sony Alpha 7 V (Thân máy) chính hãng"
-                    className="w-full px-3 py-2 rounded-lg bg-black/60 border border-white/20 text-white text-xs"
+                    className={FIELD}
                   />
                 </div>
 
-                <div className="flex flex-col gap-1.5">
-                  <label className="font-bold text-white/90">{tSafe('priceVndLabel', 'Giá niêm yết (VND)')}</label>
+                <div className="flex flex-col gap-2">
+                  <label className="label">{tSafe('priceVndLabel', 'Giá niêm yết (VND)')}</label>
                   <input
                     type="number"
                     value={newPriceVnd || ''}
                     onChange={(e) => setNewPriceVnd(Number(e.target.value))}
                     placeholder="VD: 59900000"
-                    className="w-full px-3 py-2 rounded-lg bg-black/60 border border-white/20 text-white font-mono text-xs"
+                    className={`${FIELD} tabular-nums`}
                   />
                 </div>
 
-                <div className="flex flex-col gap-1.5">
-                  <label className="font-bold text-white/90">{tSafe('priceFormattedLabel', 'Giá hiển thị')}</label>
+                <div className="flex flex-col gap-2">
+                  <label className="label">{tSafe('priceFormattedLabel', 'Giá hiển thị')}</label>
                   <input
                     type="text"
                     value={newPriceFormatted}
                     onChange={(e) => setNewPriceFormatted(e.target.value)}
                     placeholder="VD: 59.990.000 ₫"
-                    className="w-full px-3 py-2 rounded-lg bg-black/60 border border-white/20 text-white font-mono text-xs"
+                    className={`${FIELD} tabular-nums`}
                   />
                 </div>
 
-                <div className="flex flex-col gap-1.5">
-                  <label className="font-bold text-white/90">{tSafe('urlLabel', 'Link trang sản phẩm (Sony Store URL)')}</label>
+                <div className="flex flex-col gap-2">
+                  <label className="label">{tSafe('urlLabel', 'Link trang sản phẩm (Sony Store URL)')}</label>
                   <input
                     type="url"
                     value={newUrl}
                     onChange={(e) => setNewUrl(e.target.value)}
                     placeholder="https://www.sony.com.vn/electronics/..."
-                    className="w-full px-3 py-2 rounded-lg bg-black/60 border border-white/20 text-white text-xs"
+                    className={FIELD}
                   />
                 </div>
 
-                <div className="flex flex-col gap-1.5 sm:col-span-2">
-                  <label className="font-bold text-white/90">{tSafe('imageUrlLabel', 'Link ảnh sản phẩm đại diện chính (Primary Image URL)')}</label>
+                <div className="flex flex-col gap-2 sm:col-span-2">
+                  <label className="label">{tSafe('imageUrlLabel', 'Link ảnh sản phẩm đại diện chính (Primary Image URL)')}</label>
                   <input
                     type="text"
                     value={newImageUrl}
                     onChange={(e) => setNewImageUrl(e.target.value)}
                     placeholder="/logo.png hoặc URL ảnh CDN"
-                    className="w-full px-3 py-2 rounded-lg bg-black/60 border border-white/20 text-white text-xs"
+                    className={FIELD}
                   />
                 </div>
 
-                <div className="flex flex-col gap-1.5 sm:col-span-2">
-                  <label className="font-bold text-sky-300">{tSafe('galleryUrlsLabel', 'Danh sách URL ảnh minh họa / Gallery (Mỗi URL 1 dòng)')}</label>
+                <div className="flex flex-col gap-2 sm:col-span-2">
+                  <label className="label">{tSafe('galleryUrlsLabel', 'Danh sách URL ảnh minh họa / Gallery (Mỗi URL 1 dòng)')}</label>
                   <textarea
                     value={newGalleryUrls}
                     onChange={(e) => setNewGalleryUrls(e.target.value)}
                     rows={4}
                     placeholder="https://static.bhphoto.com/images/1.jpg&#10;https://static.bhphoto.com/images/2.jpg"
-                    className="w-full px-3 py-2 rounded-lg bg-black/60 border border-white/20 text-white font-mono text-xs"
+                    className={AREA}
                   />
                 </div>
               </div>
 
+              <div className="seam" />
+
               {/* Key Features Input (EN & VI) */}
-              <div className="flex flex-col gap-2 pt-2 border-t border-white/10">
-                <span className="font-bold text-amber-300">{tSafe('featuresHeading', 'Tính năng nổi bật')} ({tSafe('featuresHint', 'Mỗi dòng một ý.')})</span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="flex flex-col gap-1">
-                    <label className="font-mono text-[10px] font-bold text-sky-300 uppercase">{tSafe('featuresEn', 'Tiếng Anh')}</label>
+              <div className="flex flex-col gap-3">
+                <span className="label text-proposal">{tSafe('featuresHeading', 'Tính năng nổi bật')} ({tSafe('featuresHint', 'Mỗi dòng một ý.')})</span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-2">
+                    <label className="label">{tSafe('featuresEn', 'Tiếng Anh')}</label>
                     <textarea
                       value={newFeaturesEn}
                       onChange={(e) => setNewFeaturesEn(e.target.value)}
                       rows={5}
                       placeholder="Mỗi dòng 1 tính năng tiếng Anh..."
-                      className="w-full px-3 py-2 rounded-lg bg-black/60 border border-white/20 text-white text-xs"
+                      className={AREA}
                     />
                   </div>
-                  <div className="flex flex-col gap-1">
-                    <label className="font-mono text-[10px] font-bold text-sky-300 uppercase">{tSafe('featuresVi', 'Tiếng Việt')}</label>
+                  <div className="flex flex-col gap-2">
+                    <label className="label">{tSafe('featuresVi', 'Tiếng Việt')}</label>
                     <textarea
                       value={newFeaturesVi}
                       onChange={(e) => setNewFeaturesVi(e.target.value)}
                       rows={5}
                       placeholder="Mỗi dòng 1 tính năng tiếng Việt..."
-                      className="w-full px-3 py-2 rounded-lg bg-black/60 border border-white/20 text-white text-xs"
+                      className={AREA}
                     />
                   </div>
                 </div>
               </div>
 
+              {/* The form's error is the hint turning rose — never a red field. */}
               {createError && (
-                <p className="text-amber-300 text-xs font-bold">{createError}</p>
+                <p className="text-body-sm text-danger">{createError}</p>
               )}
 
+              <div className="seam" />
+
               {/* Actions */}
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-white/15">
+              <div className="flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setIsCreateOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs cursor-pointer transition-colors"
+                  className="btn-glass cursor-pointer"
                 >
                   {tSafe('cancel', 'Hủy')}
                 </button>
                 <button
                   type="submit"
                   disabled={busy === 'creating'}
-                  className="px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-extrabold text-xs disabled:opacity-40 cursor-pointer shadow-lg transition-all"
+                  className="btn-accent disabled:opacity-40 cursor-pointer"
                 >
                   {busy === 'creating' ? tSafe('creating', 'Đang tạo…') : tSafe('createSubmit', 'Tạo & Lưu sản phẩm')}
                 </button>

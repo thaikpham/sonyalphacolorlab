@@ -164,9 +164,12 @@ rg -n '(text|bg|border|ring|from|to|via)-(amber|sky|slate|cyan|purple|emerald|gr
 #    icon.tsx, opengraph-image.tsx, manifest.ts and the `themeColor` viewport
 #    export are exempt and are excluded by name: Satori and the OS browser
 #    chrome both ignore `oklch()` silently, so a token there renders nothing
-#    rather than erroring.
+#    rather than erroring. `GoogleMark` is Google's trademark reproduced to
+#    their sign-in branding guidelines — recolouring it to tokens would make it
+#    a different mark, and a third party's logo is not a colour this interface
+#    chooses.
 rg -n '#[0-9a-fA-F]{3,8}' src/components/ src/app/ \
-  | rg -v 'icon\.tsx|opengraph-image\.tsx|manifest\.ts|themeColor'
+  | rg -v 'icon\.tsx|opengraph-image\.tsx|manifest\.ts|themeColor|GoogleMark'
 
 # 5. Strokes — allowed only on :focus-visible
 rg -n 'border(-[trblxy])?-[0-9]|border-(solid|white|black)|\bring-[0-9]|outline-[0-9]' src/

@@ -210,7 +210,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
  * third party's logo is not one of those choices, and recolouring it to tokens
  * would make it a different mark. Everything around it is tokens.
  */
-function GoogleMark({ className }: { className?: string }) {
+export function GoogleMark({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
       <path

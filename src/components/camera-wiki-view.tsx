@@ -621,7 +621,7 @@ export function CameraWikiView({ initialCameras, basePath = '/cameras' }: Camera
 
       {/* Compare dock — a floating second layer over the list. */}
       {selectedForCompare.length > 0 && (
-        <div className="fixed bottom-6 right-6 z-[9990] animate-fade-in pb-safe">
+        <div className="fixed bottom-6 right-6 z-[9990] animate-fade-in pb-safe pr-safe">
           <div className="surface-raised p-2.5 flex items-center gap-3">
             <button
               type="button"
