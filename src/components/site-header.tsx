@@ -821,7 +821,19 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                                      wiki grid draws. */
                                   <div
                                     className="w-9 h-9 rounded-sm flex items-center justify-center shrink-0 text-body-lg text-void/50"
-                                    style={{ backgroundColor: item.accentHex || 'oklch(100% 0 0 / 0.08)' }}
+                                    /* Dark ink on this chip is correct, but only
+                                       because the ground is always light:
+                                       `--accent` is documented to resolve at or
+                                       above the ramp's 400 lightness. The
+                                       fallback used to be white 8% — which over
+                                       the void is nearly black, so a recipe with
+                                       no computed accent drew a near-black mark
+                                       on a near-black chip. It falls back to the
+                                       ramp step the contract names instead. */
+                                    style={{
+                                      backgroundColor:
+                                        item.accentHex || 'var(--color-accent-400)',
+                                    }}
                                     aria-hidden
                                   >
                                     ◫

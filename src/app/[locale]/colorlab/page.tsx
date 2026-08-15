@@ -51,7 +51,12 @@ export default async function ColorLabPage({
             literal, because nothing on the page named it; the document title
             already says "Alpha ColorLab", so the heading is now the visible
             one and there is still exactly one h1 above the sr-only h2. */}
-        <div className="flex flex-col gap-3">
+        {/* `.hero-block` / `.hero-intro`: on a phone turned sideways (or a
+            split-screen pane) the padding collapses, the title steps down to
+            `title-1` and the lede is hidden, because this block otherwise costs
+            a full screen of scrolling before the first recipe. The rule is in
+            globals.css; this is the block it was written for. */}
+        <div className="hero-block flex flex-col gap-3">
           {/* Sony menu names. Technical terms are never translated and stay
               out of the catalogues (rule 3) — the same literal pair that
               `structured-data.tsx` writes. */}
@@ -61,7 +66,7 @@ export default async function ColorLabPage({
           <h1 className="text-display font-extrabold tracking-[-0.02em] leading-[1.08] text-ink text-pretty">
             {t('title')}
           </h1>
-          <p className="text-body-lg text-ink-muted max-w-[58ch] leading-[1.5] text-pretty">
+          <p className="hero-intro text-body-lg text-ink-muted max-w-[58ch] leading-[1.5] text-pretty">
             {t('lede')}
           </p>
         </div>
