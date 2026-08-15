@@ -70,7 +70,9 @@
     "next": "Ảnh tiếp theo",
     "nextTitle": "Ảnh tiếp theo (phím →)",
     "goTo": "Chuyển đến ảnh {index}",
-    "lightboxHint": "Phím ← → hoặc nhấp ảnh 2 bên để lướt · Nhấn ESC hoặc nhấp bên ngoài để thoát"
+    "lightboxHint": "Phím ← → hoặc nhấp ảnh 2 bên để lướt · Nhấn ESC hoặc nhấp bên ngoài để thoát",
+    "wbEngineLabel": "Lõi White Balance",
+    "paramsLabel": "Thiết lập tham số máy ảnh"
   },
   "language": {
     "en": "English",

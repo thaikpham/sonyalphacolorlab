@@ -2,35 +2,43 @@ import { WB_EXPLANATIONS, WB_OVERVIEW, type Locale } from '@/lib/camera/explanat
 import { wbEffects, wbSummary } from '@/lib/camera/effects';
 import type { WhiteBalance } from '@/lib/camera/schema';
 import { wbHeadLabel } from '@/lib/camera/format';
-import { ParamRow } from './settings-table';
+import { ParamRow, ROW_STRIPES } from './settings-table';
 import {
   getKelvinHexColor,
   getWbShiftAxisHexColor,
 } from '@/lib/camera/color';
 
 /**
- * Renders White Balance text readout with exact color coding per rules:
- * - Kelvin: < 4000K (Blue), 4100-5900K (White), >= 6000K (Orange)
- * - Shift A/B: A (Amber), B (Blue)
- * - Shift G/M: G (Green), M (Magenta)
+ * White Balance as a text readout, colour-coded by what the dial actually does:
+ * - Kelvin: < 4000K (blue), 4100-5900K (neutral), >= 6000K (orange)
+ * - Shift A/B: A (amber), B (blue)
+ * - Shift G/M: G (green), M (magenta)
+ *
+ * These are the one place amber and green survive the no-competitor-hue rule,
+ * and they are not an exception to it: the rule governs colours the *interface*
+ * chooses, and this is the recipe's own measured cast rendered as itself. An
+ * A-shift is amber; drawing it in the accent would be drawing the wrong number.
+ * Same category as `--accent`, which ColorLab also recomputes per recipe.
+ *
+ * The values come from `src/lib/camera/color.ts`, never from a literal here.
  */
 export function FormattedWb({ wb, className = '' }: { wb: WhiteBalance; className?: string }) {
   const kelvinStr = wbHeadLabel(wb);
-  const kelvinHex = wb.mode === 'kelvin' ? getKelvinHexColor(wb.kelvin) : '#ffffff';
+  const kelvinColor = wb.mode === 'kelvin' ? getKelvinHexColor(wb.kelvin) : 'var(--color-ink)';
 
   const ab = wb.shift?.ab;
   const gm = wb.shift?.gm;
 
   return (
-    <span className={`inline-flex items-center gap-1 font-sans font-bold tabular ${className}`}>
-      <span style={{ color: kelvinHex }}>{kelvinStr}</span>
-      {wb.shift && <span className="text-white/40 font-normal">, </span>}
+    <span className={`inline-flex items-center gap-1 font-bold tabular-nums ${className}`}>
+      <span style={{ color: kelvinColor }}>{kelvinStr}</span>
+      {wb.shift && <span className="font-normal text-ink-faint">, </span>}
       {ab && (
         <span style={{ color: getWbShiftAxisHexColor(ab.axis) }}>
           {ab.axis}{ab.amount}
         </span>
       )}
-      {ab && gm && <span className="text-white/40 font-normal">-</span>}
+      {ab && gm && <span className="font-normal text-ink-faint">-</span>}
       {gm && (
         <span style={{ color: getWbShiftAxisHexColor(gm.axis) }}>
           {gm.axis}{gm.amount}
@@ -62,13 +70,11 @@ function WbConclusion({ wb, locale }: { wb: WhiteBalance; locale: Locale }) {
 
   return (
     <div className="mt-3 flex flex-col gap-2.5">
-      <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3.5">
-        <span className="eyebrow !text-[0.5625rem]" style={{ color: 'oklch(72% 0.08 40)' }}>
-          {SUMMARY_LABELS.net[locale]}
-        </span>
-        <p className="mt-1 max-w-prose text-sm leading-relaxed text-ink">{net[locale]}</p>
+      <div className="row-tint p-3.5">
+        <span className="label">{SUMMARY_LABELS.net[locale]}</span>
+        <p className="mt-1 max-w-prose text-body-sm leading-relaxed text-ink">{net[locale]}</p>
         {interplay && (
-          <p className="mt-2 max-w-prose text-xs leading-relaxed text-ink-faint">
+          <p className="mt-2 max-w-prose text-meta leading-relaxed">
             <span aria-hidden className="mr-1.5 text-ink-muted">
               →
             </span>
@@ -78,7 +84,7 @@ function WbConclusion({ wb, locale }: { wb: WhiteBalance; locale: Locale }) {
       </div>
 
       <details className="group">
-        <summary className="flex cursor-pointer items-baseline gap-1.5 list-none marker:content-none text-xs text-ink-muted transition-colors hover:text-ink">
+        <summary className="flex cursor-pointer items-baseline gap-1.5 list-none marker:content-none text-meta text-ink-muted transition-colors hover:text-ink">
           <span aria-hidden className="text-ink-faint">
             ·
           </span>
@@ -87,9 +93,11 @@ function WbConclusion({ wb, locale }: { wb: WhiteBalance; locale: Locale }) {
             ?
           </span>
         </summary>
-        <div className="mt-2 flex max-w-prose flex-col gap-2 border-l border-white/10 pl-3">
+        {/* Indented rather than ruled. A vertical hairline down the left of a
+            disclosure is the same stroke the rest of the system dropped. */}
+        <div className="mt-2 ml-3 flex max-w-prose flex-col gap-2">
           {WB_OVERVIEW[locale].map((paragraph) => (
-            <p key={paragraph} className="text-xs leading-relaxed text-ink-faint">
+            <p key={paragraph} className="text-meta leading-relaxed">
               {paragraph}
             </p>
           ))}
@@ -103,17 +111,23 @@ export function WbTable({ wb, locale = 'en' }: { wb: WhiteBalance; locale?: Loca
   const fx = wbEffects(wb);
 
   const temperature = wbHeadLabel(wb);
-  const kelvinHex = wb.mode === 'kelvin' ? getKelvinHexColor(wb.kelvin) : '#ffffff';
+  const kelvinColor = wb.mode === 'kelvin' ? getKelvinHexColor(wb.kelvin) : 'var(--color-ink)';
   const ab = wb.shift?.ab;
   const gm = wb.shift?.gm;
 
   return (
-    <div className="mt-1 border-t border-white/5 pt-1">
+    /* Separated from the block above by a `.seam` — light that fades out at
+       both ends — rather than the hairline that used to run edge to edge. */
+    <div className="mt-1 pt-1">
+      <hr className="seam mb-1" />
+      {/* The three dial rows stripe as one run, exactly like a ParamBlock's —
+          this table is not inside one, so it carries the rule itself. */}
+      <div className={`flex flex-col ${ROW_STRIPES}`}>
       <ParamRow
         locale={locale}
         label="Temperature"
         value={temperature}
-        valueStyle={{ color: kelvinHex, fontWeight: 700 }}
+        valueStyle={{ color: kelvinColor, fontWeight: 700 }}
         effect={fx.temperature}
         explanation={WB_EXPLANATIONS.temperature[locale]}
       />
@@ -137,6 +151,7 @@ export function WbTable({ wb, locale = 'en' }: { wb: WhiteBalance; locale?: Loca
           explanation={WB_EXPLANATIONS.shiftGm[locale]}
         />
       )}
+      </div>
       <WbConclusion wb={wb} locale={locale} />
     </div>
   );

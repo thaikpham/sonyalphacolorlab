@@ -43,16 +43,29 @@ import type { ClSettings, PpSettings } from '@/lib/camera/schema';
  * "Hi-Light Detail" (15 chars, sans) and "Manual 92.5% +5" (15 chars, mono).
  */
 
-/** Shared track definition. Every parameter row must use this to stay aligned. */
-const ROW_GRID =
+/**
+ * Shared track definition. Every parameter row must use this to stay aligned.
+ *
+ * Kept separate from ROW_BOX because a `<details>` row puts the tracks on its
+ * `<summary>` and the padding on the `<details>` itself — one string carrying
+ * both would double the padding on half the rows.
+ */
+const ROW_TRACKS =
   'grid grid-cols-[1fr_auto] items-baseline gap-x-4 gap-y-1.5 sm:grid-cols-[9rem_8.5rem_1fr]';
 
-/** Axis tints. Muted on purpose — three of these per row must not shout. */
-const AXIS_TINT: Record<Effect['axis'], string> = {
-  contrast: 'oklch(72% 0.03 265)',
-  color: 'oklch(72% 0.08 40)',
-  detail: 'oklch(72% 0.05 160)',
-};
+/** The row's own box: the tint's shape, and the space the tint needs to read. */
+const ROW_BOX = 'rounded-sm px-3 py-2.5';
+
+/**
+ * Alternate rows carry a 4% film instead of a hairline underneath. On a dark
+ * ground a grid of 1px rules reads as noise, and the rule under the last row
+ * had to be cancelled with `last:border-0` at every call site.
+ *
+ * Applied from the container because a `ParamRow` does not know its own index —
+ * each row is its own grid, so there is nothing to hang `:nth-child` on but the
+ * parent.
+ */
+export const ROW_STRIPES = '[&>*:nth-child(even)]:bg-[oklch(100%_0_0/0.04)]';
 
 import {
   getColorDepthChannelHexColor,
@@ -81,23 +94,25 @@ export function ParamRow({
 }) {
   const head = (
     <>
-      <span className={`text-sm ${labelClassName || 'text-ink-muted'}`} style={labelStyle}>{label}</span>
-      <span className={`tabular text-sm sm:text-right ${valueClassName || 'text-ink'}`} style={valueStyle}>{value}</span>
+      <span className={`text-body-sm ${labelClassName || 'text-ink-muted'}`} style={labelStyle}>{label}</span>
+      <span className={`text-body-sm tabular-nums sm:text-right ${valueClassName || 'text-ink'}`} style={valueStyle}>{value}</span>
     </>
   );
 
+  /* The axis used to be tinted per kind — amber for colour, green for detail.
+     Both are competitor signatures, and three tints in one row is two more than
+     the system allows. The axis is already named in words, so the colour was
+     saying nothing the label did not. */
   const effectCell = effect ? (
     <span className="col-span-2 flex flex-col gap-0.5 sm:col-span-1 sm:pl-2">
-      <span className="eyebrow !text-[0.5625rem]" style={{ color: AXIS_TINT[effect.axis] }}>
-        {AXIS_LABELS[effect.axis][locale]}
-      </span>
-      <span className="text-xs leading-relaxed text-ink-faint">{effect[locale]}</span>
+      <span className="label">{AXIS_LABELS[effect.axis][locale]}</span>
+      <span className="text-meta leading-relaxed">{effect[locale]}</span>
     </span>
   ) : null;
 
   if (!explanation) {
     return (
-      <div className={`${ROW_GRID} border-b border-white/5 py-2.5 last:border-0`}>
+      <div className={`${ROW_TRACKS} ${ROW_BOX}`}>
         {head}
         {effectCell}
       </div>
@@ -105,11 +120,11 @@ export function ParamRow({
   }
 
   return (
-    <details className="group border-b border-white/5 py-2.5 last:border-0">
-      <summary className={`${ROW_GRID} cursor-pointer list-none marker:content-none`}>
+    <details className={`group ${ROW_BOX}`}>
+      <summary className={`${ROW_TRACKS} cursor-pointer list-none marker:content-none`}>
         <span className="flex items-baseline gap-1.5">
           <span
-            className={`text-sm ${labelClassName || 'text-ink-muted group-hover:text-ink transition-colors'}`}
+            className={`text-body-sm ${labelClassName || 'text-ink-muted group-hover:text-ink transition-colors'}`}
             style={labelStyle}
           >
             {label}
@@ -119,23 +134,23 @@ export function ParamRow({
           </span>
         </span>
         <span
-          className={`tabular text-sm sm:text-right ${valueClassName || 'text-ink'}`}
+          className={`text-body-sm tabular-nums sm:text-right ${valueClassName || 'text-ink'}`}
           style={valueStyle}
         >
           {value}
         </span>
         {effectCell}
       </summary>
-      <p className="mt-2 max-w-prose text-xs leading-relaxed text-ink-faint">{explanation}</p>
+      <p className="mt-2 max-w-prose text-meta leading-relaxed">{explanation}</p>
     </details>
   );
 }
 
 export function ParamBlock({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="glass p-5">
-      <h2 className="eyebrow mb-2">{title}</h2>
-      <div>{children}</div>
+    <section className="surface p-5">
+      <h2 className="label mb-2">{title}</h2>
+      <div className={`flex flex-col ${ROW_STRIPES}`}>{children}</div>
     </section>
   );
 }

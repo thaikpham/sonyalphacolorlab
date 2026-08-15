@@ -70,7 +70,9 @@
     "next": "Next photo",
     "nextTitle": "Next photo (→ key)",
     "goTo": "Go to photo {index}",
-    "lightboxHint": "← → or click the side frames to browse · ESC or click outside to exit"
+    "lightboxHint": "← → or click the side frames to browse · ESC or click outside to exit",
+    "wbEngineLabel": "Core White Balance engine",
+    "paramsLabel": "Camera parameters setup"
   },
   "language": {
     "en": "English",
