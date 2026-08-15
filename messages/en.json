@@ -8,7 +8,12 @@
   },
   "launcher": {
     "title": "Sony Alpha Ecosystem",
-    "subtitle": "Four tools, one workflow — pick where to start."
+    "subtitle": "Four tools, one workflow — pick where to start.",
+    "back": "Back to apps",
+    "divisions": {
+      "di": "Cameras, lenses & accessories",
+      "pe": "Headphones, speakers & audio gear"
+    }
   },
   "nav": {
     "ecosystem": "Sony Alpha ecosystem",

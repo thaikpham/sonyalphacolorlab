@@ -403,6 +403,121 @@ body {
   animation: fade-in 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* ---------------------------------------------------------------------------
+   The ecosystem launcher — the one sanctioned exception.
+
+   The only multi-hue gradient, the only rotating animation and the only radius
+   outside the scale in the whole ecosystem. It stays an exception by being
+   rare: reuse it on a card, a badge or a header and the launcher stops being
+   the signature, at which point it should be deleted from here too, because a
+   spectrum applied twice is decoration.
+
+   It lives here rather than inline in launcher-grid.tsx so there is exactly one
+   place to delete it from. The seven hues are NOT hardcoded here — the
+   component passes them in as `--launcher-spectrum`, built from LAUNCHER_GLOW
+   in packages/colorlab-tokens/src/tokens.ts, which stays the source of truth.
+
+   Two conic layers, not one: the wide blurred layer is the halation that reads
+   as colour bleeding out from under the tile, the tight one is the rim light
+   that keeps its edge defined. One layer alone reads as a coloured drop shadow.
+--------------------------------------------------------------------------- */
+
+@keyframes launcher-spin {
+  from {
+    transform: rotate(0turn);
+  }
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+.launcher-tile {
+  position: relative;
+  display: block;
+}
+
+.launcher-glow,
+.launcher-glow-rim {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  background: conic-gradient(from 0deg, var(--launcher-spectrum));
+  animation: launcher-spin 18s linear infinite;
+  /* `will-change` and not a transform hack: the layer is already composited by
+     the blur, and promoting it stops the rotation resampling the gradient on
+     the main thread every frame on a 132px tile. */
+  will-change: transform;
+}
+
+.launcher-glow {
+  inset: -10%;
+  border-radius: 22%;
+  filter: blur(26px) saturate(1.15);
+  opacity: 0.5;
+}
+
+.launcher-glow-rim {
+  inset: -2%;
+  border-radius: 21.5%;
+  filter: blur(8px) saturate(1.25);
+  opacity: 0.62;
+}
+
+/* The icon face is OPAQUE. The spectrum must read as light escaping from
+   behind the tile, never as a tint across the artwork. */
+.launcher-face {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-squircle);
+  background:
+    radial-gradient(120% 95% at 50% -12%, oklch(100% 0 0 / 0.17), transparent 60%),
+    linear-gradient(180deg, oklch(24% 0.012 270 / 0.92), oklch(12% 0.008 270 / 0.96));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow:
+    0 2px 4px oklch(0% 0 0 / 0.5),
+    0 14px 32px -8px oklch(0% 0 0 / 0.7),
+    inset 0 1px 0 oklch(100% 0 0 / 0.18);
+}
+
+.launcher-link {
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.launcher-link:hover {
+  transform: translateY(-4px) scale(1.045);
+}
+
+.launcher-link:active {
+  transform: scale(0.97);
+}
+
+/* Below 640px the tile drops to 76px, and a 26px blur on a 76px square is a
+   coloured fog rather than a halo — both layers tighten with it. */
+@media (max-width: 39.9375rem) {
+  .launcher-glow {
+    inset: -11%;
+    filter: blur(15px) saturate(1.15);
+  }
+
+  .launcher-glow-rim {
+    filter: blur(5px) saturate(1.25);
+  }
+
+  .launcher-link:hover {
+    transform: none;
+  }
+
+  .launcher-link:active {
+    transform: scale(0.94);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

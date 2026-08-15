@@ -8,7 +8,12 @@
   },
   "launcher": {
     "title": "Hệ sinh thái Sony Alpha",
-    "subtitle": "Bốn công cụ, một quy trình — chọn nơi bắt đầu."
+    "subtitle": "Bốn công cụ, một quy trình — chọn nơi bắt đầu.",
+    "back": "Quay lại ứng dụng",
+    "divisions": {
+      "di": "Máy ảnh, Ống kính & Phụ kiện",
+      "pe": "Tai nghe, Loa & Thiết bị âm thanh"
+    }
   },
   "nav": {
     "ecosystem": "Hệ sinh thái Sony Alpha",

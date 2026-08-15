@@ -160,14 +160,24 @@ rg -n 'font-mono|ui-monospace|Noto Sans Mono|font-display' src/ packages/
 # 3. Tailwind palette instead of tokens
 rg -n '(text|bg|border|ring|from|to|via)-(amber|sky|slate|cyan|purple|emerald|gray|zinc|red|yellow|green)-[0-9]' src/
 
-# 4. Raw hex in a component
-rg -n '#[0-9a-fA-F]{3,8}' src/components/ src/app/
+# 4. Raw hex in a component.
+#    icon.tsx, opengraph-image.tsx, manifest.ts and the `themeColor` viewport
+#    export are exempt and are excluded by name: Satori and the OS browser
+#    chrome both ignore `oklch()` silently, so a token there renders nothing
+#    rather than erroring.
+rg -n '#[0-9a-fA-F]{3,8}' src/components/ src/app/ \
+  | rg -v 'icon\.tsx|opengraph-image\.tsx|manifest\.ts|themeColor'
 
 # 5. Strokes — allowed only on :focus-visible
 rg -n 'border(-[trblxy])?-[0-9]|border-(solid|white|black)|\bring-[0-9]|outline-[0-9]' src/
 
-# 6. Deleted vocabulary
-rg -n 'glass|y2k|holo-|water-|cyber-|radar|app-glow|rainbow-glow|eyebrow|\brule\b' src/
+# 6. Deleted vocabulary.
+#    `.btn-glass` and the `glass` / `glass-raised` surface TOKENS survive and
+#    are filtered out — what was deleted is the `.glass` / `.glass-flat`
+#    primitive, which is why the filter names the survivors rather than
+#    narrowing the pattern.
+rg -n 'glass|y2k|holo-|water-|cyber-|radar|app-glow|rainbow-glow|eyebrow|\brule\b' src/ \
+  | rg -v 'btn-glass|glass-raised|bg-glass|--color-glass'
 
 # 7. Per-component scrollbar CSS (belongs in globals.css only)
 rg -n 'scrollbar|::-webkit-scrollbar' src/ | rg -v 'scroll-silent|scroll-area'

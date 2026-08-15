@@ -21,7 +21,11 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0b0d12',
+  /* `--color-void`, restated as sRGB because this string is read by the OS
+     browser chrome, not by CSS — it goes into a `<meta name="theme-color">`
+     and an `oklch()` there is simply ignored. Same exemption as `icon.tsx`,
+     `opengraph-image.tsx` and `manifest.ts`; keep it in step with the token. */
+  themeColor: '#07080B',
   colorScheme: 'dark',
   viewportFit: 'cover',
   interactiveWidget: 'resizes-content',
@@ -49,6 +53,7 @@ export default async function LocaleLayout({
     community: messages.community,
     error: messages.error,
     language: messages.language,
+    launcher: messages.launcher,
     nav: messages.nav,
     recipe: messages.recipe,
     search: messages.search,

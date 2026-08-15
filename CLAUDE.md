@@ -92,9 +92,9 @@ anywhere else — a spectrum applied twice is decoration.
 rg -n 'text-\[(9|10|11|12)px\]|text-\[0\.(5|6|7)[0-9]*rem\]' src/
 rg -n 'font-mono|ui-monospace|Noto Sans Mono|font-display' src/ packages/
 rg -n '(text|bg|border|ring|from|to|via)-(amber|sky|slate|cyan|purple|emerald|gray|zinc|red|yellow|green)-[0-9]' src/
-rg -n '#[0-9a-fA-F]{3,8}' src/components/ src/app/
+rg -n '#[0-9a-fA-F]{3,8}' src/components/ src/app/ | rg -v 'icon\.tsx|opengraph-image\.tsx|manifest\.ts|themeColor'
 rg -n 'border(-[trblxy])?-[0-9]|border-(solid|white|black)|\bring-[0-9]|outline-[0-9]' src/
-rg -n 'glass|y2k|holo-|water-|cyber-|radar|app-glow|rainbow-glow|eyebrow' src/
+rg -n 'glass|y2k|holo-|water-|cyber-|radar|app-glow|rainbow-glow|eyebrow' src/ | rg -v 'btn-glass|glass-raised|bg-glass|--color-glass'
 rg -n 'scrollbar|::-webkit-scrollbar' src/ | rg -v 'scroll-silent|scroll-area'
 ```
 
