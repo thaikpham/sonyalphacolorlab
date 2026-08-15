@@ -16,8 +16,12 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: '/',
     display: 'standalone',
     orientation: 'any',
-    background_color: '#0b0d12',
-    theme_color: '#0b0d12',
+    /* `--color-void`, restated as sRGB. The manifest is parsed by the OS
+       installer, not by CSS, so an `oklch()` here is ignored and the splash
+       screen falls back to white — the one place a dark-only app would show a
+       full screen of it. Keep in step with the token. */
+    background_color: '#07080B',
+    theme_color: '#07080B',
     categories: ['photo', 'utilities'],
     icons: [
       { src: '/icon', sizes: '512x512', type: 'image/png', purpose: 'any' },

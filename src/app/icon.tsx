@@ -28,7 +28,11 @@ export default function Icon() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: '#0b0d12',
+          /* `--color-void`, restated as sRGB. Satori ignores `oklch()`
+             silently and renders a colourless card rather than erroring, so
+             this file, opengraph-image.tsx and manifest.ts are the system's
+             only sanctioned hex literals. Keep them in step with the token. */
+          background: '#07080B',
         }}
       >
         <div style={{ position: 'relative', display: 'flex', width: box, height: box }}>
@@ -43,11 +47,15 @@ export default function Icon() {
               border: `${stroke}px solid rgba(255,255,255,0.22)`,
             }}
           />
-          {/* the plotted recipe: warm and amber-shifted, like most of the catalogue */}
+          {/* The plotted recipe. It used to be amber — a warm shift drawn in a
+              warm colour, which reads well and is the wrong hue twice over:
+              amber is Nikon's signature, and this is the ecosystem's mark. The
+              position on the grid is what says "warm", so the dot itself is
+              `--color-accent-400`. */}
           <div
             style={{
               position: 'absolute', left: box * 0.60, top: box * 0.22,
-              width: 96, height: 96, borderRadius: 48, background: '#f0a45c',
+              width: 96, height: 96, borderRadius: 48, background: '#8A9CFF',
             }}
           />
         </div>

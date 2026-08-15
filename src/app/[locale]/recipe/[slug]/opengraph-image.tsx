@@ -40,8 +40,8 @@ export default async function OgImage({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: '#0b0d12',
-            color: '#f5f6f8',
+            background: '#07080B',
+            color: '#F4F5F8',
             fontSize: 56,
           }}
         >
@@ -68,12 +68,12 @@ export default async function OgImage({
           flexDirection: 'column',
           justifyContent: 'space-between',
           padding: 72,
-          background: '#0b0d12',
+          background: '#07080B',
           // Heavier than the on-screen accent on purpose: this card competes
           // in a social feed at thumbnail size, where the UI's subtle wash
           // disappears entirely.
           backgroundImage: `radial-gradient(1100px 700px at 8% -12%, ${accent}d0, ${accent}00 60%), radial-gradient(820px 620px at 98% 112%, ${accent}a0, ${accent}00 58%)`,
-          color: '#f5f6f8',
+          color: '#F4F5F8',
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
