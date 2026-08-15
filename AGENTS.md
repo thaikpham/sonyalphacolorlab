@@ -99,11 +99,12 @@ and sign-in chrome was Vietnamese-only on `/en` this way. `messages.test.ts`
 pins EN/VI to the same key set, so a string added to one locale fails the build
 until the other exists.
 
-Vietnamese needs the `vietnamese` subset explicitly on every `next/font` call, or
-diacritics fall back and break:
+Vietnamese needs its own font subset or diacritics fall back mid-word — silently,
+with no build error. The faces are vendored, so this is a constant in
+`scripts/vendor-fonts.mjs` rather than an argument at each call site:
 
-```ts
-Noto_Sans({ subsets: ['latin', 'vietnamese'] })
+```js
+const SUBSETS = ['latin', 'vietnamese'];
 ```
 
 ## Rule 4 — Two kinds of help text, kept apart
@@ -154,18 +155,22 @@ They were workspaces under `apps/` for a while, which is why `npm run verify`
 used to gate three apps. It gates one. It is still what CI runs and still what
 to run before assuming a change is safe.
 
-Shared surfaces, ink, signal colours, radius, breakpoints, the glass
-primitives and the film/Y2K/holo VFX are still defined **once** in
+Shared surfaces, ink, the accent ramp, signal colours, the type scale, radius,
+elevation, breakpoints and spacing are defined **once** in
 `packages/colorlab-tokens/src/`. `npm run tokens:emit` generates two flavours —
 `theme.css` (`@theme static`, what this app imports) and `tokens.css` (plain
 `:root`, for a consumer without Tailwind) — writes both plus `primitives.css`
-and `vfx.css` to `dist/`, and syncs the three this app uses into
-`src/app/vendor/`.
+to `dist/`, and syncs the two this app uses into `src/app/vendor/`.
 
-Edit `src/tokens.ts`, `src/primitives.css` or `src/vfx.css`, then re-emit.
-Never hand-edit a generated file, and never re-declare a shared token in
-`globals.css` — a local copy wins the cascade silently.
-`token-drift.test.ts` fails on both.
+`vfx.css` is gone. The film/Y2K/holo/radar effects layer was the largest single
+thing the "looks AI-generated" feedback was pointing at, and deleting it is the
+change, not an optimisation of it. Do not re-add an effects file.
+
+Edit `src/tokens.ts` or `src/primitives.css`, then re-emit. Never hand-edit a
+generated file, and never re-declare a shared token in `globals.css` — a local
+copy wins the cascade silently. `token-drift.test.ts` fails on both, and it now
+exempts nothing: `--font-sans` used to be exempt because `next/font` hashed the
+family name per app, which is exactly the unevenness the rebuild removed.
 
 Two things to know before touching the emitter:
 
@@ -237,14 +242,19 @@ hurts it. Custom breakpoints (`3xl`, `4xl`) are declared in `@theme`; Tailwind v
 generates **no rule** for the inline `min-[2100px]:` form, so the column count
 silently never changes.
 
-Dark theme only. Glassmorphism — layered blur + grain + a 1px specular edge.
-Minimalist, futuristic, colour-pop accents, ASCII decorative marks.
-Noto Sans throughout. Use the shared glass primitive; do not hand-roll
-`backdrop-filter` per component. Verify text contrast over photography.
+**`DESIGN.md` is the design system and `CLAUDE.md` restates its six rules.**
+Read them before writing UI; this section is only what is specific to *this*
+app. One family (Noto Sans, self-hosted, no `next/font`), a 13px floor, dark
+only, no strokes, text always lighter than its ground, scrollbars hidden until
+hovered. Use `.surface` / `.surface-raised` / `.surface-sunken`; do not
+hand-roll `backdrop-filter` per component. Verify text contrast over
+photography. Run `/design-sync` to audit the tree.
 
 Colours are OKLCH. **In `next/og` / ImageResponse use `accentHex()`, not
 `accentCss()`** — Satori ignores `oklch()` silently and renders a colourless
 card rather than erroring. Satori also has no `α` glyph in its default font.
+`icon.tsx`, `opengraph-image.tsx` and `manifest.ts` are therefore the only
+files allowed a raw hex, and the audit's hex grep excludes them by name.
 
 Interface colour comes from the tokens in `globals.css`, never from Tailwind's
 default scales. `community` / `proposal` / `ai` / `danger` / `heart` are named
@@ -257,30 +267,26 @@ card once rendered with no accent at all.
 
 Three traps, all found on screen rather than by reading:
 
-- **`.glass` and `.glass-flat` beat every Tailwind utility on the same element.**
-  They are plain unlayered CSS written after `@import "tailwindcss"`, and
-  unlayered rules win over layered ones whatever the specificity. So on a
-  `glass` element these utilities are silently dead:
+- **A hand-written surface class beats every Tailwind utility on the same
+  element.** `.surface`, `.surface-raised` and `.surface-sunken` are plain
+  unlayered CSS written after `@import "tailwindcss"`, and unlayered rules win
+  over layered ones whatever the specificity. So `bg-*`, `rounded-*` and
+  `shadow-*` on a `.surface` element are silently dead — which is deliberate,
+  because an elevation is a whole recipe and overriding one part of it is what
+  made the old glass read as arbitrary. Change the level, don't patch it.
 
-  | class | dead utilities on it |
-  |---|---|
-  | `.glass` | `absolute` `fixed` `sticky` · `bg-*` · `rounded-*` · `border-*` · `ring-*` `outline-*` · `shadow-*` |
-  | `.glass-flat` | `bg-*` · `border-*` · `ring-*` `outline-*` · `shadow-*` (position and radius are fine) |
-
-  Two of these have bitten already. `hover:border-*` accent rings on the action
-  cards never appeared once — draw rings with `box-shadow: inset 0 0 0 1px`
-  instead. And the header profile menu was `glass absolute`, so it computed to
-  `position: relative`, stayed in normal flow and stretched the bar from 82px to
-  188px instead of opening over the page.
-
-  **Put positioning and opacity on a plain wrapper and `glass` on the panel
-  inside it.** A `glass` panel is translucent by construction, so `bg-void/95`
-  on it does nothing — paint the opaque colour on the wrapper underneath and let
-  the gradient sit on top, or text lands over whatever photograph is behind.
+  This bit twice under the class's previous name. `hover:border-*` accent rings
+  on the action cards never appeared once. And the header profile menu was
+  `glass absolute`, so it computed to `position: relative`, stayed in normal
+  flow and stretched the bar from 82px to 188px instead of opening over the
+  page. **Put positioning and opacity on a plain wrapper and the surface class
+  on the panel inside it.** A surface is translucent by construction, so
+  `bg-void/95` on it does nothing — paint the opaque colour on the wrapper
+  underneath, or text lands over whatever photograph is behind.
 - **Do not transition a `box-shadow` whose colour is `color-mix()` over a
   `var()`.** Chrome resolves the target to the *from* value and holds there;
   registering the property with `@property` does not help. Move the motion to
-  `transform`.
+  `transform` — which is what `.btn-accent` and the launcher tiles do.
 - **`group-hover:` reaches the nearest `.group` ancestor, not a sibling.** Put
   `group` on the wrapper, and remember a hover-only reveal is invisible on
   touch: gate it with `pointer-fine:`.
@@ -350,9 +356,14 @@ range.
 
 Measured with Lighthouse; both were found that way, not by inspection.
 
-1. **Font subsets are `['latin', 'vietnamese']` — do not add `latin-ext`.**
+1. **Font subsets are `latin` + `vietnamese` — do not add `latin-ext`.**
    It cost ~330KB of font for languages nothing here is written in, and pushed
-   LCP from 3.1s to 5.1s. Noto Sans Mono is `preload: false` for the same reason.
+   LCP from 3.1s to 5.1s. The subsets are now a constant in
+   `scripts/vendor-fonts.mjs`, the eight `.woff2` files are committed under
+   `public/fonts/noto-sans/`, and `src/app/fonts.test.ts` fails on a missing
+   Vietnamese range, a remote `url()` or a `latin-ext` face. There is no mono
+   face to preload any more — Noto Sans has true tabular figures and `body` sets
+   `font-variant-numeric: tabular-nums`.
 2. **`NextIntlClientProvider` gets an explicit `messages` object.** The default
    ships the whole catalogue to the browser — a recipe page was carrying the
    homepage's headline copy. Adding a `useTranslations` namespace to a *client*
