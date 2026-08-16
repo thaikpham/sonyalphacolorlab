@@ -568,21 +568,37 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                   </span>
                 </Link>
               ) : (
-                /* The wordmark is type, not artwork: 18px/800 at -0.02em with
-                   the Alpha glyph one step up in `accent-400`. It was a 1780px
-                   PNG of the same two words, which could not inherit the type
-                   scale, could not be tinted per state and shipped a raster of
-                   text to every page. */
+                /* ColorLab's own brand mark, not type.
+
+                   The four overlapping circles are the product's logo and carry
+                   its own palette — amber, teal, crimson. That is not a
+                   competitor-hue violation and `/design-sync` must not "fix" it:
+                   the no-red/yellow/green rule governs colours the INTERFACE
+                   chooses, and a brand mark is artwork, the same exemption the
+                   Google mark on the sign-in button gets.
+
+                   `unoptimized` for the reason the launcher icons carry it: the
+                   account's image-optimization quota is spent, so only transforms
+                   already in Vercel's cache resolve and a newly-sized variant
+                   returns 402. The source is served straight from /public.
+
+                   It is the link's only content, so `alt` is the accessible name
+                   rather than empty — and it is the one element on the rail
+                   allowed to shrink, capped on a phone so the row cannot overflow
+                   sideways. */
                 <Link
                   href="/"
-                  className="flex min-h-[var(--layout-touch-target)] min-w-0 items-center gap-1.5"
+                  className="flex min-h-[var(--layout-touch-target)] min-w-0 items-center"
                 >
-                  <span aria-hidden className="text-title-3 leading-none text-accent-400">
-                    α
-                  </span>
-                  <span className="min-w-0 truncate text-body-lg font-extrabold tracking-[-0.02em] text-ink">
-                    ColorLab
-                  </span>
+                  <Image
+                    src="/logo.png"
+                    alt="Alpha AI Color Lab"
+                    width={1780}
+                    height={499}
+                    priority
+                    unoptimized
+                    className="h-9 w-auto max-w-[42vw] object-contain object-left sm:max-w-none"
+                  />
                 </Link>
               )}
 
