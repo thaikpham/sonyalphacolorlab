@@ -36,10 +36,25 @@
 }
 
 /* Content paints edge to edge under the notch and home indicator
-   (viewport-fit: cover), so every edge pays back its own inset. */
+   (viewport-fit: cover), so every edge pays back its own inset.
+
+   The floor is `--layout-shell-padding` — the ecosystem's shell gutter,
+   `clamp(20px, 2vw, 40px)` — not a flat 1.25rem. Every page that wanted a
+   responsive gutter had hand-rolled one beside this class (`px-4 sm:px-6
+   lg:px-8` and friends), and none of them worked: this rule is unlayered and
+   sets the physical `padding-left`/`padding-right`, while `px-*` compiles to
+   the logical `padding-inline` inside `@layer utilities`, so the physical
+   longhand won at every width and all four pages rendered a flat 20px. The
+   token said what the gutter should be and nothing read it.
+
+   This one stays UNLAYERED on purpose, unlike the component classes in each
+   app's globals.css. It is a safe-area guarantee: several call sites write
+   `p-4 inset-safe` on a full-screen modal, and if a utility could beat it the
+   modal would lose its inset and clip under the notch. A gutter being 4px off
+   is cosmetic; content under the camera housing is not. */
 .inset-safe {
-  padding-left: max(1.25rem, env(safe-area-inset-left));
-  padding-right: max(1.25rem, env(safe-area-inset-right));
+  padding-left: max(var(--layout-shell-padding, 1.25rem), env(safe-area-inset-left));
+  padding-right: max(var(--layout-shell-padding, 1.25rem), env(safe-area-inset-right));
 }
 
 .pb-safe {

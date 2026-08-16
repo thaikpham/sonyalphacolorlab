@@ -345,7 +345,7 @@ export function CameraWikiView({ initialCameras, basePath = '/cameras' }: Camera
             {hasActiveWikiFilters && (
               <button
                 type="button"
-                onClick={() => router.push('/cameras', { scroll: false })}
+                onClick={() => router.push(basePath, { scroll: false })}
                 className="text-body-sm font-semibold text-accent-400 cursor-pointer"
               >
                 {t('emptyAction')}
@@ -359,7 +359,7 @@ export function CameraWikiView({ initialCameras, basePath = '/cameras' }: Camera
             <h2 className="text-title-3 font-semibold text-ink">{t('emptyTitle')}</h2>
             <button
               type="button"
-              onClick={() => router.push('/cameras', { scroll: false })}
+              onClick={() => router.push(basePath, { scroll: false })}
               className="btn-glass cursor-pointer"
             >
               {t('emptyAction')}

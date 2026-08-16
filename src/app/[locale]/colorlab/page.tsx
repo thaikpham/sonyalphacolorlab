@@ -46,7 +46,7 @@ export default async function ColorLabPage({
       <SiteHeader tags={tags} />
       <SiteStructuredData locale={locale} />
 
-      <main className="mx-auto w-full max-w-[160rem] flex-1 inset-safe pt-8 pb-24 px-4 sm:px-6 lg:px-8 flex flex-col gap-6">
+      <main className="mx-auto w-full max-w-[160rem] flex-1 inset-safe pt-8 pb-24 flex flex-col gap-6">
         {/* The page lede. The h1 used to be `sr-only` carrying an untranslated
             literal, because nothing on the page named it; the document title
             already says "Alpha ColorLab", so the heading is now the visible

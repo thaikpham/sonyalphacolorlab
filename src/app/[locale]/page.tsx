@@ -44,7 +44,7 @@ export default async function LauncherPage({
        would push the bottom row under the address bar. `overflow-y-auto` so a
        short landscape phone can still reach the fourth tile rather than having
        it clipped. */
-    <main className="relative flex min-h-[100dvh] w-full flex-col items-center justify-center overflow-y-auto inset-safe px-6 py-12 sm:px-10">
+    <main className="relative flex min-h-[100dvh] w-full flex-col items-center justify-center overflow-y-auto inset-safe py-12">
       {/* The tiles are the page. No visible title, no tagline and no divider —
           the four icons say what this is faster than a heading does.
           `sr-only`, not deleted: a page with four `h2`s and no `h1` fails axe,

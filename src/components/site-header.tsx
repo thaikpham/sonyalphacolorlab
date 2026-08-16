@@ -139,6 +139,22 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
   const ecosystemRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
   const portalRef = useRef<HTMLDivElement>(null);
+  /**
+   * The launcher tiles inside the portal. A REF, not a class name.
+   *
+   * This test used to be `e.target.closest('.app-enter')`, and `.app-enter` was
+   * a staggered-entrance class from the deleted vfx.css. Once the launcher was
+   * rebuilt the class was gone, `closest` returned null for every click, and so
+   * every click inside the overlay — including one on the Sony Wiki tile —
+   * counted as "outside the tiles" and closed the launcher. The tile could not
+   * be opened at all.
+   *
+   * Nothing caught it: the class is referenced from a string in JS rather than
+   * a `className`, so it is invisible to the audit greps, and `app-enter` was
+   * not in the deleted-vocabulary pattern to begin with (`app-glow` was). A ref
+   * cannot rot this way — it points at the node, not at a name.
+   */
+  const launcherRef = useRef<HTMLDivElement>(null);
 
   interface PredictiveItem {
     id: string;
@@ -1348,7 +1364,12 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
             // did before this layer covered it. The layer has to stay
             // hit-testable — `pointer-events-none` would hand the wheel to the
             // page underneath and the launcher would not scroll at all.
-            if (!(e.target as HTMLElement).closest('.app-enter')) {
+            //
+            // Tested against the launcher's own node, never a class name: the
+            // previous `closest('.app-enter')` went on compiling and passing
+            // every test after the class it named was deleted, and silently
+            // swallowed every click on a tile. See `launcherRef`.
+            if (!launcherRef.current?.contains(e.target as Node)) {
               setIsEcosystemOpen(false);
             }
           }}
@@ -1380,7 +1401,9 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                 an iframe; that only ever worked because the destination was
                 already external, and it cost the reader the app's own chrome,
                 its URL bar and its deep links. Send them to the real origin. */}
-            <LauncherGrid size="md" onNavigate={() => setIsEcosystemOpen(false)} />
+            <div ref={launcherRef}>
+              <LauncherGrid size="md" onNavigate={() => setIsEcosystemOpen(false)} />
+            </div>
           </div>
         </div>
       </div>,
