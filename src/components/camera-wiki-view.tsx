@@ -93,6 +93,68 @@ function NoPhoto({ label }: { label?: string }) {
   );
 }
 
+/**
+ * A catalogue photograph that degrades to the no-photo mark when the file does
+ * not load.
+ *
+ * A missing `imageUrl` was already handled; a PRESENT but dead one was not, and
+ * that is the case the catalogue actually has. 18 of its 94 products fail to
+ * load today: 17 point at `www.sony.com.vn`, which answers 403 to anything that
+ * is not its own page — a browser user-agent and a matching referer do not help
+ * — and one B&H id has been withdrawn (it 404s at its original path too, so the
+ * size rewrite is not what broke it). Those 18 rendered a broken-image box on a
+ * white plate, which reads as a bug in the page rather than a gap in the source.
+ *
+ * `onError` is the only signal available: whether a remote image decoded is not
+ * knowable at render time, and the failures are per-URL rather than per-host, so
+ * there is nothing to branch on up front.
+ */
+function ProductPhoto({
+  src,
+  alt,
+  sizes,
+  className,
+  label,
+  size,
+}: {
+  src: string | null | undefined;
+  alt: string;
+  /** Required unless `size` is given — `fill` needs it to pick a variant. */
+  sizes?: string;
+  className: string;
+  label?: string;
+  /** Fixed square instead of `fill`, for the table view's 56px thumbnail. */
+  size?: number;
+}) {
+  const [failed, setFailed] = useState(false);
+
+  if (!src || failed) return <NoPhoto label={label} />;
+
+  if (size) {
+    return (
+      <Image
+        src={src}
+        alt={alt}
+        width={size}
+        height={size}
+        className={className}
+        onError={() => setFailed(true)}
+      />
+    );
+  }
+
+  return (
+    <Image
+      src={src}
+      alt={alt}
+      fill
+      sizes={sizes}
+      className={className}
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
 interface CameraWikiViewProps {
   /* Cards, not full products: the spec blocks would be a third of this page's
      payload and nothing here renders them. See `CameraCard`. */
@@ -489,17 +551,12 @@ export function CameraWikiView({ initialCameras, basePath = '/cameras' }: Camera
                             className="flex items-center gap-3 cursor-pointer group"
                           >
                             <div className="relative w-14 h-14 shrink-0 rounded-md overflow-hidden bg-white p-1 flex items-center justify-center">
-                              {cam.imageUrl ? (
-                                <Image
-                                  src={cam.imageUrl}
-                                  alt={cam.name}
-                                  width={56}
-                                  height={56}
-                                  className="object-contain max-h-full"
-                                />
-                              ) : (
-                                <NoPhoto />
-                              )}
+                              <ProductPhoto
+                                src={cam.imageUrl}
+                                alt=""
+                                size={56}
+                                className="object-contain max-h-full"
+                              />
                             </div>
                             <div className="flex flex-col gap-0.5">
                               <span className="font-semibold text-body-sm text-ink group-hover:text-accent-400 transition-colors">
@@ -600,17 +657,13 @@ export function CameraWikiView({ initialCameras, basePath = '/cameras' }: Camera
                     aria-label={cam.name}
                     className="relative h-[210px] w-full bg-white flex items-center justify-center overflow-hidden cursor-pointer"
                   >
-                    {cam.imageUrl ? (
-                      <Image
-                        src={cam.imageUrl}
-                        alt=""
-                        fill
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        className="object-contain p-5"
-                      />
-                    ) : (
-                      <NoPhoto label={t('noPhoto')} />
-                    )}
+                    <ProductPhoto
+                      src={cam.imageUrl}
+                      alt=""
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                      className="object-contain p-5"
+                      label={t('noPhoto')}
+                    />
                   </button>
 
                   <div className="flex flex-col gap-[11px] px-5 pt-[19px] pb-[22px] flex-1">
@@ -751,10 +804,9 @@ export function CameraWikiView({ initialCameras, basePath = '/cameras' }: Camera
                       onClick={() => openProduct(cam)}
                       className="relative w-full aspect-[4/3] rounded-md bg-white p-2 flex items-center justify-center overflow-hidden cursor-pointer"
                     >
-                      <Image
+                      <ProductPhoto
                         src={cam.imageUrl}
-                        alt={cam.name}
-                        fill
+                        alt=""
                         sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 16vw"
                         className="object-contain p-1"
                       />
