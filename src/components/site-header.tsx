@@ -112,7 +112,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
     pathname === '/cameras' || pathname.startsWith('/cameras/') || isAudioWiki;
   const wikiBase = isAudioWiki ? '/audio' : '/cameras';
   const searchParams = useSearchParams();
-  const { user, loginWithGoogle, logout } = useAuth();
+  const { user, openLoginModal, logout } = useAuth();
 
   const currentQ = searchParams?.get('q') ?? '';
   const currentFormat = searchParams?.get('format') ?? '';
@@ -1023,7 +1023,20 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
               ) : (
                 <button
                   type="button"
-                  onClick={() => loginWithGoogle()}
+                  /* Opens the login sheet; it is the sheet's button that calls
+                     `loginWithGoogle()`.
+
+                     This used to call `loginWithGoogle()` straight from here,
+                     which redirected to Google with no interstitial — and, worse,
+                     had nowhere to report a failure. `loginWithGoogle` records
+                     `errNotConfigured` / `errOpenFailed` in the auth context, and
+                     that error is rendered ONLY inside the modal. Called from the
+                     header, a failed sign-in set an error string nobody could
+                     see and the page simply sat there. The rest of the app
+                     already routes through `openLoginModal()` — the community
+                     section and the recipe gallery both do — so this is also the
+                     consistent path. */
+                  onClick={() => openLoginModal()}
                   aria-label={tAuth('signInGoogle')}
                   title={tAuth('signInGoogle')}
                   /* A glass action, not a white pill: `bg-white text-black`
@@ -1031,9 +1044,8 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
 
                      The mark stays. It is Google's trademark and their sign-in
                      branding guidelines require it on a button that starts the
-                     Google flow — which this one does, `loginWithGoogle()` on
-                     click. What was wrong here was the DUPLICATE: a second copy
-                     of the same four brand hexes inlined in this file. It is
+                     Google flow. What was wrong here was the DUPLICATE: a second
+                     copy of the same four brand hexes inlined in this file. It is
                      imported from auth-context now, so the mark has one
                      definition and the hex grep has one exemption. */
                   className="btn-glass shrink-0 cursor-pointer gap-2"
