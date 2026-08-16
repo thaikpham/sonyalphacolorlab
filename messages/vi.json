@@ -4,11 +4,18 @@
     "resultCount": "{count} công thức",
     "emptyTitle": "Chưa có công thức nào khớp bộ lọc này.",
     "emptyAction": "Xoá bộ lọc",
-    "emptyTail": "để xem cả {total} công thức."
+    "emptyTail": "để xem cả {total} công thức.",
+    "title": "Tất cả công thức",
+    "lede": "Lọc theo tag, xem thiết lập gốc, rồi áp dụng vào máy Sony Alpha của bạn."
   },
   "launcher": {
     "title": "Hệ sinh thái Sony Alpha",
-    "subtitle": "Bốn công cụ, một quy trình — chọn nơi bắt đầu."
+    "subtitle": "Bốn công cụ, một quy trình — chọn nơi bắt đầu.",
+    "back": "Quay lại ứng dụng",
+    "divisions": {
+      "di": "Máy ảnh, Ống kính & Phụ kiện",
+      "pe": "Tai nghe, Loa & Thiết bị âm thanh"
+    }
   },
   "nav": {
     "ecosystem": "Hệ sinh thái Sony Alpha",
@@ -34,13 +41,13 @@
     "proposeVersionDesc": "Tạo biến thể thông số & bình chọn tim cộng đồng",
     "tweakAi": "Tweak with AI",
     "tweakAiDesc": "Tinh chỉnh thông số tự động bằng Claude",
-    "tagCommunity": "CỘNG ĐỒNG",
+    "tagCommunity": "Cộng đồng",
     "cancel": "Hủy",
     "galleryEmpty": "Chưa có ảnh mẫu cho công thức này. Hãy dùng <b>Đóng góp ảnh</b> bên dưới để tải lên tấm ảnh đầu tiên từ máy ảnh Sony Alpha của bạn!",
     "zoomPhoto": "Phóng to ảnh {index} của {title}",
     "zoom": "Phóng to",
-    "featuredShot": "ẢNH TIÊU BIỂU",
-    "frame": "KHUNG #{index}",
+    "featuredShot": "Ảnh tiêu biểu",
+    "frame": "Khung #{index}",
     "photoBy": "Ảnh bởi:",
     "deletePhoto": "Xóa ảnh đóng góp",
     "deletePhotoAt": "Xóa ảnh đóng góp {index}",
@@ -63,7 +70,9 @@
     "next": "Ảnh tiếp theo",
     "nextTitle": "Ảnh tiếp theo (phím →)",
     "goTo": "Chuyển đến ảnh {index}",
-    "lightboxHint": "Phím ← → hoặc nhấp ảnh 2 bên để lướt · Nhấn ESC hoặc nhấp bên ngoài để thoát"
+    "lightboxHint": "Phím ← → hoặc nhấp ảnh 2 bên để lướt · Nhấn ESC hoặc nhấp bên ngoài để thoát",
+    "wbEngineLabel": "Lõi White Balance",
+    "paramsLabel": "Thiết lập tham số máy ảnh"
   },
   "language": {
     "en": "English",
@@ -135,7 +144,9 @@
       "sampleUrlRequired": "URL ảnh demo mẫu thực tế là bắt buộc.",
       "saveFailed": "Không lưu được. Vui lòng thử lại.",
       "unknown": "Đã có lỗi xảy ra. Vui lòng thử lại."
-    }
+    },
+    "sectionCl": "2. Thông số camera Creative Look",
+    "sectionPp": "2. Thiết lập chính Picture Profile"
   },
   "notFound": {
     "title": "Không tìm thấy công thức này.",
@@ -145,7 +156,8 @@
   "error": {
     "title": "Đã có lỗi xảy ra.",
     "body": "Lỗi từ phía chúng tôi, không phải bạn. Hãy thử lại — nếu vẫn lỗi, bạn vẫn có thể vào danh mục từ trang chủ.",
-    "action": "Thử lại"
+    "action": "Thử lại",
+    "ref": "Mã lỗi"
   },
   "search": {
     "label": "Tìm công thức",
@@ -161,7 +173,7 @@
     "actionLabel": "Chi tiết & So sánh",
     "addMoreToCompare": "+ Thêm sản phẩm so sánh",
     "addToCompare": "⚡ Thêm vào danh sách so sánh",
-    "adminBadge": "👑 Điều hành",
+    "adminBadge": "Điều hành",
     "aiConnectionError": "Không thể kết nối tới máy chủ tư vấn.",
     "aiErrorResponse": "Rất tiếc, đã xảy ra lỗi khi tạo câu trả lời. Vui lòng thử lại!",
     "aiSpecialistGreeting": "Xin chào! Tôi là Chuyên viên tư vấn Sony Specialist. Tôi đã phân tích thông số kỹ thuật của các sản phẩm bạn đã chọn. Bạn cần tư vấn so sánh nhu cầu nào?",
@@ -186,25 +198,24 @@
     "compareBtn": "Mở bảng so sánh",
     "compareConfirmSub": "Kiểm tra danh sách các máy đã chọn trước khi mở chuyên trang so sánh thông số chi tiết.",
     "compareConfirmTitle": "Xác nhận so sánh sản phẩm",
-    "compareItemsBtn": "⚡ So sánh ngay ({count} sản phẩm)",
-    "comparePageTitle": "Chuyên Trang So Sánh Chi Tiết Sản Phẩm Sony",
+    "compareItemsBtn": "So sánh ngay ({count} sản phẩm)",
     "compareSummary": "{count} sản phẩm đang so sánh",
     "composeBodyPlaceholder": "Nội dung bạn muốn nói. Link sản phẩm sẽ được thêm sẵn.",
-    "composeOnRedditBtn": "Soạn trên Reddit ↗",
+    "composeOnRedditBtn": "Soạn trên Reddit",
     "composeTitlePlaceholder": "Tiêu đề chủ đề cho {name} — một câu hỏi, một recipe, một ảnh mẫu…",
     "detailModalTitle": "Chi tiết thông số sản phẩm",
     "diffBadge": "Khác biệt",
     "emptyAction": "Xóa bộ lọc tìm kiếm",
     "emptyTitle": "Không tìm thấy sản phẩm phù hợp với tìm kiếm của bạn.",
-    "exitFullscreenBtn": "↙ Thu nhỏ",
+    "exitFullscreenBtn": "Thu nhỏ",
     "expandText": "Xem thêm...",
     "featuresLabel": "Tính năng nổi bật",
-    "filterHot": "🔥 Hot",
-    "filterNew": "✨ Mới nhất",
-    "filterPhotos": "📸 Ảnh chụp mẫu",
-    "filterQuestions": "❓ Hỏi đáp",
-    "filterRecipes": "🎨 Recipe Màu",
-    "fullscreenBtn": "⛶ Phóng to",
+    "filterHot": "Hot",
+    "filterNew": "Mới nhất",
+    "filterPhotos": "Ảnh chụp mẫu",
+    "filterQuestions": "Hỏi đáp",
+    "filterRecipes": "Recipe Màu",
+    "fullscreenBtn": "Phóng to",
     "handoffDoneNote": "Reddit đã mở ở tab mới. Đăng xong thì bấm Tải lại để thấy chủ đề ở đây.",
     "handoffNote": "Mở {handle} với nội dung đã điền sẵn. Bạn bấm Post ở đó, bằng tài khoản của chính mình.",
     "highlightDiffs": "Chỉ hiện điểm khác biệt",
@@ -226,8 +237,8 @@
     "maxCompareHint": "Bạn có thể chọn tối đa 6 sản phẩm để so sánh trực quan.",
     "noPhoto": "Chưa có ảnh",
     "officialUrl": "Xem tại Sony Việt Nam ↗",
-    "openOnRedditBtn": "Mở trên Reddit ↗",
-    "pinnedBadge": "📌 Ghim",
+    "openOnRedditBtn": "Mở trên Reddit",
+    "pinnedBadge": "Ghim",
     "postPlaceholder": "Chia sẻ kinh nghiệm, ảnh mẫu hoặc recipe màu cho {name}...",
     "priceLabel": "Giá niêm yết",
     "printCompare": "In / Chia sẻ",
@@ -240,15 +251,15 @@
       "unauthorized": "{handle} từ chối yêu cầu. Đây là cộng đồng riêng tư: tài khoản đang kết nối phải là thành viên của nó.",
       "unavailable": "Hiện chưa kết nối được tới Reddit. Thử bấm Tải lại sau ít phút."
     },
-    "refreshTopicsBtn": "↻ Tải lại",
+    "refreshTopicsBtn": "Tải lại",
     "removeFromCompare": "✓ Đã có trong danh sách so sánh",
     "sameBadge": "Giống nhau",
     "searchPlaceholder": "Tìm kiếm tên sản phẩm, mã SKU (ví dụ: SEL70200GM2, FX3, ECM-M1), tính năng…",
-    "sectionAfStab": "🎯 Hệ thống lấy nét & Chống rung",
-    "sectionHighlights": "⚡ Tính năng nổi bật sản phẩm",
-    "sectionPhysical": "📐 Kích thước, Trọng lượng & Pin",
-    "sectionSensorOptics": "📷 Cảm biến & Thông số quang học",
-    "sectionVideoIso": "🎥 Khả năng quay phim & Dải ISO",
+    "sectionAfStab": "Hệ thống lấy nét & Chống rung",
+    "sectionHighlights": "Tính năng nổi bật sản phẩm",
+    "sectionPhysical": "Kích thước, Trọng lượng & Pin",
+    "sectionSensorOptics": "Cảm biến & Thông số quang học",
+    "sectionVideoIso": "Khả năng quay phim & Dải ISO",
     "selectProductTitle": "Chọn sản phẩm để thêm vào bảng so sánh",
     "sendQuestion": "Gửi câu hỏi",
     "sensorLabel": "Thông số kỹ thuật",
@@ -317,7 +328,7 @@
       "weight": "Trọng lượng"
     },
     "specsTab": "Thông số kỹ thuật",
-    "sub1All": "Tất cả định dạng",
+    "sub1All": "Tất cả máy ảnh",
     "sub2All": "Tất cả dòng máy",
     "subCategoryLabel": "Phân loại & Dòng máy",
     "subtitle": "Khám phá và so sánh thông số kỹ thuật, giá niêm yết chính hãng và tính năng của hơn 90+ dòng Máy ảnh, Ống kính và Phụ kiện Sony.",
@@ -340,7 +351,20 @@
     "topicsLoading": "Đang tải chủ đề từ Reddit…",
     "upvote": "Upvote",
     "viewGrid": "Xem dạng Lưới",
-    "viewTable": "Xem dạng Bảng"
+    "viewTable": "Xem dạng Bảng",
+    "footerCameraRoute": "Alpha ColorLab · Trang sản phẩm riêng cho {name}",
+    "footerAudioRoute": "Alpha ColorLab · Bảng Tra Cứu Tai Nghe & Loa Sony",
+    "camerasTitle": "Bảng Tra Cứu Máy Ảnh Sony",
+    "camerasSubtitle": "Tra cứu và so sánh thông số kỹ thuật, giá niêm yết chính hãng hơn 35+ dòng máy ảnh Sony Alpha, Cinema Line và Vlog.",
+    "footerCameraWiki": "Alpha ColorLab · Bảng Tra Cứu & So Sánh Máy Ảnh Sony",
+    "compareLegend": "Giá trị tốt hơn được tô accent; ô giống nhau để nguyên ink. Dấu — là thông số catalogue không công bố.",
+    "removeProduct": "Xóa khỏi bảng so sánh",
+    "closeDialog": "Đóng",
+    "chatYou": "Bạn",
+    "aiThinking": "Đang phân tích thông số các mẫu máy đã chọn…",
+    "catalogueLede": "{count} sản phẩm trong catalogue, hiển thị dạng lưới. Lọc theo dòng máy hoặc cỡ cảm biến ngay trên đầu trang.",
+    "openCompare": "Mở bảng so sánh",
+    "compareSelected": "Đã chọn"
   },
   "admin": {
     "title": "Quản trị sản phẩm",
@@ -413,6 +437,15 @@
       "mismatch": "Bản dịch trả về sai số dòng. Chưa thay đổi gì.",
       "declined": "Mô hình từ chối đoạn văn bản đó.",
       "failed": "Dịch thất bại. Chưa thay đổi gì."
-    }
+    },
+    "basicInfoHeading": "Tên sản phẩm & Bộ sưu tập ảnh",
+    "basicInfoHint": "Chỉnh sửa tên hiển thị, tên đầy đủ và danh sách URL ảnh minh họa.",
+    "primaryImageLabel": "URL ảnh đại diện chính (Primary Image URL)",
+    "galleryUrlsLabel": "Danh sách URL ảnh minh họa / Gallery (Mỗi URL 1 dòng)",
+    "photosCount": "ảnh",
+    "galleryPreviewHeading": "Xem trước ảnh minh họa trong Gallery:"
+  },
+  "loading": {
+    "status": "Đang tải công thức"
   }
 }

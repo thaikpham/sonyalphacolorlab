@@ -38,50 +38,64 @@ export type EcosystemAppDef = {
    * breakpoint.
    */
   iconInset: string;
-  /** Staggered entrance; `app-enter-N` are defined in the VFX stylesheet. */
-  enter: string;
-  /** Hover colour for the name, so the four are not one undifferentiated wall. */
-  accent?: string;
+  /**
+   * Short form for the two-column mobile grid, where a 76px tile is narrower
+   * than "Live Stream SOP" set at the 13px floor. Not a translation — the same
+   * product-name rule applies, this is just the name the product itself uses
+   * when it has no room.
+   */
+  shortName: string;
 };
 
 export const ECOSYSTEM_APPS: readonly EcosystemAppDef[] = [
   {
     key: 'colorlab',
     name: 'ColorLab 2.0',
+    shortName: 'ColorLab',
     icon: '/colorlab-icon.png',
     href: '/colorlab',
     external: false,
     iconInset: 'p-[13.5%]',
-    enter: 'app-enter-1',
   },
   {
     key: 'wiki',
     name: 'Sony Wiki',
+    shortName: 'Sony Wiki',
     icon: '/sony-wiki-icon.png',
     href: '/cameras',
     external: false,
     iconInset: 'p-[10%]',
-    enter: 'app-enter-2',
-    accent: 'group-hover:text-amber-300',
   },
   {
     key: 'cheesebooth',
     name: 'CheeseBooth',
+    shortName: 'CheeseBooth',
     icon: '/cheesebooth-icon.png',
     href: 'https://cheese-booth.vercel.app/',
     external: true,
     iconInset: 'p-[11%]',
-    enter: 'app-enter-3',
-    accent: 'group-hover:text-amber-300',
   },
   {
     key: 'livesop',
     name: 'Live Stream SOP',
+    shortName: 'Live SOP',
     icon: '/livesop-icon.png',
     href: 'https://sonylivesop.vercel.app/',
     external: true,
     iconInset: 'p-[7.5%]',
-    enter: 'app-enter-4',
-    accent: 'group-hover:text-blue-300',
   },
+] as const;
+
+/**
+ * Sony Wiki's two divisions, reached by tapping the Sony Wiki tile.
+ *
+ * `name` is not translated for the same reason the app names above are not:
+ * "Digital Imaging" and "Personal Entertainment" are Sony's own division names,
+ * the same category as a Creative Look code in Rule 3. What each division
+ * *contains* is ordinary prose and does live in `messages/*.json`, under
+ * `launcher.divisions.<key>`.
+ */
+export const WIKI_DIVISIONS = [
+  { key: 'di', name: 'DI · Digital Imaging', mark: 'DI', href: '/cameras' },
+  { key: 'pe', name: 'PE · Personal Entertainment', mark: 'PE', href: '/audio' },
 ] as const;

@@ -1,0 +1,7 @@
+{
+  "packages/colorlab-tokens/src/tokens.ts": {
+    "belowFloor": 3,
+    "mono": 1,
+    "palette": 0
+  }
+}

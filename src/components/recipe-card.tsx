@@ -1,48 +1,56 @@
 import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
 import { accentCss } from '@/lib/camera/color';
-import { CREATIVE_LOOKS } from '@/lib/camera/constants';
-import { FormattedWb } from './wb-table';
 import type { RecipeView } from '@/lib/recipes/source';
-
-const lookLabel = (code: string) => CREATIVE_LOOKS.find((l) => l.code === code)?.label ?? code;
+import { recipeChips } from '@/lib/recipes/chips';
 
 /**
- * Grid card. Name and White Balance sit bottom-left over the photograph.
- * Direct link to the recipe detail page.
+ * Grid card: a 210px photograph, then the recipe's identity underneath.
+ *
+ * The photograph no longer carries the text. Type over an arbitrary frame is
+ * the one contrast the system cannot guarantee — every scrim strong enough to
+ * fix it also hid the picture — so the name, the chips and the tags sit on the
+ * card's own surface, where `ink` / `ink-faint` mean what they say.
+ *
+ * `.surface` is the whole elevation: white 5% film, blur 30, elevation 1 and
+ * the 1px specular highlight that stands in for the border. It is unlayered
+ * CSS, so `bg-*`, `rounded-*` and `shadow-*` on this element would be silently
+ * dead — the radius, fill and shadow all come from the class, deliberately.
  */
 export function RecipeCard({ recipe }: { recipe: RecipeView }) {
   const accent = accentCss(recipe.accent);
-  const title = recipe.name.split(': ').slice(1).join(': ') || recipe.name;
+
+  /* The two formats are mutually exclusive on the camera (rule 2), so the
+     format is what a reader sorts by first — it gets a signal colour, and the
+     two names stay in English because they are Sony menu items, not copy
+     (rule 3, same as `structured-data.tsx`). */
+  const isPp = recipe.format === 'pp';
+  const kind = isPp ? 'Picture Profile' : 'Creative Look';
+  const chips = recipeChips(recipe);
 
   return (
     <Link
       href={`/recipe/${recipe.slug}`}
-      className="group relative block overflow-hidden rounded-[var(--radius-glass)] focus-visible:outline-2 transition-all duration-300 ease-out hover:-translate-y-2 hover:scale-[1.02] shadow-md hover:shadow-[0_16px_45px_-12px_rgba(0,0,0,0.85)] cursor-pointer"
+      className="surface block overflow-hidden transition-transform duration-200 ease-out hover:-translate-y-1"
+      /* Scopes ::selection inside the card to this recipe's own colour. */
       style={{ '--accent': accent } as React.CSSProperties}
     >
-      {/* Accent Glow Backdrop on Hover */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -inset-2 rounded-[var(--radius-glass)] opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl z-0"
-        style={{
-          background: `radial-gradient(circle at 50% 100%, color-mix(in oklch, ${accent} 40%, transparent), transparent 70%)`,
-        }}
-      />
-
-      <div className="relative aspect-[4/5] w-full overflow-hidden z-10">
+      <div className="relative h-[210px] w-full overflow-hidden">
         {recipe.images.length > 0 ? (
           <Image
             src={recipe.images[0]}
-            alt={title}
+            alt={recipe.name}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, (max-width: 2100px) 25vw, 20vw"
-            className="object-cover transition-all duration-500 ease-out group-hover:scale-108 group-hover:brightness-105"
+            className="object-cover"
           />
         ) : (
+          /* Only a minority of the catalogue is photographed. The rest show
+             the field this recipe's own colour science produces, which is
+             information, not a placeholder. */
           <div
             aria-hidden
-            className="absolute inset-0 transition-transform duration-500 ease-out group-hover:scale-108"
+            className="absolute inset-0"
             style={{
               background: `
                 radial-gradient(120% 90% at 22% 12%, color-mix(in oklch, ${accent} 42%, transparent), transparent 60%),
@@ -51,42 +59,34 @@ export function RecipeCard({ recipe }: { recipe: RecipeView }) {
             }}
           />
         )}
+      </div>
 
-        {/* Scrim: guarantees contrast for the overlay text */}
-        <div
-          aria-hidden
-          className="absolute inset-x-0 bottom-0 h-3/5 transition-opacity duration-300 group-hover:opacity-95"
-          style={{
-            background:
-              'linear-gradient(to top, oklch(8% 0.01 265 / 0.95), oklch(8% 0.01 265 / 0.6) 45%, transparent)',
-          }}
-        />
-
-        {/* Format marker badge (top-right) */}
-        <span className="eyebrow absolute right-3 top-3 rounded-full px-2.5 py-1 glass-flat !text-ink-muted transition-all duration-300 group-hover:bg-white group-hover:!text-void group-hover:font-bold group-hover:scale-110 group-hover:shadow-[0_0_12px_rgba(255,255,255,0.4)]">
-          {recipe.format === 'cl' ? recipe.settings.look : 'PP'}
+      <div className="flex flex-col gap-[11px] px-5 pt-[19px] pb-[22px]">
+        <span
+          className={`text-label font-semibold uppercase tracking-[0.08em] ${
+            isPp ? 'text-proposal' : 'text-community'
+          }`}
+        >
+          {kind}
         </span>
 
-        {/* Overlay: name + WB */}
-        <div className="absolute inset-x-0 bottom-0 p-4 text-left flex flex-col justify-end transition-transform duration-300">
-          <p className="eyebrow !text-ink-faint transition-colors duration-300 group-hover:text-ink-muted">
-            {recipe.id}
-          </p>
+        <h3 className="text-title-3 font-semibold leading-tight text-ink">{recipe.name}</h3>
 
-          <h3 className="mt-1 text-[0.975rem] font-semibold leading-tight text-ink transition-all duration-300 group-hover:translate-x-1 group-hover:text-white">
-            {title}
-          </h3>
-
-          <div className="mt-1.5 transition-all duration-300 group-hover:translate-x-1">
-            <FormattedWb wb={recipe.whiteBalance} className="text-xs" />
-          </div>
-
-          {recipe.format === 'cl' && (
-            <p className="eyebrow mt-1 transition-all duration-300 group-hover:translate-x-1 group-hover:text-ink">
-              {lookLabel(recipe.settings.look)}
-            </p>
-          )}
+        <div className="flex flex-wrap gap-[7px] text-label font-medium text-ink">
+          {chips.map((chip) => (
+            <span
+              key={chip.slot}
+              className="rounded-sm bg-white/8 px-[11px] py-1.5 shadow-[var(--elevation-spec)]"
+            >
+              {chip.value}
+            </span>
+          ))}
         </div>
+
+        {/* Every tag, in the seed's own order. Some recipes carry nine of
+            them, so it is clamped rather than truncated in the data — two
+            lines is the card's rhythm, and the recipe page lists them all. */}
+        <p className="meta line-clamp-2">{recipe.tags.join(' · ')}</p>
       </div>
     </Link>
   );

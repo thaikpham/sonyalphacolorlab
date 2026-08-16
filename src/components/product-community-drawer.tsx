@@ -25,28 +25,18 @@ interface TopicsResponse {
   topics?: CommunityTopic[];
 }
 
-/**
- * Deterministic avatar tint, so a handle keeps the same colour across renders.
- * Cheap hash — this is decoration, not identity.
- */
-const AVATAR_TINTS = [
-  'bg-amber-400/25 text-amber-200 border-amber-400/40',
-  'bg-sky-400/25 text-sky-200 border-sky-400/40',
-  'bg-emerald-400/25 text-emerald-200 border-emerald-400/40',
-  'bg-fuchsia-400/25 text-fuchsia-200 border-fuchsia-400/40',
-  'bg-rose-400/25 text-rose-200 border-rose-400/40',
-];
-
-function tintFor(handle: string): string {
-  let h = 0;
-  for (let i = 0; i < handle.length; i += 1) h = (h * 31 + handle.charCodeAt(i)) % 997;
-  return AVATAR_TINTS[h % AVATAR_TINTS.length];
-}
-
 function initialsFor(handle: string): string {
   const parts = handle.replace(/[._-]+/g, ' ').trim().split(/\s+/);
   return (parts[0]?.[0] ?? '?').concat(parts[1]?.[0] ?? '').toUpperCase();
 }
+
+/* The two chip rows — filters and compose tags — are the same control, so they
+   share one recipe. A selection is an accent-tinted FILL plus a level-1 shadow,
+   never a stroke, and the label on that field is pure ink rather than a darker
+   step of the field's own colour. */
+const CHIP = 'px-4 rounded-md text-label font-semibold whitespace-nowrap cursor-pointer transition-colors inline-flex items-center min-h-[var(--layout-touch-target)]';
+const CHIP_ON = 'bg-accent-500/15 text-ink shadow-[var(--elevation-1)]';
+const CHIP_OFF = 'bg-glass text-ink-muted hover:text-ink';
 
 /**
  * The product's topics on r/<SUBREDDIT>, and a composer that hands off to
@@ -155,16 +145,19 @@ export function ProductCommunityDrawer({ product }: ProductCommunityDrawerProps)
     { key: 'qa', label: t('filterQuestions') },
   ];
 
+  /* A sheet: one film above the page it sits on. The radius, the blur and the
+     shadow all come from `.surface-raised` as one recipe — nothing here paints
+     its own background or edge. */
   const panel = (
     <div
-      className={`w-full flex flex-col bg-[#14151a] border border-white/20 overflow-hidden shadow-2xl font-sans ${
-        isFullscreen ? 'h-full max-w-5xl rounded-3xl' : 'h-full rounded-2xl'
+      className={`w-full flex flex-col overflow-hidden surface-raised ${
+        isFullscreen ? 'h-full max-w-5xl' : 'h-full'
       }`}
     >
       {/* Space header — the handle is a real, linkable community */}
-      <div className="p-4 bg-gradient-to-r from-amber-500/20 via-black to-sky-500/15 border-b border-white/20 flex items-start justify-between gap-3">
+      <div className="p-4 flex items-start justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-xl bg-amber-400 text-black font-black flex items-center justify-center text-sm shadow-md shrink-0 font-mono">
+          <div className="w-10 h-10 rounded-md bg-community/15 text-community text-body font-semibold flex items-center justify-center shrink-0">
             r/
           </div>
           <div className="flex flex-col min-w-0">
@@ -172,11 +165,11 @@ export function ProductCommunityDrawer({ product }: ProductCommunityDrawerProps)
               href={SUBREDDIT_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-extrabold text-[1rem] sm:text-lg text-white hover:text-amber-300 transition-colors tracking-tight font-mono truncate"
+              className="text-body-lg font-semibold text-ink hover:text-accent-400 transition-colors truncate"
             >
               {SUBREDDIT_HANDLE}
             </a>
-            <span className="text-xs text-slate-100 font-semibold mt-0.5 truncate">
+            <span className="meta mt-0.5 truncate">
               {t('rTopicSubtitle', { name: product.name })}
             </span>
           </div>
@@ -185,74 +178,72 @@ export function ProductCommunityDrawer({ product }: ProductCommunityDrawerProps)
         <button
           type="button"
           onClick={() => setIsFullscreen(!isFullscreen)}
-          className="px-3.5 py-1.5 rounded-xl bg-white/20 hover:bg-white/30 text-white text-xs font-extrabold transition-all cursor-pointer border border-white/30 shrink-0"
+          className="btn-glass shrink-0 cursor-pointer"
         >
           {isFullscreen ? t('exitFullscreenBtn') : t('fullscreenBtn')}
         </button>
       </div>
 
+      <hr className="seam shrink-0" />
+
       {/* Why the feed is empty, when it is empty for a reason other than "no posts" */}
       {(status === 'notConfigured' || status === 'unauthorized' || status === 'unavailable') && (
-        <p className="px-4 py-2.5 bg-amber-400/15 border-b border-amber-400/40 text-[11px] sm:text-xs text-amber-100 font-semibold leading-relaxed">
+        <p className="px-4 py-3 bg-danger/15 text-ink text-body-sm leading-relaxed">
           {t(`redditStatus.${status}`, { handle: SUBREDDIT_HANDLE })}
         </p>
       )}
 
-      <div className="px-4 py-2.5 bg-black/90 border-b border-white/20 flex items-center justify-between gap-3 text-xs flex-wrap">
-        <span className="font-mono font-bold text-slate-100">
+      <div className="px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
+        <span className="meta">
           {status === 'loading' ? t('topicsLoading') : t('topicCount', { count: topics.length })}
         </span>
         <button
           type="button"
           onClick={refresh}
-          className="font-extrabold text-sky-300 hover:text-sky-200 transition-colors cursor-pointer"
+          className="text-label font-semibold text-accent-400 hover:text-ink transition-colors cursor-pointer"
         >
           {t('refreshTopicsBtn')}
         </button>
       </div>
 
-      <div className="flex items-center gap-2 px-4 py-2.5 bg-black/80 border-b border-white/15 overflow-x-auto scrollbar-none text-xs">
+      <div className="flex items-center gap-2 px-4 pb-3 overflow-x-auto scroll-silent">
         {filters.map((f) => (
           <button
             key={f.key}
             type="button"
             onClick={() => setActiveFilter(f.key)}
-            className={`px-4 py-1.5 rounded-xl font-extrabold transition-all cursor-pointer whitespace-nowrap ${
-              activeFilter === f.key
-                ? 'bg-amber-400 text-black shadow-md'
-                : 'text-slate-100 hover:text-white bg-white/10 border border-white/15'
-            }`}
+            className={`${CHIP} ${activeFilter === f.key ? CHIP_ON : CHIP_OFF}`}
           >
             {f.label}
           </button>
         ))}
       </div>
 
-      <form onSubmit={handOff} className="p-4 bg-black/60 border-b border-white/15 flex flex-col gap-2.5">
-        <div className="flex items-center gap-2 overflow-x-auto scrollbar-none">
+      <hr className="seam shrink-0" />
+
+      <form onSubmit={handOff} className="p-4 flex flex-col gap-3">
+        <div className="flex items-center gap-2 overflow-x-auto scroll-silent">
           {TOPIC_TAGS.map((option) => (
             <button
               key={option}
               type="button"
               onClick={() => setTag(option)}
               aria-pressed={tag === option}
-              className={`px-3 py-1 rounded-lg text-[11px] font-mono font-extrabold transition-all cursor-pointer whitespace-nowrap ${
-                tag === option
-                  ? 'bg-sky-400 text-black shadow-md'
-                  : 'bg-white/10 text-slate-100 border border-white/20 hover:bg-white/20'
-              }`}
+              className={`${CHIP} ${tag === option ? CHIP_ON : CHIP_OFF}`}
             >
               {tagLabel[option]}
             </button>
           ))}
         </div>
 
+        {/* No `focus:outline-none` and no focus ring of its own: the one stroke
+            in the system is the global `:focus-visible` outline. */}
         <input
           type="text"
           value={titleDraft}
           onChange={(e) => setTitleDraft(e.target.value)}
           placeholder={t('composeTitlePlaceholder', { name: product.name })}
-          className="w-full px-4 py-2.5 rounded-xl bg-black border border-white/30 text-xs sm:text-sm text-white placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-400 transition-all font-sans font-medium"
+          className="surface-sunken w-full px-4 py-3 text-body text-ink placeholder:text-ink-faint"
         />
 
         {titleDraft.trim() && (
@@ -262,16 +253,13 @@ export function ProductCommunityDrawer({ product }: ProductCommunityDrawerProps)
               onChange={(e) => setBodyDraft(e.target.value)}
               rows={3}
               placeholder={t('composeBodyPlaceholder')}
-              className="w-full px-4 py-2.5 rounded-xl bg-black border border-white/30 text-xs sm:text-sm text-white placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-amber-400 transition-all font-sans font-medium resize-y"
+              className="surface-sunken w-full px-4 py-3 text-body text-ink placeholder:text-ink-faint resize-y"
             />
             <div className="flex items-center justify-between gap-3 flex-wrap">
-              <span className="text-[11px] text-slate-300 font-medium flex-1 min-w-[12rem] leading-relaxed">
+              <span className="meta flex-1 min-w-[12rem] leading-relaxed">
                 {t('handoffNote', { handle: SUBREDDIT_HANDLE })}
               </span>
-              <button
-                type="submit"
-                className="px-5 py-2 rounded-xl bg-amber-400 text-black text-xs font-black shadow-md hover:bg-amber-300 transition-all cursor-pointer shrink-0"
-              >
+              <button type="submit" className="btn-accent shrink-0 cursor-pointer">
                 {t('composeOnRedditBtn')}
               </button>
             </div>
@@ -279,19 +267,17 @@ export function ProductCommunityDrawer({ product }: ProductCommunityDrawerProps)
         )}
 
         {handedOff && (
-          <p className="text-[11px] text-sky-200 font-semibold leading-relaxed">
-            {t('handoffDoneNote')}
-          </p>
+          <p className="text-meta text-community leading-relaxed">{t('handoffDoneNote')}</p>
         )}
       </form>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin">
+      <hr className="seam shrink-0" />
+
+      <div className="flex-1 scroll-area p-4 space-y-4">
         {status === 'loading' ? (
-          <p className="py-16 text-center text-xs sm:text-sm text-slate-200 font-bold px-6">
-            {t('topicsLoading')}
-          </p>
+          <p className="py-16 px-6 text-center text-body text-ink-muted">{t('topicsLoading')}</p>
         ) : visible.length === 0 ? (
-          <p className="py-16 text-center text-xs sm:text-sm text-slate-200 font-bold px-6 leading-relaxed">
+          <p className="py-16 px-6 text-center text-body text-ink-muted leading-relaxed">
             {t('topicsEmpty', { handle: SUBREDDIT_HANDLE })}
           </p>
         ) : (
@@ -300,18 +286,22 @@ export function ProductCommunityDrawer({ product }: ProductCommunityDrawerProps)
             const isOpen = !!expanded[topic.id];
 
             return (
+              /* A pinned or moderator post floats one film higher. It used to be
+                 a coloured stroke, and an elevation says the same thing without
+                 spending a signal colour on decoration. */
               <article
                 key={topic.id}
-                className={`p-4 sm:p-5 rounded-2xl border flex flex-col gap-3 shadow-lg transition-all ${
-                  topic.isPinned || topic.isMod
-                    ? 'bg-[#1f212a] border-amber-400/70'
-                    : 'bg-[#1a1b22] border-white/25 hover:border-amber-400/50'
+                className={`p-4 sm:p-5 flex flex-col gap-3 ${
+                  topic.isPinned || topic.isMod ? 'surface-raised' : 'surface'
                 }`}
               >
-                <div className="flex items-center justify-between gap-3 text-xs">
+                <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2.5 flex-wrap min-w-0">
+                    {/* One avatar treatment for everyone. The old hash picked one
+                        of five hues per handle, which is a signal colour spent on
+                        decoration — and it was never identity. */}
                     <span
-                      className={`w-8 h-8 rounded-full shrink-0 border flex items-center justify-center text-[11px] font-black font-mono ${tintFor(topic.author)}`}
+                      className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center bg-accent-900 text-accent-200 text-label font-semibold"
                       aria-hidden="true"
                     >
                       {initialsFor(topic.author)}
@@ -320,26 +310,24 @@ export function ProductCommunityDrawer({ product }: ProductCommunityDrawerProps)
                       href={`https://www.reddit.com/user/${topic.author}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-black text-white hover:text-amber-300 transition-colors font-mono text-xs sm:text-sm truncate"
+                      className="text-body-sm font-semibold text-ink hover:text-accent-400 transition-colors truncate"
                     >
                       u/{topic.author}
                     </a>
                     {topic.isMod && (
-                      <span className="px-2 py-0.5 rounded bg-amber-400 text-black text-[10px] font-black shadow-sm">
+                      <span className="px-2 py-0.5 rounded-sm bg-accent-500/15 text-accent-200 text-label font-semibold">
                         {t('adminBadge')}
                       </span>
                     )}
                     {topic.isPinned && (
-                      <span className="px-2 py-0.5 rounded bg-sky-400 text-black text-[10px] font-black shadow-sm">
+                      <span className="px-2 py-0.5 rounded-sm bg-glass text-ink-muted text-label font-semibold">
                         {t('pinnedBadge')}
                       </span>
                     )}
-                    <span className="text-xs text-amber-200 font-semibold">
-                      • {relTime(topic.createdUtc)}
-                    </span>
+                    <span className="meta">• {relTime(topic.createdUtc)}</span>
                   </div>
 
-                  <span className="px-2.5 py-1 rounded-lg text-xs font-mono font-extrabold bg-white/15 text-amber-300 border border-white/20 shrink-0">
+                  <span className="px-2.5 py-1 rounded-sm bg-glass text-ink-muted text-label font-semibold shrink-0">
                     {tagLabel[topic.tag]}
                   </span>
                 </div>
@@ -349,12 +337,12 @@ export function ProductCommunityDrawer({ product }: ProductCommunityDrawerProps)
                     href={topic.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-extrabold text-sm sm:text-[1rem] text-white hover:text-amber-300 transition-colors font-sans leading-snug tracking-tight"
+                    className="text-body sm:text-body-lg font-semibold text-ink hover:text-accent-400 transition-colors leading-snug"
                   >
                     {topic.title}
                   </a>
                   {topic.body && (
-                    <p className="text-xs sm:text-sm text-slate-100 leading-relaxed font-sans font-medium whitespace-pre-line">
+                    <p className="text-body-sm sm:text-body text-ink-muted leading-relaxed whitespace-pre-line">
                       {isLong && !isOpen ? `${topic.body.slice(0, 140)}…` : topic.body}
                     </p>
                   )}
@@ -362,15 +350,15 @@ export function ProductCommunityDrawer({ product }: ProductCommunityDrawerProps)
                     <button
                       type="button"
                       onClick={() => setExpanded((p) => ({ ...p, [topic.id]: !isOpen }))}
-                      className="text-xs font-black text-amber-300 hover:text-amber-200 hover:underline w-fit mt-1 cursor-pointer"
+                      className="text-body-sm font-semibold text-accent-400 hover:text-ink transition-colors w-fit mt-1 cursor-pointer"
                     >
                       {isOpen ? t('collapseText') : t('expandText')}
                     </button>
                   )}
                 </div>
 
-                <div className="flex items-center justify-between gap-3 pt-2.5 border-t border-white/15 text-xs">
-                  <div className="flex items-center gap-3 text-slate-100 font-mono font-bold">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 meta">
                     <span className="flex items-center gap-1.5">
                       <span aria-hidden="true">▲</span>
                       {topic.score}
@@ -382,7 +370,7 @@ export function ProductCommunityDrawer({ product }: ProductCommunityDrawerProps)
                     href={topic.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3.5 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-white text-xs font-black transition-all border border-white/20"
+                    className="btn-glass inline-flex items-center shrink-0"
                   >
                     {t('openOnRedditBtn')}
                   </a>
@@ -397,7 +385,7 @@ export function ProductCommunityDrawer({ product }: ProductCommunityDrawerProps)
 
   if (isFullscreen) {
     return (
-      <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-2xl p-4 sm:p-8 flex items-center justify-center animate-backdrop-blur font-sans">
+      <div className="fixed inset-0 z-50 bg-void/90 backdrop-blur-[30px] p-4 sm:p-8 flex items-center justify-center animate-fade-in">
         {panel}
       </div>
     );

@@ -86,7 +86,7 @@ export async function WbShiftPlane({
         ))}
       </svg>
       {caption && (
-        <figcaption className="eyebrow mt-3">
+        <figcaption className="label mt-3">
           {t('planeCaption', { count: recipes.length, shifted })}
         </figcaption>
       )}

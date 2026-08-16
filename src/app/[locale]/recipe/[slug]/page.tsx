@@ -82,13 +82,13 @@ export default async function RecipePage({
       <SiteHeader />
       <RecipeStructuredData recipe={recipe} locale={locale} url={shareUrl} />
 
-      <main className="mx-auto w-full max-w-[160rem] flex-1 inset-safe pb-24 px-4 sm:px-8 lg:px-12">
+      <main className="mx-auto w-full max-w-[160rem] flex-1 inset-safe pb-24">
         {/* Top Back Navigation */}
         <nav className="py-6">
           {/* Back to the catalogue this recipe belongs to, not the launcher. */}
           <Link
             href="/colorlab"
-            className="group inline-flex items-center gap-2.5 px-4 py-2 rounded-full glass-flat text-xs font-bold font-sans text-white/90 hover:text-white hover:bg-white/20 transition-all duration-300 hover:scale-105 active:scale-95 shadow-md hover:shadow-[0_8px_25px_rgba(0,0,0,0.5)] cursor-pointer"
+            className="btn-glass group gap-2.5 px-4 text-label cursor-pointer"
           >
             {/* 4-Square 2x2 Grid Icon */}
             <svg
@@ -112,26 +112,26 @@ export default async function RecipePage({
             {/* Recipe Header & Description */}
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <span className="eyebrow px-2.5 py-0.5 rounded-md bg-white/10 text-white font-mono text-[11px]">
+                <span className="chip label text-ink">
                   {recipe.id}
                 </span>
                 {look && (
-                  <span className="eyebrow px-2.5 py-0.5 rounded-md bg-[oklch(75%_0.35_330_/_0.15)] text-[oklch(75%_0.35_330)] text-[11px]">
+                  <span className="chip label bg-accent-900 text-accent-200">
                     CL: {look.code} ({look.label})
                   </span>
                 )}
                 {recipe.format === 'pp' && (
-                  <span className="eyebrow px-2.5 py-0.5 rounded-md bg-[oklch(78%_0.25_240_/_0.15)] text-[oklch(78%_0.25_240)] text-[11px]">
+                  <span className="chip label bg-accent-900 text-accent-200">
                     PICTURE PROFILE
                   </span>
                 )}
               </div>
 
-              <h1 className="text-4xl sm:text-6xl font-extrabold leading-[1.1] tracking-tight text-ink">
+              <h1 className="text-title-1 sm:text-display font-extrabold leading-[1.12] tracking-[-0.02em] text-ink">
                 {title}
               </h1>
 
-              <p className="mt-4 whitespace-pre-line leading-relaxed text-ink-muted text-[1rem] sm:text-lg">
+              <p className="mt-4 whitespace-pre-line leading-relaxed text-ink-muted text-body sm:text-body-lg">
                 {recipe.description}
               </p>
 
@@ -143,7 +143,7 @@ export default async function RecipePage({
                       <li key={tag}>
                         <Link
                           href={`/?tag=${tag}`}
-                          className="eyebrow glass-flat rounded-full px-3 py-1.5 hover:!text-ink transition-colors text-xs"
+                          className="chip chip-action label"
                         >
                           #{tag}
                         </Link>
@@ -182,14 +182,11 @@ export default async function RecipePage({
                 tables stack in one column, so a different padding put every WB
                 row 4px right of every Picture Profile row below it — one shared
                 left edge down the whole column instead. */}
-            <section className="glass p-5 shadow-[0_15px_40px_-10px_rgba(0,0,0,0.8)] relative overflow-hidden">
-              <div className="film-burn-leak" />
-              <div className="relative z-10 flex flex-col gap-4">
+            <section className="surface p-5">
+              <div className="flex flex-col gap-4">
                 <div>
-                  <span className="eyebrow text-[11px] tracking-widest text-[oklch(85%_0.3_140)] font-bold uppercase">
-                    CORE WHITE BALANCE ENGINE
-                  </span>
-                  <h2 className="text-xl font-extrabold text-ink mt-0.5">
+                  <span className="label">{t('wbEngineLabel')}</span>
+                  <h2 className="text-title-3 font-semibold text-ink mt-0.5">
                     White Balance Shift
                   </h2>
                 </div>
@@ -199,7 +196,7 @@ export default async function RecipePage({
                 <div className="grid gap-4 sm:grid-cols-[16rem_1fr] sm:items-center sm:gap-6">
                   <WbShiftPlane recipes={[recipe]} caption={false} />
                   <div>
-                    <FormattedWb wb={recipe.whiteBalance} className="text-3xl font-extrabold drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]" />
+                    <FormattedWb wb={recipe.whiteBalance} className="text-title-2 font-extrabold" />
                   </div>
                 </div>
 
@@ -211,9 +208,7 @@ export default async function RecipePage({
 
             {/* Camera Parameters Setup Table */}
             <div>
-              <h3 className="eyebrow text-xs tracking-widest uppercase mb-3 text-ink-muted">
-                CAMERA PARAMETERS SETUP
-              </h3>
+              <h3 className="label mb-3">{t('paramsLabel')}</h3>
               {recipe.format === 'pp' ? (
                 <PpTable s={recipe.settings} locale={locale} />
               ) : (

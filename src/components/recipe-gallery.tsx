@@ -23,149 +23,91 @@ interface RecipeGalleryProps {
   title: string;
 }
 
+/*
+ * The three offer icons.
+ *
+ * They used to be sRGB gradient illustrations — emerald, fuchsia and amber,
+ * eleven hex literals between them, three of which were a competitor's
+ * signature hue. They are now single-colour glyphs drawn in `currentColor`,
+ * so each one takes the signal colour of the offer it belongs to
+ * (`community` / `proposal` / `ai`) and cannot drift a shade from it. Depth
+ * comes from opacity, and the cut-outs are the ground colour.
+ */
+
 function CameraIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 48 48" fill="none">
-      <defs>
-        <linearGradient id="cam-grad-body" x1="6" y1="10" x2="42" y2="40" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#34d399" />
-          <stop offset="50%" stopColor="#10b981" />
-          <stop offset="100%" stopColor="#059669" />
-        </linearGradient>
-        <linearGradient id="cam-grad-top" x1="16" y1="6" x2="32" y2="14" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#6ee7b7" />
-          <stop offset="100%" stopColor="#10b981" />
-        </linearGradient>
-        <linearGradient id="cam-grad-lens" x1="16" y1="16" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#064e3b" />
-          <stop offset="100%" stopColor="#022c22" />
-        </linearGradient>
-        <linearGradient id="cam-grad-glass" x1="19" y1="19" x2="29" y2="29" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#a7f3d0" />
-          <stop offset="100%" stopColor="#34d399" />
-        </linearGradient>
-      </defs>
-
-      {/* Top Viewfinder Bump */}
+    <svg className={className} viewBox="0 0 48 48" fill="none" aria-hidden focusable="false">
+      {/* Viewfinder bump */}
       <path
         d="M17 12C17 9.79086 18.7909 8 21 8H27C29.2091 8 31 9.79086 31 12V14H17V12Z"
-        fill="url(#cam-grad-top)"
+        fill="currentColor"
+        opacity="0.55"
       />
-      {/* Main Camera Body */}
-      <rect
-        x="6"
-        y="12"
-        width="36"
-        height="26"
-        rx="7"
-        fill="url(#cam-grad-body)"
-      />
-      {/* Sensor Light */}
-      <circle cx="35" cy="19" r="2" fill="#a7f3d0" />
-      {/* Lens Outer Ring */}
-      <circle cx="24" cy="25" r="9.5" fill="url(#cam-grad-lens)" stroke="#6ee7b7" strokeWidth="1.5" />
-      {/* Lens Glass Reflection */}
-      <circle cx="24" cy="25" r="5.5" fill="url(#cam-grad-glass)" />
-      {/* Specular Highlight Arc */}
-      <path
-        d="M21.5 21.5C23 20 25.5 20 27 21"
-        stroke="#ffffff"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        opacity="0.85"
-      />
+      {/* Body */}
+      <rect x="6" y="12" width="36" height="26" rx="7" fill="currentColor" opacity="0.9" />
+      {/* Shutter lamp */}
+      <circle cx="35" cy="19" r="2" fill="var(--color-void)" opacity="0.7" />
+      {/* Lens barrel, then the element inside it */}
+      <circle cx="24" cy="25" r="9.5" fill="var(--color-void)" opacity="0.65" />
+      <circle cx="24" cy="25" r="5.5" fill="currentColor" />
     </svg>
   );
 }
 
 function VoteIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 48 48" fill="none">
-      <defs>
-        <linearGradient id="vote-grad-box" x1="6" y1="20" x2="42" y2="42" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#f0abfc" />
-          <stop offset="50%" stopColor="#c084fc" />
-          <stop offset="100%" stopColor="#9333ea" />
-        </linearGradient>
-        <linearGradient id="vote-grad-top" x1="6" y1="18" x2="42" y2="26" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#f5d0fe" />
-          <stop offset="100%" stopColor="#e879f9" />
-        </linearGradient>
-        <linearGradient id="vote-grad-heart" x1="16" y1="4" x2="32" y2="20" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#fb7185" />
-          <stop offset="100%" stopColor="#e11d48" />
-        </linearGradient>
-      </defs>
-
-      {/* Floating Heart Ballot Paper */}
+    <svg className={className} viewBox="0 0 48 48" fill="none" aria-hidden focusable="false">
+      {/* Ballot paper */}
       <path
         d="M17 9C17 7.34315 18.3431 6 20 6H28C29.6569 6 31 7.34315 31 9V20H17V9Z"
-        fill="#ffffff"
-        opacity="0.95"
+        fill="currentColor"
+        opacity="0.4"
       />
-      {/* Heart Icon on Card */}
+      {/* The vote itself */}
       <path
-        d="M24 16.5L21.6 14.2C20.7 13.3 20.7 11.9 21.6 11C22.5 10.1 23.9 10.1 24.8 11L24 11.8L23.2 11C24.1 10.1 25.5 10.1 26.4 11C27.3 11.9 27.3 13.3 26.4 14.2L24 16.5Z"
-        fill="url(#vote-grad-heart)"
+        d="M24 17.4c-3.5-2.5-5.3-4.2-5.3-6.1a2.85 2.85 0 0 1 5.3-1.5 2.85 2.85 0 0 1 5.3 1.5c0 1.9-1.8 3.6-5.3 6.1Z"
+        fill="currentColor"
       />
-
-      {/* Ballot Box Body */}
-      <rect x="6" y="21" width="36" height="19" rx="6" fill="url(#vote-grad-box)" />
-      {/* Ballot Box Lid Rim */}
-      <rect x="4" y="17" width="40" height="7" rx="3.5" fill="url(#vote-grad-top)" />
-      {/* Box Slot Opening */}
-      <rect x="16" y="19" width="16" height="3" rx="1.5" fill="#3b0764" opacity="0.9" />
+      {/* Box, lid rim, slot */}
+      <rect x="6" y="21" width="36" height="19" rx="6" fill="currentColor" opacity="0.9" />
+      <rect x="4" y="17" width="40" height="7" rx="3.5" fill="currentColor" opacity="0.55" />
+      <rect x="16" y="19" width="16" height="3" rx="1.5" fill="var(--color-void)" opacity="0.85" />
     </svg>
   );
 }
 
 function AiSparkleIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 48 48" fill="none">
-      <defs>
-        <linearGradient id="ai-grad-star1" x1="8" y1="4" x2="38" y2="40" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#fef08a" />
-          <stop offset="40%" stopColor="#fbbf24" />
-          <stop offset="100%" stopColor="#d97706" />
-        </linearGradient>
-        <linearGradient id="ai-grad-star2" x1="26" y1="2" x2="44" y2="20" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="100%" stopColor="#f59e0b" />
-        </linearGradient>
-        <radialGradient id="ai-grad-glow" cx="24" cy="24" r="18" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#fef08a" stopOpacity="0.5" />
-          <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
-        </radialGradient>
-      </defs>
-
-      {/* Ambient Radial Glow */}
-      <circle cx="24" cy="24" r="18" fill="url(#ai-grad-glow)" />
-
-      {/* Primary 4-Point Star Crystal */}
+    <svg className={className} viewBox="0 0 48 48" fill="none" aria-hidden focusable="false">
       <path
         d="M22 5C22 14.5 14.5 22 5 22C14.5 22 22 29.5 22 39C22 29.5 29.5 22 39 22C29.5 22 22 14.5 22 5Z"
-        fill="url(#ai-grad-star1)"
+        fill="currentColor"
       />
-
-      {/* Top-Right Secondary Sparkle */}
       <path
         d="M35 3C35 7.5 38.5 11 43 11C38.5 11 35 14.5 35 19C35 14.5 31.5 11 27 11C31.5 11 35 7.5 35 3Z"
-        fill="url(#ai-grad-star2)"
+        fill="currentColor"
+        opacity="0.6"
       />
-
-      {/* Bottom-Left Accent Dot */}
-      <circle cx="9" cy="37" r="2" fill="#fef08a" />
+      <circle cx="9" cy="37" r="2" fill="currentColor" opacity="0.6" />
     </svg>
   );
 }
 
+/** Signal colour per offer — the whole reason these three read as different. */
+const OFFER_TINT = {
+  community: 'text-community',
+  proposal: 'text-proposal',
+  ai: 'text-ai',
+} as const;
+
 /**
- * One of the three offers under the collage, as an app icon.
+ * One of the three offers under the collage.
  *
- * Same squircle as the ecosystem launcher — `.app-tile-shell` and `.app-tile`
- * are shared, not re-implemented — so the two rows of tiles on the site read as
- * one language. Only the glow colour differs, and it comes from `--card-accent`
- * so a tile cannot end up half one colour and half another.
+ * A translucent tile with the glyph in its signal colour. It is deliberately NOT the
+ * launcher's squircle-and-spectrum treatment: that glow is the ecosystem's one
+ * sanctioned exception, and a second row of tiles wearing it would make it
+ * decoration. `.app-tile-shell`, `.app-tile` and `.accent-glow` went with it —
+ * those classes no longer exist and were rendering as nothing.
  *
  * The `title` attribute carries the longer description that the old card
  * printed under its heading. Losing the visible line is the point of the
@@ -192,19 +134,15 @@ function ActionTile({
       onClick={onClick}
       aria-expanded={expanded}
       title={description}
-      className="group flex flex-col items-center gap-3 cursor-pointer font-sans shrink-0"
-      style={{ '--card-accent': `var(--color-${accent})` } as React.CSSProperties}
+      className="group flex flex-col items-center gap-3 cursor-pointer shrink-0"
     >
-      <div className="app-tile-shell w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28">
-        <span aria-hidden className="accent-glow" />
-        <div className="app-tile w-full h-full flex items-center justify-center text-[var(--card-accent)] group-hover:text-white transition-colors duration-300">
-          <span aria-hidden className="flex items-center justify-center">
-            {icon}
-          </span>
-        </div>
-      </div>
+      <span
+        className={`surface flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 transition-transform duration-200 ease-out group-hover:-translate-y-1 ${OFFER_TINT[accent]}`}
+      >
+        {icon}
+      </span>
 
-      <span className="action-tile-label flex items-center justify-center text-xs sm:text-sm font-bold text-ink text-center whitespace-nowrap">
+      <span className="text-body-sm sm:text-body font-semibold text-ink text-center whitespace-nowrap">
         {label}
       </span>
     </button>
@@ -444,7 +382,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
                   type="button"
                   onClick={() => setLightboxIndex(i)}
                   aria-label={t('zoomPhoto', { index: i + 1, title })}
-                  className={`group relative block w-full overflow-hidden rounded-[var(--radius-glass)] cursor-zoom-in transition-all duration-300 shadow-md hover:shadow-[0_12px_40px_-10px_rgba(0,0,0,0.85)] ${
+                  className={`group relative block w-full overflow-hidden rounded-lg cursor-zoom-in shadow-[var(--elevation-1)] transition-transform duration-300 ${
                     isHeroTile ? 'aspect-[4/3] sm:aspect-[16/10] h-full min-h-[18rem]' : 'aspect-[4/3]'
                   }`}
                 >
@@ -462,8 +400,8 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
                     unoptimized={isUserPhoto}
                   />
 
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/30 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-3 sm:p-4">
-                    <span className="self-start text-[10px] font-sans font-bold px-2.5 py-1 rounded-full bg-black/70 text-white backdrop-blur-md uppercase tracking-wider shadow-sm">
+                  <div className="absolute inset-0 bg-gradient-to-t from-void/90 via-transparent to-void/40 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-3 sm:p-4">
+                    <span className="self-start text-label font-semibold uppercase tracking-[0.08em] px-2.5 py-1 rounded-sm bg-void/70 text-ink backdrop-blur-[30px]">
                       {isHeroTile
                         ? t('featuredShot')
                         : isUserPhoto
@@ -471,16 +409,18 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
                           : t('frame', { index: i + 1 })}
                     </span>
 
-                    <div className="flex items-end justify-between text-xs text-white/90">
+                    <div className="flex items-end justify-between text-meta text-ink">
                       <div>
-                        <span className="font-mono text-[11px] block truncate max-w-[80%]">{title}</span>
+                        <span className="block truncate max-w-[80%] font-semibold">{title}</span>
                         {credit?.authorName && (
-                          <span className="eyebrow text-[10px] text-community block mt-0.5">
-                            📸 {t('photoBy')} {credit.authorName}
+                          <span className="block mt-0.5 text-community">
+                            {t('photoBy')} {credit.authorName}
                           </span>
                         )}
                       </div>
-                      <span className="font-bold underline text-[11px] shrink-0">{t('zoom')} ↗</span>
+                      <span className="font-semibold underline underline-offset-2 shrink-0">
+                        {t('zoom')} ↗
+                      </span>
                     </div>
                   </div>
                 </button>
@@ -495,7 +435,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
                        revealed on hover where there is. It was `opacity-0
                        group-hover:opacity-100` with `group` on the *sibling*
                        image button, so it never appeared at all. */
-                    className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 w-7 h-7 rounded-full bg-danger/85 hover:bg-danger text-white flex items-center justify-center text-xs transition-opacity backdrop-blur-md shadow-md opacity-100 pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100 focus-visible:opacity-100"
+                    className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 w-11 h-11 rounded-md bg-danger/85 hover:bg-danger text-white flex items-center justify-center text-body transition-opacity backdrop-blur-[30px] shadow-[var(--elevation-1)] opacity-100 pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100 focus-visible:opacity-100"
                   >
                     <span aria-hidden>✕</span>
                   </button>
@@ -508,8 +448,8 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
 
       {/* Empty State */}
       {allPhotos.length === 0 && !isFormOpen && (
-        <div className="glass p-8 rounded-2xl text-center flex flex-col items-center justify-center gap-3 mb-6">
-          <p className="text-sm text-ink-muted max-w-md">
+        <div className="surface p-8 text-center flex flex-col items-center justify-center gap-3 mb-6">
+          <p className="text-body text-ink-muted max-w-md">
             {t.rich('galleryEmpty', {
               b: (chunks) => <strong className="text-ink">{chunks}</strong>,
             })}
@@ -535,7 +475,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
 
           So: if the parent's `gap-8` or the sections' `mt-8` ever change, this
           number has to change with them. */}
-      <div className="flex items-center justify-center gap-6 sm:gap-12 md:gap-16 mt-14 sm:mt-16 mb-0 flex-wrap">
+      <div className="flex items-start justify-center gap-6 sm:gap-12 md:gap-16 mt-14 sm:mt-16 mb-0 flex-wrap">
         <ActionTile
           accent="community"
           icon={<CameraIcon className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12" />}
@@ -572,16 +512,16 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
              the row runs to `mb-0` so that when this form is closed it is the
              section's last child and its own margin cannot widen the gap to the
              next section. */
-          className="glass p-5 sm:p-6 rounded-2xl mt-6 mb-0 animate-fade-in flex flex-col gap-4 shadow-2xl"
+          className="surface p-5 sm:p-6 mt-6 mb-0 animate-fade-in flex flex-col gap-4"
         >
-          <h4 className="font-sans text-white font-bold text-sm tracking-wide flex items-center gap-2">
-            <span>📷</span>
-            <span>{t('formTitle')}</span>
-          </h4>
+          <h4 className="text-body-lg font-semibold text-ink">{t('formTitle')}</h4>
 
           {/* 1. Image URL (Required) */}
           <div>
-            <label htmlFor="photo-url-input" className="block mb-1.5 text-white/90 text-xs font-semibold font-sans">
+            <label
+              htmlFor="photo-url-input"
+              className="block mb-1.5 text-body-sm font-semibold text-ink-muted"
+            >
               {t('urlLabel')} <span className="text-danger">*</span>
             </label>
             <input
@@ -590,7 +530,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
               value={inputUrl}
               onChange={(e) => handleUrlChange(e.target.value)}
               placeholder={t('urlPlaceholder')}
-              className="w-full px-4 py-2.5 rounded-xl bg-black/70 border-0 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-white/40 font-sans transition-all shadow-inner"
+              className="surface-sunken w-full px-4 py-2.5 min-h-[var(--layout-touch-target)] text-body text-ink placeholder:text-ink-faint"
               required
             />
           </div>
@@ -600,16 +540,19 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
               it. Only the social link is the contributor's to fill in. */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <span className="block mb-1.5 text-white/80 text-xs font-semibold font-sans">
+              <span className="block mb-1.5 text-body-sm font-semibold text-ink-muted">
                 {t('authorLabel')}
               </span>
-              <p className="w-full px-4 py-2.5 rounded-xl bg-black/40 text-sm text-white/70 font-sans shadow-inner">
+              <p className="surface-sunken w-full px-4 py-2.5 min-h-[var(--layout-touch-target)] flex items-center text-body text-ink-muted">
                 {user?.name ?? ''}
               </p>
             </div>
 
             <div>
-              <label htmlFor="author-social-input" className="block mb-1.5 text-white/80 text-xs font-semibold font-sans">
+              <label
+                htmlFor="author-social-input"
+                className="block mb-1.5 text-body-sm font-semibold text-ink-muted"
+              >
                 {t('socialLabel')}
               </label>
               <input
@@ -618,13 +561,13 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
                 value={authorSocial}
                 onChange={(e) => setAuthorSocial(e.target.value)}
                 placeholder="https://instagram.com/username"
-                className="w-full px-4 py-2.5 rounded-xl bg-black/70 border-0 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-white/40 font-sans transition-all shadow-inner"
+                className="surface-sunken w-full px-4 py-2.5 min-h-[var(--layout-touch-target)] text-body text-ink placeholder:text-ink-faint"
               />
             </div>
           </div>
 
           {errorMsg && (
-            <p role="alert" className="text-xs text-danger mt-1">
+            <p role="alert" className="text-body-sm text-danger mt-1">
               {errorMsg}
             </p>
           )}
@@ -632,8 +575,8 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
           {/* Live Preview Card */}
           {previewUrl && (
             <div className="flex flex-col gap-1.5">
-              <span className="font-sans text-xs text-white/70">{t('previewLabel')}</span>
-              <div className="relative w-full aspect-[16/9] max-h-48 overflow-hidden rounded-xl bg-black/60 shadow-md">
+              <span className="text-body-sm text-ink-muted">{t('previewLabel')}</span>
+              <div className="relative w-full aspect-[16/9] max-h-48 overflow-hidden rounded-md bg-void/60 shadow-[var(--elevation-1)]">
                 {/* eslint-disable-next-line @next/next/no-img-element -- arbitrary user URL */}
                 <img
                   src={previewUrl}
@@ -655,14 +598,11 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
                 setErrorMsg(null);
                 setPreviewUrl(null);
               }}
-              className="font-sans text-xs font-semibold text-white/70 hover:text-white px-3 py-1.5 transition-colors cursor-pointer"
+              className="min-h-[var(--layout-touch-target)] px-3 text-body font-semibold text-ink-muted hover:text-ink transition-colors cursor-pointer"
             >
               {t('cancel')}
             </button>
-            <button
-              type="submit"
-              className="font-sans bg-white !text-black px-5 py-2.5 rounded-xl text-xs font-bold hover:bg-white/90 hover:scale-105 active:scale-95 transition-all shadow-lg cursor-pointer"
-            >
+            <button type="submit" className="btn-accent cursor-pointer">
               {t('addToGallery')}
             </button>
           </div>
@@ -676,16 +616,16 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
           aria-modal="true"
           aria-label={t('lightboxLabel')}
           onClick={() => setLightboxIndex(null)}
-          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-2xl animate-backdrop-blur flex flex-col items-center justify-between p-4 sm:p-8 cursor-zoom-out select-none"
+          className="fixed inset-0 z-50 bg-void/85 backdrop-blur-[30px] animate-fade-in flex flex-col items-center justify-between p-4 sm:p-8 cursor-zoom-out select-none"
         >
           {/* Header Bar */}
           <div
-            className="w-full max-w-5xl flex items-center justify-between z-20 glass px-4 py-2.5 rounded-2xl cursor-default shadow-lg"
+            className="surface w-full max-w-5xl flex items-center justify-between z-20 px-4 py-2.5 cursor-default"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center gap-2 truncate">
-              <span className="eyebrow text-xs text-ink font-bold truncate">{title}</span>
-              <span className="eyebrow text-[10px] px-2 py-0.5 rounded bg-white/15 text-white font-mono shrink-0">
+              <span className="text-body font-semibold text-ink truncate">{title}</span>
+              <span className="text-label font-medium px-2.5 py-1 rounded-sm bg-white/8 text-ink shrink-0 shadow-[var(--elevation-spec)]">
                 {t('frame', { index: lightboxIndex + 1 })} / {allPhotos.length}
               </span>
             </div>
@@ -695,7 +635,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
               autoFocus
               onClick={() => setLightboxIndex(null)}
               aria-label={t('close')}
-              className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-sm transition-all hover:scale-105 cursor-pointer shrink-0"
+              className="btn-glass w-11 h-11 flex items-center justify-center shrink-0 cursor-pointer"
             >
               <span aria-hidden>✕</span>
             </button>
@@ -713,7 +653,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
                   e.stopPropagation();
                   prevPhoto();
                 }}
-                className="hidden md:flex flex-col items-center justify-center shrink-0 w-32 lg:w-44 aspect-[4/3] rounded-2xl overflow-hidden bg-black/60 opacity-40 hover:opacity-85 scale-80 hover:scale-90 transition-all duration-300 ease-out cursor-pointer shadow-2xl group backdrop-blur-md relative"
+                className="hidden md:flex flex-col items-center justify-center shrink-0 w-32 lg:w-44 aspect-[4/3] rounded-lg overflow-hidden bg-void/60 opacity-40 hover:opacity-85 scale-80 hover:scale-90 transition-all duration-300 ease-out cursor-pointer shadow-[var(--elevation-2)] group backdrop-blur-[30px] relative"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element -- arbitrary URL */}
                 <img
@@ -721,12 +661,12 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
                   alt="Previous Frame Preview"
                   className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 transition-all duration-300"
                 />
-                <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent flex items-center justify-start p-3">
-                  <span className="text-white text-2xl font-bold drop-shadow-lg group-hover:-translate-x-0.5 transition-transform">
+                <div className="absolute inset-0 bg-gradient-to-r from-void/70 to-transparent flex items-center justify-start p-3">
+                  <span className="text-ink text-title-2 font-semibold group-hover:-translate-x-0.5 transition-transform">
                     ‹
                   </span>
                 </div>
-                <span className="eyebrow absolute bottom-2 left-2 text-[9px] px-1.5 py-0.5 rounded bg-black/70 text-white/80">
+                <span className="absolute bottom-2 left-2 text-meta px-2 py-0.5 rounded-sm bg-void/70 text-ink">
                   #{(lightboxIndex - 1 + allPhotos.length) % allPhotos.length + 1}
                 </span>
               </button>
@@ -741,7 +681,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
                   e.stopPropagation();
                   prevPhoto();
                 }}
-                className="md:hidden absolute left-2 z-30 w-10 h-10 rounded-full glass-flat text-white flex items-center justify-center text-xl active:scale-95 transition-all shadow-xl cursor-pointer"
+                className="btn-glass md:hidden absolute left-2 z-30 w-11 h-11 flex items-center justify-center text-title-3 active:scale-95 cursor-pointer"
               >
                 ‹
               </button>
@@ -757,28 +697,28 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
                 key={currentLightboxSrc}
                 src={currentLightboxSrc}
                 alt={`${title} — Frame ${lightboxIndex + 1}`}
-                className="max-w-full max-h-[72dvh] object-contain rounded-2xl shadow-[0_30px_90px_rgba(0,0,0,0.95),0_0_40px_rgba(255,255,255,0.08)] animate-lightbox-zoom"
+                className="max-w-full max-h-[72dvh] object-contain rounded-lg shadow-[var(--elevation-3)]"
               />
 
               {/* Author Credit Badge Overlay in Lightbox */}
               {currentLightboxCredit?.authorName && (
                 <div
-                  className="mt-3 glass px-3.5 py-1.5 rounded-full text-xs font-mono flex items-center gap-2 shadow-lg cursor-default"
+                  className="surface mt-3 px-4 py-2 text-body-sm flex items-center gap-2 cursor-default"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <span className="text-community">📸 {t('photoBy')}</span>
+                  <span className="text-community">{t('photoBy')}</span>
                   {currentLightboxCredit.authorSocial ? (
                     <a
                       href={currentLightboxCredit.authorSocial}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-white hover:text-community underline underline-offset-2 font-bold transition-colors flex items-center gap-1"
+                      className="text-ink hover:text-community underline underline-offset-2 font-semibold transition-colors flex items-center gap-1"
                     >
                       <span>{currentLightboxCredit.authorName}</span>
-                      <span>↗</span>
+                      <span aria-hidden>↗</span>
                     </a>
                   ) : (
-                    <span className="text-white font-bold">{currentLightboxCredit.authorName}</span>
+                    <span className="text-ink font-semibold">{currentLightboxCredit.authorName}</span>
                   )}
                 </div>
               )}
@@ -793,7 +733,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
                   e.stopPropagation();
                   nextPhoto();
                 }}
-                className="md:hidden absolute right-2 z-30 w-10 h-10 rounded-full glass-flat text-white flex items-center justify-center text-xl active:scale-95 transition-all shadow-xl cursor-pointer"
+                className="btn-glass md:hidden absolute right-2 z-30 w-11 h-11 flex items-center justify-center text-title-3 active:scale-95 cursor-pointer"
               >
                 ›
               </button>
@@ -809,7 +749,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
                   e.stopPropagation();
                   nextPhoto();
                 }}
-                className="hidden md:flex flex-col items-center justify-center shrink-0 w-32 lg:w-44 aspect-[4/3] rounded-2xl overflow-hidden bg-black/60 opacity-40 hover:opacity-85 scale-80 hover:scale-90 transition-all duration-300 ease-out cursor-pointer shadow-2xl group backdrop-blur-md relative"
+                className="hidden md:flex flex-col items-center justify-center shrink-0 w-32 lg:w-44 aspect-[4/3] rounded-lg overflow-hidden bg-void/60 opacity-40 hover:opacity-85 scale-80 hover:scale-90 transition-all duration-300 ease-out cursor-pointer shadow-[var(--elevation-2)] group backdrop-blur-[30px] relative"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element -- arbitrary URL */}
                 <img
@@ -817,12 +757,12 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
                   alt="Next Frame Preview"
                   className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 transition-all duration-300"
                 />
-                <div className="absolute inset-0 bg-gradient-to-l from-black/60 to-transparent flex items-center justify-end p-3">
-                  <span className="text-white text-2xl font-bold drop-shadow-lg group-hover:translate-x-0.5 transition-transform">
+                <div className="absolute inset-0 bg-gradient-to-l from-void/70 to-transparent flex items-center justify-end p-3">
+                  <span className="text-ink text-title-2 font-semibold group-hover:translate-x-0.5 transition-transform">
                     ›
                   </span>
                 </div>
-                <span className="eyebrow absolute bottom-2 right-2 text-[9px] px-1.5 py-0.5 rounded bg-black/70 text-white/80">
+                <span className="absolute bottom-2 right-2 text-meta px-2 py-0.5 rounded-sm bg-void/70 text-ink">
                   #{(lightboxIndex + 1) % allPhotos.length + 1}
                 </span>
               </button>
@@ -831,20 +771,25 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
 
           {/* Filmstrip Thumbnail Track & Navigation Bar */}
           <div
-            className="w-full max-w-5xl flex items-center justify-between flex-wrap gap-3 z-20 glass px-4 py-2 rounded-2xl text-[11px] font-mono text-ink-muted cursor-default shadow-lg"
+            className="surface w-full max-w-5xl flex items-center justify-between flex-wrap gap-3 z-20 px-4 py-2 text-meta text-ink-muted cursor-default"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Filmstrip Thumbnails Row */}
-            <div className="flex items-center gap-2 overflow-x-auto py-0.5 max-w-full scrollbar-none">
+            {/* Filmstrip Thumbnails Row.
+
+                A rail that must never advertise its overflow — the indicator is
+                hidden, the scrolling is not. */}
+            <div className="scroll-silent flex items-center gap-2 overflow-x-auto py-0.5 max-w-full">
               {allPhotos.map((thumbSrc, idx) => (
                 <button
                   key={thumbSrc}
                   type="button"
                   aria-label={t('goTo', { index: idx + 1 })}
+                  aria-current={idx === lightboxIndex ? 'true' : undefined}
                   onClick={() => setLightboxIndex(idx)}
-                  className={`relative shrink-0 w-12 h-9 rounded-lg overflow-hidden transition-all duration-300 cursor-pointer ${
+                  /* The current frame is a fill and a lift, never a ring. */
+                  className={`relative shrink-0 w-12 h-9 rounded-sm overflow-hidden transition-all duration-300 cursor-pointer ${
                     idx === lightboxIndex
-                      ? 'scale-110 shadow-[0_0_12px_rgba(255,255,255,0.6)] ring-2 ring-white'
+                      ? 'scale-110 shadow-[var(--elevation-2)]'
                       : 'opacity-40 hover:opacity-80 hover:scale-105'
                   }`}
                 >

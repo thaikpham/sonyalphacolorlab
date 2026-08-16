@@ -1,26 +1,68 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-/**
- * Guards the Vietnamese subset.
- *
- * Dropping `'vietnamese'` from a next/font call does not error and does not
- * fail a build — Vietnamese text just silently falls back mid-word to whatever
- * the system has, which is the exact font-breaking this project exists to
- * avoid. Verified in-browser at the pixel level (ế ộ ữ ằ đ all render from
- * Noto Sans); this test keeps it from regressing.
- */
-const fonts = readFileSync('src/app/fonts.ts', 'utf8');
+import { TYPOGRAPHY } from '../../packages/colorlab-tokens/src/tokens';
 
-describe('font loading', () => {
-  it('requests the vietnamese subset for every font', () => {
-    const calls = [...fonts.matchAll(/subsets:\s*\[([^\]]*)\]/g)];
-    expect(calls.length, 'no next/font subsets found in fonts.ts').toBeGreaterThan(0);
-    for (const c of calls) expect(c[1]).toContain('vietnamese');
+/**
+ * The typography guard. Three failures this catches, all of which shipped
+ * silently once:
+ *
+ *  1. A missing vietnamese subset — diacritics fall back mid-word to a
+ *     different face. No build error, no console warning, just uneven text.
+ *  2. A second typeface creeping back in (mono, display, or another family).
+ *  3. Type below the 13px floor, which is the original feedback.
+ */
+const FONT_DIR = join(process.cwd(), 'public', 'fonts', 'noto-sans');
+const FACE_CSS = join(FONT_DIR, 'noto-sans.css');
+
+describe('fonts', () => {
+  it('vendors the face CSS into the repo', () => {
+    expect(existsSync(FACE_CSS)).toBe(true);
   });
 
-  it('uses Noto Sans for both roles', () => {
-    expect(fonts).toMatch(/Noto_Sans\s*\(/);
-    expect(fonts).toMatch(/Noto_Sans_Mono\s*\(/);
+  const css = existsSync(FACE_CSS) ? readFileSync(FACE_CSS, 'utf8') : '';
+
+  it('declares the literal family name every app shares', () => {
+    expect(css).toContain("font-family: 'Noto Sans'");
+  });
+
+  it.each([400, 500, 600, 800])('ships weight %i', (weight) => {
+    expect(css).toMatch(new RegExp('font-weight: ' + weight + ';'));
+  });
+
+  it('covers Vietnamese', () => {
+    /* U+1EA0–U+1EF9 is the Vietnamese block. Without it, "Chọn ống kính"
+       renders half in Noto Sans and half in the fallback. */
+    expect(css.toUpperCase()).toContain('U+1EA0');
+  });
+
+  it('does not ship latin-ext', () => {
+    expect(css).not.toContain('latin-ext');
+  });
+
+  it('references only local files', () => {
+    expect(css).not.toMatch(/url\(['"]?https?:/);
+  });
+
+  /**
+   * Read off the `--font-*` namespace, not off the source text.
+   *
+   * The handoff's version of this test asserted the source did not contain the
+   * substring `display:` — but the type scale's page-title step IS called
+   * `display` (`--text-display`, 42px), so that assertion fails on the very
+   * scale this system specifies. What must never come back is a second
+   * *family*, and a family is exactly what the `font` namespace holds.
+   */
+  it('is the only family — no mono, no display', () => {
+    expect(Object.keys(TYPOGRAPHY.tokens)).toEqual(['sans']);
+    expect(TYPOGRAPHY.tokens.sans).toContain("'Noto Sans'");
+
+    const tokens = readFileSync(
+      join(process.cwd(), 'packages', 'colorlab-tokens', 'src', 'tokens.ts'),
+      'utf8',
+    );
+    expect(tokens).not.toContain('mono:');
+    expect(tokens).not.toContain('Noto Sans Mono');
   });
 });

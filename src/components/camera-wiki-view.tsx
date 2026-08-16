@@ -30,15 +30,128 @@ const CATEGORY_LABEL_KEY: Record<string, string> = {
   audio: 'catAudio',
 };
 
+/** Catalogue order for the first facet group. Only the ones present are drawn. */
+const CATEGORY_ORDER: ProductCategory[] = ['camera', 'lens', 'accessory', 'audio'];
+
+/**
+ * The two accent recipes this screen repeats.
+ *
+ * A selection is a FILL, never a stroke: the accent gradient plus a shadow cast
+ * in the accent's own hue. Both are written out of the accent ramp rather than
+ * out of literals, so a change to the ramp moves the selection with it.
+ */
+const ACCENT_FILL =
+  'bg-[linear-gradient(180deg,color-mix(in_oklch,var(--color-accent-500)_82%,white),var(--color-accent-500))] ' +
+  'text-white shadow-[0_6px_16px_-6px_color-mix(in_oklch,var(--color-accent-500)_55%,transparent),var(--elevation-spec)]';
+
+/* `ROW_SELECTED` lived here — the accent-tinted fill behind a selected LIST
+   row. §03 replaced the rows with cards and selection now shows only in the
+   card's action pill, so the recipe went with the rows rather than staying
+   behind as a treatment nothing applies. */
+
+/** 13px/500 on a white 8% film — the spec chip of the wiki row. */
+const CHIP =
+  'text-label font-medium text-ink px-3 py-1.5 rounded-sm bg-white/[0.08] shadow-[var(--elevation-spec)]';
+
+/**
+ * The category tag, tinted by what the row *is*.
+ *
+ * Two tints and a neutral, not four: a colour per category would put four
+ * signals in one list and turn classification into decoration.
+ */
+const CATEGORY_TAG_CLASS: Record<string, string> = {
+  camera: 'bg-accent-400/15 text-accent-400',
+  audio: 'bg-community/15 text-community',
+  lens: 'bg-white/[0.08] text-ink-muted',
+  accessory: 'bg-white/[0.08] text-ink-muted',
+};
+
+/**
+ * The card's subgroup eyebrow, tinted by the product line it belongs to.
+ *
+ * Keyed on `subCategory2`, the catalogue's own value, and mapped to the signal
+ * ramp rather than to the reference's literals — `#8A9CFF` is `accent-400`,
+ * `#AE8DF5` is `proposal`, `#5FC7D6` is `community`. Anything the catalogue
+ * names that is not one of the three falls back to `ink-muted`, which is what
+ * the reference does for DSC: a line without a signal is not given one.
+ */
+const SUBGROUP_TINT: Record<string, string> = {
+  'Máy ảnh Alpha': 'text-accent-400',
+  'Cinema Line': 'text-proposal',
+  Vlog: 'text-community',
+};
+
 /** Stands in for product photography the source does not publish. */
 function NoPhoto({ label }: { label?: string }) {
   return (
-    <span className="flex flex-col items-center justify-center gap-1 text-black/30">
-      <span className="text-2xl leading-none" aria-hidden>
+    <span className="flex flex-col items-center justify-center gap-1 text-void/40">
+      <span className="text-title-2 leading-none" aria-hidden>
         ◫
       </span>
-      {label && <span className="text-[10px] font-mono font-bold">{label}</span>}
+      {label && <span className="text-label font-semibold">{label}</span>}
     </span>
+  );
+}
+
+/**
+ * A catalogue photograph that degrades to the no-photo mark when the file does
+ * not load.
+ *
+ * A missing `imageUrl` was already handled; a PRESENT but dead one was not, and
+ * that is the case the catalogue actually has. 18 of its 94 products fail to
+ * load today: 17 point at `www.sony.com.vn`, which answers 403 to anything that
+ * is not its own page — a browser user-agent and a matching referer do not help
+ * — and one B&H id has been withdrawn (it 404s at its original path too, so the
+ * size rewrite is not what broke it). Those 18 rendered a broken-image box on a
+ * white plate, which reads as a bug in the page rather than a gap in the source.
+ *
+ * `onError` is the only signal available: whether a remote image decoded is not
+ * knowable at render time, and the failures are per-URL rather than per-host, so
+ * there is nothing to branch on up front.
+ */
+function ProductPhoto({
+  src,
+  alt,
+  sizes,
+  className,
+  label,
+  size,
+}: {
+  src: string | null | undefined;
+  alt: string;
+  /** Required unless `size` is given — `fill` needs it to pick a variant. */
+  sizes?: string;
+  className: string;
+  label?: string;
+  /** Fixed square instead of `fill`, for the table view's 56px thumbnail. */
+  size?: number;
+}) {
+  const [failed, setFailed] = useState(false);
+
+  if (!src || failed) return <NoPhoto label={label} />;
+
+  if (size) {
+    return (
+      <Image
+        src={src}
+        alt={alt}
+        width={size}
+        height={size}
+        className={className}
+        onError={() => setFailed(true)}
+      />
+    );
+  }
+
+  return (
+    <Image
+      src={src}
+      alt={alt}
+      fill
+      sizes={sizes}
+      className={className}
+      onError={() => setFailed(true)}
+    />
   );
 }
 
@@ -92,11 +205,127 @@ export function CameraWikiView({ initialCameras, basePath = '/cameras' }: Camera
      rendered — reload or share the link and you got the bare catalogue. */
   const openProduct = (cam: SonyCamera) => router.push(`${basePath}/${cam.id}`);
 
-  /* The category chips and the two sub-category option lists that used to be
-     computed here now live in `site-header.tsx`, which owns the filter bar and
-     derives them from the same query params. They were left behind unread:
-     two `useMemo` passes over the whole catalogue, building Sets nothing
-     rendered, on every keystroke that re-rendered this view. */
+  /**
+   * The facet rail's three groups — the catalogue's own axes.
+   *
+   * Options and counts are read off the catalogue that was handed in, never
+   * invented and never hardcoded: an option that no product carries would
+   * filter the list down to nothing, and a count that does not come from this
+   * array is a number the data never stated. `sub1` narrows to the chosen
+   * category and `sub2` to the chosen `sub1`, so the rail can never offer a
+   * combination the catalogue has no row for.
+   */
+  const facets = useMemo(() => {
+    const inCategory =
+      selectedCategory === 'all'
+        ? initialCameras
+        : initialCameras.filter((c) => c.category === selectedCategory);
+    const inSub1 =
+      selectedSub1 === 'all' ? inCategory : inCategory.filter((c) => c.subCategory1 === selectedSub1);
+
+    const tally = (list: CameraCard[], read: (c: CameraCard) => string) => {
+      const counts = new Map<string, number>();
+      for (const c of list) {
+        const key = read(c);
+        if (key) counts.set(key, (counts.get(key) ?? 0) + 1);
+      }
+      return counts;
+    };
+
+    const byCategory = tally(initialCameras, (c) => c.category);
+    const bySub1 = tally(inCategory, (c) => c.subCategory1);
+    const bySub2 = tally(inSub1, (c) => c.subCategory2);
+
+    const sorted = (counts: Map<string, number>) =>
+      Array.from(counts.entries())
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([value, count]) => ({ value, label: value, count }));
+
+    return [
+      {
+        key: 'cat',
+        name: t('categoryLabel'),
+        selected: selectedCategory,
+        options: [
+          { value: 'all', label: t('catAll'), count: initialCameras.length },
+          ...CATEGORY_ORDER.filter((cat) => byCategory.has(cat)).map((cat) => ({
+            value: cat as string,
+            label: t(CATEGORY_LABEL_KEY[cat] ?? 'catAll'),
+            count: byCategory.get(cat) ?? 0,
+          })),
+        ],
+      },
+      {
+        key: 'sub1',
+        name: t('specSub1'),
+        selected: selectedSub1,
+        options: [
+          { value: 'all', label: t('sub1All'), count: inCategory.length },
+          ...sorted(bySub1),
+        ],
+      },
+      {
+        key: 'sub2',
+        name: t('specSub2'),
+        selected: selectedSub2,
+        options: [{ value: 'all', label: t('sub2All'), count: inSub1.length }, ...sorted(bySub2)],
+      },
+    ].filter((group) => group.options.length > 1);
+  }, [initialCameras, selectedCategory, selectedSub1, selectedSub2, t]);
+
+  /**
+   * The facet groups flattened into one horizontal rail.
+   *
+   * §03 dropped the 268px sidebar, so the two axes a reader actually filters by
+   * — the product line (`sub2`: Máy ảnh Alpha / Cinema Line / Vlog / DSC) and
+   * the sensor size (`sub1`: Full Frame / APS-C / 1-Inch) — become chips above
+   * the grid, led by an "all" chip that clears both.
+   *
+   * `cat` leads the rail, and that is not the reference's shape by accident.
+   * The reference screen is the 31-body camera catalogue, where every chip is a
+   * camera line or a sensor size. This route carries the whole Sony catalogue —
+   * 94 products across cameras, lenses, accessories and audio — so flattening
+   * `sub1`/`sub2` across all of them put "Adapter", "Power" and "Battery" in a
+   * row beside "Full Frame", which are not the same kind of thing at all.
+   *
+   * Leading with the category restores the reference's set: pick Máy ảnh and
+   * the narrower chips become exactly Full Frame · APS-C · 1-Inch · Máy ảnh
+   * Alpha · Cinema Line · Vlog · DSC, because `facets` already narrows `sub1`
+   * to the chosen category and `sub2` to the chosen `sub1`.
+   *
+   * Counts are not printed. The reference shows bare labels, and the original
+   * spec's rule stands: show a count only where the query supplies one — the
+   * sidebar had room to be honest about that, a 40px chip does not.
+   */
+  const facetRail = useMemo(() => {
+    const isAll = selectedCategory === 'all' && selectedSub1 === 'all' && selectedSub2 === 'all';
+    const order = ['cat', 'sub1', 'sub2'];
+
+    return [
+      { group: 'cat', value: 'all', label: t('catAll'), active: isAll },
+      ...facets
+        .slice()
+        .sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key))
+        .flatMap((group) =>
+          group.options
+            .filter((o) => o.value !== 'all')
+            .map((o) => ({
+              group: group.key,
+              value: o.value,
+              label: o.label,
+              active: group.selected === o.value,
+            })),
+        ),
+    ];
+  }, [facets, selectedCategory, selectedSub1, selectedSub2, t]);
+
+  /* Picking a facet resets the narrower ones: a `sub2` left behind from another
+     branch of the catalogue silently empties the list. */
+  const pickFacet = (group: string, value: string) => {
+    if (group === 'cat') return updateWikiParam({ cat: value, sub1: 'all', sub2: 'all' });
+    if (group === 'sub1') return updateWikiParam({ sub1: value, sub2: 'all' });
+    return updateWikiParam({ sub2: value });
+  };
 
   // Filtering & Sorting
   const filteredCameras = useMemo(() => {
@@ -164,390 +393,360 @@ export function CameraWikiView({ initialCameras, basePath = '/cameras' }: Camera
     router.push(`/cameras/compare?ids=${selectedForCompare.join(',')}`);
   };
 
-  const getCategoryBadgeColor = (cat: SonyCamera['category']) => {
-    switch (cat) {
-      case 'camera':
-        return 'bg-amber-400/25 text-amber-200 border-amber-400/50 shadow-sm font-extrabold';
-      case 'lens':
-        return 'bg-sky-400/25 text-sky-200 border-sky-400/50 shadow-sm font-extrabold';
-      case 'accessory':
-        return 'bg-emerald-400/25 text-emerald-200 border-emerald-400/50 shadow-sm font-extrabold';
-      case 'audio':
-        return 'bg-fuchsia-400/25 text-fuchsia-200 border-fuchsia-400/50 shadow-sm font-extrabold';
-      default:
-        return 'bg-white/20 text-white border-white/30 font-bold';
-    }
-  };
-
   const hasActiveWikiFilters = selectedCategory !== 'all' || selectedSub1 !== 'all' || selectedSub2 !== 'all' || Boolean(searchQuery);
 
+  /* What the reader is looking at, in the catalogue's own words — the same
+     three axes the rail draws, read back as one label above the title. */
+  const trail = [
+    selectedCategory === 'all' ? t('catAll') : t(CATEGORY_LABEL_KEY[selectedCategory] ?? 'catAll'),
+    ...(selectedSub1 !== 'all' ? [selectedSub1] : []),
+    ...(selectedSub2 !== 'all' ? [selectedSub2] : []),
+  ];
+
+  const pageTitle = basePath === '/audio' ? t('audioTitle') : t('title');
+
   return (
-    <div className="w-full flex flex-col gap-6 font-sans">
-      {/* Active Filter Chips Bar (renders only when filters are active) */}
-      {hasActiveWikiFilters && (
-        <div className="flex items-center gap-2 flex-wrap px-1 font-sans text-xs">
-          {selectedCategory !== 'all' && (
-            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-400/20 text-amber-300 border border-amber-400/35 flex items-center gap-1.5">
-              <span>{t(CATEGORY_LABEL_KEY[selectedCategory] ?? 'catAll')}</span>
+    <div className="w-full flex flex-col gap-6">
+      <div className="flex flex-col gap-[26px] min-w-0">
+        <header className="flex flex-wrap items-end justify-between gap-6">
+          <div className="flex flex-col gap-[11px] min-w-0">
+            <span className="label flex flex-wrap items-center gap-2">
+              {trail.map((part, idx) => (
+                <span key={`${part}-${idx}`} className="flex items-center gap-2">
+                  {idx > 0 && <span aria-hidden>·</span>}
+                  <span>{part}</span>
+                </span>
+              ))}
+            </span>
+            <h1 className="text-display font-extrabold tracking-[-0.02em] leading-[1.12] text-ink">
+              {pageTitle}
+            </h1>
+            <p className="text-body-lg text-ink-muted max-w-[58ch] leading-[1.5] text-pretty">
+              {t('catalogueLede', { count: filteredCameras.length })}
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            {selectedForCompare.length > 0 && (
+              <>
+                <span className="text-body-sm text-ink-muted">
+                  {t('compareSummary', { count: selectedForCompare.length })}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setIsConfirmModalOpen(true)}
+                  className="btn-accent cursor-pointer"
+                >
+                  {t('openCompare')}
+                </button>
+              </>
+            )}
+            {hasActiveWikiFilters && (
               <button
                 type="button"
-                onClick={() => updateWikiParam({ cat: 'all' })}
-                className="hover:text-white ml-0.5 cursor-pointer"
+                onClick={() => router.push(basePath, { scroll: false })}
+                className="text-body-sm font-semibold text-accent-400 cursor-pointer"
               >
-                ✕
+                {t('emptyAction')}
               </button>
-            </span>
-          )}
+            )}
+          </div>
+        </header>
 
-          {selectedSub1 !== 'all' && (
-            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-white/15 text-white border border-white/25 flex items-center gap-1.5">
-              <span>{selectedSub1}</span>
+        {/* The catalogue's own axes, as one silent rail instead of a 268px
+            column. Same treatment as the recipe gallery's filter row: 13px/600,
+            radius 12, 40px, active = accent fill, and the scrollbar never shown
+            — a rail that advertises overflow reads as a broken table. */}
+        {facetRail.length > 1 && (
+          <div className="scroll-silent flex gap-[9px] overflow-x-auto pb-0.5">
+            {facetRail.map((chip) => (
               <button
+                key={`${chip.group}:${chip.value}`}
                 type="button"
-                onClick={() => updateWikiParam({ sub1: 'all' })}
-                className="hover:text-white ml-0.5 cursor-pointer"
+                aria-pressed={chip.active}
+                onClick={() => pickFacet(chip.group, chip.value)}
+                className={`flex-none flex items-center text-label font-semibold px-[15px] min-h-10 rounded-sm cursor-pointer transition-colors ${
+                  chip.active ? ACCENT_FILL : 'text-ink-muted hover:bg-white/[0.08]'
+                }`}
               >
-                ✕
+                {chip.label}
               </button>
-            </span>
-          )}
+            ))}
+          </div>
+        )}
 
-          {selectedSub2 !== 'all' && (
-            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-white/15 text-white border border-white/25 flex items-center gap-1.5">
-              <span>{selectedSub2}</span>
-              <button
-                type="button"
-                onClick={() => updateWikiParam({ sub2: 'all' })}
-                className="hover:text-white ml-0.5 cursor-pointer"
-              >
-                ✕
-              </button>
-            </span>
-          )}
+        {filteredCameras.length === 0 ? (
+          <div className="surface p-12 text-center flex flex-col items-center justify-center gap-3">
+            <h2 className="text-title-3 font-semibold text-ink">{t('emptyTitle')}</h2>
+            <button
+              type="button"
+              onClick={() => router.push(basePath, { scroll: false })}
+              className="btn-glass cursor-pointer"
+            >
+              {t('emptyAction')}
+            </button>
+          </div>
+        ) : viewMode === 'table' ? (
+          /* Table view — rows separate by an alternating film, never a rule. */
+          <div className="surface overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-body-sm text-ink">
+                <thead className="label select-none">
+                  <tr>
+                    <th scope="col" className="p-4 text-center w-12 font-semibold">
+                      {t('compare')}
+                    </th>
+                    <th scope="col" className="p-4 font-semibold">
+                      {t('actionLabel')}
+                    </th>
+                    <th scope="col" className="p-4 font-semibold">
+                      {t('skuLabel')}
+                    </th>
+                    <th scope="col" className="p-4 font-semibold">
+                      {t('categoryLabel')}
+                    </th>
+                    <th scope="col" className="p-4 font-semibold">
+                      {t('subCategoryLabel')}
+                    </th>
+                    <th scope="col" className="p-4 font-semibold">
+                      {t('priceLabel')}
+                    </th>
+                    <th scope="col" className="p-4 min-w-[28rem] lg:min-w-[36rem] font-semibold">
+                      {t('featuresLabel')}
+                    </th>
+                    <th scope="col" className="p-4 text-right min-w-[7rem] font-semibold">
+                      {t('specUrl')}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredCameras.map((cam, idx) => {
+                    const isChecked = selectedForCompare.includes(cam.id);
+                    return (
+                      <tr
+                        key={cam.id}
+                        className={
+                          isChecked
+                            ? 'bg-accent-500/15 shadow-[var(--elevation-1)]'
+                            : idx % 2 === 1
+                              ? 'row-tint'
+                              : ''
+                        }
+                      >
+                        {/* Checkbox for Compare */}
+                        <td className="p-4 text-center">
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => toggleCompare(cam.id)}
+                            aria-label={cam.name}
+                            className="w-4 h-4 rounded-sm bg-sunken accent-[var(--color-accent-500)] cursor-pointer"
+                          />
+                        </td>
 
-          {searchQuery && (
-            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-400/25 text-amber-200 border border-amber-400/40 flex items-center gap-1.5">
-              <span>&quot;{searchQuery}&quot;</span>
-              <button
-                type="button"
-                onClick={() => updateWikiParam({ q: '' })}
-                className="hover:text-white ml-0.5 cursor-pointer"
-              >
-                ✕
-              </button>
-            </span>
-          )}
+                        {/* Photo & Name (click opens the product page) */}
+                        <td className="p-4">
+                          <div
+                            onClick={() => openProduct(cam)}
+                            className="flex items-center gap-3 cursor-pointer group"
+                          >
+                            <div className="relative w-14 h-14 shrink-0 rounded-md overflow-hidden bg-white p-1 flex items-center justify-center">
+                              <ProductPhoto
+                                src={cam.imageUrl}
+                                alt=""
+                                size={56}
+                                className="object-contain max-h-full"
+                              />
+                            </div>
+                            <div className="flex flex-col gap-0.5">
+                              <span className="font-semibold text-body-sm text-ink group-hover:text-accent-400 transition-colors">
+                                {cam.name}
+                              </span>
+                              <span className="meta line-clamp-1">{cam.fullName}</span>
+                            </div>
+                          </div>
+                        </td>
 
-          <button
-            type="button"
-            onClick={() => router.push('/cameras', { scroll: false })}
-            className="text-white/60 hover:text-white underline underline-offset-2 ml-1 text-xs font-semibold cursor-pointer"
-          >
-            {t('emptyAction')}
-          </button>
-        </div>
-      )}
+                        {/* SKU Code */}
+                        <td className="p-4 text-ink-muted whitespace-nowrap">
+                          {cam.sku || <span className="text-ink-faint">—</span>}
+                        </td>
 
-      {/* Main Content Area */}
-      {filteredCameras.length === 0 ? (
-        <div className="glass p-12 rounded-2xl text-center flex flex-col items-center justify-center gap-3 font-sans border border-white/15">
-          <span className="text-3xl">📷</span>
-          <h3 className="text-[1rem] font-bold text-white font-sans">{t('emptyTitle')}</h3>
-          <button
-            type="button"
-            onClick={() => router.push('/cameras', { scroll: false })}
-            className="text-xs font-bold text-amber-300 hover:underline mt-1 font-sans"
-          >
-            {t('emptyAction')}
-          </button>
-        </div>
-      ) : viewMode === 'table' ? (
-        /* Table View */
-        <div className="glass rounded-2xl overflow-hidden shadow-2xl border border-white/15 font-sans">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-white">
-              <thead className="bg-black/80 text-[11px] uppercase tracking-wider text-white/80 font-mono border-b border-white/15 select-none font-bold">
-                <tr>
-                  <th scope="col" className="p-3.5 text-center w-12">
-                    {t('compare')}
-                  </th>
-                  <th scope="col" className="p-3.5">
-                    {t('actionLabel')}
-                  </th>
-                  <th scope="col" className="p-3.5">
-                    {t('skuLabel')}
-                  </th>
-                  <th scope="col" className="p-3.5">
-                    {t('categoryLabel')}
-                  </th>
-                  <th scope="col" className="p-3.5">
-                    {t('subCategoryLabel')}
-                  </th>
-                  <th scope="col" className="p-3.5">
-                    {t('priceLabel')}
-                  </th>
-                  <th scope="col" className="p-3.5 min-w-[28rem] lg:min-w-[36rem]">
-                    {t('featuresLabel')}
-                  </th>
-                  <th scope="col" className="p-3.5 text-right w-24">
-                    Link
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/10 font-sans">
-                {filteredCameras.map((cam) => {
-                  const isChecked = selectedForCompare.includes(cam.id);
-                  return (
-                    <tr
-                      key={cam.id}
-                      className={`hover:bg-white/10 transition-colors ${
-                        isChecked ? 'bg-amber-500/20' : 'bg-[#28292e]/80'
-                      }`}
+                        {/* Main Category Badge */}
+                        <td className="p-4 whitespace-nowrap">
+                          <span
+                            className={`px-2.5 py-1 rounded-sm text-label font-semibold shadow-[var(--elevation-spec)] ${
+                              CATEGORY_TAG_CLASS[cam.category] ?? 'bg-white/[0.08] text-ink-muted'
+                            }`}
+                          >
+                            {t(CATEGORY_LABEL_KEY[cam.category] ?? 'catAll')}
+                          </span>
+                        </td>
+
+                        {/* Sub-categories */}
+                        <td className="p-4 whitespace-nowrap">
+                          <div className="flex flex-col gap-1">
+                            <span className="text-body-sm font-semibold text-ink">{cam.subCategory1}</span>
+                            {cam.subCategory2 && <span className="meta">{cam.subCategory2}</span>}
+                          </div>
+                        </td>
+
+                        {/* Price */}
+                        <td className="p-4 font-semibold text-accent-400 tabular-nums whitespace-nowrap">
+                          {cam.priceFormatted}
+                        </td>
+
+                        {/* Features (Expanded width with word-wrap) */}
+                        <td className="p-4 min-w-[28rem] lg:min-w-[36rem]">
+                          <ul className="space-y-1.5 text-body-sm text-ink-muted leading-relaxed">
+                            {featureList(cam.features, locale).map((feat, featIdx) => (
+                              <li key={featIdx} className="flex items-start gap-2 whitespace-normal break-words">
+                                <span className="text-accent-400 shrink-0 leading-none" aria-hidden>
+                                  •
+                                </span>
+                                <span className="flex-1">{feat}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </td>
+
+                        {/* Sony Link — absent for the audio sheets, which publish none. */}
+                        <td className="p-4 text-right whitespace-nowrap">
+                          {cam.url ? (
+                            <a
+                              href={cam.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-body-sm font-semibold text-accent-400 transition-colors"
+                            >
+                              Sony ↗
+                            </a>
+                          ) : (
+                            <span className="text-ink-faint">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : (
+          /* Card grid — structurally the recipe card (§01): radius 26, glass +
+             elevation 1, a 210px photograph on top, body padding 19/20/22 at
+             gap 11. The row treatment §03 used to have is gone with the
+             sidebar; selection now shows only in the card's action pill.
+
+             Four columns at `xl`, not the reference's three. The reference is
+             drawn at a fixed 1440 frame; this page runs full-bleed to
+             `max-w-[160rem]`, so three columns left a 400px-wide card and a lot
+             of air. It steps 1 / 2 / 3 / 4 so the card never drops below the
+             ~240px its 210px photograph and three chips need. */
+          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            {filteredCameras.map((cam) => {
+              const isChecked = selectedForCompare.includes(cam.id);
+              return (
+                <li key={cam.id} className="surface overflow-hidden flex flex-col">
+                  {/* Catalogue photography is shot on white, so the plate stays
+                      opaque white — a translucent surface behind it would put a
+                      white rectangle inside a dark one. */}
+                  <button
+                    type="button"
+                    onClick={() => openProduct(cam)}
+                    aria-label={cam.name}
+                    className="relative h-[210px] w-full bg-white flex items-center justify-center overflow-hidden cursor-pointer"
+                  >
+                    <ProductPhoto
+                      src={cam.imageUrl}
+                      alt=""
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                      className="object-contain p-5"
+                      label={t('noPhoto')}
+                    />
+                  </button>
+
+                  <div className="flex flex-col gap-[11px] px-5 pt-[19px] pb-[22px] flex-1">
+                    <span
+                      className={`label ${SUBGROUP_TINT[cam.subCategory2] ?? 'text-ink-muted'}`}
                     >
-                      {/* Checkbox for Compare */}
-                      <td className="p-3.5 text-center">
+                      {cam.subCategory2 || t(CATEGORY_LABEL_KEY[cam.category] ?? 'catAll')}
+                    </span>
+
+                    <h2 className="text-title-3 font-semibold leading-tight text-ink">
+                      <button
+                        type="button"
+                        onClick={() => openProduct(cam)}
+                        className="text-left cursor-pointer hover:text-accent-400 transition-colors"
+                      >
+                        {cam.name}
+                      </button>
+                    </h2>
+
+                    {/* The three figures the catalogue publishes for this body,
+                        projected onto the card server-side so the 45KB spec
+                        block stays off the wire. A figure the source does not
+                        state is absent, never an empty chip. */}
+                    {cam.specChips.length > 0 && (
+                      <div className="flex flex-wrap gap-[7px]">
+                        {cam.specChips.map((chip, chipIdx) => (
+                          <span key={chipIdx} className={CHIP}>
+                            {chip}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* `flex-wrap` with a nowrap price: a 9-digit figure like
+                        153.153.818 đ must never break mid-number. */}
+                    <div className="mt-auto pt-[3px] flex flex-wrap items-center justify-between gap-x-3 gap-y-2.5">
+                      <span className="text-body-lg font-extrabold tracking-[-0.02em] tabular-nums text-ink whitespace-nowrap">
+                        {cam.priceFormatted}
+                      </span>
+
+                      <label
+                        className={`relative flex items-center justify-center whitespace-nowrap px-3.5 min-h-10 rounded-sm text-body-sm font-semibold select-none cursor-pointer transition-colors ${
+                          isChecked ? ACCENT_FILL : 'text-ink-muted hover:bg-white/[0.08]'
+                        }`}
+                      >
                         <input
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => toggleCompare(cam.id)}
-                          className="w-4 h-4 rounded bg-black/60 border-white/40 text-community focus:ring-0 cursor-pointer"
+                          className="absolute inset-0 w-full h-full m-0 appearance-none opacity-0 cursor-pointer"
                         />
-                      </td>
-
-                      {/* Photo & Name (click opens the product page) */}
-                      <td className="p-3.5">
-                        <div
-                          onClick={() => openProduct(cam)}
-                          className="flex items-center gap-3 cursor-pointer group"
-                        >
-                          <div className="relative w-14 h-14 shrink-0 rounded-xl overflow-hidden bg-white border border-white/30 p-1 flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
-                            {cam.imageUrl ? (
-                              <Image
-                                src={cam.imageUrl}
-                                alt={cam.name}
-                                width={56}
-                                height={56}
-                                className="object-contain max-h-full"
-                              />
-                            ) : (
-                              <NoPhoto />
-                            )}
-                          </div>
-                          <div className="flex flex-col gap-0.5">
-                            <span className="font-extrabold text-sm text-white group-hover:text-amber-300 transition-colors font-sans">{cam.name}</span>
-                            <span className="text-[11px] text-white/90 font-medium line-clamp-1 font-sans">{cam.fullName}</span>
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* SKU Code */}
-                      <td className="p-3.5 font-mono text-xs font-bold text-amber-300 whitespace-nowrap">
-                        {cam.sku || <span className="text-white/30 italic">—</span>}
-                      </td>
-
-                      {/* Main Category Badge */}
-                      <td className="p-3.5 whitespace-nowrap">
-                        <span
-                          className={`px-2.5 py-1 rounded-full text-[10px] border ${getCategoryBadgeColor(
-                            cam.category,
-                          )}`}
-                        >
-                          {cam.category.toUpperCase()}
-                        </span>
-                      </td>
-
-                      {/* Sub-categories */}
-                      <td className="p-3.5 whitespace-nowrap font-sans">
-                        <div className="flex flex-col gap-1">
-                          <span className="text-xs font-bold text-white font-sans">{cam.subCategory1}</span>
-                          {cam.subCategory2 && (
-                            <span className="text-[10px] text-white/70 font-mono font-semibold">{cam.subCategory2}</span>
-                          )}
-                        </div>
-                      </td>
-
-                      {/* Price */}
-                      <td className="p-3.5 font-mono text-sm font-extrabold text-sky-400 whitespace-nowrap drop-shadow-sm">
-                        {cam.priceFormatted}
-                      </td>
-
-                      {/* Features (Expanded width with word-wrap) */}
-                      <td className="p-3.5 font-sans min-w-[28rem] lg:min-w-[36rem]">
-                        <ul className="space-y-1.5 text-xs text-white/95 font-medium leading-relaxed">
-                          {featureList(cam.features, locale).map((feat, idx) => (
-                            <li key={idx} className="flex items-start gap-2 whitespace-normal break-words font-sans">
-                              <span className="text-emerald-400 font-bold shrink-0 text-sm leading-none">•</span>
-                              <span className="flex-1 font-sans">{feat}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </td>
-
-                      {/* Sony Link — absent for the audio sheets, which publish none. */}
-                      <td className="p-3.5 text-right whitespace-nowrap font-sans">
-                        {cam.url ? (
-                          <a
-                            href={cam.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs text-white font-bold hover:text-amber-300 underline underline-offset-2 transition-colors font-sans"
-                          >
-                            Sony ↗
-                          </a>
-                        ) : (
-                          <span className="text-xs text-white/30 italic">—</span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      ) : (
-        /* Grid View (18% Middle Gray cards with High Contrast Text) */
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-6 gap-4 font-sans">
-          {filteredCameras.map((cam) => {
-            const isChecked = selectedForCompare.includes(cam.id);
-            return (
-              <div
-                key={cam.id}
-                className={`p-4.5 rounded-2xl flex flex-col justify-between gap-4 transition-all font-sans backdrop-blur-md ${
-                  isChecked
-                    ? 'border-2 border-amber-400/70 bg-amber-500/20 shadow-[0_0_30px_rgba(251,191,36,0.25)]'
-                    : 'bg-[#28292e] hover:bg-[#303138] shadow-xl'
-                }`}
-              >
-                <div>
-                  {/* Top Bar: Badges & Checkbox */}
-                  <div className="flex items-center justify-between gap-2 mb-3">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] border ${getCategoryBadgeColor(
-                          cam.category,
-                        )}`}
-                      >
-                        {cam.category.toUpperCase()}
-                      </span>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-white/15 text-white border border-white/25 shadow-sm">
-                        {cam.subCategory1}
-                      </span>
+                        <span>{isChecked ? t('compareSelected') : t('compare')}</span>
+                      </label>
                     </div>
-
-                    <label className="flex items-center gap-1.5 text-xs text-white font-bold cursor-pointer select-none shrink-0 font-sans hover:text-amber-300 transition-colors">
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={() => toggleCompare(cam.id)}
-                        className="w-4 h-4 rounded bg-black/70 border-white/40 text-community focus:ring-0 cursor-pointer"
-                      />
-                      <span>{t('compare')}</span>
-                    </label>
                   </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
 
-                  {/* Photo on Clean WHITE Background (click opens the product page) */}
-                  <div
-                    onClick={() => openProduct(cam)}
-                    className="relative w-full aspect-[4/3] rounded-xl bg-white p-3 flex items-center justify-center mb-3.5 shadow-md overflow-hidden cursor-pointer group"
-                  >
-                    {cam.imageUrl ? (
-                      <Image
-                        src={cam.imageUrl}
-                        alt={cam.name}
-                        fill
-                        // Matches the grid above: 1 / 2 / 3 / 4 / 5 / 6 columns.
-                        sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1536px) 25vw, 20vw"
-                        className="object-contain p-2 group-hover:scale-105 transition-transform"
-                      />
-                    ) : (
-                      <NoPhoto label={t('noPhoto')} />
-                    )}
-                  </div>
-
-                  {/* Name & SKU (click opens the product page) */}
-                  <div
-                    onClick={() => openProduct(cam)}
-                    className="flex flex-col gap-1 mb-3 font-sans cursor-pointer group"
-                  >
-                    <h4 className="font-extrabold text-[1rem] text-white group-hover:text-amber-300 transition-colors font-sans tracking-tight">
-                      {cam.name}
-                    </h4>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      {cam.sku && (
-                        <span className="font-mono text-[11px] font-bold text-amber-300 bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/25">
-                          {cam.sku}
-                        </span>
-                      )}
-                      {cam.subCategory2 && (
-                        <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-white/15 text-white border border-white/20">
-                          {cam.subCategory2}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-white/90 font-medium line-clamp-2 mt-1 font-sans leading-relaxed">{cam.fullName}</p>
-                  </div>
-
-                  {/* Features List */}
-                  <ul className="space-y-1.5 mb-4 font-sans">
-                    {featureList(cam.features, locale).map((feat, idx) => (
-                      <li key={idx} className="text-xs text-white/90 font-medium flex items-start gap-2 font-sans leading-snug">
-                        <span className="text-emerald-400 font-bold shrink-0 text-sm leading-none">•</span>
-                        <span className="line-clamp-2 font-sans">{feat}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Price & Link */}
-                <div className="pt-2 flex items-center justify-between gap-2">
-                  <span className="font-mono text-[1rem] font-extrabold text-sky-400 drop-shadow-sm">
-                    {cam.priceFormatted}
-                  </span>
-                  {cam.url && (
-                    <a
-                      href={cam.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs font-bold text-white hover:text-amber-300 underline underline-offset-2 transition-colors font-sans"
-                    >
-                      Sony ↗
-                    </a>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Floating Compare Action Overlay Dock (Fixed Bottom-Right Corner) */}
+      {/* Compare dock — a floating second layer over the list. */}
       {selectedForCompare.length > 0 && (
-        <div className="fixed bottom-6 right-6 z-[9990] flex items-center gap-2 animate-fade-in font-sans pb-safe pr-safe">
-          {/* 7-Color Rainbow Glow Layer */}
-          <span aria-hidden className="rainbow-glow-bar" />
-
-          {/* Main Floating Compact Glass Dock */}
-          <div className="relative z-10 bg-[#14161b]/95 p-2 sm:p-2.5 rounded-2xl border-2 border-amber-400/80 shadow-[0_16px_40px_rgba(0,0,0,0.9)] flex items-center gap-2 sm:gap-3 backdrop-blur-2xl">
-            {/* Direct Open Compare Button */}
+        <div className="fixed bottom-6 right-6 z-[9990] animate-fade-in pb-safe pr-safe">
+          <div className="surface-raised p-2.5 flex items-center gap-3">
             <button
               type="button"
               onClick={() => setIsConfirmModalOpen(true)}
-              className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-black font-extrabold text-xs sm:text-sm hover:brightness-110 transition-all shadow-lg cursor-pointer flex items-center gap-2"
+              className="btn-accent inline-flex items-center gap-2 cursor-pointer"
             >
-              <span>⚡</span>
               <span>{t('compareBtn')}</span>
-              <span className="bg-black/20 px-2 py-0.5 rounded-full text-xs font-mono font-bold">
+              <span className="text-meta tabular-nums bg-white/20 px-2 py-0.5 rounded-sm">
                 {selectedForCompare.length}
               </span>
             </button>
 
-            {/* Clear Button */}
             <button
               type="button"
               onClick={() => setSelectedForCompare([])}
               title={t('clearCompare')}
-              className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 text-white/70 hover:text-white font-bold text-xs transition-colors cursor-pointer flex items-center justify-center border border-white/10"
+              aria-label={t('clearCompare')}
+              className="w-11 min-h-[var(--layout-touch-target)] rounded-md bg-white/[0.08] hover:bg-white/[0.13] text-ink-muted shadow-[var(--elevation-spec)] transition-colors cursor-pointer flex items-center justify-center"
             >
               ✕
             </button>
@@ -555,108 +754,104 @@ export function CameraWikiView({ initialCameras, basePath = '/cameras' }: Camera
         </div>
       )}
 
-      {/* B&H Style Pop-up Confirmation Modal */}
+      {/* Confirmation sheet before the compare page */}
       {isConfirmModalOpen && (
         <div
           role="dialog"
           aria-modal="true"
           onClick={() => setIsConfirmModalOpen(false)}
-          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xl flex flex-col items-center justify-center p-4 sm:p-6 animate-backdrop-blur select-none font-sans"
+          className="fixed inset-0 z-50 bg-void/85 backdrop-blur-[30px] flex flex-col items-center justify-center p-4 sm:p-6 select-none animate-fade-in"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-4xl max-h-[90dvh] font-sans cursor-default animate-lightbox-zoom"
+            className="relative w-full max-w-4xl max-h-[90dvh] cursor-default"
           >
-            {/* 7-Color Static Rainbow Glow Layer */}
-            <span aria-hidden className="rainbow-glow-bar" />
-
-            <div className="relative z-10 glass w-full h-full rounded-2xl p-6 flex flex-col gap-6 shadow-2xl border border-white/25 font-sans">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-white/15 pb-4 font-sans">
-              <div className="flex flex-col gap-1">
-                <h3 className="font-extrabold text-xl text-white font-sans">
-                  {t('compareConfirmTitle')} ({comparedCameraObjects.length})
-                </h3>
-                <p className="text-xs text-white/70 font-sans">
-                  {t('compareConfirmSub')}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsConfirmModalOpen(false)}
-                className="w-8 h-8 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center text-sm font-bold transition-all cursor-pointer font-sans"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Selected Product Cards Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 overflow-y-auto max-h-[60dvh] p-1 font-sans">
-              {comparedCameraObjects.map((cam) => (
-                <div
-                  key={cam.id}
-                  className="relative bg-[#28292e] p-3 rounded-xl flex flex-col gap-2.5 border border-white/20 shadow-lg font-sans"
-                >
-                  {/* Remove Button */}
-                  <button
-                    type="button"
-                    onClick={() => toggleCompare(cam.id)}
-                    title="Xóa sản phẩm"
-                    className="absolute top-2 right-2 w-5 h-5 rounded-full bg-white/10 hover:bg-red-500/80 text-white/70 hover:text-white flex items-center justify-center text-xs transition-colors cursor-pointer z-10"
-                  >
-                    ✕
-                  </button>
-
-                  {/* Photo on Clean WHITE Background */}
-                  <div
-                    onClick={() => openProduct(cam)}
-                    className="relative w-full aspect-[4/3] rounded-lg bg-white border border-white/20 p-2 flex items-center justify-center shadow-sm overflow-hidden cursor-pointer"
-                  >
-                    <Image
-                      src={cam.imageUrl}
-                      alt={cam.name}
-                      fill
-                      sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 16vw"
-                      className="object-contain p-1"
-                    />
-                  </div>
-
-                  {/* Name & SKU */}
-                  <div className="flex flex-col gap-0.5 font-sans">
-                    <h4
-                      onClick={() => openProduct(cam)}
-                      className="font-extrabold text-xs text-white line-clamp-2 leading-snug cursor-pointer hover:text-amber-300"
-                    >
-                      {cam.name}
-                    </h4>
-                    <span className="font-mono text-[10px] font-bold text-amber-300 truncate">{cam.sku}</span>
-                    <span className="font-mono text-xs font-extrabold text-sky-400 mt-0.5">{cam.priceFormatted}</span>
-                  </div>
+            <div className="surface-raised w-full h-full p-6 flex flex-col gap-6">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex flex-col gap-1">
+                  <h2 className="text-title-3 font-semibold text-ink">
+                    {t('compareConfirmTitle')} ({comparedCameraObjects.length})
+                  </h2>
+                  <p className="meta">{t('compareConfirmSub')}</p>
                 </div>
-              ))}
-            </div>
+                <button
+                  type="button"
+                  onClick={() => setIsConfirmModalOpen(false)}
+                  className="w-11 min-h-[var(--layout-touch-target)] rounded-md bg-white/[0.08] hover:bg-white/[0.13] text-ink-muted shadow-[var(--elevation-spec)] flex items-center justify-center transition-colors cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
 
-            {/* Footer Action Bar */}
-            <div className="pt-4 border-t border-white/15 flex items-center justify-between gap-4 font-sans">
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedForCompare([]);
-                  setIsConfirmModalOpen(false);
-                }}
-                className="text-xs font-bold text-white/70 hover:text-white underline transition-colors cursor-pointer"
-              >
-                {t('clearCompare')}
-              </button>
+              <div className="seam" />
 
-              <button
-                type="button"
-                onClick={navigateToComparePage}
-                className="px-6 py-3 rounded-xl bg-white text-black font-extrabold text-xs sm:text-sm hover:bg-white/90 transition-all shadow-xl cursor-pointer scale-105"
-              >
-                {t('compareItemsBtn', { count: selectedForCompare.length })}
-              </button>
-            </div>
+              {/* Selected Product Cards Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 max-h-[60dvh] p-1 scroll-area">
+                {comparedCameraObjects.map((cam) => (
+                  <div key={cam.id} className="surface relative p-3 flex flex-col gap-2.5">
+                    {/* Remove Button */}
+                    <button
+                      type="button"
+                      onClick={() => toggleCompare(cam.id)}
+                      className="absolute top-2 right-2 w-6 h-6 rounded-sm bg-white/[0.08] hover:bg-white/[0.13] text-ink-muted flex items-center justify-center text-label transition-colors cursor-pointer z-10"
+                    >
+                      ✕
+                    </button>
+
+                    {/* Photo on Clean WHITE Background */}
+                    <div
+                      onClick={() => openProduct(cam)}
+                      className="relative w-full aspect-[4/3] rounded-md bg-white p-2 flex items-center justify-center overflow-hidden cursor-pointer"
+                    >
+                      <ProductPhoto
+                        src={cam.imageUrl}
+                        alt=""
+                        sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 16vw"
+                        className="object-contain p-1"
+                      />
+                    </div>
+
+                    {/* Name & SKU */}
+                    <div className="flex flex-col gap-0.5">
+                      <h3
+                        onClick={() => openProduct(cam)}
+                        className="font-semibold text-body-sm text-ink line-clamp-2 leading-snug cursor-pointer"
+                      >
+                        {cam.name}
+                      </h3>
+                      <span className="meta truncate">{cam.sku}</span>
+                      <span className="text-body-sm font-semibold text-accent-400 tabular-nums mt-0.5">
+                        {cam.priceFormatted}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="seam" />
+
+              {/* Footer Action Bar */}
+              <div className="flex items-center justify-between gap-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedForCompare([]);
+                    setIsConfirmModalOpen(false);
+                  }}
+                  className="text-body-sm font-semibold text-ink-muted hover:text-ink transition-colors cursor-pointer"
+                >
+                  {t('clearCompare')}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={navigateToComparePage}
+                  className="btn-accent cursor-pointer"
+                >
+                  {t('compareItemsBtn', { count: selectedForCompare.length })}
+                </button>
+              </div>
             </div>
           </div>
         </div>

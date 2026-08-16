@@ -24,26 +24,32 @@ export function ProductGalleryViewer({
 
   return (
     <div className="flex flex-col gap-3.5 w-full">
-      {/* Main Image Stage */}
-      <div className="relative w-full aspect-[4/3] lg:aspect-[4/3] min-h-[18rem] rounded-2xl bg-white border border-white/20 p-4 shadow-xl overflow-hidden group">
+      {/* Main Image Stage.
+
+          The plate stays white and opaque: the catalogue photos are B&H JPEGs
+          shot on white, so a translucent frame would only put a white rectangle
+          inside a dark one. The stroke round it is gone — the panel radius and
+          elevation 1 are what make it read as an object. */}
+      <div className="relative w-full aspect-[4/3] min-h-[18rem] rounded-lg bg-white p-4 shadow-[var(--elevation-1)] overflow-hidden">
         <Image
           src={currentImage}
           alt={`${productName} - Photo ${activeIndex + 1}`}
           fill
           sizes="(max-width: 1024px) 100vw, 33vw"
           priority={activeIndex === 0}
-          className="object-contain p-2 transition-all duration-300 group-hover:scale-105"
+          className="object-contain p-2"
         />
         {images.length > 1 && (
-          <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white/90 text-[11px] font-mono font-medium shadow-md">
+          <div className="absolute top-3 right-3 px-3 py-1 rounded-sm bg-void/70 backdrop-blur-[30px] shadow-[var(--elevation-1)] text-label font-semibold text-ink tabular-nums">
             {activeIndex + 1} / {images.length}
           </div>
         )}
       </div>
 
-      {/* Thumbnails Bar */}
+      {/* Thumbnails — a rail, so it never advertises its own overflow. The
+          selection is an accent-tinted fill round the plate, never a ring. */}
       {images.length > 1 && (
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 max-w-full custom-scrollbar">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 max-w-full scroll-silent">
           {images.map((imgUrl, idx) => {
             const isActive = idx === activeIndex;
             return (
@@ -51,20 +57,22 @@ export function ProductGalleryViewer({
                 key={`${imgUrl}-${idx}`}
                 type="button"
                 onClick={() => setActiveIndex(idx)}
-                className={`relative shrink-0 w-16 h-16 rounded-xl border bg-white p-1 transition-all overflow-hidden cursor-pointer ${
+                className={`shrink-0 w-16 h-16 p-1 rounded-md cursor-pointer transition-opacity ${
                   isActive
-                    ? 'border-cyan-400 ring-2 ring-cyan-400/40 shadow-lg scale-105'
-                    : 'border-white/20 opacity-70 hover:opacity-100 hover:border-white/40'
+                    ? 'bg-accent-500/25 shadow-[var(--elevation-1)]'
+                    : 'bg-glass opacity-70 hover:opacity-100'
                 }`}
                 aria-label={`View photo ${idx + 1} of ${productName}`}
               >
-                <Image
-                  src={imgUrl}
-                  alt={`Thumbnail ${idx + 1}`}
-                  fill
-                  sizes="64px"
-                  className="object-contain p-1"
-                />
+                <span className="relative block w-full h-full rounded-sm bg-white overflow-hidden">
+                  <Image
+                    src={imgUrl}
+                    alt={`Thumbnail ${idx + 1}`}
+                    fill
+                    sizes="64px"
+                    className="object-contain p-1"
+                  />
+                </span>
               </button>
             );
           })}

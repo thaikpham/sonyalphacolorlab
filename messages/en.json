@@ -4,11 +4,18 @@
     "resultCount": "{count, plural, one {# recipe} other {# recipes}}",
     "emptyTitle": "No recipes match those filters yet.",
     "emptyAction": "Clear them",
-    "emptyTail": "to see all {total}."
+    "emptyTail": "to see all {total}.",
+    "title": "All recipes",
+    "lede": "Filter by tag, read the original settings, then dial them into your Sony Alpha."
   },
   "launcher": {
     "title": "Sony Alpha Ecosystem",
-    "subtitle": "Four tools, one workflow — pick where to start."
+    "subtitle": "Four tools, one workflow — pick where to start.",
+    "back": "Back to apps",
+    "divisions": {
+      "di": "Cameras, lenses & accessories",
+      "pe": "Headphones, speakers & audio gear"
+    }
   },
   "nav": {
     "ecosystem": "Sony Alpha ecosystem",
@@ -34,13 +41,13 @@
     "proposeVersionDesc": "Create parameter tweaks & vote with the community",
     "tweakAi": "Tweak with AI",
     "tweakAiDesc": "Fine-tune camera settings automatically with Claude",
-    "tagCommunity": "COMMUNITY",
+    "tagCommunity": "Community",
     "cancel": "Cancel",
     "galleryEmpty": "No sample photos for this recipe yet. Use <b>Contribute photo</b> below to upload the first frame from your Sony Alpha.",
     "zoomPhoto": "Zoom photo {index} of {title}",
     "zoom": "Zoom in",
-    "featuredShot": "FEATURED SHOT",
-    "frame": "FRAME #{index}",
+    "featuredShot": "Featured shot",
+    "frame": "Frame #{index}",
     "photoBy": "Photo by:",
     "deletePhoto": "Remove contributed photo",
     "deletePhotoAt": "Remove contributed photo {index}",
@@ -63,7 +70,9 @@
     "next": "Next photo",
     "nextTitle": "Next photo (→ key)",
     "goTo": "Go to photo {index}",
-    "lightboxHint": "← → or click the side frames to browse · ESC or click outside to exit"
+    "lightboxHint": "← → or click the side frames to browse · ESC or click outside to exit",
+    "wbEngineLabel": "Core White Balance engine",
+    "paramsLabel": "Camera parameters setup"
   },
   "language": {
     "en": "English",
@@ -135,7 +144,9 @@
       "sampleUrlRequired": "A real sample photo URL is required.",
       "saveFailed": "Could not save that. Please try again.",
       "unknown": "Something went wrong. Please try again."
-    }
+    },
+    "sectionCl": "2. Creative Look camera parameters",
+    "sectionPp": "2. Picture Profile master settings"
   },
   "notFound": {
     "title": "That recipe isn't here.",
@@ -145,7 +156,8 @@
   "error": {
     "title": "Something broke.",
     "body": "That's on us, not you. Try again — if it keeps happening, the catalogue is still reachable from the home page.",
-    "action": "Try again"
+    "action": "Try again",
+    "ref": "Ref"
   },
   "search": {
     "label": "Search recipes",
@@ -161,7 +173,7 @@
     "actionLabel": "Details & Compare",
     "addMoreToCompare": "+ Add Item to Compare",
     "addToCompare": "⚡ Add to Compare",
-    "adminBadge": "👑 Mod",
+    "adminBadge": "Mod",
     "aiConnectionError": "Could not connect to the specialist server.",
     "aiErrorResponse": "Sorry, an error occurred while generating the answer. Please try again!",
     "aiSpecialistGreeting": "Hello! I am your Sony Specialist advisor. I have analyzed the technical specs of your selected items. How can I help you choose today?",
@@ -186,25 +198,24 @@
     "compareBtn": "Open Compare Table",
     "compareConfirmSub": "Review your selected items before proceeding to full specification comparison.",
     "compareConfirmTitle": "Compare Products",
-    "compareItemsBtn": "⚡ Compare These Items ({count})",
-    "comparePageTitle": "Detailed Sony Product Comparison",
+    "compareItemsBtn": "Compare These Items ({count})",
     "compareSummary": "Comparing {count} products",
     "composeBodyPlaceholder": "What you want to say. The product link is added for you.",
-    "composeOnRedditBtn": "Compose on Reddit ↗",
+    "composeOnRedditBtn": "Compose on Reddit",
     "composeTitlePlaceholder": "Topic title for {name} — a question, a recipe, a sample…",
     "detailModalTitle": "Product Spec Details",
     "diffBadge": "Differs",
     "emptyAction": "Clear search & filters",
     "emptyTitle": "No products found matching your search.",
-    "exitFullscreenBtn": "↙ Exit Fullscreen",
+    "exitFullscreenBtn": "Exit Fullscreen",
     "expandText": "Show more...",
     "featuresLabel": "Key Features",
-    "filterHot": "🔥 Hot",
-    "filterNew": "✨ New",
-    "filterPhotos": "📸 Samples",
-    "filterQuestions": "❓ Questions",
-    "filterRecipes": "🎨 Recipes",
-    "fullscreenBtn": "⛶ Fullscreen",
+    "filterHot": "Hot",
+    "filterNew": "New",
+    "filterPhotos": "Samples",
+    "filterQuestions": "Questions",
+    "filterRecipes": "Recipes",
+    "fullscreenBtn": "Fullscreen",
     "handoffDoneNote": "Reddit is open in a new tab. Once you have posted, hit Refresh to see the topic here.",
     "handoffNote": "Opens {handle} with this filled in. You press Post there, under your own account.",
     "highlightDiffs": "Highlight Differences",
@@ -226,8 +237,8 @@
     "maxCompareHint": "Select up to 6 products to compare side by side.",
     "noPhoto": "No photo",
     "officialUrl": "View on Sony Vietnam ↗",
-    "openOnRedditBtn": "Open on Reddit ↗",
-    "pinnedBadge": "📌 Pinned",
+    "openOnRedditBtn": "Open on Reddit",
+    "pinnedBadge": "Pinned",
     "postPlaceholder": "Share a tip, photo sample, or recipe for {name}...",
     "priceLabel": "Official Price",
     "printCompare": "Print / Share",
@@ -240,15 +251,15 @@
       "unauthorized": "{handle} refused the request. It is a private community: the connected account has to be a member of it.",
       "unavailable": "Could not reach Reddit just now. Try Refresh in a moment."
     },
-    "refreshTopicsBtn": "↻ Refresh",
+    "refreshTopicsBtn": "Refresh",
     "removeFromCompare": "✓ In Compare List",
     "sameBadge": "Same",
     "searchPlaceholder": "Search model, SKU (e.g. SEL70200GM2, FX3, ECM-M1), or feature…",
-    "sectionAfStab": "🎯 Autofocus & Image Stabilization",
-    "sectionHighlights": "⚡ Key Product Features",
-    "sectionPhysical": "📐 Dimensions, Weight & Power",
-    "sectionSensorOptics": "📷 Sensor & Optical Specifications",
-    "sectionVideoIso": "🎥 Video Capabilities & ISO Range",
+    "sectionAfStab": "Autofocus & Image Stabilization",
+    "sectionHighlights": "Key Product Features",
+    "sectionPhysical": "Dimensions, Weight & Power",
+    "sectionSensorOptics": "Sensor & Optical Specifications",
+    "sectionVideoIso": "Video Capabilities & ISO Range",
     "selectProductTitle": "Select Product to Compare",
     "sendQuestion": "Send Question",
     "sensorLabel": "Specifications",
@@ -317,7 +328,7 @@
       "weight": "Weight"
     },
     "specsTab": "Specifications",
-    "sub1All": "All Formats",
+    "sub1All": "All cameras",
     "sub2All": "All Series",
     "subCategoryLabel": "Series & Format",
     "subtitle": "Explore technical specs, official prices, and features of 90+ Sony Alpha cameras, Lenses, and Accessories.",
@@ -340,7 +351,20 @@
     "topicsLoading": "Loading topics from Reddit…",
     "upvote": "Upvote",
     "viewGrid": "Grid View",
-    "viewTable": "Table View"
+    "viewTable": "Table View",
+    "footerCameraRoute": "Alpha ColorLab · Dedicated product route for {name}",
+    "footerAudioRoute": "Alpha ColorLab · Sony Headphone & Speaker Wiki",
+    "camerasTitle": "Sony Camera Catalog Wiki",
+    "camerasSubtitle": "Explore technical specs, official prices, and features of 35+ Sony Alpha and Cinema Line cameras.",
+    "footerCameraWiki": "Alpha ColorLab · Sony Camera Catalog & Spec Wiki",
+    "compareLegend": "The better value is tinted with the accent; cells that match stay ink. An em dash is a spec the catalogue does not publish.",
+    "removeProduct": "Remove from comparison",
+    "closeDialog": "Close",
+    "chatYou": "You",
+    "aiThinking": "Analysing the specs of the selected models…",
+    "catalogueLede": "{count} products in the catalogue, shown as a grid. Filter by product line or sensor size at the top of the page.",
+    "openCompare": "Open comparison",
+    "compareSelected": "Selected"
   },
   "admin": {
     "title": "Product Admin",
@@ -413,6 +437,15 @@
       "mismatch": "The translation came back with the wrong number of lines. Nothing was changed.",
       "declined": "The model declined that text.",
       "failed": "Translation failed. Nothing was changed."
-    }
+    },
+    "basicInfoHeading": "Product name & gallery",
+    "basicInfoHint": "Edit the display name, the full name and the gallery image URLs.",
+    "primaryImageLabel": "Primary image URL",
+    "galleryUrlsLabel": "Gallery image URLs (one per line)",
+    "photosCount": "photos",
+    "galleryPreviewHeading": "Gallery preview"
+  },
+  "loading": {
+    "status": "Loading recipes"
   }
 }

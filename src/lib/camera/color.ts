@@ -278,32 +278,31 @@ export function shiftPosition(wb: WhiteBalance): { x: number; y: number } {
 }
 
 /**
- * Standardized Text Color Helpers per project rules:
- * - White Balance Kelvin: < 4000K (Blue), 4100K-5900K (White), >= 6000K (Orange)
- * - WB Shift: B (Blue), G (Green), M (Magenta/Pink), A (Amber/Orange)
- * - Color Depth: R (Red), G (Green), B (Blue), C (Cyan), M (Magenta), Y (Yellow)
+ * What the dials actually look like, as colour.
+ *
+ * - White Balance Kelvin: < 4000K (blue), 4100K-5900K (neutral), >= 6000K (orange)
+ * - WB Shift: B (blue), G (green), M (magenta), A (amber)
+ * - Color Depth: R, G, B, C, M, Y
+ *
+ * These are the one place amber and green survive the no-competitor-hue rule,
+ * and they are not an exception to it. That rule governs colours the
+ * *interface* chooses; these are the recipe's own measured cast rendered as
+ * itself. An A-shift is amber — drawing it in the accent would be drawing the
+ * wrong number. Same category as `--accent`, which is also recomputed per
+ * recipe rather than picked from the ramp.
+ *
+ * ONE FORMAT ONLY. There used to be a second set of these returning Tailwind
+ * classes (`text-amber-400`, `text-emerald-400`, …), which put sRGB palette
+ * colours in an OKLCH interface — the exact drift the token package exists to
+ * stop — and gave the same cast two definitions that could disagree. Call
+ * sites apply the value through `style={{ color }}`, which is also the only
+ * form that works for the plotted points in `wb-shift-plane.tsx`.
  */
-
-export function getKelvinColor(kelvin: number): string {
-  if (kelvin < 4000) return 'text-blue-400';
-  if (kelvin >= 6000) return 'text-orange-400';
-  return 'text-white';
-}
 
 export function getKelvinHexColor(kelvin: number): string {
   if (kelvin < 4000) return '#60a5fa'; // Blue
   if (kelvin >= 6000) return '#fb923c'; // Orange
-  return '#ffffff'; // White
-}
-
-export function getWbShiftAxisColor(axis: 'A' | 'B' | 'G' | 'M' | string): string {
-  switch (axis) {
-    case 'B': return 'text-blue-400';
-    case 'G': return 'text-emerald-400';
-    case 'M': return 'text-pink-400';
-    case 'A': return 'text-amber-400';
-    default: return 'text-white';
-  }
+  return 'var(--color-ink)'; // Neutral — the interface's own ink, not a literal
 }
 
 export function getWbShiftAxisHexColor(axis: 'A' | 'B' | 'G' | 'M' | string): string {
@@ -312,7 +311,7 @@ export function getWbShiftAxisHexColor(axis: 'A' | 'B' | 'G' | 'M' | string): st
     case 'G': return '#34d399'; // Green
     case 'M': return '#f472b6'; // Magenta/Pink
     case 'A': return '#fbbf24'; // Amber/Orange
-    default: return '#ffffff';
+    default: return 'var(--color-ink)';
   }
 }
 

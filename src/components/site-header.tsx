@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { LanguageToggle } from './language-toggle';
-import { useAuth } from './auth-context';
+import { GoogleMark, useAuth } from './auth-context';
 import { LauncherGrid } from './launcher-grid';
 import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import { routing } from '@/i18n/routing';
@@ -37,12 +37,59 @@ const FALLBACK_TAGS: TagItem[] = [
 ];
 
 /**
+ * The sticky bar itself.
+ *
+ * `.surface-raised` is the right elevation but the wrong shape here: it is
+ * unlayered CSS that hard-sets `border-radius: 26px`, and a full-bleed bar
+ * pinned to the top of the viewport must not have corners. So the bar restates
+ * the same film and the same 40px blur, and carries the header's own drop
+ * shadow — which is the ONLY thing separating it from the content. There is no
+ * bottom border, deliberately; a rule under a translucent bar reads as a seam
+ * in the page rather than as a layer over it.
+ */
+const HEADER_BAR =
+  'bg-[linear-gradient(180deg,oklch(100%_0_0/0.075),oklch(100%_0_0/0.035))] ' +
+  '[backdrop-filter:var(--elevation-blur-strong)] [-webkit-backdrop-filter:var(--elevation-blur-strong)] ' +
+  'shadow-[0_14px_34px_-18px_oklch(0%_0_0/0.9),var(--elevation-spec)]';
+
+/**
+ * The two states of every filter chip in the console.
+ *
+ * Deliberately NOT `chip chip-action surface-selected`. `.chip` and
+ * `.surface-selected` are both unlayered and `.chip` is written *after*
+ * `.surface-selected` in globals.css, so on one element the chip's own white
+ * film and specular shadow win and the selection renders as an ordinary chip —
+ * and `.chip-action:hover` would repaint the accent fill white on top of that.
+ * The selected state therefore carries `.surface-selected` plus the chip's
+ * geometry as utilities. Both land on the same 44px touch target and the same
+ * 12px radius, so the two states are the same object.
+ */
+const CHIP_IDLE = 'chip chip-action shrink-0 whitespace-nowrap';
+const CHIP_SELECTED =
+  'surface-selected shrink-0 inline-flex items-center justify-center gap-1.5 whitespace-nowrap ' +
+  'px-3 min-h-[var(--layout-touch-target)] text-label font-semibold text-ink cursor-pointer';
+
+/**
+ * The wiki console's dropdowns. A select is an input, so it is pressed into the
+ * surface rather than raised out of it, and it carries no focus ring of its own —
+ * the global `:focus-visible` outline is the system's one sanctioned stroke.
+ */
+const WIKI_SELECT =
+  'surface-sunken px-3 min-h-[var(--layout-touch-target)] text-body-sm font-semibold text-ink cursor-pointer';
+
+/** A square 44px icon button on the control rail — launcher, mobile search. */
+const ICON_BUTTON =
+  'flex h-11 w-11 shrink-0 items-center justify-center rounded-sm cursor-pointer transition-colors';
+const ICON_BUTTON_IDLE =
+  'bg-white/[0.08] text-ink-muted hover:bg-white/[0.13] hover:text-ink shadow-[var(--elevation-spec)]';
+
+/**
  * Multi-functional sticky header navigation for Alpha ColorLab.
  *
  * Features:
  * - Wordmark with Sony Alpha 'α' glyph standing in for the "A".
  * - Expandable console integrating recipe keyword search, format filters (PP/CL),
- *   Creative Look sub-filters, and Tag filters with smooth glass animations.
+ *   Creative Look sub-filters, and Tag filters.
  * - Auto-hides on scroll down, reappears on scroll up (locked open when search is focused).
  * - Keyboard shortcuts (⌘K / / to expand, ESC to close).
  */
@@ -92,6 +139,22 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
   const ecosystemRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
   const portalRef = useRef<HTMLDivElement>(null);
+  /**
+   * The launcher tiles inside the portal. A REF, not a class name.
+   *
+   * This test used to be `e.target.closest('.app-enter')`, and `.app-enter` was
+   * a staggered-entrance class from the deleted vfx.css. Once the launcher was
+   * rebuilt the class was gone, `closest` returned null for every click, and so
+   * every click inside the overlay — including one on the Sony Wiki tile —
+   * counted as "outside the tiles" and closed the launcher. The tile could not
+   * be opened at all.
+   *
+   * Nothing caught it: the class is referenced from a string in JS rather than
+   * a `className`, so it is invisible to the audit greps, and `app-enter` was
+   * not in the deleted-vocabulary pattern to begin with (`app-glow` was). A ref
+   * cannot rot this way — it points at the node, not at a name.
+   */
+  const launcherRef = useRef<HTMLDivElement>(null);
 
   interface PredictiveItem {
     id: string;
@@ -464,35 +527,33 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
             around it. The console owns its own separation instead, as a margin
             that only exists while it is open. */}
         <div
-          className={`glass transition-all duration-300 ease-out px-3 py-1.5 sm:px-5 sm:py-2 flex flex-col ${
-            isSearchOpen ? 'shadow-[0_12px_40px_rgba(0,0,0,0.6)]' : ''
-          }`}
+          className={`${HEADER_BAR} transition-all duration-300 ease-out px-3 py-2 sm:px-6 sm:py-3 flex flex-col`}
         >
           {/* Main Top Header Line.
 
-              Every control in this row sits on one height rail — `h-9` below
-              `sm`, `h-10` at `sm` and up — and the logo is capped to it. They
-              were already vertically centred, but at five different heights
-              (40 / 32 / 33.6 / 32 / 37.2px inside a 40px bar) the row read as
-              ragged rather than as one piece of chrome. Anything added here
-              must join the rail, and the gap scale below it: `gap-1.5/2` inside
-              a control cluster, `gap-2/2.5` within a group, `gap-3/4` between
-              groups. Alignment is a system, not a per-element decision. */}
+              Every control in this row sits on one height rail, and the rail is
+              now the 44px touch target (`--layout-touch-target`) rather than a
+              per-control height. They were already vertically centred, but at
+              five different heights (40 / 32 / 33.6 / 32 / 37.2px inside a 40px
+              bar) the row read as ragged rather than as one piece of chrome —
+              and none of them cleared 44px. Anything added here must join the
+              rail, and the gap scale below it: `gap-1.5/2` inside a control
+              cluster, `gap-2/2.5` within a group, `gap-3/4` between groups.
+              Alignment is a system, not a per-element decision. */}
           <div className="flex flex-nowrap items-center justify-between gap-2 sm:gap-4">
             {/* Custom Brand Logo & 4-Square Ecosystem Launcher.
 
                 The wordmark is the one element allowed to shrink — everything
                 else on the rail is `shrink-0`. The row is `flex-nowrap`, so
-                with a fixed-width logo the controls simply ran off the right of
+                with a fixed-width mark the controls simply ran off the right of
                 a 375px screen: 350px of content in 311px, and worse once signed
-                in, where the profile pill is wider than the sign-in button. It
-                keeps its full size wherever there is room and letterboxes down
-                inside the same 36/40px rail where there is not. */}
+                in. It keeps its full size wherever there is room and truncates
+                inside the same 44px rail where there is not. */}
             <div className="relative flex min-w-0 items-center gap-2 sm:gap-2.5" ref={ecosystemRef}>
               {isWiki ? (
                 <Link
                   href={wikiBase}
-                  className="group flex h-9 sm:h-10 min-w-0 items-center gap-2 sm:gap-2.5 transition-transform duration-300 hover:scale-105 active:scale-95"
+                  className="flex min-h-[var(--layout-touch-target)] min-w-0 items-center gap-2 sm:gap-2.5"
                 >
                   <Image
                     src="/sony-wiki-icon.png"
@@ -500,24 +561,43 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                     width={512}
                     height={512}
                     priority
-                    className="h-8 sm:h-9 w-8 sm:w-9 rounded-xl object-contain transition-all duration-300 shadow-md border border-white/20 shrink-0"
+                    className="h-9 w-9 rounded-sm object-contain shrink-0"
                   />
-                  <span className="font-black text-base sm:text-lg tracking-wider text-white uppercase font-sans whitespace-nowrap flex items-center gap-1.5">
-                    SONY <span className="text-amber-400 font-mono font-bold tracking-normal">WIKI</span>
+                  <span className="flex items-center gap-1.5 whitespace-nowrap text-body-lg font-extrabold tracking-[-0.02em] text-ink">
+                    SONY <span className="text-accent-400">WIKI</span>
                   </span>
                 </Link>
               ) : (
+                /* ColorLab's own brand mark, not type.
+
+                   The four overlapping circles are the product's logo and carry
+                   its own palette — amber, teal, crimson. That is not a
+                   competitor-hue violation and `/design-sync` must not "fix" it:
+                   the no-red/yellow/green rule governs colours the INTERFACE
+                   chooses, and a brand mark is artwork, the same exemption the
+                   Google mark on the sign-in button gets.
+
+                   `unoptimized` for the reason the launcher icons carry it: the
+                   account's image-optimization quota is spent, so only transforms
+                   already in Vercel's cache resolve and a newly-sized variant
+                   returns 402. The source is served straight from /public.
+
+                   It is the link's only content, so `alt` is the accessible name
+                   rather than empty — and it is the one element on the rail
+                   allowed to shrink, capped on a phone so the row cannot overflow
+                   sideways. */
                 <Link
                   href="/"
-                  className="group flex h-9 sm:h-10 min-w-0 items-center transition-transform duration-300 hover:scale-105 active:scale-95"
+                  className="flex min-h-[var(--layout-touch-target)] min-w-0 items-center"
                 >
                   <Image
                     src="/logo.png"
-                    alt="Alpha ColorLab Logo"
+                    alt="Alpha AI Color Lab"
                     width={1780}
                     height={499}
                     priority
-                    className="h-9 sm:h-10 w-auto max-w-full object-contain object-left transition-all duration-300"
+                    unoptimized
+                    className="h-9 w-auto max-w-[42vw] object-contain object-left sm:max-w-none"
                   />
                 </Link>
               )}
@@ -533,17 +613,13 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                 aria-expanded={isEcosystemOpen}
                 aria-label={tNav('ecosystem')}
                 title={tNav('ecosystem')}
-                className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl transition-all duration-300 cursor-pointer border flex items-center justify-center shrink-0 group ${
-                  isEcosystemOpen
-                    ? 'bg-white/20 text-white border-white/35 shadow-[0_0_20px_rgba(255,255,255,0.25)] scale-105'
-                    : 'glass-flat text-white/80 hover:text-white hover:bg-white/20 border-white/15 hover:border-white/30'
+                className={`${ICON_BUTTON} ${
+                  isEcosystemOpen ? 'surface-selected text-ink' : ICON_BUTTON_IDLE
                 }`}
               >
                 {/* 4-Square Grid SVG Icon (2x2 squares) */}
                 <svg
-                  className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-300 ${
-                    isEcosystemOpen ? 'rotate-90 text-white' : 'group-hover:scale-110'
-                  }`}
+                  className="w-5 h-5"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -567,10 +643,13 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                 launcher, the profile pill and two flags all `shrink-0` in a
                 `flex-nowrap` row, the pill was squeezed to a few dozen pixels
                 of unreadable placeholder. It still opens full-width here. */}
+            {/* 300px at rest, 520px while searching — the field growing is what
+                tells the reader the bar has changed mode, and the wordmark and
+                the console give up the width for it. */}
             <div
               className={`${
-                isSearchOpen ? 'flex' : 'hidden sm:flex'
-              } flex-1 min-w-0 max-w-xl mx-auto items-center transition-all duration-300`}
+                isSearchOpen ? 'flex sm:max-w-[520px]' : 'hidden sm:flex sm:max-w-[300px]'
+              } flex-1 min-w-0 mx-auto items-center transition-all duration-300`}
             >
               {!isSearchOpen ? (
                 /* Compact Trigger Button */
@@ -579,22 +658,15 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                   onClick={() => setIsSearchOpen(true)}
                   aria-expanded="false"
                   aria-label={t('label')}
-                  className={`w-full h-9 sm:h-10 flex items-center justify-between gap-3 px-4 rounded-full transition-all duration-300 group cursor-pointer shadow-sm ${
-                    isWiki
-                      ? 'bg-black/70 border border-amber-400/30 text-amber-200 hover:border-amber-400/50'
-                      : 'bg-black/50 border border-white/10 text-white/90 hover:text-white'
-                  }`}
+                  className="surface-sunken w-full min-h-[var(--layout-touch-target)] flex items-center justify-between gap-3 px-4 text-body text-ink-faint hover:text-ink-muted transition-colors cursor-pointer"
                 >
                   <span className="flex items-center gap-2 truncate">
                     {isWiki ? (
-                      <span className="text-xs font-mono font-bold text-amber-300 flex items-center gap-1 shrink-0">
-                        <span>📷</span>
-                        <span className="hidden xs:inline">WIKI</span>
-                      </span>
+                      <span className="text-label font-semibold text-accent-400 shrink-0">WIKI</span>
                     ) : (
                       <svg
                         aria-hidden="true"
-                        className="w-3.5 h-3.5 text-white/60 group-hover:text-white transition-colors shrink-0"
+                        className="w-4 h-4 shrink-0"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -609,7 +681,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                     )}
                     <span className="truncate">
                       {query ? (
-                        <strong className="text-white">&quot;{query}&quot;</strong>
+                        <strong className="font-semibold text-ink">&quot;{query}&quot;</strong>
                       ) : (
                         isWiki ? t('wikiPlaceholder') : t('placeholder')
                       )}
@@ -617,7 +689,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
 
                     {/* Active Filter Badges in Compact Bar (ColorLab mode) */}
                     {!isWiki && currentFormat && (
-                      <span className="eyebrow text-[10px] px-2 py-0.5 rounded-full bg-white/20 text-white font-semibold">
+                      <span className="chip shrink-0">
                         {currentFormat === 'pp'
                           ? 'PP'
                           : currentLook
@@ -626,13 +698,11 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                       </span>
                     )}
                     {!isWiki && currentTag && (
-                      <span className="eyebrow text-[10px] px-2 py-0.5 rounded-full bg-white/20 text-white font-semibold truncate max-w-[5rem]">
-                        #{currentTag}
-                      </span>
+                      <span className="chip shrink-0 truncate max-w-[6rem]">#{currentTag}</span>
                     )}
                   </span>
 
-                  <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded bg-white/15 text-white/80 group-hover:text-white transition-colors">
+                  <span className="hidden sm:inline-flex items-center gap-1 shrink-0 px-2 py-1 rounded-sm bg-white/[0.08] text-label font-semibold text-ink-faint shadow-[var(--elevation-spec)]">
                     <kbd>⌘</kbd>
                     <kbd>K</kbd>
                   </span>
@@ -654,7 +724,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                   }
                   method="get"
                   onSubmit={handleSubmit}
-                  className="relative flex h-9 sm:h-10 items-center w-full animate-fade-in"
+                  className="relative flex min-h-[var(--layout-touch-target)] items-center w-full animate-fade-in"
                 >
                   {!isWiki &&
                     Object.entries({
@@ -670,14 +740,13 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
 
                   <div className="relative flex h-full items-center w-full">
                     {isWiki ? (
-                      <span className="absolute left-3 flex items-center gap-1 text-[11px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/35 shrink-0 pointer-events-none select-none">
-                        <span>📷</span>
-                        <span>WIKI</span>
+                      <span className="absolute left-4 text-label font-semibold text-accent-400 shrink-0 pointer-events-none select-none">
+                        WIKI
                       </span>
                     ) : (
                       <svg
                         aria-hidden="true"
-                        className="absolute left-3.5 w-4 h-4 text-white/70 pointer-events-none"
+                        className="absolute left-4 w-4 h-4 text-ink-faint pointer-events-none"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -701,10 +770,13 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                       onKeyDown={handleInputKeyDown}
                       placeholder={isWiki ? t('wikiPlaceholder') : t('placeholder')}
                       autoComplete="off"
-                      className={`w-full h-full text-xs sm:text-sm rounded-full bg-black/80 text-white placeholder:text-white/40 focus:outline-none transition-all shadow-md [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none ${
-                        isWiki
-                          ? 'pl-20 sm:pl-24 pr-10 border border-amber-400/40 focus:ring-1 focus:ring-amber-400/70 focus:border-amber-400/70'
-                          : 'pl-9 pr-10 border border-white/20 focus:ring-1 focus:ring-white/40'
+                      /* No `focus:outline-none` and no focus ring of its own:
+                         the sunken field is already the affordance, and the one
+                         sanctioned stroke in the system is the global
+                         `:focus-visible` outline, which that utility would have
+                         removed for keyboard users. */
+                      className={`surface-sunken w-full min-h-[var(--layout-touch-target)] text-body text-ink placeholder:text-ink-faint [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none ${
+                        isWiki ? 'pl-16 pr-12' : 'pl-11 pr-12'
                       }`}
                     />
 
@@ -719,26 +791,33 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                       }}
                       title={query ? t('clear') : t('close')}
                       aria-label={query ? t('clear') : t('close')}
-                      className="absolute right-3 p-1 rounded-full text-white/60 hover:text-white transition-colors cursor-pointer"
+                      className="absolute right-2 p-2 rounded-sm text-ink-faint hover:text-ink transition-colors cursor-pointer"
                     >
-                      <span aria-hidden className="text-xs">
+                      <span aria-hidden className="text-body">
                         ✕
                       </span>
                     </button>
 
                     {/* Live Predictive Search Auto-complete Popup */}
                     {isPredictiveOpen && query.trim().length > 0 && (
-                      <div className="absolute left-0 right-0 top-full mt-2 z-[9999] overflow-hidden rounded-2xl border border-white/25 bg-void/95 shadow-2xl backdrop-blur-2xl animate-fade-in font-sans">
+                      /* Positioning, clipping and the opaque backing on this
+                         plain wrapper; the elevation on the panel inside it.
+                         `.surface-raised` is unlayered CSS, so a `absolute`
+                         alongside it is the bug that stretched this bar once
+                         already — and a surface is translucent by construction,
+                         so `bg-void/95` on it would do nothing and the
+                         suggestions would sit over the photograph behind. */
+                      <div className="absolute left-0 right-0 top-full mt-2 z-[9999] overflow-hidden rounded-lg bg-void/95 animate-fade-in">
+                        <div className="surface-raised">
                         {isPredictiveLoading && predictiveResults.length === 0 ? (
-                          <div className="p-3 text-xs text-white/60 flex items-center gap-2 font-mono">
-                            <span className="animate-spin">⏳</span>
+                          <div className="p-4 text-body-sm text-ink-muted">
                             <span>{locale === 'vi' ? 'Đang tìm gợi ý phù hợp…' : 'Finding instant matches…'}</span>
                           </div>
                         ) : predictiveResults.length > 0 ? (
                           <div className="p-2 flex flex-col gap-1">
-                            <div className="px-3 py-1 text-[10px] font-mono font-bold text-white/50 uppercase tracking-widest flex items-center justify-between border-b border-white/10 pb-1.5 mb-0.5">
+                            <div className="label flex items-center justify-between gap-2 px-3 py-1.5">
                               <span>{isWiki ? (locale === 'vi' ? 'Sản Phẩm Khớp Nhanh' : 'Matching Products') : (locale === 'vi' ? 'Công Thức Khớp Nhanh' : 'Matching Recipes')}</span>
-                              <span className="text-amber-300 font-mono">{predictiveResults.length} {locale === 'vi' ? 'gợi ý' : 'matches'}</span>
+                              <span className="text-accent-400 tabular-nums">{predictiveResults.length} {locale === 'vi' ? 'gợi ý' : 'matches'}</span>
                             </div>
 
                             {predictiveResults.map((item, idx) => (
@@ -749,10 +828,10 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                                   setIsSearchOpen(false);
                                   setIsPredictiveOpen(false);
                                 }}
-                                className={`flex items-center gap-3 p-2 rounded-xl transition-all ${
+                                className={`flex items-center gap-3 p-2 rounded-sm transition-colors ${
                                   selectedIndex === idx
-                                    ? 'bg-amber-400/20 text-white shadow-md border border-amber-400/40 scale-[1.01]'
-                                    : 'hover:bg-white/10 text-white/90 hover:text-white'
+                                    ? 'surface-selected text-ink'
+                                    : 'text-ink-muted hover:bg-white/[0.06] hover:text-ink'
                                 }`}
                               >
                                 {item.imageUrl ? (
@@ -765,39 +844,46 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                                     alt=""
                                     width={36}
                                     height={36}
-                                    className="w-9 h-9 rounded-lg object-cover bg-black/60 border border-white/15 shrink-0"
+                                    className="w-9 h-9 rounded-sm object-cover bg-sunken shrink-0"
                                   />
                                 ) : (
+                                  /* The recipe's own accent stands in for the
+                                     photograph it has none of. `◫` is the
+                                     ecosystem's no-photo mark, the same one the
+                                     wiki grid draws. */
                                   <div
-                                    className="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 border border-white/20"
-                                    style={{ backgroundColor: item.accentHex || 'rgba(255,255,255,0.1)' }}
+                                    className="w-9 h-9 rounded-sm flex items-center justify-center shrink-0 text-body-lg text-void/50"
+                                    /* Dark ink on this chip is correct, but only
+                                       because the ground is always light:
+                                       `--accent` is documented to resolve at or
+                                       above the ramp's 400 lightness. The
+                                       fallback used to be white 8% — which over
+                                       the void is nearly black, so a recipe with
+                                       no computed accent drew a near-black mark
+                                       on a near-black chip. It falls back to the
+                                       ramp step the contract names instead. */
+                                    style={{
+                                      backgroundColor:
+                                        item.accentHex || 'var(--color-accent-400)',
+                                    }}
+                                    aria-hidden
                                   >
-                                    {isWiki ? '📷' : '🎨'}
+                                    ◫
                                   </div>
                                 )}
 
                                 <div className="flex-1 min-w-0 flex flex-col justify-center leading-snug">
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="font-bold text-xs sm:text-sm text-white truncate font-sans">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-body-sm font-semibold text-ink truncate">
                                       {item.title}
                                     </span>
-                                    {item.badge && (
-                                      <span className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold shrink-0 ${
-                                        isWiki
-                                          ? 'bg-amber-400/20 text-amber-300 border border-amber-400/35'
-                                          : 'bg-white/20 text-white border border-white/25'
-                                      }`}>
-                                        {item.badge}
-                                      </span>
-                                    )}
+                                    {item.badge && <span className="chip shrink-0">{item.badge}</span>}
                                   </div>
-                                  <span className="text-[11px] text-white/60 truncate font-mono mt-0.5">
-                                    {item.subtitle}
-                                  </span>
+                                  <span className="meta truncate mt-0.5">{item.subtitle}</span>
                                 </div>
 
                                 {item.price && (
-                                  <span className="text-xs font-mono font-bold text-amber-300 shrink-0 ml-auto">
+                                  <span className="text-body-sm font-semibold text-accent-400 tabular-nums shrink-0 ml-auto">
                                     {item.price}
                                   </span>
                                 )}
@@ -807,7 +893,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                             <button
                               type="button"
                               onClick={handleSubmit}
-                              className="w-full text-center py-1.5 text-xs font-bold text-amber-300 hover:text-amber-200 border-t border-white/10 mt-1 cursor-pointer font-sans"
+                              className="w-full text-center min-h-[var(--layout-touch-target)] px-3 rounded-sm text-body-sm font-semibold text-accent-400 cursor-pointer"
                             >
                               {locale === 'vi'
                                 ? `Nhấn Enter để xem tất cả kết quả cho "${query}" →`
@@ -815,12 +901,13 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                             </button>
                           </div>
                         ) : (
-                          <div className="p-3 text-center text-xs text-white/60 font-sans">
+                          <div className="p-4 text-center text-body-sm text-ink-muted">
                             {locale === 'vi'
                               ? `Không có gợi ý khớp ngay lập tức. Nhấn Enter để tìm kiếm sâu.`
                               : `No instant matches. Press Enter for deep search.`}
                           </div>
                         )}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -834,7 +921,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                 type="button"
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
                 aria-label={isSearchOpen ? t('close') : t('label')}
-                className="sm:hidden w-9 h-9 shrink-0 flex items-center justify-center rounded-full glass-flat text-white/80 hover:text-white transition-colors cursor-pointer"
+                className={`sm:hidden ${ICON_BUTTON} ${ICON_BUTTON_IDLE}`}
               >
                 <svg
                   aria-hidden="true"
@@ -863,56 +950,60 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                     onClick={() => setIsProfileOpen((prev) => !prev)}
                     aria-expanded={isProfileOpen}
                     aria-haspopup="menu"
-                    className={`flex h-9 sm:h-10 items-center gap-2 pl-1 pr-1 sm:pl-1.5 sm:pr-3.5 rounded-full glass-flat transition-all cursor-pointer border shadow-sm ${
-                      isProfileOpen
-                        ? 'bg-white/20 border-white/40'
-                        : 'border-white/20 hover:bg-white/20 hover:border-white/40'
-                    }`}
+                    aria-label={user.name}
+                    /* A 40px disc, and the accent gradient under the photograph
+                       is what it falls back to — the name that used to ride
+                       beside it reserved up to 64px in a row with none to spare,
+                       and it is the first line of the menu this opens. */
+                    className="h-10 w-10 shrink-0 overflow-hidden rounded-full cursor-pointer bg-[linear-gradient(160deg,var(--color-accent-400),var(--color-accent-600))] shadow-[0_6px_16px_-6px_color-mix(in_oklch,var(--color-accent-500)_60%,transparent),var(--elevation-spec)]"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element -- user avatar */}
                     <img
                       src={user.avatarUrl}
                       alt=""
                       referrerPolicy="no-referrer"
+                      /* A dead avatar URL uncovers the accent disc underneath.
+                         It used to swap in a generated one from an external
+                         avatar service, which put a third-party request and a
+                         colour from outside the ramp on the critical path for
+                         a 40px circle. */
                       onError={(e) => {
-                        e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=0D8ABC&color=fff&bold=true`;
+                        e.currentTarget.style.display = 'none';
                       }}
-                      className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-white/40 shrink-0"
+                      className="h-full w-full object-cover"
                     />
-                    {/* Avatar-only below `sm`, for the same reason the sign-in
-                        button is icon-only there: the name reserved up to 64px
-                        in a row that has none to spare, and truncating it to
-                        "Tha…" bought nothing a reader could use. */}
-                    <span className="hidden sm:inline text-xs font-bold text-white sm:max-w-[7rem] md:max-w-[9rem] truncate font-sans whitespace-nowrap">
-                      {user.name}
-                    </span>
                   </button>
 
                   {isProfileOpen && (
-                    /* The positioning lives on this wrapper and the glass look on
+                    /* The positioning lives on this wrapper and the elevation on
                        the panel inside it, because the two cannot share an
-                       element. `.glass` is unlayered CSS and therefore beats
-                       Tailwind's layered `absolute`, so a `glass absolute` panel
-                       computes to `position: relative`, stays in normal flow,
-                       and stretches the header — 82px to 188px here, which is
-                       the bar visibly growing instead of the menu opening over
-                       the page. */
-                    <div className="absolute right-0 top-full mt-2 w-48 z-50 overflow-hidden rounded-[var(--radius-glass)] border border-white/20 bg-void/95 shadow-2xl">
-                      {/* Opacity, border and shadow belong to the wrapper for the
-                          same reason as the positioning: `.glass` hard-sets
-                          background, box-shadow and `border: 0 !important`, so
-                          `bg-void/95` on the glass panel itself was dead and the
-                          menu stayed translucent — the recipe photo behind it
-                          showed straight through the email address. Painting the
-                          opaque colour underneath lets the glass gradient sit on
-                          top of it and still read as glass. */}
-                      <div role="menu" className="glass p-2 animate-fade-in">
-                        <div className="px-3 py-2 border-b border-white/10">
-                          <p className="text-xs font-bold text-white truncate font-sans">{user.name}</p>
-                          <p className="text-[10px] text-white/50 truncate font-mono mt-0.5">
-                            {user.email}
-                          </p>
+                       element. A surface class is unlayered CSS and therefore
+                       beats Tailwind's layered utilities, so the panel this
+                       replaces — which carried both the deleted surface
+                       primitive and `absolute` — computed to
+                       `position: relative`, stayed in normal flow and stretched
+                       the header from 82px to 188px, the bar visibly growing
+                       instead of a menu opening over the page.
+
+                       The opaque backing is here for the same reason: a surface
+                       is translucent by construction, so `bg-void/95` on the
+                       panel itself was dead and the recipe photograph behind
+                       showed straight through the email address. Painted
+                       underneath, the translucent film still sits on top of it
+                       and still reads as a floating layer.
+
+                       `mt-1`, not `mt-2`: the menu is anchored under the avatar
+                       and its top edge lands *inside* the bar's bottom padding,
+                       so it visibly overlaps the bar. That overlap is what ties
+                       it to the control that opened it, now that there is no
+                       rule along that edge for it to cross. */
+                    <div className="absolute right-0 top-full mt-1 w-[17rem] max-w-[calc(100vw-2rem)] z-50 overflow-hidden rounded-lg bg-void/95">
+                      <div role="menu" className="surface-raised p-2 flex flex-col gap-1 animate-fade-in">
+                        <div className="px-3 py-2 flex flex-col gap-0.5 min-w-0">
+                          <p className="text-body-sm font-semibold text-ink truncate">{user.name}</p>
+                          <p className="meta truncate">{user.email}</p>
                         </div>
+                        <hr className="seam shrink-0" />
                         <button
                           type="button"
                           role="menuitem"
@@ -920,10 +1011,10 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                             setIsProfileOpen(false);
                             void logout();
                           }}
-                          className="w-full mt-1 px-3 py-2 rounded-xl text-left text-xs font-semibold text-danger hover:bg-danger/10 transition-colors flex items-center justify-between cursor-pointer font-sans"
+                          className="w-full min-h-[var(--layout-touch-target)] px-3 rounded-sm text-left text-body font-semibold text-danger hover:bg-danger/10 transition-colors flex items-center justify-between gap-3 cursor-pointer"
                         >
                           <span>{tAuth('signOut')}</span>
-                          <span aria-hidden>↪</span>
+                          <span aria-hidden className="text-ink-faint">↪</span>
                         </button>
                       </div>
                     </div>
@@ -935,18 +1026,28 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                   onClick={() => loginWithGoogle()}
                   aria-label={tAuth('signInGoogle')}
                   title={tAuth('signInGoogle')}
-                  className="flex h-9 sm:h-10 items-center justify-center gap-2 w-9 sm:w-auto sm:px-4 rounded-full bg-white text-black font-extrabold text-xs sm:text-sm hover:bg-white/90 hover:scale-105 active:scale-95 transition-all shadow-md cursor-pointer shrink-0 border border-white font-sans"
+                  /* A glass action, not a white pill: `bg-white text-black`
+                     was dark type on a light field in a dark-only system.
+
+                     The mark stays. It is Google's trademark and their sign-in
+                     branding guidelines require it on a button that starts the
+                     Google flow — which this one does, `loginWithGoogle()` on
+                     click. What was wrong here was the DUPLICATE: a second copy
+                     of the same four brand hexes inlined in this file. It is
+                     imported from auth-context now, so the mark has one
+                     definition and the hex grep has one exemption. */
+                  className="btn-glass shrink-0 cursor-pointer gap-2"
                 >
-                  <GoogleIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
-                  {/* Icon-only on the narrowest screens. The label plus the flag
-                      toggle plus the wordmark came to 400px of content in a
-                      311px row at 375px wide, and the row is `flex-nowrap`, so
-                      it overflowed the page sideways instead of wrapping.
-                      `aria-label` above still names the button. */}
+                  <GoogleMark className="w-4 h-4 shrink-0" />
+                  {/* The full label plus the flag toggle plus the wordmark came
+                      to 400px of content in a 311px row at 375px wide, and the
+                      row is `flex-nowrap`, so it overflowed the page sideways
+                      instead of wrapping. `aria-label` above names it either
+                      way. */}
                   <span aria-hidden className="hidden md:inline whitespace-nowrap">
                     {tAuth('signInGoogle')}
                   </span>
-                  <span aria-hidden className="hidden sm:inline md:hidden whitespace-nowrap">
+                  <span aria-hidden className="md:hidden whitespace-nowrap">
                     {tAuth('signIn')}
                   </span>
                 </button>
@@ -960,32 +1061,41 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
           <div
             className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${
               isSearchOpen
-                ? 'grid-rows-[1fr] opacity-100 mt-2.5 pt-2 border-t border-white/10'
+                ? 'grid-rows-[1fr] opacity-100 mt-3'
                 : 'grid-rows-[0fr] opacity-0 pointer-events-none'
             }`}
           >
-            <div className="overflow-hidden flex flex-col gap-2 text-xs">
+            <div className="overflow-hidden flex flex-col gap-3 text-body-sm">
+              {/* The console genuinely is a second block under the control rail,
+                  so it gets the one divider the system allows: light that fades
+                  out at both ends, never a rule. It lives inside the collapsing
+                  row so it disappears with the console. */}
+              <hr className="seam shrink-0" />
               {isWiki ? (
                 /* Sony Wiki Controls */
-                <div className="flex flex-col gap-2.5 py-1 font-sans">
+                <div className="flex flex-col gap-3">
                   {/* Row 1: Category Tabs & View Switcher */}
                   <div className="flex items-center justify-between gap-3 flex-wrap">
-                    <div className="flex items-center gap-1.5 overflow-x-auto py-1 max-w-full scrollbar-none">
+                    {/* `.filter-scroll` is the fallback this rail was written
+                        for: a wrapping chip list above 48rem, one silently
+                        scrolling row below it, rather than three rows of chips
+                        pushing the catalogue off a phone screen. */}
+                    <div className="filter-scroll flex flex-wrap items-center gap-2 min-w-0">
                       {/* Every product on `/audio` is one category, so tabs
                           keyed on `cat` would be one live tab and three empty
                           ones. There they select `sub1` — Tai nghe or Loa —
                           which is the split a reader of that page is after. */}
                       {(isAudioWiki
                         ? [
-                            { key: 'all', label: tCameras('catAll'), icon: '📦' },
-                            { key: 'Tai nghe', label: 'Tai nghe', icon: '🎧' },
-                            { key: 'Loa', label: 'Loa', icon: '🔊' },
+                            { key: 'all', label: tCameras('catAll') },
+                            { key: 'Tai nghe', label: 'Tai nghe' },
+                            { key: 'Loa', label: 'Loa' },
                           ]
                         : [
-                            { key: 'all', label: tCameras('catAll'), icon: '📦' },
-                            { key: 'camera', label: tCameras('catCamera'), icon: '📷' },
-                            { key: 'lens', label: tCameras('catLens'), icon: '🔍' },
-                            { key: 'accessory', label: tCameras('catAccessory'), icon: '🎙️' },
+                            { key: 'all', label: tCameras('catAll') },
+                            { key: 'camera', label: tCameras('catCamera') },
+                            { key: 'lens', label: tCameras('catLens') },
+                            { key: 'accessory', label: tCameras('catAccessory') },
                           ]
                       ).map((cat) => (
                         <button
@@ -996,61 +1106,51 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                               ? updateWikiFilters({ sub1: cat.key, sub2: 'all' })
                               : updateWikiFilters({ cat: cat.key, sub1: 'all', sub2: 'all' })
                           }
-                          className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 font-sans ${
-                            (isAudioWiki ? wikiSub1 : wikiCat) === cat.key
-                              ? 'bg-amber-400 text-black shadow-md font-extrabold scale-105'
-                              : 'glass-flat text-white/80 hover:bg-white/20 hover:text-white border border-white/15'
-                          }`}
+                          className={
+                            (isAudioWiki ? wikiSub1 : wikiCat) === cat.key ? CHIP_SELECTED : CHIP_IDLE
+                          }
                         >
-                          <span>{cat.icon}</span>
-                          <span>{cat.label}</span>
+                          {cat.label}
                         </button>
                       ))}
                     </div>
 
-
-
-                    {/* View Mode Switcher */}
-                    <div className="flex items-center p-1 rounded-xl bg-black/70 border border-white/20 ml-auto shrink-0 font-sans">
+                    {/* View Mode Switcher — a segmented control, so the rut is
+                        pressed in and the live option is a fill. */}
+                    <div className="surface-sunken flex items-center gap-1 p-1 ml-auto shrink-0">
                       <button
                         type="button"
                         onClick={() => updateWikiFilters({ view: 'table' })}
                         title={tCameras('viewTable')}
-                        className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer font-sans ${
-                          wikiView === 'table' ? 'bg-amber-400 text-black font-extrabold shadow-md' : 'text-white/60 hover:text-white'
+                        className={`px-3 min-h-10 rounded-sm text-body-sm font-semibold transition-colors cursor-pointer ${
+                          wikiView === 'table' ? 'surface-selected text-ink' : 'text-ink-muted hover:text-ink'
                         }`}
                       >
-                        📋 {tCameras('viewTable')}
+                        {tCameras('viewTable')}
                       </button>
                       <button
                         type="button"
                         onClick={() => updateWikiFilters({ view: 'grid' })}
                         title={tCameras('viewGrid')}
-                        className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer font-sans ${
-                          wikiView === 'grid' ? 'bg-amber-400 text-black font-extrabold shadow-md' : 'text-white/60 hover:text-white'
+                        className={`px-3 min-h-10 rounded-sm text-body-sm font-semibold transition-colors cursor-pointer ${
+                          wikiView === 'grid' ? 'surface-selected text-ink' : 'text-ink-muted hover:text-ink'
                         }`}
                       >
-                        🔲 {tCameras('viewGrid')}
+                        {tCameras('viewGrid')}
                       </button>
                     </div>
                   </div>
 
                   {/* Row 2: Sub-category Dropdowns & Sort */}
-                  <div className="flex items-center justify-between gap-3 flex-wrap text-xs font-sans border-t border-white/10 pt-2">
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
                     <div className="flex items-center gap-2 flex-wrap">
-                      {/* Digital Clock Style Product Counter Badge */}
-                      <span className="px-3 py-1 rounded-xl bg-black/90 border border-amber-400/50 text-amber-300 shadow-[0_0_12px_rgba(251,191,36,0.25)] font-mono font-extrabold text-xs tracking-wider flex items-center gap-2 select-none shrink-0">
-                        <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shadow-[0_0_6px_#fbbf24]" />
-                        <span>{isAudioWiki ? '25 PRODUCTS' : '94 PRODUCTS'}</span>
-                      </span>
-
                       {/* `sub1` already has tabs on the audio route, so only
                           the `sub2` dropdown shows there. */}
                       {!isAudioWiki && (
                       <select
                         value={wikiSub1}
                         onChange={(e) => updateWikiFilters({ sub1: e.target.value, sub2: 'all' })}
-                        className="px-3 py-1.5 rounded-xl bg-black/80 border border-white/25 text-xs text-white font-bold focus:outline-none focus:ring-1 focus:ring-amber-400/60 cursor-pointer font-sans"
+                        className={WIKI_SELECT}
                       >
                         <option value="all">{tCameras('sub1All')}</option>
                         {['1-Inch', 'APS-C', 'Adapter', 'Audio', 'Full Frame', 'Grip / Tripod', 'Power'].map((sub1) => (
@@ -1064,7 +1164,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                       <select
                         value={wikiSub2}
                         onChange={(e) => updateWikiFilters({ sub2: e.target.value })}
-                        className="px-3 py-1.5 rounded-xl bg-black/80 border border-white/25 text-xs text-white font-bold focus:outline-none focus:ring-1 focus:ring-amber-400/60 cursor-pointer font-sans"
+                        className={WIKI_SELECT}
                       >
                         <option value="all">{tCameras('sub2All')}</option>
                         {(isAudioWiki
@@ -1091,11 +1191,11 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                     </div>
 
                     <div className="flex items-center gap-2 ml-auto">
-                      <span className="text-white/80 font-bold hidden sm:inline font-sans">{tCameras('sortBy')}:</span>
+                      <span className="label hidden sm:inline">{tCameras('sortBy')}</span>
                       <select
                         value={wikiSort}
                         onChange={(e) => updateWikiFilters({ sort: e.target.value })}
-                        className="px-3 py-1.5 rounded-xl bg-black/80 border border-white/25 text-xs text-white font-bold focus:outline-none focus:ring-1 focus:ring-amber-400/60 cursor-pointer font-sans"
+                        className={WIKI_SELECT}
                       >
                         {/* Cheapest first leads, because it is the default the
                             page opens on — a select whose first option is not
@@ -1109,37 +1209,40 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                   </div>
 
                   {hasActiveFilters && (
-                    <div className="flex items-center justify-between pt-1 border-t border-white/10 text-[10px] text-ink-faint">
+                    <div className="flex items-center justify-between gap-3">
                       <button
                         type="button"
                         onClick={handleResetAll}
-                        className="eyebrow text-[10px] text-amber-300 hover:text-amber-200 transition-colors cursor-pointer underline underline-offset-2"
+                        className="text-body-sm font-semibold text-accent-400 transition-colors cursor-pointer underline underline-offset-2"
                       >
                         {t('clearAll')}
                       </button>
-                      <span className="font-mono hidden sm:inline">{t('escHint')}</span>
+                      <span className="meta hidden sm:inline">{t('escHint')}</span>
                     </div>
                   )}
                 </div>
               ) : (
                 /* ColorLab Recipe Controls */
                 <>
-                  {/* Row 1: Format Filters */}
-                  <div className="flex items-start gap-2">
-                    <span className="eyebrow text-[11px] text-white/80 uppercase w-14 shrink-0 font-bold leading-6">
-                      Format
-                    </span>
+                  {/* Every chip in these three rows used to be black type on a
+                      white pill when live, and a dimmed white on the deleted
+                      flat-surface primitive when not — dark on light in a
+                      dark-only interface, forced past the cascade with
+                      `!important` because that primitive was unlayered and
+                      outranked the colour utility. Both halves are gone: the
+                      live state is an accent-tinted FILL and the idle one is the
+                      system's own chip. */}
 
-                    <div className="flex flex-wrap items-center gap-1.5 min-w-0 py-1">
+                  {/* Row 1: Format Filters */}
+                  <div className="flex items-start gap-3">
+                    <span className="label w-14 shrink-0 leading-11">Format</span>
+
+                    <div className="filter-scroll flex flex-wrap items-center gap-2 min-w-0">
                       <button
                         type="button"
                         onClick={() => updateFilters({ format: '', look: '' })}
                         aria-current={!currentFormat ? 'true' : undefined}
-                        className={`eyebrow rounded-full px-3 py-1 text-xs transition-all duration-200 ease-out hover:scale-105 hover:-translate-y-0.5 active:scale-95 cursor-pointer ${
-                          !currentFormat
-                            ? '!text-black bg-white font-bold scale-105 shadow-[0_4px_16px_rgba(0,0,0,0.3)]'
-                            : 'glass-flat !text-white/80 hover:!text-white hover:bg-white/20 font-semibold'
-                        }`}
+                        className={!currentFormat ? CHIP_SELECTED : CHIP_IDLE}
                       >
                         All
                       </button>
@@ -1150,11 +1253,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                           updateFilters({ format: currentFormat === 'pp' ? '' : 'pp', look: '' })
                         }
                         aria-current={currentFormat === 'pp' ? 'true' : undefined}
-                        className={`eyebrow rounded-full px-3 py-1 text-xs transition-all duration-200 ease-out hover:scale-105 hover:-translate-y-0.5 active:scale-95 cursor-pointer ${
-                          currentFormat === 'pp'
-                            ? '!text-black bg-white font-bold scale-105 shadow-[0_4px_16px_rgba(0,0,0,0.3)]'
-                            : 'glass-flat !text-white/80 hover:!text-white hover:bg-white/20 font-semibold'
-                        }`}
+                        className={currentFormat === 'pp' ? CHIP_SELECTED : CHIP_IDLE}
                       >
                         Picture Profile
                       </button>
@@ -1163,11 +1262,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                         type="button"
                         onClick={() => updateFilters({ format: currentFormat === 'cl' ? '' : 'cl' })}
                         aria-current={currentFormat === 'cl' ? 'true' : undefined}
-                        className={`eyebrow rounded-full px-3 py-1 text-xs transition-all duration-200 ease-out hover:scale-105 hover:-translate-y-0.5 active:scale-95 cursor-pointer ${
-                          currentFormat === 'cl'
-                            ? '!text-black bg-white font-bold scale-105 shadow-[0_4px_16px_rgba(0,0,0,0.3)]'
-                            : 'glass-flat !text-white/80 hover:!text-white hover:bg-white/20 font-semibold'
-                        }`}
+                        className={currentFormat === 'cl' ? CHIP_SELECTED : CHIP_IDLE}
                       >
                         Creative Look
                       </button>
@@ -1176,21 +1271,15 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
 
                   {/* Row 2: Creative Look Sub-Filters (only visible when format=cl) */}
                   {currentFormat === 'cl' && (
-                    <div className="flex items-start gap-2 transition-all duration-300">
-                      <span className="eyebrow text-[11px] text-white/80 uppercase w-14 shrink-0 font-bold leading-6">
-                        Look
-                      </span>
+                    <div className="flex items-start gap-3">
+                      <span className="label w-14 shrink-0 leading-11">Look</span>
 
-                      <div className="flex flex-wrap items-center gap-1.5 min-w-0 py-1">
+                      <div className="filter-scroll flex flex-wrap items-center gap-2 min-w-0">
                         <button
                           type="button"
                           onClick={() => updateFilters({ look: '' })}
                           aria-current={!currentLook ? 'true' : undefined}
-                          className={`eyebrow rounded-full px-2.5 py-0.5 text-[11px] transition-all duration-200 ease-out hover:scale-105 hover:-translate-y-0.5 active:scale-95 cursor-pointer ${
-                            !currentLook
-                              ? '!text-black bg-white font-bold scale-105 shadow-[0_4px_14px_rgba(0,0,0,0.3)]'
-                              : 'glass-flat !text-white/80 hover:!text-white hover:bg-white/20 font-semibold'
-                          }`}
+                          className={!currentLook ? CHIP_SELECTED : CHIP_IDLE}
                         >
                           All
                         </button>
@@ -1201,11 +1290,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                             type="button"
                             onClick={() => updateFilters({ look: currentLook === l.code ? '' : l.code })}
                             aria-current={currentLook === l.code ? 'true' : undefined}
-                            className={`eyebrow rounded-full px-2.5 py-0.5 text-[11px] transition-all duration-200 ease-out hover:scale-105 hover:-translate-y-0.5 active:scale-95 cursor-pointer ${
-                              currentLook === l.code
-                                ? '!text-black bg-white font-bold scale-105 shadow-[0_4px_14px_rgba(0,0,0,0.3)]'
-                                : 'glass-flat !text-white/80 hover:!text-white hover:bg-white/20 font-semibold'
-                            }`}
+                            className={currentLook === l.code ? CHIP_SELECTED : CHIP_IDLE}
                           >
                             {l.code}
                           </button>
@@ -1215,21 +1300,15 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                   )}
 
                   {/* Row 3: Tag Chips Bar */}
-                  <div className="flex items-start gap-2">
-                    <span className="eyebrow text-[11px] text-white/80 uppercase w-14 shrink-0 font-bold leading-6">
-                      Tags
-                    </span>
+                  <div className="flex items-start gap-3">
+                    <span className="label w-14 shrink-0 leading-11">Tags</span>
 
-                    <div className="flex items-center gap-1.5 min-w-0 overflow-x-auto py-1 scrollbar-none">
+                    <div className="filter-scroll flex flex-wrap items-center gap-2 min-w-0">
                       <button
                         type="button"
                         onClick={() => updateFilters({ tag: '' })}
                         aria-current={!currentTag ? 'true' : undefined}
-                        className={`eyebrow shrink-0 rounded-full px-3 py-1 text-xs transition-all duration-200 ease-out hover:scale-105 hover:-translate-y-0.5 active:scale-95 cursor-pointer ${
-                          !currentTag
-                            ? '!text-black bg-white font-bold scale-105 shadow-[0_4px_16px_rgba(0,0,0,0.3)]'
-                            : 'glass-flat !text-white/80 hover:!text-white hover:bg-white/20 font-semibold'
-                        }`}
+                        className={!currentTag ? CHIP_SELECTED : CHIP_IDLE}
                       >
                         All
                       </button>
@@ -1240,11 +1319,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                           type="button"
                           onClick={() => updateFilters({ tag: currentTag === item.tag ? '' : item.tag })}
                           aria-current={currentTag === item.tag ? 'true' : undefined}
-                          className={`eyebrow shrink-0 rounded-full px-3 py-1 text-xs transition-all duration-200 ease-out hover:scale-105 hover:-translate-y-0.5 active:scale-95 cursor-pointer ${
-                            currentTag === item.tag
-                              ? '!text-black bg-white font-bold scale-105 shadow-[0_4px_16px_rgba(0,0,0,0.3)]'
-                              : 'glass-flat !text-white/80 hover:!text-white hover:bg-white/20 font-semibold'
-                          }`}
+                          className={currentTag === item.tag ? CHIP_SELECTED : CHIP_IDLE}
                         >
                           {item.tag}
                         </button>
@@ -1254,15 +1329,15 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
 
                   {/* Footer row: Clear all filters & Shortcut hint */}
                   {hasActiveFilters && (
-                    <div className="flex items-center justify-between pt-2 mt-0.5 border-t border-white/10 text-[10px] text-ink-faint">
+                    <div className="flex items-center justify-between gap-3">
                       <button
                         type="button"
                         onClick={handleResetAll}
-                        className="eyebrow text-[10px] text-danger/85 hover:text-danger transition-colors cursor-pointer underline underline-offset-2"
+                        className="text-body-sm font-semibold text-accent-400 transition-colors cursor-pointer underline underline-offset-2"
                       >
                         {t('clearAll')}
                       </button>
-                      <span className="font-mono hidden sm:inline">{t('escHint')}</span>
+                      <span className="meta hidden sm:inline">{t('escHint')}</span>
                     </div>
                   )}
                 </>
@@ -1276,11 +1351,11 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
     {/* Full-Screen Backdrop Blur & iPad-style Launchpad */}
     {isEcosystemOpen && mounted && typeof document !== 'undefined' && createPortal(
       <div ref={portalRef} className="fixed inset-0 z-[99990]">
-        {/* Backdrop. `black/80`, not `/60`: at 60% the recipe photographs
+        {/* Backdrop. The ground at 80%, not 60%: at 60% the recipe photographs
             behind still came through the blur as legible shapes and competed
             with the icons for attention. A launcher has to feel like a layer
             over the page, not a filter on it. */}
-        <div className="absolute inset-0 bg-black/80 backdrop-blur-2xl transition-opacity duration-300" />
+        <div className="absolute inset-0 bg-void/80 [backdrop-filter:var(--elevation-blur-strong)] [-webkit-backdrop-filter:var(--elevation-blur-strong)] transition-opacity duration-300" />
 
         {/* The scrolling box, and therefore the clipping box, is deliberately
             the whole viewport.
@@ -1299,13 +1374,18 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
             here, is what lets tall content scroll without losing its top — the
             usual failure of a centred flex item inside a scroll container. */}
         <div
-          className="relative z-[99999] h-full w-full overflow-y-auto overscroll-contain scrollbar-none"
+          className="relative z-[99999] h-full w-full scroll-area scroll-silent"
           onClick={(e) => {
             // Closing on a click outside the tiles, which is what the backdrop
             // did before this layer covered it. The layer has to stay
             // hit-testable — `pointer-events-none` would hand the wheel to the
             // page underneath and the launcher would not scroll at all.
-            if (!(e.target as HTMLElement).closest('.app-enter')) {
+            //
+            // Tested against the launcher's own node, never a class name: the
+            // previous `closest('.app-enter')` went on compiling and passing
+            // every test after the class it named was deleted, and silently
+            // swallowed every click on a tile. See `launcherRef`.
+            if (!launcherRef.current?.contains(e.target as Node)) {
               setIsEcosystemOpen(false);
             }
           }}
@@ -1337,7 +1417,9 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                 an iframe; that only ever worked because the destination was
                 already external, and it cost the reader the app's own chrome,
                 its URL bar and its deep links. Send them to the real origin. */}
-            <LauncherGrid size="md" onNavigate={() => setIsEcosystemOpen(false)} />
+            <div ref={launcherRef}>
+              <LauncherGrid size="md" onNavigate={() => setIsEcosystemOpen(false)} />
+            </div>
           </div>
         </div>
       </div>,
@@ -1351,12 +1433,19 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
 export function SiteHeader(props: SiteHeaderProps) {
   return (
     <Suspense
+      /* The placeholder is the same bar as the real one — same film, same 40px
+         blur, same shadow and no bottom rule — so hydration does not swap one
+         header treatment for another. The wordmark was set in an italic serif
+         here, the only second family left in the app. */
       fallback={
-        <header className="sticky top-0 z-40 w-full border-b border-white/10 bg-black/80 backdrop-blur-xl">
-          <div className="mx-auto flex max-w-[160rem] items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-            <div className="flex items-center gap-2">
-              <span className="font-sans text-sm font-bold tracking-widest text-white">
-                ALPHA <span className="font-serif italic text-white/90">α</span> COLORLAB
+        <header className={`sticky top-0 z-40 w-full ${HEADER_BAR}`}>
+          <div className="mx-auto flex max-w-[160rem] items-center justify-between px-3 py-2 sm:px-6 sm:py-3">
+            <div className="flex min-h-[var(--layout-touch-target)] items-center gap-1.5">
+              <span aria-hidden className="text-title-3 leading-none text-accent-400">
+                α
+              </span>
+              <span className="whitespace-nowrap text-body-lg font-extrabold tracking-[-0.02em] text-ink">
+                ColorLab
               </span>
             </div>
           </div>
@@ -1365,28 +1454,5 @@ export function SiteHeader(props: SiteHeaderProps) {
     >
       <SiteHeaderInner {...props} />
     </Suspense>
-  );
-}
-
-function GoogleIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        fill="#4285F4"
-        d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
-      />
-      <path
-        fill="#34A853"
-        d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.29v3.15C3.26 21.3 7.31 24 12 24z"
-      />
-      <path
-        fill="#FBBC05"
-        d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.29C.47 8.21 0 10.05 0 12s.47 3.79 1.29 5.42l3.99-3.15z"
-      />
-      <path
-        fill="#EA4335"
-        d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.58l3.99 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
-      />
-    </svg>
   );
 }

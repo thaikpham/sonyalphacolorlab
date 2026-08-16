@@ -1,5 +1,4 @@
 import { getLocale } from 'next-intl/server';
-import { notoSans, notoSansMono } from './fonts';
 import { routing } from '@/i18n/routing';
 import './globals.css';
 
@@ -28,10 +27,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   }
 
   return (
-    <html
-      lang={locale}
-      className={`${notoSans.variable} ${notoSansMono.variable} h-full antialiased`}
-    >
+    // The face comes from `@font-face` in globals.css, vendored into
+    // public/fonts/noto-sans by `npm run fonts:vendor`. No next/font: it hashes
+    // the family into a per-app variable, so the four apps in this ecosystem
+    // could not name the same face — which is what "font không đồng đều" was.
+    <html lang={locale} className="h-full antialiased">
       <body className="app-shell font-sans min-h-screen-dynamic flex flex-col">
         {children}
       </body>

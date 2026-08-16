@@ -260,12 +260,55 @@ export function compareCameras<T extends { priceVnd: number; name: string; sku: 
  * component handed `CameraCard[]` cannot reach for `.specs` and quietly put it
  * back on the wire.
  */
-export type CameraCard = Omit<SonyCamera, 'specs' | 'galleryUrls'>;
+export type CameraCard = Omit<SonyCamera, 'specs' | 'galleryUrls'> & {
+  /**
+   * The two or three headline figures the catalogue card prints as chips.
+   *
+   * Derived here rather than shipping `specs`. The card needs three strings —
+   * for a body `effectivePixels`, `autofocus` and `video` — and the whole spec
+   * block is 45KB across 94 products, which is the payload this projection
+   * exists to keep off the wire. Three short strings per product is roughly
+   * 2KB; the block is not coming back.
+   *
+   * A field the source does not publish is simply absent, never guessed and
+   * never an empty chip: `specsMissing` is the catalogue's own record of what
+   * it does not know, and for video the card falls back to `mediaSlots`, which
+   * is what the reference does.
+   */
+  specChips: string[];
+};
 
-/** Drops the fields a listing does not render. */
+/** The chip figures per product kind. Order is the order they are printed. */
+function chipsFor(specs: ProductSpecs | undefined): string[] {
+  if (!specs) return [];
+  const missing = new Set(specs.specsMissing ?? []);
+  const take = (value: string | null | undefined, field: string) =>
+    value && !missing.has(field) ? value : null;
+
+  switch (specs.kind) {
+    case 'camera':
+      return [
+        take(specs.effectivePixels, 'effectivePixels'),
+        take(specs.autofocus, 'autofocus'),
+        take(specs.video, 'video') ?? take(specs.mediaSlots, 'mediaSlots'),
+      ].filter((v): v is string => Boolean(v));
+    case 'lens':
+      return [
+        take(specs.focalLength, 'focalLength'),
+        take(specs.maxAperture, 'maxAperture'),
+        take(specs.format, 'format'),
+      ].filter((v): v is string => Boolean(v));
+    case 'accessory':
+      return (specs.keySpecs ?? []).slice(0, 3).map((s) => s.value);
+    default:
+      return [];
+  }
+}
+
+/** Drops the fields a listing does not render, keeping the three it does. */
 export function toCameraCard(c: SonyCamera): CameraCard {
-  const { specs: _specs, galleryUrls: _galleryUrls, ...card } = c;
-  return card;
+  const { specs, galleryUrls: _galleryUrls, ...card } = c;
+  return { ...card, specChips: chipsFor(specs) };
 }
 
 export interface SonyCamera {

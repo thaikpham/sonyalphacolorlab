@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { setRequestLocale } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { getSonyCameras } from '@/lib/cameras/data';
 import { getSonyAudio } from '@/lib/audio/data';
 import { CameraCompareView } from '@/components/camera-compare-view';
@@ -30,6 +30,7 @@ export default async function CameraComparePage({
   const { locale } = await params;
   const { ids } = await searchParams;
   setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: 'cameras' });
 
   /* Both catalogues. This is the only compare surface, and `?ids=` can name a
      body and a headset in the same list — resolving against cameras alone
@@ -46,9 +47,12 @@ export default async function CameraComparePage({
         <CameraCompareView initialCameras={initialCameras} selectedIds={selectedIds} />
       </main>
 
-      <footer className="w-full py-8 text-center text-xs text-white/40 border-t border-white/10 font-mono">
-        Alpha ColorLab · Sony Camera Catalog & Spec Wiki
-      </footer>
+      {/* Light, not a line — the same seam the two catalogue routes use. */}
+      <div className="w-full max-w-[160rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12">
+        <hr className="seam" />
+      </div>
+
+      <footer className="meta w-full py-8 text-center">{t('footerCameraWiki')}</footer>
     </>
   );
 }
