@@ -44,10 +44,10 @@ const ACCENT_FILL =
   'bg-[linear-gradient(180deg,color-mix(in_oklch,var(--color-accent-500)_82%,white),var(--color-accent-500))] ' +
   'text-white shadow-[0_6px_16px_-6px_color-mix(in_oklch,var(--color-accent-500)_55%,transparent),var(--elevation-spec)]';
 
-const ROW_SELECTED =
-  'bg-[linear-gradient(180deg,color-mix(in_oklch,var(--color-accent-500)_20%,transparent),color-mix(in_oklch,var(--color-accent-500)_7%,transparent))] ' +
-  'rounded-lg backdrop-blur-[30px] ' +
-  'shadow-[0_4px_12px_oklch(0%_0_0/0.5),0_26px_60px_-20px_color-mix(in_oklch,var(--color-accent-500)_40%,transparent),var(--elevation-spec)]';
+/* `ROW_SELECTED` lived here — the accent-tinted fill behind a selected LIST
+   row. §03 replaced the rows with cards and selection now shows only in the
+   card's action pill, so the recipe went with the rows rather than staying
+   behind as a treatment nothing applies. */
 
 /** 13px/500 on a white 8% film — the spec chip of the wiki row. */
 const CHIP =
@@ -64,6 +64,21 @@ const CATEGORY_TAG_CLASS: Record<string, string> = {
   audio: 'bg-community/15 text-community',
   lens: 'bg-white/[0.08] text-ink-muted',
   accessory: 'bg-white/[0.08] text-ink-muted',
+};
+
+/**
+ * The card's subgroup eyebrow, tinted by the product line it belongs to.
+ *
+ * Keyed on `subCategory2`, the catalogue's own value, and mapped to the signal
+ * ramp rather than to the reference's literals — `#8A9CFF` is `accent-400`,
+ * `#AE8DF5` is `proposal`, `#5FC7D6` is `community`. Anything the catalogue
+ * names that is not one of the three falls back to `ink-muted`, which is what
+ * the reference does for DSC: a line without a signal is not given one.
+ */
+const SUBGROUP_TINT: Record<string, string> = {
+  'Máy ảnh Alpha': 'text-accent-400',
+  'Cinema Line': 'text-proposal',
+  Vlog: 'text-community',
 };
 
 /** Stands in for product photography the source does not publish. */
@@ -196,6 +211,52 @@ export function CameraWikiView({ initialCameras, basePath = '/cameras' }: Camera
     ].filter((group) => group.options.length > 1);
   }, [initialCameras, selectedCategory, selectedSub1, selectedSub2, t]);
 
+  /**
+   * The facet groups flattened into one horizontal rail.
+   *
+   * §03 dropped the 268px sidebar, so the two axes a reader actually filters by
+   * — the product line (`sub2`: Máy ảnh Alpha / Cinema Line / Vlog / DSC) and
+   * the sensor size (`sub1`: Full Frame / APS-C / 1-Inch) — become chips above
+   * the grid, led by an "all" chip that clears both.
+   *
+   * `cat` leads the rail, and that is not the reference's shape by accident.
+   * The reference screen is the 31-body camera catalogue, where every chip is a
+   * camera line or a sensor size. This route carries the whole Sony catalogue —
+   * 94 products across cameras, lenses, accessories and audio — so flattening
+   * `sub1`/`sub2` across all of them put "Adapter", "Power" and "Battery" in a
+   * row beside "Full Frame", which are not the same kind of thing at all.
+   *
+   * Leading with the category restores the reference's set: pick Máy ảnh and
+   * the narrower chips become exactly Full Frame · APS-C · 1-Inch · Máy ảnh
+   * Alpha · Cinema Line · Vlog · DSC, because `facets` already narrows `sub1`
+   * to the chosen category and `sub2` to the chosen `sub1`.
+   *
+   * Counts are not printed. The reference shows bare labels, and the original
+   * spec's rule stands: show a count only where the query supplies one — the
+   * sidebar had room to be honest about that, a 40px chip does not.
+   */
+  const facetRail = useMemo(() => {
+    const isAll = selectedCategory === 'all' && selectedSub1 === 'all' && selectedSub2 === 'all';
+    const order = ['cat', 'sub1', 'sub2'];
+
+    return [
+      { group: 'cat', value: 'all', label: t('catAll'), active: isAll },
+      ...facets
+        .slice()
+        .sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key))
+        .flatMap((group) =>
+          group.options
+            .filter((o) => o.value !== 'all')
+            .map((o) => ({
+              group: group.key,
+              value: o.value,
+              label: o.label,
+              active: group.selected === o.value,
+            })),
+        ),
+    ];
+  }, [facets, selectedCategory, selectedSub1, selectedSub2, t]);
+
   /* Picking a facet resets the narrower ones: a `sub2` left behind from another
      branch of the catalogue silently empties the list. */
   const pickFacet = (group: string, value: string) => {
@@ -282,49 +343,11 @@ export function CameraWikiView({ initialCameras, basePath = '/cameras' }: Camera
 
   const pageTitle = basePath === '/audio' ? t('audioTitle') : t('title');
 
-  /** One product's spec chips: the identifiers first, then its own bullets. */
-  const chipsFor = (cam: CameraCard) =>
-    [cam.sku, cam.subCategory1, cam.subCategory2, ...featureList(cam.features, locale)].filter(
-      (chip): chip is string => Boolean(chip),
-    );
-
   return (
-    <div className="w-full grid gap-6 lg:grid-cols-[268px_minmax(0,1fr)] lg:gap-8">
-      {/* Facet rail — the catalogue's own axes, as a fill-selected list. */}
-      <aside className="bg-white/[0.03] rounded-lg p-5 flex flex-col gap-6 lg:sticky lg:top-6 lg:self-start lg:max-h-[calc(100dvh-4rem)] scroll-area">
-        {facets.map((group) => (
-          <div key={group.key} className="flex flex-col gap-2">
-            <span className="label">{group.name}</span>
-            {group.options.map((option) => {
-              const isActive = group.selected === option.value;
-              return (
-                <button
-                  key={option.value}
-                  type="button"
-                  aria-pressed={isActive}
-                  onClick={() => pickFacet(group.key, option.value)}
-                  className={`flex items-center justify-between gap-2.5 text-left text-body px-3 min-h-10 pointer-coarse:min-h-[var(--layout-touch-target)] rounded-sm cursor-pointer transition-colors ${
-                    isActive ? ACCENT_FILL : 'text-ink-muted hover:bg-white/[0.06]'
-                  }`}
-                >
-                  <span className="min-w-0 truncate">{option.label}</span>
-                  <span
-                    className={`text-meta tabular-nums shrink-0 ${
-                      isActive ? 'text-accent-200' : 'text-ink-faint'
-                    }`}
-                  >
-                    {option.count}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        ))}
-      </aside>
-
-      <div className="flex flex-col gap-5 min-w-0">
-        <header className="flex flex-wrap items-end justify-between gap-5">
-          <div className="flex flex-col gap-2 min-w-0">
+    <div className="w-full flex flex-col gap-6">
+      <div className="flex flex-col gap-[26px] min-w-0">
+        <header className="flex flex-wrap items-end justify-between gap-6">
+          <div className="flex flex-col gap-[11px] min-w-0">
             <span className="label flex flex-wrap items-center gap-2">
               {trail.map((part, idx) => (
                 <span key={`${part}-${idx}`} className="flex items-center gap-2">
@@ -333,14 +356,28 @@ export function CameraWikiView({ initialCameras, basePath = '/cameras' }: Camera
                 </span>
               ))}
             </span>
-            <h1 className="text-title-1 font-extrabold tracking-[-0.02em] text-ink">{pageTitle}</h1>
+            <h1 className="text-display font-extrabold tracking-[-0.02em] leading-[1.12] text-ink">
+              {pageTitle}
+            </h1>
+            <p className="text-body-lg text-ink-muted max-w-[58ch] leading-[1.5] text-pretty">
+              {t('catalogueLede', { count: filteredCameras.length })}
+            </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="flex flex-wrap items-center gap-3">
             {selectedForCompare.length > 0 && (
-              <span className="text-body-sm text-ink-muted">
-                {t('compareSummary', { count: selectedForCompare.length })}
-              </span>
+              <>
+                <span className="text-body-sm text-ink-muted">
+                  {t('compareSummary', { count: selectedForCompare.length })}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setIsConfirmModalOpen(true)}
+                  className="btn-accent cursor-pointer"
+                >
+                  {t('openCompare')}
+                </button>
+              </>
             )}
             {hasActiveWikiFilters && (
               <button
@@ -353,6 +390,28 @@ export function CameraWikiView({ initialCameras, basePath = '/cameras' }: Camera
             )}
           </div>
         </header>
+
+        {/* The catalogue's own axes, as one silent rail instead of a 268px
+            column. Same treatment as the recipe gallery's filter row: 13px/600,
+            radius 12, 40px, active = accent fill, and the scrollbar never shown
+            — a rail that advertises overflow reads as a broken table. */}
+        {facetRail.length > 1 && (
+          <div className="scroll-silent flex gap-[9px] overflow-x-auto pb-0.5">
+            {facetRail.map((chip) => (
+              <button
+                key={`${chip.group}:${chip.value}`}
+                type="button"
+                aria-pressed={chip.active}
+                onClick={() => pickFacet(chip.group, chip.value)}
+                className={`flex-none flex items-center text-label font-semibold px-[15px] min-h-10 rounded-sm cursor-pointer transition-colors ${
+                  chip.active ? ACCENT_FILL : 'text-ink-muted hover:bg-white/[0.08]'
+                }`}
+              >
+                {chip.label}
+              </button>
+            ))}
+          </div>
+        )}
 
         {filteredCameras.length === 0 ? (
           <div className="surface p-12 text-center flex flex-col items-center justify-center gap-3">
@@ -517,100 +576,89 @@ export function CameraWikiView({ initialCameras, basePath = '/cameras' }: Camera
             </div>
           </div>
         ) : (
-          /* List view — 132px photo · product · price + action, on a surface. */
-          <ul className="flex flex-col gap-3">
+          /* Card grid — structurally the recipe card (§01): radius 26, glass +
+             elevation 1, a 210px photograph on top, body padding 19/20/22 at
+             gap 11. The row treatment §03 used to have is gone with the
+             sidebar; selection now shows only in the card's action pill. */
+          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {filteredCameras.map((cam) => {
               const isChecked = selectedForCompare.includes(cam.id);
               return (
-                <li
-                  key={cam.id}
-                  className={`p-4 flex flex-col gap-4 sm:grid sm:grid-cols-[132px_minmax(0,1fr)_auto] sm:gap-[22px] sm:items-center ${
-                    isChecked ? ROW_SELECTED : 'surface'
-                  }`}
-                >
-                  {/* Photo on a clean white plate (click opens the product page) */}
-                  <div
+                <li key={cam.id} className="surface overflow-hidden flex flex-col">
+                  {/* Catalogue photography is shot on white, so the plate stays
+                      opaque white — a translucent surface behind it would put a
+                      white rectangle inside a dark one. */}
+                  <button
+                    type="button"
                     onClick={() => openProduct(cam)}
-                    className="relative h-24 w-full rounded-md bg-white p-2 flex items-center justify-center overflow-hidden cursor-pointer"
+                    aria-label={cam.name}
+                    className="relative h-[210px] w-full bg-white flex items-center justify-center overflow-hidden cursor-pointer"
                   >
                     {cam.imageUrl ? (
                       <Image
                         src={cam.imageUrl}
-                        alt={cam.name}
+                        alt=""
                         fill
-                        sizes="132px"
-                        className="object-contain p-2"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        className="object-contain p-5"
                       />
                     ) : (
                       <NoPhoto label={t('noPhoto')} />
                     )}
-                  </div>
+                  </button>
 
-                  <div className="flex flex-col gap-2 min-w-0">
-                    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-2">
-                      <h2 className="text-title-2 font-extrabold tracking-[-0.02em] text-ink">
-                        <button
-                          type="button"
-                          onClick={() => openProduct(cam)}
-                          className="text-left cursor-pointer hover:text-accent-400 transition-colors"
-                        >
-                          {cam.name}
-                        </button>
-                      </h2>
-                      <span
-                        className={`text-label font-semibold px-2.5 py-1 rounded-sm shadow-[var(--elevation-spec)] ${
-                          CATEGORY_TAG_CLASS[cam.category] ?? 'bg-white/[0.08] text-ink-muted'
-                        }`}
-                      >
-                        {t(CATEGORY_LABEL_KEY[cam.category] ?? 'catAll')}
-                      </span>
-                    </div>
-
-                    <p className="meta line-clamp-1">{cam.fullName}</p>
-
-                    {/* Specs as chips: identifiers first, then the product's own
-                        bullets. The catalogue's spec block is not on the wire
-                        here — a card carries no `specs`. */}
-                    <div className="flex flex-wrap gap-2">
-                      {chipsFor(cam).map((chip, chipIdx) => (
-                        <span key={chipIdx} className={CHIP}>
-                          {chip}
-                        </span>
-                      ))}
-                    </div>
-
-                    {cam.url && (
-                      <a
-                        href={cam.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-body-sm font-semibold text-accent-400 self-start"
-                      >
-                        Sony ↗
-                      </a>
-                    )}
-                  </div>
-
-                  <div className="flex items-center justify-between gap-4 sm:flex-col sm:items-end sm:justify-start">
-                    <span className="text-title-3 font-extrabold tracking-[-0.02em] tabular-nums text-ink">
-                      {cam.priceFormatted}
+                  <div className="flex flex-col gap-[11px] px-5 pt-[19px] pb-[22px] flex-1">
+                    <span
+                      className={`label ${SUBGROUP_TINT[cam.subCategory2] ?? 'text-ink-muted'}`}
+                    >
+                      {cam.subCategory2 || t(CATEGORY_LABEL_KEY[cam.category] ?? 'catAll')}
                     </span>
 
-                    {/* The action is a real checkbox under a fill: selection is
-                        the accent gradient, never an outline. */}
-                    <label
-                      className={`relative flex items-center justify-center px-4 min-h-[var(--layout-touch-target)] rounded-sm text-body-sm font-semibold select-none cursor-pointer transition-colors ${
-                        isChecked ? ACCENT_FILL : 'text-ink-muted hover:bg-white/[0.06]'
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={() => toggleCompare(cam.id)}
-                        className="absolute inset-0 w-full h-full m-0 appearance-none opacity-0 cursor-pointer"
-                      />
-                      <span>{t('compare')}</span>
-                    </label>
+                    <h2 className="text-title-3 font-semibold leading-tight text-ink">
+                      <button
+                        type="button"
+                        onClick={() => openProduct(cam)}
+                        className="text-left cursor-pointer hover:text-accent-400 transition-colors"
+                      >
+                        {cam.name}
+                      </button>
+                    </h2>
+
+                    {/* The three figures the catalogue publishes for this body,
+                        projected onto the card server-side so the 45KB spec
+                        block stays off the wire. A figure the source does not
+                        state is absent, never an empty chip. */}
+                    {cam.specChips.length > 0 && (
+                      <div className="flex flex-wrap gap-[7px]">
+                        {cam.specChips.map((chip, chipIdx) => (
+                          <span key={chipIdx} className={CHIP}>
+                            {chip}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* `flex-wrap` with a nowrap price: a 9-digit figure like
+                        153.153.818 đ must never break mid-number. */}
+                    <div className="mt-auto pt-[3px] flex flex-wrap items-center justify-between gap-x-3 gap-y-2.5">
+                      <span className="text-body-lg font-extrabold tracking-[-0.02em] tabular-nums text-ink whitespace-nowrap">
+                        {cam.priceFormatted}
+                      </span>
+
+                      <label
+                        className={`relative flex items-center justify-center whitespace-nowrap px-3.5 min-h-10 rounded-sm text-body-sm font-semibold select-none cursor-pointer transition-colors ${
+                          isChecked ? ACCENT_FILL : 'text-ink-muted hover:bg-white/[0.08]'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => toggleCompare(cam.id)}
+                          className="absolute inset-0 w-full h-full m-0 appearance-none opacity-0 cursor-pointer"
+                        />
+                        <span>{isChecked ? t('compareSelected') : t('compare')}</span>
+                      </label>
+                    </div>
                   </div>
                 </li>
               );

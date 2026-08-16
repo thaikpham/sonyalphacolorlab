@@ -20,6 +20,7 @@ const eslintConfig = defineConfig([
        prototype runtime failed the gate on a deprecated `ReactDOM.render`
        inside it. */
     "Claude Design Plan/**",
+    "Font unification across design system/**",
   ]),
   {
     rules: {

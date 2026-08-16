@@ -328,7 +328,7 @@
       "weight": "Weight"
     },
     "specsTab": "Specifications",
-    "sub1All": "All Formats",
+    "sub1All": "All cameras",
     "sub2All": "All Series",
     "subCategoryLabel": "Series & Format",
     "subtitle": "Explore technical specs, official prices, and features of 90+ Sony Alpha cameras, Lenses, and Accessories.",
@@ -361,7 +361,10 @@
     "removeProduct": "Remove from comparison",
     "closeDialog": "Close",
     "chatYou": "You",
-    "aiThinking": "Analysing the specs of the selected models…"
+    "aiThinking": "Analysing the specs of the selected models…",
+    "catalogueLede": "{count} products in the catalogue, shown as a grid. Filter by product line or sensor size at the top of the page.",
+    "openCompare": "Open comparison",
+    "compareSelected": "Selected"
   },
   "admin": {
     "title": "Product Admin",

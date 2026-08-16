@@ -328,7 +328,7 @@
       "weight": "Trọng lượng"
     },
     "specsTab": "Thông số kỹ thuật",
-    "sub1All": "Tất cả định dạng",
+    "sub1All": "Tất cả máy ảnh",
     "sub2All": "Tất cả dòng máy",
     "subCategoryLabel": "Phân loại & Dòng máy",
     "subtitle": "Khám phá và so sánh thông số kỹ thuật, giá niêm yết chính hãng và tính năng của hơn 90+ dòng Máy ảnh, Ống kính và Phụ kiện Sony.",
@@ -361,7 +361,10 @@
     "removeProduct": "Xóa khỏi bảng so sánh",
     "closeDialog": "Đóng",
     "chatYou": "Bạn",
-    "aiThinking": "Đang phân tích thông số các mẫu máy đã chọn…"
+    "aiThinking": "Đang phân tích thông số các mẫu máy đã chọn…",
+    "catalogueLede": "{count} sản phẩm trong catalogue, hiển thị dạng lưới. Lọc theo dòng máy hoặc cỡ cảm biến ngay trên đầu trang.",
+    "openCompare": "Mở bảng so sánh",
+    "compareSelected": "Đã chọn"
   },
   "admin": {
     "title": "Quản trị sản phẩm",
