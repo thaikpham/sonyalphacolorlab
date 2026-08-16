@@ -479,9 +479,24 @@ body {
 
 /* The only animation in the app: panels that appear in place — the login
    sheet, the expanded search field, the profile menu, the contribution
-   forms. 180ms, no scale, no glow. */
+   forms. 180ms, no scale, no glow.
+
+   `backwards`, NOT `both`. A forwards fill holds the final keyframe forever,
+   and this one ends at `transform: none` — which Chrome computes as
+   `matrix(1, 0, 0, 1, 0, 0)`, an identity matrix that is still not `none`. A
+   non-`none` transform makes the element a containing block for every
+   `position: fixed` descendant, so a fixed child resolves its offsets against
+   this panel instead of the viewport and lands in the middle of the page.
+
+   That is not hypothetical: the launcher's "back" button is `fixed top-5
+   left-5` and rendered at (368, 359) with a `z-index` high enough to sit on
+   top of the DI tile and swallow every click meant for it.
+
+   The final keyframe is identical to the element's resting state, so dropping
+   the forwards fill changes nothing visible — it only stops the identity
+   transform outliving the 180ms. Keep it `backwards`. */
 .animate-fade-in {
-  animation: fade-in 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: fade-in 0.18s cubic-bezier(0.22, 1, 0.36, 1) backwards;
 }
 
 /* ---------------------------------------------------------------------------

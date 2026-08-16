@@ -30,6 +30,28 @@ type Props = {
 };
 
 /**
+ * Two columns below 640px, three to 1023px, one row on desktop. There are four
+ * apps, so `lg:grid-cols-4` is the "one row" the reference asks for — a flex
+ * row wraps unpredictably at the in-between widths.
+ *
+ * Both grids are written out in full rather than derived from one another.
+ * The sub-grid used to be `GRID.replace('lg:grid-cols-4', 'lg:grid-cols-2')`,
+ * and Tailwind v4 scans source text for class names: a class assembled at
+ * runtime is one the scanner never sees, so it emits no rule for it. Same trap
+ * as the inline `min-[2100px]:` form that silently never changed a column
+ * count. It happened to work only because `lg:grid-cols-2` is written
+ * literally in an unrelated file.
+ */
+const GRID =
+  'grid w-full max-w-3xl grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 ' +
+  'items-start justify-items-center gap-x-6 gap-y-8 sm:gap-x-10 sm:gap-y-10 lg:gap-x-[52px]';
+
+/** The Sony Wiki divisions: two tiles, so two columns from `sm` up. */
+const SUB_GRID =
+  'grid w-full max-w-3xl grid-cols-2 ' +
+  'items-start justify-items-center gap-x-6 gap-y-8 sm:gap-x-10 sm:gap-y-10 lg:gap-x-[52px]';
+
+/**
  * One tile: two glow layers behind an opaque icon face.
  *
  * The face must stay opaque. The spectrum reads as light escaping from behind
@@ -75,13 +97,6 @@ export function LauncherGrid({ size = 'lg', onNavigate }: Props) {
   const [subView, setSubView] = useState<'main' | 'sonywiki'>('main');
   const t = useTranslations('launcher');
 
-  /* Two columns below 640px, three to 1023px, one row on desktop. The tile
-     count is four, so `sm:grid-cols-4` is the "one row" the reference asks
-     for — a flex row would wrap unpredictably at the in-between widths. */
-  const grid =
-    'grid w-full max-w-3xl grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 ' +
-    'items-start justify-items-center gap-x-6 gap-y-8 sm:gap-x-10 sm:gap-y-10 lg:gap-x-[52px]';
-
   const shell =
     'launcher-link group flex flex-col items-center gap-3 sm:gap-4 text-center ' +
     'max-w-[240px] min-h-[var(--layout-touch-target)] cursor-pointer';
@@ -94,7 +109,7 @@ export function LauncherGrid({ size = 'lg', onNavigate }: Props) {
   return (
     <div className="w-full flex flex-col items-center justify-center">
       {subView === 'main' ? (
-        <div className={`${grid} animate-fade-in`}>
+        <div className={`${GRID} animate-fade-in`}>
           {ECOSYSTEM_APPS.map((app) => {
             const tile = <Tile app={app} size={size} />;
 
@@ -132,11 +147,18 @@ export function LauncherGrid({ size = 'lg', onNavigate }: Props) {
         /* Sony Wiki's two divisions: Digital Imaging and Personal
            Entertainment. Same tile language, no second glow treatment — these
            are inside the exception, not a new one. */
-        <div className="flex flex-col items-center justify-center w-full max-w-3xl gap-8 animate-fade-in">
+        <div className="flex flex-col items-center justify-center w-full max-w-3xl gap-8">
+          {/* OUTSIDE the fading panel below, and deliberately.
+              `.animate-fade-in` leaves a transform on its element, which makes
+              it the containing block for any `fixed` descendant — this button
+              resolved `top-5 left-5` against the panel, landed on top of the DI
+              tile, and its z-index meant every click meant for DI hit "back"
+              instead. It is chrome, not content: it does not fade with the
+              tiles, and it is a sibling so `fixed` means the viewport. */}
           <button
             type="button"
             onClick={() => setSubView('main')}
-            className="btn-glass fixed top-5 left-5 sm:top-8 sm:left-8 z-[100000] inline-flex items-center gap-2 cursor-pointer"
+            className="btn-glass fixed top-5 left-5 sm:top-8 sm:left-8 z-20 gap-2 cursor-pointer"
           >
             <span aria-hidden className="text-accent-400">
               ←
@@ -144,7 +166,7 @@ export function LauncherGrid({ size = 'lg', onNavigate }: Props) {
             <span>{t('back')}</span>
           </button>
 
-          <div className={grid.replace('lg:grid-cols-4', 'lg:grid-cols-2')}>
+          <div className={`${SUB_GRID} animate-fade-in`}>
             {WIKI_DIVISIONS.map((division) => (
               <Link
                 key={division.key}

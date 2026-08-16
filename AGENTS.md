@@ -290,6 +290,17 @@ Three traps, all found on screen rather than by reading:
 - **`group-hover:` reaches the nearest `.group` ancestor, not a sibling.** Put
   `group` on the wrapper, and remember a hover-only reveal is invisible on
   touch: gate it with `pointer-fine:`.
+- **Nothing `position: fixed` may live inside `.animate-fade-in`.** The
+  animation ends on `transform: none`, which Chrome computes as
+  `matrix(1, 0, 0, 1, 0, 0)` — an identity matrix, and still not `none`. A
+  non-`none` transform makes the element the containing block for every fixed
+  descendant, so the child resolves its offsets against the panel instead of the
+  viewport. The launcher's back button was `fixed top-5 left-5` and rendered at
+  (368, 359), on top of the DI tile, where its z-index ate every click meant for
+  it. The fill mode is `backwards` now so the transform does not outlive the
+  180ms, but during the animation it still applies: put the fixed element
+  outside the fading panel, as a sibling. Same shape as the `.glass absolute`
+  bug above — a class silently deciding what `position` means.
 
 `accentFor()` combines White Balance and Picture Profile Color Depth. Its
 weights are a neutral default, **not validated** — see the header of
