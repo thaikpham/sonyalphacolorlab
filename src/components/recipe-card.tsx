@@ -1,8 +1,8 @@
 import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
 import { accentCss } from '@/lib/camera/color';
-import { signed } from '@/lib/camera/format';
 import type { RecipeView } from '@/lib/recipes/source';
+import { recipeChips } from '@/lib/recipes/chips';
 
 /**
  * Grid card: a 210px photograph, then the recipe's identity underneath.
@@ -26,16 +26,7 @@ export function RecipeCard({ recipe }: { recipe: RecipeView }) {
      (rule 3, same as `structured-data.tsx`). */
   const isPp = recipe.format === 'pp';
   const kind = isPp ? 'Picture Profile' : 'Creative Look';
-
-  /* Three chips, read straight off the recipe: what the camera is set to, and
-     what the white balance is. Nothing derived, nothing invented. */
-  const chips = isPp
-    ? [recipe.settings.gamma, recipe.settings.colorMode, recipe.wbLabel]
-    : [
-        recipe.settings.look,
-        `Contrast ${signed(recipe.settings.contrast)}`,
-        `WB ${recipe.wbLabel}`,
-      ];
+  const chips = recipeChips(recipe);
 
   return (
     <Link
@@ -84,10 +75,10 @@ export function RecipeCard({ recipe }: { recipe: RecipeView }) {
         <div className="flex flex-wrap gap-[7px] text-label font-medium text-ink">
           {chips.map((chip) => (
             <span
-              key={chip}
+              key={chip.slot}
               className="rounded-sm bg-white/8 px-[11px] py-1.5 shadow-[var(--elevation-spec)]"
             >
-              {chip}
+              {chip.value}
             </span>
           ))}
         </div>
