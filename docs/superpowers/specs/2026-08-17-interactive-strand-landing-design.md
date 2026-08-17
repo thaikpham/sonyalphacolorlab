@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-17
 
-**Status:** Architecture approved in chat; written specification awaiting review
+**Status:** Approved for implementation; r185.1 API audit incorporated
 
 **Scope:** Alpha ColorLab localized launcher landing page only
 
@@ -189,10 +189,14 @@ budget. No renderer default may silently replace them.
 
 ### 5.2 WebGPU compute path
 
-When WebGPU initialization succeeds, storage buffers hold per-blade data and
-persistent bend state. One initialization compute pass distributes instances.
-Each animation frame then performs one compute update followed by one instanced
-draw.
+When WebGPU initialization succeeds, separate maximum-capacity storage buffers
+hold stable per-blade attributes, persistent bend state, and readiness; one
+`vec4` array is not overloaded with all three responsibilities. Readiness starts
+at zero, the update compute pass sets it to one, and the actual field material
+multiplies opacity by readiness. One initialization compute pass always
+dispatches the full maximum blade capacity so a later tier upgrade never exposes
+zeroed stable attributes. Per-frame update dispatches only the active prefix,
+followed by one instanced draw.
 
 Every active blade combines:
 
@@ -213,19 +217,25 @@ checks the actual pinned-r185 backend flag rather than inferring support from
 compute backend. Prewarm then performs this exact r185-compatible sequence:
 
 1. `await renderer.compileAsync(scene, camera)`;
-2. obtain the verified backend's `GPUDevice`, push outer `validation` and
-   `out-of-memory` error scopes, and clear the callback error flag;
-3. synchronously submit init compute, update compute, and a hidden render;
-4. `await device.queue.onSubmittedWorkDone()`, then pop and await both outer
-   error scopes and one macrotask so Three's internal pipeline error promises
-   and renderer callbacks can settle;
+2. obtain the verified backend's `GPUDevice` while preserving the monotonic callback-error latch installed before `init()`; the latch is never cleared before readiness, so errors from init, compile, compute, or render all fail the attempt;
+3. use one fenced-batch helper to push `validation` and then `out-of-memory`
+   scopes, synchronously submit init compute, update compute, and a hidden
+   render, await `device.queue.onSubmittedWorkDone()`, then pop
+   `out-of-memory` and `validation` in LIFO order;
+4. balance both scopes in the helper's `finally` path even after abort or
+   device loss, and await one macrotask so Three's internal pipeline error
+   promises and renderer callbacks can settle;
 5. render the actual field/material/camera to a temporary 32x32 transparent
-   render target, read it once with `readRenderTargetPixelsAsync()`, and require
-   at least four pixels with alpha above 16; an r185 render-pipeline failure
-   that `compileAsync()` internally consumes therefore still fails health
-   validation instead of appearing “ready” with a skipped draw;
+   render target and read it once with `readRenderTargetPixelsAsync()`. Require
+   at least eight ready-gated pixels with alpha above 16, an occupied bounding
+   box at least eight pixels wide and six pixels high, and occupancy in at least
+   two of four equal bins on each axis; a failed compute pass leaves readiness
+   at zero, while a failed distribution pass collapses coverage and fails the
+   spatial check. An r185 render-pipeline failure that `compileAsync()`
+   internally consumes likewise cannot appear “ready” with a skipped draw;
 6. dispose the health target, submit a second update plus the real canvas
-   render, and repeat the queue/error-scope fence;
+   render through a fresh fenced-batch scope pair; no scope is reused or popped
+   twice;
 7. publish readiness only if the health pixels passed, both fences returned no
    scoped error, no error/device-loss callback fired, and the mount was not
    aborted.
@@ -237,6 +247,12 @@ The removed `waitForGPU()` API is not used. The 32x32 health readback is the onl
 startup pixel readback and is excluded from performance samples. Late
 asynchronous backend errors still trigger the normal static-fallback path.
 
+The small r185 adapter is the only module allowed to narrow backend properties
+missing from `@types/three`, normalize the runtime object-shaped `onError`
+payload, expose the verified `GPUDevice`/WebGL2 context, and define the timer
+query and `navigator.connection` structural types. Version-sensitive casts do
+not spread through the shell or policy modules.
+
 ### 5.3 WebGL2 analytic path
 
 WebGL2 is a first-class interactive fallback, especially for mobile browsers
@@ -246,6 +262,12 @@ not depend on storage-buffer compute. Each blade derives its deformation
 analytically in the vertex stage from its stable instance data, wind, the
 current pointer field, and a fixed six-slot age-weighted pointer ring. The ring
 is a uniform array and its loop is statically bounded at six iterations.
+
+Before `compileAsync()`, the WebGL attempt installs
+`renderer.debug.onShaderError`; any invocation makes initialization fail. After
+the first render it also checks that the WebGL2 context is not lost. This is a
+required readiness latch because r185 can log a shader link failure and skip the
+draw without rejecting the compile promise.
 
 At most one world-space sample is processed per rendered frame. While contact
 is active, movement of at least 0.12 field units and at least 33ms since the
@@ -257,12 +279,15 @@ a short trail, and bounded elastic recovery without per-blade state or an
 unbounded vertex-shader loop.
 
 If WebGPU device creation, backend verification, or compute prewarm fails, the
-runtime disposes that renderer and attempts the WebGL2 analytic path once on the
-second, still-unbound canvas. A canvas that has acquired `webgpu` is never
-reused for `webgl2`. If WebGL2 initialization or its first frame also fails,
-the shell keeps the WebP fallback. This explicit second path avoids assuming
-that every compute feature is portable merely because Three.js can select a
-WebGL2 backend.
+runtime attempts the WebGL2 analytic path once on the second, still-unbound
+canvas. When renderer initialization fulfilled, failure cleanup uses one normal
+`renderer.dispose()`; when `init()` rejected, the adapter performs direct
+partial-backend cleanup and never calls `renderer.dispose()` or
+`setAnimationLoop()`, both of which can re-enter initialization in r185. A
+canvas that has acquired `webgpu` is never reused for `webgl2`. If WebGL2
+initialization or its first frame also fails, the shell keeps the WebP fallback.
+This explicit second path avoids assuming that every compute feature is portable
+merely because Three.js can select a WebGL2 backend.
 
 ## 6. Pointer and Touch Interaction
 
@@ -333,9 +358,12 @@ an exact ordered ladder; downgrade moves right and upgrade moves left:
 | WebGL2 + fine | `36k@1.00`, `36k@0.85`, `36k@0.70`, `28k@0.70`, `20k@0.70`, `12k@0.65` |
 | WebGL2 + coarse | `16k@1.00`, `16k@0.85`, `16k@0.70`, `12k@0.70`, `8k@0.70`, `6k@0.65` |
 
-`setAnimationLoop` may be called by a 90Hz or 120Hz display, so the runtime
-uses a logical interval of `1000 / 60` milliseconds and renders at most once
-per animation callback. On every callback it counts how many logical deadlines
+Each initialized renderer calls `setAnimationLoop()` exactly once with a stable
+adapter callback; the coordinator supplies or clears the adapter's current
+application-frame callback and never starts a second render `requestAnimationFrame`
+chain. A 90Hz or 120Hz display may invoke Three's loop faster than 60Hz, so the
+runtime uses a logical interval of `1000 / 60` milliseconds and renders at most
+once per animation callback. On every callback it counts how many logical deadlines
 have elapsed, renders one frame when at least one is due, advances the deadline
 accumulator, and records any additional elapsed deadlines as missed. It never
 performs catch-up renders. This caps average compute/draw work at 60fps without
@@ -439,11 +467,14 @@ the page is open disposes the runtime immediately; disabling it schedules a
 fresh enhancement attempt if Save-Data is not active. Save-Data is re-evaluated
 on each fresh mount but has no portable live-change event.
 
-The animation loop pauses when the document is hidden, the page receives
-`pagehide`, or an `IntersectionObserver` reports that the launcher stage is no
-longer visible. `pageshow` is the symmetric bfcache resume signal. Resume occurs
-only when the document and stage are both visible, and resets timing samples so
-background-tab elapsed time cannot trigger a false quality downgrade. A
+The application render callback pauses when the document is hidden, the page
+receives `pagehide`, or an `IntersectionObserver` reports that the launcher stage
+is no longer visible. Pinned r185 keeps its internal animation driver alive after
+`setAnimationLoop(null)` until renderer disposal, so pause clears the adapter's
+application callback and submits no compute/draw work; it does not claim to stop
+that internal driver. `pageshow` is the symmetric bfcache resume signal. Resume
+occurs only when the document and stage are both visible, and resets timing samples
+so background-tab elapsed time cannot trigger a false quality downgrade. A
 `ResizeObserver` batches size and camera updates into one animation frame and
 calls `renderer.setSize(width, height, false)`.
 
@@ -459,6 +490,16 @@ Unmount and failed initialization perform the same idempotent cleanup:
   and the renderer;
 - mark the mount disposed so an asynchronous result cannot publish after React
   Strict Mode cleanup or route navigation.
+
+Calling the r185 renderer's `dispose()` while `init()` is pending or after
+`init()` rejected is forbidden: those paths can skip backend disposal and
+asynchronously re-enter the same initialization promise. Each backend attempt
+therefore retains its initialization promise and an abort/epoch latch. Abort
+prevents every publication immediately. A fulfilled init permits exactly one
+normal renderer disposal; a rejected init is consumed and routed through the
+r185 adapter's partial-backend cleanup, which releases any acquired backend
+device/context and listeners directly without calling renderer `dispose()` or
+`setAnimationLoop()`. Scene-side resources are disposed in both paths.
 
 A dynamic `import()` request that has already started cannot be aborted. It may
 finish downloading and evaluating into the browser cache after unmount, but the
