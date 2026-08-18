@@ -37,17 +37,20 @@ const FALLBACK_TAGS: TagItem[] = [
 ];
 
 /**
- * The sticky bar itself.
+ * The bar itself: film, blur, shadow — and its radius.
  *
- * `.surface-raised` is the right elevation but the wrong shape here: it is
- * unlayered CSS that hard-sets `border-radius: 26px`, and a full-bleed bar
- * pinned to the top of the viewport must not have corners. So the bar restates
- * the same film and the same 40px blur, and carries the header's own drop
- * shadow — which is the ONLY thing separating it from the content. There is no
- * bottom border, deliberately; a rule under a translucent bar reads as a seam
- * in the page rather than as a layer over it.
+ * `rounded-xl` (32px) is the scale's largest slab, which is what this is. The
+ * bar is not full-bleed: it sits inside a wrapper carrying `.inset-safe` and
+ * `.pt-safe`, so there is real ground on all three outer edges for the corners
+ * to read against, and it floats over the page rather than capping it.
+ *
+ * No bottom border and no `overflow-hidden`. The border was never there — the
+ * `0 14px 34px -18px` shadow is what separates the bar from the content under
+ * it — and clipping would swallow the account menu, which is positioned to
+ * overlap the bar's bottom edge on purpose.
  */
 const HEADER_BAR =
+  'rounded-xl ' +
   'bg-[linear-gradient(180deg,oklch(100%_0_0/0.075),oklch(100%_0_0/0.035))] ' +
   '[backdrop-filter:var(--elevation-blur-strong)] [-webkit-backdrop-filter:var(--elevation-blur-strong)] ' +
   'shadow-[0_14px_34px_-18px_oklch(0%_0_0/0.9),var(--elevation-spec)]';

@@ -646,8 +646,29 @@ export function CameraWikiView({ initialCameras, basePath = '/cameras' }: Camera
           <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {filteredCameras.map((cam) => {
               const isChecked = selectedForCompare.includes(cam.id);
+              /* The card fill is lifted off `.surface`'s 5% film to a flat 18%
+                 — at 5% over `void` the card and the page read as the same tone
+                 and the grid lost its edges. Everything else in the elevation
+                 (radius, blur, level-1 shadow, specular) still comes from
+                 `.surface`; only the film changes.
+
+                 `bg-none` is not optional. `.surface` paints its film with the
+                 `background` shorthand, so the fill is a `background-image`
+                 gradient — a `bg-*` utility sets `background-color`, which
+                 paints *behind* that gradient and would never be seen. Clear
+                 the image first, then colour.
+
+                 The film is `bg-white/[0.18]`, not `bg-[oklch(100%_0_0_/_0.18)]`.
+                 Tailwind reads the slash in an arbitrary value as the opacity
+                 modifier, so the oklch form parses as garbage and emits **no
+                 rule at all** — the class sits in the markup, the card stays at
+                 5%, and nothing errors. `bg-white/[0.18]` is also what the
+                 compare tray's buttons below already use. */
               return (
-                <li key={cam.id} className="surface overflow-hidden flex flex-col">
+                <li
+                  key={cam.id}
+                  className="surface bg-none bg-white/[0.18] overflow-hidden flex flex-col"
+                >
                   {/* Catalogue photography is shot on white, so the plate stays
                       opaque white — a translucent surface behind it would put a
                       white rectangle inside a dark one. */}
