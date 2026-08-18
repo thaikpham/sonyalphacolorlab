@@ -21,12 +21,10 @@ export async function generateMetadata({
  * of them, and a header advertising one of the four would be picking a winner
  * before the reader has chosen. The tiles are the only navigation.
  *
- * A Server Component. `LauncherGrid` is the only client boundary on the page —
- * it holds the Sony Wiki sub-view — and the tiles' motion is all CSS
- * (`.launcher-*` in globals.css), so nothing here needs hydration to move. The
- * per-tile entrance stagger and the hover bloom that used to live in the
- * deleted effects stylesheet are gone with it; the launcher's 18s spectral
- * rotation is the one animation that survived.
+ * A Server Component with no client boundary of its own — `LauncherGrid` owns
+ * the Sony Wiki sub-view, and tile motion is CSS-only (`.launcher-*` in
+ * globals.css). The stage is flat `--color-void`: no artwork, no canvas, no
+ * frame loop, so the spectral glow behind the tiles is the only thing moving.
  *
  * The recipe catalogue that used to live here is at `/colorlab`.
  */
@@ -44,7 +42,7 @@ export default async function LauncherPage({
        would push the bottom row under the address bar. `overflow-y-auto` so a
        short landscape phone can still reach the fourth tile rather than having
        it clipped. */
-    <main className="relative flex min-h-[100dvh] w-full flex-col items-center justify-center overflow-y-auto inset-safe py-12">
+    <main className="launcher-stage flex min-h-[100dvh] w-full flex-col items-center justify-center overflow-y-auto inset-safe py-12">
       {/* The tiles are the page. No visible title, no tagline and no divider —
           the four icons say what this is faster than a heading does.
           `sr-only`, not deleted: a page with four `h2`s and no `h1` fails axe,

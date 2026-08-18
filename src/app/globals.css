@@ -541,6 +541,16 @@ body {
    that keeps its edge defined. One layer alone reads as a coloured drop shadow.
 --------------------------------------------------------------------------- */
 
+/* Landing-only stage. Flat `--color-void`, painted over the body's three
+   ambient washes: the launcher is the one screen with nothing behind the
+   tiles, so the spectral glow is the only light in the frame. No artwork, no
+   canvas and no transform on the stage — the last one matters, because a
+   transform here would become the containing block for the Sony Wiki's fixed
+   back button. */
+.launcher-stage {
+  background: var(--color-void);
+}
+
 @keyframes launcher-spin {
   from {
     transform: rotate(0turn);
