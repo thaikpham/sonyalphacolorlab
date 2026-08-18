@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import type { SonyCamera } from '@/lib/cameras/types';
 import { SUBREDDIT_HANDLE, SUBREDDIT_URL, submitUrl } from '@/lib/reddit/config';
@@ -68,16 +68,29 @@ export function ProductCommunityDrawer({ product }: ProductCommunityDrawerProps)
      the composer. */
   const [now, setNow] = useState(0);
 
+  /* Which load is allowed to write. The refresh button is deliberately not
+     disabled while a request is in flight — the reader pressing it twice must
+     not feel like a dead control — so two fetches can overlap, and the network
+     does not promise they resolve in the order they were sent. Without this
+     counter the slower, older response lands last and wins: the panel shows a
+     stale topic list, or flips `status` back to a value the newer request had
+     already moved past. Every load claims a ticket and only the current holder
+     touches state. */
+  const loadTicket = useRef(0);
+
   /* No synchronous setState: `status` already starts at 'loading', and the
      refresh button puts it back there itself. An effect that sets state before
      its first await cascades a render on every mount for nothing. */
   const load = useCallback(async () => {
+    const ticket = ++loadTicket.current;
     try {
       const res = await fetch(`/api/reddit/topics?productId=${encodeURIComponent(product.id)}`);
       const data = (await res.json()) as TopicsResponse;
+      if (ticket !== loadTicket.current) return;
       setTopics(data.topics ?? []);
       setStatus(data.status ?? 'unavailable');
     } catch {
+      if (ticket !== loadTicket.current) return;
       setTopics([]);
       setStatus('unavailable');
     }
