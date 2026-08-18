@@ -12,6 +12,12 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    /* Local git worktrees. `.gitignore` covers them for git, but flat-config
+       ESLint does not read `.gitignore`, so a checked-out branch's own `.next`
+       build output — minified vendor chunks and generated route types — was
+       linted as source and drowned the gate in thousands of problems from
+       files nobody wrote. */
+    ".worktrees/**",
     // Verbatim copy of the original sonycolorlab dataset; deleted after cutover.
     "src/lib/legacy/*.legacy.js",
     /* The design handoff bundle: HTML prototypes plus the vendored runtime
