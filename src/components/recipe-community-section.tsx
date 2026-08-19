@@ -6,7 +6,6 @@ import { useAuth } from './auth-context';
 import { OPEN_PROPOSAL_EVENT } from '@/lib/community/events';
 import type { CommentItem } from '@/app/api/comments/route';
 import type { ProposalItem } from '@/app/api/proposals/route';
-import { supabaseBrowser } from '@/lib/supabase/browser';
 import {
   getColorDepthChannelHexColor,
   getKelvinHexColor,
@@ -214,16 +213,6 @@ export function RecipeCommunitySection({
     }
   }, [recipeSlug, accessToken]);
 
-  /* The realtime subscription calls these, and must not re-subscribe when their
-     identity changes — see the note on that effect. Refs keep the handlers
-     pointed at the current closure without becoming a dependency. */
-  const fetchCommentsRef = useRef(fetchComments);
-  const fetchProposalsRef = useRef(fetchProposals);
-  useEffect(() => {
-    fetchCommentsRef.current = fetchComments;
-    fetchProposalsRef.current = fetchProposals;
-  }, [fetchComments, fetchProposals]);
-
   /* Recipe pages are statically generated, so comments and proposals cannot be
      server-rendered without serving them stale — the initial load belongs on the
      client.
@@ -244,40 +233,6 @@ export function RecipeCommunitySection({
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void fetchProposals();
   }, [fetchProposals]);
-
-  useEffect(() => {
-    /* Realtime keeps its own effect, keyed on the slug alone.
-       It used to share the effect above, whose deps include `fetchProposals` —
-       and that identity changes with the access token, which Supabase rotates
-       on a timer. So every token refresh tore down the channel and ran
-       `createClient(url, anonKey)` again: a raw client, not the memoised
-       `supabaseBrowser()` one, with `persistSession` left at its default. Each
-       new instance registered another GoTrue listener on the same storage key
-       and another socket, and the cleanup only removed the channel — never the
-       client. A tab left open climbed past a thousand instances, which is what
-       the "Multiple GoTrueClient instances detected" console flood was.
-       One shared client, and a subscription that only cares about the slug. */
-    const client = supabaseBrowser();
-    if (!client) return;
-
-    const channel = client
-      .channel(`recipe-${recipeSlug}`)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'recipe_comments', filter: `recipe_slug=eq.${recipeSlug}` },
-        () => void fetchCommentsRef.current(),
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'recipe_proposals', filter: `recipe_slug=eq.${recipeSlug}` },
-        () => void fetchProposalsRef.current(),
-      )
-      .subscribe();
-
-    return () => {
-      void client.removeChannel(channel);
-    };
-  }, [recipeSlug]);
 
   /* Opened from the gallery's "Propose & vote" card, which has no way to reach
      this state directly — see `OPEN_PROPOSAL_EVENT`. `openProposalForm` is in
