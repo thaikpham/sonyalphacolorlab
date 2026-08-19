@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;800&display=swap" rel="stylesheet">
+<script src="./image-slot.js"></script>
+<style>
+  *,*::before,*::after{box-sizing:border-box}
+  body{
+    margin:0;
+    --void:#07080B; --ink:#F4F5F8; --ink-2:#C3C7D2; --ink-3:#969CAA;
+    --a300:#B3C0FF; --a400:#8A9CFF; --a500:#5C74F0; --acc:#6E5BE6;
+    --g1:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.022));
+    --g2:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.035));
+    --spec:inset 0 1px 0 rgba(255,255,255,.11);
+    --e1:0 2px 6px rgba(0,0,0,.5), 0 18px 44px -14px rgba(0,0,0,.7);
+    --e2:0 4px 12px rgba(0,0,0,.55), 0 34px 84px -22px rgba(0,0,0,.85);
+    --sunk:inset 0 2px 8px rgba(0,0,0,.5);
+    --halo:0 12px 28px -8px rgba(110,91,230,.55);
+    background:var(--void);color:var(--ink);
+    font-family:'Noto Sans',ui-sans-serif,system-ui,sans-serif;
+    font-size:15px;line-height:1.55;font-variant-numeric:tabular-nums;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{margin:0;font-weight:800;line-height:1.14;letter-spacing:-0.02em}
+  p{margin:0}
+  a{color:var(--a400);text-decoration:none}
+  a:hover{color:var(--a300)}
+  input,textarea,select,button{font-family:inherit}
+  :focus{outline:none}
+  :focus-visible{outline:2px solid var(--a400);outline-offset:3px}
+  ::selection{background:rgba(110,91,230,.38)}
+  *{scrollbar-width:none;scrollbar-color:transparent transparent}
+  *:hover,*:focus-within{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.16) transparent}
+  ::-webkit-scrollbar{width:10px;height:10px;background:transparent}
+  ::-webkit-scrollbar-track,::-webkit-scrollbar-corner{background:transparent}
+  ::-webkit-scrollbar-button{display:none}
+  ::-webkit-scrollbar-thumb{background:transparent;border-radius:999px;border:3px solid transparent;background-clip:content-box;transition:background .18s ease}
+  *:hover::-webkit-scrollbar-thumb,*:focus-within::-webkit-scrollbar-thumb{background:rgba(255,255,255,.16);background-clip:content-box}
+  ::-webkit-scrollbar-thumb:hover,::-webkit-scrollbar-thumb:active{background:rgba(255,255,255,.3);background-clip:content-box}
+  .silent{scrollbar-width:none}
+  .silent::-webkit-scrollbar{display:none}
+  @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms !important;transition-duration:.01ms !important}}
+</style>
+</helmet>
+
+<div style="position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(60% 42% at 12% 0%,rgba(110,91,230,.17),transparent 70%),radial-gradient(52% 38% at 92% 6%,rgba(92,116,240,.12),transparent 72%),radial-gradient(70% 50% at 55% 101%,rgba(70,179,196,.06),transparent 70%)"></div>
+
+<div style="position:relative;z-index:1;max-width:1560px;margin:0 auto;padding:52px 40px 120px;display:flex;flex-direction:column;gap:56px">
+
+  <header style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:36px;align-items:end">
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;gap:10px;align-items:center;font-size:13px;font-weight:600;letter-spacing:0.09em;text-transform:uppercase;color:var(--ink-3)">
+        <span style="color:var(--a400);font-size:16px;line-height:1">α</span>
+        <span>Sony Alpha ecosystem</span><span style="color:rgba(255,255,255,.2)">/</span><span>Screens v2</span>
+      </div>
+      <h1 style="font-size:48px;max-width:22ch;text-wrap:pretty">Sáu màn hình, dựng lại bằng đúng hệ thống</h1>
+      <p style="font-size:18px;line-height:1.5;color:var(--ink-2);max-width:66ch;text-wrap:pretty">Không một đường viền, không một cỡ chữ dưới 13px, một family Noto Sans, thanh cuộn ẩn. Nội dung là dữ liệu thật của repo — <code style="font-family:inherit;color:var(--ink-3)">recipes.seed.json</code>, <code style="font-family:inherit;color:var(--ink-3)">sony-cameras.seed.json</code>, <code style="font-family:inherit;color:var(--ink-3)">messages/vi.json</code>. Mở <a href="Alpha Design System.dc.html">Alpha Design System</a> để xem token, và <a href="Ecosystem Launcher.dc.html">Ecosystem Launcher</a> cho bản desktop/mobile.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;text-align:right;padding-bottom:6px">
+      <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-3)">Khung dựng</span>
+      <span style="font-size:15px;color:var(--ink-2)">1440 × desktop</span>
+      <span style="font-size:13px;color:var(--ink-3)">Ô ảnh: kéo thả để thay</span>
+    </div>
+  </header>
+
+  <sc-for list="{{ screens }}" as="s" hint-placeholder-count="6">
+    <section data-screen-label="{{ s.n }}" style="display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:baseline">
+        <span style="font-size:13px;font-weight:800;letter-spacing:0.1em;color:var(--acc)">{{ s.n }}</span>
+        <h2 style="font-size:29px">{{ s.title }}</h2>
+        <p style="font-size:14px;color:var(--ink-3);margin-left:auto;max-width:52ch;text-align:right;text-wrap:pretty">{{ s.note }}</p>
+      </div>
+      <div style="border-radius:32px;overflow:hidden;background:rgba(7,8,11,.72);box-shadow:var(--e2),var(--spec)">
+        <sc-if value="{{ s.isGallery }}" hint-placeholder-val="{{ true }}">
+          <div>
+            <div style="display:flex;flex-wrap:wrap;gap:18px;align-items:center;padding:16px 26px;background:var(--g2);backdrop-filter:blur(40px) saturate(1.4);-webkit-backdrop-filter:blur(40px) saturate(1.4);box-shadow:0 14px 34px -18px rgba(0,0,0,.9),var(--spec)">
+              <span style="display:flex;gap:9px;align-items:center;font-size:17px;font-weight:800;letter-spacing:-0.02em"><span style="color:var(--a400);font-size:19px">α</span>ColorLab</span>
+              <nav style="display:flex;gap:4px;margin-left:14px">
+                <sc-for list="{{ nav }}" as="n" hint-placeholder-count="4">
+                  <span style="font-size:15px;font-weight:600;padding:9px 15px;border-radius:12px;min-height:44px;display:flex;align-items:center;color:{{ n.fg }};background:{{ n.bg }};box-shadow:{{ n.shadow }}">{{ n.label }}</span>
+                </sc-for>
+              </nav>
+              <label style="display:flex;gap:10px;align-items:center;margin-left:auto;padding:0 15px;min-height:44px;width:290px;border-radius:14px;background:rgba(0,0,0,.35);box-shadow:var(--sunk),var(--spec)">
+                <span style="width:15px;height:15px;border-radius:50%;box-shadow:inset 0 0 0 2px rgba(255,255,255,.34)"></span>
+                <input type="text" placeholder="Tìm công thức, máy ảnh, creative look" style="flex:1;min-width:0;font-size:15px;color:var(--ink);background:transparent;border:0;padding:0">
+              </label>
+              <span style="display:flex;gap:10px;align-items:center">
+                <span style="font-size:15px;font-weight:600;color:var(--ink-2);padding:0 6px">Đóng góp ảnh</span>
+                <span style="width:40px;height:40px;border-radius:50%;background:linear-gradient(160deg,#8A9CFF,#6E5BE6);box-shadow:0 6px 16px -6px rgba(110,91,230,.6),var(--spec)"></span>
+              </span>
+            </div>
+
+            <div style="padding:36px 26px 40px;display:flex;flex-direction:column;gap:26px">
+              <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:end;justify-content:space-between">
+                <div style="display:flex;flex-direction:column;gap:11px">
+                  <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#5FC7D6">Picture Profile &amp; Creative Look</span>
+                  <h3 style="font-size:38px">Tất cả công thức</h3>
+                  <p style="font-size:18px;line-height:1.5;color:var(--ink-2);max-width:58ch">Lọc theo tag, xem thiết lập gốc, rồi áp dụng vào máy Sony Alpha của bạn.</p>
+                </div>
+                <div style="display:flex;gap:5px;padding:5px;border-radius:16px;background:rgba(0,0,0,.3);box-shadow:var(--sunk)">
+                  <sc-for list="{{ views }}" as="v" hint-placeholder-count="3">
+                    <span style="font-size:14px;font-weight:600;padding:10px 16px;border-radius:12px;min-height:44px;display:flex;align-items:center;color:{{ v.fg }};background:{{ v.bg }};box-shadow:{{ v.shadow }}">{{ v.label }}</span>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div class="silent" style="display:flex;gap:9px;overflow-x:auto;padding-bottom:2px">
+                <sc-for list="{{ filters }}" as="f" hint-placeholder-count="7">
+                  <span style="flex:none;font-size:13px;font-weight:600;padding:9px 15px;border-radius:12px;min-height:40px;display:flex;align-items:center;color:{{ f.fg }};background:{{ f.bg }};box-shadow:{{ f.shadow }}">{{ f.label }}</span>
+                </sc-for>
+              </div>
+
+              <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px">
+                <sc-for list="{{ recipes }}" as="r" hint-placeholder-count="6">
+                  <div style="border-radius:26px;overflow:hidden;background:var(--g1);backdrop-filter:blur(30px) saturate(1.35);-webkit-backdrop-filter:blur(30px) saturate(1.35);box-shadow:var(--e1),var(--spec)">
+                    <div style="position:relative;height:210px">
+                      <image-slot id="{{ r.slot }}" shape="rect" placeholder="{{ r.slotHint }}"></image-slot>
+                    </div>
+                    <div style="padding:19px 20px 22px;display:flex;flex-direction:column;gap:11px">
+                      <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:{{ r.kindTint }}">{{ r.kind }}</span>
+                      <h4 style="font-size:21px;font-weight:600;letter-spacing:0">{{ r.name }}</h4>
+                      <div style="display:flex;flex-wrap:wrap;gap:7px;font-size:13px;font-weight:500">
+                        <sc-for list="{{ r.chips }}" as="c" hint-placeholder-count="3">
+                          <span style="padding:6px 11px;border-radius:11px;background:rgba(255,255,255,.08);box-shadow:var(--spec)">{{ c }}</span>
+                        </sc-for>
+                      </div>
+                      <span style="font-size:13px;color:var(--ink-3)">{{ r.meta }}</span>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ s.isDetail }}" hint-placeholder-val="{{ true }}">
+          <div style="display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr)">
+            <div style="display:flex;flex-direction:column">
+              <div style="position:relative;height:420px">
+                <image-slot id="detail-hero" shape="rect" placeholder="Ảnh chính của recipe"></image-slot>
+              </div>
+              <div style="padding:30px 30px 34px;display:flex;flex-direction:column;gap:16px">
+                <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#5FC7D6">Creative Look · Featured Look</span>
+                <h3 style="font-size:36px">SCL-CL-001: Film Look · Raoul Rutnam</h3>
+                <p style="font-size:18px;line-height:1.5;color:var(--ink-2);max-width:52ch;text-wrap:pretty">FL (Film Look) — Sony Asia Alpha Recipes, Sri Lanka. Tag: creative-look · film-look · sri-lanka.</p>
+                <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:4px">
+                  <button type="button" style="font-size:15px;font-weight:600;color:#fff;background:linear-gradient(180deg,#8C7BEC,#6E5BE6);border:0;border-radius:14px;padding:12px 20px;min-height:44px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.45),var(--halo),var(--spec)" style-hover="filter:brightness(1.12)">Áp dụng Recipe</button>
+                  <button type="button" style="font-size:15px;font-weight:600;color:var(--ink);background:rgba(255,255,255,.08);border:0;border-radius:14px;padding:12px 20px;min-height:44px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.4),var(--spec)" style-hover="background:rgba(255,255,255,.13)">Lưu</button>
+                  <button type="button" style="font-size:15px;font-weight:600;color:var(--a400);background:transparent;border:0;padding:12px 10px;min-height:44px;cursor:pointer">Đóng góp ảnh</button>
+                </div>
+                <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.13) 18%,rgba(255,255,255,.13) 82%,transparent);margin:6px 0 4px"></div>
+                <div style="display:flex;gap:14px;align-items:center">
+                  <span style="width:44px;height:44px;border-radius:50%;background:linear-gradient(160deg,#5FC7D6,#3E6FE0);box-shadow:var(--spec)"></span>
+                  <span style="display:flex;flex-direction:column;gap:2px">
+                    <span style="font-size:15px;font-weight:600">Raoul Rutnam</span>
+                    <span style="font-size:13px;color:var(--ink-3)">Sri Lanka · sony-asia.com/microsite/rmdc/creativelooks</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div style="padding:30px 30px 34px;display:flex;flex-direction:column;gap:18px;background:rgba(255,255,255,.022)">
+              <div style="border-radius:26px;padding:22px 22px 24px;background:var(--g1);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);box-shadow:var(--e1),var(--spec);display:flex;flex-direction:column;gap:14px">
+                <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-3)">Thiết lập trong máy</span>
+                <div style="display:flex;flex-direction:column;gap:3px">
+                  <sc-for list="{{ params }}" as="p" hint-placeholder-count="8">
+                    <div style="display:flex;justify-content:space-between;gap:16px;padding:11px 13px;border-radius:12px;background:{{ p.bg }};font-size:14px">
+                      <span style="color:var(--ink-2)">{{ p.k }}</span>
+                      <span style="font-weight:600;color:{{ p.tint }}">{{ p.v }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="border-radius:26px;padding:22px;background:var(--g1);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);box-shadow:var(--e1),var(--spec);display:flex;flex-direction:column;gap:14px">
+                <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#5FC7D6">Ảnh chụp mẫu</span>
+                <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">
+                  <sc-for list="{{ strip }}" as="t" hint-placeholder-count="3">
+                    <div style="position:relative;height:104px;border-radius:14px;overflow:hidden">
+                      <image-slot id="{{ t.slot }}" shape="rect" radius="14" placeholder="Ảnh"></image-slot>
+                    </div>
+                  </sc-for>
+                </div>
+                <span style="font-size:13px;color:var(--ink-3)">Tải lên ảnh chụp mẫu từ máy Sony Alpha của bạn.</span>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ s.isWiki }}" hint-placeholder-val="{{ true }}">
+          <div style="display:grid;grid-template-columns:268px minmax(0,1fr)">
+            <div style="padding:28px 22px 32px;display:flex;flex-direction:column;gap:22px;background:rgba(255,255,255,.03)">
+              <span style="display:flex;gap:9px;align-items:center;font-size:17px;font-weight:800;letter-spacing:-0.02em"><span style="color:var(--a400);font-size:19px">α</span>Sony Wiki</span>
+              <sc-for list="{{ facets }}" as="f" hint-placeholder-count="3">
+                <div style="display:flex;flex-direction:column;gap:9px">
+                  <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-3)">{{ f.name }}</span>
+                  <sc-for list="{{ f.items }}" as="i" hint-placeholder-count="4">
+                    <span style="display:flex;justify-content:space-between;gap:10px;font-size:15px;padding:9px 12px;border-radius:12px;min-height:40px;align-items:center;color:{{ i.fg }};background:{{ i.bg }};box-shadow:{{ i.shadow }}">
+                      <span>{{ i.label }}</span><span style="font-size:13px;color:var(--ink-3)">{{ i.count }}</span>
+                    </span>
+                  </sc-for>
+                </div>
+              </sc-for>
+            </div>
+            <div style="padding:28px 26px 34px;display:flex;flex-direction:column;gap:20px">
+              <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:end;justify-content:space-between">
+                <div style="display:flex;flex-direction:column;gap:9px">
+                  <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-3)">Máy ảnh · Full Frame</span>
+                  <h3 style="font-size:34px">Tra cứu máy ảnh</h3>
+                </div>
+                <div style="display:flex;gap:12px;align-items:center">
+                  <span style="font-size:14px;color:var(--ink-2)">2 sản phẩm đang so sánh</span>
+                  <button type="button" style="font-size:15px;font-weight:600;color:#fff;background:linear-gradient(180deg,#8C7BEC,#6E5BE6);border:0;border-radius:14px;padding:11px 18px;min-height:44px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.45),var(--halo),var(--spec)">Mở bảng so sánh</button>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <sc-for list="{{ cameras }}" as="c" hint-placeholder-count="4">
+                  <div style="display:grid;grid-template-columns:132px minmax(0,1fr) auto;gap:22px;align-items:center;padding:16px;border-radius:24px;background:{{ c.bg }};backdrop-filter:blur(30px) saturate(1.35);-webkit-backdrop-filter:blur(30px) saturate(1.35);box-shadow:{{ c.shadow }},var(--spec)">
+                    <div style="position:relative;height:96px;border-radius:16px;overflow:hidden">
+                      <image-slot id="{{ c.slot }}" shape="rect" radius="16" placeholder="Ảnh máy"></image-slot>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:9px;min-width:0">
+                      <div style="display:flex;flex-wrap:wrap;gap:11px;align-items:baseline">
+                        <h4 style="font-size:25px;font-weight:800">{{ c.name }}</h4>
+                        <span style="font-size:13px;font-weight:600;padding:5px 10px;border-radius:11px;color:{{ c.tagTint }};background:{{ c.tagBg }};box-shadow:var(--spec)">{{ c.tag }}</span>
+                      </div>
+                      <div style="display:flex;flex-wrap:wrap;gap:7px;font-size:13px;font-weight:500">
+                        <sc-for list="{{ c.specs }}" as="sp" hint-placeholder-count="4">
+                          <span style="padding:6px 11px;border-radius:11px;background:rgba(255,255,255,.08);box-shadow:var(--spec)">{{ sp }}</span>
+                        </sc-for>
+                      </div>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:9px;align-items:flex-end">
+                      <span style="font-size:21px;font-weight:800;letter-spacing:-0.02em">{{ c.price }}</span>
+                      <span style="font-size:14px;font-weight:600;padding:10px 15px;border-radius:12px;min-height:44px;display:flex;align-items:center;color:{{ c.pickFg }};background:{{ c.pickBg }};box-shadow:{{ c.pickShadow }}">{{ c.pick }}</span>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ s.isCompare }}" hint-placeholder-val="{{ true }}">
+          <div style="padding:30px 26px 34px;display:flex;flex-direction:column;gap:22px">
+            <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:end;justify-content:space-between">
+              <div style="display:flex;flex-direction:column;gap:9px">
+                <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-3)">So sánh · 3 sản phẩm</span>
+                <h3 style="font-size:34px">7 III · 7 IV · 7 V</h3>
+              </div>
+              <span style="font-size:14px;color:var(--ink-2);max-width:44ch;text-align:right">Giá trị tốt hơn được tô accent; ô giống nhau để nguyên ink. Dấu — là thông số catalogue không công bố.</span>
+            </div>
+            <div style="border-radius:26px;padding:14px 18px 18px;background:var(--g1);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);box-shadow:var(--e1),var(--spec)">
+              <div style="display:grid;grid-template-columns:minmax(0,1.2fr) repeat(3,minmax(0,1fr));gap:10px;padding:10px 14px">
+                <span style="font-size:13px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">Thông số</span>
+                <sc-for list="{{ compareHeads }}" as="h" hint-placeholder-count="3">
+                  <span style="font-size:13px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3);text-align:right">{{ h }}</span>
+                </sc-for>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:3px">
+                <sc-for list="{{ compareRows }}" as="r" hint-placeholder-count="9">
+                  <div style="display:grid;grid-template-columns:minmax(0,1.2fr) repeat(3,minmax(0,1fr));gap:10px;padding:13px 14px;border-radius:12px;background:{{ r.bg }};font-size:14px">
+                    <span style="color:var(--ink-2)">{{ r.k }}</span>
+                    <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="3">
+                      <span style="text-align:right;color:{{ c.tint }};font-weight:{{ c.weight }}">{{ c.v }}</span>
+                    </sc-for>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ s.isAdmin }}" hint-placeholder-val="{{ true }}">
+          <div style="display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr)">
+            <div style="padding:28px 26px 32px;display:flex;flex-direction:column;gap:20px">
+              <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:end;justify-content:space-between">
+                <div style="display:flex;flex-direction:column;gap:9px">
+                  <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#AE8DF5">Điều hành · Product Admin</span>
+                  <h3 style="font-size:32px">Sửa sản phẩm · 7 IV</h3>
+                </div>
+                <span style="font-size:13px;color:var(--ink-3)">Đã lưu</span>
+              </div>
+
+              <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px">
+                <sc-for list="{{ fields }}" as="f" hint-placeholder-count="6">
+                  <label style="display:flex;flex-direction:column;gap:8px;grid-column:{{ f.span }}">
+                    <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-3)">{{ f.label }}</span>
+                    <span style="display:flex;align-items:center;gap:10px;padding:0 15px;min-height:44px;border-radius:14px;background:rgba(0,0,0,.35);box-shadow:var(--sunk),var(--spec);font-size:15px;color:{{ f.tint }}">{{ f.value }}</span>
+                    <span style="font-size:13px;color:{{ f.hintTint }}">{{ f.hint }}</span>
+                  </label>
+                </sc-for>
+              </div>
+
+              <label style="display:flex;flex-direction:column;gap:8px">
+                <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-3)">Ghi chú cho người dùng</span>
+                <span style="display:block;padding:14px 15px;min-height:96px;border-radius:14px;background:rgba(0,0,0,.35);box-shadow:var(--sunk),var(--spec);font-size:15px;line-height:1.55;color:var(--ink-2)">Giữ da ấm trong ánh sáng hỗn hợp mà không đẩy vàng sang cam. Dùng tốt nhất ở trong nhà, ISO dưới 6400.</span>
+              </label>
+
+              <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding-top:2px">
+                <button type="button" style="font-size:15px;font-weight:600;color:#fff;background:linear-gradient(180deg,#8C7BEC,#6E5BE6);border:0;border-radius:14px;padding:12px 20px;min-height:44px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.45),var(--halo),var(--spec)">Công bố bản này</button>
+                <button type="button" style="font-size:15px;font-weight:600;color:var(--ink);background:rgba(255,255,255,.08);border:0;border-radius:14px;padding:12px 20px;min-height:44px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.4),var(--spec)">Lưu nháp</button>
+                <button type="button" style="font-size:15px;font-weight:600;color:#E7899A;background:transparent;border:0;padding:12px 10px;min-height:44px;cursor:pointer">Xoá đề xuất</button>
+              </div>
+            </div>
+
+            <div style="padding:28px 26px 32px;display:flex;flex-direction:column;gap:16px;background:rgba(255,255,255,.022)">
+              <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-3)">Hàng chờ duyệt · 7</span>
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <sc-for list="{{ queue }}" as="q" hint-placeholder-count="4">
+                  <div style="display:flex;flex-direction:column;gap:9px;padding:16px 17px;border-radius:20px;background:{{ q.bg }};backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);box-shadow:{{ q.shadow }},var(--spec)">
+                    <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:baseline">
+                      <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:{{ q.tint }}">{{ q.kind }}</span>
+                      <span style="font-size:13px;color:var(--ink-3);margin-left:auto">{{ q.when }}</span>
+                    </div>
+                    <span style="font-size:17px;font-weight:600">{{ q.name }}</span>
+                    <span style="font-size:13px;color:var(--ink-3)">{{ q.meta }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ s.isHeader }}" hint-placeholder-val="{{ true }}">
+          <div style="padding:28px 26px 34px;display:flex;flex-direction:column;gap:18px">
+            <sc-for list="{{ headerStates }}" as="h" hint-placeholder-count="3">
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-3)">{{ h.name }}</span>
+                <div style="border-radius:22px;padding:14px 20px;display:flex;flex-wrap:wrap;gap:16px;align-items:center;background:var(--g2);backdrop-filter:blur(40px) saturate(1.4);-webkit-backdrop-filter:blur(40px) saturate(1.4);box-shadow:var(--e1),var(--spec)">
+                  <span style="display:flex;gap:9px;align-items:center;font-size:17px;font-weight:800;letter-spacing:-0.02em"><span style="color:var(--a400);font-size:19px">α</span>{{ h.app }}</span>
+                  <span style="font-size:15px;font-weight:600;color:var(--ink-2);margin-left:6px">{{ h.left }}</span>
+                  <span style="display:flex;align-items:center;gap:10px;margin-left:auto;padding:0 15px;min-height:44px;width:{{ h.searchW }};border-radius:14px;background:rgba(0,0,0,.35);box-shadow:var(--sunk),var(--spec);font-size:15px;color:{{ h.searchTint }}">{{ h.search }}</span>
+                  <span style="width:40px;height:40px;border-radius:50%;background:linear-gradient(160deg,#8A9CFF,#6E5BE6);box-shadow:0 6px 16px -6px rgba(110,91,230,.6),var(--spec)"></span>
+                </div>
+                <sc-if value="{{ h.menu }}" hint-placeholder-val="{{ false }}">
+                  <div style="align-self:flex-end;width:270px;margin:-12px 8px 0 0;border-radius:20px;padding:9px;display:flex;flex-direction:column;gap:2px;background:var(--g2);backdrop-filter:blur(40px) saturate(1.4);-webkit-backdrop-filter:blur(40px) saturate(1.4);box-shadow:var(--e2),var(--spec);position:relative;z-index:2">
+                    <sc-for list="{{ menuItems }}" as="m" hint-placeholder-count="4">
+                      <span style="display:flex;justify-content:space-between;gap:12px;font-size:15px;padding:11px 13px;border-radius:12px;min-height:44px;align-items:center;color:{{ m.fg }};background:{{ m.bg }}">
+                        <span>{{ m.label }}</span><span style="font-size:13px;color:var(--ink-3)">{{ m.hint }}</span>
+                      </span>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <span style="font-size:14px;color:var(--ink-2);max-width:76ch">{{ h.note }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+    </section>
+  </sc-for>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;accentHex&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#6E5BE6&quot;,&quot;options&quot;:[&quot;#6E5BE6&quot;,&quot;#5C74F0&quot;,&quot;#8E63E6&quot;,&quot;#4C6FE3&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Color&quot;}}">
+const GLASS = 'linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.022))';
+const E1 = '0 2px 6px rgba(0,0,0,.5), 0 18px 44px -14px rgba(0,0,0,.7)';
+const SPEC = 'inset 0 1px 0 rgba(255,255,255,.11)';
+const ACC_FILL = 'linear-gradient(180deg,#8C7BEC,#6E5BE6)';
+const ACC_SHADOW = '0 6px 16px -6px rgba(110,91,230,.55), ' + SPEC;
+
+const pick = (on, label) =>
+  on
+    ? { label, fg: '#fff', bg: ACC_FILL, shadow: ACC_SHADOW }
+    : { label, fg: '#C3C7D2', bg: 'transparent', shadow: 'none' };
+
+class Component extends DCLogic {
+  renderVals() {
+    const accent = this.props.accentHex ?? '#6E5BE6';
+
+    /* Recipes, looks, cameras and admin copy below are the repo's own data:
+       data/recipes.seed.json, data/sony-cameras.seed.json and messages/vi.json.
+       Nothing here is invented. */
+    const recipes = [
+      ['g1', 'SCL-PP-001: Mojave Sun', 'Picture Profile', '#AE8DF5', ['Cine1', 'S-Gamut3', '7000K B3 M1.5'], 'nostalgic · sun-drenched · golden-hour'],
+      ['g2', 'SCL-PP-002: Kyoto Jade', 'Picture Profile', '#AE8DF5', ['Cine2', 'S-Gamut3', '3700K A7 M0.5'], 'serene · subtle · portrait · street'],
+      ['g3', 'SCL-CL-001: Film Look · Raoul Rutnam', 'Creative Look', '#5FC7D6', ['FL', 'Contrast +5', 'WB AWB'], 'creative-look · film-look · sri-lanka'],
+      ['g4', 'SCL-CL-002: Film Look · Arantha Sirimanne', 'Creative Look', '#5FC7D6', ['FL', 'Contrast +3', 'WB Cloudy A1.5'], 'creative-look · film-look · sri-lanka'],
+      ['g5', 'SCL-CL-004: Vivid2 · Sony Asia', 'Creative Look', '#5FC7D6', ['VV2', 'Fade +4', 'WB 5600K'], 'creative-look · vivid · asia-pacific'],
+      ['g6', 'SCL-PP-006: Faded Cine', 'Picture Profile', '#AE8DF5', ['Cine2', 'Knee Manual', 'Black Level −7'], 'faded · cinematic · muted'],
+    ].map(([slot, name, kind, kindTint, chips, meta]) => ({
+      slot, name, kind, kindTint, chips, meta, slotHint: 'Ảnh mẫu · ' + name,
+    }));
+
+    /* SCL-CL-001, verbatim from recipes.seed.json (format "cl"). */
+    const params = [
+      ['Creative Look', 'FL', true], ['Contrast', '+5', false], ['Highlights', '−9', false],
+      ['Shadows', '+3', false], ['Fade', '+3', false], ['Saturation', '+3', false],
+      ['Sharpness', '+4', false], ['Sharpness Range', '+5', false], ['Clarity', '+4', false],
+      ['White Balance', 'AWB', true],
+    ].map(([k, v, hot], i) => ({
+      k, v,
+      tint: hot ? '#8A9CFF' : '#F4F5F8',
+      bg: i % 2 === 0 ? 'rgba(255,255,255,.04)' : 'transparent',
+    }));
+
+    const cameras = [
+      ['w1', '7 V', 'Máy ảnh Alpha', '#8A9CFF', 'rgba(138,156,255,.15)', ['33,0 MP', '759 điểm', '4K 120p', 'CFexpress A / SD x2'], '68.990.000 đ', true],
+      ['w2', '7 IV', 'Máy ảnh Alpha', '#8A9CFF', 'rgba(138,156,255,.15)', ['33 MP', '759 điểm', '658 g', 'CFexpress A / SD x2'], '53.499.273 đ', true],
+      ['w3', '7 III', 'Máy ảnh Alpha', '#C3C7D2', 'rgba(255,255,255,.08)', ['24,2 MP', '693 điểm', '650 g', 'SD x2'], '34.353.818 đ', false],
+      ['w4', 'FX3', 'Cinema Line', '#AE8DF5', 'rgba(174,141,245,.15)', ['12,1 MP', 'Full-frame', '715 g', 'CFexpress A / SD x2'], '86.390.182 đ', false],
+    ].map(([slot, name, tag, tagTint, tagBg, specs, price, chosen]) => {
+      const p = pick(chosen, chosen ? 'Đã chọn' : 'So sánh');
+      return {
+        slot, name, tag, tagTint, tagBg, specs, price,
+        bg: chosen ? 'linear-gradient(180deg,rgba(110,91,230,.20),rgba(110,91,230,.07))' : GLASS,
+        shadow: chosen ? '0 4px 12px rgba(0,0,0,.5), 0 26px 60px -20px rgba(110,91,230,.4)' : E1,
+        pick: p.label, pickFg: p.fg, pickBg: p.bg, pickShadow: p.shadow,
+      };
+    });
+
+    /* 7 III / 7 IV / 7 V — specs block of each entry in sony-cameras.seed.json.
+       An em dash means the catalogue publishes no figure (specsMissing). */
+    const rawCompare = [
+      ['Cảm biến', ['Exmor R CMOS BSI', 'Exmor R CMOS BSI', 'Exmor R CMOS BSI'], -1],
+      ['Điểm ảnh hiệu dụng', ['24,2 MP', '33 MP', '33,0 MP'], 2],
+      ['Dải ISO', ['—', '—', '100–51200 (mở rộng 50–204800)'], 2],
+      ['Lấy nét tự động', ['693 điểm', '759 điểm', '759 điểm'], 1],
+      ['Quay video', ['—', '—', '4K 120p'], 2],
+      ['Kính ngắm', ['2 359 296 điểm', '3 686 400 điểm', '3 686 400 điểm'], 1],
+      ['Màn hình', ['3,0" 921.600 điểm', '3,0" 1 036 800 điểm', '3,2" 2.095.104 điểm'], 2],
+      ['Khe thẻ', ['SD x2', 'CFexpress A / SD x2', 'CFexpress A / SD x2'], 1],
+      ['Pin', ['710 ảnh (LCD)', '—', '750 ảnh (LCD)'], 2],
+      ['Khối lượng', ['650 g', '658 g', '—'], 0],
+      ['Giá niêm yết', ['34.353.818 đ', '53.499.273 đ', '68.990.000 đ'], 0],
+    ];
+
+    const compareRows = rawCompare.map(([k, vals, best], i) => ({
+      k,
+      bg: i % 2 === 0 ? 'rgba(255,255,255,.04)' : 'transparent',
+      cells: vals.map((v, j) => ({
+        v,
+        tint: j === best ? '#8A9CFF' : '#F4F5F8',
+        weight: j === best ? '600' : '400',
+      })),
+    }));
+
+    /* Field labels are the admin editor's own strings (admin-editor.tsx /
+       messages/vi.json), and the values are the 7 IV row of the seed. */
+    const fields = [
+      ['Tên ngắn hiển thị (Name)', '7 IV', '#F4F5F8', 'Hiện trên thẻ sản phẩm và thanh so sánh', '#969CAA', 'span 1'],
+      ['Mã SKU sản phẩm', 'ILCE-7M4/BQ AP2', '#F4F5F8', 'Khoá định danh — không đổi sau khi công bố', '#969CAA', 'span 1'],
+      ['Tên đầy đủ chính thức (Full Name)', 'Sony 7 IV (ILCE-7M4/BQ AP2)', '#F4F5F8', 'Dùng cho tiêu đề trang và kết quả tìm kiếm', '#969CAA', 'span 1 / span 3'],
+      ['Danh mục (Category)', 'Máy ảnh', '#F4F5F8', 'Bắt buộc', '#969CAA', 'span 1'],
+      ['Phân nhóm chính (SubCategory 1)', 'Full Frame', '#F4F5F8', 'Bắt buộc', '#969CAA', 'span 1'],
+      ['Phân nhóm phụ (SubCategory 2)', 'Máy ảnh Alpha', '#F4F5F8', 'VD: Alpha 7 Series, G Master...', '#969CAA', 'span 1'],
+      ['Giá niêm yết (VND)', '53499273', '#F4F5F8', 'Giá hiển thị: 53.499.273 đ', '#969CAA', 'span 1'],
+      ['Thông số còn thiếu', 'battery · isoRange · video', '#F4F5F8', '3 thông số chưa có trong catalogue — sẽ hiện “Liên hệ”', '#E7899A', 'span 1'],
+      ['Trang nguồn', 'sony.com.vn/…/ilce-7m4/spec', '#F4F5F8', 'Bắt buộc khi sửa khối thông số', '#969CAA', 'span 1'],
+    ].map(([label, value, tint, hint, hintTint, span]) => ({ label, value, tint, hint, hintTint, span }));
+
+    const queue = [
+      ['Bản dịch máy', '#AE8DF5', '7 V (ILCE-7M5/BQ FS1)', 'Bản dịch máy. Hãy đọc lại trước khi lưu.', '12 phút', true],
+      ['Thiếu thông số', '#E7899A', 'FX3 (ILME-FX3A/Q AP2)', 'isoRange · video · battery chưa có figure', '1 giờ', false],
+      ['Đã lưu', '#5FC7D6', 'FX30 (ILME-FX30B/QAP2)', 'Cập nhật giá niêm yết 41.226.546 đ', '3 giờ', false],
+      ['Chưa có giá', '#969CAA', 'FE C 16-35mm T3.1 G Cinema', 'priceVnd 0 — catalogue không công bố', 'Hôm qua', false],
+    ].map(([kind, tint, name, meta, when, hot]) => ({
+      kind, tint, name, meta, when,
+      bg: hot ? 'linear-gradient(180deg,rgba(174,141,245,.18),rgba(174,141,245,.06))' : GLASS,
+      shadow: hot ? '0 4px 12px rgba(0,0,0,.5), 0 24px 56px -20px rgba(174,141,245,.38)' : E1,
+    }));
+
+    return {
+      accent,
+      /* messages/vi.json: nav.cameras, nav.ecosystem, recipe.back, cameras.* */
+      nav: [pick(true, 'Tất cả công thức'), pick(false, 'Tra cứu máy ảnh'), pick(false, 'Tai nghe & Loa')],
+      views: [pick(true, 'Grid'), pick(false, 'Bảng'), pick(false, 'So sánh')],
+      /* Tags as they appear in recipes.seed.json. */
+      filters: [
+        pick(true, 'Tất cả sản phẩm'), pick(false, 'creative-look'), pick(false, 'film-look'),
+        pick(false, 'portrait'), pick(false, 'street-photography'), pick(false, 'golden-hour'),
+        pick(false, 'cinematic'), pick(false, 'sri-lanka'),
+      ],
+      recipes,
+      params,
+      strip: [{ slot: 'd1' }, { slot: 'd2' }, { slot: 'd3' }],
+      facets: [
+        /* Facet names and options are the catalogue's own category /
+           subCategory1 / subCategory2 values (messages/vi.json cameras.cat*,
+           sony-cameras.seed.json). Counts are left out rather than invented. */
+        {
+          name: 'Danh mục',
+          items: [
+            { ...pick(true, 'Máy ảnh'), count: '' },
+            { ...pick(false, 'Ống kính'), count: '' },
+            { ...pick(false, 'Phụ kiện'), count: '' },
+            { ...pick(false, 'Tai nghe & Loa'), count: '' },
+          ].map((i) => ({ label: i.label, fg: i.fg, bg: i.bg, shadow: i.shadow, count: i.count })),
+        },
+        {
+          name: 'Phân nhóm chính',
+          items: [
+            { ...pick(true, 'Full Frame'), count: '' },
+            { ...pick(false, 'APS-C'), count: '' },
+            { ...pick(false, 'Cinema Line'), count: '' },
+            { ...pick(false, 'Cyber-shot'), count: '' },
+          ].map((i) => ({ label: i.label, fg: i.fg, bg: i.bg, shadow: i.shadow, count: i.count })),
+        },
+        {
+          name: 'Phân nhóm phụ',
+          items: [
+            { ...pick(false, 'Máy ảnh Alpha'), count: '' },
+            { ...pick(false, 'G Master'), count: '' },
+          ].map((i) => ({ label: i.label, fg: i.fg, bg: i.bg, shadow: i.shadow, count: i.count })),
+        },
+      ],
+      cameras,
+      compareHeads: ['7 III', '7 IV', '7 V'],
+      compareRows,
+      fields,
+      queue,
+      /* Labels from messages/vi.json: nav.*, search.*, auth.*, recipe.back. */
+      headerStates: [
+        {
+          name: 'Mặc định', app: 'ColorLab', left: 'Tất cả công thức · Tra cứu máy ảnh',
+          search: 'Tìm công thức, máy ảnh, creative look', searchTint: '#969CAA', searchW: '300px', menu: false,
+          note: 'Thanh kính nổi trên nội dung, blur 40px. Không viền dưới — bóng đổ 14px làm việc đó.',
+        },
+        {
+          name: 'Đang tìm', app: 'ColorLab', left: '',
+          search: 'ilce-7m4|', searchTint: '#F4F5F8', searchW: '520px', menu: false,
+          note: 'Ô tìm giãn ra, nav thu lại. Ô nhập là lớp lõm: bóng trong 8px, không viền. Fuzzy search khớp a7iv → ILCE-7M4.',
+        },
+        {
+          name: 'Menu tài khoản', app: 'ColorLab', left: 'Tất cả công thức · Tra cứu máy ảnh',
+          search: 'Tìm công thức, máy ảnh, creative look', searchTint: '#969CAA', searchW: '300px', menu: true,
+          note: 'Menu là lớp nổi thứ hai: film trắng 7.5%, blur 40px, bóng 34px, neo dưới avatar và chờm lên cạnh thanh. Mỗi dòng cao 44px.',
+        },
+      ],
+      menuItems: [
+        { label: 'Điều hành', hint: 'Admin', fg: '#F4F5F8', bg: 'rgba(255,255,255,.07)' },
+        { label: 'Đóng góp ảnh', hint: '', fg: '#F4F5F8', bg: 'transparent' },
+        { label: 'Hệ sinh thái Sony Alpha', hint: '4 app', fg: '#F4F5F8', bg: 'transparent' },
+        { label: 'Đăng xuất', hint: '', fg: '#C3C7D2', bg: 'transparent' },
+      ],
+      screens: [
+        { n: '01', title: 'ColorLab · Tất cả công thức', note: 'Công thức, tag và thiết lập lấy từ data/recipes.seed.json. Chip lọc cuộn ngang không thanh cuộn.', isGallery: true },
+        { n: '02', title: 'ColorLab · Chi tiết công thức', note: 'SCL-CL-001 nguyên văn từ seed: look FL, 9 tham số, WB AWB. Không một đường kẻ nào.', isDetail: true },
+        { n: '03', title: 'Sony Wiki · Tra cứu máy ảnh', note: 'Facet là category / subCategory của catalogue; giá và spec từ data/sony-cameras.seed.json.', isWiki: true },
+        { n: '04', title: 'Sony Wiki · So sánh spec', note: 'Khối specs của 7 III / 7 IV / 7 V. Dấu — là specsMissing, không phải chỗ trống.', isCompare: true },
+        { n: '05', title: 'Admin · Sửa sản phẩm', note: 'Nhãn trường đúng theo admin-editor.tsx. Lỗi báo bằng chữ hồng 13px, không viền đỏ.', isAdmin: true },
+        { n: '06', title: 'Site header · ba trạng thái', note: 'Mặc định, đang tìm, menu tài khoản. Launcher nằm ở file riêng.', isHeader: true },
+      ],
+    };
+  }
+}
+
+</script>
+</body>
+</html>

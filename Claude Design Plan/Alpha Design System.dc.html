@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;800&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box}
+  body{
+    margin:0;
+    --void:#07080B; --ink:#F4F5F8; --ink-2:#C3C7D2; --ink-3:#969CAA;
+    --g1:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.022));
+    --g2:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.035));
+    --spec:inset 0 1px 0 rgba(255,255,255,.11);
+    --lift:0 2px 6px rgba(0,0,0,.5), 0 18px 44px -14px rgba(0,0,0,.7);
+    --lift-lg:0 4px 12px rgba(0,0,0,.55), 0 34px 84px -22px rgba(0,0,0,.85);
+    background:var(--void);color:var(--ink);
+    font-family:'Noto Sans',ui-sans-serif,system-ui,sans-serif;
+    font-size:15px;line-height:1.55;font-weight:400;
+    font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{margin:0;font-weight:800;line-height:1.12;letter-spacing:-0.02em}
+  p{margin:0}
+  a{color:#8A9CFF;text-decoration:none;text-underline-offset:3px}
+  a:hover{color:#B3C0FF;text-decoration:underline}
+  code{font-family:inherit;color:var(--ink-2)}
+  :focus{outline:none}
+  :focus-visible{outline:2px solid #8A9CFF;outline-offset:3px}
+  ::selection{background:rgba(110,91,230,.38)}
+  html{scrollbar-width:none;scrollbar-color:transparent transparent}
+  html:hover{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.16) transparent}
+  ::-webkit-scrollbar{width:10px;height:10px;background:transparent}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:transparent;border-radius:999px;border:3px solid transparent;background-clip:content-box}
+  :hover::-webkit-scrollbar-thumb{background:rgba(255,255,255,.16);background-clip:content-box}
+  ::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.3);background-clip:content-box}
+  ::-webkit-scrollbar-corner,::-webkit-scrollbar-button{display:none}
+  @keyframes spin-glow{from{transform:rotate(0turn)}to{transform:rotate(1turn)}}
+  @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}}
+</style>
+</helmet>
+
+<div style="position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(65% 45% at 15% 0%,rgba(110,91,230,.18),transparent 70%),radial-gradient(55% 40% at 90% 8%,rgba(92,116,240,.13),transparent 72%),radial-gradient(75% 55% at 55% 102%,rgba(70,179,196,.07),transparent 70%)"></div>
+
+<div style="position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:52px 40px 120px">
+
+  <header style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:36px;align-items:end;margin-bottom:34px">
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <div style="display:flex;gap:10px;align-items:center;font-size:13px;font-weight:600;letter-spacing:0.09em;text-transform:uppercase;color:var(--ink-3)">
+        <span style="color:{{ accent }};font-size:16px;line-height:1">α</span>
+        <span>Sony Alpha ecosystem</span><span style="color:rgba(255,255,255,.2)">/</span><span>Design tokens v2</span>
+      </div>
+      <h1 style="font-size:52px;max-width:20ch;text-wrap:pretty">Một font. Một accent. Ánh sáng thay cho đường viền.</h1>
+      <p style="font-size:18px;line-height:1.5;color:var(--ink-2);max-width:64ch;text-wrap:pretty">Bản chữa cho feedback: chữ nội dung quá nhỏ, font không đồng đều, giao diện đọc như AI sinh ra. Nền tối luôn luôn. Mọi giá trị dưới đây là <em style="font-style:normal;color:var(--ink);font-weight:600">bắt buộc</em> — agent đọc file này trước khi viết một dòng UI.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;text-align:right;font-size:13px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3);padding-bottom:8px">
+      <span>ColorLab</span><span>Sony Wiki</span><span>CheeseBooth</span><span>Live SOP</span>
+    </div>
+  </header>
+
+  <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px;margin-bottom:56px">
+    <sc-for list="{{ headline }}" as="k" hint-placeholder-count="4">
+      <div style="border-radius:24px;padding:24px 24px 26px;background:var(--g1);backdrop-filter:blur(30px) saturate(1.35);-webkit-backdrop-filter:blur(30px) saturate(1.35);box-shadow:var(--lift),var(--spec);display:flex;flex-direction:column;gap:9px">
+        <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-3)">{{ k.label }}</span>
+        <span style="font-size:38px;font-weight:800;letter-spacing:-0.02em;color:{{ k.tint }};text-shadow:{{ k.glow }}">{{ k.value }}</span>
+        <p style="font-size:14px;line-height:1.5;color:var(--ink-2)">{{ k.note }}</p>
+      </div>
+    </sc-for>
+  </section>
+
+  <section style="margin-bottom:56px">
+    <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:baseline;margin-bottom:22px">
+      <span style="font-size:13px;font-weight:800;letter-spacing:0.1em;color:{{ accent }}">01</span>
+      <h2 style="font-size:32px">Thang chữ</h2>
+      <p style="font-size:14px;color:var(--ink-3);margin-left:auto;max-width:42ch;text-align:right">Mười bước, hết. Mọi cỡ ngoài bảng này là bug — kể cả trong arbitrary value của Tailwind.</p>
+    </div>
+    <div style="border-radius:26px;padding:8px 28px;background:var(--g1);backdrop-filter:blur(30px) saturate(1.35);-webkit-backdrop-filter:blur(30px) saturate(1.35);box-shadow:var(--lift),var(--spec)">
+      <sc-for list="{{ typeScale }}" as="row" hint-placeholder-count="10">
+        <div style="display:grid;grid-template-columns:158px minmax(0,1fr) 210px;gap:24px;align-items:baseline;padding:19px 0">
+          <div style="display:flex;flex-direction:column;gap:3px">
+            <span style="font-size:14px;font-weight:600">{{ row.token }}</span>
+            <span style="font-size:13px;color:var(--ink-3)">{{ row.spec }}</span>
+          </div>
+          <div style="{{ row.style }}">{{ row.sample }}</div>
+          <div style="font-size:13px;line-height:1.45;color:var(--ink-2)">{{ row.use }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="margin-bottom:56px">
+    <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:baseline;margin-bottom:22px">
+      <span style="font-size:13px;font-weight:800;letter-spacing:0.1em;color:{{ accent }}">02</span>
+      <h2 style="font-size:32px">Trước / sau</h2>
+      <p style="font-size:14px;color:var(--ink-3);margin-left:auto;max-width:46ch;text-align:right">Cùng một hàng meta trong <code>recipe-gallery.tsx</code>, đọc ở khoảng cách laptop thật.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px">
+      <div style="border-radius:26px;padding:28px;background:var(--g1);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);box-shadow:var(--lift),var(--spec)">
+        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;margin-bottom:22px">
+          <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#E05B6E">Trước</span>
+          <span style="font-size:13px;color:var(--ink-3)">9px · 10px · font-mono · viền 1px</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="font-size:10px;font-family:ui-monospace,monospace;text-transform:uppercase;letter-spacing:0.15em;color:rgba(255,255,255,.45)">community recipe</div>
+          <div style="font-size:15px;font-weight:700">FL-W2 Warm Portrait</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;font-size:9px;font-family:ui-monospace,monospace;color:rgba(255,255,255,.5)">
+            <span style="padding:2px 6px;border:1px solid rgba(255,255,255,.18);border-radius:4px">ILCE-7M4</span>
+            <span style="padding:2px 6px;border:1px solid rgba(255,255,255,.18);border-radius:4px">CL: VV2</span>
+            <span style="padding:2px 6px;border:1px solid rgba(255,255,255,.18);border-radius:4px">WB 5600K</span>
+          </div>
+          <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:4px">by Ngoc Tran · 12 ảnh · 48 ♥</div>
+        </div>
+      </div>
+      <div style="border-radius:26px;padding:28px;background:var(--g2);backdrop-filter:blur(30px) saturate(1.4);-webkit-backdrop-filter:blur(30px) saturate(1.4);box-shadow:var(--lift-lg),var(--spec)">
+        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;margin-bottom:22px">
+          <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#8A9CFF">Sau</span>
+          <span style="font-size:13px;color:var(--ink-3)">meta 13px · title 21px · một family · không viền</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#5FC7D6">Community recipe</div>
+          <div style="font-size:21px;font-weight:800;letter-spacing:-0.02em">FL-W2 Warm Portrait</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;font-size:13px;font-weight:500">
+            <span style="padding:6px 12px;border-radius:11px;background:rgba(255,255,255,.08);box-shadow:var(--spec)">ILCE-7M4</span>
+            <span style="padding:6px 12px;border-radius:11px;background:rgba(255,255,255,.08);box-shadow:var(--spec)">CL VV2</span>
+            <span style="padding:6px 12px;border-radius:11px;background:rgba(255,255,255,.08);box-shadow:var(--spec)">WB 5600K</span>
+          </div>
+          <div style="font-size:13px;color:var(--ink-3)">Ngoc Tran · 12 ảnh · 48 lượt thích</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="margin-bottom:56px">
+    <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:baseline;margin-bottom:22px">
+      <span style="font-size:13px;font-weight:800;letter-spacing:0.1em;color:{{ accent }}">03</span>
+      <h2 style="font-size:32px">Màu</h2>
+      <p style="font-size:14px;color:var(--ink-3);margin-left:auto;max-width:50ch;text-align:right">Đen xanh + blue + purple. Không đỏ, không vàng, không xanh lá — đó là chữ ký của Canon, Nikon, Fuji.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(238px,1fr));gap:18px">
+      <sc-for list="{{ colorRoles }}" as="c" hint-placeholder-count="12">
+        <div style="border-radius:22px;overflow:hidden;background:var(--g1);backdrop-filter:blur(26px);-webkit-backdrop-filter:blur(26px);box-shadow:var(--lift),var(--spec)">
+          <div style="height:76px;background:{{ c.hex }};box-shadow:{{ c.glow }}"></div>
+          <div style="padding:15px 18px 19px;display:flex;flex-direction:column;gap:4px">
+            <span style="font-size:14px;font-weight:600">{{ c.name }}</span>
+            <span style="font-size:13px;color:var(--ink-3)">{{ c.hex }}</span>
+            <span style="font-size:13px;line-height:1.45;color:var(--ink-2);margin-top:4px">{{ c.use }}</span>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="margin-top:18px;border-radius:24px;padding:24px 26px 26px;background:var(--g1);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);box-shadow:var(--lift),var(--spec)">
+      <sc-for list="{{ ramps }}" as="r" hint-placeholder-count="3">
+        <div style="display:grid;grid-template-columns:150px minmax(0,1fr);gap:20px;align-items:center;padding:9px 0">
+          <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-3)">{{ r.name }}</span>
+          <div style="display:grid;grid-template-columns:repeat(9,1fr);gap:4px">
+            <sc-for list="{{ r.steps }}" as="s" hint-placeholder-count="9">
+              <div style="height:50px;border-radius:10px;background:{{ s.hex }};display:flex;align-items:flex-end;padding:5px 7px;font-size:13px;font-weight:600;color:{{ s.fg }}">{{ s.step }}</div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+      <p style="font-size:14px;line-height:1.55;color:var(--ink-2);margin-top:14px;max-width:88ch">Trên nền tối dùng bước 300–400 cho chữ và icon, 500 cho nền nút, 800–900 cho vùng tint. Không <code>color-mix()</code> tuỳ hứng, không bước nào tối hơn ink-3 cho chữ.</p>
+    </div>
+  </section>
+
+  <section style="margin-bottom:56px">
+    <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:baseline;margin-bottom:22px">
+      <span style="font-size:13px;font-weight:800;letter-spacing:0.1em;color:{{ accent }}">04</span>
+      <h2 style="font-size:32px">Tương phản: cấm</h2>
+      <p style="font-size:14px;color:var(--ink-3);margin-left:auto;max-width:48ch;text-align:right">Ba cặp màu dưới đây là lỗi, không phải phong cách. Nền tối luôn luôn, và chữ luôn sáng hơn nền nó nằm trên.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(268px,1fr));gap:18px">
+      <sc-for list="{{ contrast }}" as="x" hint-placeholder-count="4">
+        <div style="border-radius:22px;overflow:hidden;background:var(--g1);backdrop-filter:blur(26px);-webkit-backdrop-filter:blur(26px);box-shadow:var(--lift),var(--spec)">
+          <div style="padding:26px 22px;background:{{ x.bg }};display:flex;flex-direction:column;gap:7px">
+            <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:{{ x.label }}">Font pipeline</span>
+            <span style="font-size:21px;font-weight:800;letter-spacing:-0.02em;color:{{ x.fg }};line-height:1.2">Noto Sans nằm trong git</span>
+          </div>
+          <div style="padding:16px 20px 20px;display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;gap:9px;align-items:baseline">
+              <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:{{ x.verdictTint }}">{{ x.verdict }}</span>
+              <span style="font-size:13px;color:var(--ink-3)">{{ x.ratio }}</span>
+            </div>
+            <p style="font-size:14px;line-height:1.5;color:var(--ink-2)">{{ x.note }}</p>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="margin-bottom:56px">
+    <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:baseline;margin-bottom:22px">
+      <span style="font-size:13px;font-weight:800;letter-spacing:0.1em;color:{{ accent }}">05</span>
+      <h2 style="font-size:32px">Bề mặt &amp; component</h2>
+      <p style="font-size:14px;color:var(--ink-3);margin-left:auto;max-width:48ch;text-align:right">Không stroke. Lớp phân tách bằng độ trong, blur, bóng đổ và một vạch sáng mờ ở cạnh trên.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px">
+
+      <div style="border-radius:26px;padding:26px;background:var(--g1);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);box-shadow:var(--lift),var(--spec);display:flex;flex-direction:column;gap:18px">
+        <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-3)">Nút · 15px / 600 / cao 44px</span>
+        <div style="display:flex;flex-wrap:wrap;gap:12px">
+          <button type="button" style="font-family:inherit;font-size:15px;font-weight:600;color:#fff;background:linear-gradient(180deg,{{ accentSoft }},{{ accent }});border:0;border-radius:14px;padding:12px 20px;min-height:44px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.45),0 12px 28px -8px {{ accentShadow }},var(--spec)" style-hover="filter:brightness(1.12)" style-active="transform:translateY(1px)">Lưu recipe</button>
+          <button type="button" style="font-family:inherit;font-size:15px;font-weight:600;color:var(--ink);background:rgba(255,255,255,.08);border:0;border-radius:14px;padding:12px 20px;min-height:44px;cursor:pointer;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 2px 6px rgba(0,0,0,.4),var(--spec)" style-hover="background:rgba(255,255,255,.13)">So sánh</button>
+          <button type="button" style="font-family:inherit;font-size:15px;font-weight:600;color:#8A9CFF;background:transparent;border:0;border-radius:14px;padding:12px 10px;min-height:44px;cursor:pointer" style-hover="color:#B3C0FF">Xem tất cả</button>
+        </div>
+        <p style="font-size:14px;line-height:1.5;color:var(--ink-2)">Nút chính là fill accent với halation cùng màu bên dưới. Nút phụ là kính mờ. Không nút nào có viền.</p>
+      </div>
+
+      <div style="border-radius:26px;padding:26px;background:var(--g1);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);box-shadow:var(--lift),var(--spec);display:flex;flex-direction:column;gap:18px">
+        <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-3)">Tag · 13px / 600</span>
+        <div style="display:flex;flex-wrap:wrap;gap:9px">
+          <sc-for list="{{ tags }}" as="t" hint-placeholder-count="4">
+            <span style="font-size:13px;font-weight:600;padding:7px 13px;border-radius:11px;color:{{ t.fg }};background:{{ t.bg }};box-shadow:{{ t.glow }},var(--spec)">{{ t.label }}</span>
+          </sc-for>
+        </div>
+        <p style="font-size:14px;line-height:1.5;color:var(--ink-2)">Bốn màu semantic chỉ để phân loại nội dung. Nền tint 12–16%, chữ lấy bước 300–400 để vẫn đạt AA.</p>
+      </div>
+
+      <div style="border-radius:26px;padding:26px;background:var(--g1);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);box-shadow:var(--lift),var(--spec);display:flex;flex-direction:column;gap:16px">
+        <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-3)">Ô nhập &amp; chọn · cao 44px</span>
+        <input type="text" value="ILCE-7M4" style="font-family:inherit;font-size:15px;color:var(--ink);background:rgba(0,0,0,.35);border:0;border-radius:14px;padding:12px 15px;min-height:44px;width:100%;box-shadow:inset 0 2px 8px rgba(0,0,0,.5),var(--spec)">
+        <div style="display:flex;gap:5px;padding:5px;border-radius:16px;background:rgba(0,0,0,.3);box-shadow:inset 0 2px 8px rgba(0,0,0,.45);width:fit-content;max-width:100%;flex-wrap:wrap">
+          <span style="font-size:14px;font-weight:600;padding:9px 16px;border-radius:12px;background:linear-gradient(180deg,{{ accentSoft }},{{ accent }});color:#fff;box-shadow:0 6px 16px -6px {{ accentShadow }},var(--spec)">Grid</span>
+          <span style="font-size:14px;font-weight:600;padding:9px 16px;border-radius:12px;color:var(--ink-2)">Bảng</span>
+          <span style="font-size:14px;font-weight:600;padding:9px 16px;border-radius:12px;color:var(--ink-2)">So sánh</span>
+        </div>
+      </div>
+
+      <div style="border-radius:26px;padding:26px;background:var(--g1);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);box-shadow:var(--lift),var(--spec);display:flex;flex-direction:column;gap:16px">
+        <span style="font-size:13px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-3)">Bảng spec · 14px, tabular</span>
+        <div style="display:flex;flex-direction:column;gap:3px">
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) 88px 88px;gap:8px;padding:8px 12px;font-size:13px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3)">
+            <span>Thông số</span><span style="text-align:right">A7 IV</span><span style="text-align:right">A7C II</span>
+          </div>
+          <sc-for list="{{ specRows }}" as="r" hint-placeholder-count="3">
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) 88px 88px;gap:8px;padding:11px 12px;border-radius:12px;background:{{ r.bg }};font-size:14px">
+              <span style="color:var(--ink-2)">{{ r.k }}</span>
+              <span style="text-align:right">{{ r.a }}</span>
+              <span style="text-align:right;color:{{ r.tint }};font-weight:{{ r.weight }}">{{ r.b }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <p style="font-size:14px;line-height:1.5;color:var(--ink-2)">Hàng phân biệt bằng nền tint 4%, không bằng đường kẻ. Giá trị tốt hơn được tô accent.</p>
+      </div>
+    </div>
+  </section>
+
+  <section style="margin-bottom:56px">
+    <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:baseline;margin-bottom:22px">
+      <span style="font-size:13px;font-weight:800;letter-spacing:0.1em;color:{{ accent }}">06</span>
+      <h2 style="font-size:32px">Luật cho agent</h2>
+      <p style="font-size:14px;color:var(--ink-3);margin-left:auto;max-width:44ch;text-align:right">Dán nguyên khối này vào CLAUDE.md / AGENTS.md. Mỗi dòng là một thứ đang sai trong repo hôm nay.</p>
+    </div>
+    <div style="border-radius:26px;padding:10px 28px;background:var(--g1);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);box-shadow:var(--lift),var(--spec)">
+      <sc-for list="{{ rules }}" as="r" hint-placeholder-count="9">
+        <div style="display:grid;grid-template-columns:36px minmax(0,1fr) minmax(0,1fr);gap:22px;padding:19px 0;align-items:start">
+          <span style="font-size:13px;font-weight:800;color:{{ accent }};padding-top:3px">{{ r.n }}</span>
+          <div style="font-size:16px;font-weight:600;line-height:1.4;text-wrap:pretty">{{ r.rule }}</div>
+          <div style="font-size:14px;color:var(--ink-2);line-height:1.5;text-wrap:pretty">{{ r.why }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="border-radius:30px;padding:44px 40px;background:linear-gradient(150deg,rgba(110,91,230,.32),rgba(92,116,240,.16) 55%,rgba(255,255,255,.03));backdrop-filter:blur(36px) saturate(1.4);-webkit-backdrop-filter:blur(36px) saturate(1.4);box-shadow:var(--lift-lg),var(--spec)">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:40px;align-items:start">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <span style="font-size:13px;font-weight:600;letter-spacing:0.09em;text-transform:uppercase;color:#C6CCFF">Font pipeline</span>
+        <h3 style="font-size:29px;max-width:22ch;color:#FFFFFF;text-wrap:pretty">Noto Sans nằm trong git, không qua CDN, không qua next/font.</h3>
+        <p style="font-size:15px;line-height:1.55;color:#E4E7F5">Bốn app đang khai báo font ba cách khác nhau — đó là lý do chữ không đồng đều giữa ColorLab và Sony Wiki. Một thư mục font, một khối <code style="color:#FFFFFF">@font-face</code>, dùng chung một tên family duy nhất.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:3px;font-size:14px">
+        <sc-for list="{{ fontFiles }}" as="f" hint-placeholder-count="5">
+          <div style="display:flex;justify-content:space-between;gap:16px;padding:11px 14px;border-radius:12px;background:rgba(255,255,255,.07);color:#FFFFFF">
+            <span>{{ f.file }}</span><span style="color:#C6CCFF">{{ f.note }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;minLabelPx&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:13,&quot;min&quot;:12,&quot;max&quot;:15,&quot;unit&quot;:&quot;px&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Type&quot;},&quot;accentHex&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#6E5BE6&quot;,&quot;options&quot;:[&quot;#6E5BE6&quot;,&quot;#5C74F0&quot;,&quot;#8E63E6&quot;,&quot;#4C6FE3&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Color&quot;}}">
+const RAMP = {
+  neutral: ['#F4F5F8','#D6D9E2','#B6BAC7','#9096A6','#6E7486','#545A6B','#3D4250','#282C36','#14161C'],
+  'accent · blue': ['#EEF1FF','#D6DDFF','#B3C0FF','#8A9CFF','#5C74F0','#4459D6','#3444AE','#26307A','#1A2050'],
+  'accent-2 · purple': ['#F5EFFF','#E5D6FF','#CDB3FF','#AE8DF5','#8E63E6','#7449CC','#5A38A3','#402875','#2B1C4D'],
+};
+
+function hexToRgb(hex) {
+  const h = hex.replace('#', '');
+  const n = parseInt(h.length === 3 ? h.split('').map((c) => c + c).join('') : h, 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+function mixWhite(hex, amount) {
+  const [r, g, b] = hexToRgb(hex);
+  const m = (c) => Math.round(c + (255 - c) * amount);
+  return 'rgb(' + m(r) + ',' + m(g) + ',' + m(b) + ')';
+}
+
+function alpha(hex, a) {
+  const [r, g, b] = hexToRgb(hex);
+  return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+}
+
+class Component extends DCLogic {
+  renderVals() {
+    const min = this.props.minLabelPx ?? 13;
+    const accent = this.props.accentHex ?? '#6E5BE6';
+
+    const typeScale = [
+      ['display-xl','56px · 800 · 1.05','Alpha ColorLab','font-size:56px;font-weight:800;letter-spacing:-0.03em;line-height:1.05','Hero một trang duy nhất'],
+      ['display','42px · 800 · 1.08','Sony Camera Wiki','font-size:42px;font-weight:800;letter-spacing:-0.025em;line-height:1.08','Tiêu đề trang'],
+      ['title-1','32px · 800 · 1.12','FL-W2 Warm Portrait','font-size:32px;font-weight:800;letter-spacing:-0.02em;line-height:1.12','Tên recipe, tên máy'],
+      ['title-2','25px · 800 · 1.2','Creative Look VV2','font-size:25px;font-weight:800;letter-spacing:-0.02em;line-height:1.2','Section trong trang'],
+      ['title-3','21px · 600 · 1.3','Ảnh cộng đồng','font-size:21px;font-weight:600;line-height:1.3','Tiêu đề card, tiêu đề khối'],
+      ['body-lg','18px · 400 · 1.5','Recipe này giữ da ấm ở ánh sáng hỗn hợp.','font-size:18px;font-weight:400;line-height:1.5','Đoạn dẫn, mô tả đầu trang'],
+      ['body','15px · 400 · 1.55','Giảm Saturation 2 bước nếu chụp ngoài trời gắt.','font-size:15px;font-weight:400;line-height:1.55','Mặc định — mọi nội dung đọc'],
+      ['body-sm','14px · 400 · 1.5','33.0 MP · ISO 204800 · 658 g','font-size:14px;font-weight:400;line-height:1.5','Ô bảng, spec, form hint'],
+      ['label', min + 'px · 600 · 0.08em','COMMUNITY RECIPE','font-size:' + min + 'px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase','Eyebrow, badge, cột bảng'],
+      ['meta', min + 'px · 400 · 1.45','Ngoc Tran · 12 ảnh · 48 lượt thích','font-size:' + min + 'px;font-weight:400;line-height:1.45;color:#969CAA','Tác giả, thời gian, đếm — SÀN'],
+    ].map(([token, spec, sample, style, use]) => ({ token, spec, sample, style, use }));
+
+    return {
+      accent,
+      accentSoft: mixWhite(accent, 0.18),
+      accentShadow: alpha(accent, 0.55),
+      typeScale,
+      headline: [
+        { label: 'Sàn cỡ chữ', value: min + 'px', tint: '#F4F5F8', glow: 'none', note: 'Không còn 9px, 10px, 0.65rem ở bất kỳ đâu.' },
+        { label: 'Font family', value: '1', tint: '#F4F5F8', glow: 'none', note: 'Noto Sans, self-host trong git. Mono bị loại.' },
+        { label: 'Accent', value: '1', tint: mixWhite(accent, 0.32), glow: '0 0 28px ' + alpha(accent, 0.5), note: 'Blue–purple cho hành động. Bốn màu semantic chỉ để phân loại.' },
+        { label: 'Đường viền', value: '0', tint: '#F4F5F8', glow: 'none', note: 'Phân tách bằng độ trong, blur, bóng đổ và glow.' },
+      ],
+      colorRoles: [
+        { name: 'void', hex: '#07080B', glow: 'none', use: 'Nền trang. Đen hơi xanh, không đen tuyệt đối.' },
+        { name: 'glass-1', hex: 'rgba(255,255,255,.05)', glow: 'inset 0 1px 0 rgba(255,255,255,.11)', use: 'Panel, card. Blur 30px, saturate 1.35.' },
+        { name: 'glass-2', hex: 'rgba(255,255,255,.085)', glow: 'inset 0 1px 0 rgba(255,255,255,.14)', use: 'Lớp nổi: dropdown, dock, sheet.' },
+        { name: 'sunken', hex: 'rgba(0,0,0,.35)', glow: 'inset 0 2px 8px rgba(0,0,0,.5)', use: 'Ô nhập và rãnh của segmented control.' },
+        { name: 'ink', hex: '#F4F5F8', glow: 'none', use: 'Nội dung chính. 18.4:1 trên void.' },
+        { name: 'ink-2', hex: '#C3C7D2', glow: 'none', use: 'Nội dung phụ, ô bảng. 11.1:1.' },
+        { name: 'ink-3', hex: '#969CAA', glow: 'none', use: 'Meta. Bước tối nhất được phép cho chữ — 6.1:1.' },
+        { name: 'accent', hex: accent, glow: '0 0 30px ' + alpha(accent, 0.45), use: 'Nền nút chính, trạng thái đang chọn.' },
+        { name: 'accent-400', hex: '#8A9CFF', glow: 'none', use: 'Link, icon, số nổi bật trên nền tối.' },
+        { name: 'community', hex: '#5FC7D6', glow: 'none', use: 'Ảnh và recipe do cộng đồng góp.' },
+        { name: 'proposal', hex: '#AE8DF5', glow: 'none', use: 'Phiên bản đề xuất chờ duyệt.' },
+        { name: 'ai / danger', hex: '#D48FE6', glow: 'none', use: 'AI tweak. Lỗi dùng #E05B6E — không dùng đỏ Canon.' },
+      ],
+      ramps: Object.keys(RAMP).map((name) => ({
+        name,
+        steps: RAMP[name].map((hex, i) => ({
+          hex,
+          step: (i + 1) * 100,
+          fg: i < 4 ? 'rgba(7,8,11,.8)' : 'rgba(244,245,248,.9)',
+        })),
+      })),
+      contrast: [
+        {
+          bg: '#4A1712', fg: '#2A2724', label: '#C08A80', verdict: 'Cấm', verdictTint: '#E05B6E', ratio: '1.4:1',
+          note: 'Chữ tối trên nền tối — đúng ca đang gặp. Tiêu đề gần như biến mất, và nền đỏ còn là màu của Canon.',
+        },
+        {
+          bg: 'rgba(255,255,255,.05)', fg: '#6E7486', label: '#5A5F6E', verdict: 'Cấm', verdictTint: '#E05B6E', ratio: '2.9:1',
+          note: 'Bước xám dưới ink-3 trên nền kính. Không có bước nào tối hơn ink-3 được dùng cho chữ.',
+        },
+        {
+          bg: 'linear-gradient(150deg,rgba(110,91,230,.32),rgba(92,116,240,.16))', fg: '#FFFFFF', label: '#C6CCFF', verdict: 'Đúng', verdictTint: '#8FD9C4', ratio: '13.2:1',
+          note: 'Vùng tint accent thì chữ phải là trắng thuần, nhãn dùng bước 200–300 của chính ramp đó.',
+        },
+        {
+          bg: '#07080B', fg: '#F4F5F8', label: '#969CAA', verdict: 'Đúng', verdictTint: '#8FD9C4', ratio: '18.4:1',
+          note: 'Mặc định của toàn hệ thống: ink trên void, nhãn ink-3. Đây là cặp cần dùng ở 90% trường hợp.',
+        },
+      ],
+      tags: [
+        { label: 'Community', fg: '#5FC7D6', bg: 'rgba(95,199,214,.14)', glow: '0 6px 18px -8px rgba(95,199,214,.4)' },
+        { label: 'Proposal', fg: '#AE8DF5', bg: 'rgba(174,141,245,.15)', glow: '0 6px 18px -8px rgba(174,141,245,.4)' },
+        { label: 'AI tweak', fg: '#D48FE6', bg: 'rgba(212,143,230,.15)', glow: '0 6px 18px -8px rgba(212,143,230,.4)' },
+        { label: 'PP11', fg: '#C3C7D2', bg: 'rgba(255,255,255,.08)', glow: 'none' },
+      ],
+      specRows: [
+        { k: 'Cảm biến', a: '33.0 MP', b: '33.0 MP', bg: 'rgba(255,255,255,.04)', tint: '#F4F5F8', weight: '400' },
+        { k: 'ISO tối đa', a: '204800', b: '204800', bg: 'transparent', tint: '#F4F5F8', weight: '400' },
+        { k: 'Khối lượng', a: '658 g', b: '514 g', bg: 'rgba(255,255,255,.04)', tint: '#8A9CFF', weight: '600' },
+      ],
+      rules: [
+        { n: '01', rule: 'Chỉ một family: Noto Sans, khai báo qua @font-face từ /public/fonts.', why: 'next/font ở ColorLab và @font-face ở hai app Vite cho ra hai family name khác nhau — chính là "font không đồng đều" trong feedback.' },
+        { n: '02', rule: 'Xoá font-mono. Số dùng font-variant-numeric: tabular-nums.', why: 'Noto Sans có tabular figures thật; mono chỉ làm SKU và ISO trông như log máy chủ.' },
+        { n: '03', rule: 'Sàn ' + min + 'px. Không viết text-[9px], text-[10px], text-[0.65rem].', why: '68 chỗ trong repo đang dưới sàn. Cần lùi thông tin thì giảm weight hoặc bước ink, không giảm cỡ.' },
+        { n: '04', rule: 'Chữ luôn sáng hơn nền. Không có bước nào tối hơn ink-3 cho chữ.', why: 'Trên vùng tint accent thì chữ là trắng thuần. Chữ tối trên nền tối là lỗi, không phải phong cách.' },
+        { n: '05', rule: 'Không stroke, không border, không outline trang trí.', why: 'Viền làm component trông gò bó. Phân tách bằng độ trong, blur, bóng đổ, và một vạch sáng 1px ở cạnh trên.' },
+        { n: '06', rule: 'Bề mặt là kính: blur 26–40px, saturate 1.35, nền trắng 5–8.5%.', why: 'Ba mức — panel, lớp nổi, ô nhập lõm. Độ nổi do bóng đổ quyết định, không do màu nền sáng dần.' },
+        { n: '07', rule: 'Màu lấy từ token. Không amber-300, sky-300, slate-400, cyan-400, purple-500.', why: 'Palette Tailwind là sRGB, đứng cạnh giao diện OKLCH thấy rõ lệch — và đỏ/vàng/xanh lá là chữ ký Canon, Nikon, Fuji.' },
+        { n: '08', rule: 'Glow phổ 7 màu chỉ dành cho squircle của launcher.', why: 'Đó là điểm nhấn duy nhất của hệ sinh thái. Dùng lại ở chỗ khác thì nó không còn là điểm nhấn.' },
+        { n: '09', rule: 'Uppercase chỉ ở label ' + min + 'px/600/0.08em. Không uppercase câu dài.', why: 'Uppercase quá ba từ làm chậm tốc độ đọc, và tiếng Việt có dấu thì càng chật.' },
+      ],
+      fontFiles: [
+        { file: 'NotoSans-Regular.woff2', note: '400' },
+        { file: 'NotoSans-Medium.woff2', note: '500' },
+        { file: 'NotoSans-SemiBold.woff2', note: '600' },
+        { file: 'NotoSans-ExtraBold.woff2', note: '800' },
+        { file: 'subset: latin + vietnamese', note: 'không latin-ext' },
+      ],
+    };
+  }
+}
+
+</script>
+</body>
+</html>
