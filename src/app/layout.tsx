@@ -32,6 +32,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     // the family into a per-app variable, so the four apps in this ecosystem
     // could not name the same face — which is what "font không đồng đều" was.
     <html lang={locale} className="h-full antialiased">
+      <head>
+        <link rel="preconnect" href="https://nqeedlgzaewccqztqvik.supabase.co" />
+        <link rel="preconnect" href="https://static.bhphoto.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://sony.scene7.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://nqeedlgzaewccqztqvik.supabase.co" />
+        <link rel="dns-prefetch" href="https://static.bhphoto.com" />
+        <link rel="dns-prefetch" href="https://sony.scene7.com" />
+      </head>
       <body className="app-shell font-sans min-h-screen-dynamic flex flex-col">
         {children}
       </body>

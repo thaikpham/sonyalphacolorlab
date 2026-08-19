@@ -31,6 +31,7 @@ export function RecipeCard({ recipe }: { recipe: RecipeView }) {
   return (
     <Link
       href={`/recipe/${recipe.slug}`}
+      prefetch={true}
       className="surface block overflow-hidden transition-transform duration-200 ease-out hover:-translate-y-1"
       /* Scopes ::selection inside the card to this recipe's own colour. */
       style={{ '--accent': accent } as React.CSSProperties}

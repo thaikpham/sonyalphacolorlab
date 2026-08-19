@@ -91,6 +91,19 @@ const nextConfig: NextConfig = {
   async redirects() {
     return legacyRedirects();
   },
+  async headers() {
+    return [
+      {
+        source: '/fonts/noto-sans/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default withNextIntl(nextConfig);
