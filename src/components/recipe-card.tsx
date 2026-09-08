@@ -1,8 +1,9 @@
-import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
 import { accentCss } from '@/lib/camera/color';
 import type { RecipeView } from '@/lib/recipes/source';
 import { recipeChips } from '@/lib/recipes/chips';
+import { RecipeColorField } from './recipe-color-field';
+import { RecipePhoto } from './recipe-photo';
 
 /**
  * Grid card: a 210px photograph, then the recipe's identity underneath.
@@ -38,27 +39,21 @@ export function RecipeCard({ recipe }: { recipe: RecipeView }) {
     >
       <div className="relative h-[210px] w-full overflow-hidden">
         {recipe.images.length > 0 ? (
-          <Image
+          /* Falls back to the same field on its own if the photograph does not
+             arrive — Storage answers `402` for the whole catalogue while the
+             project's egress quota is spent, and a grid of broken-image boxes
+             reads as a broken site. */
+          <RecipePhoto
             src={recipe.images[0]}
             alt={recipe.name}
-            fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, (max-width: 2100px) 25vw, 20vw"
-            className="object-cover"
+            accent={accent}
           />
         ) : (
           /* Only a minority of the catalogue is photographed. The rest show
              the field this recipe's own colour science produces, which is
              information, not a placeholder. */
-          <div
-            aria-hidden
-            className="absolute inset-0"
-            style={{
-              background: `
-                radial-gradient(120% 90% at 22% 12%, color-mix(in oklch, ${accent} 42%, transparent), transparent 60%),
-                radial-gradient(90% 80% at 85% 88%, color-mix(in oklch, ${accent} 22%, transparent), transparent 65%),
-                oklch(18% 0.02 265)`,
-            }}
-          />
+          <RecipeColorField accent={accent} />
         )}
       </div>
 

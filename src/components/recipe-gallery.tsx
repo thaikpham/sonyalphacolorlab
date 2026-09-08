@@ -217,7 +217,24 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
     [remotePhotos, localPhotos],
   );
 
-  const allPhotos = useMemo(() => [...new Set([...images, ...userPhotos])], [images, userPhotos]);
+  /* Photographs whose bytes never arrived. Storage answers `402` for the whole
+     catalogue whenever the project's egress quota is spent, and a community
+     contribution is an arbitrary third-party URL that can rot at any time, so
+     neither source can be trusted to still resolve. A dead src is dropped
+     rather than drawn as a broken tile: the collage, the lightbox, its
+     filmstrip and the frame counter all derive from `allPhotos`, so removing it
+     here keeps every one of them consistent — and when the last photograph
+     goes, the section stops rendering instead of standing empty. */
+  const [failedPhotos, setFailedPhotos] = useState<ReadonlySet<string>>(() => new Set());
+
+  const markPhotoFailed = useCallback((src: string) => {
+    setFailedPhotos((prev) => (prev.has(src) ? prev : new Set(prev).add(src)));
+  }, []);
+
+  const allPhotos = useMemo(
+    () => [...new Set([...images, ...userPhotos])].filter((src) => !failedPhotos.has(src)),
+    [images, userPhotos, failedPhotos],
+  );
 
   const nextPhoto = useCallback(() => {
     setLightboxIndex((prev) => (prev !== null && allPhotos.length > 0 ? (prev + 1) % allPhotos.length : null));
@@ -398,6 +415,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
                     priority={isHeroTile}
                     className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
                     unoptimized={isUserPhoto}
+                    onError={() => markPhotoFailed(src)}
                   />
 
                   <div className="absolute inset-0 bg-gradient-to-t from-void/90 via-transparent to-void/40 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-3 sm:p-4">
