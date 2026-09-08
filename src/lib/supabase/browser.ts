@@ -32,3 +32,40 @@ export function supabaseBrowser(): SupabaseClient | null {
   });
   return client;
 }
+
+/**
+ * Positive evidence that the project is refusing to authenticate anybody.
+ *
+ * `signInWithOAuth` under PKCE builds the authorize URL locally and hands the
+ * browser to it. It never calls Supabase, so it cannot fail and cannot report
+ * that the project is not answering — it returns no error and the reader lands
+ * on whatever `/auth/v1/authorize` serves. When the project is restricted (a
+ * spent egress quota answers *every* endpoint, auth included, with `402` and a
+ * JSON body) that is a raw error document with no way back to the site.
+ *
+ * One cheap GET first turns that into a translated line inside the sign-in
+ * sheet. `/auth/v1/settings` is the right probe: it is the same gateway the
+ * redirect would hit, it is CORS-enabled, it needs only the anon key, and it
+ * carries no session state.
+ *
+ * Deliberately fails OPEN. Only a definitive non-OK response counts as an
+ * outage; a timeout, a DNS failure or an offline reader returns `false` and the
+ * redirect is allowed to try. Blocking a legitimate sign-in over a flaky
+ * connection would be a worse bug than the one this prevents.
+ */
+export async function isAuthOutage(): Promise<boolean> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !anonKey) return false;
+
+  try {
+    const res = await fetch(`${url}/auth/v1/settings`, {
+      headers: { apikey: anonKey },
+      cache: 'no-store',
+      signal: AbortSignal.timeout(5000),
+    });
+    return !res.ok;
+  } catch {
+    return false;
+  }
+}

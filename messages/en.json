@@ -31,7 +31,9 @@
     "closeModal": "Close dialog",
     "privacy": "We only receive your public name and profile picture. Your email address is stored to establish comment ownership and is never shown publicly.",
     "errNotConfigured": "Sign-in is not configured on the server.",
-    "errOpenFailed": "Could not open Google sign-in. Please try again."
+    "errOpenFailed": "Could not open Google sign-in. Please try again.",
+    "connecting": "Connecting…",
+    "errUnavailable": "Google sign-in is temporarily unavailable — the site's backend is not answering. Please try again later."
   },
   "recipe": {
     "back": "All recipes",

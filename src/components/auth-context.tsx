@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import type { Session } from '@supabase/supabase-js';
-import { supabaseBrowser } from '@/lib/supabase/browser';
+import { isAuthOutage, supabaseBrowser } from '@/lib/supabase/browser';
 
 /**
  * Real Google sign-in, via Supabase Auth.
@@ -70,7 +70,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   /* A code, not a sentence: the message is looked up at render, so switching
      language does not leave a stale error in the other locale on screen. */
-  const [error, setError] = useState<'errNotConfigured' | 'errOpenFailed' | null>(null);
+  const [error, setError] = useState<
+    'errNotConfigured' | 'errOpenFailed' | 'errUnavailable' | null
+  >(null);
+  /* The reachability probe below is a network round trip, so the button has to
+     say it is doing something. Without this it looks dead for up to 5s. */
+  const [isSigningIn, setIsSigningIn] = useState(false);
 
   useEffect(() => {
     const supabase = supabaseBrowser();
@@ -106,12 +111,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     setError(null);
-    const { error: err } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      // Come back to the page the reader was reading, in their own locale.
-      options: { redirectTo: window.location.href },
-    });
-    if (err) setError('errOpenFailed');
+    setIsSigningIn(true);
+    try {
+      /* Ask whether the project is answering before handing the browser away.
+         `signInWithOAuth` under PKCE only navigates — it never calls Supabase,
+         so it returns no error however dead the project is, and a restricted
+         one serves the reader a raw `402` JSON page they cannot get back from.
+         See `isAuthOutage`; it fails open, so this only stops a sign-in on
+         positive evidence of an outage. */
+      if (await isAuthOutage()) {
+        setError('errUnavailable');
+        return;
+      }
+      const { error: err } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        // Come back to the page the reader was reading, in their own locale.
+        options: { redirectTo: window.location.href },
+      });
+      if (err) setError('errOpenFailed');
+    } finally {
+      setIsSigningIn(false);
+    }
   }, []);
 
   const logout = useCallback(async () => {
@@ -181,10 +201,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               <button
                 type="button"
                 onClick={loginWithGoogle}
-                className="btn-accent flex w-full cursor-pointer items-center justify-center gap-3"
+                disabled={isSigningIn}
+                aria-busy={isSigningIn}
+                className="btn-accent flex w-full cursor-pointer items-center justify-center gap-3 disabled:cursor-wait disabled:opacity-60"
               >
                 <GoogleMark className="w-4 h-4 shrink-0" />
-                <span>{t('continueGoogle')}</span>
+                <span>{isSigningIn ? t('connecting') : t('continueGoogle')}</span>
               </button>
 
               {error && (

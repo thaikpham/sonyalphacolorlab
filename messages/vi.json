@@ -31,7 +31,9 @@
     "closeModal": "Đóng hộp thoại",
     "privacy": "Chúng tôi chỉ nhận tên và ảnh đại diện công khai của bạn. Địa chỉ email được lưu để xác định quyền sở hữu bình luận và không bao giờ hiển thị công khai.",
     "errNotConfigured": "Đăng nhập chưa được cấu hình trên máy chủ.",
-    "errOpenFailed": "Không thể mở đăng nhập Google. Vui lòng thử lại."
+    "errOpenFailed": "Không thể mở đăng nhập Google. Vui lòng thử lại.",
+    "connecting": "Đang kết nối…",
+    "errUnavailable": "Đăng nhập Google tạm thời không khả dụng — máy chủ của trang chưa phản hồi. Vui lòng thử lại sau."
   },
   "recipe": {
     "back": "Tất cả công thức",
