@@ -5,6 +5,11 @@ import { getMessages, setRequestLocale } from 'next-intl/server';
 import { routing } from '@/i18n/routing';
 import { AuthProvider } from '@/components/auth-context';
 import { HtmlLang } from '@/components/html-lang';
+/* The face comes from `@font-face` in globals.css, vendored into
+   public/fonts/noto-sans by `npm run fonts:vendor`. No next/font: it hashes the
+   family into a per-app variable, so the four apps in this ecosystem could not
+   name the same face — which is what "font không đồng đều" was. */
+import '../globals.css';
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -61,11 +66,32 @@ export default async function LocaleLayout({
   };
 
   return (
-    <NextIntlClientProvider messages={clientMessages}>
-      {/* `<html>` lives in the root layout, above this segment, so a soft
-          navigation between locales never re-renders its `lang`. */}
-      <HtmlLang />
-      <AuthProvider>{children}</AuthProvider>
-    </NextIntlClientProvider>
+    /* `<html>` lives HERE, not in the root layout above, and that placement is
+       load-bearing rather than stylistic. `lang` needs the locale; the root
+       layout has no `[locale]` param, so it could only get one from
+       `getLocale()`, which reads `headers()`. Reading headers in the outermost
+       layout opts the ENTIRE route tree out of static generation — every page
+       became `ƒ` (server-rendered on demand), `generateStaticParams` below was
+       dead, and every view re-queried Supabase. Here the locale arrives as a
+       param that `generateStaticParams` already enumerates, so the same
+       attribute costs no dynamic rendering. */
+    <html lang={locale} className="h-full antialiased">
+      <head>
+        <link rel="preconnect" href="https://nqeedlgzaewccqztqvik.supabase.co" />
+        <link rel="preconnect" href="https://static.bhphoto.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://sony.scene7.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://nqeedlgzaewccqztqvik.supabase.co" />
+        <link rel="dns-prefetch" href="https://static.bhphoto.com" />
+        <link rel="dns-prefetch" href="https://sony.scene7.com" />
+      </head>
+      <body className="app-shell font-sans min-h-screen-dynamic flex flex-col">
+        <NextIntlClientProvider messages={clientMessages}>
+          {/* Still needed: switching language is a soft navigation, and React
+              does not re-render `<html>`'s attributes across one. */}
+          <HtmlLang />
+          <AuthProvider>{children}</AuthProvider>
+        </NextIntlClientProvider>
+      </body>
+    </html>
   );
 }
