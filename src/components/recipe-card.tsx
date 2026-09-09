@@ -30,9 +30,16 @@ export function RecipeCard({ recipe }: { recipe: RecipeView }) {
   const chips = recipeChips(recipe);
 
   return (
+    /* No `prefetch={true}`. The recipe route renders on demand, so an eager
+       prefetch is not a cheap cache warm — it is a full server render, and each
+       one costs its own round trip to Supabase. The list page renders a card
+       per recipe, so one visit to /colorlab fanned out into a server render of
+       every recipe page in the catalogue, for pages the reader never opened.
+       That is what put 5,373 requests a day on /rest/v1/recipes, ~95% of them
+       for nobody. Link's default (auto) prefetches only the loading boundary of
+       a dynamic route, which is the behaviour this wanted all along. */
     <Link
       href={`/recipe/${recipe.slug}`}
-      prefetch={true}
       className="surface block overflow-hidden transition-transform duration-200 ease-out hover:-translate-y-1"
       /* Scopes ::selection inside the card to this recipe's own colour. */
       style={{ '--accent': accent } as React.CSSProperties}
