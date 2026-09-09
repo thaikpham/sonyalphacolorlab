@@ -1,5 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { cache } from 'react';
+import { catalogueCache } from '@/lib/catalogue-cache';
 import { isSupabaseConfigured, supabaseRead } from '@/lib/supabase/server';
 import { getSonyAudioById } from '@/lib/audio/data';
 import { compareCameras, type ProductCategory, type SonyCamera, type WikiSort } from './types';
@@ -20,7 +22,12 @@ function getSeedCameras(): SonyCamera[] {
   }
 }
 
-export async function getSonyCameras(options?: {
+/* The wiki, the compare view, the admin list, the sitemap and
+   `/api/search/predictive` all read this table; the last of those pulls all 94
+   rows to return five suggestions, once per keystroke. See `catalogue-cache`. */
+export const getSonyCameras = catalogueCache('getSonyCameras', _getSonyCameras);
+
+async function _getSonyCameras(options?: {
   category?: ProductCategory;
   subCategory1?: string;
   subCategory2?: string;
@@ -130,14 +137,17 @@ export async function getSonyCameras(options?: {
   return cameras;
 }
 
-export async function getSonyCameraById(id: string): Promise<SonyCamera | null> {
+/* A point lookup over a whole-table read, so React `cache()` on top of the
+   cross-request cache: the detail route asks in `generateMetadata` and again in
+   the page body, and this way the second call never reaches the cache store. */
+export const getSonyCameraById = cache(async (id: string): Promise<SonyCamera | null> => {
   const cameras = await getSonyCameras();
   return cameras.find((c) => c.id === id) || null;
-}
+});
 
-export async function getSonyProductById(id: string): Promise<SonyCamera | null> {
+export const getSonyProductById = cache(async (id: string): Promise<SonyCamera | null> => {
   const camera = await getSonyCameraById(id);
   if (camera) return camera;
   return getSonyAudioById(id);
-}
+});
 

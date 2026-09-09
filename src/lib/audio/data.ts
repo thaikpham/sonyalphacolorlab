@@ -1,5 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { cache } from 'react';
+import { catalogueCache } from '@/lib/catalogue-cache';
 import { isSupabaseConfigured, supabaseRead } from '@/lib/supabase/server';
 import { compareCameras, type SonyCamera, type WikiSort } from '@/lib/cameras/types';
 
@@ -36,7 +38,12 @@ function getSeedAudio(): SonyCamera[] {
   }
 }
 
-export async function getSonyAudio(options?: { sortBy?: WikiSort }): Promise<SonyCamera[]> {
+/* Cached like the camera catalogue, and now for the same reason: since the
+   Supabase branch below exists, `/audio/**`, the sitemap, the compare view and
+   the admin list all reach the same table on every render. */
+export const getSonyAudio = catalogueCache('getSonyAudio', _getSonyAudio);
+
+async function _getSonyAudio(options?: { sortBy?: WikiSort }): Promise<SonyCamera[]> {
   const seed = getSeedAudio();
 
   let products: SonyCamera[] = [];
@@ -84,8 +91,8 @@ export async function getSonyAudio(options?: { sortBy?: WikiSort }): Promise<Son
   return [...products].sort(compareCameras(options.sortBy));
 }
 
-export async function getSonyAudioById(id: string): Promise<SonyCamera | null> {
+export const getSonyAudioById = cache(async (id: string): Promise<SonyCamera | null> => {
   const audio = await getSonyAudio();
   return audio.find((p) => p.id === id) ?? null;
-}
+});
 
