@@ -14,7 +14,7 @@ type CreateBody = {
   sku?: string;
   name?: string;
   fullName?: string;
-  category?: 'camera' | 'lens' | 'accessory';
+  category?: 'camera' | 'lens' | 'accessory' | 'audio';
   subCategory1?: string;
   subCategory2?: string;
   priceVnd?: number;
@@ -32,7 +32,7 @@ const asLines = (x: unknown): string[] =>
     : [];
 
 function buildInitialSpecs(
-  kind: 'camera' | 'lens' | 'accessory',
+  kind: ProductSpecs['kind'],
   inputSpecs: Record<string, unknown> = {},
 ): ProductSpecs {
   const fields = SPEC_ROWS[kind];
@@ -93,18 +93,27 @@ export async function POST(request: Request) {
     ? body.galleryUrls.filter((u): u is string => typeof u === 'string' && u.trim().length > 0).map((u) => u.trim())
     : [imageUrl].filter((u) => u && u !== '/logo.png');
 
-  if (!sku || !name || !category || !subCategory1) {
+  if (!name || !category || !subCategory1) {
     return NextResponse.json({ error: 'badRequest' }, { status: 400 });
   }
 
-  if (!['camera', 'lens', 'accessory'].includes(category)) {
+  if (category !== 'audio' && !sku) {
     return NextResponse.json({ error: 'badRequest' }, { status: 400 });
   }
 
-  const cleanSkuId = sku.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
-  const id = `sony-${cleanSkuId || Date.now()}`;
+  if (!['camera', 'lens', 'accessory', 'audio'].includes(category)) {
+    return NextResponse.json({ error: 'badRequest' }, { status: 400 });
+  }
 
-  const kind = category;
+  const slugBase = (sku || name).toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+  const id = `sony-${slugBase || Date.now()}`;
+
+  const kind: ProductSpecs['kind'] =
+    category === 'audio'
+      ? subCategory1.toLowerCase().includes('loa') || subCategory1.toLowerCase().includes('speaker')
+        ? 'speaker'
+        : 'headphone'
+      : category;
   const specs = buildInitialSpecs(kind, body.specs || {});
   const features = {
     en: asLines(body.features?.en),

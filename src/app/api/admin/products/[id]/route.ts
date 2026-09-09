@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin, canManageCategory, NOT_ADMIN } from '@/lib/auth/require-admin';
 import { supabaseAdmin, isSupabaseConfigured } from '@/lib/supabase/server';
-import { getSonyCameraById } from '@/lib/cameras/data';
+import { getSonyProductById } from '@/lib/cameras/data';
 import { SPEC_ROWS, type ProductSpecs } from '@/lib/cameras/types';
 
 /**
@@ -66,7 +66,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   }
 
   const { id } = await params;
-  const product = await getSonyCameraById(id);
+  const product = await getSonyProductById(id);
   if (!product) return NextResponse.json({ error: 'notFound' }, { status: 404 });
   if (!canManageCategory(admin.role, product.category)) {
     return NextResponse.json({ error: 'notAllowedForCategory' }, { status: 403 });
@@ -112,8 +112,27 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     update.features = { en: asLines(body.features.en), vi: asLines(body.features.vi) };
   }
 
+  const fullRow = {
+    id: product.id,
+    sku: product.sku,
+    name: (update.name as string) ?? product.name,
+    full_name: (update.full_name as string) ?? product.fullName,
+    category: product.category,
+    sub_category_1: product.subCategory1,
+    sub_category_2: product.subCategory2,
+    price_vnd: product.priceVnd,
+    price_formatted: product.priceFormatted,
+    url: product.url,
+    image_url: (update.image_url as string) ?? product.imageUrl,
+    gallery_urls: (update.gallery_urls as string[]) ?? product.galleryUrls ?? [],
+    features: update.features ?? product.features,
+    specs: update.specs ?? product.specs,
+    updated_at: update.updated_at,
+    updated_by: update.updated_by,
+  };
+
   try {
-    const { error } = await supabaseAdmin().from('sony_cameras').update(update).eq('id', id);
+    const { error } = await supabaseAdmin().from('sony_cameras').upsert(fullRow, { onConflict: 'id' });
     if (error) {
       console.error('[admin/products] update failed:', JSON.stringify(error));
       return NextResponse.json({ error: 'saveFailed' }, { status: 502 });

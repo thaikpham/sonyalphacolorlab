@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { isSupabaseConfigured, supabaseRead } from '@/lib/supabase/server';
 import { compareCameras, type SonyCamera, type WikiSort } from '@/lib/cameras/types';
 
 /**
@@ -17,11 +18,8 @@ import { compareCameras, type SonyCamera, type WikiSort } from '@/lib/cameras/ty
  * ordering rules, which is exactly the drift `compareCameras` was written to
  * end.
  *
- * There is no Supabase branch here yet. The camera reader has one because the
- * admin UI writes camera rows; nothing writes audio rows, so a table read would
- * be a fallback with no primary. Add it when the admin editor learns this
- * catalogue, not before — an empty table that silently shadows the seed is the
- * failure mode that costs a whole catalogue.
+ * Now connected to Supabase when configured so the admin editor (/admin/pe) can
+ * update and read audio products seamlessly.
  */
 
 let cached: SonyCamera[] | null = null;
@@ -39,12 +37,55 @@ function getSeedAudio(): SonyCamera[] {
 }
 
 export async function getSonyAudio(options?: { sortBy?: WikiSort }): Promise<SonyCamera[]> {
-  const products = getSeedAudio();
+  const seed = getSeedAudio();
+
+  let products: SonyCamera[] = [];
+
+  if (isSupabaseConfigured()) {
+    try {
+      const { data, error } = await supabaseRead()
+        .from('sony_cameras')
+        .select(
+          'id, sku, name, full_name, category, sub_category_1, sub_category_2, price_vnd, price_formatted, url, image_url, features, specs',
+        )
+        .eq('category', 'audio')
+        .order('price_vnd', { ascending: false });
+
+      const seedById = new Map(seed.map((c) => [c.id, c]));
+      if (!error && Array.isArray(data) && data.length > 0) {
+        products = data.map((row) => ({
+          id: row.id,
+          sku: row.sku,
+          name: row.name,
+          fullName: row.full_name,
+          category: row.category as SonyCamera['category'],
+          subCategory1: row.sub_category_1 || '',
+          subCategory2: row.sub_category_2 || '',
+          priceVnd: Number(row.price_vnd),
+          priceFormatted: row.price_formatted,
+          url: row.url,
+          imageUrl: row.image_url,
+          features: (row.features ?? []) as SonyCamera['features'],
+          specs: (row.specs as SonyCamera['specs']) ?? seedById.get(row.id)?.specs,
+          galleryUrls: seedById.get(row.id)?.galleryUrls,
+        }));
+      } else {
+        products = seed;
+      }
+    } catch {
+      products = seed;
+    }
+  } else {
+    products = seed;
+  }
+
   if (!options?.sortBy) return products;
   // On a copy: `sort` mutates, and the array above is the module-level cache.
   return [...products].sort(compareCameras(options.sortBy));
 }
 
 export async function getSonyAudioById(id: string): Promise<SonyCamera | null> {
-  return getSeedAudio().find((p) => p.id === id) ?? null;
+  const audio = await getSonyAudio();
+  return audio.find((p) => p.id === id) ?? null;
 }
+

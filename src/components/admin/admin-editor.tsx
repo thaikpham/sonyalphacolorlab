@@ -42,10 +42,11 @@ const asDraft = (p: SonyCamera): Draft => {
 
 const lines = (s?: string | null) => (s ?? '').split('\n').map((l) => l.trim()).filter(Boolean);
 
-const SUB1_OPTIONS: Record<'camera' | 'lens' | 'accessory', string[]> = {
+const SUB1_OPTIONS: Record<'camera' | 'lens' | 'accessory' | 'audio', string[]> = {
   camera: ['Mirrorless Full-Frame', 'Mirrorless APS-C', 'Cinema Line', 'Compact', 'PTZ Camera'],
   lens: ['FE-mount (Full-Frame)', 'E-mount (APS-C)', 'Cinema Lens', 'Teleconverter'],
   accessory: ['Audio', 'Power', 'Grip & Mount', 'Adaptor'],
+  audio: ['Tai nghe', 'Loa Bluetooth', 'Loa Karaoke', 'Tai nghe Inzone'],
 };
 
 /**
@@ -107,7 +108,7 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
 
   // New Product Modal State
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [newCat, setNewCat] = useState<'camera' | 'lens' | 'accessory'>('camera');
+  const [newCat, setNewCat] = useState<'camera' | 'lens' | 'accessory' | 'audio'>('camera');
   const [newSub1, setNewSub1] = useState('Mirrorless Full-Frame');
   const [newSub2, setNewSub2] = useState('');
   const [newSku, setNewSku] = useState('');
@@ -261,7 +262,7 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
     }
   };
 
-  const handleCategoryChange = (cat: 'camera' | 'lens' | 'accessory') => {
+  const handleCategoryChange = (cat: 'camera' | 'lens' | 'accessory' | 'audio') => {
     setNewCat(cat);
     setNewSub1(SUB1_OPTIONS[cat][0]);
   };
@@ -269,7 +270,7 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
   const handleCreateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreateError('');
-    if (!newSku.trim() || !newName.trim()) {
+    if ((newCat !== 'audio' && !newSku.trim()) || !newName.trim()) {
       setCreateError(err('badRequest'));
       return;
     }
@@ -981,12 +982,13 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
                   <label className="label">{tSafe('categoryLabel', 'Danh mục (Category)')} *</label>
                   <select
                     value={newCat}
-                    onChange={(e) => handleCategoryChange(e.target.value as 'camera' | 'lens' | 'accessory')}
+                    onChange={(e) => handleCategoryChange(e.target.value as 'camera' | 'lens' | 'accessory' | 'audio')}
                     className={FIELD}
                   >
                     <option value="camera">{tSafe('catCamera', 'Máy ảnh (Camera)')}</option>
                     <option value="lens">{tSafe('catLens', 'Ống kính (Lens)')}</option>
                     <option value="accessory">{tSafe('catAccessory', 'Phụ kiện (Accessory)')}</option>
+                    <option value="audio">{tSafe('catAudio', 'Âm thanh (Audio)')}</option>
                   </select>
                 </div>
 
@@ -1020,13 +1022,13 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
               {/* Product Basic Info */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-2">
-                  <label className="label">{tSafe('skuLabel', 'Mã SKU sản phẩm')} *</label>
+                  <label className="label">{tSafe('skuLabel', 'Mã SKU sản phẩm')} {newCat !== 'audio' && '*'}</label>
                   <input
                     type="text"
-                    required
+                    required={newCat !== 'audio'}
                     value={newSku}
                     onChange={(e) => setNewSku(e.target.value)}
-                    placeholder="VD: ILCE-7M5/BQ hoặc SEL2470GM2"
+                    placeholder="VD: ILCE-7M5/BQ hoặc WH-1000XM6"
                     className={FIELD}
                   />
                 </div>

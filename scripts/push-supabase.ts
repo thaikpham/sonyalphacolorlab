@@ -30,6 +30,8 @@ const images = JSON.parse(readFileSync('data/images.seed.json', 'utf8')) as {
   sort: number;
 }[];
 const cameras = JSON.parse(readFileSync('data/sony-cameras.seed.json', 'utf8')) as SonyCamera[];
+const audio = JSON.parse(readFileSync('data/sony-audio.seed.json', 'utf8')) as SonyCamera[];
+const allProducts = [...cameras, ...audio];
 
 async function main() {
   // Validate everything before touching the database. A partial write is worse
@@ -82,27 +84,27 @@ async function main() {
   // Keep the product catalogue in the same remote database as its admin editor.
   // Like recipes, this is deliberately upsert-only: deleting a product must be
   // an explicit administrative action, never an incidental seed sync.
-  const cameraRows = cameras.map((camera) => ({
-    id: camera.id,
-    sku: camera.sku,
-    name: camera.name,
-    full_name: camera.fullName,
-    category: camera.category,
-    sub_category_1: camera.subCategory1,
-    sub_category_2: camera.subCategory2,
-    price_vnd: camera.priceVnd,
-    price_formatted: camera.priceFormatted,
-    url: camera.url,
-    image_url: camera.imageUrl,
-    gallery_urls: camera.galleryUrls ?? [],
-    features: camera.features,
-    specs: camera.specs,
+  const productRows = allProducts.map((p) => ({
+    id: p.id,
+    sku: p.sku,
+    name: p.name,
+    full_name: p.fullName,
+    category: p.category,
+    sub_category_1: p.subCategory1,
+    sub_category_2: p.subCategory2,
+    price_vnd: p.priceVnd,
+    price_formatted: p.priceFormatted,
+    url: p.url,
+    image_url: p.imageUrl,
+    gallery_urls: p.galleryUrls ?? [],
+    features: p.features,
+    specs: p.specs,
   }));
   const { error: cameraError } = await db
     .from('sony_cameras')
-    .upsert(cameraRows, { onConflict: 'id' });
+    .upsert(productRows, { onConflict: 'id' });
   if (cameraError) throw new Error(`sony_cameras upsert: ${cameraError.message}`);
-  console.log(`✓ ${cameraRows.length} products upserted`);
+  console.log(`✓ ${productRows.length} products upserted`);
 
   const { count, error: countError } = await db
     .from('recipes')

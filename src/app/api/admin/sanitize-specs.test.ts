@@ -158,4 +158,36 @@ describe('sanitizeSpecs — partial bodies', () => {
     expect(out.specsMissing).toEqual(['lcd']);
     expectMissingMatchesNulls(out);
   });
+
+  it('sanitizes headphone and speaker specs correctly for audio products', () => {
+    const headphoneSpecs = {
+      kind: 'headphone' as const,
+      specsSource: 'https://www.sony.com.vn/example-headphone',
+      specsMissing: ['weight'],
+      designType: 'Tai nghe nhét tai',
+      design: 'Gập xoay',
+      noiseCancelling: 'Chống ồn 4 micro',
+      driver: '30 mm',
+      frequencyResponse: '4 Hz - 40000 Hz',
+      audioTech: 'LDAC',
+      processor: 'QN3',
+      microphones: '12 micro',
+      connectivity: 'Bluetooth 5.3',
+      battery: '30 giờ',
+      fastCharge: '3 phút -> 60 phút',
+      smartFeatures: 'Speak-to-Chat',
+      spatialSound: '360 RA',
+      gameModes: null,
+      includedAccessories: null,
+      weight: null,
+    };
+
+    const out = sanitizeSpecs({ battery: '35 giờ', noiseCancelling: '' }, headphoneSpecs);
+    expect(out.kind).toBe('headphone');
+    expect((out as typeof headphoneSpecs).battery).toBe('35 giờ');
+    expect((out as typeof headphoneSpecs).noiseCancelling).toBeNull();
+    expect(out.specsMissing).toEqual(expect.arrayContaining(['noiseCancelling', 'weight', 'gameModes', 'includedAccessories']));
+    expectMissingMatchesNulls(out);
+  });
 });
+

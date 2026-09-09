@@ -18,7 +18,8 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createClient } from '@supabase/supabase-js';
 
-const SEED = join(process.cwd(), 'data', 'sony-cameras.seed.json');
+const SEED_CAMERAS = join(process.cwd(), 'data', 'sony-cameras.seed.json');
+const SEED_AUDIO = join(process.cwd(), 'data', 'sony-audio.seed.json');
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -49,48 +50,67 @@ async function main() {
     process.exit(1);
   }
 
-  const seed = JSON.parse(readFileSync(SEED, 'utf8')) as Row[];
-  const byId = new Map(seed.map((p) => [p.id as string, p]));
+  const cameraSeed = JSON.parse(readFileSync(SEED_CAMERAS, 'utf8')) as Row[];
+  const audioSeed = JSON.parse(readFileSync(SEED_AUDIO, 'utf8')) as Row[];
 
-  let changed = 0;
+  type SeedEntry = { seed: 'cameras' | 'audio'; row: Row };
+  const entries: [string, SeedEntry][] = [
+    ...cameraSeed.map((p): [string, SeedEntry] => [p.id as string, { seed: 'cameras', row: p }]),
+    ...audioSeed.map((p): [string, SeedEntry] => [p.id as string, { seed: 'audio', row: p }]),
+  ];
+  const byId = new Map<string, SeedEntry>(entries);
+
+  let cameraChanged = 0;
+  let audioChanged = 0;
   const edits: string[] = [];
 
   for (const row of data as Row[]) {
-    const local = byId.get(row.id as string);
-    /* A row that exists only in the database is skipped, not appended. Adding a
-       product is an extraction job with a cited source — see
-       docs/HANDOVER-sony-product-specs.md — not something a sync should invent
-       a seed entry for. */
-    if (!local) {
-      edits.push(`  ? ${row.id} — in Supabase, not in the seed. Add it by hand.`);
+    const entry = byId.get(row.id as string);
+    if (!entry) {
+      edits.push(`  ? ${row.id} — in Supabase, not in any seed. Add it by hand.`);
       continue;
     }
+
+    const local = entry.row;
+    let rowUpdated = false;
 
     for (const field of ['features', 'specs'] as const) {
       const next = row[field];
       if (next === null || next === undefined) continue;
       if (JSON.stringify(next) === JSON.stringify(local[field])) continue;
       local[field] = next;
-      changed++;
+      rowUpdated = true;
       const who = row.updated_by ? ` (by ${row.updated_by})` : '';
       edits.push(`  ~ ${row.id}.${field}${who}`);
+    }
+
+    if (rowUpdated) {
+      if (entry.seed === 'cameras') cameraChanged++;
+      else audioChanged++;
     }
   }
 
   for (const line of edits) console.log(line);
 
-  if (changed === 0) {
-    console.log('Seed already matches Supabase. Nothing to write.');
+  const totalChanged = cameraChanged + audioChanged;
+  if (totalChanged === 0) {
+    console.log('Seeds already match Supabase. Nothing to write.');
     return;
   }
   if (dry) {
-    console.log(`\n${changed} field(s) would change. Re-run without --dry to write.`);
+    console.log(`\n${totalChanged} field(s) would change. Re-run without --dry to write.`);
     return;
   }
 
-  writeFileSync(SEED, `${JSON.stringify(seed, null, 2)}\n`, 'utf8');
-  console.log(`\nWrote ${changed} field(s) to data/sony-cameras.seed.json.`);
-  console.log('Run `npm run verify` before committing — the suite reads this file.');
+  if (cameraChanged > 0) {
+    writeFileSync(SEED_CAMERAS, `${JSON.stringify(cameraSeed, null, 2)}\n`, 'utf8');
+    console.log(`Wrote changes to data/sony-cameras.seed.json.`);
+  }
+  if (audioChanged > 0) {
+    writeFileSync(SEED_AUDIO, `${JSON.stringify(audioSeed, null, 2)}\n`, 'utf8');
+    console.log(`Wrote changes to data/sony-audio.seed.json.`);
+  }
+  console.log('Run `npm run verify` before committing — the suite reads these files.');
 }
 
 main().catch((err) => {

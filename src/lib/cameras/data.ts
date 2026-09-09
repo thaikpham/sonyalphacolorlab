@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { isSupabaseConfigured, supabaseRead } from '@/lib/supabase/server';
+import { getSonyAudioById } from '@/lib/audio/data';
 import { compareCameras, type ProductCategory, type SonyCamera, type WikiSort } from './types';
 import { splitFeatures } from './features';
 
@@ -40,6 +41,7 @@ export async function getSonyCameras(options?: {
         .select(
           'id, sku, name, full_name, category, sub_category_1, sub_category_2, price_vnd, price_formatted, url, image_url, features, specs',
         )
+        .neq('category', 'audio')
         .order('price_vnd', { ascending: false });
 
       const seedById = new Map(seed.map((c) => [c.id, c]));
@@ -132,3 +134,10 @@ export async function getSonyCameraById(id: string): Promise<SonyCamera | null> 
   const cameras = await getSonyCameras();
   return cameras.find((c) => c.id === id) || null;
 }
+
+export async function getSonyProductById(id: string): Promise<SonyCamera | null> {
+  const camera = await getSonyCameraById(id);
+  if (camera) return camera;
+  return getSonyAudioById(id);
+}
+
