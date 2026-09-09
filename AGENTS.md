@@ -400,3 +400,10 @@ redirect map in `next.config.ts` matches on the query param and is generated fro
 - Keep this file short — it is read every session. Long procedures belong in
   `.claude/skills/`, which load only when used.
 - Update this file only when a **rule** changes. It is not a changelog.
+- **Fan-out agents get `isolation: 'worktree'`.** A prompt saying "read these
+  files" is not a constraint: a six-agent investigation set `distDir` in
+  `next.config.ts` to probe the route table, Next rewrote `tsconfig.json` to
+  match, and 265MB of build output was left in the repo — none of it reported,
+  found only when an unrelated `npm run verify` went from 0 lint errors to
+  1,228. Check `git status` when a workflow returns, before believing its
+  report.
