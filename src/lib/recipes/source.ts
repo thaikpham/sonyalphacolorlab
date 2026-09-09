@@ -11,6 +11,7 @@
  */
 
 import 'server-only';
+import { cache } from 'react';
 import recipesSeed from '../../../data/recipes.seed.json';
 import translationsSeed from '../../../data/translations.seed.json';
 import imagesSeed from '../../../data/images.seed.json';
@@ -221,7 +222,21 @@ async function loadTranslations(ids: string[]): Promise<Map<string, string>> {
   );
 }
 
-export async function getRecipe(slug: string, locale: Locale = 'en'): Promise<RecipeView | null> {
+/**
+ * One recipe, deduplicated across a single render pass.
+ *
+ * The detail route asks for the same row twice — once in `generateMetadata` and
+ * once in the page body — and they are separate renders as far as this module
+ * is concerned, so it was two Supabase round trips per view. React's `cache()`
+ * memoizes per request, so the second caller gets the first one's promise.
+ *
+ * This is NOT a cache across requests: it lives and dies with the render, which
+ * is why it is safe to apply to published content that an admin can edit. A
+ * cross-request cache is a separate decision with its own invalidation.
+ */
+export const getRecipe = cache(_getRecipe);
+
+async function _getRecipe(slug: string, locale: Locale = 'en'): Promise<RecipeView | null> {
   const seed = () => {
     const found = seedRecipes.find((r) => r.slug === slug && r.published);
     return found

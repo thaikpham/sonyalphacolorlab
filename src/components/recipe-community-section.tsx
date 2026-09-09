@@ -227,12 +227,20 @@ export function RecipeCommunitySection({
   }, [fetchComments]);
 
   useEffect(() => {
-    /* Separate from the comments load because this one depends on the access
-       token as well as the slug: `hasVoted` is per-viewer, so signing in has to
-       refetch or every heart renders empty until a reload. */
+    /* Only once the proposals tab is actually showing. `comments` is the
+       default, so this used to fetch a panel most readers never opened — one
+       Supabase read per recipe view, for nothing. Every route into the tab goes
+       through `setActiveTab('proposals')`, including the gallery's
+       "Propose & vote" card via OPEN_PROPOSAL_EVENT, so nothing can display
+       proposals without first tripping this.
+
+       Separate from the comments load because this one also depends on the
+       access token: `hasVoted` is per-viewer, so signing in has to refetch or
+       every heart renders empty until a reload. */
+    if (activeTab !== 'proposals') return;
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void fetchProposals();
-  }, [fetchProposals]);
+  }, [activeTab, fetchProposals]);
 
   /* Opened from the gallery's "Propose & vote" card, which has no way to reach
      this state directly — see `OPEN_PROPOSAL_EVENT`. `openProposalForm` is in
