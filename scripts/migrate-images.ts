@@ -95,7 +95,19 @@ async function main() {
 
       const { error } = await db.storage
         .from(BUCKET)
-        .upload(path, bytes, { contentType, upsert: true });
+        /* A year, immutable. Storage's default is `max-age=3600`, which is the
+           wrong contract for these: the path carries the recipe id and the
+           sort index, so a replacement photograph overwrites the same key and
+           `upsert: true` above is how it lands — the bytes at a path change
+           only when this script is re-run deliberately. An hour of freshness
+           bought nothing and made every returning reader re-download the whole
+           catalogue, against a CDN egress quota billed by the byte. Re-running
+           this script is what invalidates the cache. */
+        .upload(path, bytes, {
+          contentType,
+          upsert: true,
+          cacheControl: '31536000',
+        });
       if (error) {
         skipped.push(`${recipeId} <- upload failed: ${error.message}`);
         continue;
