@@ -36,13 +36,23 @@ export type RecipeView = Recipe & {
   images: string[];
 };
 
-const STORAGE_BUCKET = 'recipes';
-
-/** Storage path -> public URL. Empty when Supabase is not configured. */
-function publicImageUrl(path: string): string | null {
-  const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  return base ? `${base}/storage/v1/object/public/${STORAGE_BUCKET}/${path}` : null;
-}
+/**
+ * Seed path -> public URL.
+ *
+ * These are vendored into `public/recipes/` by `npm run vendor:images`, not
+ * fetched from Supabase Storage. Storage served every photograph at its stored
+ * resolution — 1.27GB of CDN egress a day, ~38GB a month against a 5GB quota —
+ * and that is what restricted the whole project, Auth and PostgREST included.
+ *
+ * Serving them from `public/` puts them on the same static CDN as the fonts:
+ * no egress quota and no optimizer in the path, because the sizes already exist
+ * on disk and `catalogue-loader.ts` picks between them by rewriting the suffix.
+ *
+ * It also means this no longer returns null without credentials, which is what
+ * `AGENTS.md` promised all along — the app "builds, runs and tests offline",
+ * except that every photograph used to vanish when it did.
+ */
+const publicImageUrl = (path: string): string => `/recipes/${path}`;
 
 /**
  * Recipe id -> ordered image paths.
@@ -61,7 +71,7 @@ const seedImages = (imagesSeed as { recipeId: string; storagePath: string; sort:
   }, {});
 
 const imagesFor = (recipeId: string): string[] =>
-  (seedImages[recipeId] ?? []).map(publicImageUrl).filter((u): u is string => Boolean(u));
+  (seedImages[recipeId] ?? []).map(publicImageUrl);
 
 export type RecipeFilters = { format?: 'pp' | 'cl'; look?: string; tag?: string; q?: string };
 

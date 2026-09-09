@@ -136,7 +136,25 @@ interface LoaderArgs {
   quality?: number;
 }
 
+/**
+ * The vendored recipe photographs, and the rungs they exist at on disk.
+ *
+ * Must agree with `WIDTHS` in `scripts/vendor-recipe-images.ts`, which writes
+ * them. Picking between real files by rewriting the suffix means no optimizer
+ * is involved at all — not Vercel's, not Supabase's. It is the same move the
+ * B&H branch below makes against B&H's published size paths; the difference is
+ * that here we publish the sizes ourselves.
+ */
+const LOCAL_RECIPE_RUNG = /^\/recipes\/(.+)-(\d+)\.webp$/;
+const LOCAL_WIDTHS = [320, 640, 1024] as const;
+
 export default function catalogueImageLoader({ src, width, quality }: LoaderArgs): string {
+  const local = LOCAL_RECIPE_RUNG.exec(src);
+  if (local) {
+    const rung = LOCAL_WIDTHS.find((w) => width <= w) ?? LOCAL_WIDTHS[LOCAL_WIDTHS.length - 1];
+    return `/recipes/${local[1]}-${rung}.webp`;
+  }
+
   // Relative sources (`/logo.png`) are not URLs and must not reach `new URL`.
   if (!src.startsWith('http://') && !src.startsWith('https://')) return src;
 

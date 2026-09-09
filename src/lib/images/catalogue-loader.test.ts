@@ -57,6 +57,47 @@ describe('catalogueImageLoader', () => {
     }
   });
 
+  /**
+   * The vendored recipe photographs, picked between by rewriting the suffix.
+   *
+   * No optimizer is involved on this path — the three rungs are real files that
+   * `npm run vendor:images` wrote — so a mistake here is a 404 where a
+   * photograph should be, on the site's busiest surface.
+   */
+  describe('vendored recipe photographs', () => {
+    const photo = '/recipes/SCL-PP-044/00-1024.webp';
+
+    it('climbs the rungs that exist on disk, and only those', () => {
+      const rung = (width: number) => loader({ src: photo, width });
+
+      expect(rung(48)).toBe('/recipes/SCL-PP-044/00-320.webp');
+      expect(rung(320)).toBe('/recipes/SCL-PP-044/00-320.webp');
+      expect(rung(321)).toBe('/recipes/SCL-PP-044/00-640.webp');
+      expect(rung(640)).toBe('/recipes/SCL-PP-044/00-640.webp');
+      expect(rung(641)).toBe('/recipes/SCL-PP-044/00-1024.webp');
+      expect(rung(1920)).toBe('/recipes/SCL-PP-044/00-1024.webp');
+    });
+
+    it('never reaches for the optimizer — these are static files', () => {
+      for (const width of [48, 320, 640, 1024, 1920]) {
+        expect(loader({ src: photo, width })).not.toContain('/_next/image');
+      }
+    });
+
+    it('rewrites from whichever rung it is handed, not just the largest', () => {
+      // The seed carries -1024, but a component may already hold a smaller one.
+      expect(loader({ src: '/recipes/SCL-CL-001/02-320.webp', width: 900 })).toBe(
+        '/recipes/SCL-CL-001/02-1024.webp',
+      );
+    });
+
+    it('leaves other local files alone', () => {
+      for (const src of ['/logo.png', '/recipes/notes.txt', '/fonts/noto-sans/a.woff2']) {
+        expect(loader({ src, width: 640 })).toBe(src);
+      }
+    });
+  });
+
   it('passes through anything that is neither a B&H photo nor Storage', () => {
     for (const src of [
       '/logo.png',

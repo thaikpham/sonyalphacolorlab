@@ -1,902 +1,902 @@
 [
   {
-    "recipeId": "SCL-PP-001",
-    "storagePath": "SCL-PP-001/00.jpg",
-    "sort": 0
-  },
-  {
-    "recipeId": "SCL-PP-001",
-    "storagePath": "SCL-PP-001/01.jpg",
-    "sort": 1
-  },
-  {
-    "recipeId": "SCL-PP-001",
-    "storagePath": "SCL-PP-001/02.jpg",
-    "sort": 2
-  },
-  {
-    "recipeId": "SCL-PP-002",
-    "storagePath": "SCL-PP-002/00.jpg",
-    "sort": 0
-  },
-  {
-    "recipeId": "SCL-PP-002",
-    "storagePath": "SCL-PP-002/01.jpg",
-    "sort": 1
-  },
-  {
-    "recipeId": "SCL-PP-002",
-    "storagePath": "SCL-PP-002/02.jpg",
-    "sort": 2
-  },
-  {
-    "recipeId": "SCL-PP-002",
-    "storagePath": "SCL-PP-002/03.jpg",
-    "sort": 3
-  },
-  {
-    "recipeId": "SCL-PP-009",
-    "storagePath": "SCL-PP-009/00.jpg",
-    "sort": 0
-  },
-  {
-    "recipeId": "SCL-PP-009",
-    "storagePath": "SCL-PP-009/01.jpg",
-    "sort": 1
-  },
-  {
-    "recipeId": "SCL-PP-015",
-    "storagePath": "SCL-PP-015/00.jpg",
-    "sort": 0
-  },
-  {
-    "recipeId": "SCL-PP-015",
-    "storagePath": "SCL-PP-015/01.jpg",
-    "sort": 1
-  },
-  {
-    "recipeId": "SCL-PP-015",
-    "storagePath": "SCL-PP-015/02.jpg",
-    "sort": 2
-  },
-  {
-    "recipeId": "SCL-PP-015",
-    "storagePath": "SCL-PP-015/03.jpg",
-    "sort": 3
-  },
-  {
-    "recipeId": "SCL-PP-015",
-    "storagePath": "SCL-PP-015/04.jpg",
-    "sort": 4
-  },
-  {
-    "recipeId": "SCL-PP-025",
-    "storagePath": "SCL-PP-025/00.jpg",
-    "sort": 0
-  },
-  {
-    "recipeId": "SCL-PP-025",
-    "storagePath": "SCL-PP-025/01.jpg",
-    "sort": 1
-  },
-  {
-    "recipeId": "SCL-PP-025",
-    "storagePath": "SCL-PP-025/02.jpg",
-    "sort": 2
-  },
-  {
-    "recipeId": "SCL-PP-025",
-    "storagePath": "SCL-PP-025/03.jpg",
-    "sort": 3
-  },
-  {
-    "recipeId": "SCL-PP-025",
-    "storagePath": "SCL-PP-025/04.jpg",
-    "sort": 4
-  },
-  {
-    "recipeId": "SCL-PP-025",
-    "storagePath": "SCL-PP-025/05.jpg",
-    "sort": 5
-  },
-  {
-    "recipeId": "SCL-PP-027",
-    "storagePath": "SCL-PP-027/00.jpg",
-    "sort": 0
-  },
-  {
-    "recipeId": "SCL-PP-027",
-    "storagePath": "SCL-PP-027/01.jpg",
-    "sort": 1
-  },
-  {
-    "recipeId": "SCL-PP-027",
-    "storagePath": "SCL-PP-027/02.jpg",
-    "sort": 2
-  },
-  {
-    "recipeId": "SCL-PP-044",
-    "storagePath": "SCL-PP-044/00.png",
-    "sort": 0
-  },
-  {
-    "recipeId": "SCL-PP-044",
-    "storagePath": "SCL-PP-044/01.png",
-    "sort": 1
-  },
-  {
-    "recipeId": "SCL-PP-044",
-    "storagePath": "SCL-PP-044/02.png",
-    "sort": 2
-  },
-  {
-    "recipeId": "SCL-PP-044",
-    "storagePath": "SCL-PP-044/03.png",
-    "sort": 3
-  },
-  {
-    "recipeId": "SCL-PP-044",
-    "storagePath": "SCL-PP-044/04.png",
-    "sort": 4
-  },
-  {
-    "recipeId": "SCL-PP-044",
-    "storagePath": "SCL-PP-044/05.png",
-    "sort": 5
-  },
-  {
-    "recipeId": "SCL-PP-045",
-    "storagePath": "SCL-PP-045/00.jpg",
-    "sort": 0
-  },
-  {
-    "recipeId": "SCL-PP-045",
-    "storagePath": "SCL-PP-045/01.jpg",
-    "sort": 1
-  },
-  {
-    "recipeId": "SCL-PP-046",
-    "storagePath": "SCL-PP-046/00.jpg",
-    "sort": 0
-  },
-  {
-    "recipeId": "SCL-PP-047",
-    "storagePath": "SCL-PP-047/00.jpg",
-    "sort": 0
-  },
-  {
-    "recipeId": "SCL-PP-047",
-    "storagePath": "SCL-PP-047/01.jpg",
-    "sort": 1
-  },
-  {
     "recipeId": "SCL-CL-001",
-    "storagePath": "SCL-CL-001/00.jpg",
+    "storagePath": "SCL-CL-001/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-002",
-    "storagePath": "SCL-CL-002/00.jpg",
+    "storagePath": "SCL-CL-002/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-002",
-    "storagePath": "SCL-CL-002/01.jpg",
+    "storagePath": "SCL-CL-002/01-1024.webp",
     "sort": 1
   },
   {
     "recipeId": "SCL-CL-002",
-    "storagePath": "SCL-CL-002/02.jpg",
+    "storagePath": "SCL-CL-002/02-1024.webp",
     "sort": 2
   },
   {
     "recipeId": "SCL-CL-003",
-    "storagePath": "SCL-CL-003/00.jpg",
+    "storagePath": "SCL-CL-003/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-003",
-    "storagePath": "SCL-CL-003/01.jpg",
+    "storagePath": "SCL-CL-003/01-1024.webp",
     "sort": 1
   },
   {
     "recipeId": "SCL-CL-004",
-    "storagePath": "SCL-CL-004/00.jpg",
+    "storagePath": "SCL-CL-004/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-004",
-    "storagePath": "SCL-CL-004/01.jpg",
+    "storagePath": "SCL-CL-004/01-1024.webp",
     "sort": 1
   },
   {
     "recipeId": "SCL-CL-004",
-    "storagePath": "SCL-CL-004/02.jpg",
+    "storagePath": "SCL-CL-004/02-1024.webp",
     "sort": 2
   },
   {
     "recipeId": "SCL-CL-005",
-    "storagePath": "SCL-CL-005/00.jpg",
+    "storagePath": "SCL-CL-005/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-005",
-    "storagePath": "SCL-CL-005/01.jpg",
+    "storagePath": "SCL-CL-005/01-1024.webp",
     "sort": 1
   },
   {
     "recipeId": "SCL-CL-005",
-    "storagePath": "SCL-CL-005/02.jpg",
+    "storagePath": "SCL-CL-005/02-1024.webp",
     "sort": 2
   },
   {
     "recipeId": "SCL-CL-005",
-    "storagePath": "SCL-CL-005/03.jpg",
+    "storagePath": "SCL-CL-005/03-1024.webp",
     "sort": 3
   },
   {
     "recipeId": "SCL-CL-005",
-    "storagePath": "SCL-CL-005/04.jpg",
+    "storagePath": "SCL-CL-005/04-1024.webp",
     "sort": 4
   },
   {
     "recipeId": "SCL-CL-005",
-    "storagePath": "SCL-CL-005/05.jpg",
+    "storagePath": "SCL-CL-005/05-1024.webp",
     "sort": 5
   },
   {
     "recipeId": "SCL-CL-005",
-    "storagePath": "SCL-CL-005/06.jpg",
+    "storagePath": "SCL-CL-005/06-1024.webp",
     "sort": 6
   },
   {
     "recipeId": "SCL-CL-006",
-    "storagePath": "SCL-CL-006/00.jpg",
+    "storagePath": "SCL-CL-006/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-006",
-    "storagePath": "SCL-CL-006/01.jpg",
+    "storagePath": "SCL-CL-006/01-1024.webp",
     "sort": 1
   },
   {
     "recipeId": "SCL-CL-006",
-    "storagePath": "SCL-CL-006/02.jpg",
+    "storagePath": "SCL-CL-006/02-1024.webp",
     "sort": 2
   },
   {
     "recipeId": "SCL-CL-006",
-    "storagePath": "SCL-CL-006/03.jpg",
+    "storagePath": "SCL-CL-006/03-1024.webp",
     "sort": 3
   },
   {
     "recipeId": "SCL-CL-006",
-    "storagePath": "SCL-CL-006/04.jpg",
+    "storagePath": "SCL-CL-006/04-1024.webp",
     "sort": 4
   },
   {
     "recipeId": "SCL-CL-006",
-    "storagePath": "SCL-CL-006/05.jpg",
+    "storagePath": "SCL-CL-006/05-1024.webp",
     "sort": 5
   },
   {
     "recipeId": "SCL-CL-006",
-    "storagePath": "SCL-CL-006/06.jpg",
+    "storagePath": "SCL-CL-006/06-1024.webp",
     "sort": 6
   },
   {
     "recipeId": "SCL-CL-006",
-    "storagePath": "SCL-CL-006/07.jpg",
+    "storagePath": "SCL-CL-006/07-1024.webp",
     "sort": 7
   },
   {
     "recipeId": "SCL-CL-006",
-    "storagePath": "SCL-CL-006/08.jpg",
+    "storagePath": "SCL-CL-006/08-1024.webp",
     "sort": 8
   },
   {
     "recipeId": "SCL-CL-007",
-    "storagePath": "SCL-CL-007/00.jpg",
+    "storagePath": "SCL-CL-007/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-007",
-    "storagePath": "SCL-CL-007/01.jpg",
+    "storagePath": "SCL-CL-007/01-1024.webp",
     "sort": 1
   },
   {
     "recipeId": "SCL-CL-007",
-    "storagePath": "SCL-CL-007/02.jpg",
+    "storagePath": "SCL-CL-007/02-1024.webp",
     "sort": 2
   },
   {
     "recipeId": "SCL-CL-007",
-    "storagePath": "SCL-CL-007/03.jpg",
+    "storagePath": "SCL-CL-007/03-1024.webp",
     "sort": 3
   },
   {
     "recipeId": "SCL-CL-007",
-    "storagePath": "SCL-CL-007/04.jpg",
+    "storagePath": "SCL-CL-007/04-1024.webp",
     "sort": 4
   },
   {
     "recipeId": "SCL-CL-008",
-    "storagePath": "SCL-CL-008/00.jpg",
+    "storagePath": "SCL-CL-008/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-008",
-    "storagePath": "SCL-CL-008/01.jpg",
+    "storagePath": "SCL-CL-008/01-1024.webp",
     "sort": 1
   },
   {
     "recipeId": "SCL-CL-008",
-    "storagePath": "SCL-CL-008/02.jpg",
+    "storagePath": "SCL-CL-008/02-1024.webp",
     "sort": 2
   },
   {
     "recipeId": "SCL-CL-009",
-    "storagePath": "SCL-CL-009/00.jpg",
+    "storagePath": "SCL-CL-009/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-009",
-    "storagePath": "SCL-CL-009/01.jpg",
+    "storagePath": "SCL-CL-009/01-1024.webp",
     "sort": 1
   },
   {
     "recipeId": "SCL-CL-010",
-    "storagePath": "SCL-CL-010/00.jpg",
+    "storagePath": "SCL-CL-010/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-010",
-    "storagePath": "SCL-CL-010/01.jpg",
+    "storagePath": "SCL-CL-010/01-1024.webp",
     "sort": 1
   },
   {
     "recipeId": "SCL-CL-010",
-    "storagePath": "SCL-CL-010/02.jpg",
+    "storagePath": "SCL-CL-010/02-1024.webp",
     "sort": 2
   },
   {
     "recipeId": "SCL-CL-010",
-    "storagePath": "SCL-CL-010/03.jpg",
+    "storagePath": "SCL-CL-010/03-1024.webp",
     "sort": 3
   },
   {
     "recipeId": "SCL-CL-010",
-    "storagePath": "SCL-CL-010/04.jpg",
+    "storagePath": "SCL-CL-010/04-1024.webp",
     "sort": 4
   },
   {
     "recipeId": "SCL-CL-010",
-    "storagePath": "SCL-CL-010/05.jpg",
+    "storagePath": "SCL-CL-010/05-1024.webp",
     "sort": 5
   },
   {
     "recipeId": "SCL-CL-010",
-    "storagePath": "SCL-CL-010/06.jpg",
+    "storagePath": "SCL-CL-010/06-1024.webp",
     "sort": 6
   },
   {
     "recipeId": "SCL-CL-010",
-    "storagePath": "SCL-CL-010/07.jpg",
+    "storagePath": "SCL-CL-010/07-1024.webp",
     "sort": 7
   },
   {
     "recipeId": "SCL-CL-010",
-    "storagePath": "SCL-CL-010/08.jpg",
+    "storagePath": "SCL-CL-010/08-1024.webp",
     "sort": 8
   },
   {
     "recipeId": "SCL-CL-010",
-    "storagePath": "SCL-CL-010/09.jpg",
+    "storagePath": "SCL-CL-010/09-1024.webp",
     "sort": 9
   },
   {
     "recipeId": "SCL-CL-011",
-    "storagePath": "SCL-CL-011/00.jpg",
+    "storagePath": "SCL-CL-011/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-011",
-    "storagePath": "SCL-CL-011/01.jpg",
+    "storagePath": "SCL-CL-011/01-1024.webp",
     "sort": 1
   },
   {
     "recipeId": "SCL-CL-011",
-    "storagePath": "SCL-CL-011/02.jpg",
+    "storagePath": "SCL-CL-011/02-1024.webp",
     "sort": 2
   },
   {
     "recipeId": "SCL-CL-011",
-    "storagePath": "SCL-CL-011/03.jpg",
+    "storagePath": "SCL-CL-011/03-1024.webp",
     "sort": 3
   },
   {
     "recipeId": "SCL-CL-011",
-    "storagePath": "SCL-CL-011/04.jpg",
+    "storagePath": "SCL-CL-011/04-1024.webp",
     "sort": 4
   },
   {
     "recipeId": "SCL-CL-012",
-    "storagePath": "SCL-CL-012/00.jpg",
+    "storagePath": "SCL-CL-012/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-012",
-    "storagePath": "SCL-CL-012/01.jpg",
+    "storagePath": "SCL-CL-012/01-1024.webp",
     "sort": 1
   },
   {
     "recipeId": "SCL-CL-013",
-    "storagePath": "SCL-CL-013/00.jpg",
+    "storagePath": "SCL-CL-013/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-013",
-    "storagePath": "SCL-CL-013/01.jpg",
+    "storagePath": "SCL-CL-013/01-1024.webp",
     "sort": 1
   },
   {
     "recipeId": "SCL-CL-013",
-    "storagePath": "SCL-CL-013/02.jpg",
+    "storagePath": "SCL-CL-013/02-1024.webp",
     "sort": 2
   },
   {
     "recipeId": "SCL-CL-014",
-    "storagePath": "SCL-CL-014/00.jpg",
+    "storagePath": "SCL-CL-014/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-014",
-    "storagePath": "SCL-CL-014/01.jpg",
+    "storagePath": "SCL-CL-014/01-1024.webp",
     "sort": 1
   },
   {
     "recipeId": "SCL-CL-014",
-    "storagePath": "SCL-CL-014/02.jpg",
+    "storagePath": "SCL-CL-014/02-1024.webp",
     "sort": 2
   },
   {
     "recipeId": "SCL-CL-014",
-    "storagePath": "SCL-CL-014/03.jpg",
+    "storagePath": "SCL-CL-014/03-1024.webp",
     "sort": 3
   },
   {
     "recipeId": "SCL-CL-015",
-    "storagePath": "SCL-CL-015/00.jpg",
+    "storagePath": "SCL-CL-015/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-015",
-    "storagePath": "SCL-CL-015/01.jpg",
+    "storagePath": "SCL-CL-015/01-1024.webp",
     "sort": 1
   },
   {
     "recipeId": "SCL-CL-016",
-    "storagePath": "SCL-CL-016/00.jpg",
+    "storagePath": "SCL-CL-016/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-016",
-    "storagePath": "SCL-CL-016/01.jpg",
+    "storagePath": "SCL-CL-016/01-1024.webp",
     "sort": 1
   },
   {
     "recipeId": "SCL-CL-016",
-    "storagePath": "SCL-CL-016/02.jpg",
+    "storagePath": "SCL-CL-016/02-1024.webp",
     "sort": 2
   },
   {
     "recipeId": "SCL-CL-017",
-    "storagePath": "SCL-CL-017/00.jpg",
+    "storagePath": "SCL-CL-017/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-018",
-    "storagePath": "SCL-CL-018/00.jpg",
+    "storagePath": "SCL-CL-018/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-019",
-    "storagePath": "SCL-CL-019/00.jpg",
+    "storagePath": "SCL-CL-019/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-019",
-    "storagePath": "SCL-CL-019/01.jpg",
+    "storagePath": "SCL-CL-019/01-1024.webp",
     "sort": 1
   },
   {
     "recipeId": "SCL-CL-019",
-    "storagePath": "SCL-CL-019/02.jpg",
+    "storagePath": "SCL-CL-019/02-1024.webp",
     "sort": 2
   },
   {
     "recipeId": "SCL-CL-019",
-    "storagePath": "SCL-CL-019/03.jpg",
+    "storagePath": "SCL-CL-019/03-1024.webp",
     "sort": 3
   },
   {
     "recipeId": "SCL-CL-020",
-    "storagePath": "SCL-CL-020/00.jpg",
+    "storagePath": "SCL-CL-020/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-021",
-    "storagePath": "SCL-CL-021/00.jpg",
+    "storagePath": "SCL-CL-021/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-021",
-    "storagePath": "SCL-CL-021/01.jpg",
+    "storagePath": "SCL-CL-021/01-1024.webp",
     "sort": 1
   },
   {
     "recipeId": "SCL-CL-021",
-    "storagePath": "SCL-CL-021/02.jpg",
+    "storagePath": "SCL-CL-021/02-1024.webp",
     "sort": 2
   },
   {
     "recipeId": "SCL-CL-022",
-    "storagePath": "SCL-CL-022/00.jpg",
+    "storagePath": "SCL-CL-022/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-022",
-    "storagePath": "SCL-CL-022/01.jpg",
+    "storagePath": "SCL-CL-022/01-1024.webp",
     "sort": 1
   },
   {
     "recipeId": "SCL-CL-022",
-    "storagePath": "SCL-CL-022/02.jpg",
+    "storagePath": "SCL-CL-022/02-1024.webp",
     "sort": 2
   },
   {
     "recipeId": "SCL-CL-023",
-    "storagePath": "SCL-CL-023/00.jpg",
+    "storagePath": "SCL-CL-023/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-023",
-    "storagePath": "SCL-CL-023/01.jpg",
+    "storagePath": "SCL-CL-023/01-1024.webp",
     "sort": 1
   },
   {
     "recipeId": "SCL-CL-023",
-    "storagePath": "SCL-CL-023/02.jpg",
+    "storagePath": "SCL-CL-023/02-1024.webp",
     "sort": 2
   },
   {
     "recipeId": "SCL-CL-023",
-    "storagePath": "SCL-CL-023/03.jpg",
+    "storagePath": "SCL-CL-023/03-1024.webp",
     "sort": 3
   },
   {
     "recipeId": "SCL-CL-023",
-    "storagePath": "SCL-CL-023/04.jpg",
+    "storagePath": "SCL-CL-023/04-1024.webp",
     "sort": 4
   },
   {
     "recipeId": "SCL-CL-023",
-    "storagePath": "SCL-CL-023/05.jpg",
+    "storagePath": "SCL-CL-023/05-1024.webp",
     "sort": 5
   },
   {
     "recipeId": "SCL-CL-023",
-    "storagePath": "SCL-CL-023/06.jpg",
+    "storagePath": "SCL-CL-023/06-1024.webp",
     "sort": 6
   },
   {
     "recipeId": "SCL-CL-023",
-    "storagePath": "SCL-CL-023/07.jpg",
+    "storagePath": "SCL-CL-023/07-1024.webp",
     "sort": 7
   },
   {
     "recipeId": "SCL-CL-023",
-    "storagePath": "SCL-CL-023/08.jpg",
+    "storagePath": "SCL-CL-023/08-1024.webp",
     "sort": 8
   },
   {
     "recipeId": "SCL-CL-023",
-    "storagePath": "SCL-CL-023/09.jpg",
+    "storagePath": "SCL-CL-023/09-1024.webp",
     "sort": 9
   },
   {
     "recipeId": "SCL-CL-023",
-    "storagePath": "SCL-CL-023/10.jpg",
+    "storagePath": "SCL-CL-023/10-1024.webp",
     "sort": 10
   },
   {
     "recipeId": "SCL-CL-023",
-    "storagePath": "SCL-CL-023/11.jpg",
+    "storagePath": "SCL-CL-023/11-1024.webp",
     "sort": 11
   },
   {
     "recipeId": "SCL-CL-023",
-    "storagePath": "SCL-CL-023/12.jpg",
+    "storagePath": "SCL-CL-023/12-1024.webp",
     "sort": 12
   },
   {
     "recipeId": "SCL-CL-023",
-    "storagePath": "SCL-CL-023/13.jpg",
+    "storagePath": "SCL-CL-023/13-1024.webp",
     "sort": 13
   },
   {
     "recipeId": "SCL-CL-023",
-    "storagePath": "SCL-CL-023/14.jpg",
+    "storagePath": "SCL-CL-023/14-1024.webp",
     "sort": 14
   },
   {
     "recipeId": "SCL-CL-023",
-    "storagePath": "SCL-CL-023/15.jpg",
+    "storagePath": "SCL-CL-023/15-1024.webp",
     "sort": 15
   },
   {
     "recipeId": "SCL-CL-024",
-    "storagePath": "SCL-CL-024/00.jpg",
+    "storagePath": "SCL-CL-024/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-024",
-    "storagePath": "SCL-CL-024/01.jpg",
+    "storagePath": "SCL-CL-024/01-1024.webp",
     "sort": 1
   },
   {
     "recipeId": "SCL-CL-024",
-    "storagePath": "SCL-CL-024/02.jpg",
+    "storagePath": "SCL-CL-024/02-1024.webp",
     "sort": 2
   },
   {
     "recipeId": "SCL-CL-025",
-    "storagePath": "SCL-CL-025/00.jpg",
+    "storagePath": "SCL-CL-025/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-025",
-    "storagePath": "SCL-CL-025/01.jpg",
+    "storagePath": "SCL-CL-025/01-1024.webp",
     "sort": 1
   },
   {
     "recipeId": "SCL-CL-025",
-    "storagePath": "SCL-CL-025/02.jpg",
+    "storagePath": "SCL-CL-025/02-1024.webp",
     "sort": 2
   },
   {
     "recipeId": "SCL-CL-025",
-    "storagePath": "SCL-CL-025/03.jpg",
+    "storagePath": "SCL-CL-025/03-1024.webp",
     "sort": 3
   },
   {
     "recipeId": "SCL-CL-026",
-    "storagePath": "SCL-CL-026/00.jpg",
+    "storagePath": "SCL-CL-026/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-026",
-    "storagePath": "SCL-CL-026/01.jpg",
+    "storagePath": "SCL-CL-026/01-1024.webp",
     "sort": 1
   },
   {
     "recipeId": "SCL-CL-026",
-    "storagePath": "SCL-CL-026/02.jpg",
+    "storagePath": "SCL-CL-026/02-1024.webp",
     "sort": 2
   },
   {
     "recipeId": "SCL-CL-026",
-    "storagePath": "SCL-CL-026/03.jpg",
+    "storagePath": "SCL-CL-026/03-1024.webp",
     "sort": 3
   },
   {
     "recipeId": "SCL-CL-026",
-    "storagePath": "SCL-CL-026/04.jpg",
+    "storagePath": "SCL-CL-026/04-1024.webp",
     "sort": 4
   },
   {
     "recipeId": "SCL-CL-027",
-    "storagePath": "SCL-CL-027/00.jpg",
+    "storagePath": "SCL-CL-027/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-027",
-    "storagePath": "SCL-CL-027/01.jpg",
+    "storagePath": "SCL-CL-027/01-1024.webp",
     "sort": 1
   },
   {
     "recipeId": "SCL-CL-027",
-    "storagePath": "SCL-CL-027/02.jpg",
+    "storagePath": "SCL-CL-027/02-1024.webp",
     "sort": 2
   },
   {
     "recipeId": "SCL-CL-028",
-    "storagePath": "SCL-CL-028/00.jpg",
+    "storagePath": "SCL-CL-028/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-029",
-    "storagePath": "SCL-CL-029/00.webp",
+    "storagePath": "SCL-CL-029/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-030",
-    "storagePath": "SCL-CL-030/00.jpg",
+    "storagePath": "SCL-CL-030/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-030",
-    "storagePath": "SCL-CL-030/01.jpg",
+    "storagePath": "SCL-CL-030/01-1024.webp",
     "sort": 1
   },
   {
     "recipeId": "SCL-CL-030",
-    "storagePath": "SCL-CL-030/02.jpg",
+    "storagePath": "SCL-CL-030/02-1024.webp",
     "sort": 2
   },
   {
     "recipeId": "SCL-CL-031",
-    "storagePath": "SCL-CL-031/00.jpg",
+    "storagePath": "SCL-CL-031/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-031",
-    "storagePath": "SCL-CL-031/01.jpg",
+    "storagePath": "SCL-CL-031/01-1024.webp",
     "sort": 1
   },
   {
     "recipeId": "SCL-CL-031",
-    "storagePath": "SCL-CL-031/02.jpg",
+    "storagePath": "SCL-CL-031/02-1024.webp",
     "sort": 2
   },
   {
     "recipeId": "SCL-CL-032",
-    "storagePath": "SCL-CL-032/00.jpg",
+    "storagePath": "SCL-CL-032/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-032",
-    "storagePath": "SCL-CL-032/01.jpg",
+    "storagePath": "SCL-CL-032/01-1024.webp",
     "sort": 1
   },
   {
     "recipeId": "SCL-CL-032",
-    "storagePath": "SCL-CL-032/02.jpg",
+    "storagePath": "SCL-CL-032/02-1024.webp",
     "sort": 2
   },
   {
     "recipeId": "SCL-CL-032",
-    "storagePath": "SCL-CL-032/03.jpg",
+    "storagePath": "SCL-CL-032/03-1024.webp",
     "sort": 3
   },
   {
     "recipeId": "SCL-CL-033",
-    "storagePath": "SCL-CL-033/00.jpg",
+    "storagePath": "SCL-CL-033/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-033",
-    "storagePath": "SCL-CL-033/01.jpg",
+    "storagePath": "SCL-CL-033/01-1024.webp",
     "sort": 1
   },
   {
     "recipeId": "SCL-CL-033",
-    "storagePath": "SCL-CL-033/02.jpg",
+    "storagePath": "SCL-CL-033/02-1024.webp",
     "sort": 2
   },
   {
     "recipeId": "SCL-CL-033",
-    "storagePath": "SCL-CL-033/03.jpg",
+    "storagePath": "SCL-CL-033/03-1024.webp",
     "sort": 3
   },
   {
     "recipeId": "SCL-CL-034",
-    "storagePath": "SCL-CL-034/00.jpg",
+    "storagePath": "SCL-CL-034/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-034",
-    "storagePath": "SCL-CL-034/01.jpg",
+    "storagePath": "SCL-CL-034/01-1024.webp",
     "sort": 1
   },
   {
     "recipeId": "SCL-CL-034",
-    "storagePath": "SCL-CL-034/02.jpg",
+    "storagePath": "SCL-CL-034/02-1024.webp",
     "sort": 2
   },
   {
     "recipeId": "SCL-CL-034",
-    "storagePath": "SCL-CL-034/03.jpg",
+    "storagePath": "SCL-CL-034/03-1024.webp",
     "sort": 3
   },
   {
     "recipeId": "SCL-CL-034",
-    "storagePath": "SCL-CL-034/04.jpg",
+    "storagePath": "SCL-CL-034/04-1024.webp",
     "sort": 4
   },
   {
     "recipeId": "SCL-CL-035",
-    "storagePath": "SCL-CL-035/00.jpg",
+    "storagePath": "SCL-CL-035/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-035",
-    "storagePath": "SCL-CL-035/01.jpg",
+    "storagePath": "SCL-CL-035/01-1024.webp",
     "sort": 1
   },
   {
     "recipeId": "SCL-CL-035",
-    "storagePath": "SCL-CL-035/02.jpg",
+    "storagePath": "SCL-CL-035/02-1024.webp",
     "sort": 2
   },
   {
     "recipeId": "SCL-CL-035",
-    "storagePath": "SCL-CL-035/03.jpg",
+    "storagePath": "SCL-CL-035/03-1024.webp",
     "sort": 3
   },
   {
     "recipeId": "SCL-CL-035",
-    "storagePath": "SCL-CL-035/04.jpg",
+    "storagePath": "SCL-CL-035/04-1024.webp",
     "sort": 4
   },
   {
     "recipeId": "SCL-CL-036",
-    "storagePath": "SCL-CL-036/00.jpg",
+    "storagePath": "SCL-CL-036/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-036",
-    "storagePath": "SCL-CL-036/01.jpg",
+    "storagePath": "SCL-CL-036/01-1024.webp",
     "sort": 1
   },
   {
     "recipeId": "SCL-CL-037",
-    "storagePath": "SCL-CL-037/00.jpg",
+    "storagePath": "SCL-CL-037/00-1024.webp",
     "sort": 0
   },
   {
     "recipeId": "SCL-CL-037",
-    "storagePath": "SCL-CL-037/01.jpg",
+    "storagePath": "SCL-CL-037/01-1024.webp",
     "sort": 1
   },
   {
     "recipeId": "SCL-CL-037",
-    "storagePath": "SCL-CL-037/02.jpg",
+    "storagePath": "SCL-CL-037/02-1024.webp",
     "sort": 2
   },
   {
     "recipeId": "SCL-CL-037",
-    "storagePath": "SCL-CL-037/03.jpg",
+    "storagePath": "SCL-CL-037/03-1024.webp",
     "sort": 3
   },
   {
     "recipeId": "SCL-CL-037",
-    "storagePath": "SCL-CL-037/04.jpg",
+    "storagePath": "SCL-CL-037/04-1024.webp",
     "sort": 4
   },
   {
     "recipeId": "SCL-CL-037",
-    "storagePath": "SCL-CL-037/05.jpg",
+    "storagePath": "SCL-CL-037/05-1024.webp",
     "sort": 5
   },
   {
     "recipeId": "SCL-CL-037",
-    "storagePath": "SCL-CL-037/06.jpg",
+    "storagePath": "SCL-CL-037/06-1024.webp",
     "sort": 6
   },
   {
     "recipeId": "SCL-CL-037",
-    "storagePath": "SCL-CL-037/07.jpg",
+    "storagePath": "SCL-CL-037/07-1024.webp",
     "sort": 7
   },
   {
     "recipeId": "SCL-CL-037",
-    "storagePath": "SCL-CL-037/08.jpg",
+    "storagePath": "SCL-CL-037/08-1024.webp",
     "sort": 8
   },
   {
     "recipeId": "SCL-CL-037",
-    "storagePath": "SCL-CL-037/09.jpg",
+    "storagePath": "SCL-CL-037/09-1024.webp",
     "sort": 9
+  },
+  {
+    "recipeId": "SCL-PP-001",
+    "storagePath": "SCL-PP-001/00-1024.webp",
+    "sort": 0
+  },
+  {
+    "recipeId": "SCL-PP-001",
+    "storagePath": "SCL-PP-001/01-1024.webp",
+    "sort": 1
+  },
+  {
+    "recipeId": "SCL-PP-001",
+    "storagePath": "SCL-PP-001/02-1024.webp",
+    "sort": 2
+  },
+  {
+    "recipeId": "SCL-PP-002",
+    "storagePath": "SCL-PP-002/00-1024.webp",
+    "sort": 0
+  },
+  {
+    "recipeId": "SCL-PP-002",
+    "storagePath": "SCL-PP-002/01-1024.webp",
+    "sort": 1
+  },
+  {
+    "recipeId": "SCL-PP-002",
+    "storagePath": "SCL-PP-002/02-1024.webp",
+    "sort": 2
+  },
+  {
+    "recipeId": "SCL-PP-002",
+    "storagePath": "SCL-PP-002/03-1024.webp",
+    "sort": 3
+  },
+  {
+    "recipeId": "SCL-PP-009",
+    "storagePath": "SCL-PP-009/00-1024.webp",
+    "sort": 0
+  },
+  {
+    "recipeId": "SCL-PP-009",
+    "storagePath": "SCL-PP-009/01-1024.webp",
+    "sort": 1
+  },
+  {
+    "recipeId": "SCL-PP-015",
+    "storagePath": "SCL-PP-015/00-1024.webp",
+    "sort": 0
+  },
+  {
+    "recipeId": "SCL-PP-015",
+    "storagePath": "SCL-PP-015/01-1024.webp",
+    "sort": 1
+  },
+  {
+    "recipeId": "SCL-PP-015",
+    "storagePath": "SCL-PP-015/02-1024.webp",
+    "sort": 2
+  },
+  {
+    "recipeId": "SCL-PP-015",
+    "storagePath": "SCL-PP-015/03-1024.webp",
+    "sort": 3
+  },
+  {
+    "recipeId": "SCL-PP-015",
+    "storagePath": "SCL-PP-015/04-1024.webp",
+    "sort": 4
+  },
+  {
+    "recipeId": "SCL-PP-025",
+    "storagePath": "SCL-PP-025/00-1024.webp",
+    "sort": 0
+  },
+  {
+    "recipeId": "SCL-PP-025",
+    "storagePath": "SCL-PP-025/01-1024.webp",
+    "sort": 1
+  },
+  {
+    "recipeId": "SCL-PP-025",
+    "storagePath": "SCL-PP-025/02-1024.webp",
+    "sort": 2
+  },
+  {
+    "recipeId": "SCL-PP-025",
+    "storagePath": "SCL-PP-025/03-1024.webp",
+    "sort": 3
+  },
+  {
+    "recipeId": "SCL-PP-025",
+    "storagePath": "SCL-PP-025/04-1024.webp",
+    "sort": 4
+  },
+  {
+    "recipeId": "SCL-PP-025",
+    "storagePath": "SCL-PP-025/05-1024.webp",
+    "sort": 5
+  },
+  {
+    "recipeId": "SCL-PP-027",
+    "storagePath": "SCL-PP-027/00-1024.webp",
+    "sort": 0
+  },
+  {
+    "recipeId": "SCL-PP-027",
+    "storagePath": "SCL-PP-027/01-1024.webp",
+    "sort": 1
+  },
+  {
+    "recipeId": "SCL-PP-027",
+    "storagePath": "SCL-PP-027/02-1024.webp",
+    "sort": 2
+  },
+  {
+    "recipeId": "SCL-PP-044",
+    "storagePath": "SCL-PP-044/00-1024.webp",
+    "sort": 0
+  },
+  {
+    "recipeId": "SCL-PP-044",
+    "storagePath": "SCL-PP-044/01-1024.webp",
+    "sort": 1
+  },
+  {
+    "recipeId": "SCL-PP-044",
+    "storagePath": "SCL-PP-044/02-1024.webp",
+    "sort": 2
+  },
+  {
+    "recipeId": "SCL-PP-044",
+    "storagePath": "SCL-PP-044/03-1024.webp",
+    "sort": 3
+  },
+  {
+    "recipeId": "SCL-PP-044",
+    "storagePath": "SCL-PP-044/04-1024.webp",
+    "sort": 4
+  },
+  {
+    "recipeId": "SCL-PP-044",
+    "storagePath": "SCL-PP-044/05-1024.webp",
+    "sort": 5
+  },
+  {
+    "recipeId": "SCL-PP-045",
+    "storagePath": "SCL-PP-045/00-1024.webp",
+    "sort": 0
+  },
+  {
+    "recipeId": "SCL-PP-045",
+    "storagePath": "SCL-PP-045/01-1024.webp",
+    "sort": 1
+  },
+  {
+    "recipeId": "SCL-PP-046",
+    "storagePath": "SCL-PP-046/00-1024.webp",
+    "sort": 0
+  },
+  {
+    "recipeId": "SCL-PP-047",
+    "storagePath": "SCL-PP-047/00-1024.webp",
+    "sort": 0
+  },
+  {
+    "recipeId": "SCL-PP-047",
+    "storagePath": "SCL-PP-047/01-1024.webp",
+    "sort": 1
   }
 ]
