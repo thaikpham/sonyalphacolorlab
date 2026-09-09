@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import loader from './catalogue-loader';
 
 /**
@@ -57,18 +57,97 @@ describe('catalogueImageLoader', () => {
     }
   });
 
-  it('passes through anything that is not a B&H catalogue photo', () => {
+  it('passes through anything that is neither a B&H photo nor Storage', () => {
     for (const src of [
       '/logo.png',
       '/products/sony-sel50f14gm.jpg',
       'https://www.sony.com.vn/image/df5de41437d48c04ff92d80faa8a610a?fmt=png-alpha',
       'https://sony.scene7.com/is/image/sonyglobalsolutions/a7iv',
-      'https://nqeedlgzaewccqztqvik.supabase.co/storage/v1/object/public/recipes/a.jpg',
       'data:image/gif;base64,R0lGOD',
       'not a url at all',
     ]) {
       expect(loader({ src, width: 64 })).toBe(src);
     }
+  });
+
+  /**
+   * Storage photographs must NOT pass through.
+   *
+   * They used to, and that is what spent the project's cached-egress quota: no
+   * resizing ever happened, so a 210px grid card downloaded the full original —
+   * 155KB on average, 1.87MB at worst, 1.27GB of CDN egress a day against a 5GB
+   * month. A passthrough here is not a missing optimization, it is the bug.
+   */
+  describe('Supabase Storage', () => {
+    const STORAGE = 'https://nqeedlgzaewccqztqvik.supabase.co';
+    const photo = `${STORAGE}/storage/v1/object/public/recipes/SCL-PP-044/00.png`;
+
+    /* Next inlines this at build time for the browser; vitest does not load
+       `.env.local`, so the host has to be stated for the branch to exist. */
+    const original = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    beforeAll(() => {
+      process.env.NEXT_PUBLIC_SUPABASE_URL = STORAGE;
+    });
+    afterAll(() => {
+      if (original === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+      else process.env.NEXT_PUBLIC_SUPABASE_URL = original;
+    });
+
+    it('leaves photographs alone when Supabase is not configured at all', () => {
+      // The app runs off the seed files then; there is no Storage to optimize.
+      process.env.NEXT_PUBLIC_SUPABASE_URL = '';
+      expect(loader({ src: photo, width: 256 })).toBe(photo);
+      process.env.NEXT_PUBLIC_SUPABASE_URL = STORAGE;
+    });
+
+    it('routes recipe photographs through the optimizer, never verbatim', () => {
+      const out = loader({ src: photo, width: 256 });
+
+      expect(out).not.toBe(photo);
+      expect(out.startsWith('/_next/image?')).toBe(true);
+      expect(new URLSearchParams(out.split('?')[1]).get('url')).toBe(photo);
+    });
+
+    it('snaps to two rungs, so the whole catalogue is ~370 transformations', () => {
+      // The optimizer bills distinct transformations, not requests. Next asks
+      // across its full ladder; only these two widths may reach it.
+      const widths = [16, 64, 128, 256, 640, 750, 828, 1080, 1200, 1920];
+      const asked = new Set(
+        widths.map((width) => new URLSearchParams(loader({ src: photo, width }).split('?')[1]).get('w')),
+      );
+
+      expect([...asked].sort()).toEqual(['1200', '640']);
+    });
+
+    it('asks for the small rung at card widths and the large one above', () => {
+      const w = (width: number) =>
+        new URLSearchParams(loader({ src: photo, width }).split('?')[1]).get('w');
+
+      expect(w(256)).toBe('640');
+      expect(w(640)).toBe('640');
+      expect(w(641)).toBe('1200');
+      expect(w(1920)).toBe('1200');
+    });
+
+    it('carries the requested quality, defaulting to Next’s own 75', () => {
+      const q = (quality?: number) =>
+        new URLSearchParams(loader({ src: photo, width: 256, quality }).split('?')[1]).get('q');
+
+      expect(q()).toBe('75');
+      expect(q(90)).toBe('90');
+    });
+
+    it('refuses any path on the host that is not a public Storage object', () => {
+      // A loader that hands /_next/image an arbitrary path on this host turns
+      // the optimizer into a proxy for whatever else the host serves.
+      for (const src of [
+        `${STORAGE}/rest/v1/recipes`,
+        `${STORAGE}/auth/v1/authorize`,
+        `${STORAGE}/storage/v1/object/sign/recipes/a.jpg`,
+      ]) {
+        expect(loader({ src, width: 256 })).toBe(src);
+      }
+    });
   });
 
   it('never returns a bhphotovideo.com URL — that host 403s hotlinked requests', () => {

@@ -31,10 +31,34 @@
  *   that looked right on one sample would have turned a working photo into a
  *   404 at the other. The exact failure this file exists to fix. All of them
  *   pass through at their published size.
- * - **It does not touch a non-B&H src.** Sony's own hosts, Supabase Storage and
- *   the local `/logo.png` family are returned verbatim. They lose optimization
- *   they were not receiving anyway while the quota was spent, and none of them
- *   publishes a size-variant path this loader could target.
+ * - **It does not touch Sony's own hosts or the local `/logo.png` family.**
+ *   They are returned verbatim: none of them publishes a size-variant path this
+ *   loader could target, and the local files are already small.
+ *
+ * ---
+ *
+ * **Supabase Storage is the exception, and it is why this file was revisited.**
+ *
+ * Recipe photographs used to pass through verbatim too, which meant no resizing
+ * ever happened to them: a 210px grid card downloaded the full original. The
+ * catalogue averages 155KB an image and one of them is a 1.87MB PNG. Measured
+ * against 24h of Supabase edge logs, that was **1.27GB of CDN egress a day**,
+ * 90% of it grid thumbnails — roughly 38GB a month against a 5GB quota, which
+ * is what restricted the project and took Storage, Auth and PostgREST down
+ * together with `402 exceed_cached_egress_quota`.
+ *
+ * So these go back through `/_next/image`. That is the same optimizer this file
+ * was written to escape, and the difference is what reaches it:
+ *
+ * - Only Storage photographs, never the B&H catalogue. B&H keeps the direct-CDN
+ *   path above, so the 94 wiki photos that 402'd in August do not return.
+ * - The requested width is snapped to **two** rungs, mirroring what B&H
+ *   publishes. Next would otherwise ask across its whole ladder, and the
+ *   optimizer is billed per distinct transformation, not per request. 185
+ *   objects x 2 rungs bounds the whole catalogue at ~370 transformations.
+ * - `minimumCacheTTL` in `next.config.ts` is a year, so the optimizer fetches
+ *   each original from Storage once and serves every reader from its own cache.
+ *   Supabase egress for images stops scaling with traffic at all.
  */
 
 /** Directories confirmed to serve the same filename at both variant sizes. */
@@ -57,13 +81,57 @@ const SMALL_VARIANT_MAX_WIDTH = 500;
 const BH_HOST = 'static.bhphoto.com';
 const BH_PATH = /^\/images\/([^/]+)\/([^/]+)$/;
 
+/**
+ * The project's own Storage host, or undefined when Supabase is not configured
+ * — the app still runs off the seed files then, and there are no Storage URLs
+ * for this branch to match.
+ *
+ * Read through a function rather than captured at module scope. Two reasons,
+ * one of them a real hazard: a malformed env value would make `new URL()` throw
+ * during module evaluation, which in a bundled client chunk takes down far more
+ * than image loading. Here it degrades to "no Storage host" instead. The memo
+ * keeps the parse off the hot path; in the browser the env read is a build-time
+ * literal either way.
+ */
+let hostMemo: { raw: string | undefined; host: string | undefined } | null = null;
+
+function storageHost(): string | undefined {
+  const raw = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!hostMemo || hostMemo.raw !== raw) {
+    let host: string | undefined;
+    try {
+      host = raw ? new URL(raw).hostname : undefined;
+    } catch {
+      host = undefined;
+    }
+    hostMemo = { raw, host };
+  }
+  return hostMemo.host;
+}
+
+/** Only what `remotePatterns` in `next.config.ts` already allows through. */
+const STORAGE_PATH_PREFIX = '/storage/v1/object/public/';
+
+/**
+ * The two rungs Storage photographs are optimized at.
+ *
+ * Both are members of `deviceSizes` — the optimizer rejects a width it was not
+ * configured for — and two is the whole point: the count of distinct
+ * transformations, not the count of requests, is what the optimizer bills and
+ * what ran out in August.
+ */
+const STORAGE_WIDTHS = [640, 1200] as const;
+
+/** Next's own default, restated because this loader must supply one. */
+const DEFAULT_QUALITY = 75;
+
 interface LoaderArgs {
   src: string;
   width: number;
   quality?: number;
 }
 
-export default function catalogueImageLoader({ src, width }: LoaderArgs): string {
+export default function catalogueImageLoader({ src, width, quality }: LoaderArgs): string {
   // Relative sources (`/logo.png`) are not URLs and must not reach `new URL`.
   if (!src.startsWith('http://') && !src.startsWith('https://')) return src;
 
@@ -72,6 +140,22 @@ export default function catalogueImageLoader({ src, width }: LoaderArgs): string
     url = new URL(src);
   } catch {
     return src;
+  }
+
+  /* Recipe photographs, back through the optimizer. The path is checked as well
+     as the host so this can only ever name a public Storage object — the same
+     closed shape `remotePatterns` enforces on the other side, because a loader
+     that will hand `/_next/image` any path on the host turns the optimizer into
+     a proxy for whatever else that host serves. */
+  const storage = storageHost();
+  if (storage && url.hostname === storage && url.pathname.startsWith(STORAGE_PATH_PREFIX)) {
+    const rung = STORAGE_WIDTHS.find((w) => width <= w) ?? STORAGE_WIDTHS[STORAGE_WIDTHS.length - 1];
+    const params = new URLSearchParams({
+      url: src,
+      w: String(rung),
+      q: String(quality ?? DEFAULT_QUALITY),
+    });
+    return `/_next/image?${params}`;
   }
 
   if (url.hostname !== BH_HOST) return src;
