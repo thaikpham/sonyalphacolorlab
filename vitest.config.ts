@@ -16,6 +16,10 @@ export default defineConfig({
       // fileURLToPath, not URL.pathname — the project path contains a space and
       // pathname percent-encodes it into a path that does not exist.
       'server-only': fileURLToPath(new URL('./src/test/server-only-stub.ts', import.meta.url)),
+      // `unstable_cache` throws `Invariant: incrementalCache missing` without a
+      // Next server around it. Same call as above: stub the framework concern
+      // rather than branch on it in application code.
+      'next/cache': fileURLToPath(new URL('./src/test/next-cache-stub.ts', import.meta.url)),
     },
   },
   test: {

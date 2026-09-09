@@ -12,6 +12,7 @@
 
 import 'server-only';
 import { cache } from 'react';
+import { unstable_cache } from 'next/cache';
 import recipesSeed from '../../../data/recipes.seed.json';
 import translationsSeed from '../../../data/translations.seed.json';
 import imagesSeed from '../../../data/images.seed.json';
@@ -87,6 +88,40 @@ async function withSeedFallback<T>(
     return fromSeed();
   }
 }
+
+// ---------------------------------------------------------------------------
+// Caching
+// ---------------------------------------------------------------------------
+
+/**
+ * Every catalogue read is cached across requests, not just within one render.
+ *
+ * `next: { revalidate }` and a route-level `export const revalidate` cannot do
+ * this: supabase-js sends an `Authorization` header on every call, which makes
+ * Next mark the fetch uncacheable and opt the route out of the data cache. The
+ * same diagnosis is written up in `reddit/client.ts` for a third-party API —
+ * this is that fix, applied to the source it was always more needed for.
+ *
+ * It matters most for what is left dynamic after the prerender fix: `/colorlab`
+ * (it reads `searchParams`), `/cameras/compare`, and the route handlers. The
+ * worst of those is `/api/search/predictive`, which reads the whole catalogue
+ * to return five suggestions and is called on a 120ms debounce — once per
+ * keystroke. Caching here, rather than at each caller, is what makes that one
+ * read per minute instead of one per keypress.
+ *
+ * Sixty seconds, not the five minutes the shape would otherwise suggest: the
+ * admin editor writes straight to Supabase and nothing here calls
+ * `revalidateTag`, so this interval IS how long an edit takes to appear. The
+ * tag is declared so that wiring becomes one line in the write route.
+ */
+const CATALOGUE_TAG = 'catalogue';
+const CATALOGUE_TTL_SECONDS = 60;
+
+const catalogueCache = <A extends unknown[], R>(keyPart: string, read: (...args: A) => Promise<R>) =>
+  unstable_cache(read, [keyPart], {
+    revalidate: CATALOGUE_TTL_SECONDS,
+    tags: [CATALOGUE_TAG],
+  });
 
 // ---------------------------------------------------------------------------
 // Seed fallback
@@ -172,7 +207,9 @@ const pickDescription = (
 export const photosFirst = <T extends { images: string[] }>(views: T[]): T[] =>
   views.slice().sort((a, b) => (b.images.length > 0 ? 1 : 0) - (a.images.length > 0 ? 1 : 0));
 
-export async function listRecipes(
+export const listRecipes = catalogueCache('listRecipes', _listRecipes);
+
+async function _listRecipes(
   locale: Locale = 'en',
   filters: RecipeFilters = {},
 ): Promise<RecipeView[]> {
@@ -234,7 +271,7 @@ async function loadTranslations(ids: string[]): Promise<Map<string, string>> {
  * is why it is safe to apply to published content that an admin can edit. A
  * cross-request cache is a separate decision with its own invalidation.
  */
-export const getRecipe = cache(_getRecipe);
+export const getRecipe = cache(catalogueCache('getRecipe', _getRecipe));
 
 async function _getRecipe(slug: string, locale: Locale = 'en'): Promise<RecipeView | null> {
   const seed = () => {
@@ -262,7 +299,9 @@ async function _getRecipe(slug: string, locale: Locale = 'en'): Promise<RecipeVi
   }, seed);
 }
 
-export async function listSlugs(): Promise<string[]> {
+export const listSlugs = catalogueCache('listSlugs', _listSlugs);
+
+async function _listSlugs(): Promise<string[]> {
   const seed = () => seedRecipes.filter((r) => r.published).map((r) => r.slug);
   if (!isSupabaseConfigured()) return seed();
 
@@ -281,7 +320,9 @@ export async function listSlugs(): Promise<string[]> {
 
 
 /** Tags in use, most common first — drives the filter bar. */
-export async function listTags(limit = 14): Promise<{ tag: string; count: number }[]> {
+export const listTags = catalogueCache('listTags', _listTags);
+
+async function _listTags(limit = 14): Promise<{ tag: string; count: number }[]> {
   const seedTags = () => seedRecipes.filter((r) => r.published).map((r) => r.tags);
   const tagLists = isSupabaseConfigured()
     ? await withSeedFallback(
