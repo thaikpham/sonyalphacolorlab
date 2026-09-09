@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { OPEN_PROPOSAL_EVENT, OPEN_TWEAK_EVENT } from '@/lib/community/events';
 import { isCommunityErrorCode } from '@/lib/community/errors';
 import { useAuth } from '@/components/auth-context';
+import catalogueImageLoader from '@/lib/images/catalogue-loader';
 import {
   getLocalCredits,
   getLocalPhotos,
@@ -92,6 +93,24 @@ function AiSparkleIcon({ className }: { className?: string }) {
     </svg>
   );
 }
+
+/**
+ * The lightbox's own images, sized.
+ *
+ * Everything in the collage above goes through `next/image` and so through the
+ * catalogue loader. The lightbox cannot: its photos may be community
+ * contributions, which are arbitrary third-party URLs that `next/image` refuses
+ * because they are not in `remotePatterns`. So they are raw `<img>` — and a raw
+ * `<img>` bypasses the loader, which meant every one of them pulled the full
+ * original straight from Storage. The filmstrip renders up to sixteen at 48px
+ * each; that was ~3.2MB to open a lightbox once, against a CDN egress quota
+ * billed by the byte.
+ *
+ * Calling the loader by hand restores the sizing without giving up the escape
+ * hatch: a Storage object comes back as an optimizer URL at the right rung, and
+ * a community URL comes back untouched, exactly as before.
+ */
+const sized = (src: string, width: number) => catalogueImageLoader({ src, width });
 
 /** Signal colour per offer — the whole reason these three read as different. */
 const OFFER_TINT = {
@@ -675,8 +694,13 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
               >
                 {/* eslint-disable-next-line @next/next/no-img-element -- arbitrary URL */}
                 <img
-                  src={allPhotos[(lightboxIndex - 1 + allPhotos.length) % allPhotos.length]}
+                  src={sized(
+                    allPhotos[(lightboxIndex - 1 + allPhotos.length) % allPhotos.length],
+                    256,
+                  )}
                   alt="Previous Frame Preview"
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 transition-all duration-300"
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-void/70 to-transparent flex items-center justify-start p-3">
@@ -713,8 +737,9 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
               {/* eslint-disable-next-line @next/next/no-img-element -- arbitrary URL */}
               <img
                 key={currentLightboxSrc}
-                src={currentLightboxSrc}
+                src={sized(currentLightboxSrc, 1200)}
                 alt={`${title} — Frame ${lightboxIndex + 1}`}
+                decoding="async"
                 className="max-w-full max-h-[72dvh] object-contain rounded-lg shadow-[var(--elevation-3)]"
               />
 
@@ -771,8 +796,10 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
               >
                 {/* eslint-disable-next-line @next/next/no-img-element -- arbitrary URL */}
                 <img
-                  src={allPhotos[(lightboxIndex + 1) % allPhotos.length]}
+                  src={sized(allPhotos[(lightboxIndex + 1) % allPhotos.length], 256)}
                   alt="Next Frame Preview"
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 transition-all duration-300"
                 />
                 <div className="absolute inset-0 bg-gradient-to-l from-void/70 to-transparent flex items-center justify-end p-3">
@@ -813,8 +840,10 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element -- arbitrary URL */}
                   <img
-                    src={thumbSrc}
+                    src={sized(thumbSrc, 256)}
                     alt={`Thumb ${idx + 1}`}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover"
                   />
                 </button>

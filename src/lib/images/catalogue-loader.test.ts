@@ -108,22 +108,27 @@ describe('catalogueImageLoader', () => {
       expect(new URLSearchParams(out.split('?')[1]).get('url')).toBe(photo);
     });
 
-    it('snaps to two rungs, so the whole catalogue is ~370 transformations', () => {
+    it('snaps to three rungs, so the whole catalogue is ~555 transformations', () => {
       // The optimizer bills distinct transformations, not requests. Next asks
-      // across its full ladder; only these two widths may reach it.
-      const widths = [16, 64, 128, 256, 640, 750, 828, 1080, 1200, 1920];
+      // across its full ladder; only these three widths may reach it.
+      const widths = [16, 48, 64, 128, 256, 640, 750, 828, 1080, 1200, 1920];
       const asked = new Set(
         widths.map((width) => new URLSearchParams(loader({ src: photo, width }).split('?')[1]).get('w')),
       );
 
-      expect([...asked].sort()).toEqual(['1200', '640']);
+      expect([...asked].sort()).toEqual(['1200', '256', '640']);
     });
 
-    it('asks for the small rung at card widths and the large one above', () => {
+    it('climbs the rungs in step with the width asked for', () => {
       const w = (width: number) =>
         new URLSearchParams(loader({ src: photo, width }).split('?')[1]).get('w');
 
-      expect(w(256)).toBe('640');
+      // 48px filmstrip thumbnails and the 128-176px lightbox previews. Serving
+      // these from 640 was a 10x overdraw on the one surface that renders
+      // sixteen images at once.
+      expect(w(48)).toBe('256');
+      expect(w(256)).toBe('256');
+      expect(w(257)).toBe('640');
       expect(w(640)).toBe('640');
       expect(w(641)).toBe('1200');
       expect(w(1920)).toBe('1200');

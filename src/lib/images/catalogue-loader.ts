@@ -113,14 +113,19 @@ function storageHost(): string | undefined {
 const STORAGE_PATH_PREFIX = '/storage/v1/object/public/';
 
 /**
- * The two rungs Storage photographs are optimized at.
+ * The rungs Storage photographs are optimized at.
  *
- * Both are members of `deviceSizes` — the optimizer rejects a width it was not
- * configured for — and two is the whole point: the count of distinct
- * transformations, not the count of requests, is what the optimizer bills and
- * what ran out in August.
+ * Every one is a member of `imageSizes`/`deviceSizes` — the optimizer rejects a
+ * width it was not configured for — and the shortness of the list is the whole
+ * point: the count of distinct transformations, not the count of requests, is
+ * what the optimizer bills and what ran out in August. Three rungs puts the
+ * whole 185-object catalogue at ~555 transformations.
+ *
+ * 256 exists for the lightbox furniture. Its filmstrip thumbnails are 48px and
+ * its prev/next previews 128–176px; serving those from the 640 rung was a 10x
+ * overdraw on the one surface that renders sixteen images at once.
  */
-const STORAGE_WIDTHS = [640, 1200] as const;
+const STORAGE_WIDTHS = [256, 640, 1200] as const;
 
 /** Next's own default, restated because this loader must supply one. */
 const DEFAULT_QUALITY = 75;
