@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Alpha Tech Blogs">
+  <title>Alpha Tech Blogs</title>
+  <!--
+    A paragraph: four lines of type, left-aligned, ragged right.
+
+    Same grammar as the ColorLab mark and measured off it — flat fills, no
+    stroke, no gradient, a 4px margin, saturated shapes at alpha 0.561 with one
+    neutral at 0.251, composited plain source-over. The lines are set close
+    enough that each one bleeds into the next, so the three seams between them
+    are the third colours this family is built on. ColorLab overlaps to mix
+    light; this overlaps to make prose, which is what the app is: technical
+    articles and an eight-step walkthrough, read top to bottom.
+
+    Ragged right is the whole read. Four bars of equal width would be a stack or
+    a chart; 244 / 210 / 232 / 150 is unmistakably body copy at 76px, and the
+    short last line is what separates this silhouette from the wiki's fan.
+
+    Violet ramp from packages/colorlab-tokens — `ink` as the neutral, then
+    accent 400, `proposal` and `ai`. Cool and warm apart from the other two
+    tiles at a glance, and no competitor signature hue.
+  -->
+  <rect x="6" y="7" width="244" height="78" rx="39" fill="#8A9CFF" fill-opacity="0.561"/>
+  <rect x="6" y="63" width="210" height="78" rx="39" fill="#F4F5F8" fill-opacity="0.251"/>
+  <rect x="6" y="119" width="232" height="78" rx="39" fill="#9B7BF0" fill-opacity="0.561"/>
+  <rect x="6" y="175" width="150" height="78" rx="39" fill="#C77BD9" fill-opacity="0.561"/>
+</svg>

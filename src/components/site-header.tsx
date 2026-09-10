@@ -114,6 +114,12 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
   const isWiki =
     pathname === '/cameras' || pathname.startsWith('/cameras/') || isAudioWiki;
   const wikiBase = isAudioWiki ? '/audio' : '/cameras';
+  /* The third surface. It carries the bar — wordmark, launcher, account,
+     language — but not the search console: this header's search is wired to
+     the recipe and product catalogues, and a box on an article page that
+     silently searches recipes is worse than no box. Alpha Tech Blogs filters
+     in its own rail, where the filters are. */
+  const isBlog = pathname === '/blog' || pathname.startsWith('/blog/');
   const searchParams = useSearchParams();
   const { user, openLoginModal, logout } = useAuth();
 
@@ -129,9 +135,11 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
   const wikiView = searchParams?.get('view') ?? 'grid';
 
   const tagList = providedTags && providedTags.length > 0 ? providedTags : FALLBACK_TAGS;
-  const hasActiveFilters = isWiki
-    ? Boolean(currentQ || wikiCat !== 'all' || wikiSub1 !== 'all' || wikiSub2 !== 'all' || wikiSort !== DEFAULT_WIKI_SORT)
-    : Boolean(currentQ || currentFormat || currentLook || currentTag);
+  const hasActiveFilters = isBlog
+    ? false
+    : isWiki
+      ? Boolean(currentQ || wikiCat !== 'all' || wikiSub1 !== 'all' || wikiSub2 !== 'all' || wikiSort !== DEFAULT_WIKI_SORT)
+      : Boolean(currentQ || currentFormat || currentLook || currentTag);
 
   const [isHidden, setIsHidden] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(hasActiveFilters);
@@ -297,6 +305,14 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
         e.target instanceof HTMLTextAreaElement ||
         (e.target instanceof HTMLElement && e.target.isContentEditable);
 
+      /* Both shortcuts open the search console, and the blog does not render
+         one — without this the keys open an empty 300ms animation over the
+         article and ⌘K appears broken. */
+      if (isBlog) {
+        if (e.key === 'Escape' && isEcosystemOpen) setIsEcosystemOpen(false);
+        return;
+      }
+
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         setIsSearchOpen((prev) => !prev);
@@ -319,7 +335,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isSearchOpen, isEcosystemOpen, isProfileOpen]);
+  }, [isSearchOpen, isEcosystemOpen, isProfileOpen, isBlog]);
 
   /**
    * Close either dropdown on a click outside it.
@@ -499,7 +515,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
     setQuery('');
     queuePredictive('');
     // Clearing filters returns to the current app's own index, never the launcher.
-    router.push(isWiki ? wikiBase : '/colorlab', { scroll: false });
+    router.push(isBlog ? '/blog' : isWiki ? wikiBase : '/colorlab', { scroll: false });
   };
 
   return (
@@ -553,13 +569,35 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                 in. It keeps its full size wherever there is room and truncates
                 inside the same 44px rail where there is not. */}
             <div className="relative flex min-w-0 items-center gap-2 sm:gap-2.5" ref={ecosystemRef}>
-              {isWiki ? (
+              {isBlog ? (
+                /* Mark plus type, the same shape as the Sony Wiki wordmark
+                   below — the accent falls on the word that distinguishes the
+                   app, the way WIKI carries it there. Links to the feed, which
+                   is this app's index, never to `/`, which is the launcher. */
+                <Link
+                  href="/blog"
+                  className="flex min-h-[var(--layout-touch-target)] min-w-0 items-center gap-2 sm:gap-2.5"
+                >
+                  <Image
+                    src="/alpha-tech-blogs-icon.svg"
+                    alt="Alpha Tech Blogs"
+                    width={256}
+                    height={256}
+                    priority
+                    unoptimized
+                    className="h-9 w-9 shrink-0 rounded-sm object-contain"
+                  />
+                  <span className="flex items-center gap-1.5 truncate whitespace-nowrap text-body-lg font-extrabold tracking-[-0.02em] text-ink">
+                    ALPHA TECH <span className="text-accent-400">BLOGS</span>
+                  </span>
+                </Link>
+              ) : isWiki ? (
                 <Link
                   href={wikiBase}
                   className="flex min-h-[var(--layout-touch-target)] min-w-0 items-center gap-2 sm:gap-2.5"
                 >
                   <Image
-                    src="/sony-wiki-icon.png"
+                    src="/sony-wiki-icon.svg"
                     alt="Sony Wiki Logo"
                     width={512}
                     height={512}
@@ -649,6 +687,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
             {/* 300px at rest, 520px while searching — the field growing is what
                 tells the reader the bar has changed mode, and the wordmark and
                 the console give up the width for it. */}
+            {!isBlog && (
             <div
               className={`${
                 isSearchOpen ? 'flex sm:max-w-[520px]' : 'hidden sm:flex sm:max-w-[300px]'
@@ -917,9 +956,11 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                 </form>
               )}
             </div>
+            )}
 
             {/* Right Side Controls */}
             <div className="flex flex-nowrap items-center gap-1.5 sm:gap-2.5 shrink-0">
+              {!isBlog && (
               <button
                 type="button"
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
@@ -941,6 +982,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                   />
                 </svg>
               </button>
+              )}
 
               {/* Google Auth / Profile Button */}
               {user ? (
@@ -1072,8 +1114,15 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
             </div>
           </div>
 
-          {/* Expanded Glass Console for Filters & Controls */}
-          <div
+          {/* Expanded Glass Console for Filters & Controls.
+
+              Not rendered on the blog: every control in it filters recipes or
+              catalogue products, so there it would be an empty drawer that ⌘K
+              opens over the article. Gating the render rather than hiding it
+              also keeps those controls out of the blog's tab order — collapsed,
+              they are zero-height but still focusable. */}
+          {!isBlog && (
+            <div
             className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${
               isSearchOpen
                 ? 'grid-rows-[1fr] opacity-100 mt-3'
@@ -1359,6 +1408,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
               )}
             </div>
           </div>
+          )}
         </div>
       </div>
     </header>

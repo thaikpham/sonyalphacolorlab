@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Sony Wiki">
+  <title>Sony Wiki</title>
+  <!--
+    A stack of record cards, each stepped down and to the right.
+
+    Same grammar as the ColorLab mark, measured off it rather than guessed —
+    flat fills, no stroke and no gradient, running to a 4px margin, the
+    saturated shapes at alpha 0.561 with one neutral at 0.251, composited plain
+    source-over so every overlap resolves to a colour in neither card. In
+    ColorLab that means additive colour mixing, which is what that app does.
+    Here it means depth of pile: the bottom-right corner, where all four cross,
+    is the densest and most saturated part of the mark.
+
+    The primitive is a card because this app is a catalogue — a few hundred
+    cameras, lenses and audio products, each one a page you flip to. The step is
+    28x24, which is the whole design: it leaves every card a band of its own
+    colour along its top and left edge, so at a 76px tile you count four records
+    rather than see one blue lozenge. A fan was tried first and failed exactly
+    there — rotated cards overlap almost everywhere, so the four collapsed into
+    a single wobbly blob with no structure left to read.
+
+    Cool ramp, every value straight out of packages/colorlab-tokens: `ink` as
+    the neutral at the back, then accent 500, accent 400 and `community` cyan
+    coming forward. Deepest to brightest in that order on purpose — the four
+    values are close in hue, so it is the climb in lightness across the exposed
+    bands that separates them at tile size. Cyan sits in front because it is the
+    furthest from the violet the blog mark is built on, which is what keeps the
+    two tiles apart at a glance. No hue here is Canon red, Nikon yellow or Fuji
+    green.
+  -->
+  <rect x="6" y="6" width="148" height="172" rx="26" fill="#F4F5F8" fill-opacity="0.251"/>
+  <rect x="34" y="30" width="148" height="172" rx="26" fill="#5C74F0" fill-opacity="0.561"/>
+  <rect x="62" y="54" width="148" height="172" rx="26" fill="#8A9CFF" fill-opacity="0.561"/>
+  <rect x="90" y="78" width="148" height="172" rx="26" fill="#46B3C4" fill-opacity="0.561"/>
+</svg>

@@ -1,5 +1,5 @@
 /**
- * The two apps, in launcher order.
+ * The three apps, in launcher order.
  *
  * Two surfaces render this list — the overlay in `site-header.tsx` and the
  * landing page at `/` — so it lives in one place. They were one component with
@@ -25,13 +25,21 @@ export type EcosystemAppDef = {
   key: string;
   /** Product name. Never translated — see above. */
   name: string;
-  /** Square PNG under `/public`, 256x256. */
+  /**
+   * Square artwork under `/public`, authored on a 256x256 canvas.
+   *
+   * SVG for the two marks drawn for this system, PNG for ColorLab's, which
+   * predates it. The launcher passes `unoptimized`, so the file is served as
+   * authored and a vector stays crisp on the 198px desktop tile at 3x — which
+   * a 256px raster does not.
+   */
   icon: string;
   href: string;
   /** Another origin → new tab. In-app routes navigate in place. */
   external: boolean;
   /**
-   * Padding inside the tile, per app.
+   * Padding inside the tile, per app. Unused by a `mark` tile, whose glyph is
+   * centred by the face rather than inset.
    *
    * The PNGs are bare artwork on transparency with quite different bleed, so
    * one shared padding renders them at different optical sizes. These values
@@ -62,10 +70,19 @@ export const ECOSYSTEM_APPS: readonly EcosystemAppDef[] = [
     key: 'wiki',
     name: 'Sony Wiki',
     shortName: 'Sony Wiki',
-    icon: '/sony-wiki-icon.png',
+    icon: '/sony-wiki-icon.svg',
     href: '/cameras',
     external: false,
-    iconInset: 'p-[10%]',
+    iconInset: 'p-[13.5%]',
+  },
+  {
+    key: 'blog',
+    name: 'Alpha Tech Blogs',
+    shortName: 'Tech Blogs',
+    icon: '/alpha-tech-blogs-icon.svg',
+    href: '/blog',
+    external: false,
+    iconInset: 'p-[13.5%]',
   },
 ] as const;
 

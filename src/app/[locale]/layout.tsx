@@ -57,6 +57,7 @@ export default async function LocaleLayout({
     cameras: messages.cameras,
     community: messages.community,
     error: messages.error,
+    lab: messages.lab,
     language: messages.language,
     launcher: messages.launcher,
     nav: messages.nav,

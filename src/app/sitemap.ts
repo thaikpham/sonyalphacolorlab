@@ -2,6 +2,7 @@ import type { MetadataRoute } from 'next';
 import { routing } from '@/i18n/routing';
 import { listSlugs } from '@/lib/recipes/source';
 import { getSonyAudio } from '@/lib/audio/data';
+import { ARTICLES } from '@/lib/lab/articles';
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
@@ -66,5 +67,41 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
   );
 
-  return [...home, ...catalogue, ...recipes, ...audioIndex, ...audioProducts];
+  /* Alpha Tech Blogs. The feed carries a query string in use, but the
+     canonical URL is the unfiltered one — a sitemap listing `?topic=af`
+     would ask a crawler to index eleven near-identical pages. */
+  const blogIndex = routing.locales.map((locale) => ({
+    url: `${SITE}${path(locale, '/blog')}`,
+    changeFrequency: 'weekly' as const,
+    priority: 0.9,
+    alternates: alternatesFor('/blog'),
+  }));
+
+  const blogArticles = routing.locales.flatMap((locale) =>
+    ARTICLES.map((article) => ({
+      url: `${SITE}${path(locale, `/blog/${article.id}`)}`,
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+      alternates: alternatesFor(`/blog/${article.id}`),
+    })),
+  );
+
+  // The setup tool. A reference page people link to, so it ranks with the feed.
+  const setup = routing.locales.map((locale) => ({
+    url: `${SITE}${path(locale, '/blog/setup')}`,
+    changeFrequency: 'monthly' as const,
+    priority: 0.9,
+    alternates: alternatesFor('/blog/setup'),
+  }));
+
+  return [
+    ...home,
+    ...catalogue,
+    ...recipes,
+    ...audioIndex,
+    ...audioProducts,
+    ...blogIndex,
+    ...blogArticles,
+    ...setup,
+  ];
 }
