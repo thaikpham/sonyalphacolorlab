@@ -619,7 +619,38 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
 
       {/* The compare grid — one panel, no rules, alternating tint. */}
       <div className="surface px-4 pt-3 pb-4">
-        <div className="overflow-x-auto scroll-area">
+        {/* The height cap is load-bearing — without it this route cannot be
+            scrolled at all.
+
+            `overflow-x-auto` is needed because the table is wider than the
+            page once enough products are compared (12 of them is 2928px of
+            table in a 2432px column). But CSS will not give you one axis of
+            overflow on its own: with `overflow-x: auto` the used value of
+            `overflow-y` is raised from `visible` to `auto`, so this div is a
+            *vertical* scroll container too. With no height cap it had no
+            vertical overflow to scroll, and Chrome latches a wheel gesture to
+            the scroll container under the cursor for the life of that gesture:
+            the delta was handed to a box that could not move and was dropped
+            rather than chained to the page. Measured, not reasoned about — the
+            page scrolled normally with the cursor an inch higher, and no
+            `wheel` event ever reached JS because the compositor had already
+            eaten it.
+
+            That also made the sticky `<thead>` below dead code: sticky resolves
+            against the nearest scroll container, which was this box, which
+            never scrolled. Capping the height fixes both — the head now pins
+            while the body scrolls under it.
+
+            It only bites past ~10 products, which is why it reads as
+            intermittent: below that the table fits, the box is not a scroll
+            container, and nothing latches.
+
+            Not `.scroll-area`: its `overscroll-behavior: contain` is right for
+            a bounded panel floating over the page, but here it would stop the
+            table handing the scroll back to the page at its last row. Keep the
+            containment on x only, where it stops a sideways swipe becoming
+            browser back-navigation. */}
+        <div className="overflow-x-auto overscroll-x-contain max-h-[75dvh]">
           <table className="w-full text-left table-fixed border-separate border-spacing-0">
             <colgroup>
               <col className="w-[15rem] min-w-[11rem]" />
