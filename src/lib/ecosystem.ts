@@ -1,5 +1,5 @@
 /**
- * The four apps, in launcher order.
+ * The two apps, in launcher order.
  *
  * Two surfaces render this list — the overlay in `site-header.tsx` and the
  * landing page at `/` — so it lives in one place. They were one component with
@@ -7,15 +7,17 @@
  * been a launcher that disagrees with itself about what exists.
  *
  * **App names are not translated.** They are product names, the same category
- * as recipe names and Creative Look codes in Rule 3: "CheeseBooth" is
- * "CheeseBooth" in both locales. That is why they are here and not in
+ * as recipe names and Creative Look codes in Rule 3: "ColorLab 2.0" is
+ * "ColorLab 2.0" in both locales. That is why they are here and not in
  * `messages/*.json` — a name in a message catalogue is a name somebody will
  * eventually translate.
  *
- * Two of the four are separate projects on their own repos and their own Vercel
- * deployments (Rule 6). This app cannot render them and does not try: it links
- * out to the real origin, which is why `external` is per-app rather than
- * inferred from the URL shape.
+ * `external` is per-app rather than inferred from the URL shape. Nothing in the
+ * list carries it right now — both entries are in-app routes — but an entry
+ * pointing at another origin is a separate project on its own repo and its own
+ * Vercel deployment (Rule 6), which this app cannot render and must open at the
+ * real origin. That is a property of the app, not something to re-derive from
+ * the href.
  */
 
 export type EcosystemAppDef = {
@@ -31,16 +33,15 @@ export type EcosystemAppDef = {
   /**
    * Padding inside the tile, per app.
    *
-   * The PNGs are bare artwork on transparency with quite different bleed (96%,
-   * 90%, 82% of their own canvas), so one shared padding renders them at three
-   * different optical sizes. These values land them all on roughly 70% of the
-   * tile. Percentages, not `p-4`, so they hold at every tile size without a
-   * breakpoint.
+   * The PNGs are bare artwork on transparency with quite different bleed, so
+   * one shared padding renders them at different optical sizes. These values
+   * land them both on roughly 70% of the tile. Percentages, not `p-4`, so they
+   * hold at every tile size without a breakpoint.
    */
   iconInset: string;
   /**
    * Short form for the two-column mobile grid, where a 76px tile is narrower
-   * than "Live Stream SOP" set at the 13px floor. Not a translation — the same
+   * than "ColorLab 2.0" set at the 13px floor. Not a translation — the same
    * product-name rule applies, this is just the name the product itself uses
    * when it has no room.
    */
@@ -65,24 +66,6 @@ export const ECOSYSTEM_APPS: readonly EcosystemAppDef[] = [
     href: '/cameras',
     external: false,
     iconInset: 'p-[10%]',
-  },
-  {
-    key: 'cheesebooth',
-    name: 'CheeseBooth',
-    shortName: 'CheeseBooth',
-    icon: '/cheesebooth-icon.png',
-    href: 'https://cheese-booth.vercel.app/',
-    external: true,
-    iconInset: 'p-[11%]',
-  },
-  {
-    key: 'livesop',
-    name: 'Live Stream SOP',
-    shortName: 'Live SOP',
-    icon: '/livesop-icon.png',
-    href: 'https://sonylivesop.vercel.app/',
-    external: true,
-    iconInset: 'p-[7.5%]',
   },
 ] as const;
 

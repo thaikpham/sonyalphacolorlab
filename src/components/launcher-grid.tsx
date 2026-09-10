@@ -30,20 +30,21 @@ type Props = {
 };
 
 /**
- * Two columns below 640px, three to 1023px, one row on desktop. There are four
- * apps, so `lg:grid-cols-4` is the "one row" the reference asks for — a flex
- * row wraps unpredictably at the in-between widths.
+ * Two apps, so two columns is the "one row" the reference asks for at every
+ * width. The `sm:grid-cols-3`/`lg:grid-cols-4` steps existed to walk four tiles
+ * down to a single row and have nothing left to do; a flex row wraps
+ * unpredictably at the in-between widths, so this stays a grid.
  *
- * Both grids are written out in full rather than derived from one another.
+ * Both grids are written out in full rather than derived from one another, and
+ * that they now hold the same string is a coincidence of both being two-up.
  * The sub-grid used to be `GRID.replace('lg:grid-cols-4', 'lg:grid-cols-2')`,
  * and Tailwind v4 scans source text for class names: a class assembled at
  * runtime is one the scanner never sees, so it emits no rule for it. Same trap
  * as the inline `min-[2100px]:` form that silently never changed a column
- * count. It happened to work only because `lg:grid-cols-2` is written
- * literally in an unrelated file.
+ * count.
  */
 const GRID =
-  'grid w-full max-w-3xl grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 ' +
+  'grid w-full max-w-3xl grid-cols-2 ' +
   'items-start justify-items-center gap-x-6 gap-y-8 sm:gap-x-10 sm:gap-y-10 lg:gap-x-[52px]';
 
 /** The Sony Wiki divisions: two tiles, so two columns from `sm` up. */
@@ -56,7 +57,7 @@ const SUB_GRID =
  *
  * The face must stay opaque. The spectrum reads as light escaping from behind
  * the tile; the moment it tints the artwork it stops being a signature and
- * becomes a filter over four different brands' icons.
+ * becomes a filter over the apps' icons.
  */
 function Tile({ app, size }: { app: EcosystemAppDef; size: 'md' | 'lg' }) {
   const box =

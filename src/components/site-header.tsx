@@ -1408,30 +1408,28 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
           <div className="min-h-full flex items-center justify-center p-6 sm:p-10">
             {/* `items-center sm:items-start`: this box is a flex column below
                 `sm` and a grid above it, and `align-items` means different
-                things in each. In the grid it keeps the three tiles on one line
+                things in each. In the grid it keeps the tiles on one line
                 even if a longer app name wraps to two; in the column it is what
                 centres them, and `items-start` alone left-aligned the whole
                 stack on a phone (`justify-items-center` is grid-only and does
                 nothing there).
 
-                `iconInset` is per-app on purpose. The three PNGs are bare
-                artwork on transparency with quite different bleed (96%, 90%,
-                82% of their own canvas), so one shared padding renders them at
-                three different optical sizes — which is exactly what it used to
-                do. These values land all three on roughly 70% of the tile.
-                Percentages, not `p-4`, so they hold at both tile sizes without
-                a breakpoint. */}
+                `iconInset` is per-app on purpose. The PNGs are bare artwork
+                on transparency with quite different bleed, so one shared
+                padding renders them at different optical sizes — which is
+                exactly what it used to do. These values land them both on
+                roughly 70% of the tile. Percentages, not `p-4`, so they hold at
+                both tile sizes without a breakpoint. */}
             {/* One list, two surfaces — see `ECOSYSTEM_APPS`. The landing page
-                at `/` renders the same four tiles from the same definitions, so
-                a new app appears in both without touching either. The two
-                external entries carry absolute URLs and deliberately not
-                routes: they are separate projects on their own repos and their
-                own Vercel deployments, so this app has no copy of their source
-                and no way to render them. They used to be reachable at
-                `/cheesebooth` and `/livesop`, which embedded each deployment in
-                an iframe; that only ever worked because the destination was
-                already external, and it cost the reader the app's own chrome,
-                its URL bar and its deep links. Send them to the real origin. */}
+                at `/` renders the same tiles from the same definitions, so a
+                new app appears in both without touching either. An entry may
+                carry an absolute URL rather than a route, which is what
+                `external` marks: such an app is a separate project on its own
+                repo and its own Vercel deployment, so this app has no copy of
+                its source and no way to render it. Embedding one in an iframe
+                was tried — reachable then at `/cheesebooth` and `/livesop` —
+                and it cost the reader the app's own chrome, its URL bar and its
+                deep links. Send them to the real origin. */}
             <div ref={launcherRef}>
               <LauncherGrid size="md" onNavigate={() => setIsEcosystemOpen(false)} />
             </div>
