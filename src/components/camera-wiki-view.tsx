@@ -489,32 +489,57 @@ export function CameraWikiView({ initialCameras, basePath = '/cameras' }: Camera
         ) : viewMode === 'table' ? (
           /* Table view — rows separate by an alternating film, never a rule. */
           <div className="surface overflow-hidden">
-            <div className="overflow-x-auto">
+            {/* Same latching trap the compare table hit (see
+                `camera-compare-view.tsx`): `overflow-x: auto` raises the used
+                value of `overflow-y` from `visible` to `auto`, so this box is a
+                vertical scroll container too, and Chrome latches a wheel
+                gesture to it for the life of that gesture. Uncapped it had no
+                vertical overflow to spend that gesture on, so the delta was
+                dropped instead of chaining — and this box is 22,000px tall, so
+                the whole route froze under the cursor.
+
+                Two things keep it from overflowing rather than one, because the
+                cap alone would put the 94-row catalogue permanently inside a
+                75dvh window on a monitor wide enough not to need it.
+
+                Measured min-content of the table: 1878px with the features
+                column, 1302px without. Container width is the viewport less
+                64px of gutter (96px from 2xl). So the features column pays for
+                itself only from `3xl` (2004px of container against 1878), and
+                without it the table already fits from `2xl` (1440 against
+                1302) — which is exactly where the cap is released. Below that
+                the remainder can still overflow, and there the cap gives the
+                gesture something real to scroll and the head something to pin
+                against. */}
+            <div className="overflow-x-auto overscroll-x-contain max-h-[75dvh] 2xl:max-h-none">
               <table className="w-full text-left text-body-sm text-ink">
-                <thead className="label select-none">
+                <thead className="label select-none sticky top-0 z-10">
                   <tr>
-                    <th scope="col" className="p-4 text-center w-12 font-semibold">
+                    <th scope="col" className="bg-void/90 backdrop-blur-[30px] p-4 text-center w-12 font-semibold">
                       {t('compare')}
                     </th>
-                    <th scope="col" className="p-4 font-semibold">
+                    <th scope="col" className="bg-void/90 backdrop-blur-[30px] p-4 font-semibold">
                       {t('actionLabel')}
                     </th>
-                    <th scope="col" className="p-4 font-semibold">
+                    <th scope="col" className="bg-void/90 backdrop-blur-[30px] p-4 font-semibold">
                       {t('skuLabel')}
                     </th>
-                    <th scope="col" className="p-4 font-semibold">
+                    <th scope="col" className="bg-void/90 backdrop-blur-[30px] p-4 font-semibold">
                       {t('categoryLabel')}
                     </th>
-                    <th scope="col" className="p-4 font-semibold">
+                    <th scope="col" className="bg-void/90 backdrop-blur-[30px] p-4 font-semibold">
                       {t('subCategoryLabel')}
                     </th>
-                    <th scope="col" className="p-4 font-semibold">
+                    <th scope="col" className="bg-void/90 backdrop-blur-[30px] p-4 font-semibold">
                       {t('priceLabel')}
                     </th>
-                    <th scope="col" className="p-4 min-w-[28rem] lg:min-w-[36rem] font-semibold">
+                    <th
+                      scope="col"
+                      className="hidden 3xl:table-cell bg-void/90 backdrop-blur-[30px] p-4 min-w-[36rem] font-semibold"
+                    >
                       {t('featuresLabel')}
                     </th>
-                    <th scope="col" className="p-4 text-right min-w-[7rem] font-semibold">
+                    <th scope="col" className="bg-void/90 backdrop-blur-[30px] p-4 text-right min-w-[7rem] font-semibold">
                       {t('specUrl')}
                     </th>
                   </tr>
@@ -597,7 +622,7 @@ export function CameraWikiView({ initialCameras, basePath = '/cameras' }: Camera
                         </td>
 
                         {/* Features (Expanded width with word-wrap) */}
-                        <td className="p-4 min-w-[28rem] lg:min-w-[36rem]">
+                        <td className="hidden 3xl:table-cell p-4 min-w-[36rem]">
                           <ul className="space-y-1.5 text-body-sm text-ink-muted leading-relaxed">
                             {featureList(cam.features, locale).map((feat, featIdx) => (
                               <li key={featIdx} className="flex items-start gap-2 whitespace-normal break-words">
