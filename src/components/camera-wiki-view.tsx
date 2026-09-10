@@ -638,12 +638,20 @@ export function CameraWikiView({ initialCameras, basePath = '/cameras' }: Camera
              gap 11. The row treatment §03 used to have is gone with the
              sidebar; selection now shows only in the card's action pill.
 
-             Four columns at `xl`, not the reference's three. The reference is
-             drawn at a fixed 1440 frame; this page runs full-bleed to
-             `max-w-[160rem]`, so three columns left a 400px-wide card and a lot
-             of air. It steps 1 / 2 / 3 / 4 so the card never drops below the
-             ~240px its 210px photograph and three chips need. */
-          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+             Four columns at `xl` and five at `2xl`, not the reference's three.
+             The reference is drawn at a fixed 1440 frame; this page runs
+             full-bleed to `max-w-[160rem]`, so three columns left a 400px-wide
+             card and a lot of air. It steps 1 / 2 / 3 / 4 / 5 so the card never
+             drops below the ~240px its 210px photograph and three chips need —
+             which is also why the fifth column waits for `2xl` (1536px, card
+             ~272px) instead of arriving at `xl`, where five would put it at
+             ~227px and break that floor.
+
+             ColorLab's browse grid takes its fifth column at `3xl` instead.
+             That is not an inconsistency to "fix": a recipe card is narrower
+             than this one, so it can afford six columns by 2800px, while this
+             card's 210px photograph cannot. */
+          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
             {filteredCameras.map((cam) => {
               const isChecked = selectedForCompare.includes(cam.id);
               /* The card fill is lifted off `.surface`'s 5% film to a flat 18%
