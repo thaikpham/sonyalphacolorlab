@@ -50,12 +50,13 @@ export default async function LauncherPage({
           on. Same device the recipe grid uses for its own heading. */}
       <h1 className="sr-only">{t('title')}</h1>
 
-      {/* Two columns on a phone, three on a tablet, one row on desktop — the
-          grid and its glow are LauncherGrid's, the one sanctioned exception in
-          the system. The page's only job is to centre it and stay out of the
+      {/* Two columns until `md`, one row of three above it — the grid, its
+          tile size and its glow are all LauncherGrid's, the one sanctioned
+          exception in the system. The tiles are the same size here as in the
+          header's ecosystem overlay; there is no size prop to diverge with. The page's only job is to centre it and stay out of the
           way: no panel behind it, because a translucent film under a spectral
           halo turns the exception into a card treatment. */}
-      <LauncherGrid size="lg" />
+      <LauncherGrid />
     </main>
   );
 }

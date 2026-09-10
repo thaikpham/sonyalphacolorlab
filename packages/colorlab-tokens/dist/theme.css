@@ -126,8 +126,9 @@
      a WCAG target-size requirement everywhere, not a kiosk quirk. */
   --layout-touch-target: 44px;
   --layout-shell-padding: clamp(20px, 2vw, 40px);
-  --layout-tile-desktop: 132px;
-  --layout-tile-mobile: 76px;
+  --layout-tile-desktop: 198px;
+  --layout-tile-tablet: 168px;
+  --layout-tile-mobile: 114px;
   --layout-gap: clamp(16px, 1.4vw, 24px);
   --layout-gap-tight: clamp(10px, 1vw, 16px);
 }

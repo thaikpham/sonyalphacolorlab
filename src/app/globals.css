@@ -574,21 +574,21 @@ body {
   animation: launcher-spin 18s linear infinite;
   /* `will-change` and not a transform hack: the layer is already composited by
      the blur, and promoting it stops the rotation resampling the gradient on
-     the main thread every frame on a 132px tile. */
+     the main thread every frame on a 198px tile. */
   will-change: transform;
 }
 
 .launcher-glow {
   inset: -10%;
   border-radius: 22%;
-  filter: blur(26px) saturate(1.15);
+  filter: blur(39px) saturate(1.15);
   opacity: 0.5;
 }
 
 .launcher-glow-rim {
   inset: -2%;
   border-radius: 21.5%;
-  filter: blur(8px) saturate(1.25);
+  filter: blur(12px) saturate(1.25);
   opacity: 0.62;
 }
 
@@ -626,16 +626,17 @@ body {
   transform: scale(0.97);
 }
 
-/* Below 640px the tile drops to 76px, and a 26px blur on a 76px square is a
-   coloured fog rather than a halo — both layers tighten with it. */
+/* Below 640px the tile drops to 114px, and a 39px blur on a 114px square is a
+   coloured fog rather than a halo — both layers tighten with it, by the same
+   ratio they held before the tile was scaled up. */
 @media (max-width: 39.9375rem) {
   .launcher-glow {
     inset: -11%;
-    filter: blur(15px) saturate(1.15);
+    filter: blur(22px) saturate(1.15);
   }
 
   .launcher-glow-rim {
-    filter: blur(5px) saturate(1.25);
+    filter: blur(8px) saturate(1.25);
   }
 
   .launcher-link:hover {

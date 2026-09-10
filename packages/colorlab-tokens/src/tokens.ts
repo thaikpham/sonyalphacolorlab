@@ -223,8 +223,12 @@ export const LAYOUT: TokenGroup = {
   tokens: {
     'touch-target': '44px',
     'shell-padding': 'clamp(20px, 2vw, 40px)',
-    'tile-desktop': '132px',
-    'tile-mobile': '76px',
+    /* The launcher tile at its three widths. One ramp, used by both the
+       landing page and the header's ecosystem overlay — they render the same
+       component at the same size, so a tile that grows here grows in both. */
+    'tile-desktop': '198px',
+    'tile-tablet': '168px',
+    'tile-mobile': '114px',
     gap: 'clamp(16px, 1.4vw, 24px)',
     'gap-tight': 'clamp(10px, 1vw, 16px)',
   },

@@ -1431,7 +1431,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                 and it cost the reader the app's own chrome, its URL bar and its
                 deep links. Send them to the real origin. */}
             <div ref={launcherRef}>
-              <LauncherGrid size="md" onNavigate={() => setIsEcosystemOpen(false)} />
+              <LauncherGrid onNavigate={() => setIsEcosystemOpen(false)} />
             </div>
           </div>
         </div>
