@@ -2,7 +2,8 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { cache } from 'react';
 import { catalogueCache } from '@/lib/catalogue-cache';
-import { isSupabaseConfigured, supabaseRead } from '@/lib/supabase/server';
+import { contentRead } from '@/lib/supabase/server';
+import { contentOrOfflineSeed } from '@/lib/supabase/content-source';
 import { getSonyAudioById } from '@/lib/audio/data';
 import { compareCameras, type ProductCategory, type SonyCamera, type WikiSort } from './types';
 import { splitFeatures } from './features';
@@ -36,11 +37,15 @@ async function _getSonyCameras(options?: {
 }): Promise<SonyCamera[]> {
   const seed = getSeedCameras();
 
-  let cameras: SonyCamera[] = [];
-
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabaseRead()
+  /* Configuration decides the source, and nothing else. The old shape — try
+     the database, `catch { cameras = seed }` — meant a content outage silently
+     republished the Git-time snapshot of the catalogue, prices included, with
+     no error anywhere. `data.length > 0` made it worse: an administrator who
+     deleted the last product in a category would see the seed come back. */
+  let cameras = await contentOrOfflineSeed<SonyCamera[]>(
+    'wiki.cameras',
+    async () => {
+      const { data, error } = await contentRead()
         .from('sony_cameras')
         /* Columns named, never `*`. `updated_by` is an email and this query runs
            under the anon key, which ships in the browser bundle — the same rule
@@ -51,9 +56,14 @@ async function _getSonyCameras(options?: {
         .neq('category', 'audio')
         .order('price_vnd', { ascending: false });
 
+      if (error) throw new Error(`sony_cameras: ${error.message}`);
+
+      /* The seed still supplies `specs` and `galleryUrls` for rows that have
+         none in the database — those are packaging, not content, and they are
+         keyed by id so they cannot attach to the wrong product. What the seed
+         no longer does is stand in for the *set* of products. */
       const seedById = new Map(seed.map((c) => [c.id, c]));
-      if (!error && Array.isArray(data) && data.length > 0) {
-        cameras = data.map((row) => ({
+      return (data ?? []).map((row) => ({
           id: row.id,
           sku: row.sku,
           name: row.name,
@@ -69,18 +79,12 @@ async function _getSonyCameras(options?: {
              at render. Coercing to `string[]` here would flatten the admin's
              Vietnamese away. */
           features: (row.features ?? []) as SonyCamera['features'],
-          specs: (row.specs as SonyCamera['specs']) ?? seedById.get(row.id)?.specs,
-          galleryUrls: seedById.get(row.id)?.galleryUrls,
-        }));
-      } else {
-        cameras = seed;
-      }
-    } catch {
-      cameras = seed;
-    }
-  } else {
-    cameras = seed;
-  }
+        specs: (row.specs as SonyCamera['specs']) ?? seedById.get(row.id)?.specs,
+        galleryUrls: seedById.get(row.id)?.galleryUrls,
+      }));
+    },
+    () => seed,
+  );
 
   // Apply Main Category Filter
   if (options?.category && options.category !== 'all') {

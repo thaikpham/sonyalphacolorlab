@@ -2,7 +2,8 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { cache } from 'react';
 import { catalogueCache } from '@/lib/catalogue-cache';
-import { isSupabaseConfigured, supabaseRead } from '@/lib/supabase/server';
+import { contentRead } from '@/lib/supabase/server';
+import { contentOrOfflineSeed } from '@/lib/supabase/content-source';
 import { compareCameras, type SonyCamera, type WikiSort } from '@/lib/cameras/types';
 
 /**
@@ -46,11 +47,13 @@ export const getSonyAudio = catalogueCache('getSonyAudio', _getSonyAudio);
 async function _getSonyAudio(options?: { sortBy?: WikiSort }): Promise<SonyCamera[]> {
   const seed = getSeedAudio();
 
-  let products: SonyCamera[] = [];
-
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabaseRead()
+  /* Same rule as the camera catalogue: configuration picks the source, a
+     failure throws. Serving the snapshot on error would put deleted audio
+     products and stale prices back on the site with nothing to show for it. */
+  const products = await contentOrOfflineSeed<SonyCamera[]>(
+    'wiki.audio',
+    async () => {
+      const { data, error } = await contentRead()
         .from('sony_cameras')
         .select(
           'id, sku, name, full_name, category, sub_category_1, sub_category_2, price_vnd, price_formatted, url, image_url, features, specs',
@@ -58,9 +61,10 @@ async function _getSonyAudio(options?: { sortBy?: WikiSort }): Promise<SonyCamer
         .eq('category', 'audio')
         .order('price_vnd', { ascending: false });
 
+      if (error) throw new Error(`sony_cameras (audio): ${error.message}`);
+
       const seedById = new Map(seed.map((c) => [c.id, c]));
-      if (!error && Array.isArray(data) && data.length > 0) {
-        products = data.map((row) => ({
+      return (data ?? []).map((row) => ({
           id: row.id,
           sku: row.sku,
           name: row.name,
@@ -73,18 +77,12 @@ async function _getSonyAudio(options?: { sortBy?: WikiSort }): Promise<SonyCamer
           url: row.url,
           imageUrl: row.image_url,
           features: (row.features ?? []) as SonyCamera['features'],
-          specs: (row.specs as SonyCamera['specs']) ?? seedById.get(row.id)?.specs,
-          galleryUrls: seedById.get(row.id)?.galleryUrls,
-        }));
-      } else {
-        products = seed;
-      }
-    } catch {
-      products = seed;
-    }
-  } else {
-    products = seed;
-  }
+        specs: (row.specs as SonyCamera['specs']) ?? seedById.get(row.id)?.specs,
+        galleryUrls: seedById.get(row.id)?.galleryUrls,
+      }));
+    },
+    () => seed,
+  );
 
   if (!options?.sortBy) return products;
   // On a copy: `sort` mutates, and the array above is the module-level cache.

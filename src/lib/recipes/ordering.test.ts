@@ -8,9 +8,10 @@ import { listRecipes, photosFirst } from './source';
  * rather than as the deliberate fallback it is.
  *
  * The ordering is tested as a pure function rather than through `listRecipes`:
- * image URLs are built from `NEXT_PUBLIC_SUPABASE_URL`, which is unset under
- * vitest, so every recipe would come back with an empty `images` here and the
- * assertion would pass without proving anything.
+ * with no Supabase configured, that reader returns the seed snapshot and its
+ * image list comes from `data/images.seed.json` — so the assertion would be
+ * about the seed's shape rather than about the ordering, and would pass without
+ * proving anything.
  */
 const view = (id: string, photos: number) => ({
   id,

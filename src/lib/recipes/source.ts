@@ -1,10 +1,15 @@
 /**
  * Recipe reads.
  *
- * Backed by Supabase when it is configured, and by the migrated seed files when
- * it is not. That is not a convenience — it is what lets the site build, run and
- * test with no credentials at all, so a missing env var degrades to stale-but-
- * correct content rather than a blank page.
+ * Backed by the **content** project when Supabase is configured, and by the
+ * migrated seed files when it is not. That is not a convenience — it is what
+ * lets the site build, run and test with no credentials at all.
+ *
+ * The two are not interchangeable at runtime. Configuration alone decides, and
+ * an online read that fails throws rather than reaching for the snapshot: see
+ * `contentOrOfflineSeed`, which replaced a per-reader catch that would have
+ * republished every recipe an administrator had unpublished since the last
+ * commit, silently, for the duration of an outage.
  *
  * Everything above this module works in terms of `RecipeView`, so no component
  * knows or cares which source answered.
@@ -19,7 +24,8 @@ import imagesSeed from '../../../data/images.seed.json';
 import { accentFor, type Accent } from '../camera/color';
 import { formatWhiteBalance } from '../camera/format';
 import type { Recipe } from '../camera/schema';
-import { isSupabaseConfigured, supabaseRead } from '../supabase/server';
+import { contentRead } from '../supabase/server';
+import { contentOrOfflineSeed } from '../supabase/content-source';
 import { fromRow, type RecipeRow } from './row';
 
 export type Locale = 'en' | 'vi';
@@ -74,30 +80,6 @@ const imagesFor = (recipeId: string): string[] =>
   (seedImages[recipeId] ?? []).map(publicImageUrl);
 
 export type RecipeFilters = { format?: 'pp' | 'cl'; look?: string; tag?: string; q?: string };
-
-/**
- * Runs a Supabase read, falling back to the seed files if it fails.
- *
- * Stale-but-correct beats a blank page for a content site, and the seed is the
- * same catalogue the database was populated from. The failure is logged loudly
- * rather than swallowed — a silent fallback would hide a real outage, which is
- * worse than the outage.
- */
-async function withSeedFallback<T>(
-  label: string,
-  fromDb: () => Promise<T>,
-  fromSeed: () => T,
-): Promise<T> {
-  try {
-    return await fromDb();
-  } catch (e) {
-    console.error(
-      `[recipes] ${label} failed against Supabase, serving seed data instead:`,
-      e instanceof Error ? e.message : e,
-    );
-    return fromSeed();
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Seed fallback
@@ -196,10 +178,8 @@ async function _listRecipes(
         .map((r) => toView(r, r.legacyId, pickDescription(seedDescriptions, r.id, locale))),
     );
 
-  if (!isSupabaseConfigured()) return seed();
-
-  return withSeedFallback('listRecipes', async () => {
-  const db = supabaseRead();
+  return contentOrOfflineSeed('recipes.list', async () => {
+  const db = contentRead();
   let query = db.from('recipes').select('*').eq('published', true);
   if (filters.format) query = query.eq('format', filters.format);
   if (filters.look) query = query.eq('look', filters.look);
@@ -225,7 +205,7 @@ async function _listRecipes(
 
 async function loadTranslations(ids: string[]): Promise<Map<string, string>> {
   if (ids.length === 0) return new Map();
-  const { data, error } = await supabaseRead()
+  const { data, error } = await contentRead()
     .from('recipe_translations')
     .select('recipe_id, locale, description')
     .in('recipe_id', ids);
@@ -257,10 +237,8 @@ async function _getRecipe(slug: string, locale: Locale = 'en'): Promise<RecipeVi
       : null;
   };
 
-  if (!isSupabaseConfigured()) return seed();
-
-  return withSeedFallback('getRecipe', async () => {
-  const { data, error } = await supabaseRead()
+  return contentOrOfflineSeed('recipes.get', async () => {
+  const { data, error } = await contentRead()
     .from('recipes')
     .select('*')
     .eq('slug', slug)
@@ -279,18 +257,18 @@ export const listSlugs = catalogueCache('listSlugs', _listSlugs);
 
 async function _listSlugs(): Promise<string[]> {
   const seed = () => seedRecipes.filter((r) => r.published).map((r) => r.slug);
-  if (!isSupabaseConfigured()) return seed();
 
-  return withSeedFallback('listSlugs', async () => {
-    const { data, error } = await supabaseRead()
+  return contentOrOfflineSeed('recipes.slugs', async () => {
+    const { data, error } = await contentRead()
       .from('recipes')
       .select('slug')
       .eq('published', true);
     if (error) throw new Error(`listSlugs: ${error.message}`);
-    const slugs = ((data ?? []) as { slug: string }[]).map((r) => r.slug);
-    // An empty table would silently prerender zero pages; treat it as a failure.
-    if (slugs.length === 0) throw new Error('no published recipes returned');
-    return slugs;
+    /* An empty result is an answer, not a failure. It used to throw here on
+       purpose, to reach the seed fallback — with that fallback gone, the throw
+       would turn a genuinely empty catalogue into a site-wide outage, and
+       prerendering zero pages is the correct response to zero recipes. */
+    return ((data ?? []) as { slug: string }[]).map((r) => r.slug);
   }, seed);
 }
 
@@ -300,22 +278,18 @@ export const listTags = catalogueCache('listTags', _listTags);
 
 async function _listTags(limit = 14): Promise<{ tag: string; count: number }[]> {
   const seedTags = () => seedRecipes.filter((r) => r.published).map((r) => r.tags);
-  const tagLists = isSupabaseConfigured()
-    ? await withSeedFallback(
-        'listTags',
-        async () => {
-          const { data, error } = await supabaseRead()
-            .from('recipes')
-            .select('tags')
-            .eq('published', true);
-          if (error) throw new Error(`listTags: ${error.message}`);
-          const lists = ((data ?? []) as { tags: string[] }[]).map((r) => r.tags ?? []);
-          if (lists.length === 0) throw new Error('no published recipes returned');
-          return lists;
-        },
-        seedTags,
-      )
-    : seedTags();
+  const tagLists = await contentOrOfflineSeed(
+    'recipes.tags',
+    async () => {
+      const { data, error } = await contentRead()
+        .from('recipes')
+        .select('tags')
+        .eq('published', true);
+      if (error) throw new Error(`listTags: ${error.message}`);
+      return ((data ?? []) as { tags: string[] }[]).map((r) => r.tags ?? []);
+    },
+    seedTags,
+  );
 
   const counts = new Map<string, number>();
   for (const tags of tagLists) {
