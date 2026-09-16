@@ -182,7 +182,7 @@ npm test -- --run src/lib/supabase/config.test.ts src/lib/supabase/auth-outage.t
 npm run typecheck
 ~~~
 
-- [ ] **Step 8: Commit only this task.**
+- [x] **Step 8: Commit only this task.**
 
 ~~~bash
 git add src/lib/supabase/config.ts src/lib/supabase/config.test.ts src/lib/supabase/server.ts src/lib/supabase/browser.ts src/lib/supabase/auth-outage.test.ts src/components/auth-context.tsx scripts/check-supabase-env.ts .env.example
@@ -293,7 +293,7 @@ src/app/api/admin/translate/route.ts
 
 Every mutating handler must authorize before request.json(), request.formData(), Anthropic, contentAdmin(), or Storage. Every route must map a control outage to 503 rather than an uncaught 500.
 
-- [ ] **Step 7: Run focused verification and commit.**
+- [x] **Step 7: Run focused verification and commit.**
 
 ~~~bash
 npm test -- --run src/lib/auth/control-boundary.test.ts src/app/api/admin/admin-gate.test.ts
@@ -385,7 +385,7 @@ Add matching keys in messages/en.json and messages/vi.json. Run:
 npm test -- --run src/app/messages.test.ts src/app/api/community-error-codes.test.ts
 ~~~
 
-- [ ] **Step 7: Run focused verification and commit.**
+- [x] **Step 7: Run focused verification and commit.**
 
 ~~~bash
 npm test -- --run src/app/api/community-boundaries.test.ts src/lib/recipes/existence.test.ts src/app/api/community-error-codes.test.ts src/app/messages.test.ts
@@ -479,7 +479,7 @@ npm test -- --run src/lib/supabase/content-source.test.ts src/lib/recipes/orderi
 npm run typecheck
 ~~~
 
-- [ ] **Step 7: Commit.**
+- [x] **Step 7: Commit.**
 
 ~~~bash
 git add src/lib/supabase/content-source.ts src/lib/supabase/content-source.test.ts src/lib/recipes/source.ts src/lib/cameras/data.ts src/lib/audio/data.ts src/lib/recipes/ordering.test.ts
@@ -544,7 +544,7 @@ Offline development uses devPublished(). Offline non-development uses the compil
 
 Blog feed, detail lookup, generateStaticParams, metadata, and sitemap must call getPublishedArticles()/getPublishedArticle(). None may import ARTICLES directly.
 
-- [ ] **Step 5: Run focused verification and commit.**
+- [x] **Step 5: Run focused verification and commit.**
 
 ~~~bash
 npm test -- --run src/lib/lab/data.test.ts src/lib/lab/parse.test.ts src/lib/lab/article-spec.test.ts
@@ -639,7 +639,7 @@ The admin client must use the response or perform its existing GET after success
 Remove the predictive route's public response cache and return Cache-Control: no-store. Its getSonyCameras()/listRecipes() calls remain protected by the tagged Data Cache, so a keystroke may invoke the route but does not issue a new PostgREST catalogue read. The cache test must reject s-maxage and stale-while-revalidate.
 
 
-- [ ] **Step 6: Run focused verification and commit.**
+- [x] **Step 6: Run focused verification and commit.**
 
 ~~~bash
 npm test -- --run src/lib/admin/content-freeze.test.ts src/app/api/admin/content-write-boundaries.test.ts src/app/api/admin/admin-gate.test.ts src/app/api/admin/sanitize-specs.test.ts src/app/api/search/predictive/cache.test.ts src/app/messages.test.ts
@@ -755,7 +755,7 @@ Do not edit 0013 to pretend an already-applied migration changed.
 
 Keep recipe child cascades. Assert lab_articles deletion is refused while lab_assets exists. Assert published article RLS and draft hiding using SET ROLE anon where PGlite supports it; otherwise assert policies and privileges through system catalogs and leave live RLS to the cutover plan.
 
-- [ ] **Step 6: Run migration tests and commit.**
+- [x] **Step 6: Run migration tests and commit.**
 
 ~~~bash
 npm test -- --run src/lib/supabase/migration-roots.test.ts src/lib/recipes/migration.test.ts
@@ -855,7 +855,7 @@ Decode with Sharp limitInputPixels, auto-rotate, resize with fit inside and with
 
 The upload route executes Sharp in production, so sharp belongs under dependencies rather than devDependencies. Use npm install --save sharp@^0.35.4 to update both manifest and lockfile; inspect that no unrelated package upgrades occurred.
 
-- [ ] **Step 6: Run focused tests and commit.**
+- [x] **Step 6: Run focused tests and commit.**
 
 ~~~bash
 npm test -- --run src/lib/lab/assets.test.ts src/lib/lab/image-process.test.ts src/lib/lab/parse.test.ts
@@ -957,7 +957,7 @@ npm test -- --run src/app/api/admin/articles/upload/route.test.ts src/lib/lab/as
 npm run typecheck
 ~~~
 
-- [ ] **Step 7: Commit.**
+- [x] **Step 7: Commit.**
 
 ~~~bash
 git add src/lib/lab/asset-store.ts src/lib/lab/asset-store.test.ts src/app/api/admin/articles/upload/route.ts src/app/api/admin/articles/upload/route.test.ts src/components/lab/admin/article-admin.tsx src/components/lab/admin/block-editor.tsx
@@ -1028,7 +1028,7 @@ Delete ordering: force article private if needed, invalidate, remove public and 
 
 After PATCH returns success, article-admin refetches the record and preview map. It must not keep a stale signed URL or stale status.
 
-- [ ] **Step 6: Run focused verification and commit.**
+- [x] **Step 6: Run focused verification and commit.**
 
 ~~~bash
 npm test -- --run src/lib/lab/asset-lifecycle.test.ts src/app/api/admin/articles/content-lifecycle.test.ts src/app/api/admin/content-write-boundaries.test.ts
@@ -1103,7 +1103,7 @@ next.config.ts and catalogue-loader.ts read NEXT_PUBLIC_CONTENT_SUPABASE_URL. Pa
 
 In the locale layout, remove the hard-coded nqeedlgzaewccqztqvik preconnect/dns-prefetch. Add a content preconnect only when the validated content origin exists; Auth is user-triggered and does not need a global preconnect on every public page.
 
-- [ ] **Step 6: Run focused verification and commit.**
+- [x] **Step 6: Run focused verification and commit.**
 
 ~~~bash
 npm test -- --run src/lib/images/catalogue-loader.test.ts src/lib/lab/assets.test.ts src/lib/lab/parse.test.ts src/lib/lab/article-spec.test.ts
@@ -1239,7 +1239,7 @@ Add:
 
 Update existing seed/pull scripts to require --target content where they touch content. Ignore artifacts/supabase/ and keep supabase/.temp/ untracked.
 
-- [ ] **Step 9: Run tests and commit.**
+- [x] **Step 9: Run tests and commit.**
 
 ~~~bash
 npm test -- --run scripts/supabase/args.test.ts scripts/supabase/stable-hash.test.ts
@@ -1323,7 +1323,7 @@ Check:
 - product and article invalidation follows successful writes;
 - content migration inventory has no control tables.
 
-- [ ] **Step 6: Commit documentation and any final focused fixes.**
+- [x] **Step 6: Commit documentation and any final focused fixes.**
 
 ~~~bash
 git add docs/runbooks/supabase-control-content.md
@@ -1333,3 +1333,40 @@ git commit -m "docs: add Supabase split operations runbook"
 ~~~
 
 At this point the repository implementation is complete, but production has not been changed. Continue only with docs/superpowers/plans/2026-09-11-supabase-content-cutover.md.
+
+---
+
+## Execution record — 2026-09-16
+
+All thirteen commits landed on branch `supabase-split-and-admin`, in the order
+above, with `npm run verify` green before the first and after the last.
+
+Four deviations from the commands as written, each deliberate:
+
+- **`git add -p` was not available.** The four files the plan meant to
+  hunk-split — `package.json`, `package-lock.json`, `messages/en.json`,
+  `messages/vi.json` — went whole into the first commit that names them
+  (package files into Task 1, the two message catalogues into Task 3). So Task
+  3 also carries the message keys Tasks 6 and 9 would have added, and the
+  launcher keys removed by unrelated work in the same tree. Reviewing those two
+  files means reading one commit, not three.
+- **`.env.example` was untracked**, matched by the `.env*` rule and therefore
+  ignored, so Task 1 could not add it. `.gitignore` gained a `!.env.example`
+  exception, committed with Task 1. The file holds the six-variable contract
+  and no values.
+- **`src/app/api/admin/articles/upload/route.test.ts` does not exist** and was
+  skipped in Task 9. Upload behaviour is covered by
+  `src/lib/lab/asset-store.test.ts` and
+  `src/app/api/admin/content-write-boundaries.test.ts`.
+- **One trailing-space line in `src/lib/lab/admin-store.ts`** failed
+  `git diff --cached --check` at Task 6 and was stripped. The Markdown hard
+  breaks in the two spec documents were left alone — there the trailing spaces
+  are the line break.
+
+Thirty-five files in the tree belonged to no task in this plan: the Reddit
+drawer removal, the Wiki DI/PE switch moving into the header, the article admin
+route, and assorted fixes. They are twelve further commits on the same branch,
+each named for its own change.
+
+Production has not been touched. Continue with
+`docs/superpowers/plans/2026-09-11-supabase-content-cutover.md`.
