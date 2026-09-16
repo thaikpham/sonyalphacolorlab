@@ -15,6 +15,19 @@ import { describe, expect, it } from 'vitest';
  */
 const layout = readFileSync('src/app/[locale]/layout.tsx', 'utf8');
 
+/**
+ * A `clientMessages` object literal, however the file that holds it is written.
+ *
+ * The semicolon is optional, and that is the point of naming this once rather
+ * than inlining it three times. The admin routes are written with semicolons
+ * and the Alpha Tech Blogs routes without, and a pattern that demanded one
+ * simply did not match the second style — so a provider written that way was
+ * invisible here. Invisible in both directions: the route-level check reported
+ * a namespace as unsent when it was sent, and the "no namespace ships unread"
+ * check quietly stopped counting the namespaces that provider sends.
+ */
+const PROVIDER_BLOCK = /const clientMessages = \{([\s\S]*?)\n {2}\};?/g;
+
 const en = JSON.parse(readFileSync('messages/en.json', 'utf8')) as Record<string, unknown>;
 const vi = JSON.parse(readFileSync('messages/vi.json', 'utf8')) as Record<string, unknown>;
 
@@ -88,7 +101,7 @@ function providerFiles(): Array<{ file: string; sends: Set<string> }> {
   return sourceFiles('src/app')
     .map(([file, src]) => {
       const sends = new Set<string>();
-      for (const block of src.matchAll(/const clientMessages = \{([\s\S]*?)\n {2}\};/g)) {
+      for (const block of src.matchAll(PROVIDER_BLOCK)) {
         for (const m of block[1].matchAll(/^\s*(\w+):/gm)) sends.add(m[1]);
       }
       return { file, sends };
@@ -167,7 +180,7 @@ describe('client message scoping', () => {
    */
   it('every route with its own provider sends what its components read', () => {
     const fromLayout = new Set(
-      [...layout.matchAll(/const clientMessages = \{([\s\S]*?)\n {2}\};/g)].flatMap((b) =>
+      [...layout.matchAll(PROVIDER_BLOCK)].flatMap((b) =>
         [...b[1].matchAll(/^\s*(\w+):/gm)].map((m) => m[1]),
       ),
     );
@@ -178,7 +191,7 @@ describe('client message scoping', () => {
     for (const [file, src] of routes) {
       const sends = new Set([
         ...fromLayout,
-        ...[...src.matchAll(/const clientMessages = \{([\s\S]*?)\n {2}\};/g)].flatMap((b) =>
+        ...[...src.matchAll(PROVIDER_BLOCK)].flatMap((b) =>
           [...b[1].matchAll(/^\s*(\w+):/gm)].map((m) => m[1]),
         ),
       ]);
