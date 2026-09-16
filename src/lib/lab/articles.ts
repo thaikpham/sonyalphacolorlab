@@ -5,7 +5,7 @@
  * inside the prototype's HTML, and its README flags that as the one thing to
  * replace: "in production this should come from a CMS or MDX". This module is
  * the seam where that happens. Nothing outside it knows where an article came
- * from — the feed and the article view both go through `getArticle` and
+ * from — the feed and the article view both go through `data.ts` and
  * `ARTICLES`, so swapping this file for a Supabase query or an MDX loader
  * later is a change to one module, not to every renderer.
  *
@@ -286,7 +286,3 @@ export const ARTICLES: readonly Article[] = [
     ],
   },
 ] as const
-
-export function getArticle(id: string): Article | undefined {
-  return ARTICLES.find((a) => a.id === id)
-}

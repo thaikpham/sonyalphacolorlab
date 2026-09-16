@@ -1,11 +1,17 @@
 import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
-import { ARTICLES, LEVELS, TOPICS, levelLabel, topicLabel } from '@/lib/lab/articles'
-import type { LevelId, TopicId } from '@/lib/lab/types'
+import { LEVELS, TOPICS, levelLabel, topicLabel } from '@/lib/lab/articles'
+import type { Article, LevelId, TopicId } from '@/lib/lab/types'
 
 /**
  * The feed, its two filters, and the pinned card that leads into the setup
  * tool.
+ *
+ * The catalogue arrives as a prop rather than being imported. It used to be
+ * the typed array in `lib/lab/articles.ts`; it now comes from Supabase via
+ * `lib/lab/data.ts`, and the page above is the one place that knows which.
+ * Keeping the fetch out of here is what lets this stay a plain Server
+ * Component the tests can render with three fixtures.
  *
  * Filter state lives in the URL rather than in component state, which is the
  * handoff's own production note ("make these real routes … with topic/level as
@@ -31,10 +37,7 @@ export function parseFilter(params: Record<string, string | string[] | undefined
 }
 
 /** AND across the two axes, as specified. */
-function matches(
-  article: (typeof ARTICLES)[number],
-  { topic, level }: FeedFilter,
-): boolean {
+function matches(article: Article, { topic, level }: FeedFilter): boolean {
   return (
     (topic === 'all' || article.topic === topic) && (level === 'all' || article.level === level)
   )
@@ -49,15 +52,21 @@ function filterHref(current: FeedFilter, patch: Partial<FeedFilter>) {
   return { pathname: '/blog' as const, query }
 }
 
-export async function LabFeed({ filter }: { filter: FeedFilter }) {
+export async function LabFeed({
+  filter,
+  articles,
+}: {
+  filter: FeedFilter
+  articles: readonly Article[]
+}) {
   const t = await getTranslations('lab')
-  const visible = ARTICLES.filter((a) => matches(a, filter))
+  const visible = articles.filter((a) => matches(a, filter))
 
   /* Counts follow the level filter but ignore the topic filter — a topic row
      showing "0" because a different topic is selected would be telling the
      reader the topic is empty when it is not. */
   const countFor = (topic: TopicId | 'all') =>
-    ARTICLES.filter((a) => matches(a, { topic, level: filter.level })).length
+    articles.filter((a) => matches(a, { topic, level: filter.level })).length
 
   /* The pinned tool is a setup topic at newbie level, so it hides under any
      filter that would exclude an article with those two properties. */
