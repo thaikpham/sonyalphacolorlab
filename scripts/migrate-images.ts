@@ -23,6 +23,7 @@
 
 import { readFileSync, writeFileSync } from 'node:fs';
 import { adminClient } from './lib/db';
+import { requireTarget } from './supabase/args';
 import { toRecipeId } from '../src/lib/legacy/migrate';
 
 const BUCKET = 'recipes';
@@ -58,7 +59,11 @@ const extFor = (contentType: string) =>
 type Row = { recipeId: string; storagePath: string; sort: number };
 
 async function main() {
-  const db = adminClient();
+  const { target } = requireTarget(process.argv.slice(2));
+  if (target !== 'content') {
+    throw new Error('This script seeds content tables. Pass --target content.');
+  }
+  const db = adminClient(target);
 
   // Both libraries, already keyed by canonical recipe id.
   const sources: Record<string, string[]> = {
