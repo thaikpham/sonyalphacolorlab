@@ -87,13 +87,22 @@ export const ECOSYSTEM_APPS: readonly EcosystemAppDef[] = [
 ] as const;
 
 /**
- * Sony Wiki's two divisions, reached by tapping the Sony Wiki tile.
+ * Sony Wiki's two divisions — the pair behind the DI/PE switch in the header.
+ *
+ * They were a second screen of launcher tiles: the Sony Wiki tile opened a
+ * sub-grid and you picked a division before the app itself ever rendered. But
+ * DI and PE are two catalogues inside one app, not two apps, and a doorway that
+ * asks which half you want before showing you either is a question the reader
+ * cannot yet answer. The switch moved to `site-header.tsx`, beside the search
+ * field, where it sits next to the rest of that app's controls and can be
+ * thrown at any time — so this list is now consumed by the header, and the
+ * launcher's Sony Wiki tile goes straight to `/cameras`.
  *
  * `name` is not translated for the same reason the app names above are not:
  * "Digital Imaging" and "Personal Entertainment" are Sony's own division names,
- * the same category as a Creative Look code in Rule 3. What each division
- * *contains* is ordinary prose and does live in `messages/*.json`, under
- * `launcher.divisions.<key>`.
+ * the same category as a Creative Look code in Rule 3. `mark` is the two-letter
+ * form the switch shows — the full `name` is its title and accessible name,
+ * because "DI" alone tells a screen reader nothing.
  */
 export const WIKI_DIVISIONS = [
   { key: 'di', name: 'DI · Digital Imaging', mark: 'DI', href: '/cameras' },

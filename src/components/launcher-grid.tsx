@@ -1,11 +1,9 @@
 'use client';
 
-import { useState } from 'react';
 import Image from 'next/image';
-import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { LAUNCHER_GLOW } from '../../packages/colorlab-tokens/src/tokens';
-import { ECOSYSTEM_APPS, WIKI_DIVISIONS, type EcosystemAppDef } from '@/lib/ecosystem';
+import { ECOSYSTEM_APPS, type EcosystemAppDef } from '@/lib/ecosystem';
 
 /**
  * The ecosystem launcher — the one sanctioned exception in the design system.
@@ -64,20 +62,13 @@ const TILE =
  * `sm` alone — `md:max-w-3xl` hands the full width back the moment all three
  * fit on one row.
  *
- * Both grids are written out in full rather than derived from one another.
- * The sub-grid used to be `GRID.replace('lg:grid-cols-4', 'lg:grid-cols-2')`,
- * and Tailwind v4 scans source text for class names: a class assembled at
- * runtime is one the scanner never sees, so it emits no rule for it. Same trap
- * as the inline `min-[2100px]:` form that silently never changed a column
- * count.
+ * Written out in full rather than derived from another string. Tailwind v4
+ * scans source text for class names: a class assembled at runtime is one the
+ * scanner never sees, so it emits no rule for it. Same trap as the inline
+ * `min-[2100px]:` form that silently never changed a column count.
  */
 const GRID =
   'grid w-full max-w-3xl sm:max-w-[400px] md:max-w-3xl grid-cols-2 md:grid-cols-3 ' +
-  'items-start justify-items-center gap-x-6 gap-y-8 sm:gap-x-10 sm:gap-y-10 lg:gap-x-[52px]';
-
-/** The Sony Wiki divisions: two tiles, so two columns from `sm` up. */
-const SUB_GRID =
-  'grid w-full max-w-3xl grid-cols-2 ' +
   'items-start justify-items-center gap-x-6 gap-y-8 sm:gap-x-10 sm:gap-y-10 lg:gap-x-[52px]';
 
 /**
@@ -117,108 +108,50 @@ function Tile({ app }: { app: EcosystemAppDef }) {
   );
 }
 
+/**
+ * Every tile opens its app. No tile opens a second screen of tiles.
+ *
+ * Sony Wiki used to be the exception: tapping it swapped the grid for a DI/PE
+ * sub-view, so reaching a camera page cost two taps and a back button that had
+ * to be positioned around `.animate-fade-in`'s transform. The two divisions are
+ * one app with two catalogues, not two apps, so the switch between them now
+ * lives where the rest of that app's controls live — beside the search field in
+ * `site-header.tsx`. The tile lands on `/cameras` like any other tile lands on
+ * its app.
+ */
 export function LauncherGrid({ onNavigate }: Props) {
-  const [subView, setSubView] = useState<'main' | 'sonywiki'>('main');
-  const t = useTranslations('launcher');
-
   const shell =
     'launcher-link group flex flex-col items-center gap-3 sm:gap-4 text-center ' +
     'max-w-[240px] min-h-[var(--layout-touch-target)] cursor-pointer';
 
-  const handleWikiClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setSubView('sonywiki');
-  };
-
   return (
     <div className="w-full flex flex-col items-center justify-center">
-      {subView === 'main' ? (
-        <div className={`${GRID} animate-fade-in`}>
-          {ECOSYSTEM_APPS.map((app) => {
-            const tile = <Tile app={app} />;
+      <div className={`${GRID} animate-fade-in`}>
+        {ECOSYSTEM_APPS.map((app) => {
+          const tile = <Tile app={app} />;
 
-            if (app.key === 'wiki') {
-              return (
-                <button key={app.key} type="button" onClick={handleWikiClick} className={shell}>
-                  {tile}
-                </button>
-              );
-            }
-
-            if (app.external) {
-              return (
-                <a
-                  key={app.key}
-                  href={app.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => onNavigate && setTimeout(onNavigate, 200)}
-                  className={shell}
-                >
-                  {tile}
-                </a>
-              );
-            }
-
+          if (app.external) {
             return (
-              <Link key={app.key} href={app.href} onClick={onNavigate} className={shell}>
-                {tile}
-              </Link>
-            );
-          })}
-        </div>
-      ) : (
-        /* Sony Wiki's two divisions: Digital Imaging and Personal
-           Entertainment. Same tile language, no second glow treatment — these
-           are inside the exception, not a new one. */
-        <div className="flex flex-col items-center justify-center w-full max-w-3xl gap-8">
-          {/* OUTSIDE the fading panel below, and deliberately.
-              `.animate-fade-in` leaves a transform on its element, which makes
-              it the containing block for any `fixed` descendant — this button
-              resolved `top-5 left-5` against the panel, landed on top of the DI
-              tile, and its z-index meant every click meant for DI hit "back"
-              instead. It is chrome, not content: it does not fade with the
-              tiles, and it is a sibling so `fixed` means the viewport. */}
-          <button
-            type="button"
-            onClick={() => setSubView('main')}
-            className="btn-glass fixed top-5 left-5 sm:top-8 sm:left-8 z-20 gap-2 cursor-pointer"
-          >
-            <span aria-hidden className="text-accent-400">
-              ←
-            </span>
-            <span>{t('back')}</span>
-          </button>
-
-          <div className={`${SUB_GRID} animate-fade-in`}>
-            {WIKI_DIVISIONS.map((division) => (
-              <Link
-                key={division.key}
-                href={division.href}
-                onClick={onNavigate}
+              <a
+                key={app.key}
+                href={app.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => onNavigate && setTimeout(onNavigate, 200)}
                 className={shell}
               >
-                <div
-                  className={`launcher-tile ${TILE}`}
-                  style={{ '--launcher-spectrum': SPECTRUM } as React.CSSProperties}
-                >
-                  <span aria-hidden className="launcher-glow" />
-                  <span aria-hidden className="launcher-glow-rim" />
-                  <div className="launcher-face">
-                    <span className="text-display font-extrabold text-ink select-none">
-                      {division.mark}
-                    </span>
-                  </div>
-                </div>
-                <span className="text-meta sm:text-body font-semibold text-ink text-center leading-tight">
-                  {division.name}
-                </span>
-                <span className="meta">{t(`divisions.${division.key}`)}</span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
+                {tile}
+              </a>
+            );
+          }
+
+          return (
+            <Link key={app.key} href={app.href} onClick={onNavigate} className={shell}>
+              {tile}
+            </Link>
+          );
+        })}
+      </div>
     </div>
   );
 }

@@ -21,10 +21,14 @@ export async function generateMetadata({
  * of them, and a header advertising one of the four would be picking a winner
  * before the reader has chosen. The tiles are the only navigation.
  *
- * A Server Component with no client boundary of its own — `LauncherGrid` owns
- * the Sony Wiki sub-view, and tile motion is CSS-only (`.launcher-*` in
- * globals.css). The stage is flat `--color-void`: no artwork, no canvas, no
- * frame loop, so the spectral glow behind the tiles is the only thing moving.
+ * A Server Component with no client boundary of its own, and `LauncherGrid` no
+ * longer holds any state either: every tile is a link straight into its app.
+ * Sony Wiki used to open a second screen of DI/PE tiles here — that switch is
+ * now a segmented control beside the search field in `site-header.tsx`, where
+ * it can be thrown from inside the app instead of only on the way in. Tile
+ * motion is CSS-only (`.launcher-*` in globals.css), and the stage is flat
+ * `--color-void`: no artwork, no canvas, no frame loop, so the spectral glow
+ * behind the tiles is the only thing moving.
  *
  * The recipe catalogue that used to live here is at `/colorlab`.
  */

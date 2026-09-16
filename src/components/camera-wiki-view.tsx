@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
+import { WikiDivisionSwitch } from './wiki-division-switch';
 import {
   compareCameras,
   DEFAULT_WIKI_SORT,
@@ -456,24 +457,37 @@ export function CameraWikiView({ initialCameras, basePath = '/cameras' }: Camera
         {/* The catalogue's own axes, as one silent rail instead of a 268px
             column. Same treatment as the recipe gallery's filter row: 13px/600,
             radius 12, 40px, active = accent fill, and the scrollbar never shown
-            — a rail that advertises overflow reads as a broken table. */}
-        {facetRail.length > 1 && (
-          <div className="scroll-silent flex gap-[9px] overflow-x-auto pb-0.5">
-            {facetRail.map((chip) => (
-              <button
-                key={`${chip.group}:${chip.value}`}
-                type="button"
-                aria-pressed={chip.active}
-                onClick={() => pickFacet(chip.group, chip.value)}
-                className={`flex-none flex items-center text-label font-semibold px-[15px] min-h-10 rounded-sm cursor-pointer transition-colors ${
-                  chip.active ? ACCENT_FILL : 'text-ink-muted hover:bg-white/[0.08]'
-                }`}
-              >
-                {chip.label}
-              </button>
-            ))}
-          </div>
-        )}
+            — a rail that advertises overflow reads as a broken table.
+
+            On a phone the DI/PE switch leads this rail, because the header rail
+            it belongs on has no room for it at 375px — `wiki-division-switch.tsx`
+            carries that arithmetic. It sits OUTSIDE the scroller rather than as
+            its first chip: the chips scroll sideways, and a switch between
+            catalogues that slides out of reach once you have paged through the
+            categories is a control you cannot find when you want it. It also
+            holds its place when there is no facet rail at all — the rail is
+            hidden below two axes, and the switch is not one of them. */}
+        <div className="flex items-center gap-[9px]">
+          <WikiDivisionSwitch current={basePath} className="flex sm:hidden" />
+
+          {facetRail.length > 1 && (
+            <div className="scroll-silent flex min-w-0 flex-1 gap-[9px] overflow-x-auto pb-0.5">
+              {facetRail.map((chip) => (
+                <button
+                  key={`${chip.group}:${chip.value}`}
+                  type="button"
+                  aria-pressed={chip.active}
+                  onClick={() => pickFacet(chip.group, chip.value)}
+                  className={`flex-none flex items-center text-label font-semibold px-[15px] min-h-10 rounded-sm cursor-pointer transition-colors ${
+                    chip.active ? ACCENT_FILL : 'text-ink-muted hover:bg-white/[0.08]'
+                  }`}
+                >
+                  {chip.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
         {filteredCameras.length === 0 ? (
           <div className="surface p-12 text-center flex flex-col items-center justify-center gap-3">

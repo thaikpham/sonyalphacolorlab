@@ -8,10 +8,12 @@ import { useLocale, useTranslations } from 'next-intl';
 import { LanguageToggle } from './language-toggle';
 import { GoogleMark, useAuth } from './auth-context';
 import { LauncherGrid } from './launcher-grid';
+import { WikiDivisionSwitch } from './wiki-division-switch';
 import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import { routing } from '@/i18n/routing';
 import { CREATIVE_LOOKS } from '@/lib/camera/constants';
 import { DEFAULT_WIKI_SORT } from '@/lib/cameras/types';
+
 
 interface TagItem {
   tag: string;
@@ -604,7 +606,14 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                     priority
                     className="h-9 w-9 rounded-sm object-contain shrink-0"
                   />
-                  <span className="flex items-center gap-1.5 whitespace-nowrap text-body-lg font-extrabold tracking-[-0.02em] text-ink">
+                  {/* `truncate`, like the blog wordmark beside it. The row is
+                      `flex-nowrap` and everything else on it is `shrink-0`, so
+                      once the division switch joined the rail this mark was the
+                      only thing left that could give width back. It keeps its
+                      full size wherever there is room and yields first where
+                      there is not, rather than pushing the controls off the
+                      right edge. */}
+                  <span className="flex min-w-0 items-center gap-1.5 truncate whitespace-nowrap text-body-lg font-extrabold tracking-[-0.02em] text-ink">
                     SONY <span className="text-accent-400">WIKI</span>
                   </span>
                 </Link>
@@ -675,6 +684,12 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                 </svg>
               </button>
             </div>
+
+            {/* DI / PE, from `sm` up. Below that the phone rail has no room
+                for it and the catalogue's own facet rail mounts it instead —
+                the reasoning, and the pixel budget behind it, are on the
+                component. */}
+            {isWiki && <WikiDivisionSwitch current={wikiBase} className="hidden sm:flex" />}
 
             {/* Center: Search Trigger or Expanded Live Search Form.
 
