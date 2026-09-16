@@ -66,6 +66,10 @@ function precisSource(section: readonly Block[]): string {
     if (b.t === 'callout') return b.text
     if (b.t === 'figure') return b.caption
     if (b.t === 'table') return b.caption
+    /* An `embed` caption counts for the same reason a figure's does: a section
+       built around a video has nothing else the rail can quote, and an empty
+       row there reads as a rendering failure rather than as a short section. */
+    if (b.t === 'embed') return b.caption
   }
   return ''
 }
