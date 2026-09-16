@@ -20,12 +20,42 @@ npm run dev            # dev server
 npm test               # vitest — MUST pass before any commit
 npm run typecheck      # tsc --noEmit
 npm run seed:emit      # regenerate data/*.seed.json (merges data/translations.vi.json)
-npm run push:supabase  # push the catalogue to Supabase (needs service-role key)
+npm run push:supabase -- --target content   # push the catalogue (needs a secret key)
+npm run supabase:health -- --target control # is a project actually answering?
 ```
 
 Supabase is optional: with no credentials the app reads `data/*.seed.json`, so it
 builds, runs and tests offline. Add the env vars and it switches over — see
 `.env.example`.
+
+## Two projects, and which one you mean
+
+There are **two** Supabase projects, in two organisations:
+
+- the **control plane** owns Auth, `admin_emails` and the community tables;
+- the **content plane** owns recipes, the Sony catalogue, articles and their media.
+
+Separate organisations on purpose — a content egress incident cannot take
+sign-in down with it, which is exactly what happened on 2026-09-11.
+
+Four server factories, one per trust boundary, and no generic one:
+`controlRead()` · `controlAdmin()` · `contentRead()` · `contentAdmin()`. The
+browser gets `authBrowser()` and nothing else. All six runtime variables are set
+or none is — a half-configured boundary is a deployment error, not a degraded
+mode.
+
+Every script that touches a project takes an explicit `--target control|content`.
+There is no default, and nothing reads `supabase/.temp/linked-project.json`:
+with two projects, a script that guesses can write the catalogue into the one
+that holds Auth and say nothing about it.
+
+Operations live in `docs/runbooks/supabase-control-content.md`.
+
+**An online content read that fails must throw, never fall back to the seeds.**
+The seeds are a Git-time snapshot, so serving them during an outage silently
+republishes every recipe and article an administrator has since deleted — with
+no error anywhere. Configuration decides the source; failure is failure. See
+`contentOrOfflineSeed()`.
 
 ## Rule 1 — Never write a camera value from memory
 
@@ -337,9 +367,14 @@ name the columns. `proposal_votes` is emails only and is readable by the service
 role alone. Pinned by `no-email-leak.test.ts` and the privilege tests in
 `migration.test.ts`.
 
-Every `.sql` in `supabase/migrations/` is executed by `migration.test.ts`
-against PGlite. Adding one there is what proves it is valid — and applying it to
-Supabase is a separate, manual step that nothing in CI can do for you.
+Two migration roots, two databases. `supabase/migrations` is the control
+plane's applied history — never rewrite it; a correction is a new file.
+`supabase/content/migrations` is the content baseline, applied from zero. Both
+are executed against PGlite: `migration.test.ts` for the control root,
+`migration-roots.test.ts` for both plus the boundary between them (the content
+project must never grow an `admin_emails`). Adding a `.sql` there is what proves
+it is valid — applying it is `npm run supabase:migrations -- --target … --apply`,
+a separate, manual step that nothing in CI can do for you.
 
 ## Who the caller is
 
