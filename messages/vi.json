@@ -410,7 +410,9 @@
     "primaryImageLabel": "URL ảnh đại diện chính (Primary Image URL)",
     "galleryUrlsLabel": "Danh sách URL ảnh minh họa / Gallery (Mỗi URL 1 dòng)",
     "photosCount": "ảnh",
-    "galleryPreviewHeading": "Xem trước ảnh minh họa trong Gallery:"
+    "galleryPreviewHeading": "Xem trước ảnh minh họa trong Gallery:",
+    "gateDownTitle": "Chưa xác minh được tài khoản",
+    "gateDownBody": "Dịch vụ đăng nhập hiện không phản hồi. Đây không phải vấn đề quyền hạn — quyền của bạn không thay đổi. Hãy thử lại sau ít phút."
   },
   "loading": {
     "status": "Đang tải công thức"
@@ -598,7 +600,8 @@
       "compareLabels": "Khối so sánh phải ghi thông số thật, không phải “trước” và “sau”.",
       "calloutLabel": "Khối lưu ý phải ghi điều kiện áp dụng, không phải chữ “lưu ý”.",
       "emoji": "Bỏ emoji. Đây là tài liệu tra cứu.",
-      "exclamation": "Bỏ dấu chấm than. Chúng đọc như lời quảng cáo."
+      "exclamation": "Bỏ dấu chấm than. Chúng đọc như lời quảng cáo.",
+      "controlUnavailable": "Dịch vụ đăng nhập hiện không phản hồi. Chưa có gì thay đổi — hãy thử lại sau ít phút."
     },
     "imageNone": "Chưa có ảnh. Hãy tải lên — JPEG, PNG hoặc WebP, tối đa 8 MB.",
     "imagePreviewExpired": "Liên kết xem trước đã hết hạn. Mở lại bài viết để xem.",
@@ -607,6 +610,8 @@
     "assetSyncFailed": "Không di chuyển được ảnh. Bài viết chưa thay đổi như mong muốn — hãy mở lại để xem trạng thái hiện tại.",
     "unsupportedType": "Tệp đó không phải JPEG, PNG hay WebP. Ảnh động không được hỗ trợ.",
     "dimensionsTooLarge": "Ảnh quá lớn về số điểm ảnh. Hãy thu nhỏ dưới 12000 mỗi cạnh.",
-    "noFile": "Chưa đính kèm tệp nào."
+    "noFile": "Chưa đính kèm tệp nào.",
+    "gateDownTitle": "Chưa xác minh được tài khoản",
+    "gateDownBody": "Dịch vụ đăng nhập hiện không phản hồi. Đây không phải vấn đề quyền hạn — quyền của bạn không thay đổi. Hãy thử lại sau ít phút."
   }
 }

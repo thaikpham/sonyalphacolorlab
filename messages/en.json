@@ -410,7 +410,9 @@
     "primaryImageLabel": "Primary image URL",
     "galleryUrlsLabel": "Gallery image URLs (one per line)",
     "photosCount": "photos",
-    "galleryPreviewHeading": "Gallery preview"
+    "galleryPreviewHeading": "Gallery preview",
+    "gateDownTitle": "Could not verify your account",
+    "gateDownBody": "The sign-in service is not answering right now. This is not a permissions problem — your access is unchanged. Try again shortly."
   },
   "loading": {
     "status": "Loading recipes"
@@ -598,7 +600,8 @@
       "compareLabels": "A comparison is labelled with real parameters, not “before” and “after”.",
       "calloutLabel": "A callout is labelled with its condition, not the word “note”.",
       "emoji": "Remove the emoji. This is a reference product.",
-      "exclamation": "Remove the exclamation marks. They read as marketing copy."
+      "exclamation": "Remove the exclamation marks. They read as marketing copy.",
+      "controlUnavailable": "The sign-in service is not answering right now. Nothing was changed — try again shortly."
     },
     "imageNone": "No image yet. Upload one — JPEG, PNG or WebP, up to 8 MB.",
     "imagePreviewExpired": "Preview link expired. Reopen the article to see it again.",
@@ -607,6 +610,8 @@
     "assetSyncFailed": "The images could not be moved. The article was not changed as intended — reopen it to see its current state.",
     "unsupportedType": "That file is not a JPEG, PNG or WebP. Animated images are not supported.",
     "dimensionsTooLarge": "That image is too large in pixels. Resize it under 12000 on each side.",
-    "noFile": "No file was attached."
+    "noFile": "No file was attached.",
+    "gateDownTitle": "Could not verify your account",
+    "gateDownBody": "The sign-in service is not answering right now. This is not a permissions problem — your access is unchanged. Try again shortly."
   }
 }

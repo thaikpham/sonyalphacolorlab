@@ -92,7 +92,12 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
   );
 
   const [products, setProducts] = useState<SonyCamera[]>(initialProducts);
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  /* The client's copy of `adminGate`'s three outcomes, not a boolean.
+     `/api/admin/session` answers 503 when the control project cannot be
+     reached, and that is not a `no`: reading it as one tells an admin their
+     account was removed and hides a live outage behind an empty screen. The
+     fetch throwing is the same case — unverifiable, not denied. */
+  const [gate, setGate] = useState<'checking' | 'admin' | 'denied' | 'unavailable'>('checking');
   const [email, setEmail] = useState('');
   const [adminRole, setAdminRole] = useState<'super' | 'di' | 'pe'>('super');
   const [activeTab, setActiveTab] = useState<'di' | 'pe'>(initialTab ?? 'di');
@@ -136,9 +141,13 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
     (async () => {
       try {
         const res = await fetch('/api/admin/session', { headers: authed() });
+        if (res.status === 503) {
+          if (live) setGate('unavailable');
+          return;
+        }
         const data = (await res.json()) as { isAdmin: boolean; email?: string; role?: 'super' | 'di' | 'pe' };
         if (!live) return;
-        setIsAdmin(data.isAdmin);
+        setGate(data.isAdmin ? 'admin' : 'denied');
         setEmail(data.email ?? '');
         const role = data.role ?? 'super';
         setAdminRole(role);
@@ -146,7 +155,7 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
         else if (role === 'di') setActiveTab('di');
         else if (initialTab) setActiveTab(initialTab);
       } catch {
-        if (live) setIsAdmin(false);
+        if (live) setGate('unavailable');
       }
     })();
     return () => {
@@ -360,7 +369,16 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
     setTimeout(() => setCopiedMd(false), 2000);
   };
 
-  if (isAdmin === false) {
+  if (gate === 'unavailable') {
+    return (
+      <main className="flex-1 w-full max-w-2xl mx-auto px-6 py-20 text-center flex flex-col gap-3">
+        <h1 className="text-title-1 font-extrabold tracking-[-0.02em] text-ink">{tSafe('gateDownTitle', 'Chưa xác minh được tài khoản')}</h1>
+        <p className="text-body text-ink-muted leading-relaxed">{tSafe('gateDownBody', 'Dịch vụ đăng nhập hiện không phản hồi. Đây không phải vấn đề quyền hạn — hãy thử lại sau ít phút.')}</p>
+      </main>
+    );
+  }
+
+  if (gate === 'denied') {
     return (
       <main className="flex-1 w-full max-w-2xl mx-auto px-6 py-20 text-center flex flex-col gap-3">
         <h1 className="text-title-1 font-extrabold tracking-[-0.02em] text-ink">{tSafe('gateTitle', 'Chỉ dành cho admin')}</h1>

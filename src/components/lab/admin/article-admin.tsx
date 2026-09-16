@@ -80,7 +80,12 @@ export function ArticleAdmin() {
   const t = useTranslations('labAdmin')
   const { accessToken } = useAuth()
 
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null)
+  /* The client's copy of `adminGate`'s three outcomes, not a boolean.
+     `/api/admin/session` answers 503 when the control project cannot be
+     reached, and that is not a `no`: reading it as one tells an editor their
+     account was removed and hides a live outage behind an empty screen. The
+     fetch throwing is the same case — unverifiable, not denied. */
+  const [gate, setGate] = useState<'checking' | 'admin' | 'denied' | 'unavailable'>('checking')
   const [email, setEmail] = useState('')
   const [articles, setArticles] = useState<ArticleRecord[]>([])
   const [draft, setDraft] = useState<Draft | null>(null)
@@ -135,13 +140,17 @@ export function ArticleAdmin() {
     ;(async () => {
       try {
         const res = await fetch('/api/admin/session', { headers: authed() })
+        if (res.status === 503) {
+          if (live) setGate('unavailable')
+          return
+        }
         const data = (await res.json()) as { isAdmin: boolean; email?: string }
         if (!live) return
-        setIsAdmin(data.isAdmin)
+        setGate(data.isAdmin ? 'admin' : 'denied')
         setEmail(data.email ?? '')
         if (data.isAdmin) await loadList()
       } catch {
-        if (live) setIsAdmin(false)
+        if (live) setGate('unavailable')
       }
     })()
     return () => {
@@ -399,7 +408,7 @@ export function ArticleAdmin() {
     )
   }, [articles, query])
 
-  if (isAdmin === null) {
+  if (gate === 'checking') {
     return (
       <main className="mx-auto w-full max-w-[86rem] inset-safe py-16">
         <p className="meta">{t('checking')}</p>
@@ -407,7 +416,18 @@ export function ArticleAdmin() {
     )
   }
 
-  if (!isAdmin) {
+  if (gate === 'unavailable') {
+    return (
+      <main className="mx-auto w-full max-w-[52rem] inset-safe py-16">
+        <h1 className="text-title-1 font-extrabold tracking-[-0.02em] text-ink">
+          {t('gateDownTitle')}
+        </h1>
+        <p className="mt-3 text-body text-ink-muted">{t('gateDownBody')}</p>
+      </main>
+    )
+  }
+
+  if (gate === 'denied') {
     return (
       <main className="mx-auto w-full max-w-[52rem] inset-safe py-16">
         <h1 className="text-title-1 font-extrabold tracking-[-0.02em] text-ink">
