@@ -24,6 +24,7 @@ import { ControlUnavailableError } from '@/lib/supabase/errors';
  */
 
 const USER = {
+  id: 'user-1',
   email: 'Editor@Example.com',
   user_metadata: { full_name: 'An Editor', avatar_url: 'https://cdn.example.com/a.png' },
 };
@@ -40,6 +41,12 @@ const state = {
     data: { email: 'editor@example.com', role: 'di' },
     error: null,
   }),
+  /* No enrolled factor by default, which is where every account starts. The
+     tests that care about the ratchet set one. */
+  factors: async (): Promise<Result<{ factors: { status: string }[] }>> => ({
+    data: { factors: [] },
+    error: null,
+  }),
 };
 
 function refuse(): never {
@@ -50,7 +57,10 @@ vi.mock('@/lib/supabase/server', () => ({
   hasControlConfig: () => state.online,
   hasContentConfig: () => state.online,
   controlAdmin: () => ({
-    auth: { getUser: () => state.getUser() },
+    auth: {
+      getUser: () => state.getUser(),
+      admin: { mfa: { listFactors: () => state.factors() } },
+    },
     from: () => ({
       select: () => ({ eq: () => ({ maybeSingle: () => state.adminRow() }) }),
     }),
@@ -71,6 +81,7 @@ beforeEach(() => {
   state.online = true;
   state.getUser = async () => ({ data: { user: USER }, error: null });
   state.adminRow = async () => ({ data: { email: 'editor@example.com', role: 'di' }, error: null });
+  state.factors = async () => ({ data: { factors: [] }, error: null });
 });
 
 afterEach(() => {
@@ -123,6 +134,74 @@ describe('requireUser', () => {
   it('returns null offline, because seed mode has no sessions to verify', async () => {
     state.online = false;
     await expect(requireUser(bearer())).resolves.toBeNull();
+  });
+});
+
+/** A token whose payload carries the given assurance level. */
+const aalToken = (aal: 'aal1' | 'aal2') => {
+  const seg = (o: object) => Buffer.from(JSON.stringify(o)).toString('base64url');
+  return `${seg({ alg: 'HS256' })}.${seg({ aal, sub: 'user-1' })}.sig`;
+};
+
+describe('the second factor, once one exists', () => {
+  it('is not demanded from an account that has not enrolled one', async () => {
+    /* The ratchet must not bite before there is anything to bite with. This is
+       the state every account starts in, and the state the operator is in while
+       they are on the screen that enrols the factor — requiring aal2 here would
+       lock the only administrator out of the only way back in. */
+    state.factors = async () => ({ data: { factors: [] }, error: null });
+    await expect(requireAdmin(bearer(aalToken('aal1')))).resolves.toMatchObject({ role: 'di' });
+  });
+
+  it('is not demanded while the enrolment is still half-finished', async () => {
+    /* `mfa.enroll()` creates an `unverified` factor and it stays that way until
+       a code is accepted. Counting it would strand an operator who closed the
+       tab midway. */
+    state.factors = async () => ({ data: { factors: [{ status: 'unverified' }] }, error: null });
+    await expect(requireAdmin(bearer(aalToken('aal1')))).resolves.toMatchObject({ role: 'di' });
+  });
+
+  it('is demanded as soon as a verified factor exists', async () => {
+    state.factors = async () => ({ data: { factors: [{ status: 'verified' }] }, error: null });
+    await expect(requireAdmin(bearer(aalToken('aal1')))).rejects.toMatchObject({
+      code: 'mfaRequired',
+    });
+  });
+
+  it('lets a stepped-up session straight through', async () => {
+    state.factors = async () => ({ data: { factors: [{ status: 'verified' }] }, error: null });
+    await expect(requireAdmin(bearer(aalToken('aal2')))).resolves.toMatchObject({ role: 'di' });
+  });
+
+  it('does not ask about factors at all when the session is already aal2', async () => {
+    /* The common path after enrolment. One fewer control round trip per admin
+       request, and the assertion is here so an edit that reorders the `&&`
+       shows up as a test failure rather than as latency. */
+    let asked = false;
+    state.factors = async () => {
+      asked = true;
+      return { data: { factors: [] }, error: null };
+    };
+    await requireAdmin(bearer(aalToken('aal2')));
+    expect(asked).toBe(false);
+  });
+
+  it('refuses rather than waving through when the factor list cannot be read', async () => {
+    /* Answering "no factor" on an error would silently disable the second
+       factor for the length of an outage — the exact shape of the 2026-09-11
+       bypass, where an unreachable allowlist became a hard-coded one. */
+    state.factors = async () => ({ data: { factors: [] }, error: { message: 'boom' } });
+    await expect(requireAdmin(bearer(aalToken('aal1')))).rejects.toMatchObject({
+      name: 'ControlUnavailableError',
+    });
+  });
+
+  it('never treats an unreadable assurance claim as elevated', async () => {
+    /* A token whose payload will not decode has not proved a second factor. */
+    state.factors = async () => ({ data: { factors: [{ status: 'verified' }] }, error: null });
+    await expect(requireAdmin(bearer('not-a-jwt'))).rejects.toMatchObject({
+      code: 'mfaRequired',
+    });
   });
 });
 

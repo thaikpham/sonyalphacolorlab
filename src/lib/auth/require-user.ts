@@ -2,6 +2,7 @@ import 'server-only';
 import { controlAdmin, hasControlConfig } from '@/lib/supabase/server';
 import { ControlUnavailableError, isCredentialRejection } from '@/lib/supabase/errors';
 import { communityErrorBody } from '@/lib/community/errors';
+import { assuranceLevelOf, type AssuranceLevel } from './aal';
 
 /**
  * Resolves the caller from a verified Supabase session, never from the request
@@ -30,9 +31,26 @@ import { communityErrorBody } from '@/lib/community/errors';
  */
 
 export type AuthedUser = {
+  /**
+   * The Supabase user id, straight off the verified `getUser` answer.
+   *
+   * Not decoded from the token's `sub`: `getUser` already returns it, and one
+   * source means the id and the address can never describe two different
+   * accounts. `requireAdmin()` uses it to ask about enrolled factors.
+   */
+  id: string;
   email: string;
   name: string;
   avatarUrl: string | null;
+  /**
+   * How many factors this session satisfied, read off the token AFTER GoTrue
+   * verified it — see `aal.ts`, where the ordering is the security property.
+   *
+   * Community callers ignore it: a reader posting a photograph has one factor
+   * and that is correct. `requireAdmin()` is the only consumer, and only for
+   * accounts that have actually enrolled a second one.
+   */
+  assuranceLevel: AssuranceLevel | null;
 };
 
 export async function requireUser(request: Request): Promise<AuthedUser | null> {
@@ -86,7 +104,18 @@ export async function requireUser(request: Request): Promise<AuthedUser | null> 
         ? rawAvatar
         : null;
 
-    return { email: data.user.email, name: name.slice(0, 100), avatarUrl };
+    /* Read only now, below `getUser`. The claim is authentic because the
+       token it comes from has just been proven, not because the token said so
+       about itself. */
+    const assuranceLevel = assuranceLevelOf(token);
+
+    return {
+      id: data.user.id ?? '',
+      email: data.user.email,
+      name: name.slice(0, 100),
+      avatarUrl,
+      assuranceLevel,
+    };
   }
 }
 

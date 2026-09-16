@@ -388,6 +388,23 @@ without limit. Pinned by `identity-not-from-body.test.ts`.
 Never put an email in a query string — it lands in every access log. Community
 writes are rate-limited per verified address via `checkRateLimit`.
 
+**Readers and administrators sign in differently, on purpose.** A reader uses
+Google — one factor, which is right for leaving a comment. An administrator
+types an email, a password and a TOTP code at `/admin`, with no redirect: the
+request was "no Gmail click-through", and email-plus-code as literally asked for
+is ONE factor, because all four admin addresses are plaintext in
+`supabase/migrations/0011_admin_category_roles.sql`. Both paths are Supabase
+Auth on the control project; no password, seed or session is stored in this
+repository.
+
+`requireAdmin()` demands `aal2` **as soon as the account has a verified
+factor**, and not before — a ratchet rather than a flag. Requiring it
+unconditionally would lock the only operator out of `/admin/security`, the one
+screen that enrols the factor. Enrol there, and from the next sign-in a stolen
+password stops being enough. `aal.ts` reads the claim only after GoTrue has
+verified the token, and `control-boundary.test.ts` pins every case including the
+one that matters most: an unreadable factor list is 503, never "no factor".
+
 ## AI ("Tweak with AI")
 
 `claude-sonnet-5` via structured outputs, so the JSON shape is constrained by the

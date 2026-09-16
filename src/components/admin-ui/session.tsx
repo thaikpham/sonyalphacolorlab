@@ -28,7 +28,15 @@ import { useAuth } from '@/components/auth-context';
  * the caller's rights.
  */
 
-export type AdminGate = 'checking' | 'admin' | 'denied' | 'unavailable';
+/**
+ * `adminGate()`'s outcomes, plus the one the client adds.
+ *
+ * `mfaRequired` is the server's: a valid session for an account that is on the
+ * admin list and has enrolled a second factor, which has not been stepped up.
+ * `denied` covers both "not signed in" and "not an admin", because the server
+ * deliberately does not tell them apart.
+ */
+export type AdminGate = 'checking' | 'admin' | 'denied' | 'unavailable' | 'mfaRequired';
 export type AdminRole = 'super' | 'di' | 'pe';
 
 export type AdminSession = {
@@ -37,6 +45,8 @@ export type AdminSession = {
   email: string;
   /** `super` until the route says otherwise — see `canManageCategory()`. */
   role: AdminRole;
+  /** Re-probes after a sign-in or a step-up, without a full page load. */
+  refresh: () => void;
   /**
    * Headers for a write. The bearer token is rebuilt per call rather than
    * captured: the session refreshes underneath a long-lived editor, and a
@@ -61,6 +71,8 @@ export function AdminSessionProvider({ children }: { children: React.ReactNode }
   const [gate, setGate] = useState<AdminGate>('checking');
   const [email, setEmail] = useState('');
   const [role, setRole] = useState<AdminRole>('super');
+  const [nonce, setNonce] = useState(0);
+  const refresh = useCallback(() => setNonce((n) => n + 1), []);
 
   const authed = useCallback(
     (extra: HeadersInit = {}) => {
@@ -92,9 +104,15 @@ export function AdminSessionProvider({ children }: { children: React.ReactNode }
           isAdmin: boolean;
           email?: string;
           role?: AdminRole;
+          error?: string;
         };
         if (!live) return;
-        setGate(data.isAdmin ? 'admin' : 'denied');
+        /* The code, not the status: a step-up request answers 200 with
+           `isAdmin: false` on purpose, so that the shell can read it on every
+           page load without a 403 in the console each time. */
+        setGate(
+          data.isAdmin ? 'admin' : data.error === 'mfaRequired' ? 'mfaRequired' : 'denied',
+        );
         setEmail(data.email ?? '');
         setRole(data.role ?? 'super');
       } catch {
@@ -104,11 +122,14 @@ export function AdminSessionProvider({ children }: { children: React.ReactNode }
     return () => {
       live = false;
     };
-  }, [authed]);
+    /* `nonce` is the dependency that matters here: signing in or stepping up
+       changes nothing this effect reads, so without it the shell would keep
+       showing the login form to somebody who had just used it. */
+  }, [authed, nonce]);
 
   const value = useMemo(
-    () => ({ gate, email, role, authed, bearer }),
-    [gate, email, role, authed, bearer],
+    () => ({ gate, email, role, authed, bearer, refresh }),
+    [gate, email, role, authed, bearer, refresh],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

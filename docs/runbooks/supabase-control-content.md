@@ -177,6 +177,41 @@ Growth in `orphaned` or `cleanup_failed` is a defect, not routine cleanup.
 If either starts appearing in Storage egress, something has regressed to serving
 originals.
 
+### Admin sign-in, and getting locked out
+
+Administrators sign in at `/admin` with an email, a password and a TOTP code.
+Readers still use Google. Both are Supabase Auth on the **control** project.
+
+First-time setup, per administrator, in this order:
+
+1. Sign in once by whatever means already works for that account.
+2. `/admin/security` → set a password. An account created by Google sign-in has
+   none, and the admin form asks for one.
+3. `/admin/security` → set up the authenticator, scan, and enter a code to
+   confirm. Nothing is enrolled until a code is accepted.
+
+`requireAdmin()` requires the second factor only once a **verified** factor
+exists, so step 2 and step 3 are reachable with one factor and the order above
+cannot strand anyone.
+
+**Project settings this depends on.** Email/password sign-in must be enabled on
+the control project, and so must MFA (TOTP). If password sign-in is disabled the
+form answers "that email and password do not match an account" — which is also
+what a wrong password looks like, deliberately, so check the setting before
+concluding the password is wrong.
+
+**If an operator loses their phone.** There is no recovery code path in the
+application. Recover from the Supabase dashboard on the control project: find
+the user under Authentication, delete their MFA factor, and they are back to one
+factor until they enrol again. That is a deliberate consequence of not storing
+the seed here — the dashboard is the recovery path, and it needs project access
+rather than anything this deployment holds.
+
+**Revoking an administrator** is still a row: delete them from `admin_emails`
+and the next request refuses, with no redeploy. The second factor is
+authentication; `admin_emails` is authorisation; they are kept apart so a single
+compromised credential is not sufficient on its own.
+
 ### Publishing a recipe photograph
 
 `/admin/colorlab` uploads into the PRIVATE `recipe-uploads` bucket. That is the

@@ -25,6 +25,13 @@ export async function GET(request: Request) {
     if (gate.status === 503) {
       return NextResponse.json({ isAdmin: false, error: gate.error }, { status: 503 });
     }
+    if (gate.error === 'mfaRequired') {
+      /* 200, like the plain "no": this route's whole contract is that the
+         shell reads it on every page load and a 403 there would be noise. The
+         code is what the shell branches on, and it is only ever produced for a
+         caller already holding a valid session for that very account. */
+      return NextResponse.json({ isAdmin: false, error: gate.error }, { status: 200 });
+    }
     return NextResponse.json({ isAdmin: false }, { status: 200 });
   }
   const { admin } = gate;

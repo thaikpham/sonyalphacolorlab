@@ -69,15 +69,30 @@ describe(SESSION, () => {
 describe(SHELL, () => {
   const source = readFileSync(SHELL, 'utf8');
 
-  it('keeps a screen of its own for each of the gate’s three answers', () => {
-    /* Distinct copy per state, not one panel reworded: "we cannot check" and
-       "you are not an admin" have different causes and different things for
-       the reader to do. */
+  it('keeps a screen of its own for each of the gate’s four answers', () => {
+    /* Distinct copy per state, not one panel reworded: "we cannot check", "you
+       are not an admin" and "enter your code" have different causes and
+       different things for the reader to do. */
     expect(source).toMatch(/gate === 'checking'/);
     expect(source).toMatch(/gate === 'unavailable'/);
     expect(source).toMatch(/gate === 'denied'/);
+    expect(source).toMatch(/gate === 'mfaRequired'/);
     expect(source).toMatch(/gateDownTitle/);
     expect(source).toMatch(/notAdminTitle/);
+    expect(source).toMatch(/<StepUp/);
+  });
+
+  it('splits a refusal into "sign in" and "not on the list" using its own session', () => {
+    /* The server answers one 403 for both, on purpose. The client holds its own
+       session and discloses nothing by reading it — and without the split, a
+       reader who signed in to leave a comment and then typed /admin is handed a
+       login form they have already used, forever. */
+    expect(source).toMatch(/useAuth\(\)/);
+    expect(source).toMatch(/user \? \(/);
+    expect(source).toMatch(/<AdminSignIn/);
+    /* And the restore window is its own state, or a signed-in admin's screen
+       flickers through a login prompt on every load. */
+    expect(source).toMatch(/!isReady/);
   });
 });
 
