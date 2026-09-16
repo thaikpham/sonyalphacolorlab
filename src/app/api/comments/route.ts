@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
-import { isSupabaseConfigured, supabaseAdmin, supabaseRead } from '@/lib/supabase/server';
+import { hasControlConfig, controlAdmin, controlRead } from '@/lib/supabase/server';
 import { requireUser, UNAUTHENTICATED } from '@/lib/auth/require-user';
 import { checkRateLimit } from '@/lib/ai/rate-limit';
-import { communityErrorBody } from '@/lib/community/errors';
+import { COMMUNITY_ERRORS, communityErrorBody, outageErrorCode } from '@/lib/community/errors';
+import { hasContentConfig } from '@/lib/supabase/server';
+import { publishedRecipeExists } from '@/lib/recipes/existence';
 
 /**
  * PostgREST rejects with a plain object, not an Error, so `String(err)` gave
@@ -58,13 +60,13 @@ export async function GET(request: Request) {
     return NextResponse.json(communityErrorBody('missingFields'), { status: 400 });
   }
 
-  if (!isSupabaseConfigured()) {
+  if (!hasControlConfig()) {
     const filtered = memoryComments.filter((c) => c.recipeSlug === slug);
     return NextResponse.json({ comments: filtered, source: 'memory' });
   }
 
   try {
-    const { data, error } = await supabaseRead()
+    const { data, error } = await controlRead()
       /* Explicit columns, never `*`. author_email is written on POST so a
          comment can be attributed, but it must never come back out — this
          endpoint is public and unauthenticated. */
@@ -115,6 +117,16 @@ export async function POST(request: Request) {
       return NextResponse.json(communityErrorBody('missingFields'), { status: 400 });
     }
 
+    /* The recipe lives in the other project, so Postgres cannot enforce this
+       reference and the check has to happen here, before the write. A comment
+       on a slug that does not exist is invisible on every page and survives
+       until somebody goes looking for it. `publishedRecipeExists` throws rather
+       than answering `false` when the content project is unreachable — see the
+       catch below, which turns that into 503 and not 404. */
+    if (hasContentConfig() && !(await publishedRecipeExists(recipeSlug))) {
+      return NextResponse.json(communityErrorBody('recipeNotFound'), { status: 404 });
+    }
+
     const newComment: CommentItem = {
       id: `comment-${Date.now()}`,
       recipeSlug,
@@ -124,12 +136,12 @@ export async function POST(request: Request) {
       createdAt: new Date().toISOString(),
     };
 
-    if (!isSupabaseConfigured()) {
+    if (!hasControlConfig()) {
       memoryComments.unshift(newComment);
       return NextResponse.json({ comment: newComment, source: 'memory' });
     }
 
-    const db = supabaseAdmin();
+    const db = controlAdmin();
     const { data, error } = await db
       .from('recipe_comments')
       .insert({
@@ -158,6 +170,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ comment: savedComment, source: 'supabase' });
   } catch (err) {
     logFallback('comments', err);
+    /* Which project failed is the whole content of the answer: a content
+       outage means "we could not confirm the recipe", a control outage means
+       "we could not store your comment", and neither is the 500 that a real
+       bug in this handler would be. */
+    const outage = outageErrorCode(err);
+    if (outage) {
+      return NextResponse.json(communityErrorBody(outage), { status: COMMUNITY_ERRORS[outage] });
+    }
     return NextResponse.json(communityErrorBody('saveFailed'), { status: 500 });
   }
 }

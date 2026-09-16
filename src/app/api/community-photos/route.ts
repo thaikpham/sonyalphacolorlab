@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { checkRateLimit } from '@/lib/ai/rate-limit';
-import { isSupabaseConfigured, supabaseAdmin, supabaseRead } from '@/lib/supabase/server';
-import { listSlugs } from '@/lib/recipes/source';
-import { communityErrorBody } from '@/lib/community/errors';
+import { hasContentConfig, hasControlConfig, controlAdmin, controlRead } from '@/lib/supabase/server';
+import { publishedRecipeExists } from '@/lib/recipes/existence';
+import { COMMUNITY_ERRORS, communityErrorBody, outageErrorCode } from '@/lib/community/errors';
 import { requireUser, UNAUTHENTICATED } from '@/lib/auth/require-user';
 
 /**
@@ -46,12 +46,12 @@ export async function GET(req: Request) {
     return NextResponse.json(communityErrorBody('missingFields'), { status: 400 });
   }
 
-  if (!isSupabaseConfigured()) {
+  if (!hasControlConfig()) {
     return NextResponse.json({ ok: true, photos: [], credits: [], source: 'offline' });
   }
 
   try {
-    const { data, error } = await supabaseRead()
+    const { data, error } = await controlRead()
       .from('community_photos')
       .select('image_url, author_name, author_social')
       .eq('recipe_slug', parsed.data)
@@ -111,17 +111,29 @@ export async function POST(req: Request) {
     );
   }
 
-  if (!isSupabaseConfigured()) {
+  if (!hasControlConfig()) {
     return NextResponse.json({ ok: true, saved: false, source: 'offline' });
   }
 
-  const slugs = await listSlugs();
-  if (!slugs.includes(body.slug)) {
-    return NextResponse.json(communityErrorBody('recipeNotFound'), { status: 404 });
+  /* One row from the content project, not the whole slug list. `listSlugs()`
+     read every recipe on every photo submission, which after the split would
+     be a full catalogue fetch across a project boundary — and it could not tell
+     "no such recipe" from "the content project is down", so an outage would
+     have answered 404 to every submission on the site. */
+  try {
+    if (hasContentConfig() && !(await publishedRecipeExists(body.slug))) {
+      return NextResponse.json(communityErrorBody('recipeNotFound'), { status: 404 });
+    }
+  } catch (e) {
+    const outage = outageErrorCode(e);
+    if (outage) {
+      return NextResponse.json(communityErrorBody(outage), { status: COMMUNITY_ERRORS[outage] });
+    }
+    throw e;
   }
 
   try {
-    const db = supabaseAdmin();
+    const db = controlAdmin();
 
     const { count, error: countError } = await db
       .from('community_photos')
@@ -161,6 +173,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, saved: true, source: 'supabase' });
   } catch (e) {
     console.error('[community-photos POST]', e);
+    const outage = outageErrorCode(e);
+    if (outage) {
+      return NextResponse.json(communityErrorBody(outage), { status: COMMUNITY_ERRORS[outage] });
+    }
     return NextResponse.json(communityErrorBody('saveFailed'), { status: 500 });
   }
 }

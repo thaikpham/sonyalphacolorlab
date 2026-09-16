@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
-import { isSupabaseConfigured, supabaseAdmin, supabaseRead } from '@/lib/supabase/server';
+import { hasControlConfig, controlAdmin, controlRead } from '@/lib/supabase/server';
 import { requireUser, UNAUTHENTICATED } from '@/lib/auth/require-user';
 import { checkRateLimit } from '@/lib/ai/rate-limit';
-import { communityErrorBody } from '@/lib/community/errors';
+import { COMMUNITY_ERRORS, communityErrorBody, outageErrorCode } from '@/lib/community/errors';
+import { hasContentConfig } from '@/lib/supabase/server';
+import { publishedRecipeExists } from '@/lib/recipes/existence';
 
 /**
  * PostgREST rejects with a plain object, not an Error, so `String(err)` gave
@@ -89,13 +91,22 @@ export async function GET(request: Request) {
      query param: an address in a URL is copied into every access log and
      referrer, and anyone could have passed someone else's to learn how they
      voted. Anonymous readers simply get hasVoted: false. */
-  const viewer = (await requireUser(request))?.email ?? null;
+  let viewer: string | null = null;
+  try {
+    viewer = (await requireUser(request))?.email ?? null;
+  } catch {
+    /* A control outage while resolving the viewer is not fatal to a public
+       read. Everything below degrades to the seeded list anyway, and the worst
+       a null viewer costs a signed-in reader is their own heart showing hollow
+       for the duration. */
+    viewer = null;
+  }
 
   if (!slug) {
     return NextResponse.json(communityErrorBody('missingFields'), { status: 400 });
   }
 
-  if (!isSupabaseConfigured()) {
+  if (!hasControlConfig()) {
     const filtered = memoryProposals.filter((p) => p.recipeSlug === slug);
     return NextResponse.json({ proposals: filtered, source: 'memory' });
   }
@@ -103,7 +114,7 @@ export async function GET(request: Request) {
   try {
     /* Explicit columns, never `*`: author_email must not ride along into a
        response the whole internet can fetch. */
-    const { data: proposalRows, error } = await supabaseRead()
+    const { data: proposalRows, error } = await controlRead()
       .from('recipe_proposals')
       .select(
         'id, recipe_slug, title, author_name, author_avatar, settings, white_balance, vote_count, created_at',
@@ -124,7 +135,7 @@ export async function GET(request: Request) {
     if (viewer && proposalIds.length > 0) {
       // Service role, not the anon key: proposal_votes is nothing but email
       // addresses, so the public roles are not granted select on it at all.
-      const { data: voteRows } = await supabaseAdmin()
+      const { data: voteRows } = await controlAdmin()
         .from('proposal_votes')
         .select('proposal_id')
         .eq('user_email', viewer)
@@ -175,6 +186,13 @@ export async function POST(request: Request) {
       return NextResponse.json(communityErrorBody('sampleUrlRequired'), { status: 400 });
     }
 
+    /* Confirm the recipe against the content project before writing anything
+       to the control one. A proposal is worse than a stray comment when it
+       orphans: it also seeds `community_photos` further down this handler. */
+    if (hasContentConfig() && !(await publishedRecipeExists(recipeSlug))) {
+      return NextResponse.json(communityErrorBody('recipeNotFound'), { status: 404 });
+    }
+
     const newProposal: ProposalItem = {
       id: `prop-${Date.now()}`,
       recipeSlug,
@@ -189,12 +207,12 @@ export async function POST(request: Request) {
       createdAt: new Date().toISOString(),
     };
 
-    if (!isSupabaseConfigured()) {
+    if (!hasControlConfig()) {
       memoryProposals.unshift(newProposal);
       return NextResponse.json({ proposal: newProposal, source: 'memory' });
     }
 
-    const db = supabaseAdmin();
+    const db = controlAdmin();
     const { data, error } = await db
       .from('recipe_proposals')
       .insert({
@@ -216,18 +234,28 @@ export async function POST(request: Request) {
 
     if (error) throw error;
 
-    // If sampleImageUrl is provided, automatically add to community_photos gallery
+    /* The sample photograph also joins the recipe's gallery.
+     *
+     * Deliberately not fatal to the proposal: the proposal row is already
+     * committed above, and failing the request now would tell the author their
+     * submission did not go through when it did.
+     *
+     * The `try`/`catch` this replaced caught nothing. supabase-js reports a
+     * constraint violation in `error`, it does not throw — so the duplicate the
+     * comment claimed to ignore was never reaching the handler, and neither was
+     * an RLS refusal or an outage. Every failure here was silent. Now the
+     * duplicate is ignored by name and everything else is logged. */
     if (sampleImageUrl && typeof sampleImageUrl === 'string' && sampleImageUrl.startsWith('https://')) {
-      try {
-        await db.from('community_photos').insert({
-          recipe_slug: recipeSlug,
-          image_url: sampleImageUrl,
-          author_name: `${user.name} (${title.slice(0, 150)})`,
-          author_social: null,
-          submitted_by: user.email,
-        });
-      } catch {
-        // Ignore duplicate image insertion error
+      const { error: photoError } = await db.from('community_photos').insert({
+        recipe_slug: recipeSlug,
+        image_url: sampleImageUrl,
+        author_name: `${user.name} (${title.slice(0, 150)})`,
+        author_social: null,
+        submitted_by: user.email,
+      });
+      // 23505 is unique_violation: this photo is already in the gallery.
+      if (photoError && photoError.code !== '23505') {
+        logFallback('proposals/gallery', photoError);
       }
     }
 
@@ -248,6 +276,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ proposal: savedProposal, source: 'supabase' });
   } catch (err) {
     logFallback('proposals', err);
+    const outage = outageErrorCode(err);
+    if (outage) {
+      return NextResponse.json(communityErrorBody(outage), { status: COMMUNITY_ERRORS[outage] });
+    }
     return NextResponse.json(communityErrorBody('saveFailed'), { status: 500 });
   }
 }
