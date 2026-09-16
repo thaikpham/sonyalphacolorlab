@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { requireAdmin, NOT_ADMIN } from '@/lib/auth/require-admin';
+import { adminGate } from '@/lib/auth/admin-gate';
 import { translateFeatures } from '@/lib/ai/translate-features';
 import { checkRateLimit } from '@/lib/ai/rate-limit';
 
@@ -17,12 +17,12 @@ import { checkRateLimit } from '@/lib/ai/rate-limit';
  * that bill arrives.
  */
 export async function POST(request: Request) {
-  const admin = await requireAdmin(request);
-  if (!admin) return NextResponse.json(NOT_ADMIN, { status: 403 });
+  const gate = await adminGate(request);
+  if (!gate.ok) return NextResponse.json({ error: gate.error }, { status: gate.status });
 
   /* Namespaced by route so a translation burst cannot exhaust the same budget
      the reader-facing "Tweak with AI" endpoint draws on. */
-  const limit = checkRateLimit(`admin-translate:${admin.email}`);
+  const limit = checkRateLimit(`admin-translate:${gate.admin.email}`);
   if (!limit.allowed) {
     return NextResponse.json(
       { error: 'rateLimited', retryAfterSeconds: limit.retryAfterSeconds },

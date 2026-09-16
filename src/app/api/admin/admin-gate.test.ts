@@ -13,20 +13,56 @@ import { describe, expect, it } from 'vitest';
  * reachable with a key the browser holds.
  */
 
+/**
+ * Every route under /api/admin. The list is the test: a new admin route that
+ * nobody adds here is a route nobody checks, and the article routes spent their
+ * whole first draft outside this file.
+ */
 const ADMIN_ROUTES = [
   'src/app/api/admin/session/route.ts',
   'src/app/api/admin/products/route.ts',
   'src/app/api/admin/products/[id]/route.ts',
   'src/app/api/admin/translate/route.ts',
+  'src/app/api/admin/articles/route.ts',
+  'src/app/api/admin/articles/[id]/route.ts',
+  'src/app/api/admin/articles/upload/route.ts',
 ];
 
 const WRITE_ROUTES = ADMIN_ROUTES.filter((p) => !p.endsWith('session/route.ts'));
 
+/**
+ * The work a request must not reach before it has been authorised.
+ *
+ * Body parsing is the cheap one to get wrong and the expensive one to leave
+ * open: `request.formData()` on the upload route buffers megabytes from an
+ * anonymous caller, and the Anthropic call on the translate route spends money.
+ * Opening a content client before the gate is worse than wasteful — it puts a
+ * service credential in the call stack of an unauthenticated request.
+ */
+const GUARDED_WORK = [
+  /request\.json\(\)/,
+  /request\.formData\(\)/,
+  /contentAdmin\(\)/,
+  /callAnthropic|translateFeatures\(/,
+  /\.storage\b/,
+];
+
 describe.each(ADMIN_ROUTES)('%s', (path) => {
   const source = readFileSync(path, 'utf8');
 
-  it('calls requireAdmin on the request', () => {
-    expect(source).toMatch(/requireAdmin\(\s*request\s*\)/);
+  it('authorises through the one shared gate', () => {
+    expect(source).toMatch(/adminGate\(\s*request\s*\)/);
+    /* Not `requireAdmin` directly: that call has three outcomes now, and a
+       route that writes `if (!admin)` around it turns a thrown control outage
+       into an uncaught 500. */
+    expect(source).not.toMatch(/requireAdmin\(\s*request\s*\)/);
+  });
+
+  it('maps a control outage to 503 rather than a 403 or an uncaught 500', () => {
+    /* Either the route forwards the gate's own status, or — the session route —
+       it names 503 explicitly. What it may not do is answer "not an admin" when
+       the truth is "we could not ask". */
+    expect(source).toMatch(/status:\s*gate\.status|status:\s*503/);
   });
 });
 
@@ -34,8 +70,23 @@ describe.each(WRITE_ROUTES)('%s', (path) => {
   const source = readFileSync(path, 'utf8');
 
   it('refuses a non-admin before doing any work', () => {
-    expect(source).toMatch(/if\s*\(\s*!admin\s*\)\s*return/);
-    expect(source).toMatch(/status:\s*403/);
+    expect(source).toMatch(/if\s*\(\s*!gate\.ok\s*\)\s*return/);
+    expect(source).toMatch(/status:\s*gate\.status/);
+  });
+
+  it('authorises before parsing a body, spending a model call, or opening a client', () => {
+    /* Measured inside the handlers only. A module-level helper that opens a
+       content client sits above every handler in the file and would make this
+       read false while being true of every actual request. */
+    const first = source.search(/export async function (GET|POST|PATCH|DELETE)\(/);
+    const body = source.slice(first);
+    const gateAt = body.search(/adminGate\(\s*request\s*\)/);
+    expect(gateAt).toBeGreaterThan(-1);
+    for (const work of GUARDED_WORK) {
+      const at = body.search(work);
+      if (at === -1) continue;
+      expect(at).toBeGreaterThan(gateAt);
+    }
   });
 
   it('never takes the editor identity from the body', () => {
@@ -47,7 +98,7 @@ describe.each(WRITE_ROUTES)('%s', (path) => {
     /* The stored editor must be the verified one. `updated_by: body.…` is the
        regression this catches. */
     if (source.includes('updated_by')) {
-      expect(source).toMatch(/updated_by:\s*admin\.email/);
+      expect(source).toMatch(/updated_by:\s*(gate\.)?admin\.email/);
     }
   });
 });
@@ -90,10 +141,18 @@ describe('admin_emails', () => {
     expect(sql).toMatch(/alter\s+table\s+admin_emails\s+enable\s+row\s+level\s+security/i);
   });
 
-  it('is only ever read with the service-role client', () => {
+  it('is only ever read with the control plane secret client', () => {
+    /* Two properties in one place, because they fail together. The allowlist
+       must be read with a credential the browser does not hold — an anon read
+       would need a public grant on a table of administrator addresses. And it
+       must be read from the CONTROL project: after the split, the content
+       project has no `admin_emails` at all, so a content client here would
+       authorise nobody, or worse, authorise everybody if a table of that name
+       were ever created there. */
     const guard = readFileSync('src/lib/auth/require-admin.ts', 'utf8');
-    expect(guard).toMatch(/supabaseAdmin\(\)[\s\S]{0,80}admin_emails/);
-    expect(guard).not.toMatch(/supabaseRead\(\)/);
+    expect(guard).toMatch(/controlAdmin\(\)[\s\S]{0,80}admin_emails/);
+    expect(guard).not.toMatch(/controlRead\(\)/);
+    expect(guard).not.toMatch(/content(Read|Admin)\(\)/);
   });
 
   it('folds case before comparing, so A@x.com is not a different admin', () => {

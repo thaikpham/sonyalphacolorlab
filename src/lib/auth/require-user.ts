@@ -1,5 +1,6 @@
 import 'server-only';
-import { supabaseAdmin, isSupabaseConfigured } from '@/lib/supabase/server';
+import { controlAdmin, hasControlConfig } from '@/lib/supabase/server';
+import { ControlUnavailableError, isCredentialRejection } from '@/lib/supabase/errors';
 import { communityErrorBody } from '@/lib/community/errors';
 
 /**
@@ -15,6 +16,17 @@ import { communityErrorBody } from '@/lib/community/errors';
  * The bearer token is a Supabase-issued JWT; `getUser(token)` validates the
  * signature and expiry against the project's own keys. A tampered or expired
  * token resolves to nothing, and callers must treat that as unauthenticated.
+ *
+ * It asks the *control* project and only the control project. The content
+ * project has no Auth configured and never sees this token: every content write
+ * goes through a route handler here that has already verified the session.
+ *
+ * `null` and a throw mean different things and the difference is load-bearing.
+ * `null` is "this credential is not good". `ControlUnavailableError` is "the
+ * project could not tell us" — a spent egress quota, a 5xx, a transport
+ * failure. Collapsing the second into the first signs every reader out during
+ * an incident, and used to be what tipped the admin guard into a hard-coded
+ * bypass.
  */
 
 export type AuthedUser = {
@@ -24,15 +36,36 @@ export type AuthedUser = {
 };
 
 export async function requireUser(request: Request): Promise<AuthedUser | null> {
-  if (!isSupabaseConfigured()) return null;
+  if (!hasControlConfig()) return null;
 
   const header = request.headers.get('authorization') ?? '';
   const token = header.toLowerCase().startsWith('bearer ') ? header.slice(7).trim() : '';
   if (!token) return null;
 
+  let data: Awaited<ReturnType<ReturnType<typeof controlAdmin>['auth']['getUser']>>['data'];
   try {
-    const { data, error } = await supabaseAdmin().auth.getUser(token);
-    if (error || !data.user?.email) return null;
+    const result = await controlAdmin().auth.getUser(token);
+    if (result.error) {
+      if (isCredentialRejection((result.error as { status?: number }).status)) return null;
+      throw new ControlUnavailableError(`getUser: ${result.error.message}`);
+    }
+    data = result.data;
+  } catch (error) {
+    if (error instanceof ControlUnavailableError) throw error;
+    /* A TypeError from fetch, an aborted request, a proxy's HTML error page
+       failing to parse. None of them is evidence about the token. */
+    throw new ControlUnavailableError(`getUser: ${(error as Error).message}`);
+  }
+
+  if (!data.user) {
+    /* No error and no user is not a shape GoTrue produces. Something between us
+       and the project rewrote the answer, so believing it would sign the reader
+       out mid-session. */
+    throw new ControlUnavailableError('getUser returned neither a user nor an error.');
+  }
+  if (!data.user.email) return null;
+
+  {
 
     // Google supplies these; fall back to the address rather than trusting any
     // client-supplied display name.
@@ -54,9 +87,6 @@ export async function requireUser(request: Request): Promise<AuthedUser | null> 
         : null;
 
     return { email: data.user.email, name: name.slice(0, 100), avatarUrl };
-  } catch {
-    // A verification failure is an unauthenticated request, never an allowed one.
-    return null;
   }
 }
 

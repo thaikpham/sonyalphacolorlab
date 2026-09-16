@@ -1,12 +1,16 @@
 import { NextResponse } from 'next/server';
-import { requireAdmin, canManageCategory, NOT_ADMIN } from '@/lib/auth/require-admin';
-import { supabaseAdmin, isSupabaseConfigured } from '@/lib/supabase/server';
+import { canManageCategory } from '@/lib/auth/require-admin';
+import { adminGate } from '@/lib/auth/admin-gate';
+import { CONTENT_ADMIN_FROZEN, contentAdminWritesFrozen } from '@/lib/admin/content-freeze';
+import { revalidateTag } from 'next/cache';
+import { CATALOGUE_TAG, IMMEDIATE } from '@/lib/catalogue-cache';
+import { contentAdmin, hasContentConfig } from '@/lib/supabase/server';
 import { SPEC_ROWS, type ProductSpecs, type SonyCamera } from '@/lib/cameras/types';
 
 /**
  * Creates a new camera/lens/accessory product in Supabase.
  *
- * Gated by `requireAdmin(request)`. The editor is a trusted person, but the request
+ * Gated by `adminGate(request)`. The editor is a trusted person, but the request
  * body is untrusted and validated server-side.
  */
 
@@ -63,9 +67,12 @@ function buildInitialSpecs(
 }
 
 export async function POST(request: Request) {
-  const admin = await requireAdmin(request);
-  if (!admin) return NextResponse.json(NOT_ADMIN, { status: 403 });
-  if (!isSupabaseConfigured()) {
+  const gate = await adminGate(request);
+  if (!gate.ok) return NextResponse.json({ error: gate.error }, { status: gate.status });
+  if (contentAdminWritesFrozen()) {
+    return NextResponse.json(CONTENT_ADMIN_FROZEN, { status: 503 });
+  }
+  if (!hasContentConfig()) {
     return NextResponse.json({ error: 'notConfigured' }, { status: 503 });
   }
 
@@ -80,7 +87,7 @@ export async function POST(request: Request) {
   const name = (body.name ?? '').trim();
   const fullName = (body.fullName ?? name).trim();
   const category = body.category;
-  if (!category || !canManageCategory(admin.role, category)) {
+  if (!category || !canManageCategory(gate.admin.role, category)) {
     return NextResponse.json({ error: 'notAllowedForCategory' }, { status: 403 });
   }
   const subCategory1 = (body.subCategory1 ?? '').trim();
@@ -154,11 +161,11 @@ export async function POST(request: Request) {
     specs: newProduct.specs,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-    updated_by: admin.email,
+    updated_by: gate.admin.email,
   };
 
   try {
-    const { error } = await supabaseAdmin().from('sony_cameras').insert(cameraRow);
+    const { error } = await contentAdmin().from('sony_cameras').insert(cameraRow);
     if (error) {
       console.error('[admin/products] create failed:', JSON.stringify(error));
       return NextResponse.json({ error: 'saveFailed' }, { status: 502 });
@@ -167,6 +174,13 @@ export async function POST(request: Request) {
     console.error('[admin/products] create threw:', err);
     return NextResponse.json({ error: 'saveFailed' }, { status: 502 });
   }
+
+  /* After the commit and only after it. The catalogue reads are wrapped in a
+     tagged Data Cache with a sixty-second interval, so without this the new
+     product is invisible for up to a minute — and an editor who cannot see
+     what they just saved saves it again. Invalidating before the write, or on
+     a failed one, throws away a good cache to show the same old rows. */
+  revalidateTag(CATALOGUE_TAG, IMMEDIATE);
 
   return NextResponse.json({
     ok: true,

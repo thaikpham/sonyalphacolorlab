@@ -1,8 +1,61 @@
 import { NextResponse } from 'next/server';
-import { requireAdmin, canManageCategory, NOT_ADMIN } from '@/lib/auth/require-admin';
-import { supabaseAdmin, isSupabaseConfigured } from '@/lib/supabase/server';
-import { getSonyProductById } from '@/lib/cameras/data';
-import { SPEC_ROWS, type ProductSpecs } from '@/lib/cameras/types';
+import { canManageCategory } from '@/lib/auth/require-admin';
+import { adminGate } from '@/lib/auth/admin-gate';
+import { CONTENT_ADMIN_FROZEN, contentAdminWritesFrozen } from '@/lib/admin/content-freeze';
+import { revalidateTag } from 'next/cache';
+import { CATALOGUE_TAG, IMMEDIATE } from '@/lib/catalogue-cache';
+import { contentAdmin, hasContentConfig } from '@/lib/supabase/server';
+import { SPEC_ROWS, type ProductSpecs, type SonyCamera } from '@/lib/cameras/types';
+
+/**
+ * The row as it is *right now*, read past every cache.
+ *
+ * This used to call the shared by-id reader, which goes through the tagged
+ * catalogue cache — a sixty-second window in which this handler could be
+ * looking at a copy that predates the save before it. Two edits a minute apart
+ * were enough: the second built `fullRow` by filling unspecified columns from
+ * the stale copy and upserted the first edit away, with both saves reporting
+ * success.
+ *
+ * It is also the row the category/role check is made against, and a PE deciding
+ * whether they may touch a product should not be answered from a cache.
+ *
+ * `contentAdmin()` rather than `contentRead()` because this needs the columns a
+ * public select deliberately omits, and the caller has already passed
+ * `adminGate()`.
+ */
+async function currentProductRow(id: string): Promise<SonyCamera | null> {
+  const { data, error } = await contentAdmin()
+    .from('sony_cameras')
+    .select(
+      'id, sku, name, full_name, category, sub_category_1, sub_category_2, price_vnd, price_formatted, url, image_url, gallery_urls, features, specs',
+    )
+    .eq('id', id)
+    .maybeSingle();
+
+  if (error) {
+    console.error('[admin/products] current row read failed:', error.message);
+    throw new Error('currentProductRow');
+  }
+  if (!data) return null;
+
+  return {
+    id: data.id,
+    sku: data.sku,
+    name: data.name,
+    fullName: data.full_name,
+    category: data.category as SonyCamera['category'],
+    subCategory1: data.sub_category_1 || '',
+    subCategory2: data.sub_category_2 || '',
+    priceVnd: Number(data.price_vnd),
+    priceFormatted: data.price_formatted,
+    url: data.url,
+    imageUrl: data.image_url,
+    galleryUrls: (data.gallery_urls as string[] | null) ?? undefined,
+    features: (data.features ?? []) as SonyCamera['features'],
+    specs: (data.specs as SonyCamera['specs']) ?? undefined,
+  };
+}
 
 /**
  * Saves one product's specs and features.
@@ -59,16 +112,25 @@ export function sanitizeSpecs(input: Record<string, unknown>, existing: ProductS
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const admin = await requireAdmin(request);
-  if (!admin) return NextResponse.json(NOT_ADMIN, { status: 403 });
-  if (!isSupabaseConfigured()) {
+  const gate = await adminGate(request);
+  if (!gate.ok) return NextResponse.json({ error: gate.error }, { status: gate.status });
+  if (contentAdminWritesFrozen()) {
+    return NextResponse.json(CONTENT_ADMIN_FROZEN, { status: 503 });
+  }
+  if (!hasContentConfig()) {
     return NextResponse.json({ error: 'notConfigured' }, { status: 503 });
   }
 
   const { id } = await params;
-  const product = await getSonyProductById(id);
+
+  let product: SonyCamera | null;
+  try {
+    product = await currentProductRow(id);
+  } catch {
+    return NextResponse.json({ error: 'contentUnavailable' }, { status: 503 });
+  }
   if (!product) return NextResponse.json({ error: 'notFound' }, { status: 404 });
-  if (!canManageCategory(admin.role, product.category)) {
+  if (!canManageCategory(gate.admin.role, product.category)) {
     return NextResponse.json({ error: 'notAllowedForCategory' }, { status: 403 });
   }
 
@@ -81,7 +143,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
   const update: Record<string, unknown> = {
     updated_at: new Date().toISOString(),
-    updated_by: admin.email,
+    updated_by: gate.admin.email,
   };
 
   if (typeof body.name === 'string' && body.name.trim()) {
@@ -132,7 +194,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   };
 
   try {
-    const { error } = await supabaseAdmin().from('sony_cameras').upsert(fullRow, { onConflict: 'id' });
+    const { error } = await contentAdmin().from('sony_cameras').upsert(fullRow, { onConflict: 'id' });
     if (error) {
       console.error('[admin/products] update failed:', JSON.stringify(error));
       return NextResponse.json({ error: 'saveFailed' }, { status: 502 });
@@ -141,6 +203,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     console.error('[admin/products] update threw:', err);
     return NextResponse.json({ error: 'saveFailed' }, { status: 502 });
   }
+
+  // After the commit and only after it — see the create route for why.
+  revalidateTag(CATALOGUE_TAG, IMMEDIATE);
 
   return NextResponse.json({
     ok: true,

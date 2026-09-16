@@ -1,5 +1,6 @@
 import 'server-only';
-import { supabaseAdmin, isSupabaseConfigured } from '@/lib/supabase/server';
+import { controlAdmin, hasControlConfig } from '@/lib/supabase/server';
+import { ControlUnavailableError } from '@/lib/supabase/errors';
 import { requireUser, type AuthedUser } from './require-user';
 
 /**
@@ -16,23 +17,24 @@ import { requireUser, type AuthedUser } from './require-user';
  *    the table is revoked from anon and authenticated entirely — a browser
  *    cannot enumerate the admin list, or probe whether one address is on it.
  *
- * Returns `null` for every failure — unauthenticated, not an admin, table
- * missing, Supabase down. The caller answers 401/403 and must never branch on
- * *why*, because the difference between "you are not an admin" and "that
- * address is not an admin" is itself a disclosure.
+ * Returns `null` when the answer is no — unauthenticated, or verified and not
+ * on the list. The caller answers 403 for both and must never branch on which,
+ * because the difference between "you are not an admin" and "that address is
+ * not an admin" is itself a disclosure.
+ *
+ * It *throws* `ControlUnavailableError` when there is no answer. That is a new
+ * third outcome and it replaces something much worse: the allowlist query used
+ * to be wrapped in a bare `catch` that fell through to four addresses compiled
+ * into the bundle. So on 2026-09-11, with the project answering `402` to every
+ * request, the live authorisation path was a hard-coded list — reachable by
+ * anyone who could make the query fail. An unreachable allowlist is not
+ * evidence that somebody is an administrator. It is 503.
  */
 
 export type AdminRole = 'super' | 'di' | 'pe';
 
 export type AdminUser = AuthedUser & {
   role: AdminRole;
-};
-
-const HARDCODED_ADMINS: Record<string, AdminRole> = {
-  'thaikphams@gmail.com': 'super',
-  'thaikpham.art@gmail.com': 'super',
-  'trungnguyen.fwr@gmail.com': 'di',
-  'nghiemtrancong.sony@gmail.com': 'pe',
 };
 
 export function canManageCategory(role: AdminRole, category: string): boolean {
@@ -42,49 +44,53 @@ export function canManageCategory(role: AdminRole, category: string): boolean {
   return false;
 }
 
+/**
+ * The one account that exists without a project behind it.
+ *
+ * Not a bypass: it is reachable only when *no* Supabase boundary is configured
+ * at all — which Task 1's parser makes an all-or-nothing state, so a single
+ * missing variable in production can no longer unlock it — and only under
+ * `NODE_ENV=development`. The address is deliberately not routable. A real one
+ * here is how a local convenience becomes a production credential.
+ */
+const LOCAL_DEV_ADMIN: AdminUser = {
+  email: 'dev@localhost',
+  name: 'Local development',
+  avatarUrl: null,
+  role: 'super',
+};
+
 export async function requireAdmin(request: Request): Promise<AdminUser | null> {
-  // In offline local development mode without Supabase env vars, provide a local dev admin session
-  if (!isSupabaseConfigured()) {
-    if (process.env.NODE_ENV === 'development') {
-      return {
-        email: 'thaikphams@gmail.com',
-        name: 'Thái K. Phạm (Dev)',
-        avatarUrl: null,
-        role: 'super',
-      };
-    }
-    return null;
+  if (!hasControlConfig()) {
+    return process.env.NODE_ENV === 'development' ? LOCAL_DEV_ADMIN : null;
   }
 
   const user = await requireUser(request);
   if (!user?.email) return null;
 
+  /* Compared lowercased: Supabase stores the address as the provider sent it,
+     and `A@x.com` and `a@x.com` are the same mailbox. Storing the list
+     lowercased is not enough on its own — the JWT side has to be folded too. */
   const normalizedEmail = user.email.toLowerCase();
 
+  let data: { email: string; role: string } | null;
   try {
-    /* Compared lowercased: Supabase stores the address as the provider sent it,
-       and `A@x.com` and `a@x.com` are the same mailbox. Storing the list
-       lowercased is not enough on its own — the JWT side has to be folded too. */
-    const { data, error } = await supabaseAdmin()
+    const result = await controlAdmin()
       .from('admin_emails')
       .select('email, role')
       .eq('email', normalizedEmail)
       .maybeSingle();
-
-    if (!error && data) {
-      const role = (data.role as AdminRole) || 'super';
-      return { ...user, role };
+    if (result.error) {
+      throw new ControlUnavailableError(`admin_emails: ${result.error.message}`);
     }
-  } catch {
-    // Ignore query error and fallback to hardcoded list below
+    data = result.data as { email: string; role: string } | null;
+  } catch (error) {
+    if (error instanceof ControlUnavailableError) throw error;
+    throw new ControlUnavailableError(`admin_emails: ${(error as Error).message}`);
   }
 
-  // Fallback check against hardcoded list so admins are never locked out
-  if (normalizedEmail in HARDCODED_ADMINS) {
-    return { ...user, role: HARDCODED_ADMINS[normalizedEmail] };
-  }
-
-  return null;
+  if (!data) return null;
+  return { ...user, role: (data.role as AdminRole) || 'super' };
 }
 
 /**
