@@ -21,12 +21,20 @@ const MAX_QUERY = 64;
 const SUGGESTIONS = 5;
 
 /**
- * Suggestions are a pure function of the catalogue and the query, and the
- * catalogue changes when an admin saves — minutes apart at best. Letting the
- * CDN answer a repeated prefix keeps the common case off the origin entirely,
- * and `stale-while-revalidate` means the refresh never blocks a keystroke.
+ * No shared cache on this response, deliberately.
+ *
+ * It used to be a public shared-cache directive with a sixty-second freshness
+ * window and a five-minute stale grace, which put a copy of the suggestion list
+ * in front of the CDN for up to six minutes after a save — outliving the
+ * `revalidateTag` the write route now fires, so an editor would rename a
+ * product, see the page update, and still get the old name from the search
+ * box.
+ *
+ * Nothing is lost by dropping it. The expensive part of this route is the
+ * catalogue read, and that is still behind the tagged Data Cache: a keystroke
+ * invokes the handler but does not issue a PostgREST query.
  */
-const CACHE_CONTROL = 'public, s-maxage=60, stale-while-revalidate=300';
+const CACHE_CONTROL = 'no-store';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);

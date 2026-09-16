@@ -21,6 +21,19 @@ export const unstable_cache = <T extends (...args: never[]) => unknown>(
   _options?: { revalidate?: number | false; tags?: string[] },
 ): T => read;
 
-/** No cache to invalidate, so nothing to do. */
-export const revalidateTag = (_tag: string): void => {};
+/**
+ * No cache to invalidate, so nothing to do.
+ *
+ * Whether a route invalidates — and whether it does so only *after* the write
+ * committed — is asserted in `content-write-boundaries.test.ts`, against the
+ * source. That is the right level for it: executing these handlers would need
+ * two live Supabase projects, and what has to hold is a property of the code.
+ * A recording stub here would be a second mechanism for the same guarantee,
+ * with nothing importing it.
+ *
+ * The second parameter is Next 16's required cache-life profile — accepted and
+ * ignored, so a call written against the real signature type-checks and runs
+ * identically here.
+ */
+export const revalidateTag = (_tag: string, _profile?: string | { expire?: number }): void => {};
 export const revalidatePath = (_path: string): void => {};
