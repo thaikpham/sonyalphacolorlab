@@ -4,6 +4,7 @@ import { buildOutline, buildSummary } from '@/lib/lab/outline'
 import { levelLabel, topicLabel } from '@/lib/lab/articles'
 import type { Article, Block } from '@/lib/lab/types'
 import {
+  ArticleEmbed,
   ArticleFigure,
   Callout,
   ComparisonTable,
@@ -18,7 +19,7 @@ import { CompareSlider } from './compare-slider'
 /**
  * One article, with the derived rail beside it.
  *
- * A Server Component: only two of the nine blocks need a client boundary, and
+ * A Server Component: only two of the ten blocks need a client boundary, and
  * they open their own. The rail is the interesting half — its summary and its
  * per-section précis are computed from the body rather than authored, so a
  * rewritten section cannot leave a stale summary behind it.
@@ -39,11 +40,13 @@ function renderBlock(block: Block, i: number, articleId: string) {
     case 'callout':
       return <Callout key={i} block={block} />
     case 'compare':
-      return <CompareSlider key={i} block={block} />
+      return <CompareSlider key={i} block={block} articleId={articleId} />
     case 'checklist':
       return <Checklist key={i} block={block} articleId={articleId} blockIndex={i} />
     case 'figure':
-      return <ArticleFigure key={i} block={block} />
+      return <ArticleFigure key={i} block={block} articleId={articleId} />
+    case 'embed':
+      return <ArticleEmbed key={i} block={block} />
   }
 }
 

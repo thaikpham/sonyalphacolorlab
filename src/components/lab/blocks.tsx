@@ -1,7 +1,9 @@
 import Image from 'next/image'
+import { assetUrl } from '@/lib/lab/media'
 import { headingId } from '@/lib/lab/outline'
 import type {
   CalloutBlock,
+  EmbedBlock,
   FigureBlock,
   HeadingBlock,
   MenuBlock,
@@ -11,9 +13,10 @@ import type {
 } from '@/lib/lab/types'
 
 /**
- * The seven static block renderers. `compare` and `checklist` are interactive
+ * The eight static block renderers. `compare` and `checklist` are interactive
  * and live in their own client modules, so an article that uses neither ships
- * no JavaScript for its body at all.
+ * no JavaScript for its body at all — `embed` is static too: an iframe is the
+ * provider's player, and nothing on this side has to run to place one.
  *
  * The handoff's spec is a light theme and separates almost everything with
  * `border-top: 1px solid var(--seam)`. This ecosystem bans strokes (rule 4) —
@@ -158,27 +161,76 @@ export function Callout({ block }: { block: CalloutBlock }) {
 /**
  * A figure renders only when its image exists, caption included.
  *
- * No photography shipped with the handoff — every image position there was a
- * drag-and-drop placeholder so the prototype could be reviewed without
- * assets. Neither half of the block stands on its own: an empty 16:9 well in
- * production reads as a broken page rather than as "image pending", and a
- * caption alone is a line of text pointing at nothing, which is worse — this
- * article's says "Bảng Creative Look trên máy" with no screen anywhere near
- * it. Fill in `src` in the article data and the whole block appears; nothing
- * else has to change.
+ * Neither half of the block stands on its own: an empty 16:9 well in production
+ * reads as a broken page rather than as "image pending", and a caption alone is
+ * a line of text pointing at nothing, which is worse. Attach an asset and the
+ * whole block appears; nothing else has to change.
+ *
+ * The `src` names the widest rung; the project's custom loader swaps the width
+ * segment for whichever of the three actually fits, so no optimizer is involved
+ * on either side. The variants were produced at upload from the original bytes,
+ * so re-encoding them through `/_next/image` would pay a transformation to make
+ * an already optimal file slightly worse.
  */
-export function ArticleFigure({ block }: { block: FigureBlock }) {
-  if (!block.src) return null
+export function ArticleFigure({ block, articleId }: { block: FigureBlock; articleId: string }) {
+  if (!block.assetId) return null
+  const src = assetUrl(articleId, block.assetId)
+  if (!src) return null
 
   return (
     <figure className={BLOCK_GAP}>
       <div className="surface-sunken relative aspect-video overflow-hidden rounded-lg">
         <Image
-          src={block.src}
+          src={src}
           alt={block.alt ?? ''}
           fill
           sizes="(max-width: 48rem) 100vw, 40rem"
           className="object-cover"
+        />
+      </div>
+      <figcaption className="meta mt-2">{block.caption}</figcaption>
+    </figure>
+  )
+}
+
+/**
+ * A video, as the provider's own player.
+ *
+ * The `src` is built from the two stored fields and never from anything an
+ * editor pasted — see `parseEmbedUrl` in `parse.ts` for why a URL is reduced to
+ * a provider and an id before it is stored. Both hosts here are the
+ * privacy-preserving variants the providers publish: `youtube-nocookie.com`,
+ * and Vimeo with `dnt=1`. Neither stops the embed being a third party on the
+ * page, but both stop it profiling a reader who never pressed play.
+ *
+ * `loading="lazy"` matters more than usual: a player iframe is several hundred
+ * kilobytes of someone else's JavaScript, and an article may carry two.
+ */
+export function ArticleEmbed({ block }: { block: EmbedBlock }) {
+  const src =
+    block.provider === 'youtube'
+      ? `https://www.youtube-nocookie.com/embed/${block.id}?rel=0`
+      : `https://player.vimeo.com/video/${block.id}?dnt=1`
+
+  return (
+    <figure className={BLOCK_GAP}>
+      {/* The well is `surface-sunken` rather than transparent so the block has
+          the same weight as a figure while the player is still loading — an
+          iframe paints nothing for its first few hundred milliseconds, and a
+          hole in the article is what that looks like without a ground. */}
+      <div className="surface-sunken relative aspect-video overflow-hidden rounded-lg">
+        <iframe
+          src={src}
+          title={block.caption}
+          loading="lazy"
+          /* `allowFullScreen` and nothing else. The default `allow` list hands
+             a third-party frame autoplay, camera, microphone and payment on
+             this origin's behalf; naming the three the player genuinely needs
+             is the difference between embedding a video and delegating the
+             page. */
+          allow="accelerometer; encrypted-media; picture-in-picture"
+          allowFullScreen
+          className="absolute inset-0 h-full w-full"
         />
       </div>
       <figcaption className="meta mt-2">{block.caption}</figcaption>

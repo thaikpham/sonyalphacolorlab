@@ -3,6 +3,7 @@
 import { useId, useState } from 'react'
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
+import { assetUrl } from '@/lib/lab/media'
 import type { CompareBlock } from '@/lib/lab/types'
 import { BLOCK_GAP } from './blocks'
 
@@ -20,7 +21,7 @@ import { BLOCK_GAP } from './blocks'
  * things reimplemented badly. Position is ephemeral by design — the handoff
  * says do not persist it, and a wipe frozen at 3% on return would look broken.
  */
-export function CompareSlider({ block }: { block: CompareBlock }) {
+export function CompareSlider({ block, articleId }: { block: CompareBlock; articleId: string }) {
   const [value, setValue] = useState(50)
   const id = useId()
   const t = useTranslations('lab')
@@ -29,13 +30,17 @@ export function CompareSlider({ block }: { block: CompareBlock }) {
      stand in for them: every one of these opens by telling the reader to drag
      a control that would not be on the page. The block waits for its
      photography rather than shipping an instruction to nowhere. */
-  if (!block.before || !block.after) return null
+  if (!block.beforeAssetId || !block.afterAssetId) return null
+
+  const before = assetUrl(articleId, block.beforeAssetId)
+  const after = assetUrl(articleId, block.afterAssetId)
+  if (!before || !after) return null
 
   return (
     <figure className={BLOCK_GAP}>
       <div className="surface-sunken relative aspect-3/2 overflow-hidden rounded-lg">
         <Image
-          src={block.after}
+          src={after}
           alt={block.afterLabel}
           fill
           sizes="(max-width: 48rem) 100vw, 40rem"
@@ -49,7 +54,7 @@ export function CompareSlider({ block }: { block: CompareBlock }) {
           style={{ clipPath: `inset(0 ${100 - value}% 0 0)` }}
         >
           <Image
-            src={block.before}
+            src={before}
             alt={block.beforeLabel}
             fill
             sizes="(max-width: 48rem) 100vw, 40rem"

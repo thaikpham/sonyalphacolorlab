@@ -5,6 +5,7 @@ import { getMessages, setRequestLocale } from 'next-intl/server';
 import { routing } from '@/i18n/routing';
 import { AuthProvider } from '@/components/auth-context';
 import { HtmlLang } from '@/components/html-lang';
+import { contentOrigin as resolveContentOrigin } from '@/lib/supabase/config';
 /* The face comes from `@font-face` in globals.css, vendored into
    public/fonts/noto-sans by `npm run fonts:vendor`. No next/font: it hashes the
    family into a per-app variable, so the four apps in this ecosystem could not
@@ -59,12 +60,21 @@ export default async function LocaleLayout({
     error: messages.error,
     lab: messages.lab,
     language: messages.language,
-    launcher: messages.launcher,
     nav: messages.nav,
     recipe: messages.recipe,
     search: messages.search,
     tweak: messages.tweak,
   };
+
+  /* Resolved through the same validator the client factories use, so a
+     malformed value degrades to "no preconnect" rather than throwing during a
+     render — `new URL()` on a bad string inside a layout takes the page down. */
+  let contentOrigin: string | null = null;
+  try {
+    contentOrigin = resolveContentOrigin(process.env);
+  } catch {
+    contentOrigin = null;
+  }
 
   return (
     /* `<html>` lives HERE, not in the root layout above, and that placement is
@@ -78,10 +88,20 @@ export default async function LocaleLayout({
        attribute costs no dynamic rendering. */
     <html lang={locale} className="h-full antialiased">
       <head>
-        <link rel="preconnect" href="https://nqeedlgzaewccqztqvik.supabase.co" />
+        {/* The content project, and only when one is configured. The old
+            hard-coded control-project host is gone: that project serves no
+            images any more, and naming it on every public page
+            both warmed a connection nobody used and published which project
+            holds the site's Auth. Sign-in is user-triggered and gets its
+            connection when the reader asks for it. */}
+        {contentOrigin ? (
+          <>
+            <link rel="preconnect" href={contentOrigin} />
+            <link rel="dns-prefetch" href={contentOrigin} />
+          </>
+        ) : null}
         <link rel="preconnect" href="https://static.bhphoto.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://sony.scene7.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://nqeedlgzaewccqztqvik.supabase.co" />
         <link rel="dns-prefetch" href="https://static.bhphoto.com" />
         <link rel="dns-prefetch" href="https://sony.scene7.com" />
       </head>

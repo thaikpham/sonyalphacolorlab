@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import loader from './catalogue-loader';
 
 /**
@@ -112,86 +112,67 @@ describe('catalogueImageLoader', () => {
   });
 
   /**
-   * Storage photographs must NOT pass through.
+   * Article assets, and the rung that already exists.
    *
-   * They used to, and that is what spent the project's cached-egress quota: no
-   * resizing ever happened, so a 210px grid card downloaded the full original —
-   * 155KB on average, 1.87MB at worst, 1.27GB of CDN egress a day against a 5GB
-   * month. A passthrough here is not a missing optimization, it is the bug.
+   * Nothing is transformed on demand any more. Recipe photographs are vendored
+   * into `public/recipes` at three widths, and article media is written to
+   * Storage at the same three widths at upload — so both branches of this
+   * loader do the same thing: rewrite the path to name the rung that fits. The
+   * optimizer is out of the picture entirely, which is the point. Routing these
+   * through `/_next/image` traded a Supabase quota for a Vercel one, and
+   * Vercel's had already run out once.
    */
-  describe('Supabase Storage', () => {
-    const STORAGE = 'https://nqeedlgzaewccqztqvik.supabase.co';
-    const photo = `${STORAGE}/storage/v1/object/public/recipes/SCL-PP-044/00.png`;
+  describe('article assets', () => {
+    const CONTENT = 'https://touiyczjvnuaxfzulgeq.supabase.co';
+    const ASSET = '3f2b9c41-6d5e-4a7b-9c10-2e8f4a6b1d33';
+    const stem = `${CONTENT}/storage/v1/object/public/lab/body-ev-vs-flash-ev/${ASSET}`;
+    const remote = `${stem}/1024.webp`;
+    const local = `/lab/body-ev-vs-flash-ev/${ASSET}/1024.webp`;
 
-    /* Next inlines this at build time for the browser; vitest does not load
-       `.env.local`, so the host has to be stated for the branch to exist. */
-    const original = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    beforeAll(() => {
-      process.env.NEXT_PUBLIC_SUPABASE_URL = STORAGE;
-    });
-    afterAll(() => {
-      if (original === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL;
-      else process.env.NEXT_PUBLIC_SUPABASE_URL = original;
+    it('never reaches the optimizer', () => {
+      for (const width of [16, 48, 256, 640, 1200, 1920]) {
+        expect(loader({ src: remote, width })).not.toContain('/_next/image');
+      }
     });
 
-    it('leaves photographs alone when Supabase is not configured at all', () => {
-      // The app runs off the seed files then; there is no Storage to optimize.
-      process.env.NEXT_PUBLIC_SUPABASE_URL = '';
-      expect(loader({ src: photo, width: 256 })).toBe(photo);
-      process.env.NEXT_PUBLIC_SUPABASE_URL = STORAGE;
+    it('climbs the three rungs in step with the width asked for', () => {
+      const w = (width: number) => loader({ src: remote, width }).split('/').pop();
+      expect(w(16)).toBe('320.webp');
+      expect(w(320)).toBe('320.webp');
+      expect(w(321)).toBe('640.webp');
+      expect(w(640)).toBe('640.webp');
+      expect(w(641)).toBe('1024.webp');
+      expect(w(1920)).toBe('1024.webp');
     });
 
-    it('routes recipe photographs through the optimizer, never verbatim', () => {
-      const out = loader({ src: photo, width: 256 });
-
-      expect(out).not.toBe(photo);
-      expect(out.startsWith('/_next/image?')).toBe(true);
-      expect(new URLSearchParams(out.split('?')[1]).get('url')).toBe(photo);
-    });
-
-    it('snaps to three rungs, so the whole catalogue is ~555 transformations', () => {
-      // The optimizer bills distinct transformations, not requests. Next asks
-      // across its full ladder; only these three widths may reach it.
+    it('asks for no width that was never written', () => {
       const widths = [16, 48, 64, 128, 256, 640, 750, 828, 1080, 1200, 1920];
-      const asked = new Set(
-        widths.map((width) => new URLSearchParams(loader({ src: photo, width }).split('?')[1]).get('w')),
+      const asked = new Set(widths.map((width) => loader({ src: remote, width }).split('/').pop()));
+      expect([...asked].sort()).toEqual(['1024.webp', '320.webp', '640.webp']);
+    });
+
+    it('changes only the width segment, so it cannot name a different asset', () => {
+      const out = loader({ src: remote, width: 320 });
+      expect(out).toBe(`${stem}/320.webp`);
+      expect(out.startsWith(stem)).toBe(true);
+    });
+
+    it('works identically on the offline copy under public/', () => {
+      /* Same three rungs on disk, written by the upload route's dev branch, so
+         an article authored on a laptop renders through this same path. */
+      expect(loader({ src: local, width: 320 })).toBe(
+        `/lab/body-ev-vs-flash-ev/${ASSET}/320.webp`,
       );
-
-      expect([...asked].sort()).toEqual(['1200', '256', '640']);
     });
 
-    it('climbs the rungs in step with the width asked for', () => {
-      const w = (width: number) =>
-        new URLSearchParams(loader({ src: photo, width }).split('?')[1]).get('w');
-
-      // 48px filmstrip thumbnails and the 128-176px lightbox previews. Serving
-      // these from 640 was a 10x overdraw on the one surface that renders
-      // sixteen images at once.
-      expect(w(48)).toBe('256');
-      expect(w(256)).toBe('256');
-      expect(w(257)).toBe('640');
-      expect(w(640)).toBe('640');
-      expect(w(641)).toBe('1200');
-      expect(w(1920)).toBe('1200');
-    });
-
-    it('carries the requested quality, defaulting to Next’s own 75', () => {
-      const q = (quality?: number) =>
-        new URLSearchParams(loader({ src: photo, width: 256, quality }).split('?')[1]).get('q');
-
-      expect(q()).toBe('75');
-      expect(q(90)).toBe('90');
-    });
-
-    it('refuses any path on the host that is not a public Storage object', () => {
-      // A loader that hands /_next/image an arbitrary path on this host turns
-      // the optimizer into a proxy for whatever else the host serves.
+    it('leaves anything that is not an asset variant alone', () => {
       for (const src of [
-        `${STORAGE}/rest/v1/recipes`,
-        `${STORAGE}/auth/v1/authorize`,
-        `${STORAGE}/storage/v1/object/sign/recipes/a.jpg`,
+        `${CONTENT}/storage/v1/object/public/lab/loose-file.webp`,
+        `${CONTENT}/storage/v1/object/sign/lab-drafts/${ASSET}/1024.webp`,
+        `${CONTENT}/rest/v1/recipes`,
+        `${stem}/2048.webp`,
       ]) {
-        expect(loader({ src, width: 256 })).toBe(src);
+        expect(loader({ src, width: 320 })).toBe(src);
       }
     });
   });
