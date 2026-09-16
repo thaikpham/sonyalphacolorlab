@@ -1,10 +1,14 @@
 /**
- * Pushes the migrated catalogue into Supabase.
+ * Pushes the migrated catalogue into the content project.
  *
- * Run once the project exists and the migration in supabase/migrations has been
+ * Run once the project exists and `supabase/content/migrations` has been
  * applied:
  *
- *   NEXT_PUBLIC_SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... npm run push:supabase
+ *   npm run push:supabase -- --target content
+ *
+ * The target is required and has no default. Recipes live in the content
+ * project; pushing them into the control one would put the catalogue in the
+ * project that holds Auth, and the script's output would not say so.
  *
  * Idempotent: rows are upserted on primary key, so re-running syncs rather than
  * duplicating. Nothing is deleted — removing a recipe is a deliberate act, not a
@@ -13,6 +17,7 @@
 
 import { readFileSync } from 'node:fs';
 import { adminClient } from './lib/db';
+import { requireTarget } from './supabase/args';
 import { recipeSchema } from '../src/lib/camera/schema';
 import { toRow } from '../src/lib/recipes/row';
 import type { SonyCamera } from '../src/lib/cameras/types';
@@ -48,7 +53,11 @@ async function main() {
   });
   console.log(`✓ ${rows.length} recipes validated`);
 
-  const db = adminClient();
+  const { target } = requireTarget(process.argv.slice(2));
+  if (target !== 'content') {
+    throw new Error('This script seeds content tables. Pass --target content.');
+  }
+  const db = adminClient(target);
 
   const { error: recipeError } = await db.from('recipes').upsert(rows, { onConflict: 'id' });
   if (recipeError) throw new Error(`recipes upsert: ${recipeError.message}`);

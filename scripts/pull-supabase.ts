@@ -14,27 +14,27 @@
  * Run it before committing after an editing session. It is deliberately not
  * automatic: overwriting a tracked data file is a thing you should ask for.
  */
+import { adminClient } from './lib/db';
+import { requireTarget } from './supabase/args';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { createClient } from '@supabase/supabase-js';
 
 const SEED_CAMERAS = join(process.cwd(), 'data', 'sony-cameras.seed.json');
 const SEED_AUDIO = join(process.cwd(), 'data', 'sony-audio.seed.json');
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-if (!url || !key) {
-  console.error('Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env.local.');
-  process.exit(1);
-}
-
+/* `sony_cameras` lives in the content project. There is no generic "the
+   project" left to default to, and pulling the catalogue out of the wrong one
+   would overwrite the seed files with whatever that project happened to hold. */
 const dry = process.argv.includes('--dry');
 
 type Row = Record<string, unknown>;
 
 async function main() {
-  const db = createClient(url!, key!, { auth: { persistSession: false } });
+  const { target } = requireTarget(process.argv.slice(2).filter((a) => a !== '--dry'));
+  if (target !== 'content') {
+    throw new Error('The catalogue lives in the content project. Pass --target content.');
+  }
+  const db = adminClient(target);
   const { data, error } = await db
     .from('sony_cameras')
     .select(

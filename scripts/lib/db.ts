@@ -1,22 +1,23 @@
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
+
+import { adminClient as targetedAdminClient } from '../supabase/clients';
+import type { Target } from '../supabase/args';
 
 /**
- * Service-role client for scripts.
+ * The old generic script client, now unable to guess.
  *
- * Scripts build their own client rather than importing `src/lib/supabase/server`
- * — that module carries `import 'server-only'`, which throws outside a React
- * Server Component and would otherwise force us to weaken the guard that keeps
- * the service-role key out of the app bundle.
+ * It used to read `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`,
+ * which meant "the project" — fine when there was one. With two projects in two
+ * organisations, a seed script that reads whichever variables happen to be
+ * loaded can write the catalogue into the project that holds Auth, and nothing
+ * in its output would say so.
  *
- * Bypasses RLS. Only ever for seeding and admin tasks.
+ * The signature is the fix: there is no call without a target. Everything else
+ * lives in `scripts/supabase/clients.ts`, which this re-exports so the existing
+ * seed scripts keep one short import.
  */
-export function adminClient(): SupabaseClient {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
-    throw new Error(
-      'Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (scripts read .env.local).',
-    );
-  }
-  return createClient(url, key, { auth: { persistSession: false } });
+export function adminClient(target: Target): SupabaseClient {
+  return targetedAdminClient(target);
 }
+
+export type { Target };
