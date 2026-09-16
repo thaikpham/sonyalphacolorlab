@@ -8,7 +8,7 @@
 
 Alpha ColorLab 2.0 is a modern Next.js 16 App Router application for exploring, comparing, and sharing Sony Alpha White Balance Shift color recipes, Picture Profiles, Creative Looks, and comprehensive camera/lens specifications.
 
-All 93 Sony products in the catalog (`data/sony-cameras.seed.json`) have been audited against official sources (B&H Photo Video, Sony VN, Sony SG, YL Camera MY), paired with 1000x1000 high-resolution B&H product photos, and wired to real discussion topics on **`r/sonysandbox_dev`**.
+All 93 Sony products in the catalog (`data/sony-cameras.seed.json`) have been audited against official sources (B&H Photo Video, Sony VN, Sony SG, YL Camera MY) and paired with 1000x1000 high-resolution B&H product photos.
 
 ---
 
@@ -19,56 +19,18 @@ All 93 Sony products in the catalog (`data/sony-cameras.seed.json`) have been au
 - Vertical lens images (`height > width`) were automatically detected, rotated 90° counter-clockwise (CCW) using Pillow, and saved to `public/products/<product-id>.jpg` (e.g. `sony-sel50f14gm.jpg`, `sony-sel85f14gm2.jpg`).
 - `fast_image_audit.py` confirmed **0 broken image links** out of 93 products (100% HTTP 200 OK).
 
-### B. Product Community Drawer — real topics from `r/sonysandbox_dev`
+### B. Product community drawer — removed
 
-`src/lib/reddit/` is the whole integration; `ProductCommunityDrawer`
-(`src/components/product-community-drawer.tsx`) is its only UI.
+The `/cameras/<id>` pages carried a drawer that read real topics from
+`r/sonysandbox_dev`. The whole integration is gone: `src/lib/reddit/`,
+`/api/reddit/topics`, `ProductCommunityDrawer`, the `reddit:token` and
+`reddit:seed` scripts, the `REDDIT_*` environment contract and the
+`cameras.redditStatus.*` / topic message keys. The product page is a single
+column of specs and features now.
 
-- **Every number on screen is Reddit's.** Score, comment count, author, mod and
-  pin state are read from the API. There is no local vote and no local post
-  list: acting on a post is an action on Reddit under the reader's own account,
-  so each card links out for it instead of simulating it.
-- **The mockups are gone.** `src/lib/cameras/community.ts` held five authored
-  placeholder topics for the a7 IV and a per-product handle (`r/7iv-sev`) that
-  does not exist on reddit.com. Both are deleted. A space that cannot be read
-  now says so — see the `redditStatus.*` banner — rather than showing a
-  realistic-looking feed.
-- Filter tabs (`✨ Mới nhất`, `🔥 Hot`, `🎨 Recipe Màu`, `📸 Ảnh chụp mẫu`,
-  `❓ Hỏi đáp`), fullscreen mode and the >140-character `Xem thêm…` expansion are
-  unchanged.
-
-### C. How a post is bound to a product
-
-The canonical product URL in the post body — `…/cameras/<product-id>` — appended
-by `composeBody()` and read back by `productIdOf()` (`src/lib/reddit/topics.ts`).
-It is a link a human reader wants anyway, it survives editing and crossposting,
-and it needs no per-product flair. `topics.test.ts` pins the two as inverses,
-because if they drift the post is silently dropped from every feed with no error
-to see.
-
-The server reads `/r/<sub>/new?limit=100` once and caches it for 60s, then
-filters in memory. Reddit's search endpoint is the scalable shape but its index
-lags minutes behind a submission, and a reader who posts and does not see their
-own topic reads that as a bug.
-
-### C2. Two write paths, and why
-
-- **Readers hand off to Reddit** (`submitUrl()` in `src/lib/reddit/config.ts`).
-  The drawer opens reddit.com's own compose page pre-filled; the reader presses
-  Post as themselves. No server route posts on a reader's behalf — that would
-  put one account's name on prose someone else typed, the same trap
-  `identity-not-from-body.test.ts` pins for the community tables.
-- **The project posts as itself** via `npm run reddit:seed -- <product-id>`,
-  dry by default, `--post` to submit. This is the only user of the bot token.
-
-### C3. Credentials
-
-`r/sonysandbox_dev` is a **private** Devvit playtest sub, so reading it needs a
-refresh token belonging to an account that is a member — an app-only
-(`client_credentials`) token is refused. Mint one with `npm run reddit:token`
-after creating a **web app** at `https://www.reddit.com/prefs/apps` with redirect
-URI `http://localhost:8080/callback`. Vars are documented in `.env.example`.
-Without them the drawer reports `notConfigured` and shows nothing.
+Nothing replaced it. The recipe-side community — photo uploads and comments on
+`/recipe/<slug>`, under the `community` message namespace — is a different
+feature on this project's own Supabase tables and is untouched.
 
 ### D. Dedicated Individual Product Routes (`/cameras/[id]`)
 - Created `src/app/[locale]/cameras/[id]/page.tsx`:

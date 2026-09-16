@@ -24,7 +24,9 @@
       "WebFetch(domain:www.sony-asia.com)",
       "WebFetch(domain:supabase.com)",
       "WebFetch(domain:nextjs.org)",
-      "Read(//home/thaikpham/Desktop/ColorLab 2.0/**)"
+      "Read(//home/thaikpham/Desktop/ColorLab 2.0/**)",
+      "Write(//home/thaikpham/Desktop/ColorLab 2.0/.env.local)",
+      "Edit(//home/thaikpham/Desktop/ColorLab 2.0/.env.local)"
     ]
   },
   "extraKnownMarketplaces": {

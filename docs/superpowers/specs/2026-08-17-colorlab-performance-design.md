@@ -2,7 +2,11 @@
 
 **Date:** 2026-08-17  
 **Status:** Approved in chat; pending implementation plan  
-**Scope:** Alpha ColorLab only
+**Scope:** Alpha ColorLab only  
+**Amended 2026-09-15:** the Reddit product-community drawer was removed from the
+project, so its deferred-read requirements have been struck from this document.
+Everything below about the *recipe* community — photos, comments, proposals — is
+unaffected and still stands.
 
 ## 1. Context
 
@@ -176,7 +180,7 @@ The next-intl Proxy stays in place for as-needed English routing. The design
 does not skip locale middleware for RSC requests without proving bare English
 and prefixed Vietnamese behavior end to end.
 
-### 5.4 Deferred community and Reddit reads
+### 5.4 Deferred community reads
 
 Keep the authored recipe gallery in the initial render. Move community data to
 one lazy client boundary that starts when the gallery/community area approaches
@@ -202,11 +206,6 @@ community data; other readers may see the change for at most the five-minute
 stale-while-revalidate window.
 Realtime events update local state directly where the payload is sufficient;
 otherwise they trigger at most one explicit refresh.
-
-The Reddit product-community drawer does not fetch until opened. Its public
-result uses `s-maxage=300` and `stale-while-revalidate=3600`, so a cold region or
-new Function instance does not repeat the upstream request for every product
-view.
 
 ### 5.5 Paid AI protection
 
@@ -267,7 +266,7 @@ primary AI protection even if the Vercel plan cannot enforce WAF rate limits.
 - Preserve the original image only for an explicit lightbox interaction.
 - Do not serialize the full camera catalogue into the initial compare RSC
   payload. Load the cached catalogue after the compare shell mounts.
-- Lazy-load the Community, Reddit, comparison tool, and AI interaction code at
+- Lazy-load the Community, comparison tool, and AI interaction code at
   the point each feature can be used. Core recipe settings, authored photos,
   product identity, navigation, and accessibility content remain in the first
   render.
@@ -289,8 +288,8 @@ Cloudflare/Vercel is verified separately before any external change.
 
 - Lazy sections render a stable translated placeholder/skeleton with reserved
   space to avoid layout shift.
-- Community and Reddit errors show a retry action and do not fail the recipe or
-  product page.
+- Community errors show a retry action and do not fail the recipe or product
+  page.
 - A stale cached public read is preferred to a blank section during a transient
   upstream failure.
 - AI authentication opens the existing sign-in flow. Rate-limit and service
@@ -318,7 +317,6 @@ Implementation follows TDD. Each behavior is pinned before production code.
 - Intersection-driven community loading performs zero initial GETs, one shared
   GET on entry, and no duplicate request for gallery/community consumers.
 - Anonymous vote state is not requested; authenticated vote state is private.
-- Reddit performs no request before opening and one request after opening.
 - AI routes reject anonymous, oversized, malformed, and unknown-key requests
   before Anthropic is called.
 - Atomic quota tests cover concurrent increments, UTC rollover, per-user caps,
@@ -386,7 +384,7 @@ Implementation is delivered in independently verifiable layers:
 1. AI authentication, validation, and shared quota migration.
 2. Localized root-layout/static-rendering correction.
 3. Catalogue cache, invalidation, static filters, and search index.
-4. Deferred/aggregated Community and Reddit reads.
+4. Deferred/aggregated Community reads.
 5. Image, logo, compare payload, and lazy-bundle reductions.
 6. Metadata redirect cleanup and staged WAF observation rules.
 

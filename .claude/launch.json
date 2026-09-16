@@ -1,27 +1,16 @@
 {
   "version": "0.0.1",
+  "//": "Offline seed mode is no longer something a launch config arranges — it is what the application does when none of the six Supabase variables is set, which is the state `.env.local` is in. `configurationMode()` in src/lib/supabase/config.ts returns 'offline' only when *all six* are absent; a half-configured boundary throws rather than degrading. So there is nothing left for a config to blank. The three entries that used to live here each cleared NEXT_PUBLIC_SUPABASE_ANON_KEY to force a seed fallback; that variable was retired with the control/content split and no code reads it any more, which made all three configs identical to plain `npm run dev` while claiming otherwise.",
   "configurations": [
     {
+      "// ": "The only dev config. While the six Supabase variables are absent this is the full offline preview: recipes and articles come from the repository seed, uploads land in public/lab/ and data/lab-articles.dev.json (both gitignored), and /blog/admin is open with no login — requireAdmin() hands out the dev@localhost super-admin whenever hasControlConfig() is false and NODE_ENV is development. Port 3000 is also the OAuth callback origin, which matters again as soon as the control plane is configured. Next 16 takes a per-directory lock and refuses a second `next dev` in this tree, so there is one server here, not a choice of three.",
       "name": "alpha-colorlab",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
-      "port": 3000,
-      "autoPort": false
-    },
-    {
-      "// ": "Seed-only preview: the only way to see freshly emitted recipes before they are pushed. isSupabaseConfigured() needs BOTH url and anon key, so blanking just the key is enough to force the seed fallback — and it MUST be just the key, because publicImageUrl() builds Storage URLs from NEXT_PUBLIC_SUPABASE_URL. Blank that too and every recipe photo silently disappears. The bucket is public, so the images still load with no key. Real process env wins over .env.local in Next, so this leaves that file untouched. Port 3001 keeps 3000 free for the OAuth callback.",
-      "name": "alpha-colorlab-seed",
-      "runtimeExecutable": "env",
       "runtimeArgs": [
-        "NEXT_PUBLIC_SUPABASE_ANON_KEY=",
-        "npm",
         "run",
-        "dev",
-        "--",
-        "--port",
-        "3001"
+        "dev"
       ],
-      "port": 3001,
+      "port": 3000,
       "autoPort": false
     }
   ]

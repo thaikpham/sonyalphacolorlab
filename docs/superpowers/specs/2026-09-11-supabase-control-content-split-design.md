@@ -1,7 +1,7 @@
 # Supabase Control Plane / Content Plane Split
 
 **Date:** 2026-09-11
-**Status:** Approved in chat; awaiting written-spec review
+**Status:** Approved
 **Scope:** Alpha ColorLab, Sony Wiki, Alpha Tech Blogs, and their shared admin surfaces
 
 ## Summary
@@ -145,7 +145,6 @@ NEXT_PUBLIC_AUTH_SUPABASE_URL
 NEXT_PUBLIC_AUTH_SUPABASE_ANON_KEY
 AUTH_SUPABASE_SECRET_KEY
 
-CONTENT_SUPABASE_URL
 CONTENT_SUPABASE_ANON_KEY
 CONTENT_SUPABASE_SECRET_KEY
 NEXT_PUBLIC_CONTENT_SUPABASE_URL
@@ -154,11 +153,12 @@ NEXT_PUBLIC_CONTENT_SUPABASE_URL
 `NEXT_PUBLIC_CONTENT_SUPABASE_URL` is permitted because public Storage URLs expose
 the host already. No privileged key receives a `NEXT_PUBLIC_` prefix.
 
-The application exposes four focused client factories:
+The application exposes five focused client factories:
 
 - `authBrowser()` authenticates users against the control plane.
-- `controlAdmin()` verifies a bearer token and reads `admin_emails` or writes
-  operational tables.
+- `controlRead()` performs public, RLS-constrained operational reads.
+- `controlAdmin()` verifies a bearer token, reads `admin_emails`, or writes
+  operational tables with a server-only credential.
 - `contentRead()` performs published, RLS-constrained content reads.
 - `contentAdmin()` performs validated administrator content writes.
 
@@ -166,6 +166,15 @@ Production startup/configuration checks reject half-configured boundaries. An Au
 URL without its anon key, or a content URL without both read and write credentials,
 is a deployment error rather than an implicit seed fallback.
 
+CONTENT_ADMIN_FROZEN=true is an optional server-only maintenance switch. It
+rejects product, article, and article-upload mutations before body parsing while
+leaving Auth, community operations, and all public reads available.
+
+
+SUPABASE_ROLLBACK_MODE=true is the only allowed exception to distinct control
+and content origins. It is server-only, emits a deployment-check warning, and
+exists solely for the documented emergency rollback to the retained old content
+tables.
 Local development and tests omit both boundaries only in the explicit offline
 configuration. That absence enables the repository's file-backed/seed behavior;
 production verification rejects it.
@@ -282,7 +291,7 @@ use the explicitly allowed Sony/B&H origins. Neither moves into the new bucket.
 - Published content is readable to `anon` and `authenticated`; drafts are not.
 - `updated_by`, author email, voter email, and administrator email never have
   public column grants.
-- Every restrictive column grant is preceded by a table-level `REVOKE SELECT`.
+- Every restrictive column grant is preceded by a table-level `REVOKE ALL`.
 - No browser role receives insert, update, or delete rights on administrator-owned
   content.
 - Server credentials remain server-only and are scoped by client factory; a
