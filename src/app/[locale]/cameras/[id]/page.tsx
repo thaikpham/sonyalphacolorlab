@@ -4,8 +4,6 @@ import { notFound } from 'next/navigation';
 import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
 import { NextIntlClientProvider } from 'next-intl';
 import { getSonyCameraById, getSonyCameras } from '@/lib/cameras/data';
-import { ProductCommunityDrawer } from '@/components/product-community-drawer';
-import { SUBREDDIT_HANDLE } from '@/lib/reddit/config';
 import { SiteHeader } from '@/components/site-header';
 import { ProductSpecTable } from '@/components/product-spec-table';
 import { ProductGalleryViewer } from '@/components/product-gallery-viewer';
@@ -32,17 +30,13 @@ export async function generateMetadata({
   if (!camera) return { title: 'Product Not Found' };
 
   const isVi = locale === 'vi';
-  /* The real community, not a per-product handle. An earlier draft advertised
-     `r/7iv-sev` in the page title — a plausible-looking address that 404s on
-     reddit.com, and one that search engines would have indexed. */
-  const handle = SUBREDDIT_HANDLE;
   return {
-    title: `${camera.name} (${camera.sku}) · ${isVi ? `Thông số & ${handle}` : `Specs & ${handle}`}`,
+    title: `${camera.name} (${camera.sku}) · ${isVi ? 'Thông số' : 'Specs'}`,
     description: isVi
-      ? `Thông số kỹ thuật chính hãng, giá niêm yết ${camera.priceFormatted}, tính năng nổi bật và thảo luận ${handle} của ${camera.fullName}.`
-      : `Official specs, pricing ${camera.priceFormatted}, key features, and ${handle} discussion for ${camera.fullName}.`,
+      ? `Thông số kỹ thuật chính hãng, giá niêm yết ${camera.priceFormatted} và tính năng nổi bật của ${camera.fullName}.`
+      : `Official specs, pricing ${camera.priceFormatted}, and key features for ${camera.fullName}.`,
     openGraph: {
-      title: `${camera.name} — Alpha ColorLab · ${handle}`,
+      title: `${camera.name} — Alpha ColorLab`,
       description: featureList(camera.features, locale).slice(0, 3).join(' · '),
       images: [{ url: camera.imageUrl }],
     },
@@ -67,7 +61,6 @@ export default async function ProductDetailPage({
   const clientMessages = {
     auth: messages.auth,
     cameras: messages.cameras,
-    community: messages.community,
     language: messages.language,
     nav: messages.nav,
     recipe: messages.recipe,
@@ -214,39 +207,31 @@ export default async function ProductDetailPage({
             </div>
           </section>
 
-          {/* Dual-Pane Layout: Left specs & features, Right community drawer */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-            {/* Left Column: Features & Specifications */}
-            <div className="lg:col-span-7 flex flex-col gap-5">
-              {/* Key Features Section */}
-              <div className="surface p-5 flex flex-col gap-3">
-                {/* h2, not h3: the only heading above this one is the product
-                    name in the hero, and h1 → h3 is a level skip. */}
-                <h2 className="text-title-3 font-semibold text-ink tracking-[-0.02em]">
-                  {t('featuresLabel')}
-                </h2>
+          {/* One column. This was a 7/5 grid with a Reddit community drawer in
+              the right half; the drawer is gone, and a 7-of-12 column with five
+              empty columns beside it is a layout still holding a shape for
+              something that no longer exists. Specs take the full width. */}
+          <div className="flex flex-col gap-5">
+            {/* Key Features Section */}
+            <div className="surface p-5 flex flex-col gap-3">
+              {/* h2, not h3: the only heading above this one is the product
+                  name in the hero, and h1 → h3 is a level skip. */}
+              <h2 className="text-title-3 font-semibold text-ink tracking-[-0.02em]">
+                {t('featuresLabel')}
+              </h2>
 
-                <ul className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-body-sm text-ink-muted leading-relaxed">
-                  {featureList(product.features, locale).map((feat: string, idx: number) => (
-                    <li key={idx} className="row-tint flex items-start gap-2.5 p-3">
-                      <span className="text-accent-400 shrink-0 leading-none">•</span>
-                      <span className="flex-1">{feat}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Scientific Specs Table */}
-              {product.specs && <ProductSpecTable specs={product.specs} locale={locale} />}
+              <ul className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-body-sm text-ink-muted leading-relaxed">
+                {featureList(product.features, locale).map((feat: string, idx: number) => (
+                  <li key={idx} className="row-tint flex items-start gap-2.5 p-3">
+                    <span className="text-accent-400 shrink-0 leading-none">•</span>
+                    <span className="flex-1">{feat}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
 
-            {/* Right Column: real topics from the subreddit, bound by product link.
-                Height follows the viewport instead of a fixed `42rem`: against a
-                1519px left column that magic number left 847px of empty page,
-                and a sticky rail that fills the screen never shows the gap. */}
-            <div className="lg:col-span-5 h-[36rem] lg:h-[calc(100dvh-7rem)] lg:sticky lg:top-24">
-              <ProductCommunityDrawer product={product} />
-            </div>
+            {/* Scientific Specs Table */}
+            {product.specs && <ProductSpecTable specs={product.specs} locale={locale} />}
           </div>
         </main>
 
