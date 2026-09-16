@@ -2,7 +2,7 @@ import type { MetadataRoute } from 'next';
 import { routing } from '@/i18n/routing';
 import { listSlugs } from '@/lib/recipes/source';
 import { getSonyAudio } from '@/lib/audio/data';
-import { ARTICLES } from '@/lib/lab/articles';
+import { getPublishedArticles } from '@/lib/lab/data';
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
@@ -13,6 +13,10 @@ const path = (locale: string, rest: string) =>
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const slugs = await listSlugs();
   const audio = await getSonyAudio();
+  // Published only, and from the store rather than the seed: an article an
+  // editor unpublished must leave the sitemap, or a crawler keeps asking for a
+  // URL that now 404s.
+  const articles = await getPublishedArticles();
 
   // Each URL declares its counterparts via `alternates.languages`, so search
   // engines treat the two locales as one page in two languages rather than
@@ -78,7 +82,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   const blogArticles = routing.locales.flatMap((locale) =>
-    ARTICLES.map((article) => ({
+    articles.map((article) => ({
       url: `${SITE}${path(locale, `/blog/${article.id}`)}`,
       changeFrequency: 'monthly' as const,
       priority: 0.8,

@@ -4,42 +4,58 @@ import { notFound } from 'next/navigation'
 import { setRequestLocale } from 'next-intl/server'
 import { ArticleView } from '@/components/lab/article-view'
 import { SiteHeader } from '@/components/site-header'
-import { ARTICLES, getArticle } from '@/lib/lab/articles'
+import { getPublishedArticle, getPublishedArticles } from '@/lib/lab/data'
 import { routing, type Locale } from '@/i18n/routing'
 
 /**
- * Every article, in every locale, prerendered. The catalogue is a typed array
- * in `lib/lab/articles.ts` — nothing to fetch, so there is no reason for any
- * of these to be rendered on demand.
+ * Every article published at build time, in every locale, prerendered.
  *
- * `/blog/setup` is a static sibling segment, so Next matches it before this
- * dynamic one; no article may take `setup` as its id, and none does.
+ * This used to be the whole set, because the catalogue was a typed array and
+ * could not grow after the build. It can now: an editor publishes an article
+ * and it has to appear without a deploy. So this list is the warm start, not
+ * the boundary — `dynamicParams` below is what admits the rest.
+ *
+ * `/blog/setup` and `/blog/admin` are static sibling segments, so Next matches
+ * both before this dynamic one. `RESERVED_IDS` in `parse.ts` refuses either as
+ * an article id at save time, which is where the editor can still do something
+ * about it.
  */
-export function generateStaticParams() {
+export async function generateStaticParams() {
+  const articles = await getPublishedArticles()
   return routing.locales.flatMap((locale) =>
-    ARTICLES.map((article) => ({ locale, id: article.id })),
+    articles.map((article) => ({ locale, id: article.id })),
   )
 }
 
 /**
- * An id outside `generateStaticParams` is not an article — it is a typo or a
- * dead link, and it is answered by the router rather than by this page.
+ * Unknown ids now render on demand, and this is a real loss that had to be
+ * accepted rather than a default left in place.
  *
- * That distinction is worth the line. With the default `dynamicParams: true`,
- * an unknown id runs this page, hits `notFound()`, and Next has already
- * flushed the `[locale]/loading.tsx` shell with a 200 by then: the reader sees
- * the correct not-found page once the stream resolves, but the response says
- * `200 OK` and carries a long `s-maxage`. That is a soft 404 — a crawler
- * records a dead URL as a live page and keeps it. Refusing unknown params here
- * makes the router answer `404` before any of that starts.
+ * With `dynamicParams = false`, an id outside `generateStaticParams` was
+ * answered `404` by the router before this page ran. With it true, an unknown
+ * id runs the page, hits `notFound()`, and Next has already flushed the
+ * `[locale]/loading.tsx` shell with a 200 by then: the reader sees the correct
+ * not-found page once the stream resolves, but the response says `200 OK`.
+ * That is a soft 404, and a crawler records a dead URL as a live page.
  *
- * It is available to this route because the catalogue is compile-time data, so
- * an id that is not in it can never become valid at runtime. `/cameras/[id]`
- * and `/recipe/[slug]` read from Supabase and cannot make the same promise —
- * they still return 200 for a dead URL, which is a separate, pre-existing bug
- * in the shared `loading.tsx` boundary and is not fixed here.
+ * The old guarantee rested on the catalogue being compile-time data, so an id
+ * absent from it could never become valid later. That stopped being true the
+ * moment an editor could publish: keeping the flag would mean every new
+ * article 404'd until the next deploy, which is the feature not working. The
+ * soft-404 behaviour is now the same as `/cameras/[id]` and `/recipe/[slug]`,
+ * which read from Supabase and have always had it — one shared bug in the
+ * `loading.tsx` boundary rather than a new one here.
  */
-export const dynamicParams = false
+export const dynamicParams = true
+
+/**
+ * The backstop for a page whose article was edited after it was prerendered.
+ *
+ * The write routes call `revalidateTag(LAB_TAG)`, which expires the cached
+ * article list immediately — this hour is only what catches a row changed in
+ * Supabase directly, outside the app.
+ */
+export const revalidate = 3600
 
 export async function generateMetadata({
   params,
@@ -47,7 +63,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>
 }): Promise<Metadata> {
   const { id } = await params
-  const article = getArticle(id)
+  const article = await getPublishedArticle(id)
   if (!article) return {}
   return { title: article.title, description: article.dek }
 }
@@ -60,7 +76,7 @@ export default async function ArticlePage({
   const { locale, id } = await params
   setRequestLocale(locale)
 
-  const article = getArticle(id)
+  const article = await getPublishedArticle(id)
   if (!article) notFound()
 
   return (

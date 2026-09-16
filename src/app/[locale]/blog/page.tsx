@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { LabFeed, parseFilter } from '@/components/lab/lab-feed'
 import { SiteHeader } from '@/components/site-header'
+import { getPublishedArticles } from '@/lib/lab/data'
 import type { Locale } from '@/i18n/routing'
 
 export async function generateMetadata({
@@ -33,6 +34,7 @@ export default async function BlogFeedPage({
   const { locale } = await params
   setRequestLocale(locale)
   const filter = parseFilter(await searchParams)
+  const articles = await getPublishedArticles()
 
   return (
     /* The ecosystem bar, the same one Sony Wiki and ColorLab carry. It is what
@@ -45,7 +47,7 @@ export default async function BlogFeedPage({
     <>
       <SiteHeader />
       <main className="min-h-screen-dynamic w-full">
-        <LabFeed filter={filter} />
+        <LabFeed filter={filter} articles={articles} />
       </main>
     </>
   )
