@@ -33,7 +33,17 @@ const ARTICLE_ROUTES = [
   'src/app/api/admin/articles/[id]/route.ts',
 ];
 
-const MUTATING_ROUTES = [...PRODUCT_ROUTES, ...ARTICLE_ROUTES, 'src/app/api/admin/articles/upload/route.ts'];
+const RECIPE_ROUTES = [
+  'src/app/api/admin/recipes/route.ts',
+  'src/app/api/admin/recipes/[id]/route.ts',
+];
+
+const MUTATING_ROUTES = [
+  ...PRODUCT_ROUTES,
+  ...ARTICLE_ROUTES,
+  ...RECIPE_ROUTES,
+  'src/app/api/admin/articles/upload/route.ts',
+];
 
 const read = (path: string) => readFileSync(path, 'utf8');
 
@@ -128,6 +138,108 @@ describe.each(ARTICLE_ROUTES)('%s', (path) => {
          unreachable unless the write committed. */
       expect(before).toMatch(/status: 502/);
     }
+  });
+});
+
+describe.each(RECIPE_ROUTES)('%s', (path) => {
+  const source = read(path);
+
+  it('invalidates the catalogue tag, which is the one recipe reads sit behind', () => {
+    /* `source.ts` wraps all four readers in `catalogueCache`, so a recipe save
+       that fired `LAB_TAG` would commit, answer ok, and leave the editor
+       looking at their old colour science for sixty seconds. */
+    expect(source).toMatch(/revalidateTag\(CATALOGUE_TAG, IMMEDIATE\)/);
+    expect(source).not.toMatch(/revalidateTag\(LAB_TAG/);
+  });
+
+  it('invalidates only after the store call returned', () => {
+    /* Per call rather than `lastIndexOf('status: 502')`: these files hold
+       three handlers, so the last 502 in the file belongs to DELETE and sits
+       below PATCH's invalidation while being nothing to do with it. Asking
+       "is every invalidation preceded by a failure path that returned" is the
+       property actually wanted, and it survives a fourth handler. */
+    const calls = [...source.matchAll(/revalidateTag\(CATALOGUE_TAG, IMMEDIATE\)/g)];
+    expect(calls.length).toBeGreaterThan(0);
+    for (const call of calls) {
+      expect(source.slice(0, call.index)).toMatch(/status: 502/);
+    }
+  });
+});
+
+describe('the recipe store', () => {
+  const source = read('src/lib/recipes/admin-store.ts');
+
+  it('reads and writes recipes on the content plane', () => {
+    expect(source).toMatch(/contentAdmin\(\)[\s\S]{0,80}recipes/);
+    expect(source).not.toMatch(/controlAdmin|controlRead/);
+  });
+
+  it('uses the local file store only when there is no Supabase at all', () => {
+    expect(source).toMatch(/isRecipeDevStore\(\)/);
+  });
+
+  it('never issues a hard delete', () => {
+    /* `recipe_comments`, `recipe_proposals`, `proposal_votes` and
+       `community_photos` live on the CONTROL project and reference
+       `recipe_slug` as a plain string. Postgres cannot cascade across two
+       projects in two organisations, so `delete from recipes` orphans four
+       tables with no error and nothing to find them by. Unpublishing is the
+       only removal this domain has. */
+    expect(source).not.toMatch(/\.delete\(\)/);
+    expect(source).toMatch(/export async function unpublishRecipe/);
+  });
+
+  it('keeps the slug out of every update it sends', () => {
+    /* Same cross-project reason, from the other direction: renaming a slug
+       orphans the rows that point at it. The column is destructured out of the
+       patch rather than sent unchanged, because a patch that names a column is
+       a patch that can change it. */
+    expect(source).toMatch(/const \{ slug: _slug, legacy_id: _legacyId, \.\.\.patch \} = row/);
+  });
+
+  it('makes a missing row an error rather than a silent success', () => {
+    /* An `update ... where id = ?` matching nothing is a success in PostgREST:
+       no error, zero rows. `.select('id')` is what turns that into a 404. */
+    expect(source).toMatch(/\.select\('id'\)/);
+  });
+});
+
+describe('the recipe reading path', () => {
+  const source = read('src/lib/recipes/source.ts');
+
+  it('reaches the development store only behind the two-part guard', () => {
+    /* `/admin/colorlab` writing to a file that `/colorlab` cannot read is a
+       half-feature: the editor works offline and its results are invisible. So
+       the offline catalogue is the dev store when one is engaged — and
+       `isRecipeDevStore()` is the only way it is reached, because that is what
+       keeps `NODE_ENV=test` and every production build on the compiled
+       snapshot instead of a developer's scratch file. */
+    expect(source).toMatch(/isRecipeDevStore\(\)/);
+    expect(source).toMatch(/isRecipeDevStore\(\)\s*\?\s*devListRecipes\(\)/);
+  });
+
+  it('still filters every offline read to published rows', () => {
+    /* The dev store holds drafts — that is its job. A reader path that stopped
+       filtering would put an editor's unfinished recipe on the site the moment
+       they typed a name. */
+    const calls = [...source.matchAll(/seedRecipes\(\)/g)];
+    expect(calls.length).toBeGreaterThan(1);
+    for (const call of calls) {
+      /* Each use is followed, within the same expression, by a published
+         check — `.filter(r => r.published …)` or `&& r.published`. */
+      const after = source.slice(call.index, call.index + 200);
+      expect(after, `seedRecipes() at ${call.index} does not filter on published`).toMatch(
+        /r\.published/,
+      );
+    }
+  });
+});
+
+describe('the recipe development store', () => {
+  const source = read('src/lib/recipes/dev-store.ts');
+
+  it('cannot engage unless both halves hold', () => {
+    expect(source).toMatch(/!hasContentConfig\(\) && process\.env\.NODE_ENV === 'development'/);
   });
 });
 

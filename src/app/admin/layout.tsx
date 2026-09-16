@@ -57,14 +57,16 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   /* Explicit namespaces, not the whole catalogue — the same rule the public
      layout follows and `messages.test.ts` checks. `adminUi` is the shell's;
-     `admin` and `labAdmin` belong to the two editors below; `auth` is
-     `AuthProvider`'s; `cameras` is read by the product editor's spec labels. */
+     `admin`, `labAdmin` and `recipeAdmin` belong to the three editors
+     below; `auth` is `AuthProvider`'s; `cameras` is read by the product
+     editor's spec labels. */
   const clientMessages = {
     admin: messages.admin,
     adminUi: messages.adminUi,
     auth: messages.auth,
     cameras: messages.cameras,
     labAdmin: messages.labAdmin,
+    recipeAdmin: messages.recipeAdmin,
   };
 
   return (

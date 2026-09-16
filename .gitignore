@@ -50,6 +50,11 @@ next-env.d.ts
 # src/lib/lab/dev-store.ts.
 /data/lab-articles.dev.json
 
+# The same thing for recipes, written by /admin/colorlab. Seeded from
+# data/recipes.seed.json the first time and diverging from it immediately —
+# see src/lib/recipes/dev-store.ts.
+/data/recipes.dev.json
+
 # Images uploaded through /blog/admin in local development.
 /public/lab/
 

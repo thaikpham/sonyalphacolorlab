@@ -22,8 +22,9 @@ import { AdminSessionProvider, useAdminSession, type AdminRole } from './session
  * there.
  */
 
-/** Sections in the order the nav shows them. ColorLab recipes join at P3. */
+/** Sections in the order the nav shows them. */
 const SECTIONS = [
+  { href: '/admin/colorlab', key: 'sectionColorlab' as const },
   { href: '/admin/wiki', key: 'sectionWiki' as const },
   { href: '/admin/blog', key: 'sectionBlog' as const },
 ];

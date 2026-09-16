@@ -27,6 +27,7 @@ import type { Recipe } from '../camera/schema';
 import { contentRead } from '../supabase/server';
 import { contentOrOfflineSeed } from '../supabase/content-source';
 import { fromRow, type RecipeRow } from './row';
+import { devListRecipes, isRecipeDevStore } from './dev-store';
 
 export type Locale = 'en' | 'vi';
 
@@ -85,7 +86,27 @@ export type RecipeFilters = { format?: 'pp' | 'cl'; look?: string; tag?: string;
 // Seed fallback
 // ---------------------------------------------------------------------------
 
-const seedRecipes = recipesSeed as unknown as (Recipe & { legacyId: string })[];
+const compiledSeed = recipesSeed as unknown as (Recipe & { legacyId: string | null })[];
+
+/**
+ * The offline catalogue — exactly one source per environment.
+ *
+ * - **Online** — never reaches here; `contentOrOfflineSeed` calls the query.
+ * - **Offline, development** — the file `/admin/colorlab` writes, so publishing
+ *   a recipe on a laptop puts it on the site immediately. Without this the
+ *   editor works offline and its results are invisible, which is a worse
+ *   half-feature than no editor at all.
+ * - **Offline, anywhere else** — the compiled snapshot, which is what the whole
+ *   test suite and a credential-free build read.
+ *
+ * `isRecipeDevStore()` needs `NODE_ENV === 'development'` as well as an absent
+ * Supabase, so `NODE_ENV=test` and a production build both take the snapshot
+ * and no test result depends on a developer's scratch file.
+ */
+const seedRecipes = (): (Recipe & { legacyId: string | null })[] =>
+  isRecipeDevStore()
+    ? devListRecipes().map((r) => ({ ...r.recipe, legacyId: r.legacyId }))
+    : compiledSeed;
 
 const seedDescriptions = new Map(
   (translationsSeed as { recipeId: string; locale: string; description: string }[]).map((t) => [
@@ -173,7 +194,7 @@ async function _listRecipes(
 ): Promise<RecipeView[]> {
   const seed = () =>
     photosFirst(
-      seedRecipes
+      seedRecipes()
         .filter((r) => r.published && matches(r, filters))
         .map((r) => toView(r, r.legacyId, pickDescription(seedDescriptions, r.id, locale))),
     );
@@ -231,7 +252,7 @@ export const getRecipe = cache(catalogueCache('getRecipe', _getRecipe));
 
 async function _getRecipe(slug: string, locale: Locale = 'en'): Promise<RecipeView | null> {
   const seed = () => {
-    const found = seedRecipes.find((r) => r.slug === slug && r.published);
+    const found = seedRecipes().find((r) => r.slug === slug && r.published);
     return found
       ? toView(found, found.legacyId, pickDescription(seedDescriptions, found.id, locale))
       : null;
@@ -256,7 +277,7 @@ async function _getRecipe(slug: string, locale: Locale = 'en'): Promise<RecipeVi
 export const listSlugs = catalogueCache('listSlugs', _listSlugs);
 
 async function _listSlugs(): Promise<string[]> {
-  const seed = () => seedRecipes.filter((r) => r.published).map((r) => r.slug);
+  const seed = () => seedRecipes().filter((r) => r.published).map((r) => r.slug);
 
   return contentOrOfflineSeed('recipes.slugs', async () => {
     const { data, error } = await contentRead()
@@ -277,7 +298,7 @@ async function _listSlugs(): Promise<string[]> {
 export const listTags = catalogueCache('listTags', _listTags);
 
 async function _listTags(limit = 14): Promise<{ tag: string; count: number }[]> {
-  const seedTags = () => seedRecipes.filter((r) => r.published).map((r) => r.tags);
+  const seedTags = () => seedRecipes().filter((r) => r.published).map((r) => r.tags);
   const tagLists = await contentOrOfflineSeed(
     'recipes.tags',
     async () => {

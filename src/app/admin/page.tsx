@@ -1,19 +1,13 @@
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 
-/**
- * The department's front door.
- *
- * Two cards today. ColorLab recipes join them when there is a recipe write
- * path to link to — there is none in the app at all right now (no
- * `/api/admin/recipes`, no admin read that can see a draft), and a tile
- * leading to an empty screen is worse than an absent tile.
- */
+/** The department's front door. One card per app. */
 
 export default async function AdminHome() {
   const t = await getTranslations({ locale: 'vi', namespace: 'adminUi' });
 
   const cards = [
+    { href: '/admin/colorlab', title: t('sectionColorlab'), body: t('sectionColorlabBody') },
     { href: '/admin/wiki', title: t('sectionWiki'), body: t('sectionWikiBody') },
     { href: '/admin/blog', title: t('sectionBlog'), body: t('sectionBlogBody') },
   ];
@@ -25,7 +19,7 @@ export default async function AdminHome() {
         <p className="text-body leading-relaxed text-ink-muted">{t('homeBody')}</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {cards.map((c) => (
           <Link
             key={c.href}

@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 /**
@@ -26,9 +26,43 @@ const ADMIN_ROUTES = [
   'src/app/api/admin/articles/route.ts',
   'src/app/api/admin/articles/[id]/route.ts',
   'src/app/api/admin/articles/upload/route.ts',
+  'src/app/api/admin/recipes/route.ts',
+  'src/app/api/admin/recipes/[id]/route.ts',
 ];
 
 const WRITE_ROUTES = ADMIN_ROUTES.filter((p) => !p.endsWith('session/route.ts'));
+
+/**
+ * The list above is hand-maintained, and this is what stops it going stale.
+ *
+ * "A new admin route that nobody adds here is a route nobody checks" was
+ * already the rule, enforced by remembering — and the article routes spent
+ * their whole first draft outside the list. The recipe routes were the second
+ * set to be added by hand. Discovery makes the third set impossible to forget:
+ * a route file under /api/admin that is not listed fails here, naming itself.
+ */
+function discoverAdminRoutes(dir = 'src/app/api/admin'): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+    const p = `${dir}/${e.name}`;
+    if (e.isDirectory()) return discoverAdminRoutes(p);
+    return e.name === 'route.ts' ? [p] : [];
+  });
+}
+
+describe('the admin route inventory', () => {
+  it('lists every route file under /api/admin', () => {
+    const found = discoverAdminRoutes().sort();
+    const listed = [...ADMIN_ROUTES].sort();
+    expect(
+      found.filter((p) => !listed.includes(p)),
+      'these admin routes exist but are not in ADMIN_ROUTES, so nothing checks their gate',
+    ).toEqual([]);
+    expect(
+      listed.filter((p) => !found.includes(p)),
+      'these are listed in ADMIN_ROUTES but no longer exist',
+    ).toEqual([]);
+  });
+});
 
 /**
  * The work a request must not reach before it has been authorised.
