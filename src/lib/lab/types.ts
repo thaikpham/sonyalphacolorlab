@@ -2,12 +2,25 @@
  * The editorial contract for Alpha Tech Blogs, encoded.
  *
  * `ARTICLE-SPEC.md` in the design handoff defines nine block types and seven
- * article archetypes, and states the rule that matters most here: there is no
- * tenth block. Content that fits none of the nine is rewritten as a paragraph,
- * not given a new renderer. That is why `Block` is a closed discriminated
- * union rather than an open `{ type: string; props: unknown }` bag — a draft
- * carrying a block this file does not name should fail to compile, which is
- * the only place that rule can actually be enforced.
+ * article archetypes, and states the rule that matters most here: content that
+ * fits none of the named blocks is rewritten as a paragraph, not given a new
+ * renderer. That is why `Block` is a closed discriminated union rather than an
+ * open `{ type: string; props: unknown }` bag.
+ *
+ * `embed` is the tenth, and the spec's own rule is why it had to be added
+ * rather than worked around: a video cannot be rewritten as a paragraph. The
+ * rule bars a new block for content that *could* have been prose; it does not
+ * bar a medium the vocabulary has no way to express. A GIF is not the tenth,
+ * and after the media rework it is not anything: uploads are decoded and
+ * re-encoded to three bounded WebP widths, and animation is refused by a CHECK
+ * constraint on `lab_assets` rather than carried by a flag.
+ *
+ * The union stays closed, and the compile-time guarantee it used to carry
+ * alone is now half of a pair: articles authored in this file are still checked
+ * by the compiler, and articles arriving from Supabase are checked by
+ * `parseBlocks` in `parse.ts` before anything renders them. A row is untrusted
+ * input; the type system cannot see it, so the parser is where the same rule is
+ * enforced at runtime.
  *
  * Article bodies are Vietnamese and stay Vietnamese in both locales. They are
  * authored prose, the same category as a recipe name or a Creative Look code:
@@ -88,15 +101,64 @@ export type CompareBlock = {
   beforeLabel: string
   afterLabel: string
   caption: string
-  before?: string
-  after?: string
+  /* Asset UUIDs, not URLs. Both optional and independently so: the slider
+     renders nothing until it has both, which is how a half-uploaded comparison
+     shows as absent rather than as a broken image. */
+  beforeAssetId?: string
+  afterAssetId?: string
 }
 
 /** 3–6 items, each verifiable by eye on the camera. State persists. */
 export type ChecklistBlock = { t: 'checklist'; label: string; items: readonly string[] }
 
-/** The caption adds information; it never re-describes the picture. */
-export type FigureBlock = { t: 'figure'; caption: string; alt?: string; src?: string }
+/**
+ * A still. The caption adds information; it never re-describes the picture.
+ *
+ * Only a still: an upload is decoded and re-encoded to three bounded WebP
+ * widths, and a CHECK constraint on `lab_assets` refuses anything animated.
+ * The block used to carry an `animated` flag that took a GIF around the image
+ * optimizer, which meant it was served whole — a 40 MB screen recording was one
+ * drag-and-drop away.
+ */
+export type FigureBlock = {
+  t: 'figure'
+  caption: string
+  alt?: string
+  /**
+   * The asset, by UUID — never a URL.
+   *
+   * A stored Storage URL bakes a project reference into the article body, so
+   * moving projects would mean rewriting every embedded image in every
+   * article. With a UUID the article says *which* picture and the server
+   * decides where it currently lives: publishing copies bytes between buckets,
+   * unpublishing removes the public copy, and the body never notices.
+   *
+   * `animated` is gone with it. A GIF bypassed the optimizer and was served
+   * whole, so a 40 MB screen recording was one drag-and-drop away; uploads are
+   * re-encoded to three bounded WebP rungs now and animation is refused at the
+   * schema. Re-enabling it is a deliberate migration, not a flag.
+   */
+  assetId?: string
+}
+
+/**
+ * A video, by reference. Never a file.
+ *
+ * The provider and the id are stored apart rather than as a URL, and that is
+ * the point of the block: a URL from an editor's address bar carries a
+ * playlist, a start offset, a tracking parameter and sometimes a session, and
+ * building an iframe `src` out of it hands all of that to a third party on
+ * every reader's behalf. `parseEmbedUrl` in `parse.ts` reduces whatever was
+ * pasted to these two fields, and the renderer builds the `src` from them, so
+ * the page can only ever embed the shape this app names.
+ */
+export type EmbedBlock = {
+  t: 'embed'
+  provider: 'youtube' | 'vimeo'
+  /** The bare video id — `dQw4w9WgXcQ`, `76979871`. No URL, no query string. */
+  id: string
+  caption: string
+}
 
 export type Block =
   | TldrBlock
@@ -108,6 +170,7 @@ export type Block =
   | CompareBlock
   | ChecklistBlock
   | FigureBlock
+  | EmbedBlock
 
 export type Article = {
   /** Stable, URL-safe. This is the `/blog/<id>` segment and the storage key. */
@@ -129,3 +192,30 @@ export type Article = {
  * a6700-era body reads `new`.
  */
 export type MenuVersion = 'old' | 'new'
+
+/**
+ * Whether an article is visible to a reader.
+ *
+ * Two states, not three. A "scheduled" state implies a publisher that runs
+ * without anyone present, and there is none — the admin publishes by pressing
+ * publish. Adding the state without the runner would give an editor a date
+ * field that silently does nothing.
+ */
+export type ArticleStatus = 'draft' | 'published'
+
+/**
+ * An article as Supabase holds it: the published shape plus the three facts
+ * only the store knows.
+ *
+ * The reading surfaces take `Article`, never this — the feed and the article
+ * view have no business branching on status, because by the time they run the
+ * data layer has already filtered drafts out. Only the admin sees a record.
+ */
+export type ArticleRecord = Article & {
+  readonly status: ArticleStatus
+  /** ISO 8601, from the database. Rendered in the admin list only. */
+  readonly updatedAt: string
+  /** The admin's address. Never sent to a reading surface — see the anon
+      column list in `data.ts` and `no-email-leak.test.ts` for the rule. */
+  readonly updatedBy: string | null
+}
