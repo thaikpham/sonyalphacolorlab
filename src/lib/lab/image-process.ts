@@ -31,8 +31,16 @@ import { LAB_ASSET_WIDTHS, type LabAssetWidth } from './assets';
  * this app's own pages.
  */
 
-/** 8 MiB of *compressed* input. Checked before the decoder is handed anything. */
-export const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
+/**
+ * 8 MiB of *compressed* input. Checked before the decoder is handed anything.
+ *
+ * Declared in `lib/recipes/upload-limits.ts` and re-exported here: this module
+ * is `server-only` because it imports Sharp, and the recipe editor needs the
+ * same number in the browser to refuse an oversized file before uploading it.
+ * One constant, two readers.
+ */
+export { MAX_UPLOAD_BYTES } from '@/lib/recipes/upload-limits';
+import { MAX_UPLOAD_BYTES } from '@/lib/recipes/upload-limits';
 
 /** Per-side ceiling, matching the CHECK constraint on `lab_assets`. */
 export const MAX_DIMENSION = 12_000;

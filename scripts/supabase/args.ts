@@ -33,6 +33,16 @@ export type ParsedArgs = {
   dryRun: boolean;
   apply: boolean;
   rollback: boolean;
+  /**
+   * Lets `vendor:uploads` rewrite the image manifest with FEWER entries.
+   *
+   * Without it a shrink is refused, because the manifest decides which
+   * photographs the site shows and the table it is rebuilt from is populated by
+   * something else. The wrong project, a half-finished import or an unapplied
+   * migration would all read as "these photographs were deleted", and the
+   * resulting commit would look like a routine manifest update.
+   */
+  allowRemovals: boolean;
 };
 
 export class ArgumentError extends Error {
@@ -57,6 +67,7 @@ const BOOLEAN_FLAGS = new Map<string, keyof ParsedArgs>([
   ['--dry-run', 'dryRun'],
   ['--apply', 'apply'],
   ['--rollback', 'rollback'],
+  ['--allow-removals', 'allowRemovals'],
 ]);
 
 function readTarget(flag: string, raw: string | undefined): Target {
@@ -80,6 +91,7 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
     dryRun: false,
     apply: false,
     rollback: false,
+    allowRemovals: false,
   };
 
   for (let i = 0; i < argv.length; i += 1) {

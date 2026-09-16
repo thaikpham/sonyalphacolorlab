@@ -44,6 +44,11 @@ describe('parseArgs', () => {
       dryRun: false,
       apply: false,
       rollback: false,
+      /* `vendor:uploads` refuses to shrink the image manifest without this.
+         Off by default like every other switch here: the manifest decides
+         which photographs the site serves, and a quiet shrink would read as a
+         routine commit. */
+      allowRemovals: false,
     });
   });
 

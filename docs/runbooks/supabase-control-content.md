@@ -10,7 +10,7 @@
 | | **Control plane** | **Content plane** |
 |---|---|---|
 | Project | `nqeedlgzaewccqztqvik` ("web system", ap-northeast-2) | the content-org project |
-| Owns | Supabase Auth, `auth.users`, `admin_emails`, `recipe_comments`, `recipe_proposals`, `proposal_votes`, `community_photos` | `recipes`, `recipe_translations`, `recipe_images`, `sony_cameras`, `lab_articles`, `lab_assets`, the `lab` / `lab-drafts` buckets |
+| Owns | Supabase Auth, `auth.users`, `admin_emails`, `recipe_comments`, `recipe_proposals`, `proposal_votes`, `community_photos` | `recipes`, `recipe_translations`, `recipe_images`, `sony_cameras`, `lab_articles`, `lab_assets`, the `lab` / `lab-drafts` / `recipe-uploads` buckets |
 | Migration root | `supabase/migrations` | `supabase/content/migrations` |
 | Who talks to it | the browser (Auth only), `controlRead()`, `controlAdmin()` | `contentRead()`, `contentAdmin()` — server-side only |
 
@@ -176,3 +176,37 @@ Growth in `orphaned` or `cleanup_failed` is a defect, not routine cleanup.
 
 If either starts appearing in Storage egress, something has regressed to serving
 originals.
+
+### Publishing a recipe photograph
+
+`/admin/colorlab` uploads into the PRIVATE `recipe-uploads` bucket. That is the
+intake, not the origin: no reader is ever served from it, and the editor sees
+its own uploads through signed URLs that expire. A photograph reaches the site
+only when someone runs the vendor step and deploys the result.
+
+```bash
+npm run vendor:uploads -- --target content --dry-run   # what would change
+npm run vendor:uploads -- --target content             # pull + rewrite manifest
+git add public/recipes data/images.seed.json
+git commit -m "content(recipes): add <what> photographs"
+```
+
+The script rebuilds `data/images.seed.json` from `recipe_images`, so ORDER and
+ALT come across in the same pass — reordering photographs in the admin reaches
+readers the same way adding one does.
+
+It **refuses to shrink the manifest** unless given `--allow-removals`. A shrink
+means either a deliberate removal or something worse — the wrong project, a
+half-finished import, `0002` not applied — and the resulting commit would look
+like a routine manifest update while dropping photographs from the live site.
+Read the list it prints before reaching for the flag.
+
+The admin screen shows `CHỜ DEPLOY` / `AWAITING DEPLOY` on every photograph that
+is not yet in the manifest, and a banner with this command while any are
+pending. If an editor reports that a photograph "did not upload", check that
+banner first: it almost certainly uploaded and is waiting for this step.
+
+**`recipe-uploads` must never become public.** `migration-roots.test.ts` asserts
+it across every migration in the content root, because a public intake bucket
+re-creates the 2026-09-11 incident exactly — the recipe grid is still the
+highest-traffic image surface on the site.

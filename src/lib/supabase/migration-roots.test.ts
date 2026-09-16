@@ -243,14 +243,18 @@ describe('what a browser may read', () => {
   });
 });
 
-describe('the two buckets', () => {
-  it('creates a private drafts bucket and a public published one', async () => {
+describe('the three buckets', () => {
+  it('creates one public bucket and two private ones', async () => {
     const rows = await content.query<{ id: string; public: boolean }>(
       `select id, public from storage.buckets order by id`,
     );
     expect(rows.rows).toEqual([
       { id: 'lab', public: true },
       { id: 'lab-drafts', public: false },
+      /* Recipe photograph INTAKE, and private forever. It is not a runtime
+         path: `vendor:images` pulls from it into `public/recipes`, which is
+         what readers are served. See 0002 and the assertion below. */
+      { id: 'recipe-uploads', public: false },
     ]);
   });
 
@@ -270,5 +274,22 @@ describe('the two buckets', () => {
        widths; `recipe_images` keeps only the association. */
     const sql = readFileSync(`${CONTENT_ROOT}/0001_content_baseline.sql`, 'utf8');
     expect(sql).not.toMatch(/values \('recipes', 'recipes'/);
+  });
+
+  it('keeps the recipe intake bucket private across every migration', () => {
+    /* Asserted over the whole root rather than one file, because the way this
+       comes back is a later migration flipping the flag or adding a read
+       policy — not an edit to the one that created it. A public intake bucket
+       IS the 2026-09-11 incident: the recipe grid is still the highest-traffic
+       image surface on the site. */
+    const all = readdirSync(CONTENT_ROOT)
+      .filter((f) => f.endsWith('.sql'))
+      .map((f) => readFileSync(`${CONTENT_ROOT}/${f}`, 'utf8'))
+      .join('\n');
+
+    expect(all).toMatch(/values \('recipe-uploads', 'recipe-uploads', false\)/);
+    expect(all).not.toMatch(/values \('recipe-uploads', 'recipe-uploads', true\)/);
+    expect(all).not.toMatch(/bucket_id = 'recipe-uploads'/);
+    expect(all).not.toMatch(/update storage\.buckets[\s\S]{0,200}recipe-uploads/);
   });
 });

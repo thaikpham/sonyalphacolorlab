@@ -28,6 +28,8 @@ const ADMIN_ROUTES = [
   'src/app/api/admin/articles/upload/route.ts',
   'src/app/api/admin/recipes/route.ts',
   'src/app/api/admin/recipes/[id]/route.ts',
+  'src/app/api/admin/recipes/[id]/images/route.ts',
+  'src/app/api/admin/recipes/[id]/images/[imageId]/route.ts',
 ];
 
 const WRITE_ROUTES = ADMIN_ROUTES.filter((p) => !p.endsWith('session/route.ts'));

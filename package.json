@@ -26,6 +26,8 @@
     "tokens:emit": "tsx packages/colorlab-tokens/src/emit.ts",
     "fonts:vendor": "node scripts/vendor-fonts.mjs",
     "vendor:images": "tsx scripts/vendor-recipe-images.ts",
+  "//vendor:uploads": "The second half of the /admin/colorlab image pipeline: pulls uploaded photographs out of the PRIVATE recipe-uploads bucket into public/recipes and rewrites data/images.seed.json. Readers are never served from Storage \u2014 that is what caused the 2026-09-11 egress incident. Commit the result and deploy.",
+  "vendor:uploads": "tsx --env-file=.env.local scripts/vendor-recipe-uploads.ts",
     "design:baseline": "tsx scripts/design-baseline.ts",
     "//": "The gate. This is what CI runs and what a developer runs before assuming a change is safe. It chained two more `-w apps/*` gates while CheeseBooth and Sony Live SOP were workspaces here; they are their own repos now and gate themselves.",
     "//build": "`build` is last and is not optional. Lint, typecheck and the suite all passed against a tree whose stylesheet imported a deleted file \u2014 none of the three resolves a CSS import, so the app failed to compile with the whole gate green. It is the slowest step, so it runs after the fast ones have had their chance to fail.",

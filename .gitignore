@@ -55,6 +55,13 @@ next-env.d.ts
 # see src/lib/recipes/dev-store.ts.
 /data/recipes.dev.json
 
+# Recipe photographs uploaded through /admin/colorlab in local development:
+# the bytes, and the association that orders them. `public/recipes/` next door
+# is committed and is what the last deploy serves — these are scratch, and the
+# `-dev` in the URL is what keeps the two impossible to confuse.
+/public/recipes-dev/
+/data/recipe-images.dev.json
+
 # Images uploaded through /blog/admin in local development.
 /public/lab/
 

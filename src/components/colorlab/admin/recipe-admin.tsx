@@ -8,6 +8,7 @@ import { CREATIVE_LOOK_CODES, PP_RANGES, CL_RANGES, WB_KELVIN } from '@/lib/came
 import type { ClSettings, PpSettings, Recipe } from '@/lib/camera/schema';
 import { PpFields, ClFields } from './settings-fields';
 import { WhiteBalanceFields } from './wb-fields';
+import { ImagePanel } from './image-panel';
 
 /**
  * The ColorLab recipe editor.
@@ -435,6 +436,11 @@ export function RecipeAdmin() {
               value={draft.whiteBalance}
               onChange={(whiteBalance) => edit({ ...draft, whiteBalance })}
             />
+
+            {/* Keyed on the recipe id so switching recipes remounts it rather
+                than showing the previous recipe's photographs while the new
+                list loads. */}
+            <ImagePanel key={draft.id} recipeId={draft.id} />
 
             {draft.format === 'pp' ? (
               <PpFields
