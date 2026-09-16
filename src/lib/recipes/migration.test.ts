@@ -14,6 +14,13 @@ import type { Recipe } from '../camera/schema';
  * have been applied to Supabase either, which left comments, proposals and heart
  * voting silently falling back to per-process memory in production. A migration
  * nothing runs is a migration nobody notices is missing.
+ *
+ * This directory is the **control** root now. `supabase/content/migrations` is
+ * the second root and is exercised by `migration-roots.test.ts`, which is also
+ * where the boundary between the two is asserted — that the content project
+ * never grows an `admin_emails`, and that the control project keeps a schema
+ * capable of receiving a rollback. This file stays what it always was: proof
+ * that the history the old project has already applied still applies from zero.
  */
 
 const MIGRATIONS = readdirSync('supabase/migrations')
@@ -49,6 +56,26 @@ beforeAll(async () => {
       end if;
     end $$;
   `);
+  /* Same reasoning one level up: Supabase ships a `storage` schema, and a bare
+     Postgres does not. 0013 creates the `lab` bucket and the policy that makes
+     article photography publicly readable, so without these two stubs that
+     migration would abort and every later one with it — the whole file would
+     go red on a table nothing in it tests. Only the columns the migrations
+     name are stubbed; this is a stand-in for the SQL to run against, not a
+     model of Supabase Storage. */
+  await db.exec(`
+    create schema if not exists storage;
+    create table if not exists storage.buckets (
+      id text primary key,
+      name text not null,
+      public boolean not null default false
+    );
+    create table if not exists storage.objects (
+      id uuid primary key default gen_random_uuid(),
+      bucket_id text references storage.buckets (id),
+      name text
+    );
+  `);
   for (const file of MIGRATIONS) {
     await db.exec(readFileSync(`supabase/migrations/${file}`, 'utf8'));
   }
@@ -76,6 +103,22 @@ describe('migrations', () => {
         'recipe_translations',
         'recipes',
       ]),
+    );
+  });
+
+  it('keeps the content tables the rollback window depends on', async () => {
+    /* `recipes`, `sony_cameras` and `lab_articles` are no longer written here
+       once the split is live — but they are not dropped either. They are the
+       rollback copy, read-only, for at least fourteen days. Cleanup is a
+       separate approved change and deliberately not part of the cutover; the
+       cheapest possible mistake at that point would be a migration that tidies
+       them away while they are still the only recoverable copy. */
+    const t = await db.query<{ table_name: string }>(
+      `select table_name from information_schema.tables
+        where table_schema = 'public' order by table_name`,
+    );
+    expect(t.rows.map((r) => r.table_name)).toEqual(
+      expect.arrayContaining(['recipes', 'sony_cameras', 'lab_articles', 'lab_assets']),
     );
   });
 
