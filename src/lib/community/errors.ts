@@ -37,6 +37,10 @@ export const COMMUNITY_ERRORS = {
   sampleUrlRequired: 400,
   /** Persistence failed. Deliberately vague: the detail goes to the log. */
   saveFailed: 500,
+  /** The control project could not be reached. Nothing was written. */
+  controlUnavailable: 503,
+  /** The content project could not confirm the recipe. Nothing was written. */
+  contentUnavailable: 503,
 } as const;
 
 export type CommunityErrorCode = keyof typeof COMMUNITY_ERRORS;
@@ -59,4 +63,23 @@ export function communityErrorBody(code: CommunityErrorCode): CommunityErrorBody
  */
 export function isCommunityErrorCode(value: unknown): value is CommunityErrorCode {
   return typeof value === 'string' && value in COMMUNITY_ERRORS;
+}
+
+/**
+ * Which plane just failed, if either did.
+ *
+ * The community routes now touch both projects on a single write — the content
+ * plane to confirm the recipe exists, the control plane to store the row — and
+ * they have to say which one is down, because the two mean different things to
+ * a reader and different things to whoever is on call. Everything else stays
+ * `saveFailed`: a constraint violation or a bug here is not an outage, and
+ * dressing it up as one would send someone to look at a healthy project.
+ *
+ * Returns `null` for anything that is not one of the two typed outages, so the
+ * caller keeps its existing default rather than guessing.
+ */
+export function outageErrorCode(error: unknown): CommunityErrorCode | null {
+  const code = (error as { code?: unknown } | null)?.code;
+  if (code === 'controlUnavailable' || code === 'contentUnavailable') return code;
+  return null;
 }
