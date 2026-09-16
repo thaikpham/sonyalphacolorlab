@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import type { Session } from '@supabase/supabase-js';
-import { isAuthOutage, supabaseBrowser } from '@/lib/supabase/browser';
+import { authBrowser, isAuthOutage } from '@/lib/supabase/browser';
 
 /**
  * Real Google sign-in, via Supabase Auth.
@@ -66,7 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
      a login prompt at somebody who is in fact signed in. Starts true when there
      is no Supabase at all — there is then nothing to restore, and deciding that
      during render avoids a setState in the effect below. */
-  const [isReady, setIsReady] = useState(() => supabaseBrowser() === null);
+  const [isReady, setIsReady] = useState(() => authBrowser() === null);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   /* A code, not a sentence: the message is looked up at render, so switching
      language does not leave a stale error in the other locale on screen. */
@@ -78,7 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isSigningIn, setIsSigningIn] = useState(false);
 
   useEffect(() => {
-    const supabase = supabaseBrowser();
+    const supabase = authBrowser();
     if (!supabase) return;
 
     let active = true;
@@ -105,7 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const closeLoginModal = useCallback(() => setIsLoginModalOpen(false), []);
 
   const loginWithGoogle = useCallback(async () => {
-    const supabase = supabaseBrowser();
+    const supabase = authBrowser();
     if (!supabase) {
       setError('errNotConfigured');
       return;
@@ -135,7 +135,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
-    await supabaseBrowser()?.auth.signOut();
+    await authBrowser()?.auth.signOut();
     setSession(null);
   }, []);
 

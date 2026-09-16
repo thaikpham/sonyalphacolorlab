@@ -33,6 +33,10 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# The exception: .env.example carries the six-variable contract and no values.
+# It is the only record of which variable belongs to which trust boundary, so
+# it is the one env file that must be in the repository.
+!.env.example
 
 # vercel
 .vercel
@@ -40,3 +44,20 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# The local article store, written by /blog/admin when Supabase is absent.
+# Scratch content for one developer's machine, never a seed — see
+# src/lib/lab/dev-store.ts.
+/data/lab-articles.dev.json
+
+# Images uploaded through /blog/admin in local development.
+/public/lab/
+
+# Export/import artifacts from the control/content migration. They are a full
+# JSON copy of the catalogue and carry `updated_by`, an editor's address —
+# generated, verifiable from the source, and never committed.
+/artifacts/supabase/
+
+# The Supabase CLI's linked-project state. Ambient, inherited, and exactly the
+# kind of implicit target `scripts/supabase/push-migrations.ts` refuses to read.
+/supabase/.temp/

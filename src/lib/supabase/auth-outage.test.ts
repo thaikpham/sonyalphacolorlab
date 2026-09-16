@@ -21,8 +21,8 @@ import { isAuthOutage } from './browser';
  *   a flaky connection would be a worse bug than the one this prevents.
  */
 
-const URL_KEY = 'NEXT_PUBLIC_SUPABASE_URL';
-const KEY_KEY = 'NEXT_PUBLIC_SUPABASE_ANON_KEY';
+const URL_KEY = 'NEXT_PUBLIC_AUTH_SUPABASE_URL';
+const KEY_KEY = 'NEXT_PUBLIC_AUTH_SUPABASE_ANON_KEY';
 
 const original = { url: process.env[URL_KEY], key: process.env[KEY_KEY] };
 

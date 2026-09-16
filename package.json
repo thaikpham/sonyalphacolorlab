@@ -21,6 +21,8 @@
     "typecheck": "tsc --noEmit",
     "seed:emit": "tsx scripts/emit-seed.ts",
     "doctor": "tsx scripts/doctor.ts",
+    "//check:supabase-env": "Deliberately not part of `verify`. The gate runs credential-free on purpose — that is what proves seed mode still works — so the topology check lives where the real values are: inside `vercel env run` at deploy time.",
+    "check:supabase-env": "tsx scripts/check-supabase-env.ts",
     "tokens:emit": "tsx packages/colorlab-tokens/src/emit.ts",
     "fonts:vendor": "node scripts/vendor-fonts.mjs",
     "vendor:images": "tsx scripts/vendor-recipe-images.ts",
@@ -28,11 +30,16 @@
     "//": "The gate. This is what CI runs and what a developer runs before assuming a change is safe. It chained two more `-w apps/*` gates while CheeseBooth and Sony Live SOP were workspaces here; they are their own repos now and gate themselves.",
     "//build": "`build` is last and is not optional. Lint, typecheck and the suite all passed against a tree whose stylesheet imported a deleted file \u2014 none of the three resolves a CSS import, so the app failed to compile with the whole gate green. It is the slowest step, so it runs after the fast ones have had their chance to fail.",
     "verify": "npm run lint && npm run typecheck && npm run test && npm run build",
+    "//supabase-targets": "Every script that touches a project takes an explicit --target. There is no default: with two projects in two organisations, a script that reads whichever variables happen to be loaded can write the catalogue into the project that holds Auth.",
+    "supabase:health": "tsx --env-file=.env.local scripts/supabase/health.ts",
+    "supabase:migrations": "tsx --env-file=.env.local scripts/supabase/push-migrations.ts",
+    "content:export": "tsx --env-file=.env.local scripts/supabase/export-content.ts",
+    "content:import": "tsx --env-file=.env.local scripts/supabase/import-content.ts",
+    "content:verify": "tsx --env-file=.env.local scripts/supabase/verify-content.ts",
     "push:supabase": "tsx --env-file=.env.local scripts/push-supabase.ts",
+    "push:lab": "tsx --env-file=.env.local scripts/push-lab-articles.ts",
     "pull:supabase": "tsx --env-file=.env.local scripts/pull-supabase.ts",
-    "migrate:images": "tsx --env-file=.env.local scripts/migrate-images.ts",
-    "reddit:token": "tsx --env-file=.env.local scripts/reddit-token.ts",
-    "reddit:seed": "tsx --conditions=react-server --env-file=.env.local scripts/reddit-seed.ts"
+    "migrate:images": "tsx --env-file=.env.local scripts/migrate-images.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.115.0",
