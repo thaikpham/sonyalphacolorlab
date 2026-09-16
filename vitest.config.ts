@@ -24,8 +24,11 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
-    // packages/ holds the shared design-token source; its drift test is what
-    // keeps this app's vendored copy honest.
-    include: ['src/**/*.test.ts', 'packages/**/*.test.ts'],
+    /* packages/ holds the shared design-token source; its drift test is what
+       keeps this app's vendored copy honest. scripts/ is here because the
+       migration tooling decides which of two Supabase projects a command
+       touches — the one piece of logic in the repository whose failure mode is
+       writing the catalogue into the project that holds Auth. */
+    include: ['src/**/*.test.ts', 'packages/**/*.test.ts', 'scripts/**/*.test.ts'],
   },
 });
