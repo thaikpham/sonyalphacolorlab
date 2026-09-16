@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { useAuth } from '@/components/auth-context';
+import { useAdminSession } from '@/components/admin-ui/session';
+import { AREA, FIELD, FIELD_SM, TAG, TAG_NEUTRAL } from '@/components/admin-ui/controls';
 import { splitFeatures, needsTranslation } from '@/lib/cameras/features';
 import { SPEC_ROWS, type SonyCamera } from '@/lib/cameras/types';
 import { getSpecMeta } from '@/lib/cameras/spec-meta';
@@ -58,19 +59,15 @@ const SUB1_OPTIONS: Record<'camera' | 'lens' | 'accessory' | 'audio', string[]> 
  * the tint has to say what the row *is*, because `.chip` is unlayered CSS and
  * silently beats a `text-*` utility on its own element.
  */
-const TAG = 'text-label font-semibold px-2.5 py-1 rounded-sm shadow-[var(--elevation-spec)]';
-const TAG_NEUTRAL = `${TAG} bg-white/[0.08] text-ink-muted`;
-const FIELD =
-  'w-full px-4 min-h-[var(--layout-touch-target)] surface-sunken text-body text-ink placeholder:text-ink-faint';
-const FIELD_SM =
-  'w-full px-3 min-h-[var(--layout-touch-target)] surface-sunken text-body-sm text-ink placeholder:text-ink-faint';
-const AREA =
-  'w-full px-4 py-3 surface-sunken text-body text-ink leading-relaxed resize-y placeholder:text-ink-faint';
 
 export function AdminEditor({ products: initialProducts, initialTab }: Props) {
   const t = useTranslations('admin');
   const tSpec = useTranslations('cameras.specs');
-  const { accessToken } = useAuth();
+  /* One probe for the whole department, run by `<AdminShell>` above. This
+     component renders only once the gate has opened, so it may assume an admin
+     from its first line — the "checking", "not an admin" and "cannot verify"
+     screens are the shell's now. */
+  const { role: adminRole, authed } = useAdminSession();
 
   // Helper for safe translation key lookup supporting interpolations to prevent intl formatting errors
   const tSafe = useCallback(
@@ -92,15 +89,11 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
   );
 
   const [products, setProducts] = useState<SonyCamera[]>(initialProducts);
-  /* The client's copy of `adminGate`'s three outcomes, not a boolean.
-     `/api/admin/session` answers 503 when the control project cannot be
-     reached, and that is not a `no`: reading it as one tells an admin their
-     account was removed and hides a live outage behind an empty screen. The
-     fetch throwing is the same case — unverifiable, not denied. */
-  const [gate, setGate] = useState<'checking' | 'admin' | 'denied' | 'unavailable'>('checking');
-  const [email, setEmail] = useState('');
-  const [adminRole, setAdminRole] = useState<'super' | 'di' | 'pe'>('super');
-  const [activeTab, setActiveTab] = useState<'di' | 'pe'>(initialTab ?? 'di');
+  /* The tab a click asked for, or null while nobody has asked. Derived below
+     rather than synced in an effect: the role arrives from the session after
+     the first paint, and writing it into state there is a cascading render
+     that renders the wrong division once before correcting itself. */
+  const [pickedTab, setPickedTab] = useState<'di' | 'pe' | null>(null);
   const [query, setQuery] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
@@ -128,40 +121,13 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
   const [newFeaturesVi, setNewFeaturesVi] = useState('');
   const [createError, setCreateError] = useState('');
 
-  const authed = useCallback(
-    (extra: HeadersInit = {}) => {
-      const token = accessToken();
-      return { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...extra };
-    },
-    [accessToken],
-  );
-
-  useEffect(() => {
-    let live = true;
-    (async () => {
-      try {
-        const res = await fetch('/api/admin/session', { headers: authed() });
-        if (res.status === 503) {
-          if (live) setGate('unavailable');
-          return;
-        }
-        const data = (await res.json()) as { isAdmin: boolean; email?: string; role?: 'super' | 'di' | 'pe' };
-        if (!live) return;
-        setGate(data.isAdmin ? 'admin' : 'denied');
-        setEmail(data.email ?? '');
-        const role = data.role ?? 'super';
-        setAdminRole(role);
-        if (role === 'pe') setActiveTab('pe');
-        else if (role === 'di') setActiveTab('di');
-        else if (initialTab) setActiveTab(initialTab);
-      } catch {
-        if (live) setGate('unavailable');
-      }
-    })();
-    return () => {
-      live = false;
-    };
-  }, [authed, initialTab]);
+  /* The role wins over the URL, and both lose to a click.
+     `canManageCategory()` refuses a PE admin's write to a DI product
+     server-side, so honouring `?division=di` for them would render a whole
+     screen of controls that cannot save. A single-division admin cannot pick
+     the other tab anyway — the buttons below refuse. */
+  const activeTab: 'di' | 'pe' =
+    adminRole === 'pe' ? 'pe' : adminRole === 'di' ? 'di' : (pickedTab ?? initialTab ?? 'di');
 
   const selected = useMemo(
     () => products.find((p) => p.id === selectedId) ?? null,
@@ -369,24 +335,6 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
     setTimeout(() => setCopiedMd(false), 2000);
   };
 
-  if (gate === 'unavailable') {
-    return (
-      <main className="flex-1 w-full max-w-2xl mx-auto px-6 py-20 text-center flex flex-col gap-3">
-        <h1 className="text-title-1 font-extrabold tracking-[-0.02em] text-ink">{tSafe('gateDownTitle', 'Chưa xác minh được tài khoản')}</h1>
-        <p className="text-body text-ink-muted leading-relaxed">{tSafe('gateDownBody', 'Dịch vụ đăng nhập hiện không phản hồi. Đây không phải vấn đề quyền hạn — hãy thử lại sau ít phút.')}</p>
-      </main>
-    );
-  }
-
-  if (gate === 'denied') {
-    return (
-      <main className="flex-1 w-full max-w-2xl mx-auto px-6 py-20 text-center flex flex-col gap-3">
-        <h1 className="text-title-1 font-extrabold tracking-[-0.02em] text-ink">{tSafe('gateTitle', 'Chỉ dành cho admin')}</h1>
-        <p className="text-body text-ink-muted leading-relaxed">{tSafe('gateBody', 'Đăng nhập bằng địa chỉ admin')}</p>
-      </main>
-    );
-  }
-
   return (
     <main className="flex-1 w-full max-w-[110rem] mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-5">
       <header className="flex flex-wrap items-end justify-between gap-4">
@@ -395,11 +343,6 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
           <p className="meta">{tSafe('subtitle', 'Sửa thông số và tính năng sản phẩm')}</p>
         </div>
         <div className="flex items-center gap-4 flex-wrap">
-          {email && (
-            <span className="meta">
-              {tSafe('signedInAs', 'Đang đăng nhập: {email}', { email })}
-            </span>
-          )}
           <button
             type="button"
             onClick={() => setIsCreateOpen(true)}
@@ -420,7 +363,7 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
             type="button"
             onClick={() => {
               if (adminRole === 'pe') return;
-              setActiveTab('di');
+              setPickedTab('di');
               setSelectedId(null);
               setDraft(null);
             }}
@@ -437,7 +380,7 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
             type="button"
             onClick={() => {
               if (adminRole === 'di') return;
-              setActiveTab('pe');
+              setPickedTab('pe');
               setSelectedId(null);
               setDraft(null);
             }}

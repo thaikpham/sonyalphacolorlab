@@ -414,6 +414,23 @@
     "gateDownTitle": "Chưa xác minh được tài khoản",
     "gateDownBody": "Dịch vụ đăng nhập hiện không phản hồi. Đây không phải vấn đề quyền hạn — quyền của bạn không thay đổi. Hãy thử lại sau ít phút."
   },
+  "adminUi": {
+    "wordmark": "Alpha Admin",
+    "homeTitle": "Bộ phận quản trị",
+    "homeBody": "Một nơi cho cả ba app. Mọi màn hình đều hỏi máy chủ bạn là ai; không màn hình nào tự nó là quyền.",
+    "sectionWiki": "Sản phẩm",
+    "sectionWikiBody": "Máy ảnh, ống kính, phụ kiện và thiết bị âm thanh Sony — thông số, tính năng và hình ảnh.",
+    "sectionBlog": "Bài viết",
+    "sectionBlogBody": "Alpha Tech Blogs — viết, minh hoạ, đăng và gỡ đăng.",
+    "backToSite": "Về trang chính",
+    "checking": "Đang kiểm tra tài khoản…",
+    "notAdminTitle": "Chỉ dành cho admin",
+    "notAdminBody": "Đăng nhập bằng địa chỉ có trong danh sách admin. Nếu địa chỉ của bạn nên có mặt, hãy nhờ quản trị viên thêm vào.",
+    "gateDownTitle": "Chưa xác minh được tài khoản",
+    "gateDownBody": "Dịch vụ đăng nhập hiện không phản hồi. Đây không phải vấn đề quyền hạn — quyền của bạn không thay đổi. Hãy thử lại sau ít phút.",
+    "roleDi": "Admin ngành hàng DI",
+    "rolePe": "Admin ngành hàng PE"
+  },
   "loading": {
     "status": "Đang tải công thức"
   },

@@ -1,38 +1,24 @@
-import type { Metadata } from 'next';
-import { getMessages, setRequestLocale } from 'next-intl/server';
-import { NextIntlClientProvider } from 'next-intl';
-import { getSonyCameras } from '@/lib/cameras/data';
-import { getSonyAudio } from '@/lib/audio/data';
-import { SiteHeader } from '@/components/site-header';
-import { AdminEditor } from '@/components/admin/admin-editor';
+import { redirect } from 'next/navigation';
 
-export const metadata: Metadata = {
-  title: 'DI Product Admin — Alpha ColorLab',
-  robots: { index: false, follow: false },
-};
+/**
+ * Moved to `/admin/wiki?division=di`.
+ *
+ * One of two spellings of the same screen — `/admin/di` and `/di/admin` both existed and both rendered the same editor.
+ *
+ * A page that redirects rather than an entry in `next.config.ts`: middleware
+ * runs before config redirects, so a config rule here would race next-intl's
+ * locale rewrite on the very paths this app prefixes. A redirect inside the
+ * segment runs after the locale is resolved and cannot be raced.
+ */
+/* Dynamic, so this answers with a real 307.
+ *
+ * `[locale]/layout.tsx` has `generateStaticParams`, so without this the page
+ * is prerendered — and Next expresses a redirect in a STATIC page as a 200
+ * carrying `<meta http-equiv="refresh" content="1;url=...">`. That works, one
+ * second later, and it is not what a bookmark or a `curl` follows. A page
+ * whose entire body is a redirect has nothing to gain from being static. */
+export const dynamic = 'force-dynamic';
 
-export default async function DiAdminPage({ params }: { params: Promise<{ locale: string }> }) {
-  const { locale } = await params;
-  setRequestLocale(locale);
-
-  const products = [...(await getSonyCameras()), ...(await getSonyAudio())];
-  const messages = await getMessages();
-
-  const clientMessages = {
-    admin: messages.admin,
-    auth: messages.auth,
-    cameras: messages.cameras,
-    language: messages.language,
-    nav: messages.nav,
-    search: messages.search,
-  };
-
-  return (
-    <NextIntlClientProvider messages={clientMessages}>
-      <div className="min-h-screen flex flex-col bg-void text-ink font-sans">
-        <SiteHeader />
-        <AdminEditor products={products} initialTab="di" />
-      </div>
-    </NextIntlClientProvider>
-  );
+export default function MovedPage() {
+  redirect('/admin/wiki?division=di');
 }

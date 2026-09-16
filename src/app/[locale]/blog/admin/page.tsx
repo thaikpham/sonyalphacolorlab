@@ -1,64 +1,24 @@
-import { Suspense } from 'react'
-import type { Metadata } from 'next'
-import { getMessages, setRequestLocale } from 'next-intl/server'
-import { NextIntlClientProvider } from 'next-intl'
-import { SiteHeader } from '@/components/site-header'
-import { ArticleAdmin } from '@/components/lab/admin/article-admin'
+import { redirect } from 'next/navigation';
 
 /**
- * The article editor's route.
+ * Moved to `/admin/blog`.
  *
- * `noindex`, and deliberately not gated here — the same call
- * `/[locale]/admin/page.tsx` makes and for the same reason: every write goes
- * through `/api/admin/articles`, which checks `requireAdmin()` itself, and a
- * page has never been an authorisation boundary. What this page renders to a
- * stranger is the "not an admin" panel, because the session check is a fetch
- * the component makes rather than something the render assumes.
+ * The article editor joined the other two admin surfaces rather than living under the app it edits.
  *
- * `/blog/admin` is a static segment, so Next matches it before `/blog/[id]`.
- * `RESERVED_IDS` in `lib/lab/parse.ts` refuses `admin` as an article id, which
- * is what stops an article being saved at a URL this route would shadow.
+ * A page that redirects rather than an entry in `next.config.ts`: middleware
+ * runs before config redirects, so a config rule here would race next-intl's
+ * locale rewrite on the very paths this app prefixes. A redirect inside the
+ * segment runs after the locale is resolved and cannot be raced.
  */
+/* Dynamic, so this answers with a real 307.
+ *
+ * `[locale]/layout.tsx` has `generateStaticParams`, so without this the page
+ * is prerendered — and Next expresses a redirect in a STATIC page as a 200
+ * carrying `<meta http-equiv="refresh" content="1;url=...">`. That works, one
+ * second later, and it is not what a bookmark or a `curl` follows. A page
+ * whose entire body is a redirect has nothing to gain from being static. */
+export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = {
-  title: 'Article Admin — Alpha Tech Blogs',
-  robots: { index: false, follow: false },
-}
-
-export default async function BlogAdminPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>
-}) {
-  const { locale } = await params
-  setRequestLocale(locale)
-
-  const messages = await getMessages()
-
-  /* Explicit namespaces, not the whole catalogue. `labAdmin` is only read on
-     this route, so it does not belong in the layout's provider where every
-     visitor would carry it — the same arrangement the five product-admin
-     routes have with `admin`, and what `messages.test.ts` checks per route. */
-  const clientMessages = {
-    auth: messages.auth,
-    cameras: messages.cameras,
-    labAdmin: messages.labAdmin,
-    language: messages.language,
-    nav: messages.nav,
-    search: messages.search,
-  }
-
-  return (
-    <NextIntlClientProvider messages={clientMessages}>
-      <div className="min-h-screen-dynamic flex flex-col bg-void font-sans text-ink">
-        {/* `SiteHeader` reads `useSearchParams()`; without a boundary of its
-            own that bails the whole route to client rendering. Same fix as
-            `/blog/[id]`. */}
-        <Suspense>
-          <SiteHeader />
-        </Suspense>
-        <ArticleAdmin />
-      </div>
-    </NextIntlClientProvider>
-  )
+export default function MovedPage() {
+  redirect('/admin/blog');
 }

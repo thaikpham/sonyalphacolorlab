@@ -2,12 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { useAuth } from '@/components/auth-context'
 import { Link } from '@/i18n/navigation'
+import { useAdminSession } from '@/components/admin-ui/session'
 import { LEVELS, TOPICS } from '@/lib/lab/articles'
 import type { Archetype, Article, ArticleRecord, ArticleStatus, Block } from '@/lib/lab/types'
 import { BLOCK_TYPES, BlockFields, emptyBlock, type UploadFn } from './block-editor'
-import { AREA, FIELD, SELECT } from './ui'
+import { AREA, FIELD, SELECT } from '@/components/admin-ui/controls'
 
 /**
  * The Alpha Tech Blogs editor.
@@ -78,15 +78,12 @@ const blankDraft = (): Draft => ({
 
 export function ArticleAdmin() {
   const t = useTranslations('labAdmin')
-  const { accessToken } = useAuth()
+  /* One probe for the whole department, run by `<AdminShell>` above. This
+     component renders only once the gate has opened, so it may assume an
+     admin from its first line — the "checking", "not an editor" and "cannot
+     verify" screens are the shell's now, not three more branches here. */
+  const { authed, bearer } = useAdminSession()
 
-  /* The client's copy of `adminGate`'s three outcomes, not a boolean.
-     `/api/admin/session` answers 503 when the control project cannot be
-     reached, and that is not a `no`: reading it as one tells an editor their
-     account was removed and hides a live outage behind an empty screen. The
-     fetch throwing is the same case — unverifiable, not denied. */
-  const [gate, setGate] = useState<'checking' | 'admin' | 'denied' | 'unavailable'>('checking')
-  const [email, setEmail] = useState('')
   const [articles, setArticles] = useState<ArticleRecord[]>([])
   const [draft, setDraft] = useState<Draft | null>(null)
   const [dirty, setDirty] = useState(false)
@@ -101,18 +98,6 @@ export function ArticleAdmin() {
   const [previews, setPreviews] = useState<Readonly<Record<string, string>>>({})
   const [query, setQuery] = useState('')
 
-  const authed = useCallback(
-    (extra: HeadersInit = {}): HeadersInit => {
-      const token = accessToken()
-      return {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...extra,
-      }
-    },
-    [accessToken],
-  )
-
   /* An error code, never a sentence from the server. The routes answer with
      codes for the same reason the community ones do: a literal renders
      untranslated in the other locale and is invisible to the parity test. */
@@ -121,42 +106,43 @@ export function ArticleAdmin() {
     [t],
   )
 
-  const loadList = useCallback(async () => {
+  /* Fetches and reports failure, but sets no list state — so the mount effect
+     below can decide for itself whether the answer still has anywhere to go. */
+  const fetchList = useCallback(async (): Promise<ArticleRecord[] | null> => {
     try {
       const res = await fetch('/api/admin/articles', { headers: authed() })
       const data = (await res.json()) as { articles?: ArticleRecord[]; error?: string }
       if (!res.ok || !data.articles) {
         setStatus({ kind: 'err', msg: codeMessage(data.error ?? 'loadFailed') })
-        return
+        return null
       }
-      setArticles(data.articles)
+      return data.articles
     } catch {
       setStatus({ kind: 'err', msg: codeMessage('loadFailed') })
+      return null
     }
   }, [authed, codeMessage])
 
+  /** Refresh after a save or a delete, where the component is certainly alive. */
+  const loadList = useCallback(async () => {
+    const rows = await fetchList()
+    if (rows) setArticles(rows)
+  }, [fetchList])
+
+  /* No session probe of its own any more — mounting IS the answer, because
+     `<AdminShell>` renders this only when the gate opened. The `live` flag
+     outlives the await: a list that arrives after the editor unmounts has
+     nothing left to set. */
   useEffect(() => {
     let live = true
     ;(async () => {
-      try {
-        const res = await fetch('/api/admin/session', { headers: authed() })
-        if (res.status === 503) {
-          if (live) setGate('unavailable')
-          return
-        }
-        const data = (await res.json()) as { isAdmin: boolean; email?: string }
-        if (!live) return
-        setGate(data.isAdmin ? 'admin' : 'denied')
-        setEmail(data.email ?? '')
-        if (data.isAdmin) await loadList()
-      } catch {
-        if (live) setGate('unavailable')
-      }
+      const rows = await fetchList()
+      if (live && rows) setArticles(rows)
     })()
     return () => {
       live = false
     }
-  }, [authed, loadList])
+  }, [fetchList])
 
   /* The one guard against losing a draft. Nothing autosaves, so the browser's
      own prompt is what stands between an unsaved rewrite and a closed tab. */
@@ -183,7 +169,6 @@ export function ArticleAdmin() {
         setStatus({ kind: 'err', msg: codeMessage('saveBeforeUpload') })
         return null
       }
-      const token = accessToken()
       const form = new FormData()
       form.append('file', file)
       form.append('articleId', articleId)
@@ -192,7 +177,7 @@ export function ArticleAdmin() {
           method: 'POST',
           /* No `Content-Type` here on purpose: the browser has to set it
              itself so the multipart boundary matches the body it generated. */
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          headers: bearer(),
           body: form,
         })
         const data = (await res.json()) as {
@@ -211,7 +196,7 @@ export function ArticleAdmin() {
         return null
       }
     },
-    [accessToken, articleId, codeMessage],
+    [bearer, articleId, codeMessage],
   )
 
   /**
@@ -408,45 +393,10 @@ export function ArticleAdmin() {
     )
   }, [articles, query])
 
-  if (gate === 'checking') {
-    return (
-      <main className="mx-auto w-full max-w-[86rem] inset-safe py-16">
-        <p className="meta">{t('checking')}</p>
-      </main>
-    )
-  }
-
-  if (gate === 'unavailable') {
-    return (
-      <main className="mx-auto w-full max-w-[52rem] inset-safe py-16">
-        <h1 className="text-title-1 font-extrabold tracking-[-0.02em] text-ink">
-          {t('gateDownTitle')}
-        </h1>
-        <p className="mt-3 text-body text-ink-muted">{t('gateDownBody')}</p>
-      </main>
-    )
-  }
-
-  if (gate === 'denied') {
-    return (
-      <main className="mx-auto w-full max-w-[52rem] inset-safe py-16">
-        <h1 className="text-title-1 font-extrabold tracking-[-0.02em] text-ink">
-          {t('notAdminTitle')}
-        </h1>
-        <p className="mt-3 text-body text-ink-muted">{t('notAdminBody')}</p>
-      </main>
-    )
-  }
-
   return (
     <main className="mx-auto flex w-full max-w-[110rem] flex-wrap items-start gap-y-8 gap-x-[clamp(2rem,3vw,3.5rem)] inset-safe pb-24 pt-8">
       {/* ---- the list ---- */}
       <aside className="flex grow basis-[clamp(16rem,20vw,22rem)] flex-col gap-4 self-start lg:sticky lg:top-6 lg:grow-0">
-        <div>
-          <p className="label text-accent-400">{t('wordmark')}</p>
-          <p className="meta mt-1">{email}</p>
-        </div>
-
         <button type="button" onClick={startNew} className="btn-accent w-full cursor-pointer">
           {t('newArticle')}
         </button>

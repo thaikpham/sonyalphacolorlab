@@ -4,7 +4,7 @@ import { useId, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { parseEmbedUrl } from '@/lib/lab/parse'
 import type { Block } from '@/lib/lab/types'
-import { AREA, FIELD, FIELD_SM } from './ui'
+import { AREA, FIELD, FIELD_SM } from '@/components/admin-ui/controls'
 
 /**
  * One block's fields, for every block type in the vocabulary.

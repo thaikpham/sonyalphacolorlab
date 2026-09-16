@@ -414,6 +414,23 @@
     "gateDownTitle": "Could not verify your account",
     "gateDownBody": "The sign-in service is not answering right now. This is not a permissions problem — your access is unchanged. Try again shortly."
   },
+  "adminUi": {
+    "wordmark": "Alpha Admin",
+    "homeTitle": "Admin department",
+    "homeBody": "One place for the three apps. Every screen asks the server who you are; nothing here is a permission by itself.",
+    "sectionWiki": "Products",
+    "sectionWikiBody": "Sony cameras, lenses, accessories and audio — specs, features and photographs.",
+    "sectionBlog": "Articles",
+    "sectionBlogBody": "Alpha Tech Blogs — write, illustrate, publish and unpublish.",
+    "backToSite": "Back to the site",
+    "checking": "Checking your account…",
+    "notAdminTitle": "Admins only",
+    "notAdminBody": "Sign in with an address on the admin list. If yours should be on it, ask an administrator to add it.",
+    "gateDownTitle": "Could not verify your account",
+    "gateDownBody": "The sign-in service is not answering right now. This is not a permissions problem — your access is unchanged. Try again shortly.",
+    "roleDi": "DI admin",
+    "rolePe": "PE admin"
+  },
   "loading": {
     "status": "Loading recipes"
   },
