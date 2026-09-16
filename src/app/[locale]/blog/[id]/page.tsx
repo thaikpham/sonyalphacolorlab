@@ -28,23 +28,27 @@ export async function generateStaticParams() {
 }
 
 /**
- * Unknown ids now render on demand, and this is a real loss that had to be
- * accepted rather than a default left in place.
+ * Unknown ids render on demand, and answer a real 404 while doing it.
  *
- * With `dynamicParams = false`, an id outside `generateStaticParams` was
- * answered `404` by the router before this page ran. With it true, an unknown
- * id runs the page, hits `notFound()`, and Next has already flushed the
- * `[locale]/loading.tsx` shell with a 200 by then: the reader sees the correct
- * not-found page once the stream resolves, but the response says `200 OK`.
- * That is a soft 404, and a crawler records a dead URL as a live page.
+ * With `dynamicParams = false` the router refused an id outside
+ * `generateStaticParams` before this page ran. That guarantee rested on the
+ * catalogue being compile-time data, so an id absent from it could never
+ * become valid later — which stopped being true the moment an editor could
+ * publish. Keeping the flag would mean every new article 404'd until the next
+ * deploy, which is the feature not working.
  *
- * The old guarantee rested on the catalogue being compile-time data, so an id
- * absent from it could never become valid later. That stopped being true the
- * moment an editor could publish: keeping the flag would mean every new
- * article 404'd until the next deploy, which is the feature not working. The
- * soft-404 behaviour is now the same as `/cameras/[id]` and `/recipe/[slug]`,
- * which read from Supabase and have always had it — one shared bug in the
- * `loading.tsx` boundary rather than a new one here.
+ * Turning it on cost a correct status for a while. An unknown id ran the page,
+ * hit `notFound()`, and by then Next had already flushed the
+ * `[locale]/loading.tsx` shell with a 200: the reader saw the right screen once
+ * the stream resolved, and a crawler recorded a dead URL as a live page. The
+ * same soft 404 applied to `/cameras/[id]`, `/audio/[id]` and `/recipe/[slug]`,
+ * because one `loading.tsx` at the segment root sat above all of them.
+ *
+ * That file now lives at `[locale]/colorlab/`, which is the one route its
+ * skeleton was ever drawn for. Nothing streams above these pages any more, so
+ * `notFound()` reaches the status line — verified against `next start`, where
+ * all four unknown-id routes answer `404` and every real page still answers
+ * `200`. `next-boundaries.test.ts` keeps the boundary from drifting back up.
  */
 export const dynamicParams = true
 

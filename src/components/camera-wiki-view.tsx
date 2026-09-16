@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { Suspense, useMemo, useState } from 'react';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
@@ -171,7 +171,21 @@ interface CameraWikiViewProps {
   basePath?: string;
 }
 
-export function CameraWikiView({ initialCameras, basePath = '/cameras' }: CameraWikiViewProps) {
+/**
+ * The catalogue itself, which reads the filters out of the URL.
+ *
+ * Wrapped below rather than exported directly. `useSearchParams()` bails its
+ * subtree out of server rendering, so it needs a Suspense boundary — and until
+ * now it borrowed one it did not own: `[locale]/loading.tsx` sat above every
+ * page in the segment and happened to satisfy the requirement.
+ *
+ * That shared boundary was also flushing a `200 OK` shell above every detail
+ * route, which turned three `notFound()` calls into soft 404s. Moving it to the
+ * one route it was drawn for left this component without a boundary, which is
+ * the right place for the fix: a component that reads search params owns the
+ * boundary that makes it legal, the way `site-header.tsx` already does.
+ */
+function CameraWikiViewInner({ initialCameras, basePath = '/cameras' }: CameraWikiViewProps) {
   const t = useTranslations('cameras');
   const locale = useLocale();
   const router = useRouter();
@@ -925,5 +939,28 @@ export function CameraWikiView({ initialCameras, basePath = '/cameras' }: Camera
         </div>
       )}
     </div>
+  );
+}
+
+export function CameraWikiView(props: CameraWikiViewProps) {
+  return (
+    /* The fallback is the page's own frame with an empty grid rather than a
+       spinner: the filter rail and the heading do not depend on the URL, so
+       replacing the whole catalogue with a placeholder would move furniture
+       that is about to land in the same place. */
+    <Suspense
+      fallback={
+        <div className="mx-auto w-full max-w-[160rem] px-3 py-6 sm:px-6">
+          <div className="h-3 w-48 rounded-sm bg-glass" />
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <div key={i} className="surface aspect-[4/5]" />
+            ))}
+          </div>
+        </div>
+      }
+    >
+      <CameraWikiViewInner {...props} />
+    </Suspense>
   );
 }

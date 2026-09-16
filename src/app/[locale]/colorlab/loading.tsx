@@ -1,9 +1,29 @@
 import { SiteHeader } from '@/components/site-header';
 
 /**
- * Skeleton matching the real grid's shape, so the layout does not jump when
+ * Skeleton matching the recipe grid's shape, so the layout does not jump when
  * content arrives. Marked aria-hidden and announced via role=status instead —
  * a screen reader gains nothing from twelve empty boxes.
+ *
+ * IT LIVES HERE, not at `[locale]/`, and the move fixed two things at once.
+ *
+ * It says "Loading recipes" and draws a grid of recipe cards, but at the
+ * segment root it was the skeleton for EVERY page under `[locale]` — a reader
+ * opening a camera's spec sheet or an article watched six recipe cards
+ * pretend to load.
+ *
+ * The second thing is not cosmetic. A `loading.tsx` is a Suspense boundary, and
+ * Next flushes the shell above it — `<html>`, the head, this markup — with
+ * `200 OK` before the page body runs. So `/recipe/<unknown>`,
+ * `/cameras/<unknown>` and `/blog/<unknown>` all reached `notFound()` with the
+ * status line already on the wire: the reader saw the right screen once the
+ * stream resolved, and a crawler recorded a dead URL as a live page. Three soft
+ * 404s from one file in the wrong place.
+ *
+ * So: a loading boundary belongs above a route that CANNOT 404. This one is the
+ * catalogue — it always has a grid to show, even an empty one. The detail
+ * routes have no boundary above them now and answer a real 404, which costs
+ * them a skeleton they were never drawn for.
  */
 export default function Loading() {
   return (
