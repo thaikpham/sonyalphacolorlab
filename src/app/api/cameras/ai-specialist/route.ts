@@ -56,10 +56,13 @@ Keep your response structured (using bolding and bullet points), clear, concise,
         system: systemPrompt,
       });
 
-      const replyText =
-        response.content[0].type === 'text'
-          ? response.content[0].text
-          : 'Không thể tạo phản hồi.';
+      /* `content` is an array and may be empty — a stop with no blocks, or a
+         response shape this code does not know about. Indexing it unchecked
+         threw a TypeError out of the handler as an uncaught 500, which reads to
+         the reader as "the site is broken" rather than "the model said
+         nothing". `find` also survives a leading non-text block. */
+      const textBlock = response.content.find((block) => block.type === 'text');
+      const replyText = textBlock?.text?.trim() || 'Không thể tạo phản hồi.';
 
       return NextResponse.json({ answer: replyText });
     }
