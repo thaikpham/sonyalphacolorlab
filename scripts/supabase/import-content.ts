@@ -46,7 +46,7 @@ async function main() {
 
   const manifest = JSON.parse(await readFile(join(dir, 'manifest.json'), 'utf8')) as {
     source: string;
-    tables: Record<string, { count: number }>;
+    tables: Record<string, { count?: number; absent?: boolean }>;
   };
 
   if (manifest.source !== source) {
@@ -77,20 +77,36 @@ async function main() {
      and loading rows into it would make that worse. */
   if (destination === 'content') {
     for (const table of FORBIDDEN_IN_CONTENT) {
-      const { error } = await db.from(table).select('*', { head: true, count: 'exact' });
-      /* A missing table is what we want, and PostgREST says so with a schema
-         error rather than an empty result. */
+      /* A real GET, not `head: true`. PostgREST answers a HEAD with `204` and
+         no error for a table that has never existed — the same answer it gives
+         for one that exists and is empty — so a HEAD probe reports every table
+         as present and this guard could never pass. `PGRST205` on a GET is the
+         only thing that actually means "no such relation". */
+      const { error } = await db.from(table).select('*').limit(1);
+
       if (!error) {
         throw new Error(
           `The content project has a ${table} table. That belongs to the control plane; ` +
             'refusing to import until the planes are actually separate.',
         );
       }
+      if (error.code !== 'PGRST205') {
+        throw new Error(`Could not establish whether ${table} exists: ${error.message}`);
+      }
     }
   }
 
   for (const spec of CONTENT_TABLES) {
     if (!allowed.has(spec.name)) continue;
+
+    /* The source had no such table, so the export wrote no file and said so.
+       Nothing to move is a legitimate outcome here — it is only legitimate
+       because the manifest states it, which is why this reads the flag rather
+       than treating a missing file as an empty one. */
+    if (manifest.tables[spec.name]?.absent) {
+      console.log(`  skipping ${spec.name} — absent on the source`);
+      continue;
+    }
 
     const rows = JSON.parse(await readFile(join(dir, `${spec.name}.json`), 'utf8')) as unknown[];
     const expected = manifest.tables[spec.name]?.count ?? 0;

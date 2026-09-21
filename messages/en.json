@@ -322,7 +322,34 @@
     "closeDialog": "Close",
     "catalogueLede": "{count, plural, one {# product} other {# products}} in the catalogue. Use the filters at the top of the page to narrow the list.",
     "openCompare": "Open comparison",
-    "compareSelected": "Selected"
+    "compareSelected": "Selected",
+    "productNotFound": "Product not found",
+    "productMetaTitle": "{name} ({sku}) · Specs",
+    "productMetaDescription": "Official specs, pricing {price}, and key features for {fullName}.",
+    "compareMetaTitle": "Compare Sony Alpha Products",
+    "compareMetaDescription": "Detailed side-by-side spec comparison of Sony products.",
+    "galleryPhotoAlt": "{name} — photo {index}",
+    "galleryThumbLabel": "View photo {index} of {name}",
+    "priceOnRequest": "Price on request",
+    "kindCamera": "Camera",
+    "kindLens": "Lens",
+    "kindAccessory": "Accessory",
+    "sub": {
+      "headphones": "Headphones",
+      "speakers": "Speakers",
+      "overEar": "Over-ear",
+      "inEar": "In-ear",
+      "portable": "Portable",
+      "alphaCameras": "Alpha cameras",
+      "adapters": "Adapters",
+      "audio": "Audio",
+      "microphones": "Microphones",
+      "power": "Power",
+      "batteries": "Batteries",
+      "gripsTripods": "Grips / tripods",
+      "vlogAccessories": "Vlog accessories",
+      "mountAdapters": "Mount adapters"
+    }
   },
   "admin": {
     "title": "Product admin",
@@ -648,7 +675,60 @@
     "recapNoteNew": "The paths below follow the new menu (a6700 · ZV-E10 II). Switch to Old menu at the top of the page if your camera uses the old menu.",
     "recapSetting": "Setting",
     "recapValue": "Value",
-    "recapPath": "Menu path"
+    "recapPath": "Menu path",
+    "articleInVietnamese": "This article is written in Vietnamese.",
+    "setupPaths": {
+      "modeDial": "MODE dial",
+      "modeButton": "MODE button",
+      "aelButton": "AEL button (or C1)"
+    },
+    "setupSteps": {
+      "or": "{a} or {b}",
+      "shootMode": {
+        "kicker": "Exposure · shooting mode",
+        "title": "Shoot in A or P and let the camera meter",
+        "value": "A (aperture priority) or P",
+        "why": "A and P are the two modes that meter automatically: the camera reads the light in the scene and picks the remaining settings for you. As soon as one of the three — aperture, shutter, ISO — is on Auto, the exposure compensation dial comes alive: turn EV towards + and the picture brightens, towards − and it darkens, exactly like dragging the brightness slider on a phone. In M with all three set by hand the EV dial does nothing, because there is nothing left for the camera to compensate with. Start in A: you choose how blurred the background is, and the camera handles the rest."
+      },
+      "isoAutoRange": {
+        "kicker": "Exposure · ISO",
+        "title": "Cap ISO Auto to the 100 – {isoMax} range",
+        "why": "ISO is the third side of the exposure triangle — how sensitive the sensor is to light. Leave ISO on Auto, but give it a ceiling: the camera raises ISO as the light drops so the shutter stays fast enough, but never past {isoMax}, the point where the file is still clean and keeps its detail. Set the ceiling too low and indoors the camera is forced to slow the shutter and the shot blurs; set it too high and the image goes mushy, skin loses detail and colour noise creeps in."
+      },
+      "minShutter": {
+        "kicker": "Exposure · shutter floor",
+        "title": "Set ISO AUTO Min. SS to {minSs}",
+        "why": "It sits directly beside ISO in the menu, and it is the single item beginners most often skip. It sets the shutter floor: as the light drops the camera raises ISO rather than letting the shutter fall below {minSs}. Left unset, the camera tends to protect low ISO and drags the shutter down to 1/30 or 1/15 — clean of noise, but blurred by your own hands and by people moving in the frame. A noisy photo can be rescued; a blurred one cannot."
+      },
+      "focusMode": {
+        "kicker": "Focus · mode",
+        "title": "Set Focus Mode to AF-C (Continuous AF)",
+        "why": "AF-C holds focus continuously: the camera follows the subject the whole time you are framing, whether they step towards you or you move yourself. AF-S locks focus once and stops — right only when both you and the subject are still. The classic beginner's mistake is locking focus in AF-S, then tilting the camera or shifting half a step, and the photo comes back sharp on the wall behind the subject."
+      },
+      "focusArea": {
+        "kicker": "Focus · area",
+        "title": "Set Focus Area to Tracking: Zone",
+        "why": "Zone is a middling area — not the whole frame, where the camera chooses for itself and often focuses on the background, and not a tiny point, which is hard to hold on target handheld. Add Tracking and you only have to put that area on the subject and focus once: the camera locks onto them and follows as they move through the frame. That leaves you free to recompose while focus stays where it belongs.",
+        "tipTitle": "Focusing with your thumb (AF-ON)",
+        "tipBody": "Assign AF ON to the AEL button (or C1), then turn off focusing on the half-press. From then on, holding AF-ON with your thumb tracks focus and releasing it locks focus right there, while your index finger has one job left: taking the picture. No more wanting to hold focus and fearing an early shot — this is how working photographers shoot, and after about one practice session it is easier than the half-press.",
+        "tipAssign": "Assign AF ON",
+        "tipHalfPress": "Turn off half-press focus"
+      },
+      "metering": {
+        "kicker": "Metering",
+        "title": "Set Metering to Multi and turn on face priority",
+        "why": "Multi divides the frame into segments, meters each one and takes a weighted average — the safest choice for almost any scene, unlike Spot, which reads a single point and blows out or crushes the whole picture that much more easily. Turn on Face Priority as well: when there is a face in the frame, the camera exposes for the person rather than leaving them a silhouette against a bright sky."
+      },
+      "creativeLook": {
+        "kicker": "Colour",
+        "title": "Set {look} to {value}",
+        "why": "This is the “look” the camera bakes into the JPEG. {neutral} is the standard, neutral rendering and the easiest to adjust afterwards. {portrait} makes skin softer and warmer — pick it for people. Avoid VV/Vivid: vivid on screen, but the colours clip, skin goes red and it is very hard to recover. If you shoot RAW this only affects the preview; if you shoot JPEG it is the final colour."
+      },
+      "monitor": {
+        "kicker": "Screen",
+        "why": "Sunny Weather pushes the screen to its brightest setting so you can still see the frame outdoors — the default Manual level is usually unreadable at midday. Display Quality: High makes the screen and the viewfinder smoother and more detailed, so you can judge focus more accurately. Both cost battery, and both make framing and reviewing markedly easier in return."
+      }
+    }
   },
   "labAdmin": {
     "newArticle": "New article",

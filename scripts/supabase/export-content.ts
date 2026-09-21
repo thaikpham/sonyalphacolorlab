@@ -40,14 +40,27 @@ type Row = Record<string, unknown>;
  * returning fewer rows than asked for. An export that reads one page and stops
  * reports a clean hash over two thirds of the catalogue.
  */
-async function readAll(db: ReturnType<typeof adminClient>, spec: TableSpec): Promise<Row[]> {
+async function readAll(
+  db: ReturnType<typeof adminClient>,
+  spec: TableSpec,
+): Promise<Row[] | null> {
   const rows: Row[] = [];
   for (let from = 0; ; from += PAGE) {
     let query = db.from(spec.name).select(spec.columns.join(', ')).range(from, from + PAGE - 1);
     for (const column of spec.orderBy) query = query.order(column, { ascending: true });
 
     const { data, error } = await query;
-    if (error) throw new Error(`${spec.name}: ${error.message}`);
+    if (error) {
+      /* `PGRST205` is PostgREST saying the relation is not in its schema cache
+         — the table does not exist on this project. For a `contentPlaneOnly`
+         table on the control project that is the expected shape of a
+         pre-split database, and `null` is how this says "absent", which the
+         manifest records as such. Every other error, and an absent table that
+         was *not* declared content-plane-only, still throws: a cutover that
+         shrugs at a missing table is how a catalogue goes missing quietly. */
+      if (spec.contentPlaneOnly && error.code === 'PGRST205') return null;
+      throw new Error(`${spec.name}: ${error.message}`);
+    }
 
     const page = (data ?? []) as unknown as Row[];
     rows.push(...page);
@@ -76,6 +89,15 @@ async function main() {
 
   for (const spec of CONTENT_TABLES) {
     const rows = await readAll(db, spec);
+
+    if (rows === null) {
+      /* Nothing is written for an absent table, so a later import cannot read
+         an empty file and believe it moved something. */
+      tables[spec.name] = { absent: true };
+      console.log(`  ${spec.name.padEnd(20)}  absent on source (content plane only)`);
+      continue;
+    }
+
     await writeFile(join(dir, `${spec.name}.json`), `${JSON.stringify(rows, null, 2)}\n`, 'utf8');
 
     tables[spec.name] = {
@@ -110,7 +132,19 @@ async function main() {
   console.log(`\n  ✓ ${dir}\n`);
 }
 
-main().catch((error) => {
-  console.error(error instanceof ArgumentError ? `\n  ${error.message}\n` : error);
-  process.exit(1);
-});
+/*
+ * Only when this file *is* the command.
+ *
+ * `import-content.ts` and `verify-content.ts` both import `EXPORT_ROOT` and
+ * `identify` from here, and an unguarded `main()` runs on that import: the
+ * export CLI would parse *their* arguments, fail on the `--target` it needs
+ * and they do not take, and `process.exit(1)` before either had started. That
+ * is what "the cutover is blocked" turned out to mean — neither the import nor
+ * the verification had ever been reachable.
+ */
+if (require.main === module) {
+  main().catch((error) => {
+    console.error(error instanceof ArgumentError ? `\n  ${error.message}\n` : error);
+    process.exit(1);
+  });
+}

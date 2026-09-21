@@ -322,7 +322,34 @@
     "closeDialog": "Đóng",
     "catalogueLede": "{count, plural, other {# sản phẩm}} trong danh mục. Dùng bộ lọc ở đầu trang để thu hẹp danh sách.",
     "openCompare": "Mở bảng so sánh",
-    "compareSelected": "Đã chọn"
+    "compareSelected": "Đã chọn",
+    "productNotFound": "Không tìm thấy sản phẩm",
+    "productMetaTitle": "{name} ({sku}) · Thông số",
+    "productMetaDescription": "Thông số kỹ thuật chính hãng, giá niêm yết {price} và tính năng nổi bật của {fullName}.",
+    "compareMetaTitle": "So Sánh Chi Tiết Sản Phẩm Sony",
+    "compareMetaDescription": "Chuyên trang so sánh thông số kỹ thuật chi tiết giữa các sản phẩm Sony.",
+    "galleryPhotoAlt": "{name} — ảnh {index}",
+    "galleryThumbLabel": "Xem ảnh {index} của {name}",
+    "priceOnRequest": "Liên hệ",
+    "kindCamera": "Máy ảnh",
+    "kindLens": "Ống kính",
+    "kindAccessory": "Phụ kiện",
+    "sub": {
+      "headphones": "Tai nghe",
+      "speakers": "Loa",
+      "overEar": "Choàng đầu",
+      "inEar": "Nhét tai",
+      "portable": "Di động",
+      "alphaCameras": "Máy ảnh Alpha",
+      "adapters": "Adapter",
+      "audio": "Âm thanh",
+      "microphones": "Microphone",
+      "power": "Nguồn điện",
+      "batteries": "Pin",
+      "gripsTripods": "Grip / Chân máy",
+      "vlogAccessories": "Phụ kiện vlog",
+      "mountAdapters": "Ngàm chuyển"
+    }
   },
   "admin": {
     "title": "Quản trị sản phẩm",
@@ -648,7 +675,60 @@
     "recapNoteNew": "Đường dẫn dưới đây theo menu mới (a6700 · ZV-E10 II). Chuyển sang Menu cũ ở đầu trang nếu máy bạn dùng menu cũ.",
     "recapSetting": "Cài đặt",
     "recapValue": "Giá trị",
-    "recapPath": "Đường dẫn menu"
+    "recapPath": "Đường dẫn menu",
+    "articleInVietnamese": "Bài viết này được soạn bằng tiếng Việt.",
+    "setupPaths": {
+      "modeDial": "Vòng xoay MODE",
+      "modeButton": "Nút MODE",
+      "aelButton": "nút AEL (hoặc C1)"
+    },
+    "setupSteps": {
+      "or": "{a} hoặc {b}",
+      "shootMode": {
+        "kicker": "Phơi sáng · chế độ chụp",
+        "title": "Chụp ở chế độ A hoặc P để máy tự đo sáng",
+        "value": "A (ưu tiên khẩu) hoặc P",
+        "why": "A và P là hai chế độ có đo sáng tự động: máy đọc ánh sáng của cảnh rồi tự chọn thông số còn lại cho đủ sáng. Chỉ cần một trong ba thông số — khẩu độ, tốc độ, ISO — đang ở Auto thì vòng bù sáng EV được kích hoạt: xoay EV về + là ảnh sáng lên, về − là tối đi, đúng như kéo thanh sáng khi chụp bằng điện thoại. Ở chế độ M với cả ba thông số đặt tay, vòng EV không còn tác dụng vì không còn gì để máy tự bù. Người mới nên bắt đầu ở A: bạn chỉ chọn độ mờ nền, mọi thứ khác máy lo."
+      },
+      "isoAutoRange": {
+        "kicker": "Phơi sáng · ISO",
+        "title": "Giới hạn ISO Auto trong khoảng 100 – {isoMax}",
+        "why": "ISO là thông số thứ ba của tam giác sáng — độ nhạy sáng của cảm biến. Để ISO Auto nhưng có trần: máy tự nâng ISO khi trời tối để giữ tốc chụp an toàn, nhưng không vượt quá {isoMax} — mức mà ảnh vẫn còn sạch và giữ được chi tiết. Đặt trần quá thấp thì trong nhà máy buộc phải hạ tốc và ảnh nhòe; đặt quá cao thì ảnh bết, mất chi tiết da và nhiễu hạt màu."
+      },
+      "minShutter": {
+        "kicker": "Phơi sáng · sàn tốc độ",
+        "title": "ISO AUTO Min. SS đặt {minSs}",
+        "why": "Đây là mục nằm ngay cạnh ISO trong menu, và là mục quan trọng nhất mà người mới hay bỏ qua. Nó đặt sàn tốc độ: khi ánh sáng giảm, máy sẽ nâng ISO chứ không hạ tốc xuống dưới {minSs}. Nếu không đặt, máy có xu hướng ưu tiên ISO thấp và kéo tốc về 1/30 hay 1/15 — ảnh sạch nhiễu nhưng nhòe vì rung tay và vì người trong ảnh chuyển động. Ảnh nhiễu còn cứu được, ảnh nhòe thì không."
+      },
+      "focusMode": {
+        "kicker": "Lấy nét · chế độ",
+        "title": "Focus Mode để AF-C (Continuous AF)",
+        "why": "AF-C giữ nét liên tục: máy bám theo chủ thể suốt lúc bạn ngắm, kể cả khi chủ thể bước tới hoặc chính bạn đổi chỗ. AF-S thì khoá nét một lần rồi thôi — chỉ đúng khi cả bạn và chủ thể đều đứng yên. Lỗi kinh điển của người mới là khoá nét ở AF-S, rồi nghiêng máy hoặc bước lại nửa bước, và ảnh nét vào bức tường sau lưng chủ thể."
+      },
+      "focusArea": {
+        "kicker": "Lấy nét · vùng nét",
+        "title": "Focus Area chọn Tracking: Zone",
+        "why": "Zone là một vùng vừa phải — không phải cả khung (máy tự chọn, hay nét vào hậu cảnh), cũng không phải một điểm bé xíu (khó ngắm khi cầm tay). Thêm Tracking: bạn chỉ cần đưa vùng đó lên chủ thể và bấm nét, máy khoá vào chủ thể rồi bám theo nó khi nó di chuyển trong khung. Bạn được rảnh tay bố cục lại mà nét vẫn dính đúng chỗ.",
+        "tipTitle": "Lấy nét bằng ngón tay cái (AF-ON)",
+        "tipBody": "Gán AF ON cho nút AEL (hoặc C1) rồi tắt lấy nét ở nửa cò. Từ đó ngón cái giữ AF-ON là bám nét, nhả ra là khoá nét ngay tại đó, còn ngón trỏ chỉ còn một việc: bấm chụp. Không còn cảnh vừa muốn giữ nét vừa sợ bấm chụp sớm — đây là cách bấm của người chụp chuyên nghiệp và dễ hơn nửa cò sau khoảng một buổi tập.",
+        "tipAssign": "Gán AF ON",
+        "tipHalfPress": "Tắt nét nửa cò"
+      },
+      "metering": {
+        "kicker": "Đo sáng",
+        "title": "Metering để Multi và bật ưu tiên khuôn mặt",
+        "why": "Multi chia khung thành nhiều ô, đo sáng từng ô rồi lấy trung bình có trọng số — an toàn nhất cho gần như mọi cảnh, khác với Spot chỉ đo đúng một điểm nên rất dễ cháy hoặc tối cả ảnh. Bật thêm Face Priority: khi có khuôn mặt trong khung, máy ưu tiên phơi sáng đúng cho mặt người, không để mặt tối đen vì trời sau lưng quá sáng."
+      },
+      "creativeLook": {
+        "kicker": "Màu ảnh",
+        "title": "{look} chọn {value}",
+        "why": "Đây là “màu ảnh” máy áp vào file JPEG. {neutral} là màu chuẩn, trung tính, dễ chỉnh lại sau. {portrait} làm tông da mềm và hồng hào hơn — chụp người thì chọn nó. Tránh VV/Vivid: rực rỡ trên màn hình nhưng bệt màu, da đỏ và rất khó cứu. Nếu bạn chụp RAW thì lựa chọn này chỉ ảnh hưởng bản xem trước, còn chụp JPEG thì nó là màu cuối cùng."
+      },
+      "monitor": {
+        "kicker": "Màn hình",
+        "why": "Sunny Weather đẩy màn hình lên mức sáng nhất để bạn còn nhìn thấy khung ảnh khi chụp ngoài trời nắng — mức Manual mặc định thường tối om giữa trưa. Display Quality: High làm hình trong màn hình và trong ống ngắm mịn, chi tiết hơn, nên bạn kiểm tra nét chính xác hơn. Cả hai đều tốn pin hơn, đổi lại trải nghiệm ngắm và xem ảnh dễ hơn hẳn."
+      }
+    }
   },
   "labAdmin": {
     "newArticle": "Bài mới",

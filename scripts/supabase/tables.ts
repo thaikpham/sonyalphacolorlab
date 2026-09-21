@@ -25,6 +25,13 @@ export type TableSpec = {
   readonly orderBy: readonly string[];
   /** The stable identity of a row, for the manifest's ID list. */
   readonly key: readonly string[];
+  /**
+   * Introduced with the content plane. The control project predates the split
+   * and has no such table, so an export from `control` records it as absent
+   * rather than failing — and the manifest says `absent`, never `0 rows`,
+   * because those are different claims and only one of them is true.
+   */
+  readonly contentPlaneOnly?: boolean;
 };
 
 export const CONTENT_TABLES: readonly TableSpec[] = [
@@ -77,6 +84,7 @@ export const CONTENT_TABLES: readonly TableSpec[] = [
     ],
     orderBy: ['id'],
     key: ['id'],
+    contentPlaneOnly: true,
   },
 ];
 

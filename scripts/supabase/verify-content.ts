@@ -53,7 +53,10 @@ async function main() {
   const dir = await latestExport(label);
 
   const manifest = JSON.parse(await readFile(join(dir, 'manifest.json'), 'utf8')) as {
-    tables: Record<string, { count: number; hash: string; rows: Record<string, string> }>;
+    tables: Record<
+      string,
+      { count?: number; hash?: string; rows?: Record<string, string>; absent?: boolean }
+    >;
   };
 
   console.log(`\n  verifying the ${target} plane against ${dir}`);
@@ -67,8 +70,15 @@ async function main() {
      a control table in the content project means the planes are not separate. */
   if (!args.rollback) {
     for (const table of FORBIDDEN_IN_CONTENT) {
-      const { error } = await db.from(table).select('*', { head: true, count: 'exact' });
-      if (!error) failures.push(`${table} exists here and belongs to the control plane`);
+      /* A real GET. PostgREST answers a HEAD with `204` and no error whether
+         or not the relation exists, so a HEAD probe would report every one of
+         these as present and fail every verification. */
+      const { error } = await db.from(table).select('*').limit(1);
+      if (!error) {
+        failures.push(`${table} exists here and belongs to the control plane`);
+      } else if (error.code !== 'PGRST205') {
+        failures.push(`could not establish whether ${table} exists: ${error.message}`);
+      }
     }
   }
 
@@ -76,6 +86,14 @@ async function main() {
     const expected = manifest.tables[spec.name];
     if (!expected) {
       failures.push(`${spec.name}: absent from the manifest`);
+      continue;
+    }
+
+    /* Absent on the source, so the export moved nothing and claimed nothing.
+       Verifying it against a count and a hash that were never recorded is what
+       produced a `FAIL` on a table the cutover never touched. */
+    if (expected.absent) {
+      console.log(`  --   ${spec.name.padEnd(20)}  absent on the source, nothing to verify`);
       continue;
     }
 
@@ -96,9 +114,10 @@ async function main() {
          tells them where, which is the difference between a two-minute fix and
          an afternoon of diffing JSON. */
       const here = new Map(rows.map((row) => [identify(spec, row), stableHash(row)]));
+      const recorded = expected.rows ?? {};
       const differing = [
-        ...Object.keys(expected.rows).filter((id) => here.get(id) !== expected.rows[id]),
-        ...[...here.keys()].filter((id) => !(id in expected.rows)),
+        ...Object.keys(recorded).filter((id) => here.get(id) !== recorded[id]),
+        ...[...here.keys()].filter((id) => !(id in recorded)),
       ];
       failures.push(
         `${spec.name}: ${differing.length} row(s) differ, first: ${differing.slice(0, 5).join(', ')}`,

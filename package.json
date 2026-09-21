@@ -13,7 +13,8 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "//build": "check:supabase-env runs first so a deployment with no Supabase configured fails the build instead of silently serving the compiled seed snapshots — which is what production did from the two-project split until 2026-09-21.",
+    "build": "npm run check:supabase-env && next build",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
