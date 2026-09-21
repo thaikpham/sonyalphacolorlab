@@ -116,6 +116,30 @@ export const SCRAPE_CORRECTIONS: Correction[] = [
 ];
 
 /**
+ * One photographer, two spellings on the page. The credit and the recipe
+ * title use the form the page uses most often.
+ */
+export const PHOTOGRAPHER_SPELLING: Record<string, string> = {
+  'jonpoon.jpg': 'Jonpoon.jpg',
+};
+
+/**
+ * The page prints its shoot notes as separate lines ("Shot with Creative
+ * Looks" / "Crop & RGB adjusted in post."). Collapsing the whitespace alone
+ * runs them into one unpunctuated sentence, so the lines are joined as
+ * clauses and the sentence is closed.
+ */
+export function formatNotes(raw: string): string {
+  const parts = raw
+    .split(/\n+/)
+    .map((p) => p.replace(/\s+/g, ' ').trim().replace(/\.+$/, ''))
+    .filter(Boolean)
+    .map((p, i) => (i > 0 && /^[A-Z][a-z]/.test(p) ? p[0].toLowerCase() + p.slice(1) : p))
+    .map((p) => p.replace(/ & /g, ' and '));
+  return parts.length ? `${parts.join('; ')}.` : '';
+}
+
+/**
  * Rows the scrape cannot express as a single camera state. Keyed by the
  * settings string, so a page fix makes the entry stop matching rather than
  * silently masking a different row.
@@ -334,7 +358,8 @@ export function importSonyAsia(csv: string): ImportResult {
       ...(mono ? {} : { saturation: tokens.saturation }),
     };
 
-    const photographer = (row.name ?? '').trim() || 'Sony';
+    const rawPhotographer = (row.name ?? '').trim();
+    const photographer = PHOTOGRAPHER_SPELLING[rawPhotographer] ?? (rawPhotographer || 'Sony');
     const country = (row.data3 ?? '').trim();
 
     // A recipe is its settings plus its balance. Two photographers landing on
@@ -405,9 +430,8 @@ export function importSonyAsia(csv: string): ImportResult {
     // Factual, not invented character prose: who shot it, where, on which Look,
     // plus whatever the page itself said about the shoot.
     descriptions[id] = [
-      `${lookLabel} (${look}) Creative Look recipe by ${photographer}${country ? `, ${country}` : ''}, from Sony's Alpha Recipes collection.`,
-
-      notes,
+      `${lookLabel} (${look}) Creative Look recipe by ${photographer}${country ? `, ${country}` : ''}, from Sony’s Alpha Recipes collection.`,
+      formatNotes(row.data2 ?? ''),
     ]
       .filter(Boolean)
       .join(' ');

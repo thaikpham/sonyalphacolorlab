@@ -61,7 +61,7 @@ export const ECOSYSTEM_APPS: readonly EcosystemAppDef[] = [
     key: 'colorlab',
     name: 'ColorLab 2.0',
     shortName: 'ColorLab',
-    icon: '/colorlab-icon.png',
+    icon: '/colorlab-icon.svg',
     href: '/colorlab',
     external: false,
     iconInset: 'p-[13.5%]',

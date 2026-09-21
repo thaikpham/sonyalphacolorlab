@@ -18,6 +18,11 @@ const eslintConfig = defineConfig([
        linted as source and drowned the gate in thousands of problems from
        files nobody wrote. */
     ".worktrees/**",
+    /* Same reason, second location: the agent harness checks its worktrees
+       out under `.claude/worktrees/`, not `.worktrees/`, so the pattern
+       above never covered them and a fan-out run's leftovers failed the
+       gate on vendored prototype code it had copied in. */
+    ".claude/worktrees/**",
     // Verbatim copy of the original sonycolorlab dataset; deleted after cutover.
     "src/lib/legacy/*.legacy.js",
     /* The design handoff bundle: HTML prototypes plus the vendored runtime

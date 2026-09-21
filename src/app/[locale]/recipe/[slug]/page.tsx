@@ -17,6 +17,8 @@ import { getRecipe, listSlugs } from '@/lib/recipes/source';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
+const OG_LOCALES: Record<Locale, string> = { en: 'en_US', vi: 'vi_VN' };
+
 export async function generateStaticParams() {
   return (await listSlugs()).map((slug) => ({ slug }));
 }
@@ -52,7 +54,9 @@ export async function generateMetadata({
       description: recipe.description,
       url: path,
       siteName: 'Alpha ColorLab',
-      locale,
+      // og:locale is language_TERRITORY; scrapers may ignore a bare 'vi'.
+      locale: OG_LOCALES[locale],
+      alternateLocale: routing.locales.filter((l) => l !== locale).map((l) => OG_LOCALES[l]),
     },
     twitter: { card: 'summary_large_image' },
   };
@@ -142,7 +146,7 @@ export default async function RecipePage({
                     {recipe.tags.map((tag) => (
                       <li key={tag}>
                         <Link
-                          href={`/?tag=${tag}`}
+                          href={`/colorlab?tag=${encodeURIComponent(tag)}`}
                           className="chip chip-action label"
                         >
                           #{tag}

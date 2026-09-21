@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 
 interface ProductGalleryViewerProps {
   primaryImageUrl: string;
@@ -14,6 +15,7 @@ export function ProductGalleryViewer({
   galleryUrls = [],
   productName,
 }: ProductGalleryViewerProps) {
+  const t = useTranslations('cameras');
   // Deduplicate and filter out empty strings
   const images = Array.from(
     new Set([primaryImageUrl, ...galleryUrls].filter((u) => u && u.trim().length > 0))
@@ -33,7 +35,7 @@ export function ProductGalleryViewer({
       <div className="relative w-full aspect-[4/3] min-h-[18rem] rounded-lg bg-white p-4 shadow-[var(--elevation-1)] overflow-hidden">
         <Image
           src={currentImage}
-          alt={`${productName} - Photo ${activeIndex + 1}`}
+          alt={t('galleryPhotoAlt', { name: productName, index: activeIndex + 1 })}
           fill
           sizes="(max-width: 1024px) 100vw, 33vw"
           priority={activeIndex === 0}
@@ -62,12 +64,14 @@ export function ProductGalleryViewer({
                     ? 'bg-accent-500/25 shadow-[var(--elevation-1)]'
                     : 'bg-glass opacity-70 hover:opacity-100'
                 }`}
-                aria-label={`View photo ${idx + 1} of ${productName}`}
+                aria-label={t('galleryThumbLabel', { name: productName, index: idx + 1 })}
               >
+                {/* Empty alt: the button's label already names the photo, and
+                    a second name inside it is read twice. */}
                 <span className="relative block w-full h-full rounded-sm bg-white overflow-hidden">
                   <Image
                     src={imgUrl}
-                    alt={`Thumbnail ${idx + 1}`}
+                    alt=""
                     fill
                     sizes="64px"
                     className="object-contain p-1"

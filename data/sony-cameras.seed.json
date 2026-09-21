@@ -13,29 +13,29 @@
     "imageUrl": "https://static.bhphoto.com/images/fb/1899230.jpg",
     "features": {
       "en": [
-        "26MP APS-C Exmor R CMOS BSI Sensor",
+        "33MP Full-Frame Exmor R CMOS BSI Sensor",
         "UHD 4K up to 120p, 1080p up to 240p",
         "10-Bit 4:2:2 XAVC S-I, S-Cinetone",
-        "495-Pt. Fast Hybrid AF, Real-time Eye AF",
+        "759-Pt. Fast Hybrid AF, Real-time Eye AF",
         "5-Axis SteadyShot Image Stabilization",
         "Dual CFexpress Type A / SD Card Slots",
         "Detachable XLR Handle Unit",
         "Built-In Cooling Fan & Active Heatsink"
       ],
       "vi": [
-        "Cảm biến 26MP APS-C Exmor R CMOS BSI",
+        "Cảm biến 33MP Full-Frame Exmor R CMOS BSI",
         "Quay UHD 4K lên tới 120p, 1080p lên tới 240p",
         "Ghi hình 10-Bit 4:2:2 XAVC S-I, hỗ trợ S-Cinetone",
-        "Lấy nét Fast Hybrid AF 495 điểm, Real-time Eye AF",
+        "Lấy nét Fast Hybrid AF 759 điểm, Real-time Eye AF",
         "Chống rung hình ảnh 5 trục SteadyShot",
         "Khe cắm thẻ nhớ kép CFexpress Type A / SD",
-        "Detachable XLR Handle Unit",
-        "Quạt tản nhiệt & Tản nhiệt chủ động tích hợp"
+        "Bộ tay cầm XLR tháo rời",
+        "Tích hợp quạt làm mát và tản nhiệt chủ động"
       ]
     },
     "specs": {
       "kind": "camera",
-      "sensor": "APS-C Exmor R CMOS BSI",
+      "sensor": "Full-Frame Exmor R CMOS BSI",
       "effectivePixels": "33,0 MP",
       "isoRange": "100–51200 (mở rộng 50–204800)",
       "autofocus": "759 điểm",
@@ -93,10 +93,10 @@
         "Cảm biến 12.1MP Full-Frame Exmor R CMOS BSI",
         "Quay UHD 4K lên tới 120p, 1080p lên tới 240p",
         "Ghi hình 10-Bit 4:2:2 XAVC S-I, hỗ trợ S-Cinetone",
-        "627-Pt. Fast Hybrid AF, Real-time Eye AF",
+        "Lấy nét Fast Hybrid AF 627 điểm, Real-time Eye AF",
         "Chống rung hình ảnh 5 trục SteadyShot",
         "Khe cắm thẻ nhớ kép CFexpress Type A / SD",
-        "Bộ tay cầm Top Handle XLR tháo rời",
+        "Bộ tay cầm XLR gắn trên nóc máy, tháo rời được",
         "Quạt tản nhiệt tích hợp cho khả năng quay không giới hạn"
       ]
     },
@@ -269,10 +269,10 @@
         "Cảm biến 24.2MP Full-Frame Exmor R CMOS BSI",
         "Quay video UHD 4K 60p 10-Bit 4:2:2",
         "Lấy nét Fast Hybrid AF 693 điểm, Real-time Eye AF",
-        "Hồ sơ màu S-Cinetone, S-Log3, HLG Gamma Profiles",
+        "Hỗ trợ gamma S-Cinetone, S-Log3, HLG",
         "Chống rung hình ảnh 5 trục SteadyShot",
         "Khe cắm thẻ nhớ kép CFexpress Type A / SD",
-        "Cinema Line Ergonomics & Control Dial"
+        "Thiết kế công thái học Cinema Line & vòng xoay điều khiển"
       ]
     },
     "specs": {
@@ -344,24 +344,24 @@
     "imageUrl": "https://static.bhphoto.com/images/fb/1592066.jpg",
     "features": {
       "en": [
-        "4K 4.2K Full-Frame 10.2MP CMOS Sensor",
+        "10.2MP Full-Frame Exmor R CMOS BSI Sensor",
         "DCI 4K 60p, UHD 4K 120p, 1080p 240p",
         "15+ Stops of Dynamic Range in S-Log3",
         "Base ISO 800 / ISO 12800 Dual Native ISO",
-        "627-Pt. Fast Hybrid AF with Real-Time Eye AF",
+        "627-Pt. Fast Hybrid AF with Real-time Eye AF",
         "Electronic Variable ND Filter (1/4 to 1/128)",
         "16-Bit RAW Output via 12G-SDI",
         "Top Handle with Dual XLR Audio Inputs"
       ],
       "vi": [
-        "Cảm biến 10.2MP Full-Frame CMOS (4K 4.2K)",
+        "Cảm biến 10.2MP Full-Frame Exmor R CMOS BSI",
         "Quay DCI 4K 60p, UHD 4K 120p, 1080p 240p",
-        "Dynamic Range hơn 15+ stop khi quay S-Log3",
-        "Dual Native ISO cơ sở ISO 800 / ISO 12800",
-        "Lấy nét Fast Hybrid AF 627 điểm với Real-Time Eye AF",
-        "Electronic Variable ND Filter (1/4 to 1/128)",
+        "Dynamic range hơn 15 stop với S-Log3",
+        "Dual Native ISO với ISO gốc 800 / 12800",
+        "Lấy nét Fast Hybrid AF 627 điểm với Real-time Eye AF",
+        "Kính lọc Electronic Variable ND (1/4 đến 1/128)",
         "Xuất tín hiệu 16-Bit RAW qua cổng 12G-SDI",
-        "Tay cầm Top Handle hỗ trợ 2 đầu vào âm thanh XLR"
+        "Tay cầm gắn nóc máy có 2 cổng âm thanh XLR"
       ]
     },
     "specs": {
@@ -450,12 +450,12 @@
         "Dual CFexpress Type A / SD Card Slots"
       ],
       "vi": [
-        "Full-Frame Sensor Interchangeable Lens PTZ Camera",
-        "E-Mount Lens Compatibility",
-        "UHD 4K 120p & 1080p 240p Recording",
-        "Remote Control via Web Browser or RM-IP500",
-        "Electronic Variable ND Filter",
-        "12G-SDI, HDMI & NDI|HX Output",
+        "Máy quay PTZ cảm biến Full-Frame, dùng ống kính rời",
+        "Tương thích ống kính ngàm E-mount",
+        "Quay UHD 4K 120p & 1080p 240p",
+        "Điều khiển từ xa qua trình duyệt web hoặc RM-IP500",
+        "Kính lọc Electronic Variable ND",
+        "Xuất tín hiệu 12G-SDI, HDMI & NDI|HX",
         "Khe cắm thẻ nhớ kép CFexpress Type A / SD"
       ]
     },
@@ -525,14 +525,14 @@
         "3.0\" 1.44m-Dot Tilting Touchscreen LCD"
       ],
       "vi": [
-        "20.1MP 1.0-Type Exmor RS CMOS Sensor",
-        "ZEISS Vario-Sonnar T* 24-600mm f/2.4-4 Lens",
-        "BIONZ X Bộ xử lý hình ảnh & Front-End LSI",
-        "315-Point Phase-Detection AF System",
-        "24 fps Chụp liên tục with AF/AE",
-        "UHD 4K30p Video & Super Slow Motion",
-        "2.36m-Dot OLED Electronic Viewfinder",
-        "3.0\" 1.44m-Dot Tilting Màn hình cảm ứng LCD"
+        "Cảm biến 20.1MP 1.0-Type Exmor RS CMOS",
+        "Ống kính ZEISS Vario-Sonnar T* 24-600mm f/2.4-4",
+        "Bộ xử lý hình ảnh BIONZ X & Front-End LSI",
+        "Hệ thống lấy nét Phase-Detection AF 315 điểm",
+        "Chụp liên tục 24 fps với AF/AE",
+        "Quay video UHD 4K30p & Super Slow Motion",
+        "Khung ngắm điện tử OLED 2.36 triệu điểm ảnh",
+        "Màn hình cảm ứng LCD 3.0\" 1.44 triệu điểm ảnh, lật được"
       ]
     },
     "specs": {
@@ -595,7 +595,7 @@
       "en": [
         "20.1MP 1.0-Type Exmor RS CMOS Sensor",
         "ZEISS Vario-Sonnar T* 24-200mm f/2.8-4.5 Lens",
-        "357-Pt. Phase-Detection AF & Real-Time Eye AF",
+        "357-Pt. Phase-Detection AF & Real-time Eye AF",
         "20 fps Blackout-Free Shooting",
         "UHD 4K30p Video & Active SteadyShot",
         "Pop-Up 2.36m-Dot OLED EVF",
@@ -603,14 +603,14 @@
         "3.5mm External Microphone Jack"
       ],
       "vi": [
-        "20.1MP 1.0-Type Exmor RS CMOS Sensor",
-        "ZEISS Vario-Sonnar T* 24-200mm f/2.8-4.5 Lens",
-        "357-Pt. Phase-Detection AF & Real-Time Eye AF",
-        "20 fps Blackout-Free Shooting",
-        "UHD 4K30p Video & Active SteadyShot",
-        "Pop-Up 2.36m-Dot OLED EVF",
-        "3.0\" 921k-Dot 180° Tilting Màn hình cảm ứng LCD",
-        "3.5mm External Microphone Jack"
+        "Cảm biến 20.1MP 1.0-Type Exmor RS CMOS",
+        "Ống kính ZEISS Vario-Sonnar T* 24-200mm f/2.8-4.5",
+        "Lấy nét Phase-Detection AF 357 điểm & Real-time Eye AF",
+        "Chụp liên tục 20 fps không tối màn hình (Blackout-Free)",
+        "Quay video UHD 4K30p & Active SteadyShot",
+        "Khung ngắm EVF OLED dạng bật lên, 2.36 triệu điểm ảnh",
+        "Màn hình cảm ứng LCD 3.0\" 921k điểm ảnh, lật 180°",
+        "Cổng micro ngoài 3.5mm"
       ]
     },
     "specs": {
@@ -622,10 +622,10 @@
       "video": "4K 30p",
       "stabilization": "Optical SteadyShot",
       "viewfinder": "2,359,296 điểm ảnh",
-      "lcd": "7.5cm(3.0type)(4:3) / 921,600 dots / Xtra Fine / TFT LCD",
+      "lcd": "Xtra Fine TFT 7,5 cm (3,0 inch, 4:3), 921.600 điểm",
       "mediaSlots": "SD",
       "battery": "130 phút",
-      "weight": "302g(Battery and Memory Card are included); 275g(Body Only)",
+      "weight": "302 g (có pin và thẻ nhớ); 275 g (chỉ thân máy)",
       "dimensions": "101.6 x 58.1 x 42.8 mm",
       "specsSource": "https://www.sony-asia.com/electronics/cyber-shot-compact-cameras/dsc-rx100m7/specifications",
       "specsMissing": [
@@ -670,13 +670,13 @@
       ],
       "vi": [
         "Cảm biến 42.4MP Full-Frame Exmor R CMOS BSI",
-        "ZEISS Sonnar T* 35mm f/2 Lens",
-        "Variable Optical Low-Pass Filter",
-        "399-Pt. Fast Hybrid AF System",
-        "Full HD 1080p60 Quay video",
-        "Pop-Up 2.36m-Dot OLED EVF",
-        "3.0\" 1.23m-Dot Tilting LCD Screen",
-        "Uncompressed 14-Bit RAW Output"
+        "Ống kính ZEISS Sonnar T* 35mm f/2",
+        "Tích hợp Variable Optical Low-Pass Filter",
+        "Hệ thống lấy nét Fast Hybrid AF 399 điểm",
+        "Quay video Full HD 1080p60",
+        "Khung ngắm EVF OLED dạng bật lên, 2.36 triệu điểm ảnh",
+        "Màn hình LCD 3.0\" 1.23 triệu điểm ảnh, lật được",
+        "Ảnh RAW 14-Bit không nén"
       ]
     },
     "specs": {
@@ -688,10 +688,10 @@
       "video": "HD 60p",
       "stabilization": null,
       "viewfinder": "2,359,296 điểm ảnh",
-      "lcd": "7.5cm (3.0 type) (4:3) / 1,228,800 dots / Xtra Fine / TFT LCD",
+      "lcd": "Xtra Fine TFT 7,5 cm (3,0 inch, 4:3), 1.228.800 điểm",
       "mediaSlots": "SD",
       "battery": "110 phút",
-      "weight": "480 g (Body only); 507 g (With battery and Memory Stick PRO Duo)",
+      "weight": "480 g (chỉ thân máy); 507 g (có pin và thẻ nhớ Memory Stick PRO Duo)",
       "dimensions": "113.3 x 65.4 x 72.0 mm",
       "specsSource": "https://www.sony-asia.com/electronics/cyber-shot-compact-cameras/dsc-rx1rm2/specifications",
       "specsMissing": [
@@ -738,14 +738,14 @@
         "Ultra-Lightweight 178g Design"
       ],
       "vi": [
-        "APS-C Format | f/4 Constant Aperture",
-        "15-30mm (35mm Equivalent)",
-        "Power Zoom Mechanism & Internal Zoom",
-        "Dual Linear AF Motors & Cấu trúc lấy nét trong (Internal Focus)",
-        "ED and Aspherical Elements",
-        "Dust and Moisture-Resistant Construction",
+        "Định dạng APS-C | Khẩu độ không đổi f/4",
+        "Tiêu cự tương đương 15-30mm (định dạng 35mm)",
+        "Cơ chế Power Zoom & zoom trong",
+        "Hai động cơ AF Linear Motor & lấy nét trong (Internal Focus)",
+        "ED Elements & Aspherical Elements",
+        "Thiết kế chống bụi và chống ẩm",
         "Cấu tạo 7 lá khẩu tròn",
-        "Ultra-Lightweight 178g Design"
+        "Thiết kế siêu nhẹ, chỉ 178g"
       ]
     },
     "specs": {
@@ -830,14 +830,14 @@
         "Focus Hold Button and AF/MF Switch"
       ],
       "vi": [
-        "APS-C Format | f/2.8 Constant Aperture",
-        "24-82.5mm (35mm Equivalent)",
-        "Four Aspherical & Three ED Elements",
-        "Nano AR Coating to Suppress Flare",
-        "XD Linear Motor AF System",
-        "Dust and Moisture-Resistant Design",
+        "Định dạng APS-C | Khẩu độ không đổi f/2.8",
+        "Tiêu cự tương đương 24-82.5mm (định dạng 35mm)",
+        "4 Aspherical Elements & 3 ED Elements",
+        "Lớp phủ Nano AR giảm loá",
+        "Hệ thống AF dùng động cơ XD Linear Motor",
+        "Thiết kế chống bụi và chống ẩm",
         "Cấu tạo 9 lá khẩu tròn",
-        "Nút giữ lấy nét Focus Hold Button and AF/MF Switch"
+        "Focus Hold Button & công tắc AF/MF"
       ]
     },
     "specs": {
@@ -918,14 +918,14 @@
         "Ideal for Video & Still Photography"
       ],
       "vi": [
-        "APS-C Format | f/4 Constant Aperture",
-        "27-157.5mm (35mm Equivalent)",
-        "Power Zoom Lever & Smooth Motion Optics",
-        "Two ED & Three Aspherical Elements",
+        "Định dạng APS-C | Khẩu độ không đổi f/4",
+        "Tiêu cự tương đương 27-157.5mm (định dạng 35mm)",
+        "Cần gạt Power Zoom & Smooth Motion Optics",
+        "2 ED Elements & 3 Aspherical Elements",
         "Chống rung quang học Optical SteadyShot",
-        "Internal Zoom & Cấu trúc lấy nét trong (Internal Focus) Design",
+        "Thiết kế zoom trong & lấy nét trong (Internal Focus)",
         "Cấu tạo 7 lá khẩu tròn",
-        "Ideal for Video & Still Photography"
+        "Lý tưởng cho cả quay video và chụp ảnh"
       ]
     },
     "specs": {
@@ -1011,13 +1011,13 @@
         "7-Blade Circular Diaphragm"
       ],
       "vi": [
-        "APS-C Format | f/4.5-6.3 Variable Aperture",
-        "105-525mm (35mm Equivalent)",
-        "One Aspherical Element & Three ED Elements",
-        "XD Linear Motor AF System",
+        "Định dạng APS-C | Khẩu độ thay đổi f/4.5-6.3",
+        "Tiêu cự tương đương 105-525mm (định dạng 35mm)",
+        "1 Aspherical Element & 3 ED Elements",
+        "Hệ thống AF dùng động cơ XD Linear Motor",
         "Chống rung quang học Optical SteadyShot",
-        "Zoom Lock Switch & Customizable Focus Hold",
-        "Dust and Moisture-Resistant Construction",
+        "Công tắc khoá zoom & Focus Hold Button tuỳ chỉnh được",
+        "Thiết kế chống bụi và chống ẩm",
         "Cấu tạo 7 lá khẩu tròn"
       ]
     },
@@ -1091,13 +1091,13 @@
         "7-Blade Circular Diaphragm"
       ],
       "vi": [
-        "Full-Frame Format | f/4 Constant Aperture",
-        "Four Aspherical, One Super ED & Three ED Elements",
-        "Nano AR Coating to Eliminate Ghosting",
-        "Direct Drive Super Sonic Wave Motor AF",
-        "Nút giữ lấy nét Focus Hold Button & AF/MF Switch",
-        "Integrated Lens Hood",
-        "Dust and Moisture-Resistant Construction",
+        "Định dạng Full-Frame | Khẩu độ không đổi f/4",
+        "4 Aspherical Elements, 1 Super ED Element & 3 ED Elements",
+        "Lớp phủ Nano AR loại bỏ hiện tượng bóng ma",
+        "Lấy nét bằng động cơ Direct Drive Super Sonic Wave Motor",
+        "Focus Hold Button & công tắc AF/MF",
+        "Loa che nắng tích hợp",
+        "Thiết kế chống bụi và chống ẩm",
         "Cấu tạo 7 lá khẩu tròn"
       ]
     },
@@ -1181,14 +1181,14 @@
         "Compact Ultra-Wide Astro & Landscape Lens"
       ],
       "vi": [
-        "Full-Frame Format | Ultra-Wide Prime Lens",
-        "f/1.8 Fast Maximum Aperture",
+        "Định dạng Full-Frame | Ống kính prime siêu rộng",
+        "Khẩu độ tối đa lớn f/1.8",
         "2 XA Elements & ED Glass Elements",
-        "Dual XD Linear Motor AF System",
-        "Aperture De-Click Switch for Video",
-        "Dust and Moisture-Resistant Sealed Design",
+        "Hệ thống AF hai động cơ XD Linear Motor",
+        "Công tắc De-Click khẩu độ cho quay video",
+        "Thiết kế chống bụi và chống ẩm",
         "Cấu tạo 9 lá khẩu tròn",
-        "Compact Ultra-Wide Astro & Landscape Lens"
+        "Ống kính siêu rộng nhỏ gọn cho thiên văn & phong cảnh"
       ]
     },
     "specs": {
@@ -1294,14 +1294,14 @@
         "Lightest Full-Frame Power Zoom Lens (353g)"
       ],
       "vi": [
-        "Full-Frame Format | f/4 Constant Aperture",
-        "Electronic Power Zoom Mechanism",
-        "Six XD Linear Motors (Zoom & AF)",
-        "Super ED, ED, and Aspherical Elements",
-        "De-Clickable Aperture Ring",
-        "Suppressed Focus Breathing",
+        "Định dạng Full-Frame | Khẩu độ không đổi f/4",
+        "Cơ chế Power Zoom điện tử",
+        "6 động cơ XD Linear Motor (cho zoom & AF)",
+        "Super ED, ED & Aspherical Elements",
+        "Vòng khẩu độ hỗ trợ De-Click",
+        "Hạn chế hiện tượng focus breathing",
         "Cấu tạo 7 lá khẩu tròn",
-        "Lightest Full-Frame Power Zoom Lens (353g)"
+        "Ống kính Power Zoom Full-Frame nhẹ nhất (353g)"
       ]
     },
     "specs": {
@@ -1371,13 +1371,13 @@
         "Robust Professional Cinema Housing"
       ],
       "vi": [
-        "Full-Frame Cinema Lens | Constant T3.1 Aperture",
-        "Standard 0.8 MOD Gear Rings for Focus, Zoom, Iris",
-        "Detachable Servo Zoom Unit",
-        "Advanced Optical Design with Two XA Elements",
-        "Linear Response MF & Focus Breathing Control",
-        "11-Blade Circular Iris Diaphragm",
-        "Robust Professional Cinema Housing"
+        "Ống kính điện ảnh Full-Frame | Khẩu độ không đổi T3.1",
+        "Vòng răng chuẩn 0.8 MOD cho lấy nét, zoom và khẩu độ",
+        "Bộ Servo Zoom tháo rời",
+        "Thiết kế quang học tiên tiến với 2 XA Elements",
+        "Linear Response MF & kiểm soát focus breathing",
+        "Cấu tạo 11 lá khẩu tròn",
+        "Thân ống kính điện ảnh chuyên nghiệp, bền bỉ"
       ]
     },
     "specs": {
@@ -1446,14 +1446,14 @@
         "Ultra-Compact 409g Design"
       ],
       "vi": [
-        "Full-Frame Format | Fast f/2.8 Aperture",
-        "Three Aspherical & Three ED Elements",
-        "Dual XD Linear Motor AF System",
-        "Vòng khẩu độ vật lý with De-Click Switch",
-        "Focus Breathing Compensation Support",
-        "Dust and Moisture-Resistant Construction",
+        "Định dạng Full-Frame | Khẩu độ lớn f/2.8",
+        "3 Aspherical Elements & 3 ED Elements",
+        "Hệ thống AF hai động cơ XD Linear Motor",
+        "Vòng khẩu độ vật lý với công tắc De-Click",
+        "Hỗ trợ Focus Breathing Compensation",
+        "Thiết kế chống bụi và chống ẩm",
         "Cấu tạo 11 lá khẩu tròn",
-        "Ultra-Compact 409g Design"
+        "Thiết kế siêu gọn, 409g"
       ]
     },
     "specs": {
@@ -1528,13 +1528,13 @@
         "Compact Ultra-Wide Landscape & Astro Lens"
       ],
       "vi": [
-        "Full-Frame Format | f/1.8 Ultra-Wide Prime",
-        "Two Advanced Aspherical & Three ED Elements",
-        "Dual XD Linear Motor AF System",
-        "Vòng khẩu độ vật lý với công tắc De-Click",
-        "Fluorine Coating & Weather-Sealed Build",
+        "Định dạng Full-Frame | Ống kính prime siêu rộng f/1.8",
+        "2 Advanced Aspherical Elements & 3 ED Elements",
+        "Hệ thống AF hai động cơ XD Linear Motor",
+        "Vòng khẩu độ với công tắc De-Click",
+        "Lớp phủ Fluorine & thân chống chịu thời tiết",
         "Cấu tạo 9 lá khẩu tròn",
-        "Compact Ultra-Wide Landscape & Astro Lens"
+        "Ống kính siêu rộng nhỏ gọn cho phong cảnh & thiên văn"
       ]
     },
     "specs": {
@@ -1623,14 +1623,14 @@
         "Lightweight 488g All-Rounder Zoom"
       ],
       "vi": [
-        "Full-Frame Format | Ultra-Wide to Short Telephoto",
-        "f/4 Constant Maximum Aperture",
-        "Dual XD Linear Motor AF System",
-        "2 AA Elements, One ED & Three Aspherical Elements",
-        "Aperture Ring with Click/De-Click Switch",
-        "Micro-Step Aperture Control & Active Breathing Compensation",
+        "Định dạng Full-Frame | Dải tiêu cự từ siêu rộng đến tele ngắn",
+        "Khẩu độ tối đa không đổi f/4",
+        "Hệ thống AF hai động cơ XD Linear Motor",
+        "2 AA Elements, 1 ED Element & 3 Aspherical Elements",
+        "Vòng khẩu độ với công tắc Click/De-Click",
+        "Điều khiển khẩu độ Micro-Step & Active Breathing Compensation",
         "Cấu tạo 9 lá khẩu tròn",
-        "Lightweight 488g All-Rounder Zoom"
+        "Ống kính zoom đa dụng, nhẹ 488g"
       ]
     },
     "specs": {
@@ -1711,13 +1711,13 @@
         "11-Blade Circular Diaphragm"
       ],
       "vi": [
-        "Full-Frame Format | Telephoto Super-Zoom",
+        "Định dạng Full-Frame | Ống kính siêu zoom tele",
         "Khẩu độ thay đổi từ f/5.6 đến f/6.3",
-        "5 ED Elements & One Aspherical Element",
-        "Direct Drive Super Sonic Wave Motor AF",
+        "5 ED Elements & 1 Aspherical Element",
+        "Lấy nét bằng động cơ Direct Drive Super Sonic Wave Motor",
         "Chống rung quang học Optical SteadyShot",
-        "Internal Zoom & Cấu trúc lấy nét trong (Internal Focus) Design",
-        "Removable Rotating Tripod Collar",
+        "Thiết kế zoom trong & lấy nét trong (Internal Focus)",
+        "Vòng gắn chân máy xoay được, có thể tháo rời",
         "Cấu tạo 11 lá khẩu tròn"
       ]
     },
@@ -1791,14 +1791,14 @@
         "Ultra-Compact 162g Pancake-Style Form Factor"
       ],
       "vi": [
-        "Full-Frame Format | Wide-Angle Compact Prime",
-        "f/2.8 Fast Aperture & Aluminum Metal Exterior",
-        "3 Aspherical Elements & One ED Element",
-        "Dual XD Linear Motor AF System",
-        "Vòng khẩu độ vật lý với công tắc De-Click",
-        "Dust and Moisture-Resistant Construction",
+        "Định dạng Full-Frame | Ống kính prime góc rộng nhỏ gọn",
+        "Khẩu độ lớn f/2.8 & vỏ nhôm",
+        "3 Aspherical Elements & 1 ED Element",
+        "Hệ thống AF hai động cơ XD Linear Motor",
+        "Vòng khẩu độ với công tắc De-Click",
+        "Thiết kế chống bụi và chống ẩm",
         "Cấu tạo 7 lá khẩu tròn",
-        "Ultra-Compact 162g Pancake-Style Form Factor"
+        "Kiểu dáng pancake siêu gọn, 162g"
       ]
     },
     "specs": {
@@ -1892,13 +1892,13 @@
         "9-Blade Circular Diaphragm"
       ],
       "vi": [
-        "Full-Frame Format | f/4 Constant Aperture",
-        "4 Aspherical Elements & Three ED Elements",
-        "Nano AR Coating to Minimize Ghosting",
-        "Direct Drive Super Sonic Wave Motor AF",
+        "Định dạng Full-Frame | Khẩu độ không đổi f/4",
+        "4 Aspherical Elements & 3 ED Elements",
+        "Lớp phủ Nano AR giảm thiểu hiện tượng bóng ma",
+        "Lấy nét bằng động cơ Direct Drive Super Sonic Wave Motor",
         "Chống rung quang học Optical SteadyShot",
-        "Nút giữ lấy nét Focus Hold Button & AF/MF Switch",
-        "Dust and Moisture-Resistant Construction",
+        "Focus Hold Button & công tắc AF/MF",
+        "Thiết kế chống bụi và chống ẩm",
         "Cấu tạo 9 lá khẩu tròn"
       ]
     },
@@ -1983,13 +1983,13 @@
         "Compact Everyday Standard Zoom (440g)"
       ],
       "vi": [
-        "Full-Frame Format | f/2.8 Constant Aperture",
-        "Four Aspherical & Two ED Glass Elements",
-        "Dual XD Linear Motor AF System",
-        "Dedicated Aperture Ring with De-Click Switch",
-        "Dust and Moisture-Resistant Sealed Housing",
-        "11-Blade Circular Iris Diaphragm",
-        "Compact Everyday Standard Zoom (440g)"
+        "Định dạng Full-Frame | Khẩu độ không đổi f/2.8",
+        "4 Aspherical Elements & 2 ED Glass Elements",
+        "Hệ thống AF hai động cơ XD Linear Motor",
+        "Vòng khẩu độ riêng với công tắc De-Click",
+        "Thiết kế chống bụi và chống ẩm",
+        "Cấu tạo 11 lá khẩu tròn",
+        "Ống kính zoom tiêu chuẩn nhỏ gọn cho mọi ngày (440g)"
       ]
     },
     "specs": {
@@ -2079,12 +2079,12 @@
         "9-Blade Circular Diaphragm"
       ],
       "vi": [
-        "Full-Frame Cinema Zoom Lens | f/4 Constant Aperture",
-        "Smooth Motion Optics (SMO) Prevents Focus Breathing",
-        "Independent Focus, Zoom, and Iris Control Rings",
-        "Super Sonic Wave Motor (SSM) Drive",
+        "Ống kính zoom điện ảnh Full-Frame | Khẩu độ không đổi f/4",
+        "Quang học Smooth Motion Optics (SMO) chống focus breathing",
+        "Vòng lấy nét, zoom và khẩu độ độc lập",
+        "Lấy nét bằng động cơ Super Sonic Wave Motor (SSM)",
         "Chống rung quang học Optical SteadyShot",
-        "Removable Tripod Collar",
+        "Vòng gắn chân máy có thể tháo rời",
         "Cấu tạo 9 lá khẩu tròn"
       ]
     },
@@ -2178,14 +2178,14 @@
         "Ultra-Lightweight 173g Compact Design"
       ],
       "vi": [
-        "Full-Frame Format | Compact Prime Lens",
-        "f/2.5 Maximum Aperture & Aluminum Metal Build",
+        "Định dạng Full-Frame | Ống kính prime nhỏ gọn",
+        "Khẩu độ tối đa f/2.5 & thân nhôm",
         "3 Aspherical Elements",
-        "Dual XD Linear Motor AF System",
-        "Vòng khẩu độ vật lý with De-Click Switch",
-        "Dust and Moisture-Resistant Construction",
+        "Hệ thống AF hai động cơ XD Linear Motor",
+        "Vòng khẩu độ vật lý với công tắc De-Click",
+        "Thiết kế chống bụi và chống ẩm",
         "Cấu tạo 7 lá khẩu tròn",
-        "Ultra-Lightweight 173g Compact Design"
+        "Thiết kế nhỏ gọn, siêu nhẹ 173g"
       ]
     },
     "specs": {
@@ -2261,12 +2261,12 @@
         "11-Blade Circular Diaphragm"
       ],
       "vi": [
-        "Full-Frame Format | Extreme Super-Telephoto Zoom",
-        "f/6.3-8 Variable Aperture Range",
-        "6 ED Glass Elements & Advanced Aspherical Lens",
-        "Hệ thống truyền động AF động cơ kép XD Linear",
+        "Định dạng Full-Frame | Ống kính zoom siêu tele",
+        "Khẩu độ thay đổi từ f/6.3 đến f/8",
+        "6 ED Glass Elements & Advanced Aspherical Element",
+        "Hệ thống AF hai động cơ XD Linear Motor",
         "Chống rung quang học Optical SteadyShot",
-        "Weather-Sealed Magnesium Alloy Barrel",
+        "Thân ống kính hợp kim magie chống chịu thời tiết",
         "Cấu tạo 11 lá khẩu tròn"
       ]
     },
@@ -2348,14 +2348,14 @@
         "Compact 174g Form Factor"
       ],
       "vi": [
-        "Full-Frame Format | Standard Prime Lens",
-        "f/2.5 Fast Maximum Aperture & Metal Housing",
-        "2 Aspherical Elements & One ED Element",
-        "Dual XD Linear Motor AF System",
-        "Vòng khẩu độ vật lý với công tắc De-Click",
-        "Dust and Moisture-Resistant Build",
+        "Định dạng Full-Frame | Ống kính prime tiêu chuẩn",
+        "Khẩu độ tối đa lớn f/2.5 & thân kim loại",
+        "2 Aspherical Elements & 1 ED Element",
+        "Hệ thống AF hai động cơ XD Linear Motor",
+        "Vòng khẩu độ với công tắc De-Click",
+        "Thiết kế chống bụi và chống ẩm",
         "Cấu tạo 7 lá khẩu tròn",
-        "Compact 174g Form Factor"
+        "Kiểu dáng nhỏ gọn, 174g"
       ]
     },
     "specs": {
@@ -2428,17 +2428,17 @@
         "Advanced Aspherical & Super ED Elements",
         "Optical SteadyShot Image Stabilization",
         "Compatible with 1.4x & 2.0x Teleconverters",
-        "15% Smaller & 46g Lighter than Gen 1",
+        "15% Smaller & 46g Lighter Than Mark I",
         "9-Blade Circular Diaphragm"
       ],
       "vi": [
-        "Full-Frame Format | f/4 Constant Aperture",
-        "0.5x Half-Macro Magnification Throughout Zoom",
-        "Four XD Linear AF Motors",
+        "Định dạng Full-Frame | Khẩu độ không đổi f/4",
+        "Độ phóng đại 0.5x (half-macro) trên toàn dải zoom",
+        "Hệ thống AF bốn động cơ XD Linear Motor",
         "Advanced Aspherical & Super ED Elements",
         "Chống rung quang học Optical SteadyShot",
         "Tương thích với Teleconverter 1.4x & 2.0x",
-        "15% Smaller & 46g Lighter than Gen 1",
+        "Nhỏ hơn 15% và nhẹ hơn 46g so với thế hệ đầu",
         "Cấu tạo 9 lá khẩu tròn"
       ]
     },
@@ -2517,13 +2517,13 @@
         "9-Blade Circular Diaphragm"
       ],
       "vi": [
-        "Full-Frame Format | f/2.8 Maximum Aperture",
-        "1:1 Magnification Ratio | True Macro Reproduction",
-        "Aspherical, ED, and Super ED Elements",
-        "Nano AR Coating to Reduce Reflections",
-        "Direct Drive Super Sonic Wave Motor AF",
+        "Định dạng Full-Frame | Khẩu độ tối đa f/2.8",
+        "Tỷ lệ phóng đại 1:1 | Macro đúng tỷ lệ thật",
+        "Aspherical, ED & Super ED Elements",
+        "Lớp phủ Nano AR giảm phản xạ",
+        "Lấy nét bằng động cơ Direct Drive Super Sonic Wave Motor",
         "Chống rung quang học Optical SteadyShot",
-        "Sliding Focus Ring for AF/MF Switching",
+        "Vòng lấy nét trượt để chuyển AF/MF",
         "Cấu tạo 9 lá khẩu tròn"
       ]
     },
@@ -2612,13 +2612,13 @@
         "11-Blade Circular Diaphragm"
       ],
       "vi": [
-        "Full-Frame G Master Telephoto Macro Lens",
-        "f/2.8 Fast Aperture with Soft Bokeh Tuning",
-        "1:1 Magnification Life-Size Macro Ability",
-        "XA Element & Super ED Glass Elements",
-        "Dual XD Linear Motor AF System",
+        "Ống kính macro tele G Master Full-Frame",
+        "Khẩu độ lớn f/2.8, Bokeh mềm mại",
+        "Chụp macro tỷ lệ 1:1 đúng kích thước thật",
+        "XA Element & Super ED Elements",
+        "Hệ thống AF hai động cơ XD Linear Motor",
         "Chống rung quang học Optical SteadyShot",
-        "Dust and Moisture-Resistant Construction",
+        "Thiết kế chống bụi và chống ẩm",
         "Cấu tạo 11 lá khẩu tròn"
       ]
     },
@@ -2630,7 +2630,7 @@
       "minAperture": "F20–22",
       "construction": "13 thành phần / 10 nhóm",
       "angleOfView": "16°",
-      "minFocusDistance": "0.85m / 2.79 ft. (at \"0.85m-∞\" position); 0.57m / 1.87 ft. (at \"0.57m-1.0m\" position)",
+      "minFocusDistance": "0,85m / 2,79 ft. (ở vị trí \"0,85m-∞\"); 0,57m / 1,87 ft. (ở vị trí \"0,57m-1,0m\")",
       "maxMagnification": "0.14x",
       "filterDiameter": "72 mm",
       "apertureBlades": "11 (khẩu tròn)",
@@ -2722,13 +2722,13 @@
         "9-Blade Circular Diaphragm"
       ],
       "vi": [
-        "Full-Frame Format | G Master Super-Telephoto Zoom",
+        "Định dạng Full-Frame | Ống kính zoom siêu tele G Master",
         "Khẩu độ thay đổi từ f/4.5 đến f/5.6",
-        "One Super ED Element & Two ED Elements",
-        "Nano AR Coating & Fluorine Coating",
-        "Direct Drive SSM and Double Linear Motor AF",
+        "1 Super ED Element & 2 ED Elements",
+        "Lớp phủ Nano AR & lớp phủ Fluorine",
+        "Lấy nét bằng động cơ Direct Drive SSM & Double Linear Motor",
         "Chống rung quang học Optical SteadyShot",
-        "Zoom Torque Adjustment Ring",
+        "Vòng điều chỉnh độ nặng zoom",
         "Cấu tạo 9 lá khẩu tròn"
       ]
     },
@@ -2803,13 +2803,13 @@
         "9-Blade Circular Diaphragm"
       ],
       "vi": [
-        "Full-Frame Format | G Master Super-Telephoto Zoom",
+        "Định dạng Full-Frame | Ống kính zoom siêu tele G Master",
         "Khẩu độ thay đổi từ f/4.5 đến f/5.6",
-        "One Super ED Element & Two ED Elements",
-        "Nano AR Coating & Fluorine Coating",
-        "Direct Drive SSM and Double Linear Motor AF",
+        "1 Super ED Element & 2 ED Elements",
+        "Lớp phủ Nano AR & lớp phủ Fluorine",
+        "Lấy nét bằng động cơ Direct Drive SSM & Double Linear Motor",
         "Chống rung quang học Optical SteadyShot",
-        "Zoom Torque Adjustment Ring",
+        "Vòng điều chỉnh độ nặng zoom",
         "Cấu tạo 9 lá khẩu tròn"
       ]
     },
@@ -2884,20 +2884,20 @@
         "Two ED Elements & Two Aspherical Elements",
         "Optical SteadyShot Image Stabilization",
         "Focus Range Limiter & Focus Hold Button",
-        "Dust & Moisture-Resistant Design",
+        "Dust and Moisture-Resistant Design",
         "9-Blade Circular Diaphragm",
         "Compact Super-Telephoto Zoom (654g)"
       ],
       "vi": [
-        "Full-Frame Format | Super-Telephoto Zoom",
+        "Định dạng Full-Frame | Ống kính zoom siêu tele",
         "Khẩu độ thay đổi từ f/5.6 đến f/8",
-        "150-600mm tương đương APS-C",
+        "Tương đương 150-600mm trên máy APS-C",
         "2 ED Elements & 2 Aspherical Elements",
         "Chống rung quang học Optical SteadyShot",
-        "Chức năng giới hạn khoảng lấy nét & Nút giữ lấy nét Focus Hold Button",
+        "Công tắc giới hạn khoảng lấy nét & Focus Hold Button",
         "Thiết kế chống bụi và chống ẩm",
         "Cấu tạo 9 lá khẩu tròn",
-        "Compact Super-Telephoto Zoom (654g)"
+        "Ống kính zoom siêu tele nhỏ gọn (654g)"
       ]
     },
     "specs": {
@@ -2973,13 +2973,13 @@
         "11-Blade Circular Diaphragm"
       ],
       "vi": [
-        "Full-Frame Format | Smooth Trans Focus (STF) Lens",
-        "APD Apodization Element for Ultra-Smooth Bokeh",
-        "f/2.8 (T5.6) Aperture Rating",
-        "One Aspherical Element & One ED Element",
-        "Direct Drive SSM Focus Motor",
+        "Định dạng Full-Frame | Ống kính Smooth Trans Focus (STF)",
+        "Thấu kính APD (Apodization) cho Bokeh siêu mịn",
+        "Khẩu độ f/2.8 (T5.6)",
+        "1 Aspherical Element & 1 ED Element",
+        "Lấy nét bằng động cơ Direct Drive SSM",
         "Chống rung quang học Optical SteadyShot",
-        "Macro Switching Ring & Aperture Ring",
+        "Vòng chuyển chế độ macro & vòng khẩu độ",
         "Cấu tạo 11 lá khẩu tròn"
       ]
     },
@@ -3078,14 +3078,14 @@
         "Ultra-Wide Angle G Master Performance"
       ],
       "vi": [
-        "Full-Frame Format | f/2.8 Constant Aperture",
-        "3 XA Elements & One Aspherical Element",
-        "Nano AR Coating II to Reduce Flare",
-        "Four XD Linear Motor AF System",
-        "Rear Gel Filter Holder & Integrated Hood",
-        "Dust and Moisture-Resistant Construction",
+        "Định dạng Full-Frame | Khẩu độ không đổi f/2.8",
+        "3 XA Elements & 1 Aspherical Element",
+        "Lớp phủ Nano AR II giảm loá",
+        "Hệ thống AF bốn động cơ XD Linear Motor",
+        "Khe gắn kính lọc gel phía sau & loa che nắng tích hợp",
+        "Thiết kế chống bụi và chống ẩm",
         "Cấu tạo 9 lá khẩu tròn",
-        "Ultra-Wide Angle G Master Performance"
+        "Chất lượng G Master ở góc siêu rộng"
       ]
     },
     "specs": {
@@ -3169,13 +3169,13 @@
         "11-Blade Circular Diaphragm"
       ],
       "vi": [
-        "Full-Frame Format | Medium Telephoto Prime",
-        "f/1.8 Fast Maximum Aperture",
-        "XA, Super ED, and ED Elements",
-        "Nano AR Coating for High Contrast",
-        "Dual XD Linear Motor AF System",
-        "Vòng khẩu độ vật lý with De-Click Switch",
-        "Dust and Moisture-Resistant Construction",
+        "Định dạng Full-Frame | Ống kính prime tele tầm trung",
+        "Khẩu độ tối đa lớn f/1.8",
+        "XA, Super ED & ED Elements",
+        "Lớp phủ Nano AR cho độ tương phản cao",
+        "Hệ thống AF hai động cơ XD Linear Motor",
+        "Vòng khẩu độ vật lý với công tắc De-Click",
+        "Thiết kế chống bụi và chống ẩm",
         "Cấu tạo 11 lá khẩu tròn"
       ]
     },
@@ -3267,14 +3267,14 @@
         "Lightweight 460g Astro & Landscape Master"
       ],
       "vi": [
-        "Full-Frame Format | f/1.8 Ultra-Wide Prime",
-        "2 XA Elements & Two ED Elements",
-        "Nano AR Coating II for Extreme Flare Resistance",
-        "Dual XD Linear Motor AF System",
-        "Vòng khẩu độ vật lý với công tắc De-Click",
-        "Rear Gel Filter Holder",
+        "Định dạng Full-Frame | Ống kính prime siêu rộng f/1.8",
+        "2 XA Elements & 2 ED Elements",
+        "Lớp phủ Nano AR II chống loá vượt trội",
+        "Hệ thống AF hai động cơ XD Linear Motor",
+        "Vòng khẩu độ với công tắc De-Click",
+        "Khe gắn kính lọc gel phía sau",
         "Cấu tạo 9 lá khẩu tròn",
-        "Lightweight 460g Astro & Landscape Master"
+        "Ống kính nhẹ 460g chuyên thiên văn & phong cảnh"
       ]
     },
     "specs": {
@@ -3381,14 +3381,14 @@
         "Ultimate 16-35mm G Master Optics"
       ],
       "vi": [
-        "Full-Frame Format | f/2.8 Constant Aperture",
-        "20% Lighter & 10% Smaller Than Mark I",
-        "Four XD Linear Motor AF System",
-        "One ED Aspherical, Two XA & Two ED Elements",
-        "Aperture Ring with De-Click and Iris Lock",
-        "Fluorine Coating & Weather-Sealed Housing",
+        "Định dạng Full-Frame | Khẩu độ không đổi f/2.8",
+        "Nhẹ hơn 20% và nhỏ hơn 10% so với Mark I",
+        "Hệ thống AF bốn động cơ XD Linear Motor",
+        "1 ED Aspherical, 2 XA & 2 ED Elements",
+        "Vòng khẩu độ với công tắc De-Click & Iris Lock",
+        "Lớp phủ Fluorine & thân chống chịu thời tiết",
         "Cấu tạo 11 lá khẩu tròn",
-        "Ultimate 16-35mm G Master Optics"
+        "Quang học G Master 16-35mm đỉnh cao"
       ]
     },
     "specs": {
@@ -3478,19 +3478,19 @@
         "Four XD Linear Motor AF System",
         "Two XA, Two ED & Two Super ED Elements",
         "Aperture Ring with De-Click Switch & Smooth Zoom Ring",
-        "Nano AR II Coating & Fluorine Front Element",
+        "Nano AR Coating II & Fluorine Front Element",
         "11-Blade Circular Iris Diaphragm",
         "Benchmark Standard Zoom Lens"
       ],
       "vi": [
-        "Full-Frame Format | f/2.8 Constant Aperture",
-        "22% Lighter & 18% Smaller Than Mark I",
-        "Four XD Linear Motor AF System",
-        "Two XA, Two ED & Two Super ED Elements",
-        "Aperture Ring with De-Click Switch & Smooth Zoom Ring",
-        "Nano AR II Coating & Fluorine Front Element",
-        "11-Blade Circular Iris Diaphragm",
-        "Benchmark Standard Zoom Lens"
+        "Định dạng Full-Frame | Khẩu độ không đổi f/2.8",
+        "Nhẹ hơn 22% và nhỏ hơn 18% so với Mark I",
+        "Hệ thống AF bốn động cơ XD Linear Motor",
+        "2 XA, 2 ED & 2 Super ED Elements",
+        "Vòng khẩu độ với công tắc De-Click & vòng zoom mượt",
+        "Lớp phủ Nano AR II & thấu kính trước phủ Fluorine",
+        "Cấu tạo 11 lá khẩu tròn",
+        "Chuẩn mực của dòng zoom tiêu chuẩn"
       ]
     },
     "specs": {
@@ -3576,12 +3576,12 @@
         "9-Blade Circular Diaphragm"
       ],
       "vi": [
-        "Full-Frame Format | f/2.8 Constant Aperture",
-        "One XA Element & Two Aspherical Elements",
-        "One ED Element & One Super ED Element",
-        "Nano AR Coating to Eliminate Flare",
-        "Direct Drive SSM Focus System",
-        "Nút giữ lấy nét Focus Hold Button & AF/MF Switch",
+        "Định dạng Full-Frame | Khẩu độ không đổi f/2.8",
+        "1 XA Element & 2 Aspherical Elements",
+        "1 ED Element & 1 Super ED Element",
+        "Lớp phủ Nano AR loại bỏ loá",
+        "Lấy nét bằng động cơ Direct Drive SSM",
+        "Focus Hold Button & công tắc AF/MF",
         "Cấu tạo 9 lá khẩu tròn"
       ]
     },
@@ -3666,14 +3666,14 @@
         "Compact 445g G Master Wide-Angle Prime"
       ],
       "vi": [
-        "Full-Frame Format | Fast f/1.4 Aperture",
-        "2 XA Elements & Three ED Elements",
-        "Nano AR Coating to Suppress Ghosting",
-        "Direct Drive SSM Focus Motor",
-        "Vòng khẩu độ vật lý with De-Click Switch",
-        "Dust and Moisture-Resistant Construction",
+        "Định dạng Full-Frame | Khẩu độ lớn f/1.4",
+        "2 XA Elements & 3 ED Elements",
+        "Lớp phủ Nano AR hạn chế hiện tượng bóng ma",
+        "Lấy nét bằng động cơ Direct Drive SSM",
+        "Vòng khẩu độ vật lý với công tắc De-Click",
+        "Thiết kế chống bụi và chống ẩm",
         "Cấu tạo 11 lá khẩu tròn",
-        "Compact 445g G Master Wide-Angle Prime"
+        "Ống kính prime góc rộng G Master nhỏ gọn, 445g"
       ]
     },
     "specs": {
@@ -3764,7 +3764,7 @@
     "imageUrl": "https://static.bhphoto.com/images/fb/1862825.jpg",
     "features": {
       "en": [
-        "Full-Frame Format | World's First Constant f/2 Standard Zoom",
+        "Full-Frame Format | World’s First Constant f/2 Standard Zoom",
         "Replaces Multiple Prime Lenses in One Body",
         "Four XD Linear AF Motors",
         "Three XA Elements & Three ED Elements",
@@ -3773,13 +3773,13 @@
         "11-Blade Circular Iris Diaphragm"
       ],
       "vi": [
-        "Full-Frame Format | World's First Constant f/2 Standard Zoom",
-        "Replaces Multiple Prime Lenses in One Body",
-        "Four XD Linear AF Motors",
-        "3 XA Elements & Three ED Elements",
-        "Aperture Ring with Click & Iris Lock Switches",
-        "Nano AR Coating II & Weather-Sealed Housing",
-        "11-Blade Circular Iris Diaphragm"
+        "Định dạng Full-Frame | Ống kính zoom tiêu chuẩn khẩu độ không đổi f/2 đầu tiên trên thế giới",
+        "Một ống kính thay cho nhiều ống kính prime",
+        "Hệ thống AF bốn động cơ XD Linear Motor",
+        "3 XA Elements & 3 ED Elements",
+        "Vòng khẩu độ với công tắc Click & Iris Lock",
+        "Lớp phủ Nano AR II & thân chống chịu thời tiết",
+        "Cấu tạo 11 lá khẩu tròn"
       ]
     },
     "specs": {
@@ -3865,7 +3865,7 @@
     "features": {
       "en": [
         "Full-Frame Format | f/2.8 Constant Aperture",
-        "World's Lightest 300mm f/2.8 Lens (1470g)",
+        "World’s Lightest 300mm f/2.8 Lens (1470g)",
         "Three Super ED Elements & One ED Element",
         "Dual XD Linear Motor AF Drive",
         "Optical SteadyShot Image Stabilization with 3 Modes",
@@ -3874,12 +3874,12 @@
         "11-Blade Circular Diaphragm"
       ],
       "vi": [
-        "Full-Frame Format | f/2.8 Constant Aperture",
-        "World's Lightest 300mm f/2.8 Lens (1470g)",
+        "Định dạng Full-Frame | Khẩu độ không đổi f/2.8",
+        "Ống kính 300mm f/2.8 nhẹ nhất thế giới (1470g)",
         "3 Super ED Elements & 1 ED Element",
-        "Hệ thống truyền động AF động cơ kép XD Linear",
+        "Hệ thống AF hai động cơ XD Linear Motor",
         "Chống rung quang học Optical SteadyShot với 3 chế độ",
-        "Khay gắn kính lọc Drop-In cho filter 40.5mm",
+        "Khay gắn kính lọc Drop-In cho kính lọc 40.5mm",
         "Tương thích với Teleconverter 1.4x & 2.0x",
         "Cấu tạo 11 lá khẩu tròn"
       ]
@@ -3965,17 +3965,17 @@
         "Physical Aperture Ring with De-Click Switch",
         "Dust and Moisture-Resistant Construction",
         "11-Blade Circular Diaphragm",
-        "Lightweight 524g Master Street & Portrait Prime"
+        "Lightweight 524g G Master Street & Portrait Prime"
       ],
       "vi": [
-        "Full-Frame Format | f/1.4 Fast Maximum Aperture",
-        "2 XA Elements & One ED Element",
-        "Nano AR Coating II to Minimize Reflection",
-        "Dual XD Linear Motor AF System",
-        "Vòng khẩu độ vật lý with De-Click Switch",
-        "Dust and Moisture-Resistant Construction",
+        "Định dạng Full-Frame | Khẩu độ tối đa lớn f/1.4",
+        "2 XA Elements & 1 ED Element",
+        "Lớp phủ Nano AR II giảm thiểu phản xạ",
+        "Hệ thống AF hai động cơ XD Linear Motor",
+        "Vòng khẩu độ vật lý với công tắc De-Click",
+        "Thiết kế chống bụi và chống ẩm",
         "Cấu tạo 11 lá khẩu tròn",
-        "Lightweight 524g Master Street & Portrait Prime"
+        "Ống kính prime G Master nhẹ 524g cho đường phố & chân dung"
       ]
     },
     "specs": {
@@ -4073,13 +4073,13 @@
         "33% Lighter & 15% Smaller than 50mm f/1.2"
       ],
       "vi": [
-        "Full-Frame Format | f/1.4 Fast Aperture",
-        "2 XA Elements & One ED Element",
-        "Dual XD Linear Motor AF System",
-        "Aperture Ring with De-Click and Iris Lock Switches",
-        "Nano AR Coating II & Weather-Sealed Housing",
+        "Định dạng Full-Frame | Khẩu độ lớn f/1.4",
+        "2 XA Elements & 1 ED Element",
+        "Hệ thống AF hai động cơ XD Linear Motor",
+        "Vòng khẩu độ với công tắc De-Click & Iris Lock",
+        "Lớp phủ Nano AR II & thân chống chịu thời tiết",
         "Cấu tạo 11 lá khẩu tròn",
-        "33% Lighter & 15% Smaller than 50mm f/1.2"
+        "Nhẹ hơn 33% và nhỏ hơn 15% so với 50mm f/1.2"
       ]
     },
     "specs": {
@@ -4175,12 +4175,12 @@
         "11-Blade Circular Diaphragm"
       ],
       "vi": [
-        "Full-Frame Format | Constant f/2 Fast Zoom",
-        "Replaces 50mm, 85mm, 135mm Fast Primes",
-        "Four XD Linear Motor AF System",
-        "3 XA Elements & Two Super ED Elements",
-        "Vòng khẩu độ vật lý with De-Click Switch",
-        "Dust and Weather-Sealed Construction",
+        "Định dạng Full-Frame | Ống kính zoom khẩu độ lớn không đổi f/2",
+        "Thay cho các ống kính prime khẩu lớn 50mm, 85mm, 135mm",
+        "Hệ thống AF bốn động cơ XD Linear Motor",
+        "3 XA Elements & 2 Super ED Elements",
+        "Vòng khẩu độ vật lý với công tắc De-Click",
+        "Thiết kế chống bụi và chống chịu thời tiết",
         "Cấu tạo 11 lá khẩu tròn"
       ]
     },
@@ -4270,13 +4270,13 @@
         "Flagship G Master Standard Prime"
       ],
       "vi": [
-        "Full-Frame Format | Ultra-Fast f/1.2 Aperture",
-        "3 XA Elements for Extreme Resolution",
-        "Four XD Linear Motor AF System",
-        "Vòng khẩu độ vật lý with De-Click Switch",
-        "Nano AR Coating II & Weather Sealing",
+        "Định dạng Full-Frame | Khẩu độ siêu lớn f/1.2",
+        "3 XA Elements cho độ phân giải vượt trội",
+        "Hệ thống AF bốn động cơ XD Linear Motor",
+        "Vòng khẩu độ vật lý với công tắc De-Click",
+        "Lớp phủ Nano AR II & khả năng chống chịu thời tiết",
         "Cấu tạo 11 lá khẩu tròn",
-        "Flagship G Master Standard Prime"
+        "Ống kính prime tiêu chuẩn G Master hàng đầu"
       ]
     },
     "specs": {
@@ -4372,13 +4372,13 @@
         "11-Blade Circular Diaphragm"
       ],
       "vi": [
-        "Full-Frame Format | f/4 Fast Super-Telephoto",
+        "Định dạng Full-Frame | Ống kính siêu tele khẩu độ lớn f/4",
         "3 Fluorite Elements & 1 XA Element",
-        "Hệ thống truyền động AF động cơ kép XD Linear",
+        "Hệ thống AF hai động cơ XD Linear Motor",
         "Chống rung quang học Optical SteadyShot",
         "Khay gắn kính lọc Drop-In 40.5mm",
         "Thiết kế quang học cân bằng trọng lượng phía trước (3040g)",
-        "Thiết kế hợp kim Magie chống chịu thời tiết",
+        "Thân ống kính hợp kim magie chống chịu thời tiết",
         "Cấu tạo 11 lá khẩu tròn"
       ]
     },
@@ -4460,12 +4460,12 @@
         "11-Blade Circular Diaphragm"
       ],
       "vi": [
-        "Full-Frame Format | f/2.8 Constant Aperture",
-        "29% Lighter Than Mark I (1045g)",
-        "Four XD Linear Motor AF Drive (4x Faster)",
+        "Định dạng Full-Frame | Khẩu độ không đổi f/2.8",
+        "Nhẹ hơn 29% so với Mark I (1045g)",
+        "Hệ thống AF bốn động cơ XD Linear Motor (nhanh hơn 4 lần)",
         "XA, Aspherical, Super ED & ED Elements",
-        "Optical SteadyShot Stabilization with Mode 3",
-        "Aperture Ring with De-Click Switch & Iris Lock",
+        "Chống rung quang học Optical SteadyShot có Mode 3",
+        "Vòng khẩu độ với công tắc De-Click & Iris Lock",
         "Cấu tạo 11 lá khẩu tròn"
       ]
     },
@@ -4549,13 +4549,13 @@
         "11-Blade Circular Iris Diaphragm"
       ],
       "vi": [
-        "Full-Frame Format | f/1.4 Fast Portrait Prime",
-        "20% Lighter & 13% Smaller Than Mark I",
-        "2 XA Elements & Two ED Glass Elements",
-        "Dual XD Linear Motor AF System (3x Faster)",
-        "Aperture Ring with Click & Iris Lock Switches",
-        "Nano AR Coating II & Fluorine Coating",
-        "11-Blade Circular Iris Diaphragm"
+        "Định dạng Full-Frame | Ống kính prime chân dung khẩu độ lớn f/1.4",
+        "Nhẹ hơn 20% và nhỏ hơn 13% so với Mark I",
+        "2 XA Elements & 2 ED Glass Elements",
+        "Hệ thống AF hai động cơ XD Linear Motor (nhanh hơn 3 lần)",
+        "Vòng khẩu độ với công tắc Click & Iris Lock",
+        "Lớp phủ Nano AR II & lớp phủ Fluorine",
+        "Cấu tạo 11 lá khẩu tròn"
       ]
     },
     "specs": {
@@ -4649,12 +4649,12 @@
         "11-Blade Circular Diaphragm"
       ],
       "vi": [
-        "Full-Frame Format | f/1.4 Fast Aperture",
-        "One XA Element & Three ED Elements",
-        "Nano AR Coating to Suppress Ghosting",
-        "Linear SSM Focus Motor Drive",
-        "Vòng khẩu độ vật lý with De-Click Switch",
-        "Dust and Moisture-Resistant Build",
+        "Định dạng Full-Frame | Khẩu độ lớn f/1.4",
+        "1 XA Element & 3 ED Elements",
+        "Lớp phủ Nano AR hạn chế hiện tượng bóng ma",
+        "Lấy nét bằng động cơ Linear SSM",
+        "Vòng khẩu độ vật lý với công tắc De-Click",
+        "Thiết kế chống bụi và chống ẩm",
         "Cấu tạo 11 lá khẩu tròn"
       ]
     },
@@ -4752,13 +4752,13 @@
       ],
       "vi": [
         "Cảm biến 50.1MP Full-Frame Exmor RS Stacked CMOS",
-        "Up to 30 fps Shooting, ISO 100-32000",
-        "8K 30p & 4K 120p Video in 10-Bit 4:2:2",
-        "Kính ngắm điện tử EVF 9.44M điểm ảnh với tần số quét 240 fps",
-        "759-Pt. Fast Hybrid AF, Real-time Bird/Eye AF",
+        "Chụp tới 30 fps, ISO 100-32000",
+        "Quay video 8K 30p & 4K 120p 10-Bit 4:2:2",
+        "Khung ngắm EVF 9.44 triệu điểm ảnh, tần số quét 240 fps",
+        "Lấy nét Fast Hybrid AF 759 điểm, Real-time Bird/Eye AF",
         "Chống rung hình ảnh 5 trục SteadyShot",
         "Khe cắm thẻ nhớ kép CFexpress Type A / SD",
-        "1/400 sec Flash Sync Speed"
+        "Tốc độ đồng bộ đèn flash 1/400 giây"
       ]
     },
     "specs": {
@@ -4842,11 +4842,11 @@
       ],
       "vi": [
         "Cảm biến 50.1MP Full-Frame Exmor RS Stacked CMOS",
-        "Bộ xử lý AI Processing Unit cho Real-Time AF thế hệ mới",
-        "Chụp liên tục lên tới 30 fps không chớp màn hình (Blackout-Free)",
+        "AI Processing Unit cho Real-Time AF thế hệ mới",
+        "Chụp liên tục tới 30 fps không tối màn hình (Blackout-Free)",
         "Quay video 8K 30p & 4K 120p 10-Bit 4:2:2",
-        "Chống rung 5 trục In-Body lên tới 8.5-Stop",
-        "Kính ngắm điện tử EVF 9.44M điểm ảnh với tần số quét 240 fps",
+        "Chống rung 5 trục trong thân máy, hiệu quả tới 8.5 stop",
+        "Khung ngắm EVF 9.44 triệu điểm ảnh, tần số quét 240 fps",
         "Màn hình cảm ứng LCD 3.2\" xoay lật 4 trục Multi-Angle",
         "Chế độ chụp Pre-Capture & Speed Boost"
       ]
@@ -4899,7 +4899,7 @@
       "en": [
         "24.2MP APS-C Exmor CMOS Sensor",
         "BIONZ X Image Processor",
-        "Real-Time Eye AF & Real-Time Tracking",
+        "Real-time Eye AF & Real-Time Tracking",
         "XGA OLED Tru-Finder 2.36m-Dot EVF",
         "3.0\" 921k-Dot 180° Tilting Touchscreen LCD",
         "UHD 4K30p Video with S-Log3 and HLG",
@@ -4908,13 +4908,13 @@
       ],
       "vi": [
         "Cảm biến 24.2MP APS-C Exmor CMOS",
-        "BIONZ X Bộ xử lý hình ảnh",
-        "Real-Time Eye AF & Real-Time Tracking",
-        "XGA OLED Tru-Finder 2.36m-Dot EVF",
-        "3.0\" 921k-Dot 180° Tilting Màn hình cảm ứng LCD",
-        "UHD 4K30p Video with S-Log3 and HLG",
-        "Built-In Wi-Fi with NFC",
-        "425 Phase- & Contrast-Detect AF Points"
+        "Bộ xử lý hình ảnh BIONZ X",
+        "Real-time Eye AF & Real-Time Tracking",
+        "Khung ngắm EVF XGA OLED Tru-Finder 2.36 triệu điểm ảnh",
+        "Màn hình cảm ứng LCD 3.0\" 921k điểm ảnh, lật 180°",
+        "Quay video UHD 4K30p với S-Log3 & HLG",
+        "Tích hợp Wi-Fi & NFC",
+        "425 điểm lấy nét Phase-Detection & Contrast-Detection"
       ]
     },
     "specs": {
@@ -4999,13 +4999,13 @@
       ],
       "vi": [
         "Cảm biến 26MP APS-C Exmor R CMOS BSI",
-        "BIONZ XR Processor & AI Processing Unit",
-        "UHD 4K 120p / FHD 240p / 10-Bit 4:2:2",
-        "Up to 11 fps Shooting, ISO 100-32000",
-        "5-Axis Pixel-Level Chống rung hình ảnh",
-        "Real-Time Tracking AF for Stills & Video",
-        "759-Point Phase Detection Coverage",
-        "3.0\" 1.03m-Dot Vari-Angle Màn hình cảm ứng LCD"
+        "Bộ xử lý BIONZ XR & AI Processing Unit",
+        "Quay video UHD 4K 120p / FHD 240p / 10-Bit 4:2:2",
+        "Chụp tới 11 fps, ISO 100-32000",
+        "Chống rung 5 trục chính xác tới từng điểm ảnh",
+        "Lấy nét Real-Time Tracking cho cả ảnh và video",
+        "759 điểm lấy nét Phase-Detection",
+        "Màn hình cảm ứng LCD Vari-Angle 3.0\" 1.03 triệu điểm ảnh"
       ]
     },
     "specs": {
@@ -5076,13 +5076,13 @@
       ],
       "vi": [
         "Cảm biến 24.2MP Full-Frame Exmor R CMOS BSI",
-        "BIONZ X Bộ xử lý hình ảnh & Front-End LSI",
-        "693-Point Hybrid AF System",
-        "UHD 4K30p Video with HLG & S-Log3 Gammas",
-        "2.36m-Dot Tru-Finder OLED EVF",
-        "3.0\" 921k-Dot Tilting Màn hình cảm ứng LCD",
-        "5-Axis SteadyShot INSIDE Stabilization",
-        "Dual SD Card Slots; USB 3.1 Gen 1 Type-C"
+        "Bộ xử lý hình ảnh BIONZ X & Front-End LSI",
+        "Hệ thống lấy nét Hybrid AF 693 điểm",
+        "Quay video UHD 4K30p với gamma HLG & S-Log3",
+        "Khung ngắm EVF Tru-Finder OLED 2.36 triệu điểm ảnh",
+        "Màn hình cảm ứng LCD 3.0\" 921k điểm ảnh, lật được",
+        "Chống rung 5 trục SteadyShot INSIDE",
+        "Khe cắm thẻ nhớ SD kép; USB 3.1 Gen 1 Type-C"
       ]
     },
     "specs": {
@@ -5150,15 +5150,15 @@
       ],
       "vi": [
         "Cảm biến 33MP Full-Frame Exmor R CMOS BSI",
-        "Up to 10 fps Shooting, ISO 100-51200",
-        "4K 60p Video in 10-Bit, S-Cinetone",
-        "3.68m-Dot EVF with 120 fps tần số quét",
-        "3\" 1.03m-Dot Vari-Angle Màn hình cảm ứng LCD",
-        "759-Pt. Fast Hybrid AF, Real-time Eye AF",
-        "Focus Breathing Compensation",
+        "Chụp tới 10 fps, ISO 100-51200",
+        "Quay video 4K 60p 10-Bit, S-Cinetone",
+        "Khung ngắm EVF 3.68 triệu điểm ảnh, tần số quét 120 fps",
+        "Màn hình cảm ứng LCD Vari-Angle 3\" 1.03 triệu điểm ảnh",
+        "Lấy nét Fast Hybrid AF 759 điểm, Real-time Eye AF",
+        "Hỗ trợ Focus Breathing Compensation",
         "Chống rung hình ảnh 5 trục SteadyShot",
-        "Creative Looks and Soft Skin Effect",
-        "4K 15p UVC/UAC Streaming via USB Type-C"
+        "Creative Look & Soft Skin Effect",
+        "Livestream 4K 15p UVC/UAC qua USB Type-C"
       ]
     },
     "specs": {
@@ -5240,12 +5240,12 @@
       ],
       "vi": [
         "Cảm biến 33MP Full-Frame Exmor R CMOS BSI",
-        "AI Processing Unit for Human/Animal/Vehicle AF",
-        "4K 60p 10-Bit 4:2:2 S-Cinetone Recording",
-        "7.0-Stop 5-Axis In-Body Chống rung hình ảnh",
-        "3.68m-Dot OLED Viewfinder 120 fps",
+        "AI Processing Unit nhận diện người, động vật, phương tiện khi lấy nét",
+        "Quay video 4K 60p 10-Bit 4:2:2 với S-Cinetone",
+        "Chống rung 5 trục trong thân máy, hiệu quả tới 7.0 stop",
+        "Khung ngắm OLED 3.68 triệu điểm ảnh, 120 fps",
         "Màn hình cảm ứng LCD 3.2\" xoay lật 4 trục Multi-Angle",
-        "Dual CFexpress Type A / SD UHS-II Slots"
+        "Khe cắm thẻ nhớ kép CFexpress Type A / SD UHS-II"
       ]
     },
     "specs": {
@@ -5327,20 +5327,20 @@
       "en": [
         "24.2MP Full-Frame Exmor R CMOS BSI Sensor",
         "BIONZ X Image Processor & Front-End LSI",
-        "693-Pt. Hybrid AF System, Real-Time Eye AF",
+        "693-Pt. Hybrid AF System, Real-time Eye AF",
         "UHD 4K30p Video with HLG & S-Log3",
-        "Compact Lightest Full-Frame Body Design",
+        "Compact, Lightweight Full-Frame Body",
         "3.0\" 921k-Dot Vari-Angle Touchscreen LCD",
         "5-Axis In-Body Image Stabilization"
       ],
       "vi": [
         "Cảm biến 24.2MP Full-Frame Exmor R CMOS BSI",
-        "BIONZ X Bộ xử lý hình ảnh & Front-End LSI",
-        "693-Pt. Hybrid AF System, Real-Time Eye AF",
-        "UHD 4K30p Video with HLG & S-Log3",
-        "Compact Lightest Full-Frame Body Design",
-        "3.0\" 921k-Dot Vari-Angle Màn hình cảm ứng LCD",
-        "5-Axis In-Body Chống rung hình ảnh"
+        "Bộ xử lý hình ảnh BIONZ X & Front-End LSI",
+        "Hệ thống lấy nét Hybrid AF 693 điểm, Real-time Eye AF",
+        "Quay video UHD 4K30p với HLG & S-Log3",
+        "Thân máy Full-Frame nhỏ gọn, nhẹ",
+        "Màn hình cảm ứng LCD Vari-Angle 3.0\" 921k điểm ảnh",
+        "Chống rung 5 trục trong thân máy"
       ]
     },
     "specs": {
@@ -5418,12 +5418,12 @@
       ],
       "vi": [
         "Cảm biến 33MP Full-Frame Exmor R CMOS BSI",
-        "BIONZ XR Processor & AI Processing Unit",
-        "4K 60p 10-Bit 4:2:2 Video & S-Cinetone",
-        "7.0-Stop 5-Axis In-Body Chống rung hình ảnh",
-        "759-Pt. Fast Hybrid AF, Real-time Eye AF",
-        "3.0\" 1.03m-Dot Vari-Angle Màn hình cảm ứng LCD",
-        "Compact Lightweight Rangefinder-Style Body"
+        "Bộ xử lý BIONZ XR & AI Processing Unit",
+        "Quay video 4K 60p 10-Bit 4:2:2 & S-Cinetone",
+        "Chống rung 5 trục trong thân máy, hiệu quả tới 7.0 stop",
+        "Lấy nét Fast Hybrid AF 759 điểm, Real-time Eye AF",
+        "Màn hình cảm ứng LCD Vari-Angle 3.0\" 1.03 triệu điểm ảnh",
+        "Thân máy kiểu rangefinder nhỏ gọn, nhẹ"
       ]
     },
     "specs": {
@@ -5489,12 +5489,12 @@
       ],
       "vi": [
         "Cảm biến 61MP Full-Frame Exmor R CMOS BSI",
-        "BIONZ XR Processor & AI Processing Unit",
-        "Pixel Shift Multi Shooting 240MP Images",
-        "4K 60p 10-Bit Video & S-Cinetone",
-        "7.0-Stop 5-Axis Chống rung hình ảnh",
-        "693-Pt. Fast Hybrid AF System",
-        "Compact 515g Body with Extension Grip"
+        "Bộ xử lý BIONZ XR & AI Processing Unit",
+        "Pixel Shift Multi Shooting cho ảnh 240MP",
+        "Quay video 4K 60p 10-Bit & S-Cinetone",
+        "Chống rung 5 trục, hiệu quả tới 7.0 stop",
+        "Hệ thống lấy nét Fast Hybrid AF 693 điểm",
+        "Thân máy nhỏ gọn 515g kèm báng cầm nối dài"
       ]
     },
     "specs": {
@@ -5563,12 +5563,12 @@
       ],
       "vi": [
         "Cảm biến 42.4MP Full-Frame Exmor R CMOS BSI",
-        "BIONZ X Bộ xử lý hình ảnh & Front-End LSI",
-        "399-Point AF System & 10 fps Shooting",
-        "UHD 4K30p Video with HLG & S-Log3 Gammas",
-        "3.68m-Dot Tru-Finder OLED EVF",
-        "3.0\" 2.36m-Dot Tilting Màn hình cảm ứng LCD",
-        "5-Axis SteadyShot INSIDE Stabilization"
+        "Bộ xử lý hình ảnh BIONZ X & Front-End LSI",
+        "Hệ thống lấy nét 399 điểm & chụp 10 fps",
+        "Quay video UHD 4K30p với gamma HLG & S-Log3",
+        "Khung ngắm EVF Tru-Finder OLED 3.68 triệu điểm ảnh",
+        "Màn hình cảm ứng LCD 3.0\" 2.36 triệu điểm ảnh, lật được",
+        "Chống rung 5 trục SteadyShot INSIDE"
       ]
     },
     "specs": {
@@ -5628,11 +5628,11 @@
       ],
       "vi": [
         "Cảm biến 61MP Full-Frame Exmor R CMOS BSI",
-        "BIONZ X Bộ xử lý hình ảnh & Front-End LSI",
-        "567-Point Phase-Detection AF System",
-        "Up to 10 fps Shooting, ISO 100-32000",
-        "UHD 4K30p Video with HLG & S-Log3 Gammas",
-        "5.76m-Dot UXGA OLED Tru-Finder EVF",
+        "Bộ xử lý hình ảnh BIONZ X & Front-End LSI",
+        "Hệ thống lấy nét Phase-Detection AF 567 điểm",
+        "Chụp tới 10 fps, ISO 100-32000",
+        "Quay video UHD 4K30p với gamma HLG & S-Log3",
+        "Khung ngắm EVF UXGA OLED Tru-Finder 5.76 triệu điểm ảnh",
         "240MP Pixel Shift Multi Shooting"
       ]
     },
@@ -5672,7 +5672,7 @@
     "features": {
       "en": [
         "61MP Full-Frame Exmor R CMOS BSI Sensor",
-        "BIONZ XR Processor & Dedicated AI Unit",
+        "BIONZ XR Processor & Dedicated AI Processing Unit",
         "8K 24p & 4K 60p 10-Bit Video",
         "8.0-Stop 5-Axis Image Stabilization System",
         "9.44m-Dot EVF with 120 fps Refresh Rate",
@@ -5682,12 +5682,12 @@
       ],
       "vi": [
         "Cảm biến 61MP Full-Frame Exmor R CMOS BSI",
-        "BIONZ XR Processor & Dedicated AI Unit",
-        "8K 24p & 4K 60p 10-Bit Video",
-        "8.0-Stop 5-Axis Chống rung hình ảnh System",
-        "9.44m-Dot EVF with 120 fps tần số quét",
+        "Bộ xử lý BIONZ XR & AI Processing Unit riêng",
+        "Quay video 8K 24p & 4K 60p 10-Bit",
+        "Hệ thống chống rung 5 trục, hiệu quả tới 8.0 stop",
+        "Khung ngắm EVF 9.44 triệu điểm ảnh, tần số quét 120 fps",
         "Màn hình cảm ứng LCD 3.2\" xoay lật 4 trục Multi-Angle",
-        "693-Pt. Fast Hybrid AF with AI Tracking",
+        "Lấy nét Fast Hybrid AF 693 điểm với AI Tracking",
         "240MP Pixel Shift Multi Shooting"
       ]
     },
@@ -5738,12 +5738,12 @@
       ],
       "vi": [
         "Cảm biến 61MP Full-Frame Exmor R CMOS BSI",
-        "Next-Gen AI Processing Unit & BIONZ XR",
-        "8K 30p & 4K 60p 10-Bit 4:2:2 Video",
-        "8.5-Stop In-Body Chống rung hình ảnh",
-        "9.44m-Dot OLED EVF 120 fps",
+        "AI Processing Unit thế hệ mới & BIONZ XR",
+        "Quay video 8K 30p & 4K 60p 10-Bit 4:2:2",
+        "Chống rung trong thân máy, hiệu quả tới 8.5 stop",
+        "Khung ngắm EVF OLED 9.44 triệu điểm ảnh, 120 fps",
         "Màn hình cảm ứng LCD 3.2\" xoay lật 4 trục Multi-Angle",
-        "Dual CFexpress Type A / SD UHS-II Slots"
+        "Khe cắm thẻ nhớ kép CFexpress Type A / SD UHS-II"
       ]
     },
     "specs": {
@@ -5784,7 +5784,7 @@
         "12.1MP Full-Frame Exmor R CMOS BSI Sensor",
         "UHD 4K 120p Video, 10-Bit 4:2:2 Internal",
         "16-Bit RAW Output, HLG & S-Cinetone",
-        "759-Pt. Fast Hybrid AF, Real-Time Eye AF",
+        "759-Pt. Fast Hybrid AF, Real-time Eye AF",
         "9.44m-Dot QXGA OLED EVF",
         "3.0\" 1.44m-Dot Vari-Angle Touchscreen LCD",
         "5-Axis SteadyShot INSIDE Stabilization",
@@ -5792,12 +5792,12 @@
       ],
       "vi": [
         "Cảm biến 12.1MP Full-Frame Exmor R CMOS BSI",
-        "UHD 4K 120p Video, 10-Bit 4:2:2 Internal",
-        "16-Bit RAW Output, HLG & S-Cinetone",
-        "759-Pt. Fast Hybrid AF, Real-Time Eye AF",
-        "9.44m-Dot QXGA OLED EVF",
-        "3.0\" 1.44m-Dot Vari-Angle Màn hình cảm ứng LCD",
-        "5-Axis SteadyShot INSIDE Stabilization",
+        "Quay video UHD 4K 120p, ghi trong máy 10-Bit 4:2:2",
+        "Xuất RAW 16-Bit, HLG & S-Cinetone",
+        "Lấy nét Fast Hybrid AF 759 điểm, Real-time Eye AF",
+        "Khung ngắm EVF QXGA OLED 9.44 triệu điểm ảnh",
+        "Màn hình cảm ứng LCD Vari-Angle 3.0\" 1.44 triệu điểm ảnh",
+        "Chống rung 5 trục SteadyShot INSIDE",
         "Khe cắm thẻ nhớ kép CFexpress Type A / SD"
       ]
     },
@@ -5842,9 +5842,9 @@
         "24.6MP Full-Frame Global Shutter Sensor",
         "Up to 120 fps Continuous Shooting with AF/AE",
         "Pre-Capture & Speed Boost Functions",
-        "Flash Sync up to 1/80,000 sec Shutter",
+        "Flash Sync up to 1/80,000 sec",
         "4K 120p 10-Bit 4:2:2 Video Recording",
-        "759-Pt. Phase-Detection AF with AI Unit",
+        "759-Pt. Phase-Detection AF with AI Processing Unit",
         "9.44m-Dot EVF with 240 fps Refresh Rate",
         "3.2\" 4-Axis Multi-Angle Touchscreen LCD"
       ],
@@ -5852,10 +5852,10 @@
         "Cảm biến 24.6MP Full-Frame Global Shutter",
         "Chụp liên tục lên tới 120 fps hỗ trợ đầy đủ AF/AE",
         "Tính năng Pre-Capture & Speed Boost",
-        "Đồng bộ đèn Flash lên tới tốc độ màn trập 1/80,000 giây",
+        "Đồng bộ đèn flash ở tốc độ màn trập tới 1/80 000 giây",
         "Quay video 4K 120p 10-Bit 4:2:2",
-        "Lấy nét Phase-Detection AF 759 điểm tích hợp AI Unit",
-        "Kính ngắm điện tử EVF 9.44M điểm ảnh với tần số quét 240 fps",
+        "Lấy nét Phase-Detection AF 759 điểm, tích hợp AI Processing Unit",
+        "Khung ngắm EVF 9.44 triệu điểm ảnh, tần số quét 240 fps",
         "Màn hình cảm ứng LCD 3.2\" xoay lật 4 trục Multi-Angle"
       ]
     },
@@ -5903,13 +5903,13 @@
         "Compact Lightweight Ultra-Wide Zoom (225g)"
       ],
       "vi": [
-        "APS-C Format | f/4 Constant Aperture",
-        "15-27mm (35mm Equivalent)",
-        "3 Aspherical Elements & One Super ED Element",
+        "Định dạng APS-C | Khẩu độ không đổi f/4",
+        "Tiêu cự tương đương 15-27mm (định dạng 35mm)",
+        "3 Aspherical Elements & 1 Super ED Element",
         "Chống rung quang học Optical SteadyShot",
-        "Cấu trúc lấy nét trong (Internal Focus) Mechanism",
+        "Cơ chế lấy nét trong (Internal Focus)",
         "Cấu tạo 7 lá khẩu tròn",
-        "Compact Lightweight Ultra-Wide Zoom (225g)"
+        "Ống kính zoom siêu rộng nhỏ gọn, nhẹ (225g)"
       ]
     },
     "specs": {
@@ -5958,14 +5958,14 @@
         "Ultra-Compact 181g Vlog & Landscape Lens"
       ],
       "vi": [
-        "APS-C Format | f/1.8 Ultra-Wide Prime",
-        "16.5mm (35mm Equivalent)",
-        "Three Aspherical & Three ED Elements",
-        "Dual Linear Motor AF System",
-        "Cấu trúc lấy nét trong (Internal Focus) & Suppressed Breathing",
-        "Dust and Moisture-Resistant Build",
+        "Định dạng APS-C | Ống kính prime siêu rộng f/1.8",
+        "Tiêu cự tương đương 16.5mm (định dạng 35mm)",
+        "3 Aspherical Elements & 3 ED Elements",
+        "Hệ thống AF hai động cơ Linear Motor",
+        "Lấy nét trong (Internal Focus) & hạn chế focus breathing",
+        "Thiết kế chống bụi và chống ẩm",
         "Cấu tạo 7 lá khẩu tròn",
-        "Ultra-Compact 181g Vlog & Landscape Lens"
+        "Ống kính siêu gọn 181g cho vlog & phong cảnh"
       ]
     },
     "specs": {
@@ -6015,12 +6015,12 @@
         "7-Blade Circular Diaphragm"
       ],
       "vi": [
-        "APS-C Format | f/1.4 Fast Maximum Aperture",
-        "22.5mm (35mm Equivalent)",
-        "Three Aspherical, One ED & One Super ED Element",
-        "Dual Linear Motor AF System",
-        "Vòng khẩu độ vật lý with De-Click Switch",
-        "Dust and Moisture-Resistant Construction",
+        "Định dạng APS-C | Khẩu độ tối đa lớn f/1.4",
+        "Tiêu cự tương đương 22.5mm (định dạng 35mm)",
+        "3 Aspherical Elements, 1 ED Element & 1 Super ED Element",
+        "Hệ thống AF hai động cơ Linear Motor",
+        "Vòng khẩu độ vật lý với công tắc De-Click",
+        "Thiết kế chống bụi và chống ẩm",
         "Cấu tạo 7 lá khẩu tròn"
       ]
     },
@@ -6071,12 +6071,12 @@
         "7-Blade Circular Diaphragm"
       ],
       "vi": [
-        "APS-C Format | All-in-One Travel Zoom",
-        "27-300mm (35mm Equivalent)",
+        "Định dạng APS-C | Ống kính zoom du lịch đa dụng",
+        "Tiêu cự tương đương 27-300mm (định dạng 35mm)",
         "Khẩu độ thay đổi từ f/3.5 đến f/6.3",
-        "4 Aspherical Elements & Two ED Elements",
+        "4 Aspherical Elements & 2 ED Elements",
         "Chống rung quang học Optical SteadyShot",
-        "Compact Lightweight (LE) Housing",
+        "Thân ống kính nhỏ gọn, nhẹ (LE)",
         "Cấu tạo 7 lá khẩu tròn"
       ]
     },
@@ -6125,13 +6125,13 @@
         "Ultra-Lightweight 138g Macro Lens"
       ],
       "vi": [
-        "APS-C Format | 45mm Equivalent",
-        "f/3.5 Maximum Aperture",
-        "1:1 Magnification Ratio | 9.5cm Min Focus",
-        "One ED Element & Three Aspherical Elements",
-        "Cấu trúc lấy nét trong (Internal Focus) Design",
+        "Định dạng APS-C | Tiêu cự tương đương 45mm",
+        "Khẩu độ tối đa f/3.5",
+        "Tỷ lệ phóng đại 1:1 | Lấy nét gần nhất 9.5cm",
+        "1 ED Element & 3 Aspherical Elements",
+        "Thiết kế lấy nét trong (Internal Focus)",
         "Cấu tạo 7 lá khẩu tròn",
-        "Ultra-Lightweight 138g Macro Lens"
+        "Ống kính macro siêu nhẹ, 138g"
       ]
     },
     "specs": {
@@ -6181,13 +6181,13 @@
         "Compact Everyday Prime (154g)"
       ],
       "vi": [
-        "APS-C Format | 52.5mm (35mm Equivalent)",
-        "f/1.8 Fast Maximum Aperture",
+        "Định dạng APS-C | Tiêu cự tương đương 52.5mm (định dạng 35mm)",
+        "Khẩu độ tối đa lớn f/1.8",
         "Chống rung quang học Optical SteadyShot",
-        "2 Aspherical Elements & One ED Element",
-        "Cấu trúc lấy nét trong (Internal Focus) Mechanism",
+        "2 Aspherical Elements & 1 ED Element",
+        "Cơ chế lấy nét trong (Internal Focus)",
         "Cấu tạo 7 lá khẩu tròn",
-        "Compact Everyday Prime (154g)"
+        "Ống kính prime nhỏ gọn cho mọi ngày (154g)"
       ]
     },
     "specs": {
@@ -6235,13 +6235,13 @@
         "Affordable Portrait Prime"
       ],
       "vi": [
-        "APS-C Format | 75mm (35mm Equivalent)",
-        "f/1.8 Fast Portrait Aperture",
+        "Định dạng APS-C | Tiêu cự tương đương 75mm (định dạng 35mm)",
+        "Khẩu độ lớn f/1.8 cho chân dung",
         "Chống rung quang học Optical SteadyShot",
-        "Cấu trúc lấy nét trong (Internal Focus) Motor System",
-        "Aluminum Alloy Lens Barrel",
+        "Hệ thống động cơ lấy nét trong (Internal Focus)",
+        "Thân ống kính hợp kim nhôm",
         "Cấu tạo 7 lá khẩu tròn",
-        "Affordable Portrait Prime"
+        "Ống kính prime chân dung giá dễ tiếp cận"
       ]
     },
     "specs": {
@@ -6289,12 +6289,12 @@
         "7-Blade Circular Diaphragm"
       ],
       "vi": [
-        "Full-Frame Format | 10x All-in-One Travel Zoom",
+        "Định dạng Full-Frame | Ống kính zoom du lịch đa dụng 10x",
         "Khẩu độ thay đổi từ f/3.5 đến f/6.3",
-        "5 Aspherical Elements & One ED Element",
-        "Linear Motor AF Drive System",
+        "5 Aspherical Elements & 1 ED Element",
+        "Hệ thống AF dùng động cơ Linear Motor",
         "Chống rung quang học Optical SteadyShot",
-        "Dust and Moisture-Resistant Construction",
+        "Thiết kế chống bụi và chống ẩm",
         "Cấu tạo 7 lá khẩu tròn"
       ]
     },
@@ -6343,13 +6343,13 @@
         "Compact Lightweight 200g Prime"
       ],
       "vi": [
-        "Full-Frame Format | f/2 Fast Aperture",
-        "Three Aspherical & Two ED Elements",
-        "Linear Motor AF Drive",
-        "Accepts Ultra-Wide & Fisheye Converter Lenses",
-        "Dust and Moisture-Resistant Construction",
+        "Định dạng Full-Frame | Khẩu độ lớn f/2",
+        "3 Aspherical Elements & 2 ED Elements",
+        "Hệ thống AF dùng động cơ Linear Motor",
+        "Tương thích ống kính chuyển đổi siêu rộng & fisheye",
+        "Thiết kế chống bụi và chống ẩm",
         "Cấu tạo 9 lá khẩu tròn",
-        "Compact Lightweight 200g Prime"
+        "Ống kính prime nhỏ gọn, nhẹ 200g"
       ]
     },
     "specs": {
@@ -6399,13 +6399,13 @@
         "Versatile Lightweight Street & Travel Prime (280g)"
       ],
       "vi": [
-        "Full-Frame Format | f/1.8 Fast Aperture",
-        "One Aspherical Element",
-        "Linear AF Motor & Cấu trúc lấy nét trong (Internal Focus)",
-        "Customizable Nút giữ lấy nét Focus Hold Button",
-        "Dust and Moisture-Resistant Housing",
+        "Định dạng Full-Frame | Khẩu độ lớn f/1.8",
+        "1 Aspherical Element",
+        "Động cơ AF Linear Motor & lấy nét trong (Internal Focus)",
+        "Focus Hold Button tuỳ chỉnh được",
+        "Thiết kế chống bụi và chống ẩm",
         "Cấu tạo 9 lá khẩu tròn",
-        "Versatile Lightweight Street & Travel Prime (280g)"
+        "Ống kính prime đa dụng, nhẹ cho đường phố & du lịch (280g)"
       ]
     },
     "specs": {
@@ -6454,12 +6454,12 @@
         "Lightweight 186g Nifty Fifty Prime"
       ],
       "vi": [
-        "Full-Frame Format | f/1.8 Fast Maximum Aperture",
-        "One Aspherical Element",
-        "DC Actuator Motor Drive",
-        "Metal Mount Construction",
+        "Định dạng Full-Frame | Khẩu độ tối đa lớn f/1.8",
+        "1 Aspherical Element",
+        "Lấy nét bằng động cơ DC Actuator",
+        "Ngàm ống kính bằng kim loại",
         "Cấu tạo 7 lá khẩu tròn",
-        "Lightweight 186g Nifty Fifty Prime"
+        "Ống kính 50mm nhẹ 186g, giá dễ tiếp cận"
       ]
     },
     "specs": {
@@ -6509,13 +6509,13 @@
         "Compact 236g Normal Macro Lens"
       ],
       "vi": [
-        "Full-Frame Format | f/2.8 Maximum Aperture",
-        "1:1 Magnification Ratio | 16cm Min Focus",
+        "Định dạng Full-Frame | Khẩu độ tối đa f/2.8",
+        "Tỷ lệ phóng đại 1:1 | Lấy nét gần nhất 16cm",
         "1 ED Element & 1 Aspherical Element",
-        "Chức năng giới hạn khoảng lấy nét & Nút giữ lấy nét Focus Hold Button",
-        "Distance & Magnification Scales",
+        "Công tắc giới hạn khoảng lấy nét & Focus Hold Button",
+        "Thang đo khoảng cách & tỷ lệ phóng đại",
         "Cấu tạo 7 lá khẩu tròn",
-        "Compact 236g Normal Macro Lens"
+        "Ống kính macro tiêu chuẩn nhỏ gọn, 236g"
       ]
     },
     "specs": {
@@ -6557,7 +6557,7 @@
     "features": {
       "en": [
         "Full-Frame Format | Fast f/1.8 Portrait Prime",
-        "One Extra-Low Dispersion Element",
+        "One ED Element",
         "Double Linear AF Motor System",
         "Customizable Focus Hold Button & AF/MF Switch",
         "Dust and Moisture-Resistant Construction",
@@ -6565,13 +6565,13 @@
         "Sharp Portrait Optics at 371g"
       ],
       "vi": [
-        "Full-Frame Format | Fast f/1.8 Portrait Prime",
-        "One Extra-Low Dispersion Element",
-        "Double Linear AF Motor System",
-        "Customizable Nút giữ lấy nét Focus Hold Button & AF/MF Switch",
-        "Dust and Moisture-Resistant Construction",
+        "Định dạng Full-Frame | Ống kính prime chân dung khẩu độ lớn f/1.8",
+        "1 ED Element",
+        "Hệ thống AF hai động cơ Linear Motor",
+        "Focus Hold Button tuỳ chỉnh được & công tắc AF/MF",
+        "Thiết kế chống bụi và chống ẩm",
         "Cấu tạo 9 lá khẩu tròn",
-        "Sharp Portrait Optics at 371g"
+        "Quang học chân dung sắc nét, chỉ 371g"
       ]
     },
     "specs": {
@@ -6619,11 +6619,11 @@
         "Compatible with FE 70-200mm, 100-400mm, 200-600mm, 300mm, 400mm, 600mm"
       ],
       "vi": [
-        "1.4x Focal Length Magnification Factor",
-        "Loses Only 1 Stop of Light Transmission",
-        "Maintains Full AF, Metering & OSS Communication",
+        "Nhân tiêu cự 1.4x",
+        "Chỉ giảm 1 stop sáng",
+        "Giữ đầy đủ AF, đo sáng & giao tiếp OSS",
         "Thiết kế chống chịu thời tiết",
-        "Compatible with FE 70-200mm, 100-400mm, 200-600mm, 300mm, 400mm, 600mm"
+        "Tương thích ống kính FE 70-200mm, 100-400mm, 200-600mm, 300mm, 400mm, 600mm"
       ]
     },
     "specs": {
@@ -6679,11 +6679,11 @@
         "Compatible with FE 70-200mm, 100-400mm, 200-600mm, 300mm, 400mm, 600mm"
       ],
       "vi": [
-        "2.0x Focal Length Magnification Factor",
-        "Loses 2 Stops of Light Transmission",
-        "Maintains Full AF, Metering & OSS Communication",
+        "Nhân tiêu cự 2.0x",
+        "Giảm 2 stop sáng",
+        "Giữ đầy đủ AF, đo sáng & giao tiếp OSS",
         "Thiết kế chống chịu thời tiết",
-        "Compatible with FE 70-200mm, 100-400mm, 200-600mm, 300mm, 400mm, 600mm"
+        "Tương thích ống kính FE 70-200mm, 100-400mm, 200-600mm, 300mm, 400mm, 600mm"
       ]
     },
     "specs": {
@@ -6736,18 +6736,18 @@
         "ZEISS 24-70mm-Equiv. f/1.8-2.8 Lens",
         "UHD 4K30p Video with HLG & S-Log3",
         "3.0\" Side-Flip Vari-Angle Touchscreen LCD",
-        "Real-Time Eye AF & Product Showcase Setting",
+        "Real-time Eye AF & Product Showcase Setting",
         "Background Defocus Switch & Soft Skin Effect",
-        "Directional 3-Capsule Mic & Wind Screen"
+        "Directional 3-Capsule Mic & Windscreen"
       ],
       "vi": [
-        "20.1MP 1.0-Type Exmor RS BSI CMOS Sensor",
-        "ZEISS 24-70mm-Equiv. f/1.8-2.8 Lens",
-        "UHD 4K30p Video with HLG & S-Log3",
-        "3.0\" Side-Flip Vari-Angle Màn hình cảm ứng LCD",
-        "Real-Time Eye AF & Product Showcase Setting",
-        "Background Defocus Switch & Soft Skin Effect",
-        "Directional 3-Capsule Mic & Wind Screen"
+        "Cảm biến 20.1MP 1.0-Type Exmor RS BSI CMOS",
+        "Ống kính ZEISS f/1.8-2.8, tương đương 24-70mm",
+        "Quay video UHD 4K30p với HLG & S-Log3",
+        "Màn hình cảm ứng LCD Vari-Angle 3.0\" mở sang bên",
+        "Real-time Eye AF & Product Showcase Setting",
+        "Nút Background Defocus & Soft Skin Effect",
+        "Micro định hướng 3 capsule & bông chắn gió"
       ]
     },
     "specs": {
@@ -6759,10 +6759,10 @@
       "video": "4K 30p",
       "stabilization": "Optical SteadyShot",
       "viewfinder": null,
-      "lcd": "7.5cm (3.0 type) (4:3) / 921,600 dots / Xtra Fine / TFT LCD",
+      "lcd": "Xtra Fine TFT 7,5 cm (3,0 inch, 4:3), 921.600 điểm",
       "mediaSlots": "SD",
       "battery": "130 phút",
-      "weight": "294g(Battery and Memory Card are included); 267g(Body Only)",
+      "weight": "294 g (có pin và thẻ nhớ); 267 g (chỉ thân máy)",
       "dimensions": "105.5 x 60.0 x 43.5 mm",
       "specsSource": "https://www.sony-asia.com/compact-cameras/products/zv-1/spec",
       "specsMissing": [
@@ -6797,13 +6797,13 @@
         "Intelligent 3-Capsule Mic & Windscreen"
       ],
       "vi": [
-        "20.1MP 1.0-Type Exmor RS BSI CMOS Sensor",
-        "ZEISS 18-50mm-Equiv. f/1.8-4 Ultra-Wide Lens",
-        "UHD 4K30p Quay video",
+        "Cảm biến 20.1MP 1.0-Type Exmor RS BSI CMOS",
+        "Ống kính siêu rộng ZEISS f/1.8-4, tương đương 18-50mm",
+        "Quay video UHD 4K30p",
         "Cinematic Vlog Setting & S-Cinetone",
-        "3.0\" Side-Opening Màn hình cảm ứng LCD",
+        "Màn hình cảm ứng LCD 3.0\" mở sang bên",
         "Product Showcase Setting & Face Priority AE",
-        "Intelligent 3-Capsule Mic & Windscreen"
+        "Micro thông minh 3 capsule & bông chắn gió"
       ]
     },
     "specs": {
@@ -6815,13 +6815,14 @@
       "video": null,
       "stabilization": null,
       "viewfinder": null,
-      "lcd": "Still images: 1.9 W, Movies: 3.6 W",
+      "lcd": null,
       "mediaSlots": "SD",
       "battery": "290 ảnh (LCD)",
       "weight": "292 g",
       "dimensions": "105.5 x 60.0 x 46.7 mm",
       "specsSource": "https://www.sony-asia.com/compact-cameras/products/zv-1m2/spec",
       "specsMissing": [
+        "lcd",
         "stabilization",
         "video",
         "viewfinder"
@@ -6854,13 +6855,13 @@
         "Vertical Video & USB Webcam Support"
       ],
       "vi": [
-        "20.1MP 1.0-Type Exmor RS BSI CMOS Sensor",
-        "20mm-Equivalent Ultra-Wide Prime Lens",
-        "UHD 4K30p & Full HD 120p Video",
-        "3.0\" Side-Opening Màn hình cảm ứng LCD",
+        "Cảm biến 20.1MP 1.0-Type Exmor RS BSI CMOS",
+        "Ống kính prime siêu rộng, tương đương 20mm",
+        "Quay video UHD 4K30p & Full HD 120p",
+        "Màn hình cảm ứng LCD 3.0\" mở sang bên",
         "Product Showcase & Background Defocus",
-        "Directional 3-Capsule Mic & Windscreen",
-        "Vertical Video & USB Webcam Support"
+        "Micro định hướng 3 capsule & bông chắn gió",
+        "Hỗ trợ video dọc & dùng làm webcam qua USB"
       ]
     },
     "specs": {
@@ -6872,10 +6873,10 @@
       "video": "4K 30p",
       "stabilization": "Electronic SteadyShot",
       "viewfinder": null,
-      "lcd": "7.5 cm(3.0type)(4:3) / 921,600 dots / Xtra Fine / TFT LCD",
+      "lcd": "Xtra Fine TFT 7,5 cm (3,0 inch, 4:3), 921.600 điểm",
       "mediaSlots": "SD",
       "battery": "180 phút",
-      "weight": "256 g(Battery and Memory Card are included); 229 g(Body Only)",
+      "weight": "256 g (có pin và thẻ nhớ); 229 g (chỉ thân máy)",
       "dimensions": "105.5 x 60.0 x 46.4 mm",
       "specsSource": "https://www.sony-asia.com/compact-cameras/products/zv-1f/spec",
       "specsMissing": [
@@ -6906,19 +6907,19 @@
         "AI-Based Auto Framing & Framing Stabilizer",
         "Cinematic Vlog Setting & S-Cinetone",
         "Dynamic Active Mode Image Stabilization",
-        "759-Pt. Fast Hybrid AF, Real-Time Eye AF",
+        "759-Pt. Fast Hybrid AF, Real-time Eye AF",
         "Product Showcase & Bokeh Switch",
         "Compact Ultra-Lightweight Vlogging Body"
       ],
       "vi": [
         "Cảm biến 12.1MP Full-Frame Exmor R CMOS BSI",
-        "UHD 4K 120p / FHD 240p / 10-Bit 4:2:2",
-        "AI-Based Auto Framing & Framing Stabilizer",
+        "Quay video UHD 4K 120p / FHD 240p / 10-Bit 4:2:2",
+        "Auto Framing bằng AI & Framing Stabilizer",
         "Cinematic Vlog Setting & S-Cinetone",
-        "Dynamic Active Mode Chống rung hình ảnh",
-        "759-Pt. Fast Hybrid AF, Real-Time Eye AF",
+        "Chống rung Dynamic Active Mode",
+        "Lấy nét Fast Hybrid AF 759 điểm, Real-time Eye AF",
         "Product Showcase & Bokeh Switch",
-        "Compact Ultra-Lightweight Vlogging Body"
+        "Thân máy vlog nhỏ gọn, siêu nhẹ"
       ]
     },
     "specs": {
@@ -6930,7 +6931,7 @@
       "video": "4K 60p",
       "stabilization": null,
       "viewfinder": null,
-      "lcd": "Ảnh tĩnh: 3,5 W (khi lắp ống kính FE 28–60 mm F4–5.6 OSS), Phim: 7,0 W (khi lắp ống kính FE 28–60 mm F4–5.6 OSS)",
+      "lcd": null,
       "mediaSlots": "SD",
       "battery": null,
       "weight": null,
@@ -6938,6 +6939,7 @@
       "specsSource": "https://www.sony.com.vn/interchangeable-lens-cameras/products/zv-e1/spec?sku=ZV-E1%2FBQ%20%20%20%20AP2",
       "specsMissing": [
         "battery",
+        "lcd",
         "stabilization",
         "viewfinder",
         "weight"
@@ -6962,21 +6964,21 @@
     "features": {
       "en": [
         "24.2MP APS-C Exmor CMOS Sensor",
-        "UHD 4K30p and Full HD 120p Video",
+        "UHD 4K30p & Full HD 120p Video",
         "3.0\" Side-Opening Touchscreen LCD",
-        "425-Pt. Fast Hybrid AF, Real-Time Eye AF",
+        "425-Pt. Fast Hybrid AF, Real-time Eye AF",
         "Product Showcase Setting & Background Defocus",
         "Directional 3-Capsule Mic & Windscreen",
         "Headphone & External Mic Ports"
       ],
       "vi": [
         "Cảm biến 24.2MP APS-C Exmor CMOS",
-        "UHD 4K30p and Full HD 120p Video",
-        "3.0\" Side-Opening Màn hình cảm ứng LCD",
-        "425-Pt. Fast Hybrid AF, Real-Time Eye AF",
+        "Quay video UHD 4K30p & Full HD 120p",
+        "Màn hình cảm ứng LCD 3.0\" mở sang bên",
+        "Lấy nét Fast Hybrid AF 425 điểm, Real-time Eye AF",
         "Product Showcase Setting & Background Defocus",
-        "Directional 3-Capsule Mic & Windscreen",
-        "Headphone & External Mic Ports"
+        "Micro định hướng 3 capsule & bông chắn gió",
+        "Cổng tai nghe & micro ngoài"
       ]
     },
     "specs": {
@@ -7021,20 +7023,20 @@
       "en": [
         "26MP APS-C Exmor R CMOS BSI Sensor",
         "UHD 4K 60p 10-Bit 4:2:2 Video & S-Cinetone",
-        "759-Pt. Fast Hybrid AF, Real-Time Eye AF",
+        "759-Pt. Fast Hybrid AF, Real-time Eye AF",
         "Cinematic Vlog Setting & Creative Looks",
-        "3.0\" Vari-Angle Touchscreen LCD Screen",
+        "3.0\" Vari-Angle Touchscreen LCD",
         "NP-FZ100 Battery Compatibility (Longer Battery Life)",
         "Vertical User Interface & Live Streaming via USB-C"
       ],
       "vi": [
         "Cảm biến 26MP APS-C Exmor R CMOS BSI",
-        "UHD 4K 60p 10-Bit 4:2:2 Video & S-Cinetone",
-        "759-Pt. Fast Hybrid AF, Real-Time Eye AF",
-        "Cinematic Vlog Setting & Creative Looks",
-        "3.0\" Vari-Angle Màn hình cảm ứng LCD Screen",
-        "NP-FZ100 Battery Compatibility (Longer Battery Life)",
-        "Vertical User Interface & Live Streaming via USB-C"
+        "Quay video UHD 4K 60p 10-Bit 4:2:2 & S-Cinetone",
+        "Lấy nét Fast Hybrid AF 759 điểm, Real-time Eye AF",
+        "Cinematic Vlog Setting & Creative Look",
+        "Màn hình cảm ứng LCD Vari-Angle 3.0\"",
+        "Dùng pin NP-FZ100 (thời lượng pin dài hơn)",
+        "Giao diện dọc & livestream qua USB-C"
       ]
     },
     "specs": {
@@ -7046,7 +7048,7 @@
       "video": "4K 60p",
       "stabilization": null,
       "viewfinder": null,
-      "lcd": "Still images: 3.2 W (with E PZ 16-50mm F3.5-5.6 OSS II lens attached),Movies: 5.0 W (with E PZ 16-50mm F3.5-5.6 OSS II lens attached)",
+      "lcd": null,
       "mediaSlots": "SD",
       "battery": null,
       "weight": null,
@@ -7054,6 +7056,7 @@
       "specsSource": "https://www.sony-asia.com/electronics/interchangeable-lens-cameras/zv-e10m2/specifications",
       "specsMissing": [
         "battery",
+        "lcd",
         "stabilization",
         "viewfinder",
         "weight"
@@ -7066,7 +7069,7 @@
   {
     "id": "sony-ecm-m1",
     "name": "Microphone thu âm Shotgun ECM-M1",
-    "fullName": "Sony Shotgun Microphone ECM-M1 8 Chế độ hướng thu",
+    "fullName": "Sony ECM-M1 Shotgun Microphone with 8 Pickup Patterns",
     "sku": "ECM-M1",
     "category": "accessory",
     "subCategory1": "Audio",
@@ -7077,14 +7080,14 @@
     "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/2_Primary_image?$S7Product$&fmt=png-alpha",
     "features": {
       "en": [
-        "8 chế độ hướng thu âm thanh linh hoạt trong một thiết kế cực kỳ nhỏ gọn",
-        "Giao diện âm thanh kỹ thuật số qua Chân cắm đa năng (MI Shoe)",
-        "Công nghệ xử lý tín hiệu kỹ thuật số tiên tiến và khả năng lọc tiếng ồn nhiễu"
+        "8 selectable pickup patterns in an ultra-compact body",
+        "Digital audio interface via the Multi Interface (MI) Shoe",
+        "Advanced digital signal processing with noise reduction"
       ],
       "vi": [
-        "8 chế độ hướng thu âm thanh linh hoạt trong một thiết kế cực kỳ nhỏ gọn",
-        "Giao diện âm thanh kỹ thuật số qua Chân cắm đa năng (MI Shoe)",
-        "Công nghệ xử lý tín hiệu kỹ thuật số tiên tiến và khả năng lọc tiếng ồn nhiễu"
+        "8 chế độ hướng thu âm linh hoạt trong thiết kế siêu nhỏ gọn",
+        "Giao tiếp âm thanh kỹ thuật số qua Multi Interface Shoe (MI Shoe)",
+        "Xử lý tín hiệu số tiên tiến, có chức năng giảm tiếng ồn"
       ]
     },
     "galleryUrls": [
@@ -7105,14 +7108,14 @@
     "imageUrl": "https://static.bhphoto.com/images/fb/1711447.jpg",
     "features": {
       "en": [
-        "3 mô hình hướng thu thu âm định hướng siêu gọn nhẹ",
-        "Truyền tải âm thanh kỹ thuật số không dây qua MI Shoe",
-        "Kháng bụi ẩm tốt và chống rung nhiễu cơ học"
+        "3 selectable directional pickup patterns in an ultra-compact body",
+        "Cable-free digital audio via the MI Shoe",
+        "Dust- and moisture-resistant, with reduced mechanical handling noise"
       ],
       "vi": [
-        "3 mô hình hướng thu thu âm định hướng siêu gọn nhẹ",
-        "Truyền tải âm thanh kỹ thuật số không dây qua MI Shoe",
-        "Kháng bụi ẩm tốt và chống rung nhiễu cơ học"
+        "3 chế độ hướng thu có thể chọn, thiết kế siêu gọn nhẹ",
+        "Truyền âm thanh kỹ thuật số không cần cáp qua MI Shoe",
+        "Chống bụi, chống ẩm và giảm tiếng ồn do rung cơ học"
       ]
     },
     "galleryUrls": [
@@ -7133,14 +7136,14 @@
     "imageUrl": "https://static.bhphoto.com/images/fb/1333269.jpg",
     "features": {
       "en": [
-        "Dung lượng pin lớn 2280 mAh cho thời lượng chụp và quay lâu gấp đôi dòng W",
-        "Hỗ trợ hiển thị chính xác % dung lượng pin trên màn hình máy ảnh Alpha",
-        "Tích hợp mạch bảo vệ an toàn cao cấp chính hãng Sony"
+        "High-capacity 2280 mAh battery with about twice the runtime of W-series packs",
+        "Shows accurate remaining charge (%) on Alpha camera screens",
+        "Genuine Sony built-in protection circuitry"
       ],
       "vi": [
-        "Dung lượng pin lớn 2280 mAh cho thời lượng chụp và quay lâu gấp đôi dòng W",
-        "Hỗ trợ hiển thị chính xác % dung lượng pin trên màn hình máy ảnh Alpha",
-        "Tích hợp mạch bảo vệ an toàn cao cấp chính hãng Sony"
+        "Dung lượng lớn 2280 mAh, thời lượng chụp và quay khoảng gấp đôi pin dòng W",
+        "Hiển thị chính xác % pin còn lại trên màn hình máy ảnh Alpha",
+        "Mạch bảo vệ an toàn tích hợp, chính hãng Sony"
       ]
     },
     "galleryUrls": [
@@ -7161,14 +7164,14 @@
     "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-3?$&fmt=png-alpha",
     "features": {
       "en": [
-        "Kết nối không dây Bluetooth tiện lợi điều khiển chụp/quay/zoom từ xa",
-        "Thiết kế linh hoạt chuyển đổi nhanh giữa báng cầm tay và chân máy mini",
-        "Khả năng chống bụi ẩm và xoay gập đa góc chụp Vlog dễ dàng"
+        "Bluetooth wireless remote for shooting, recording and zoom",
+        "Switches quickly between a handheld grip and a mini tripod",
+        "Dust- and splash-resistant, with a multi-angle tilting head for vlogging"
       ],
       "vi": [
-        "Kết nối không dây Bluetooth tiện lợi điều khiển chụp/quay/zoom từ xa",
-        "Thiết kế linh hoạt chuyển đổi nhanh giữa báng cầm tay và chân máy mini",
-        "Khả năng chống bụi ẩm và xoay gập đa góc chụp Vlog dễ dàng"
+        "Điều khiển chụp, quay và zoom từ xa qua Bluetooth",
+        "Chuyển nhanh giữa báng cầm tay và chân máy mini",
+        "Chống bụi, chống ẩm, đầu xoay nhiều góc thuận tiện quay vlog"
       ]
     },
     "galleryUrls": [
@@ -7189,14 +7192,14 @@
     "imageUrl": "https://static.bhphoto.com/images/fb/1591320.jpg",
     "features": {
       "en": [
-        "Hỗ trợ lấy nét tự động AF pha mặt phẳng tiêu cự cho ống kính A-mount SSM/SAM trên máy E-mount",
-        "Tích hợp động cơ lấy nét mô tơ cơ học cho các ống kính A-mount không có mô tơ trong",
-        "Thiết kế hình trụ gọn gàng đồng bộ đường kính ngàm E-mount"
+        "Focal-plane phase-detection AF for A-mount SSM/SAM lenses on E-mount bodies",
+        "Built-in AF drive motor for A-mount lenses without an in-lens motor",
+        "Compact cylindrical design matched to the E-mount diameter"
       ],
       "vi": [
-        "Hỗ trợ lấy nét tự động AF pha mặt phẳng tiêu cự cho ống kính A-mount SSM/SAM trên máy E-mount",
-        "Tích hợp động cơ lấy nét mô tơ cơ học cho các ống kính A-mount không có mô tơ trong",
-        "Thiết kế hình trụ gọn gàng đồng bộ đường kính ngàm E-mount"
+        "Hỗ trợ lấy nét AF theo pha cho ống kính A-mount SSM/SAM trên máy ảnh E-mount",
+        "Tích hợp mô tơ lấy nét cho ống kính A-mount không có mô tơ trong",
+        "Thiết kế hình trụ gọn gàng, cùng đường kính với ngàm E-mount"
       ]
     },
     "galleryUrls": [

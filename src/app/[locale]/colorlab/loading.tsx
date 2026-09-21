@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server';
 import { SiteHeader } from '@/components/site-header';
 
 /**
@@ -25,7 +26,8 @@ import { SiteHeader } from '@/components/site-header';
  * routes have no boundary above them now and answer a real 404, which costs
  * them a skeleton they were never drawn for.
  */
-export default function Loading() {
+export default async function Loading() {
+  const t = await getTranslations('loading');
   return (
     <>
       <SiteHeader />
@@ -39,7 +41,7 @@ export default function Loading() {
           <div className="mt-4 h-4 w-full max-w-lg rounded-sm bg-glass" />
         </div>
         <p role="status" className="sr-only">
-          Loading recipes
+          {t('status')}
         </p>
         {/* `.surface` rather than a hand-rolled radius: it is the class the real
             recipe card uses, so the skeleton lands at the same 26px corner and

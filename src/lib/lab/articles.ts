@@ -20,8 +20,11 @@ import type { Article, LevelId, TopicId } from './types'
  * setup first because it is where a new reader lands, firmware last because
  * it is the one nobody browses for. Not alphabetical, and not by count.
  *
- * Labels are Vietnamese in both locales for the same reason article bodies
- * are: they name the article's subject, and the articles are Vietnamese.
+ * The filter labels are UI chrome, so the public feed and the article view
+ * read them from `messages/*.json` (`lab.topics.*`, `lab.levels.*`) and
+ * `/en/blog` shows English chips. The `label` here is the Vietnamese-only
+ * admin's copy — `/admin` renders in `vi` and does not ship the `lab`
+ * namespace — and must say the same thing as `lab.topics.*` in `vi.json`.
  */
 export const TOPICS: readonly { readonly id: TopicId; readonly label: string }[] = [
   { id: 'setup', label: 'Thiết lập máy' },
@@ -29,29 +32,25 @@ export const TOPICS: readonly { readonly id: TopicId; readonly label: string }[]
   { id: 'af', label: 'Lấy nét & AF' },
   { id: 'exposure', label: 'Phơi sáng & đo sáng' },
   { id: 'lens', label: 'Ống kính' },
-  { id: 'body', label: 'Body & so sánh máy' },
-  { id: 'video', label: 'Video / cinematic' },
+  { id: 'body', label: 'Thân máy & so sánh' },
+  { id: 'video', label: 'Video & quay phim' },
   { id: 'post', label: 'Hậu kỳ & LUT' },
-  { id: 'gear', label: 'Phụ kiện & workflow' },
+  { id: 'gear', label: 'Phụ kiện & quy trình' },
   { id: 'firmware', label: 'Firmware' },
 ] as const
 
 export const LEVELS: readonly { readonly id: LevelId; readonly label: string }[] = [
-  { id: 'newbie', label: 'Newbie' },
-  { id: 'mid', label: 'Khá' },
+  { id: 'newbie', label: 'Cơ bản' },
+  { id: 'mid', label: 'Trung cấp' },
   { id: 'pro', label: 'Nâng cao' },
 ] as const
 
-const TOPIC_LABELS = new Map(TOPICS.map((t) => [t.id, t.label]))
-const LEVEL_LABELS = new Map(LEVELS.map((l) => [l.id, l.label]))
-
-export function topicLabel(id: TopicId): string {
-  return TOPIC_LABELS.get(id) ?? id
-}
-
-export function levelLabel(id: LevelId): string {
-  return LEVEL_LABELS.get(id) ?? id
-}
+/**
+ * The language every authored article is written in, whatever the route's
+ * locale (see `types.ts`). The article view marks its body with it so a screen
+ * reader switches voice, and shows a notice on any other locale.
+ */
+export const ARTICLE_LANG = 'vi'
 
 export const ARTICLES: readonly Article[] = [
   {
@@ -66,7 +65,7 @@ export const ARTICLES: readonly Article[] = [
       {
         t: 'tldr',
         items: [
-          'Gán AF ON cho nút AEL (hoặc C1), rồi tắt AF w/ shutter.',
+          'Gán AF On cho nút AEL (hoặc C1), rồi tắt AF w/ Shutter.',
           'Ngón cái giữ nút là bám nét, nhả ra là khoá nét — ngón trỏ chỉ còn việc bấm chụp.',
           'Đi cùng AF-C và Tracking: Zone thì mới phát huy hết.',
         ],
@@ -79,7 +78,7 @@ export const ARTICLES: readonly Article[] = [
       {
         t: 'menu',
         old: 'MENU → Camera Settings2 → Custom Key (Shoot) → AEL Button → AF ON',
-        new: 'MENU → Setup → Operation Customize → Custom Key/Dial Set. → nút AEL → AF ON',
+        new: 'MENU → Setup → Operation Customize → Custom Key/Dial Set. → AEL Button → AF On',
       },
       {
         t: 'menu',
@@ -88,7 +87,7 @@ export const ARTICLES: readonly Article[] = [
       },
       {
         t: 'callout',
-        label: 'Vì sao phải tắt AF w/ shutter',
+        label: 'Vì sao phải tắt AF w/ Shutter',
         text: 'Nếu để On, nửa cò vẫn lấy nét và bạn có hai nút làm cùng một việc — tay sẽ quay về thói quen cũ trong lúc gấp. Tắt nó là cách buộc thói quen mới hình thành.',
       },
       { t: 'h', text: 'Tập trong một buổi' },
@@ -132,19 +131,19 @@ export const ARTICLES: readonly Article[] = [
     archetype: 'setup-guide',
     read: '5 phút đọc',
     title: 'ISO Auto và Min. SS: mục bị bỏ qua nhiều nhất trong menu Sony',
-    dek: 'Vì sao ảnh trong nhà của bạn nhòe dù ISO chỉ có 400 — và một dòng cài đặt sửa được nó.',
+    dek: 'Vì sao ảnh trong nhà của bạn nhoè dù ISO chỉ có 400 — và một dòng cài đặt sửa được nó.',
     blocks: [
       {
         t: 'tldr',
         items: [
-          'Đặt ISO Auto 100 – 6400, rồi đặt ISO AUTO Min. SS là 1/125.',
-          'Không có Min. SS, máy ưu tiên ISO thấp và hạ tốc xuống 1/30 — ảnh sạch nhiễu nhưng nhòe.',
-          'Ảnh nhiễu còn cứu được ở hậu kỳ, ảnh nhòe thì không.',
+          'Đặt ISO AUTO 100–6400, rồi đặt ISO AUTO Min. SS là 1/125.',
+          'Không có Min. SS, máy ưu tiên ISO thấp và hạ tốc xuống 1/30 — ảnh sạch nhiễu nhưng nhoè.',
+          'Ảnh nhiễu còn cứu được ở hậu kỳ, ảnh nhoè thì không.',
         ],
       },
       {
         t: 'p',
-        text: 'Khi để ISO Auto, máy phải chọn giữa hai cái xấu: nâng ISO cho nhiễu lên, hay hạ tốc màn trập cho ảnh có nguy cơ nhòe. Mặc định máy nghiêng về ISO thấp — nghe hợp lý, nhưng đó là lý do rất nhiều ảnh trong nhà của người mới bị nhòe ở ISO chỉ 400.',
+        text: 'Khi để ISO Auto, máy phải chọn giữa hai cái xấu: nâng ISO cho nhiễu lên, hay hạ tốc màn trập cho ảnh có nguy cơ nhoè. Mặc định máy nghiêng về ISO thấp — nghe hợp lý, nhưng đó là lý do rất nhiều ảnh trong nhà của người mới bị nhoè ở ISO chỉ 400.',
       },
       {
         t: 'menu',
@@ -159,7 +158,7 @@ export const ARTICLES: readonly Article[] = [
       { t: 'h', text: 'Chọn con số nào' },
       {
         t: 'p',
-        text: 'Min. SS là sàn tốc độ màn trập: máy được phép nâng ISO tuỳ ý nhưng không được đi chậm hơn con số này. Chọn nó theo chủ thể bạn chụp, không theo tiêu cự ống kính — người cử động nhanh hơn tay bạn rung.',
+        text: 'Min. SS là sàn tốc độ màn trập: máy sẽ nâng ISO trước và chỉ đi chậm hơn con số này khi ISO đã chạm trần. Chọn nó theo chủ thể bạn chụp, không theo tiêu cự ống kính — người cử động nhanh hơn tay bạn rung.',
       },
       {
         t: 'table',
@@ -173,15 +172,15 @@ export const ARTICLES: readonly Article[] = [
       },
       {
         t: 'callout',
-        label: 'Trần ISO là một lời hứa, không phải giới hạn cứng',
-        text: 'Khi ánh sáng tụt quá thấp, máy đã ở trần ISO 6400 và vẫn thiếu sáng thì nó sẽ hạ tốc xuống dưới Min. SS. Lúc đó ảnh tối đi hoặc nhòe là dấu hiệu bạn cần ống kính khẩu lớn hơn, không phải cần sửa cài đặt.',
+        label: 'Min. SS là mức ưu tiên, không phải giới hạn cứng',
+        text: 'Khi ánh sáng tụt quá thấp, máy đã ở trần ISO 6400 và vẫn thiếu sáng thì nó sẽ hạ tốc xuống dưới Min. SS. Lúc đó ảnh tối đi hoặc nhoè là dấu hiệu bạn cần ống kính khẩu lớn hơn, không phải cần sửa cài đặt.',
       },
       {
         t: 'compare',
         beforeLabel: '1/30, ISO 400',
         afterLabel: '1/125, ISO 1600',
         caption:
-          'Cùng một khung trong nhà: bản ISO cao có nhiễu nhưng nét, bản ISO thấp sạch hơn mà mất chi tiết vì nhòe.',
+          'Cùng một khung trong nhà: bản ISO cao có nhiễu nhưng nét, bản ISO thấp sạch hơn mà mất chi tiết vì nhoè.',
       },
       {
         t: 'checklist',

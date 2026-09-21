@@ -12,13 +12,14 @@ import { routing } from '@/i18n/routing';
  * locale prefix, so re-linking it under another locale keeps the reader where
  * they are — switching language on a recipe page must not bounce them home.
  *
- * A segmented control, not a flag disc. The flags were two hand-drawn SVGs of
- * raw hex — a red/yellow/blue field in an interface whose whole colour rule is
- * "no red, no yellow, no green, no hex in a component" — sitting behind a white
- * 2px stroke and a white halation, neither of which the system has. What is
- * left is what the control actually is: a rut pressed into the surface
- * (`.surface-sunken`) with the current locale carrying an accent-tinted fill.
- * A selected state is a fill, never a stroke.
+ * A segmented control whose segments are flags — the US flag for English, the
+ * Vietnamese flag for Tiếng Việt. The flags are the one deliberate exception to
+ * "no red, no yellow, no raw hex": their colours are the flags' own, so they
+ * live as static files in `public/flags/` rather than as hex in a component, and
+ * they carry no stroke or halation. The control is still a rut pressed into the
+ * surface (`.surface-sunken`) with the current locale carrying an accent-tinted
+ * fill; the other flag recedes to reduced opacity until hovered. A selected
+ * state is a fill, never a stroke.
  *
  * Still real `<Link>`s, never buttons: each carries a genuine href to the other
  * locale, so middle-click, open-in-new-tab and copy-link all keep working, and a
@@ -35,6 +36,30 @@ import { routing } from '@/i18n/routing';
    becomes a 1px outline the control reads as boxed in. */
 const ACTIVE_FILL =
   'bg-[linear-gradient(180deg,color-mix(in_oklch,var(--color-accent-500)_20%,transparent),color-mix(in_oklch,var(--color-accent-500)_7%,transparent))] shadow-[var(--elevation-1)]';
+
+/* Locale → flag file. A locale with no entry falls back to its code as text,
+   so a third locale still renders something honest instead of a broken image. */
+const FLAGS: Record<string, string> = {
+  en: '/flags/us.svg',
+  vi: '/flags/vn.svg',
+};
+
+function LocaleMark({ locale }: { locale: string }) {
+  const src = FLAGS[locale];
+  if (!src) return <span aria-hidden>{locale.toUpperCase()}</span>;
+  return (
+    // eslint-disable-next-line @next/next/no-img-element -- a 24px static SVG; the image optimizer has nothing to do
+    <img
+      src={src}
+      alt=""
+      aria-hidden
+      width={24}
+      height={16}
+      draggable={false}
+      className="block h-4 w-6 rounded-[2px] object-cover shadow-[var(--elevation-1)]"
+    />
+  );
+}
 
 const SEGMENT =
   'flex min-h-[var(--layout-touch-target)] items-center justify-center px-3 ' +
@@ -62,7 +87,7 @@ export function LanguageToggle() {
             aria-current="true"
             className={`${SEGMENT} rounded-md text-ink ${ACTIVE_FILL}`}
           >
-            <span aria-hidden>{locale.toUpperCase()}</span>
+            <LocaleMark locale={locale} />
             <span className="sr-only">{t(locale)}</span>
           </span>
         ) : (
@@ -73,9 +98,9 @@ export function LanguageToggle() {
             hrefLang={locale}
             aria-label={t('switchTo', { language: t(locale) })}
             title={t('switchTo', { language: t(locale) })}
-            className={`${SEGMENT} cursor-pointer text-ink-faint transition-colors hover:text-ink`}
+            className={`${SEGMENT} cursor-pointer text-ink-faint opacity-55 transition-opacity hover:text-ink hover:opacity-100`}
           >
-            <span aria-hidden>{locale.toUpperCase()}</span>
+            <LocaleMark locale={locale} />
           </Link>
         ),
       )}

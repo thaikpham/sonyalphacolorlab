@@ -147,7 +147,7 @@
     },
     "tags": [
       "cinematic",
-      "cool-tone",
+      "warm-tone",
       "deep-blues",
       "moody",
       "atmospheric",
@@ -2568,7 +2568,7 @@
   {
     "id": "SCL-PP-043",
     "slug": "macro-shooting-for-tran-anh-tuan",
-    "name": "SCL-PP-043: Macro shooting for Tran Anh Tuan",
+    "name": "SCL-PP-043: Macro Shooting for Trần Anh Tuấn",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB",
@@ -2645,12 +2645,9 @@
       }
     },
     "tags": [
-      "stylized",
-      "atmospheric",
-      "macro",
-      "surreal",
-      "contemporary",
-      "artistic"
+      "filmic",
+      "film-emulation",
+      "contemporary"
     ],
     "published": true,
     "format": "pp",
@@ -3870,7 +3867,7 @@
   {
     "id": "SCL-CL-032",
     "slug": "fl-jonpoon-jpg",
-    "name": "SCL-CL-032: Film Look · jonpoon.jpg",
+    "name": "SCL-CL-032: Film Look · Jonpoon.jpg",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 4700,

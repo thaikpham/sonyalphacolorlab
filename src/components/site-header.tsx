@@ -618,37 +618,38 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                   </span>
                 </Link>
               ) : (
-                /* ColorLab's own brand mark, not type.
-
-                   The four overlapping circles are the product's logo and carry
-                   its own palette — amber, teal, crimson. That is not a
-                   competitor-hue violation and `/design-sync` must not "fix" it:
-                   the no-red/yellow/green rule governs colours the INTERFACE
-                   chooses, and a brand mark is artwork, the same exemption the
-                   Google mark on the sign-in button gets.
+                /* Mark plus type, the same shape as the Sony Wiki and blog
+                   wordmarks above — the accent falls on COLOR LAB, the words
+                   that distinguish the app. It was a single raster wordmark
+                   (`/logo.png`) whose amber/teal/crimson circles came from no
+                   token; the mark is now `colorlab-icon.svg`, drawn in the same
+                   grammar and token values as the other two.
 
                    `unoptimized` for the reason the launcher icons carry it: the
                    account's image-optimization quota is spent, so only transforms
                    already in Vercel's cache resolve and a newly-sized variant
                    returns 402. The source is served straight from /public.
 
-                   It is the link's only content, so `alt` is the accessible name
-                   rather than empty — and it is the one element on the rail
-                   allowed to shrink, capped on a phone so the row cannot overflow
-                   sideways. */
+                   The type is the link's text, so the mark's `alt` is empty
+                   rather than a second reading of the name. `truncate` for the
+                   same reason as the wiki wordmark: it is what gives width back
+                   on a phone. */
                 <Link
                   href="/"
-                  className="flex min-h-[var(--layout-touch-target)] min-w-0 items-center"
+                  className="flex min-h-[var(--layout-touch-target)] min-w-0 items-center gap-2 sm:gap-2.5"
                 >
                   <Image
-                    src="/logo.png"
-                    alt="Alpha AI Color Lab"
-                    width={1780}
-                    height={499}
+                    src="/colorlab-icon.svg"
+                    alt=""
+                    width={256}
+                    height={256}
                     priority
                     unoptimized
-                    className="h-9 w-auto max-w-[42vw] object-contain object-left sm:max-w-none"
+                    className="h-9 w-9 shrink-0 rounded-sm object-contain"
                   />
+                  <span className="flex min-w-0 items-center gap-1.5 truncate whitespace-nowrap text-body-lg font-extrabold tracking-[-0.02em] text-ink">
+                    ALPHA AI <span className="text-accent-400">COLOR LAB</span>
+                  </span>
                 </Link>
               )}
 

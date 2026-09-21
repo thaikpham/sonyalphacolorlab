@@ -20,12 +20,6 @@ interface CameraCompareViewProps {
   selectedIds: string[];
 }
 
-interface ChatMessage {
-  id: string;
-  sender: 'user' | 'specialist';
-  text: string;
-}
-
 /**
  * One row of the compare grid.
  *
@@ -278,17 +272,6 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
     }
   };
 
-  // AI Chatbot State
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
-    {
-      id: 'init-1',
-      sender: 'specialist',
-      text: t('aiSpecialistGreeting'),
-    },
-  ]);
-  const [userQuestion, setUserQuestion] = useState('');
-  const [isAiLoading, setIsAiLoading] = useState(false);
-
   // Selected camera objects
   const comparedCameras = useMemo(() => {
     return cameras.filter((c) => activeIds.includes(c.id));
@@ -330,64 +313,6 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
     setIsAddModalOpen(false);
     setSearchAddQuery('');
     router.replace(`/cameras/compare?ids=${next.join(',')}`);
-  };
-
-  const askAiSpecialist = async (questionText: string) => {
-    if (!questionText.trim() || isAiLoading || comparedCameras.length === 0) return;
-
-    const userMsg: ChatMessage = {
-      id: crypto.randomUUID(),
-      sender: 'user',
-      text: questionText.trim(),
-    };
-
-    setChatMessages((prev) => [...prev, userMsg]);
-    setUserQuestion('');
-    setIsAiLoading(true);
-
-    try {
-      const res = await fetch('/api/cameras/ai-specialist', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          productIds: activeIds,
-          question: questionText.trim(),
-          locale,
-        }),
-      });
-
-      const data = await res.json();
-      if (data.answer) {
-        setChatMessages((prev) => [
-          ...prev,
-          {
-            id: crypto.randomUUID(),
-            sender: 'specialist',
-            text: data.answer,
-          },
-        ]);
-      } else {
-        setChatMessages((prev) => [
-          ...prev,
-          {
-            id: crypto.randomUUID(),
-            sender: 'specialist',
-            text: t('aiErrorResponse'),
-          },
-        ]);
-      }
-    } catch {
-      setChatMessages((prev) => [
-        ...prev,
-        {
-          id: crypto.randomUUID(),
-          sender: 'specialist',
-          text: t('aiConnectionError'),
-        },
-      ]);
-    } finally {
-      setIsAiLoading(false);
-    }
   };
 
   const activeSpecSections = useMemo(() => {
@@ -773,87 +698,6 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
             </tbody>
           </table>
         </div>
-      </div>
-
-      {/* Sony Specialist — a second panel, not a second visual language. */}
-      <div className="surface p-6 flex flex-col gap-5">
-        <div className="flex flex-col gap-1">
-          <h2 className="text-title-3 font-semibold text-ink">{t('aiSpecialistTitle')}</h2>
-          <p className="meta">{t('aiSpecialistSub')}</p>
-        </div>
-
-        <div className="seam" />
-
-        {/* Quick Suggestion Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto scroll-silent">
-          {[t('quickPrompt1'), t('quickPrompt2'), t('quickPrompt3')].map((prompt, idx) => (
-            <button
-              key={idx}
-              type="button"
-              onClick={() => askAiSpecialist(prompt)}
-              className="chip chip-action whitespace-nowrap"
-            >
-              {prompt}
-            </button>
-          ))}
-        </div>
-
-        {/* Chat History Box */}
-        <div className="surface-sunken flex flex-col gap-3 max-h-[22rem] p-4 scroll-area">
-          {chatMessages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`flex flex-col max-w-[85%] gap-1 ${
-                msg.sender === 'user' ? 'ml-auto items-end' : 'mr-auto items-start'
-              }`}
-            >
-              <span className="meta">
-                {msg.sender === 'user' ? t('chatYou') : t('aiSpecialistTitle')}
-              </span>
-              <div
-                className={`p-3.5 text-body-sm leading-relaxed ${
-                  msg.sender === 'user'
-                    ? 'surface-selected text-white'
-                    : 'rounded-sm bg-white/[0.06] text-ink shadow-[var(--elevation-spec)] whitespace-pre-wrap'
-                }`}
-              >
-                {msg.text}
-              </div>
-            </div>
-          ))}
-          {isAiLoading && (
-            <div className="mr-auto items-start flex flex-col gap-1">
-              <span className="meta">{t('aiSpecialistTitle')}</span>
-              <div className="p-3.5 rounded-sm bg-white/[0.06] text-ink-muted text-body-sm shadow-[var(--elevation-spec)]">
-                {t('aiThinking')}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Input Box */}
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            askAiSpecialist(userQuestion);
-          }}
-          className="flex items-center gap-3"
-        >
-          <input
-            type="text"
-            value={userQuestion}
-            onChange={(e) => setUserQuestion(e.target.value)}
-            placeholder={t('askSpecialistPlaceholder')}
-            className="surface-sunken flex-1 min-w-0 px-4 py-3 text-body text-ink placeholder:text-ink-faint"
-          />
-          <button
-            type="submit"
-            disabled={!userQuestion.trim() || isAiLoading}
-            className="btn-accent shrink-0 disabled:opacity-40 cursor-pointer"
-          >
-            {t('sendQuestion')}
-          </button>
-        </form>
       </div>
 
       {/* Modal Add Item to Compare */}

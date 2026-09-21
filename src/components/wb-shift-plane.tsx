@@ -46,7 +46,7 @@ export async function WbShiftPlane({
         viewBox={`0 0 ${size} ${size}`}
         className="w-full h-auto max-w-[16rem]"
         role="img"
-        aria-label={`White Balance Shift grid showing ${recipes.length} recipes, ${shifted} of them shifted away from neutral`}
+        aria-label={t('planeLabel', { count: recipes.length, shifted })}
       >
         {/* Step rings, every 2 steps of the 7-step axis. */}
         {[2, 4, 6].map((step) => (

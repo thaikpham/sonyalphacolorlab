@@ -424,7 +424,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
                 >
                   <Image
                     src={src}
-                    alt={`${title} — frame ${i + 1}`}
+                    alt={t('photoAlt', { title, index: i + 1 })}
                     fill
                     sizes={
                       isHeroTile
@@ -617,7 +617,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
                 {/* eslint-disable-next-line @next/next/no-img-element -- arbitrary user URL */}
                 <img
                   src={previewUrl}
-                  alt="Preview"
+                  alt={t('previewAlt')}
                   className="w-full h-full object-cover"
                   onError={() =>
                     setErrorMsg(t('errPreviewLoad'))
@@ -698,7 +698,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
                     allPhotos[(lightboxIndex - 1 + allPhotos.length) % allPhotos.length],
                     256,
                   )}
-                  alt="Previous Frame Preview"
+                  alt=""
                   loading="lazy"
                   decoding="async"
                   className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 transition-all duration-300"
@@ -738,7 +738,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
               <img
                 key={currentLightboxSrc}
                 src={sized(currentLightboxSrc, 1200)}
-                alt={`${title} — Frame ${lightboxIndex + 1}`}
+                alt={t('photoAlt', { title, index: lightboxIndex + 1 })}
                 decoding="async"
                 className="max-w-full max-h-[72dvh] object-contain rounded-lg shadow-[var(--elevation-3)]"
               />
@@ -797,7 +797,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
                 {/* eslint-disable-next-line @next/next/no-img-element -- arbitrary URL */}
                 <img
                   src={sized(allPhotos[(lightboxIndex + 1) % allPhotos.length], 256)}
-                  alt="Next Frame Preview"
+                  alt=""
                   loading="lazy"
                   decoding="async"
                   className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 transition-all duration-300"
@@ -841,7 +841,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
                   {/* eslint-disable-next-line @next/next/no-img-element -- arbitrary URL */}
                   <img
                     src={sized(thumbSrc, 256)}
-                    alt={`Thumb ${idx + 1}`}
+                    alt=""
                     loading="lazy"
                     decoding="async"
                     className="w-full h-full object-cover"

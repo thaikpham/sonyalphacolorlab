@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 import { useAuth } from './auth-context';
 import { OPEN_PROPOSAL_EVENT } from '@/lib/community/events';
 import type { CommentItem } from '@/app/api/comments/route';
@@ -14,6 +14,7 @@ import {
 // Rule 1: every legal enum and range is imported, never retyped at a call site.
 import {
   CL_MONOCHROME_LOOKS,
+  CL_PARAM_LABELS,
   CL_RANGES,
   CREATIVE_LOOKS,
   CREATIVE_LOOK_CODES,
@@ -139,6 +140,7 @@ export function RecipeCommunitySection({
   currentWb,
 }: Props) {
   const t = useTranslations('community');
+  const format = useFormatter();
   const { user, openLoginModal, accessToken, loginWithGoogle } = useAuth();
 
   /* Every write carries the session JWT; the routes reject anything without
@@ -681,7 +683,11 @@ export function RecipeCommunitySection({
                     </div>
 
                     <span className="meta shrink-0 tabular-nums">
-                      {new Date(comment.createdAt).toLocaleDateString('vi-VN', {
+                      {/* Formatted in the reader's locale, not a fixed 'vi-VN', and pinned
+                          to one time zone so the server and client render the
+                          same string. */}
+                      {format.dateTime(new Date(comment.createdAt), {
+                        timeZone: 'Asia/Ho_Chi_Minh',
                         day: '2-digit',
                         month: '2-digit',
                         year: 'numeric',
@@ -760,7 +766,7 @@ export function RecipeCommunitySection({
                   <input
                     type="url"
                     required
-                    placeholder="https://images.unsplash.com/photo-..."
+                    placeholder="https://images.unsplash.com/photo-…"
                     value={newSampleUrl}
                     onChange={(e) => setNewSampleUrl(e.target.value)}
                     className={FIELD}
@@ -849,7 +855,7 @@ export function RecipeCommunitySection({
 
                     {/* Contrast (-9 to +9) */}
                     <div className={CONTROL}>
-                      <span className={CONTROL_LABEL}>Contrast</span>
+                      <span className={CONTROL_LABEL}>{CL_PARAM_LABELS.contrast}</span>
                       <div className="flex items-center gap-1.5">
                         <button
                           type="button"
@@ -875,7 +881,7 @@ export function RecipeCommunitySection({
 
                     {/* Highlights (-9 to +9) */}
                     <div className={CONTROL}>
-                      <span className={CONTROL_LABEL}>Highlights</span>
+                      <span className={CONTROL_LABEL}>{CL_PARAM_LABELS.highlights}</span>
                       <div className="flex items-center gap-1.5">
                         <button
                           type="button"
@@ -901,7 +907,7 @@ export function RecipeCommunitySection({
 
                     {/* Shadows (-9 to +9) */}
                     <div className={CONTROL}>
-                      <span className={CONTROL_LABEL}>Shadows</span>
+                      <span className={CONTROL_LABEL}>{CL_PARAM_LABELS.shadows}</span>
                       <div className="flex items-center gap-1.5">
                         <button
                           type="button"
@@ -927,7 +933,7 @@ export function RecipeCommunitySection({
 
                     {/* Fade (0 to 9) */}
                     <div className={CONTROL}>
-                      <span className={CONTROL_LABEL}>Fade</span>
+                      <span className={CONTROL_LABEL}>{CL_PARAM_LABELS.fade}</span>
                       <div className="flex items-center gap-1.5">
                         <button
                           type="button"
@@ -952,7 +958,7 @@ export function RecipeCommunitySection({
                     {/* Saturation (-9 to +9, omitted for monochrome BW/SE) */}
                     {!(CL_MONOCHROME_LOOKS as readonly string[]).includes(String(editSettings.look)) && (
                       <div className={CONTROL}>
-                        <span className={CONTROL_LABEL}>Saturation</span>
+                        <span className={CONTROL_LABEL}>{CL_PARAM_LABELS.saturation}</span>
                         <div className="flex items-center gap-1.5">
                           <button
                             type="button"
@@ -979,7 +985,7 @@ export function RecipeCommunitySection({
 
                     {/* Sharpness (0 to 9) */}
                     <div className={CONTROL}>
-                      <span className={CONTROL_LABEL}>Sharpness</span>
+                      <span className={CONTROL_LABEL}>{CL_PARAM_LABELS.sharpness}</span>
                       <div className="flex items-center gap-1.5">
                         <button
                           type="button"
@@ -1003,7 +1009,7 @@ export function RecipeCommunitySection({
 
                     {/* Sharpness Range (1 to 5) */}
                     <div className={CONTROL}>
-                      <span className={CONTROL_LABEL}>Sharpness Range</span>
+                      <span className={CONTROL_LABEL}>{CL_PARAM_LABELS.sharpnessRange}</span>
                       <div className="flex items-center gap-1.5">
                         <button
                           type="button"
@@ -1027,7 +1033,7 @@ export function RecipeCommunitySection({
 
                     {/* Clarity (0 to 9) */}
                     <div className={CONTROL}>
-                      <span className={CONTROL_LABEL}>Clarity</span>
+                      <span className={CONTROL_LABEL}>{CL_PARAM_LABELS.clarity}</span>
                       <div className="flex items-center gap-1.5">
                         <button
                           type="button"

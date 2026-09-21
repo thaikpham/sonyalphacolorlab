@@ -82,8 +82,15 @@ export function RecipeAdmin() {
   const [newName, setNewName] = useState('');
   const [newFormat, setNewFormat] = useState<'pp' | 'cl'>('pp');
 
+  /* An unknown code is never shown raw — a camelCase identifier is not a
+     message. It falls back to the generic failure for the call that raised it,
+     and the code goes to the console for whoever is debugging. */
   const codeMessage = useCallback(
-    (code: string) => (t.has(`errors.${code}` as never) ? t(`errors.${code}` as never) : code),
+    (code: string, fallback: 'loadFailed' | 'saveFailed' | 'uploadFailed' = 'saveFailed') => {
+      if (t.has(`errors.${code}` as never)) return t(`errors.${code}` as never);
+      console.warn('[recipeAdmin] unknown error code:', code);
+      return t(`errors.${fallback}`);
+    },
     [t],
   );
 
@@ -92,7 +99,7 @@ export function RecipeAdmin() {
       const res = await fetch('/api/admin/recipes', { headers: authed() });
       const data = (await res.json()) as { recipes?: RecipeRecord[]; error?: string };
       if (!res.ok || !data.recipes) {
-        setStatus({ kind: 'err', msg: codeMessage(data.error ?? 'loadFailed') });
+        setStatus({ kind: 'err', msg: codeMessage(data.error ?? 'loadFailed', 'loadFailed') });
         return null;
       }
       return data.recipes;
@@ -172,7 +179,7 @@ export function RecipeAdmin() {
       });
       const data = (await res.json()) as { ok?: boolean; id?: string; error?: string };
       if (!res.ok || !data.id) {
-        setStatus({ kind: 'err', msg: codeMessage(data.error ?? 'saveFailed') });
+        setStatus({ kind: 'err', msg: codeMessage(data.error ?? 'saveFailed', 'saveFailed') });
         return;
       }
       setNewName('');
@@ -215,7 +222,7 @@ export function RecipeAdmin() {
            cannot always prevent them: a Look change and a saturation value can
            each be legal while the pair is not. */
         if (data.issues) setIssues(data.issues);
-        setStatus({ kind: 'err', msg: codeMessage(data.error ?? 'saveFailed') });
+        setStatus({ kind: 'err', msg: codeMessage(data.error ?? 'saveFailed', 'saveFailed') });
         return;
       }
       if (data.recipe) setDraft(data.recipe.recipe);
@@ -239,7 +246,7 @@ export function RecipeAdmin() {
       });
       const data = (await res.json()) as { ok?: boolean; error?: string };
       if (!res.ok) {
-        setStatus({ kind: 'err', msg: codeMessage(data.error ?? 'saveFailed') });
+        setStatus({ kind: 'err', msg: codeMessage(data.error ?? 'saveFailed', 'saveFailed') });
         return;
       }
       setDraft({ ...draft, published: false });

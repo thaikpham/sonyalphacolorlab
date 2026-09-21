@@ -434,7 +434,7 @@ export function ArticleAdmin() {
                     >
                       {a.status === 'published' ? t('statusPublished') : t('statusDraft')}
                     </span>
-                    <span className="meta">{a.blocks.length}</span>
+                    <span className="meta">{t('blockCount', { n: a.blocks.length })}</span>
                   </span>
                   <span
                     className={
@@ -638,7 +638,7 @@ export function ArticleAdmin() {
                     type="text"
                     value={draft.read}
                     onChange={(e) => edit({ read: e.target.value })}
-                    placeholder="6 phút đọc"
+                    placeholder={t('readTimePlaceholder')}
                     className={FIELD}
                   />
                 </div>

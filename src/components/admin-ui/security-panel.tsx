@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 import { authBrowser } from '@/lib/supabase/browser';
 import { FIELD } from './controls';
 
@@ -27,10 +27,11 @@ import { FIELD } from './controls';
  * deployment's environment is the thing the security review refused.
  */
 
-type Factor = { id: string; status: string; friendly_name?: string };
+type Factor = { id: string; status: string; friendly_name?: string; created_at?: string };
 
 export function SecurityPanel() {
   const t = useTranslations('adminUi');
+  const format = useFormatter();
   const [factors, setFactors] = useState<Factor[]>([]);
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
@@ -70,7 +71,7 @@ export function SecurityPanel() {
   const setNewPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     const supabase = authBrowser();
-    if (!supabase) return;
+    if (!supabase) return setNote({ kind: 'err', key: 'signInNotConfigured' });
     setBusy(true);
     setNote(null);
     try {
@@ -84,7 +85,7 @@ export function SecurityPanel() {
 
   const startEnrol = async () => {
     const supabase = authBrowser();
-    if (!supabase) return;
+    if (!supabase) return setNote({ kind: 'err', key: 'signInNotConfigured' });
     setBusy(true);
     setNote(null);
     try {
@@ -104,8 +105,9 @@ export function SecurityPanel() {
 
   const confirmEnrol = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!enrolling) return;
     const supabase = authBrowser();
-    if (!supabase || !enrolling) return;
+    if (!supabase) return setNote({ kind: 'err', key: 'signInNotConfigured' });
     setBusy(true);
     setNote(null);
     try {
@@ -129,12 +131,14 @@ export function SecurityPanel() {
   const removeFactor = async (id: string) => {
     if (!window.confirm(t('unenrolConfirm'))) return;
     const supabase = authBrowser();
-    if (!supabase) return;
+    if (!supabase) return setNote({ kind: 'err', key: 'signInNotConfigured' });
     setBusy(true);
+    setNote(null);
     try {
-      await supabase.auth.mfa.unenroll({ factorId: id });
+      /* unenroll() reports a refusal in `error`; it does not throw. */
+      const { error } = await supabase.auth.mfa.unenroll({ factorId: id });
       await load();
-      setNote({ kind: 'ok', key: 'unenrolDone' });
+      setNote(error ? { kind: 'err', key: 'unenrolFailed' } : { kind: 'ok', key: 'unenrolDone' });
     } finally {
       setBusy(false);
     }
@@ -182,7 +186,21 @@ export function SecurityPanel() {
             <ul className="flex flex-col gap-2">
               {verified.map((f) => (
                 <li key={f.id} className="flex items-center justify-between gap-3">
-                  <span className="text-body-sm text-ink">{f.friendly_name ?? f.id}</span>
+                  <span className="text-body-sm text-ink">
+                    {/* friendly_name is a machine id (alpha-admin-<epoch>), never shown. */}
+                    {t('factorName')}
+                    {f.created_at ? (
+                      <span className="text-ink-muted">
+                        {' · '}
+                        {/* Rendered only after mount (factors load client-side), so the
+                            browser's own zone is safe and avoids the provider fallback. */}
+                        {format.dateTime(new Date(f.created_at), {
+                          dateStyle: 'medium',
+                          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                        })}
+                      </span>
+                    ) : null}
+                  </span>
                   <button
                     type="button"
                     disabled={busy}

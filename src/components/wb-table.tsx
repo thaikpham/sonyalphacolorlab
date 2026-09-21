@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { WB_EXPLANATIONS, WB_OVERVIEW, type Locale } from '@/lib/camera/explanations';
 import { wbEffects, wbSummary } from '@/lib/camera/effects';
 import type { WhiteBalance } from '@/lib/camera/schema';
@@ -48,15 +49,6 @@ export function FormattedWb({ wb, className = '' }: { wb: WhiteBalance; classNam
   );
 }
 
-/** UI chrome only. Parameter names stay English (rule 3); these are not names. */
-const SUMMARY_LABELS = {
-  net: { en: 'Overall tone', vi: 'Tông màu tổng thể' },
-  overview: {
-    en: 'How Temperature, A/B and G/M combine',
-    vi: 'Temperature, A/B và G/M kết hợp thế nào',
-  },
-} as const;
-
 /**
  * The payoff of the three rows above, and the primer explaining why they can
  * look like they contradict each other.
@@ -67,11 +59,14 @@ const SUMMARY_LABELS = {
  */
 function WbConclusion({ wb, locale }: { wb: WhiteBalance; locale: Locale }) {
   const { net, interplay } = wbSummary(wb);
+  /* UI chrome, so it reads from the catalogue (rule 3). The parameter names
+     inside the overview string stay English there too. */
+  const t = useTranslations('recipe');
 
   return (
     <div className="mt-3 flex flex-col gap-2.5">
       <div className="row-tint p-3.5">
-        <span className="label">{SUMMARY_LABELS.net[locale]}</span>
+        <span className="label">{t('wbNet')}</span>
         <p className="mt-1 max-w-prose text-body-sm leading-relaxed text-ink">{net[locale]}</p>
         {interplay && (
           <p className="mt-2 max-w-prose text-meta leading-relaxed">
@@ -88,7 +83,7 @@ function WbConclusion({ wb, locale }: { wb: WhiteBalance; locale: Locale }) {
           <span aria-hidden className="text-ink-faint">
             ·
           </span>
-          {SUMMARY_LABELS.overview[locale]}
+          {t('wbOverview')}
           <span aria-hidden className="text-ink-faint group-open:hidden">
             ?
           </span>

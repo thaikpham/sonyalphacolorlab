@@ -64,12 +64,13 @@ export function TweakPanel({ slug, locale, currentWb, currentSettings }: Props) 
 
   /* Read from the catalogue, not from a `locale === 'vi'` ternary: the copy for
      one language sat inside a component in the other's file, where nothing that
-     checks translations could see it. */
+     checks translations could see it. No emoji prefix: the chips are plain
+     text, like every other button in the system. */
   const samplePrompts = [
-    { icon: '✨', text: t('sampleWarm') },
-    { icon: '🎬', text: t('sampleShadow') },
-    { icon: '🌸', text: t('sampleSkin') },
-    { icon: '🌅', text: t('sampleGolden') },
+    t('sampleWarm'),
+    t('sampleShadow'),
+    t('sampleSkin'),
+    t('sampleGolden'),
   ];
 
   async function submit(e: React.FormEvent) {
@@ -180,14 +181,14 @@ export function TweakPanel({ slug, locale, currentWb, currentSettings }: Props) 
             {/* Quick Prompts */}
             <div className="flex flex-wrap items-center gap-2">
               <span className="meta mr-1">{t('quickIdeas')}</span>
-              {samplePrompts.map(({ icon, text }) => (
+              {samplePrompts.map((text) => (
                 <button
                   key={text}
                   type="button"
                   onClick={() => setRequest(text)}
                   className="inline-flex min-h-[var(--layout-touch-target)] cursor-pointer items-center rounded-sm bg-white/8 px-3 text-body-sm text-ink-muted transition-colors hover:bg-white/13 hover:text-ink"
                 >
-                  {icon} {text}
+                  {text}
                 </button>
               ))}
             </div>

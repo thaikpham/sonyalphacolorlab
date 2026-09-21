@@ -18,11 +18,6 @@
     "",
     "Vietnamese is the canonical value. This file only renders it for `en`."
   ],
-  "sensor": {
-    "literals": {
-      "hình ảnh CMOS full-frame 35 mm một chip": "Single-chip 35 mm full-frame CMOS image sensor"
-    }
-  },
   "autofocus": {
     "replace": [
       [
@@ -70,6 +65,10 @@
   "battery": {
     "replace": [
       [
+        "giờ",
+        "h"
+      ],
+      [
         "phút",
         "min"
       ],
@@ -81,6 +80,10 @@
   },
   "weight": {
     "replace": [
+      [
+        "mỗi bên tai nghe",
+        "each earbud"
+      ],
       [
         "có pin và thẻ nhớ",
         "with battery and card"
@@ -96,6 +99,18 @@
       [
         "Không có đế gắn chân máy",
         "without tripod mount"
+      ],
+      [
+        "tay nắm – bánh xe",
+        "handle and wheels"
+      ],
+      [
+        "tay nắm",
+        "handle"
+      ],
+      [
+        "tai nghe",
+        "earbuds"
       ]
     ]
   },
@@ -103,7 +118,7 @@
     "literals": {
       "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục": "Image sensor-shift mechanism with 5-axis compensation",
       "Chống rung quang học SteadyShot": "Optical SteadyShot",
-      "Không hỗ trợ (hỗ trợ ổn định hình ảnh bằng ống kính)": "Not supported (lens-based stabilisation supported)"
+      "Không hỗ trợ (hỗ trợ ổn định hình ảnh bằng ống kính)": "Not supported (supports lens-based stabilization)"
     }
   },
   "construction": {
@@ -139,6 +154,449 @@
       [
         "khẩu tròn",
         "circular"
+      ]
+    ]
+  },
+  "dimensions": {
+    "replace": [
+      [
+        "Đường kính",
+        "Diameter"
+      ]
+    ]
+  },
+  "fastCharge": {
+    "replace": [
+      [
+        "Sạc không dây",
+        "Wireless charging"
+      ],
+      [
+        "phút",
+        "min"
+      ]
+    ]
+  },
+  "designType": {
+    "literals": {
+      "Tai nghe Gaming có dây": "Wired gaming headset",
+      "Tai nghe Gaming không dây": "Wireless gaming headset",
+      "Tai nghe choàng đầu không dây": "Wireless over-ear headphones",
+      "Tai nghe kẹp tai dạng mở": "Open-ear earbuds",
+      "Tai nghe nhét tai dạng kín": "Closed in-ear earbuds",
+      "Tai nghe gaming có dây": "Wired gaming headset",
+      "Tai nghe gaming không dây": "Wireless gaming headset"
+    }
+  },
+  "design": {
+    "literals": {
+      "Xoay": "Swivel"
+    },
+    "replace": [
+      [
+        "Hộp đựng nắp nam châm",
+        "Magnetic case"
+      ],
+      [
+        "Hộp đựng có khoá kéo",
+        "Zippered case"
+      ],
+      [
+        "Đệm tai tháo rời",
+        "Detachable earpads"
+      ],
+      [
+        "Nút tai mút xốp",
+        "Foam ear tips"
+      ],
+      [
+        "Nút tai silicon",
+        "Silicone ear tips"
+      ],
+      [
+        "Gập và xoay",
+        "Folding + swivel"
+      ],
+      [
+        "Phím bấm",
+        "Buttons"
+      ],
+      [
+        "Đệm kẹp tai silicon",
+        "Silicone fitting supporters"
+      ],
+      [
+        "Case đựng nam châm",
+        "Magnetic case"
+      ],
+      [
+        "Case đựng dây kéo",
+        "Zippered case"
+      ],
+      [
+        "Típ tai bọt biển",
+        "Foam ear tips"
+      ],
+      [
+        "Earpad tháo rời",
+        "Detachable earpads"
+      ],
+      [
+        "Típ tai silicon",
+        "Silicone ear tips"
+      ],
+      [
+        "Cảm ứng chạm",
+        "Touch controls"
+      ],
+      [
+        "Cảm biến đeo",
+        "Wear detection sensor"
+      ],
+      [
+        "Gập + xoay",
+        "Folding + swivel"
+      ],
+      [
+        "Phím nhấn",
+        "Buttons"
+      ],
+      [
+        "Xoay",
+        "Swivel"
+      ]
+    ]
+  },
+  "noiseCancelling": {
+    "literals": {
+      "Âm thanh môi trường tự nhiên": "Natural ambient sound"
+    },
+    "replace": [
+      [
+        "Chống ồn",
+        "Noise cancelling"
+      ],
+      [
+        "Xuyên âm",
+        "Ambient sound"
+      ]
+    ]
+  },
+  "driver": {
+    "replace": [
+      [
+        "Màng loa sợi carbon",
+        "Carbon fibre"
+      ],
+      [
+        "Màng loa sợi Carbon",
+        "Carbon fibre"
+      ],
+      [
+        "Màng loa Dynamic Driver X",
+        "Dynamic Driver X"
+      ],
+      [
+        "Màng loa Dynamic",
+        "Dynamic driver"
+      ],
+      [
+        "Màng loa",
+        "Driver"
+      ]
+    ]
+  },
+  "drivers": {
+    "replace": [
+      [
+        "Bộ tản âm",
+        "Passive radiator"
+      ]
+    ]
+  },
+  "microphones": {
+    "replace": [
+      [
+        "Boom mic lật lên để tắt tiếng",
+        "Flip-to-mute boom mic"
+      ],
+      [
+        "Boom mic tháo rời",
+        "Detachable boom mic"
+      ],
+      [
+        "Phím tắt tiếng mic",
+        "Mic mute button"
+      ],
+      [
+        "micro trên hai bên tai",
+        "mics (both sides)"
+      ],
+      [
+        "Chạm giữ tai trái",
+        "Touch and hold left earbud"
+      ],
+      [
+        "Micro tích hợp",
+        "Built-in mic"
+      ],
+      [
+        "Mic tích hợp",
+        "Built-in mic"
+      ],
+      [
+        "Lọc ồn gió",
+        "Wind noise reduction"
+      ],
+      [
+        "Bật/Tắt Mic: phím nhấn",
+        "Mic on/off: button"
+      ],
+      [
+        "Bật/Tắt Mic linh hoạt",
+        "Flip-to-mute mic"
+      ],
+      [
+        "Boom Mic tháo rời",
+        "Detachable boom mic"
+      ],
+      [
+        "micro 2 bên tai",
+        "mics (both sides)"
+      ],
+      [
+        "Chạm giữ tai L",
+        "Touch and hold left earbud"
+      ],
+      [
+        "Build-in Mic",
+        "Built-in mic"
+      ],
+      [
+        "Micro tích hợp",
+        "Built-in mic"
+      ],
+      [
+        "lọc ồn gió",
+        "wind noise reduction"
+      ]
+    ]
+  },
+  "processor": {
+    "replace": [
+      [
+        "Ứng dụng INZONE Hub",
+        "INZONE Hub app"
+      ]
+    ]
+  },
+  "smartFeatures": {
+    "replace": [
+      [
+        "Điều khiển cảm ứng",
+        "Touch control"
+      ],
+      [
+        "Tăng tường giọng hát, giọng nói",
+        "Voice and vocal enhancement"
+      ],
+      [
+        "Tăng cường giọng hát, giọng nói",
+        "Voice and vocal enhancement"
+      ],
+      [
+        "Chế độ nghe Tiêu chuẩn",
+        "Standard listening mode"
+      ],
+      [
+        "Chế độ nghe tiêu chuẩn",
+        "Standard listening mode"
+      ],
+      [
+        "Giảm rò rỉ âm thanh",
+        "Sound leakage reduction"
+      ],
+      [
+        "Trợ lý Google Gemini",
+        "Google Gemini assistant"
+      ],
+      [
+        "Cảm biến đeo",
+        "Wear detection"
+      ],
+      [
+        "Cảm ứng chạm",
+        "Touch control"
+      ]
+    ]
+  },
+  "connectivity": {
+    "replace": [
+      [
+        "Kết nối 2 thiết bị cùng lúc",
+        "Multipoint (2 devices)"
+      ]
+    ]
+  },
+  "utilities": {
+    "replace": [
+      [
+        "Cổng USB phát nhạc và sạc thiết bị khác",
+        "USB port for playback and charging other devices"
+      ],
+      [
+        "USB Type-C vào/ra",
+        "USB Type-C in/out"
+      ],
+      [
+        "Kết nối 2 thiết bị cùng lúc",
+        "Multipoint (2 devices)"
+      ],
+      [
+        "Dây đeo loa đa hướng",
+        "Multi-way strap"
+      ],
+      [
+        "Đàm thoại rảnh tay",
+        "Hands-free calling"
+      ],
+      [
+        "Tay nắm 2 chiều",
+        "Two-way handle"
+      ],
+      [
+        "Đèn tiệc 360°",
+        "360° party light"
+      ],
+      [
+        "Dây đeo vai",
+        "Shoulder strap"
+      ]
+    ]
+  },
+  "includedAccessories": {
+    "replace": [
+      [
+        "Bộ nút tai nhiều kích cỡ",
+        "Ear tips in multiple sizes"
+      ],
+      [
+        "Cáp 3.5mm",
+        "3.5mm cable"
+      ],
+      [
+        "Bộ tip tai nhiều kích cỡ",
+        "Ear tips in multiple sizes"
+      ],
+      [
+        "Dây tai nghe 3.5mm",
+        "3.5mm headphone cable"
+      ],
+      [
+        "Túi đựng tai nghe",
+        "Carrying pouch"
+      ],
+      [
+        "Dây cáp 3.5mm",
+        "3.5mm cable"
+      ],
+      [
+        "Túi vải",
+        "Fabric pouch"
+      ],
+      [
+        "Cáp sạc",
+        "Charging cable"
+      ]
+    ]
+  },
+  "includedMic": {
+    "literals": {
+      "Micro không dây Tower 10": "Tower 10 wireless microphone"
+    }
+  },
+  "micPorts": {
+    "literals": {
+      "1 cổng micro | 1 cổng guitar": "1 mic input | 1 guitar input",
+      "2 cổng micro | 1 cổng guitar": "2 mic inputs | 1 guitar input",
+      "1 cổng Micro | 1 cổng Guitar": "1 mic input | 1 guitar input",
+      "2 cổng Micro | 1 cổng Guitar": "2 mic inputs | 1 guitar input"
+    },
+    "replace": [
+      [
+        "cổng micro",
+        "mic input"
+      ],
+      [
+        "cổng guitar",
+        "guitar input"
+      ],
+      [
+        "cổng Micro",
+        "mic input"
+      ],
+      [
+        "cổng Guitar",
+        "guitar input"
+      ]
+    ]
+  },
+  "waterResistance": {
+    "replace": [
+      [
+        "Kháng nước, kháng bụi",
+        "Water/dust resistant"
+      ],
+      [
+        "Kháng nước/bụi",
+        "Water/dust resistant"
+      ],
+      [
+        "Kháng nước",
+        "Water resistant"
+      ]
+    ]
+  },
+  "bassBoost": {
+    "literals": {
+      "TẮT ULT | BẬT ULT 1 | ULT 2": "ULT OFF | ULT 1 | ULT 2"
+    },
+    "replace": [
+      [
+        "Tắt ULT",
+        "ULT OFF"
+      ],
+      [
+        "Bật ULT",
+        "ULT ON"
+      ],
+      [
+        "TẮT ULT",
+        "ULT OFF"
+      ],
+      [
+        "BẬT ULT",
+        "ULT ON"
+      ]
+    ]
+  },
+  "specsSource": {
+    "replace": [
+      [
+        "bảng Loa Di động; bảng Loa Karaoke in giá 11.990.000 cho cùng model — lấy giá bảng Loa Di động",
+        "Portable Speakers sheet; the Karaoke Speakers sheet prints 11.990.000 for the same model — the Portable Speakers price is used"
+      ],
+      [
+        "Các sản phẩm tai nghe & Loa",
+        "Headphones & Speakers"
+      ],
+      [
+        "Các sản phẩm tai nghe & loa",
+        "Headphones & Speakers"
+      ],
+      [
+        "bảng so sánh",
+        "comparison sheet"
       ]
     ]
   }

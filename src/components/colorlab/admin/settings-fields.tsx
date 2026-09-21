@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { Group, EnumSelect, Ranged } from './fields';
 import {
   CL_MONOCHROME_LOOKS,
+  CL_PARAM_LABELS,
   CL_RANGES,
   CL_SIGNED_PARAMS,
   CREATIVE_LOOKS,
@@ -261,11 +262,13 @@ export function ClFields({
         />
       </Group>
 
+      {/* Parameter labels are Sony's own terms and are never translated, so
+          they come from `constants.ts` and not from the catalogue. */}
       <Group title={t('clAdjust')}>
         {(['contrast', 'highlights', 'shadows', 'fade'] as const).map((k) => (
           <Ranged
             key={k}
-            label={t(k)}
+            label={CL_PARAM_LABELS[k]}
             range={CL_RANGES[k]}
             value={value[k]}
             onChange={(n) => set(k, n)}
@@ -274,7 +277,7 @@ export function ClFields({
         ))}
         {!mono && (
           <Ranged
-            label={t('clSaturation')}
+            label={CL_PARAM_LABELS.saturation}
             range={CL_RANGES.saturation}
             value={value.saturation ?? 0}
             onChange={(n) => set('saturation', n)}
@@ -285,7 +288,7 @@ export function ClFields({
         {(['sharpness', 'sharpnessRange', 'clarity'] as const).map((k) => (
           <Ranged
             key={k}
-            label={t(k)}
+            label={CL_PARAM_LABELS[k]}
             range={CL_RANGES[k]}
             value={value[k]}
             onChange={(n) => set(k, n)}

@@ -44,11 +44,11 @@ const recipesData = [
     {
         "id": "scl-003",
         "name": "SCL-003: Caspian Blue",
-        "description": "A warm tone, cinematic profile with distinctive deep blues and rich, crushed blacks.\nIt lends a moody, atmospheric quality to images, perfect for urban nightscapes, dramatic portraits, and storytelling.",
+        "description": "A warm-toned, cinematic profile with distinctive deep blues and rich, crushed blacks.\nIt lends a moody, atmospheric quality to images, perfect for urban nightscapes, dramatic portraits, and storytelling.",
         "type": "color",
         "contrast": "high",
         "saturation": "normal",
-        "tags": ["cinematic", "cool-tone", "deep-blues", "moody", "atmospheric", "urban-night", "dramatic-portrait", "storytelling"],
+        "tags": ["cinematic", "warm-tone", "deep-blues", "moody", "atmospheric", "urban-night", "dramatic-portrait", "storytelling"],
         "whiteBalance": "8000K, B2-M2",
         "settings": { "Black level": "-15", "Gamma": "Cine4", "Black Gamma": "Middle +4", "Knee": "Manual 85% +4", "Color Mode": "S-Gamut3.Cine", "Saturation": "+22", "Color Phase": "+7" },
         "colorDepth": { "R": "0", "G": "-2", "B": "+4", "C": "+5", "M": "+5", "Y": "+1" },
@@ -422,7 +422,7 @@ const recipesData = [
     {
         "id": "scl-021",
         "name": "SCL-021: Muted Pastels",
-        "description": "A soft and subtle style with moderate saturation and gentle tones.\nIt's versatile for everyday shooting, lending images a peaceful and pleasant feel without being overwhelmed by color.",
+        "description": "A soft and subtle style with moderate saturation and gentle tones.\nIt’s versatile for everyday shooting, lending images a peaceful and pleasant feel without being overwhelmed by color.",
         "type": "color",
         "contrast": "soft",
         "saturation": "moderate",
@@ -464,7 +464,7 @@ const recipesData = [
     {
         "id": "scl-023",
         "name": "SCL-023: Alpine Cool",
-        "description": "A cool-toned formula with a high Kelvin temperature, giving images a clean, crisp blue cast.\nIt's well-suited for emphasizing cold light in urban or mountain landscapes, creating a clean and edgy aesthetic.",
+        "description": "A cool-toned formula with a high Kelvin temperature, giving images a clean, crisp blue cast.\nIt’s well-suited for emphasizing cold light in urban or mountain landscapes, creating a clean and edgy aesthetic.",
         "type": "color",
         "contrast": "normal",
         "saturation": "normal",
@@ -485,7 +485,7 @@ const recipesData = [
     {
         "id": "scl-024",
         "name": "SCL-024: Arctic Negative",
-        "description": "Pushing white balance to its coldest, this formula creates a unique, stylized look with a deep blue-green cast.\nIt's perfect for experimental, moody, and atmospheric photography.",
+        "description": "Pushing white balance to its coldest, this formula creates a unique, stylized look with a deep blue-green cast.\nIt’s perfect for experimental, moody, and atmospheric photography.",
         "type": "color",
         "contrast": "normal",
         "saturation": "normal",
@@ -548,7 +548,7 @@ const recipesData = [
     {
         "id": "scl-027",
         "name": "SCL-027: Daylight Cinema",
-        "description": "A modern, clean cinematic style based on S-Cinetone.\nIt's designed for daylight conditions, delivering beautiful skin tones, high saturation, and a professional, polished feel straight out of camera.",
+        "description": "A modern, clean cinematic style based on S-Cinetone.\nIt’s designed for daylight conditions, delivering beautiful skin tones, high saturation, and a professional, polished feel straight out of camera.",
         "type": "color",
         "contrast": "normal",
         "saturation": "high",
@@ -653,7 +653,7 @@ const recipesData = [
     {
         "id": "scl-032",
         "name": "SCL-032: Newsprint Grit",
-        "description": "A powerful, high-contrast style that emulates the feel of 'pushed' black and white film used by photojournalists.\nIt's grainy, sharp, and full of character, perfect for capturing raw, unedited moments.",
+        "description": "A powerful, high-contrast style that emulates the feel of “pushed” black and white film used by photojournalists.\nIt’s grainy, sharp, and full of character, perfect for capturing raw, unedited moments.",
         "type": "bw",
         "contrast": "high",
         "saturation": "normal",
@@ -716,7 +716,7 @@ const recipesData = [
     {
         "id": "scl-035",
         "name": "SCL-035: Classic Reportage",
-        "description": "A versatile, medium-contrast style with a classic grain structure.\nThis is a black and white 'workhorse' choice, ideal for photojournalism, street photography, and capturing everyday life with an authentic feel.",
+        "description": "A versatile, medium-contrast style with a classic grain structure.\nThis is a black and white “workhorse” choice, ideal for photojournalism, street photography, and capturing everyday life with an authentic feel.",
         "type": "bw",
         "contrast": "medium",
         "saturation": "normal",
@@ -758,7 +758,7 @@ const recipesData = [
     {
         "id": "scl-037",
         "name": "SCL-037: Low Light Grain",
-        "description": "Designed to emulate high-speed film, this formula uses a cinematic gamma to handle contrast while encouraging grain.\nIt's perfect for low-light situations, adding texture and atmosphere to shots.",
+        "description": "Designed to emulate high-speed film, this formula uses a cinematic gamma to handle contrast while encouraging grain.\nIt’s perfect for low-light situations, adding texture and atmosphere to shots.",
         "type": "bw",
         "contrast": "normal",
         "saturation": "normal",
@@ -800,7 +800,7 @@ const recipesData = [
     {
         "id": "scl-039",
         "name": "SCL-039: Ortho Portrait",
-        "description": "Emulating orthochromatic film, which is insensitive to red light.\nThis results in darkened skin and lip tones, creating a unique, vintage, and often dramatic portrait style.",
+        "description": "Emulates orthochromatic film, which is insensitive to red light.\nThis results in darkened skin and lip tones, creating a unique, vintage, and often dramatic portrait style.",
         "type": "color",
         "contrast": "normal",
         "saturation": "normal",
@@ -821,7 +821,7 @@ const recipesData = [
     {
         "id": "scl-040",
         "name": "SCL-040: Sunbath",
-        "description": "Based on the unique film style, this recipe offers a creative and unpredictable look with distinct color shifts, especially in reds and greens. It's perfect for photographers looking to experiment with a quirky, analog-inspired palette.",
+        "description": "Inspired by a distinctive film style, this recipe offers a creative, unpredictable look with pronounced color shifts, especially in reds and greens. It’s perfect for photographers looking to experiment with a quirky, analog-inspired palette.",
         "type": "color",
         "contrast": "normal",
         "saturation": "normal",
@@ -863,8 +863,8 @@ const recipesData = [
 
     {
         "id": "scl-043",
-        "name": "SCL-43: Macro shooting for Tran Anh Tuan",
-        "description": "A color recipe with natural and vivid colors, suitable for Macro photography in the style of Photographer Tran Anh Tuan.",
+        "name": "SCL-43: Macro Shooting for Trần Anh Tuấn",
+        "description": "A recipe with natural, vivid colors, made for macro photography in the style of photographer Trần Anh Tuấn.",
         "type": "color",
         "contrast": "high",
         "saturation": "high",
@@ -885,11 +885,11 @@ const recipesData = [
     {
         "id": "scl-044",
         "name": "SCL-44: Filmic FJ C200",
-        "description": "A filmic recipe that mimic FJ C200 Film stock.",
+        "description": "A filmic recipe that mimics FJ C200 film stock.",
         "type": "color",
         "contrast": "high",
         "saturation": "high",
-        "tags": ["stylized", "atmospheric", "macro", "surreal", "contemporary", "artistic"],
+        "tags": ["filmic", "film-emulation", "contemporary"],
         "whiteBalance": "AWB, B1-G0.5",
         "settings": { "Black level": "+5", "Gamma": "Cine4", "Black Gamma": "Narrow +5", "Knee": "Manual 75% +5", "Color Mode": "S-Gamut3.Cine", "Saturation": "+20", "Color Phase": "-2" },
         "colorDepth": { "R": "+2", "G": "-3", "B": "+3", "C": "-4", "M": "+1", "Y": "-2" },

@@ -67,13 +67,13 @@ const blackGammaLevel: Phrases = {
   [-2]: ['Shadow detail pulled well down — dense, moody dark areas', 'Chi tiết vùng tối kéo xuống nhiều — vùng tối dày, u trầm'],
   [-1]: ['Shadow detail pulled down slightly — tighter shadow gradation', 'Chi tiết vùng tối kéo xuống nhẹ — siết độ chuyển vùng tối'],
   0: ['Shadow gradation left flat — baseline shadow rendering', 'Chuyển tông vùng tối giữ nguyên mặc định'],
-  1: ['Shadow detail opened up a little — clearer shadow regions', 'Chi tiết vùng tối mở ra chút — làm rõ vùng bóng râm'],
+  1: ['Shadow detail opened up a little — clearer shadow regions', 'Chi tiết vùng tối mở ra chút — vùng tối rõ hơn'],
   2: ['Shadow detail opened well up — airy, visible dark areas', 'Chi tiết vùng tối mở nhiều — vùng tối thoáng, nhìn rõ chi tiết'],
 };
 
 const ppSaturation: Phrases = {
   [-2]: ['Colour pulled way down — subdued, near-monochrome palette', 'Màu giảm rất mạnh — bảng màu trầm, gần như đơn sắc'],
-  [-1]: ['Colour restrained — muted, subtle color palette', 'Màu tiết chế — bảng màu trầm dịu'],
+  [-1]: ['Colour restrained — muted, subtle palette', 'Màu tiết chế — bảng màu trầm dịu'],
   0: ['Colour intensity left neutral — standard camera baseline', 'Cường độ màu giữ trung tính mặc định'],
   1: ['Colour pushed up — richer, punchier hues without shouting', 'Màu đẩy lên — đậm đà hơn mà chưa bị gắt'],
   2: ['Colour pushed hard — vivid, high-impact hues', 'Màu đẩy mạnh — rực rỡ, gây ấn tượng thị giác'],
@@ -201,15 +201,15 @@ const vhBalance: Phrases = {
 };
 
 const detailLimit: Phrases = {
-  0: ['Edge enhancement capped hard — halos suppressed', 'Chặn mạnh viền tăng cường — hạn chế quầng sáng'],
-  1: ['Edge enhancement moderately capped', 'Chặn viền tăng cường ở mức vừa'],
-  2: ['Edge enhancement unrestricted', 'Không giới hạn viền tăng cường'],
+  0: ['Edge enhancement capped hard — halos suppressed', 'Giới hạn chặt phần tăng viền — hạn chế quầng sáng'],
+  1: ['Edge enhancement moderately capped', 'Giới hạn vừa phải phần tăng viền'],
+  2: ['Edge enhancement unrestricted', 'Không giới hạn phần tăng viền'],
 };
 
 const crispening: Phrases = {
   0: ['Sharpening applied to noise as well as subject', 'Tăng nét áp lên cả nhiễu lẫn chủ thể'],
-  1: ['Some sharpening held back off noise', 'Giữ lại một phần, tránh làm nổi nhiễu'],
-  2: ['Sharpening kept well off noise — cleaner grain', 'Tránh nhiễu tối đa — hạt sạch hơn'],
+  1: ['Some sharpening held back off noise', 'Bớt tăng nét trên nhiễu'],
+  2: ['Sharpening kept well off noise — cleaner grain', 'Hầu như không tăng nét trên nhiễu — hạt sạch hơn'],
 };
 
 const hiLightDetail: Phrases = {
@@ -391,19 +391,19 @@ const PRESET_PHRASES: Record<string, [en: string, vi: string]> = {
   ],
   'Fluor.: Warm White': [
     'Balanced for warm-white fluorescent tubes, including the green cast they carry',
-    'Cân bằng cho đèn huỳnh quang warm white, gồm cả sắc xanh lá mà loại đèn này mang theo',
+    'Cân bằng cho đèn huỳnh quang trắng ấm (Warm White), kể cả sắc xanh lá mà loại đèn này mang theo',
   ],
   'Fluor.: Cool White': [
     'Balanced for cool-white fluorescent tubes, including the green cast they carry',
-    'Cân bằng cho đèn huỳnh quang cool white, gồm cả sắc xanh lá mà loại đèn này mang theo',
+    'Cân bằng cho đèn huỳnh quang trắng lạnh (Cool White), kể cả sắc xanh lá mà loại đèn này mang theo',
   ],
   'Fluor.: Day White': [
     'Balanced for day-white fluorescent tubes, including the green cast they carry',
-    'Cân bằng cho đèn huỳnh quang day white, gồm cả sắc xanh lá mà loại đèn này mang theo',
+    'Cân bằng cho đèn huỳnh quang trắng ban ngày (Day White), kể cả sắc xanh lá mà loại đèn này mang theo',
   ],
   'Fluor.: Daylight': [
     'Balanced for daylight fluorescent tubes, including the green cast they carry',
-    'Cân bằng cho đèn huỳnh quang daylight, gồm cả sắc xanh lá mà loại đèn này mang theo',
+    'Cân bằng cho đèn huỳnh quang ánh sáng ban ngày (Daylight), kể cả sắc xanh lá mà loại đèn này mang theo',
   ],
   Flash: [
     'Balanced for the flash tube. Sony documents this one as still images only',
@@ -493,16 +493,16 @@ const NET_PHRASES: Record<Warmth | 'balanced', [en: string, vi: string]> = {
     'ra rất ấm — da bắt nắng, vùng trắng ngả kem, sắc xanh bị đẩy lùi rõ',
   ],
   warm: [
-    'reads warm — a golden-hour lean, with whites carrying a light cream cast',
-    'ra ấm — nghiêng về giờ vàng, vùng trắng phủ nhẹ sắc kem',
+    'reads warm — a Golden Hour lean, with whites carrying a light cream cast',
+    'ra ấm — nghiêng về tông Golden Hour, vùng trắng phủ nhẹ sắc kem',
   ],
   neutral: [
-    'reads close to neutral — whites stay white, so the recipe’s colour character comes from the profile rather than from the balance',
-    'gần trung tính — vùng trắng vẫn là trắng, nên chất màu của công thức đến từ profile chứ không phải từ cân bằng trắng',
+    'reads close to neutral — whites stay white, so the recipe’s colour character comes from the Picture Profile or Look rather than from the balance',
+    'gần trung tính — vùng trắng vẫn là trắng, nên chất màu của công thức đến từ Picture Profile hoặc Look chứ không phải từ cân bằng trắng',
   ],
   balanced: [
-    'lands close to neutral — the Kelvin setting and the A/B shift very nearly cancel each other, so whatever colour character the recipe has is coming from the profile, not from the white balance',
-    'rơi vào khoảng gần trung tính — mức Kelvin và shift A/B gần như triệt tiêu nhau, nên chất màu của công thức đến từ profile chứ không phải từ cân bằng trắng',
+    'lands close to neutral — the Kelvin setting and the A/B shift very nearly cancel each other, so whatever colour character the recipe has is coming from the Picture Profile or Look, not from the white balance',
+    'rơi vào khoảng gần trung tính — mức Kelvin và WB Shift A/B gần như triệt tiêu nhau, nên chất màu của công thức đến từ Picture Profile hoặc Look chứ không phải từ cân bằng trắng',
   ],
   cool: [
     'reads cool — a blue-hour lean, with whites carrying a light slate cast',
@@ -701,12 +701,12 @@ const CL_PHRASES: Record<ClParam, { axis: EffectAxis; phrases: Phrases }> = {
 function lookEffect(look: string): Effect {
   if (look === 'BW') return { axis: 'color', en: 'Monochrome — no colour at all', vi: 'Đơn sắc — không màu' };
   if (look === 'SE') return { axis: 'color', en: 'Sepia monotone — warm single-hue rendering', vi: 'Đơn sắc nâu — một tông ấm duy nhất' };
-  if (look === 'VV' || look === 'VV2') return { axis: 'color', en: 'Vivid base — saturation and contrast raised before any adjustment', vi: 'Nền Vivid — bão hòa và tương phản đã cao sẵn trước khi chỉnh' };
+  if (look === 'VV' || look === 'VV2') return { axis: 'color', en: 'Vivid base — saturation and contrast raised before any adjustment', vi: 'Nền Vivid — bão hoà và tương phản đã cao sẵn trước khi chỉnh' };
   if (look === 'FL') return { axis: 'color', en: 'Film base — moody colour with sharp contrast', vi: 'Nền Film — màu u trầm với tương phản gắt' };
   if (look === 'IN') return { axis: 'color', en: 'Instant base — matte texture, contrast and colour suppressed', vi: 'Nền Instant — bề mặt lì, tương phản và màu bị nén' };
   if (look === 'SH') return { axis: 'color', en: 'Soft Highkey base — bright, airy, gentle', vi: 'Nền Soft Highkey — sáng, thoáng, dịu' };
   if (look === 'PT') return { axis: 'color', en: 'Portrait base — skin rendered soft', vi: 'Nền Portrait — da lên mềm' };
-  if (look === 'NT') return { axis: 'color', en: 'Neutral base — saturation and sharpness lowered for grading', vi: 'Nền Neutral — giảm bão hòa và độ nét để hậu kỳ' };
+  if (look === 'NT') return { axis: 'color', en: 'Neutral base — saturation and sharpness lowered for grading', vi: 'Nền Neutral — giảm bão hoà và độ nét để hậu kỳ' };
   return { axis: 'color', en: 'Standard base — balanced across subjects', vi: 'Nền Standard — cân bằng cho mọi chủ thể' };
 }
 

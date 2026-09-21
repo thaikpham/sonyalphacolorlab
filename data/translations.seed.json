@@ -12,7 +12,7 @@
   {
     "recipeId": "SCL-PP-003",
     "locale": "en",
-    "description": "A warm tone, cinematic profile with distinctive deep blues and rich, crushed blacks.\nIt lends a moody, atmospheric quality to images, perfect for urban nightscapes, dramatic portraits, and storytelling."
+    "description": "A warm-toned, cinematic profile with distinctive deep blues and rich, crushed blacks.\nIt lends a moody, atmospheric quality to images, perfect for urban nightscapes, dramatic portraits, and storytelling."
   },
   {
     "recipeId": "SCL-PP-004",
@@ -102,7 +102,7 @@
   {
     "recipeId": "SCL-PP-021",
     "locale": "en",
-    "description": "A soft and subtle style with moderate saturation and gentle tones.\nIt's versatile for everyday shooting, lending images a peaceful and pleasant feel without being overwhelmed by color."
+    "description": "A soft and subtle style with moderate saturation and gentle tones.\nIt’s versatile for everyday shooting, lending images a peaceful and pleasant feel without being overwhelmed by color."
   },
   {
     "recipeId": "SCL-PP-022",
@@ -112,12 +112,12 @@
   {
     "recipeId": "SCL-PP-023",
     "locale": "en",
-    "description": "A cool-toned formula with a high Kelvin temperature, giving images a clean, crisp blue cast.\nIt's well-suited for emphasizing cold light in urban or mountain landscapes, creating a clean and edgy aesthetic."
+    "description": "A cool-toned formula with a high Kelvin temperature, giving images a clean, crisp blue cast.\nIt’s well-suited for emphasizing cold light in urban or mountain landscapes, creating a clean and edgy aesthetic."
   },
   {
     "recipeId": "SCL-PP-024",
     "locale": "en",
-    "description": "Pushing white balance to its coldest, this formula creates a unique, stylized look with a deep blue-green cast.\nIt's perfect for experimental, moody, and atmospheric photography."
+    "description": "Pushing white balance to its coldest, this formula creates a unique, stylized look with a deep blue-green cast.\nIt’s perfect for experimental, moody, and atmospheric photography."
   },
   {
     "recipeId": "SCL-PP-025",
@@ -132,7 +132,7 @@
   {
     "recipeId": "SCL-PP-027",
     "locale": "en",
-    "description": "A modern, clean cinematic style based on S-Cinetone.\nIt's designed for daylight conditions, delivering beautiful skin tones, high saturation, and a professional, polished feel straight out of camera."
+    "description": "A modern, clean cinematic style based on S-Cinetone.\nIt’s designed for daylight conditions, delivering beautiful skin tones, high saturation, and a professional, polished feel straight out of camera."
   },
   {
     "recipeId": "SCL-PP-028",
@@ -157,7 +157,7 @@
   {
     "recipeId": "SCL-PP-032",
     "locale": "en",
-    "description": "A powerful, high-contrast style that emulates the feel of 'pushed' black and white film used by photojournalists.\nIt's grainy, sharp, and full of character, perfect for capturing raw, unedited moments."
+    "description": "A powerful, high-contrast style that emulates the feel of “pushed” black and white film used by photojournalists.\nIt’s grainy, sharp, and full of character, perfect for capturing raw, unedited moments."
   },
   {
     "recipeId": "SCL-PP-033",
@@ -172,7 +172,7 @@
   {
     "recipeId": "SCL-PP-035",
     "locale": "en",
-    "description": "A versatile, medium-contrast style with a classic grain structure.\nThis is a black and white 'workhorse' choice, ideal for photojournalism, street photography, and capturing everyday life with an authentic feel."
+    "description": "A versatile, medium-contrast style with a classic grain structure.\nThis is a black and white “workhorse” choice, ideal for photojournalism, street photography, and capturing everyday life with an authentic feel."
   },
   {
     "recipeId": "SCL-PP-036",
@@ -182,7 +182,7 @@
   {
     "recipeId": "SCL-PP-037",
     "locale": "en",
-    "description": "Designed to emulate high-speed film, this formula uses a cinematic gamma to handle contrast while encouraging grain.\nIt's perfect for low-light situations, adding texture and atmosphere to shots."
+    "description": "Designed to emulate high-speed film, this formula uses a cinematic gamma to handle contrast while encouraging grain.\nIt’s perfect for low-light situations, adding texture and atmosphere to shots."
   },
   {
     "recipeId": "SCL-PP-038",
@@ -192,12 +192,12 @@
   {
     "recipeId": "SCL-PP-039",
     "locale": "en",
-    "description": "Emulating orthochromatic film, which is insensitive to red light.\nThis results in darkened skin and lip tones, creating a unique, vintage, and often dramatic portrait style."
+    "description": "Emulates orthochromatic film, which is insensitive to red light.\nThis results in darkened skin and lip tones, creating a unique, vintage, and often dramatic portrait style."
   },
   {
     "recipeId": "SCL-PP-040",
     "locale": "en",
-    "description": "Based on the unique film style, this recipe offers a creative and unpredictable look with distinct color shifts, especially in reds and greens. It's perfect for photographers looking to experiment with a quirky, analog-inspired palette."
+    "description": "Inspired by a distinctive film style, this recipe offers a creative, unpredictable look with pronounced color shifts, especially in reds and greens. It’s perfect for photographers looking to experiment with a quirky, analog-inspired palette."
   },
   {
     "recipeId": "SCL-PP-041",
@@ -207,12 +207,12 @@
   {
     "recipeId": "SCL-PP-043",
     "locale": "en",
-    "description": "A color recipe with natural and vivid colors, suitable for Macro photography in the style of Photographer Tran Anh Tuan."
+    "description": "A recipe with natural, vivid colors, made for macro photography in the style of photographer Trần Anh Tuấn."
   },
   {
     "recipeId": "SCL-PP-044",
     "locale": "en",
-    "description": "A filmic recipe that mimic FJ C200 Film stock."
+    "description": "A filmic recipe that mimics FJ C200 film stock."
   },
   {
     "recipeId": "SCL-PP-045",
@@ -232,192 +232,192 @@
   {
     "recipeId": "SCL-CL-001",
     "locale": "en",
-    "description": "Film Look (FL) Creative Look recipe by Raoul Rutnam, Sri Lanka, from Sony's Alpha Recipes collection."
+    "description": "Film Look (FL) Creative Look recipe by Raoul Rutnam, Sri Lanka, from Sony’s Alpha Recipes collection."
   },
   {
     "recipeId": "SCL-CL-002",
     "locale": "en",
-    "description": "Film Look (FL) Creative Look recipe by Arantha Sirimanne, Sri Lanka, from Sony's Alpha Recipes collection."
+    "description": "Film Look (FL) Creative Look recipe by Arantha Sirimanne, Sri Lanka, from Sony’s Alpha Recipes collection."
   },
   {
     "recipeId": "SCL-CL-003",
     "locale": "en",
-    "description": "Vivid2 (VV2) Creative Look recipe by Ravi Ranasinghe, Sri Lanka, from Sony's Alpha Recipes collection. Shot with Creative Looks Crop & RGB adjusted in post."
+    "description": "Vivid2 (VV2) Creative Look recipe by Ravi Ranasinghe, Sri Lanka, from Sony’s Alpha Recipes collection. Shot with Creative Looks; crop and RGB adjusted in post."
   },
   {
     "recipeId": "SCL-CL-004",
     "locale": "en",
-    "description": "Vivid2 (VV2) Creative Look recipe by Sony Asia, Asia Pacific, from Sony's Alpha Recipes collection."
+    "description": "Vivid2 (VV2) Creative Look recipe by Sony Asia, Asia Pacific, from Sony’s Alpha Recipes collection."
   },
   {
     "recipeId": "SCL-CL-005",
     "locale": "en",
-    "description": "Vivid2 (VV2) Creative Look recipe by Jonpoon.jpg, Singapore, from Sony's Alpha Recipes collection."
+    "description": "Vivid2 (VV2) Creative Look recipe by Jonpoon.jpg, Singapore, from Sony’s Alpha Recipes collection."
   },
   {
     "recipeId": "SCL-CL-006",
     "locale": "en",
-    "description": "Vivid2 (VV2) Creative Look recipe by Jonpoon.jpg, Singapore, from Sony's Alpha Recipes collection."
+    "description": "Vivid2 (VV2) Creative Look recipe by Jonpoon.jpg, Singapore, from Sony’s Alpha Recipes collection."
   },
   {
     "recipeId": "SCL-CL-007",
     "locale": "en",
-    "description": "Vivid (VV) Creative Look recipe by Khong ខុង, Cambodia, from Sony's Alpha Recipes collection. Shot with Creative Looks Exposure & brightness adjusted in post."
+    "description": "Vivid (VV) Creative Look recipe by Khong ខុង, Cambodia, from Sony’s Alpha Recipes collection. Shot with Creative Looks; exposure and brightness adjusted in post."
   },
   {
     "recipeId": "SCL-CL-008",
     "locale": "en",
-    "description": "Vivid (VV) Creative Look recipe by Filmreel, Cambodia, from Sony's Alpha Recipes collection."
+    "description": "Vivid (VV) Creative Look recipe by Filmreel, Cambodia, from Sony’s Alpha Recipes collection."
   },
   {
     "recipeId": "SCL-CL-009",
     "locale": "en",
-    "description": "Standard (ST) Creative Look recipe by Sandeeshwara Perera, Sri Lanka, from Sony's Alpha Recipes collection."
+    "description": "Standard (ST) Creative Look recipe by Sandeeshwara Perera, Sri Lanka, from Sony’s Alpha Recipes collection."
   },
   {
     "recipeId": "SCL-CL-010",
     "locale": "en",
-    "description": "Standard (ST) Creative Look recipe by Ravi Ranasinghe, Sri Lanka, from Sony's Alpha Recipes collection. Shot with Creative Looks Crop & RGB adjusted in post."
+    "description": "Standard (ST) Creative Look recipe by Ravi Ranasinghe, Sri Lanka, from Sony’s Alpha Recipes collection. Shot with Creative Looks; crop and RGB adjusted in post."
   },
   {
     "recipeId": "SCL-CL-011",
     "locale": "en",
-    "description": "Standard (ST) Creative Look recipe by Khong ខុង, Cambodia, from Sony's Alpha Recipes collection. Shot with Creative Looks Exposure & brightness adjusted in post."
+    "description": "Standard (ST) Creative Look recipe by Khong ខុង, Cambodia, from Sony’s Alpha Recipes collection. Shot with Creative Looks; exposure and brightness adjusted in post."
   },
   {
     "recipeId": "SCL-CL-012",
     "locale": "en",
-    "description": "Standard (ST) Creative Look recipe by Filmreel, Cambodia, from Sony's Alpha Recipes collection."
+    "description": "Standard (ST) Creative Look recipe by Filmreel, Cambodia, from Sony’s Alpha Recipes collection."
   },
   {
     "recipeId": "SCL-CL-013",
     "locale": "en",
-    "description": "Soft Highkey (SH) Creative Look recipe by Sony Asia, Asia Pacific, from Sony's Alpha Recipes collection."
+    "description": "Soft Highkey (SH) Creative Look recipe by Sony Asia, Asia Pacific, from Sony’s Alpha Recipes collection."
   },
   {
     "recipeId": "SCL-CL-014",
     "locale": "en",
-    "description": "Soft Highkey (SH) Creative Look recipe by Jonpoon.jpg, Singapore, from Sony's Alpha Recipes collection."
+    "description": "Soft Highkey (SH) Creative Look recipe by Jonpoon.jpg, Singapore, from Sony’s Alpha Recipes collection."
   },
   {
     "recipeId": "SCL-CL-015",
     "locale": "en",
-    "description": "Soft Highkey (SH) Creative Look recipe by Puy, Cambodia, from Sony's Alpha Recipes collection."
+    "description": "Soft Highkey (SH) Creative Look recipe by Puy, Cambodia, from Sony’s Alpha Recipes collection."
   },
   {
     "recipeId": "SCL-CL-016",
     "locale": "en",
-    "description": "Soft Highkey (SH) Creative Look recipe by Jomnot, Cambodia, from Sony's Alpha Recipes collection."
+    "description": "Soft Highkey (SH) Creative Look recipe by Jomnot, Cambodia, from Sony’s Alpha Recipes collection."
   },
   {
     "recipeId": "SCL-CL-017",
     "locale": "en",
-    "description": "Sepia (SE) Creative Look recipe by Satheeshan Thiyagaraja, Sri Lanka, from Sony's Alpha Recipes collection."
+    "description": "Sepia (SE) Creative Look recipe by Satheeshan Thiyagaraja, Sri Lanka, from Sony’s Alpha Recipes collection."
   },
   {
     "recipeId": "SCL-CL-018",
     "locale": "en",
-    "description": "Sepia (SE) Creative Look recipe by Ravi Ranasinghe, Sri Lanka, from Sony's Alpha Recipes collection. Shot with Creative Looks Crop & RGB adjusted in post."
+    "description": "Sepia (SE) Creative Look recipe by Ravi Ranasinghe, Sri Lanka, from Sony’s Alpha Recipes collection. Shot with Creative Looks; crop and RGB adjusted in post."
   },
   {
     "recipeId": "SCL-CL-019",
     "locale": "en",
-    "description": "Portrait (PT) Creative Look recipe by Sandeeshwara Perera, Sri Lanka, from Sony's Alpha Recipes collection."
+    "description": "Portrait (PT) Creative Look recipe by Sandeeshwara Perera, Sri Lanka, from Sony’s Alpha Recipes collection."
   },
   {
     "recipeId": "SCL-CL-020",
     "locale": "en",
-    "description": "Instant (IN) Creative Look recipe by Eranga Siriwardhana, Sri Lanka, from Sony's Alpha Recipes collection."
+    "description": "Instant (IN) Creative Look recipe by Eranga Siriwardhana, Sri Lanka, from Sony’s Alpha Recipes collection."
   },
   {
     "recipeId": "SCL-CL-021",
     "locale": "en",
-    "description": "Instant (IN) Creative Look recipe by Sony Asia, Asia Pacific, from Sony's Alpha Recipes collection."
+    "description": "Instant (IN) Creative Look recipe by Sony Asia, Asia Pacific, from Sony’s Alpha Recipes collection."
   },
   {
     "recipeId": "SCL-CL-022",
     "locale": "en",
-    "description": "Instant (IN) Creative Look recipe by Sony Asia, Asia Pacific, from Sony's Alpha Recipes collection."
+    "description": "Instant (IN) Creative Look recipe by Sony Asia, Asia Pacific, from Sony’s Alpha Recipes collection."
   },
   {
     "recipeId": "SCL-CL-023",
     "locale": "en",
-    "description": "Instant (IN) Creative Look recipe by Jonpoon.jpg, Singapore, from Sony's Alpha Recipes collection."
+    "description": "Instant (IN) Creative Look recipe by Jonpoon.jpg, Singapore, from Sony’s Alpha Recipes collection."
   },
   {
     "recipeId": "SCL-CL-024",
     "locale": "en",
-    "description": "Instant (IN) Creative Look recipe by Check In Siemreap ដើរលេងសៀមរាប, Cambodia, from Sony's Alpha Recipes collection."
+    "description": "Instant (IN) Creative Look recipe by Check In Siemreap ដើរលេងសៀមរាប, Cambodia, from Sony’s Alpha Recipes collection."
   },
   {
     "recipeId": "SCL-CL-025",
     "locale": "en",
-    "description": "Film Look (FL) Creative Look recipe by Sandeeshwara Perera, Sri Lanka, from Sony's Alpha Recipes collection. Shot with Creative Looks Curves, contrast and shadows adjusted in post"
+    "description": "Film Look (FL) Creative Look recipe by Sandeeshwara Perera, Sri Lanka, from Sony’s Alpha Recipes collection. Shot with Creative Looks; curves, contrast and shadows adjusted in post."
   },
   {
     "recipeId": "SCL-CL-026",
     "locale": "en",
-    "description": "Film Look (FL) Creative Look recipe by Sandeeshwara Perera, Sri Lanka, from Sony's Alpha Recipes collection."
+    "description": "Film Look (FL) Creative Look recipe by Sandeeshwara Perera, Sri Lanka, from Sony’s Alpha Recipes collection."
   },
   {
     "recipeId": "SCL-CL-027",
     "locale": "en",
-    "description": "Film Look (FL) Creative Look recipe by Sandeeshwara Perera, Sri Lanka, from Sony's Alpha Recipes collection."
+    "description": "Film Look (FL) Creative Look recipe by Sandeeshwara Perera, Sri Lanka, from Sony’s Alpha Recipes collection."
   },
   {
     "recipeId": "SCL-CL-028",
     "locale": "en",
-    "description": "Film Look (FL) Creative Look recipe by Lahiru Rumesh, Sri Lanka, from Sony's Alpha Recipes collection."
+    "description": "Film Look (FL) Creative Look recipe by Lahiru Rumesh, Sri Lanka, from Sony’s Alpha Recipes collection."
   },
   {
     "recipeId": "SCL-CL-029",
     "locale": "en",
-    "description": "Film Look (FL) Creative Look recipe by Isuru Mudalige, Sri Lanka, from Sony's Alpha Recipes collection."
+    "description": "Film Look (FL) Creative Look recipe by Isuru Mudalige, Sri Lanka, from Sony’s Alpha Recipes collection."
   },
   {
     "recipeId": "SCL-CL-030",
     "locale": "en",
-    "description": "Film Look (FL) Creative Look recipe by Sony Asia, Asia Pacific, from Sony's Alpha Recipes collection."
+    "description": "Film Look (FL) Creative Look recipe by Sony Asia, Asia Pacific, from Sony’s Alpha Recipes collection."
   },
   {
     "recipeId": "SCL-CL-031",
     "locale": "en",
-    "description": "Film Look (FL) Creative Look recipe by Sony Asia, Asia Pacific, from Sony's Alpha Recipes collection."
+    "description": "Film Look (FL) Creative Look recipe by Sony Asia, Asia Pacific, from Sony’s Alpha Recipes collection."
   },
   {
     "recipeId": "SCL-CL-032",
     "locale": "en",
-    "description": "Film Look (FL) Creative Look recipe by jonpoon.jpg, Singapore, from Sony's Alpha Recipes collection."
+    "description": "Film Look (FL) Creative Look recipe by Jonpoon.jpg, Singapore, from Sony’s Alpha Recipes collection."
   },
   {
     "recipeId": "SCL-CL-033",
     "locale": "en",
-    "description": "Film Look (FL) Creative Look recipe by Mardy Suong, Cambodia, from Sony's Alpha Recipes collection."
+    "description": "Film Look (FL) Creative Look recipe by Mardy Suong, Cambodia, from Sony’s Alpha Recipes collection."
   },
   {
     "recipeId": "SCL-CL-034",
     "locale": "en",
-    "description": "Film Look (FL) Creative Look recipe by Mardy Suong, Cambodia, from Sony's Alpha Recipes collection."
+    "description": "Film Look (FL) Creative Look recipe by Mardy Suong, Cambodia, from Sony’s Alpha Recipes collection."
   },
   {
     "recipeId": "SCL-CL-035",
     "locale": "en",
-    "description": "Film Look (FL) Creative Look recipe by Khong ខុង, Cambodia, from Sony's Alpha Recipes collection."
+    "description": "Film Look (FL) Creative Look recipe by Khong ខុង, Cambodia, from Sony’s Alpha Recipes collection."
   },
   {
     "recipeId": "SCL-CL-036",
     "locale": "en",
-    "description": "Film Look (FL) Creative Look recipe by Hea Kimhong ហ៊ាន គីមហុង, Cambodia, from Sony's Alpha Recipes collection."
+    "description": "Film Look (FL) Creative Look recipe by Hea Kimhong ហ៊ាន គីមហុង, Cambodia, from Sony’s Alpha Recipes collection."
   },
   {
     "recipeId": "SCL-CL-037",
     "locale": "en",
-    "description": "Film Look (FL) Creative Look recipe by Filmreel, Cambodia, from Sony's Alpha Recipes collection."
+    "description": "Film Look (FL) Creative Look recipe by Filmreel, Cambodia, from Sony’s Alpha Recipes collection."
   },
   {
     "recipeId": "SCL-PP-001",
     "locale": "vi",
-    "description": "Phong cách hoài niệm, ngập nắng, phủ lên khung hình ánh vàng ấm của giờ vàng.\nRất hợp cho ảnh du lịch và đời sống, tái hiện sắc vàng đậm và xanh sâu, gợi cảm giác một chuyến road trip mùa hè bất tận."
+    "description": "Phong cách hoài niệm, ngập nắng, phủ lên khung hình ánh sáng ấm áp của Golden Hour.\nRất hợp cho ảnh du lịch và phong cách sống, tái hiện sắc vàng đậm và xanh lam sâu, gợi cảm giác một hành trình rong ruổi mùa hè bất tận."
   },
   {
     "recipeId": "SCL-PP-002",
@@ -427,42 +427,42 @@
   {
     "recipeId": "SCL-PP-003",
     "locale": "vi",
-    "description": "Profile điện ảnh tông ấm với sắc xanh sâu đặc trưng và vùng tối đậm, dày.\nMang lại chất u tối, giàu không khí — hợp với cảnh đêm đô thị, chân dung kịch tính và ảnh kể chuyện."
+    "description": "Profile điện ảnh tông ấm với sắc xanh lam thẫm đặc trưng và vùng đen đặc, sâu.\nMang lại chất u tối, giàu không khí — hợp với cảnh đêm đô thị, chân dung kịch tính và ảnh kể chuyện."
   },
   {
     "recipeId": "SCL-PP-004",
     "locale": "vi",
-    "description": "Phong cách rực rỡ, độ bão hòa cao với sắc đỏ và vàng đất ấm.\nMang đến cường độ mạnh mẽ như nắng thiêu, gợi nhớ ảnh du lịch châu Âu cổ điển."
+    "description": "Phong cách rực rỡ, độ bão hoà cao với sắc đỏ và vàng ấm, trầm màu đất.\nMang đến vẻ đậm đà, rực nắng đầy táo bạo, gợi nhớ ảnh du lịch châu Âu cổ điển."
   },
   {
     "recipeId": "SCL-PP-005",
     "locale": "vi",
-    "description": "Bảng màu pastel mềm, tương phản nhẹ và độ bão hòa thấp.\nTông da lên rất đẹp, phong cảnh có chất mơ màng thoát tục — hợp ảnh chân dung lãng mạn và fine-art."
+    "description": "Bảng màu pastel mềm, tương phản nhẹ và độ bão hoà thấp.\nTông da lên rất đẹp, phong cảnh có chất mơ màng thoát tục — hợp ảnh chân dung lãng mạn và fine-art."
   },
   {
     "recipeId": "SCL-PP-006",
     "locale": "vi",
-    "description": "Look cách điệu với vùng tối được nâng mạnh và màu trầm, tạo hiệu ứng mềm, mờ sương.\nGợi cảm giác hoài cổ, lý tưởng cho thời trang, editorial và đời sống theo hướng vintage pha hiện đại."
+    "description": "Phong cách cách điệu với vùng tối được nâng mạnh và màu trầm, tạo hiệu ứng mềm, mờ sương.\nGợi cảm giác hoài cổ, lý tưởng cho ảnh thời trang, tạp chí và phong cách sống theo hướng vintage pha hiện đại."
   },
   {
     "recipeId": "SCL-PP-007",
     "locale": "vi",
-    "description": "Profile tương phản cao, u tối với vùng đen sâu và độ lệch màu lạnh rõ rệt.\nNhấn mạnh kết cấu và hình khối, tạo phong cách đồ họa mạnh gợi nhớ phim slide tài liệu xưa."
+    "description": "Profile tương phản cao, u tối với vùng đen sâu và độ lệch màu lạnh rõ rệt.\nNhấn mạnh kết cấu và hình khối, tạo phong cách đồ hoạ mạnh gợi nhớ phim slide tài liệu xưa."
   },
   {
     "recipeId": "SCL-PP-008",
     "locale": "vi",
-    "description": "Phong cách sạch, tươi và hiện đại, dựa trên color science mới.\nMàu đậm dễ chịu với chuyển tông mượt — lựa chọn linh hoạt cho mọi tình huống, từ chân dung đến chụp sản phẩm."
+    "description": "Phong cách sạch, tươi và hiện đại, dựa trên color science mới.\nMàu đậm, dễ chịu với chuyển tông mượt — lựa chọn linh hoạt cho việc chụp hằng ngày, từ chân dung đến sản phẩm."
   },
   {
     "recipeId": "SCL-PP-009",
     "locale": "vi",
-    "description": "Profile màu trầm, bão hòa thấp với sắc cyan-teal đặc trưng ở vùng tối và trung gian.\nTạo tâm trạng nhẹ nhàng, hơi man mác — hợp ảnh đường phố và khám phá đô thị."
+    "description": "Profile màu trầm, bão hoà thấp với sắc cyan-teal đặc trưng ở vùng tối và trung gian.\nTạo tâm trạng nhẹ nhàng, hơi man mác — hợp ảnh đường phố và khám phá đô thị."
   },
   {
     "recipeId": "SCL-PP-010",
     "locale": "vi",
-    "description": "Phong cách điện ảnh với độ bão hòa rất thấp và sắc xanh lá phảng phất, mô phỏng phim điện ảnh.\nCho nền màu phẳng, trung tính — lý tưởng cho những khung hình cần cảm giác nhạt màu, giàu không khí."
+    "description": "Phong cách điện ảnh với độ bão hoà rất thấp và sắc xanh lá phảng phất, mô phỏng phim điện ảnh.\nCho nền màu phẳng, trung tính — lý tưởng cho những khung hình cần cảm giác nhạt màu, giàu không khí."
   },
   {
     "recipeId": "SCL-PP-011",
@@ -472,12 +472,12 @@
   {
     "recipeId": "SCL-PP-012",
     "locale": "vi",
-    "description": "Profile ấm, mềm và hoài niệm với sắc hổ phách dịu.\nRất mạnh ở cảm giác ấm cúng, thân mật — hợp chân dung giờ vàng, ảnh gia đình và ảnh mang hơi hướng xưa."
+    "description": "Profile ấm, mềm và hoài niệm với sắc hổ phách dịu.\nNổi bật ở khả năng tạo cảm giác ấm cúng, thân mật — hợp chân dung Golden Hour, ảnh gia đình và ảnh mang hơi hướng cổ điển."
   },
   {
     "recipeId": "SCL-PP-013",
     "locale": "vi",
-    "description": "Profile tương phản thấp cực kỳ linh hoạt, dùng gamma S-Log để tối đa dynamic range.\nCho ảnh phẳng, mềm nhưng màu vẫn đậm — hợp điều kiện ánh sáng gắt hoặc làm nền vững cho hậu kỳ."
+    "description": "Profile tương phản thấp cực kỳ linh hoạt, dùng gamma S-Log để tối đa hoá dynamic range.\nCho ảnh phẳng, mềm nhưng màu vẫn đậm — hợp điều kiện ánh sáng gắt hoặc làm nền vững chắc cho hậu kỳ."
   },
   {
     "recipeId": "SCL-PP-014",
@@ -492,67 +492,67 @@
   {
     "recipeId": "SCL-PP-016",
     "locale": "vi",
-    "description": "Profile sạch, cân bằng và linh hoạt với độ bão hòa vừa phải và tông da tự nhiên.\nLựa chọn mặc định cho nhiều tình huống, cho vẻ chân thực với chút chất phim tinh tế."
+    "description": "Profile sạch, cân bằng và linh hoạt với độ bão hoà vừa phải và tông da tự nhiên.\nLựa chọn quen thuộc cho nhiều tình huống, cho vẻ chân thực với chút chất phim tinh tế."
   },
   {
     "recipeId": "SCL-PP-017",
     "locale": "vi",
-    "description": "Tương phản mềm cùng sắc magenta dịu khiến công thức này rất hợp chân dung tôn dáng.\nTông da lên mượt và mỏng, tạo vẻ tinh tế, sang trọng."
+    "description": "Tương phản mềm cùng sắc magenta dịu khiến công thức này rất hợp với chân dung cần tôn vẻ đẹp.\nTông da lên mịn và tinh tế, tạo vẻ thanh lịch, sang trọng."
   },
   {
     "recipeId": "SCL-PP-018",
     "locale": "vi",
-    "description": "Phong cách táo bạo, tương phản cao với màu bão hòa cực mạnh, gần như phi thực, cùng vùng đen sâu.\nTạo look đồ họa mạnh — lý tưởng cho chủ thể trừu tượng, kiến trúc hiện đại và ảnh thử nghiệm."
+    "description": "Phong cách táo bạo, tương phản cao với màu bão hoà cực mạnh, gần như phi thực, cùng vùng đen sâu.\nTạo look đồ hoạ mạnh — lý tưởng cho chủ thể trừu tượng, kiến trúc hiện đại và ảnh thử nghiệm."
   },
   {
     "recipeId": "SCL-PP-019",
     "locale": "vi",
-    "description": "Một vụ nổ màu sắc. Công thức đẩy độ bão hòa lên tối đa, tạo phong cách siêu rực rỡ, tràn năng lượng.\nHợp để tuyên ngôn mạnh và bắt lấy khía cạnh vui tươi của cuộc sống."
+    "description": "Bùng nổ sắc màu. Công thức đẩy độ bão hoà lên tối đa, tạo phong cách siêu rực rỡ, tràn năng lượng.\nHợp để tạo dấu ấn táo bạo và ghi lại những khoảnh khắc vui tươi của cuộc sống."
   },
   {
     "recipeId": "SCL-PP-020",
     "locale": "vi",
-    "description": "Cách nhìn hiện đại về những dòng phim ấm cổ điển, dùng S-Cinetone cho chuyển tông mượt.\nCảm giác ấm cúng với sắc xanh lá và vàng hơi trầm — hợp bắt trọn tinh thần một ngày thu sương mờ."
+    "description": "Phiên bản hiện đại của những film stock tông ấm cổ điển, dùng S-Cinetone cho chuyển tông mượt.\nCảm giác ấm cúng với sắc xanh lá và vàng hơi trầm — hợp để lưu giữ trọn không khí một ngày thu sương mờ."
   },
   {
     "recipeId": "SCL-PP-021",
     "locale": "vi",
-    "description": "Phong cách mềm và tinh tế với độ bão hòa vừa phải cùng tông màu dịu.\nLinh hoạt cho chụp hằng ngày, cho ảnh cảm giác bình yên, dễ chịu mà không bị màu lấn át."
+    "description": "Phong cách mềm và tinh tế với độ bão hoà vừa phải cùng tông màu dịu.\nLinh hoạt cho chụp hằng ngày, cho ảnh cảm giác bình yên, dễ chịu mà không bị màu lấn át."
   },
   {
     "recipeId": "SCL-PP-022",
     "locale": "vi",
-    "description": "Profile trung tính, sát thực tế, thiết kế cho độ chính xác.\nCho look sạch, chuẩn với rất ít lệch màu — nền tảng đáng tin cho mọi thể loại nhiếp ảnh."
+    "description": "Profile trung tính, sát thực tế, được thiết kế để tái tạo màu chính xác.\nCho hình ảnh sạch, chuẩn với rất ít lệch màu — nền tảng đáng tin cậy cho mọi thể loại nhiếp ảnh."
   },
   {
     "recipeId": "SCL-PP-023",
     "locale": "vi",
-    "description": "Công thức tông lạnh với white balance Kelvin cao, cho ảnh sắc xanh dương sạch và sắc nét.\nRất hợp để nhấn ánh sáng lạnh trong cảnh đô thị hoặc núi cao, tạo thẩm mỹ sạch và gai góc."
+    "description": "Công thức tông lạnh với nhiệt độ màu Kelvin cao, cho ảnh ánh xanh lam trong trẻo, sắc nét.\nRất hợp để nhấn ánh sáng lạnh trong cảnh đô thị hoặc núi cao, tạo thẩm mỹ sạch và cá tính."
   },
   {
     "recipeId": "SCL-PP-024",
     "locale": "vi",
-    "description": "Đẩy white balance về phía lạnh nhất, công thức tạo look cách điệu độc đáo với sắc xanh lam pha lục sâu.\nHợp ảnh thử nghiệm, u tối và giàu không khí."
+    "description": "Đẩy cân bằng trắng về mức lạnh nhất, công thức tạo vẻ cách điệu độc đáo với sắc xanh lam pha lục đậm.\nHợp với ảnh thử nghiệm, u tối và giàu không khí."
   },
   {
     "recipeId": "SCL-PP-025",
     "locale": "vi",
-    "description": "Phong cách điện ảnh mạnh mẽ, bão hòa cao, khác biệt với các bản mô phỏng Fuji.\nDùng không gian màu rộng để cho màu sâu và đậm cùng đường gamma chất phim — hợp kể chuyện bằng hình ảnh sống động."
+    "description": "Phong cách điện ảnh mạnh mẽ, bão hoà cao, khác biệt với các bản mô phỏng Fuji.\nDùng không gian màu rộng để cho màu sâu và đậm cùng đường gamma chất phim — hợp kể chuyện bằng hình ảnh sống động."
   },
   {
     "recipeId": "SCL-PP-026",
     "locale": "vi",
-    "description": "Tận dụng HLG (Hybrid Log-Gamma), công thức bắt được dynamic range rộng với độ bão hòa cao.\nCho ảnh sống động, giàu tác động, vừa điện ảnh vừa siêu thực — lý tưởng cho khung hình nhiều năng lượng."
+    "description": "Tận dụng HLG (Hybrid Log-Gamma), công thức ghi lại dynamic range rộng với độ bão hoà cao.\nCho ảnh sống động, ấn tượng, vừa điện ảnh vừa siêu thực — lý tưởng cho những khung hình giàu năng lượng."
   },
   {
     "recipeId": "SCL-PP-027",
     "locale": "vi",
-    "description": "Phong cách điện ảnh hiện đại, sạch, dựa trên S-Cinetone.\nThiết kế cho điều kiện ánh sáng ban ngày, cho tông da đẹp, độ bão hòa cao và vẻ chuyên nghiệp ngay từ máy."
+    "description": "Phong cách điện ảnh hiện đại, sạch, dựa trên S-Cinetone.\nThiết kế cho điều kiện ánh sáng ban ngày, cho tông da đẹp, độ bão hoà cao và vẻ chuyên nghiệp ngay từ máy."
   },
   {
     "recipeId": "SCL-PP-028",
     "locale": "vi",
-    "description": "Phong cách thử nghiệm và mạnh mẽ với độ bão hòa cực cao cùng tông ấm rõ rệt.\nTạo sắc đỏ và cam rực lửa — hợp ảnh táo bạo, trừu tượng và giàu tác động."
+    "description": "Phong cách thử nghiệm và mạnh mẽ với độ bão hoà cực cao cùng tông ấm rõ rệt.\nTạo sắc đỏ và cam rực lửa — hợp với ảnh táo bạo, trừu tượng và gây ấn tượng mạnh."
   },
   {
     "recipeId": "SCL-PP-029",
@@ -572,7 +572,7 @@
   {
     "recipeId": "SCL-PP-032",
     "locale": "vi",
-    "description": "Phong cách tương phản cao, mạnh mẽ, mô phỏng cảm giác phim đen trắng bị 'push' mà các phóng viên ảnh hay dùng.\nNhiều hạt, sắc nét và giàu cá tính — hợp bắt những khoảnh khắc thô mộc, chưa qua chỉnh sửa."
+    "description": "Phong cách tương phản cao, mạnh mẽ, mô phỏng cảm giác phim đen trắng bị “push” mà các phóng viên ảnh hay dùng.\nNhiều hạt, sắc nét và giàu cá tính — hợp bắt những khoảnh khắc thô mộc, chưa qua chỉnh sửa."
   },
   {
     "recipeId": "SCL-PP-033",
@@ -582,22 +582,22 @@
   {
     "recipeId": "SCL-PP-034",
     "locale": "vi",
-    "description": "Phong cách đen trắng sạch, sắc nét và tông lạnh.\nHạt mịn, độ rõ cao — hợp chủ thể kỹ thuật, kiến trúc và chân dung nơi chi tiết là ưu tiên hàng đầu."
+    "description": "Phong cách đen trắng sạch, sắc nét và tông lạnh.\nHạt mịn, độ rõ cao — hợp với chủ thể kỹ thuật, kiến trúc và những bức chân dung đề cao chi tiết."
   },
   {
     "recipeId": "SCL-PP-035",
     "locale": "vi",
-    "description": "Phong cách linh hoạt, tương phản trung bình với cấu trúc hạt cổ điển.\nLà lựa chọn 'chủ lực' cho ảnh đen trắng — lý tưởng cho ảnh báo chí, đường phố và ghi lại đời thường một cách chân thực."
+    "description": "Phong cách linh hoạt, tương phản trung bình với cấu trúc hạt cổ điển.\nLà lựa chọn “chủ lực” cho ảnh đen trắng — lý tưởng cho ảnh báo chí, đường phố và ghi lại đời thường một cách chân thực."
   },
   {
     "recipeId": "SCL-PP-036",
     "locale": "vi",
-    "description": "Phong cách đen trắng kịch tính với tương phản rất cao, vùng đen sâu và vùng trắng sáng.\nGợi thẩm mỹ film noir cổ điển — hợp tạo sự bí ẩn, kịch tính và bố cục đồ họa."
+    "description": "Phong cách đen trắng kịch tính với tương phản rất cao, vùng đen sâu và vùng trắng sáng.\nGợi thẩm mỹ film noir cổ điển — hợp tạo sự bí ẩn, kịch tính và bố cục đồ hoạ."
   },
   {
     "recipeId": "SCL-PP-037",
     "locale": "vi",
-    "description": "Thiết kế để mô phỏng phim tốc độ cao, công thức dùng gamma điện ảnh để kiểm soát tương phản trong khi khuyến khích hạt.\nHợp điều kiện thiếu sáng, thêm kết cấu và không khí cho khung hình."
+    "description": "Được thiết kế để mô phỏng phim tốc độ cao, công thức dùng gamma điện ảnh để kiểm soát tương phản, đồng thời làm nổi hạt.\nHợp với điều kiện thiếu sáng, thêm kết cấu và không khí cho khung hình."
   },
   {
     "recipeId": "SCL-PP-038",
@@ -612,12 +612,12 @@
   {
     "recipeId": "SCL-PP-040",
     "locale": "vi",
-    "description": "Dựa trên phong cách phim độc đáo, công thức cho look sáng tạo và khó đoán với những dịch chuyển màu rõ rệt, đặc biệt ở sắc đỏ và xanh lá. Hợp với người thích thử nghiệm bảng màu lạ, đậm chất analog."
+    "description": "Lấy cảm hứng từ một phong cách phim độc đáo, công thức cho vẻ ngoài sáng tạo, khó đoán với độ lệch màu rõ rệt, đặc biệt ở sắc đỏ và xanh lá. Hợp với người thích thử nghiệm bảng màu lạ, đậm chất analog."
   },
   {
     "recipeId": "SCL-PP-041",
     "locale": "vi",
-    "description": "Công thức cách điệu mạnh và giàu không khí với sắc vàng pha lục ấm áp áp đảo. Nó biến đổi phong cảnh và khung cảnh một cách rõ rệt, tạo cảm giác siêu thực, hoài cổ, thậm chí dystopian. Lý tưởng cho những tuyên ngôn nghệ thuật táo bạo."
+    "description": "Công thức cách điệu mạnh, giàu không khí, với sắc vàng pha lục ấm chiếm ưu thế. Phong cách này biến đổi rõ rệt phong cảnh và khung cảnh, tạo cảm giác siêu thực, hoài cổ, thậm chí u ám kiểu phản địa đàng. Lý tưởng cho những tác phẩm nghệ thuật táo bạo."
   },
   {
     "recipeId": "SCL-PP-043",
@@ -643,5 +643,190 @@
     "recipeId": "SCL-PP-047",
     "locale": "vi",
     "description": "Công thức màu cho hình ảnh trong trẻo, màu sắc đậm đà trên nền trung tính. Được thiết kế riêng cho livestream, thể hiện tông da người châu Á chân thực và rạng rỡ."
+  },
+  {
+    "recipeId": "SCL-CL-001",
+    "locale": "vi",
+    "description": "Công thức Creative Look Film Look (FL) của Raoul Rutnam (Sri Lanka), thuộc bộ sưu tập Alpha Recipes của Sony."
+  },
+  {
+    "recipeId": "SCL-CL-002",
+    "locale": "vi",
+    "description": "Công thức Creative Look Film Look (FL) của Arantha Sirimanne (Sri Lanka), thuộc bộ sưu tập Alpha Recipes của Sony."
+  },
+  {
+    "recipeId": "SCL-CL-003",
+    "locale": "vi",
+    "description": "Công thức Creative Look Vivid2 (VV2) của Ravi Ranasinghe (Sri Lanka), thuộc bộ sưu tập Alpha Recipes của Sony. Chụp bằng Creative Look; cắt khung và RGB được chỉnh thêm ở hậu kỳ."
+  },
+  {
+    "recipeId": "SCL-CL-004",
+    "locale": "vi",
+    "description": "Công thức Creative Look Vivid2 (VV2) của Sony Asia (châu Á – Thái Bình Dương), thuộc bộ sưu tập Alpha Recipes của Sony."
+  },
+  {
+    "recipeId": "SCL-CL-005",
+    "locale": "vi",
+    "description": "Công thức Creative Look Vivid2 (VV2) của Jonpoon.jpg (Singapore), thuộc bộ sưu tập Alpha Recipes của Sony."
+  },
+  {
+    "recipeId": "SCL-CL-006",
+    "locale": "vi",
+    "description": "Công thức Creative Look Vivid2 (VV2) của Jonpoon.jpg (Singapore), thuộc bộ sưu tập Alpha Recipes của Sony."
+  },
+  {
+    "recipeId": "SCL-CL-007",
+    "locale": "vi",
+    "description": "Công thức Creative Look Vivid (VV) của Khong ខុង (Campuchia), thuộc bộ sưu tập Alpha Recipes của Sony. Chụp bằng Creative Look; phơi sáng và độ sáng được chỉnh thêm ở hậu kỳ."
+  },
+  {
+    "recipeId": "SCL-CL-008",
+    "locale": "vi",
+    "description": "Công thức Creative Look Vivid (VV) của Filmreel (Campuchia), thuộc bộ sưu tập Alpha Recipes của Sony."
+  },
+  {
+    "recipeId": "SCL-CL-009",
+    "locale": "vi",
+    "description": "Công thức Creative Look Standard (ST) của Sandeeshwara Perera (Sri Lanka), thuộc bộ sưu tập Alpha Recipes của Sony."
+  },
+  {
+    "recipeId": "SCL-CL-010",
+    "locale": "vi",
+    "description": "Công thức Creative Look Standard (ST) của Ravi Ranasinghe (Sri Lanka), thuộc bộ sưu tập Alpha Recipes của Sony. Chụp bằng Creative Look; cắt khung và RGB được chỉnh thêm ở hậu kỳ."
+  },
+  {
+    "recipeId": "SCL-CL-011",
+    "locale": "vi",
+    "description": "Công thức Creative Look Standard (ST) của Khong ខុង (Campuchia), thuộc bộ sưu tập Alpha Recipes của Sony. Chụp bằng Creative Look; phơi sáng và độ sáng được chỉnh thêm ở hậu kỳ."
+  },
+  {
+    "recipeId": "SCL-CL-012",
+    "locale": "vi",
+    "description": "Công thức Creative Look Standard (ST) của Filmreel (Campuchia), thuộc bộ sưu tập Alpha Recipes của Sony."
+  },
+  {
+    "recipeId": "SCL-CL-013",
+    "locale": "vi",
+    "description": "Công thức Creative Look Soft Highkey (SH) của Sony Asia (châu Á – Thái Bình Dương), thuộc bộ sưu tập Alpha Recipes của Sony."
+  },
+  {
+    "recipeId": "SCL-CL-014",
+    "locale": "vi",
+    "description": "Công thức Creative Look Soft Highkey (SH) của Jonpoon.jpg (Singapore), thuộc bộ sưu tập Alpha Recipes của Sony."
+  },
+  {
+    "recipeId": "SCL-CL-015",
+    "locale": "vi",
+    "description": "Công thức Creative Look Soft Highkey (SH) của Puy (Campuchia), thuộc bộ sưu tập Alpha Recipes của Sony."
+  },
+  {
+    "recipeId": "SCL-CL-016",
+    "locale": "vi",
+    "description": "Công thức Creative Look Soft Highkey (SH) của Jomnot (Campuchia), thuộc bộ sưu tập Alpha Recipes của Sony."
+  },
+  {
+    "recipeId": "SCL-CL-017",
+    "locale": "vi",
+    "description": "Công thức Creative Look Sepia (SE) của Satheeshan Thiyagaraja (Sri Lanka), thuộc bộ sưu tập Alpha Recipes của Sony."
+  },
+  {
+    "recipeId": "SCL-CL-018",
+    "locale": "vi",
+    "description": "Công thức Creative Look Sepia (SE) của Ravi Ranasinghe (Sri Lanka), thuộc bộ sưu tập Alpha Recipes của Sony. Chụp bằng Creative Look; cắt khung và RGB được chỉnh thêm ở hậu kỳ."
+  },
+  {
+    "recipeId": "SCL-CL-019",
+    "locale": "vi",
+    "description": "Công thức Creative Look Portrait (PT) của Sandeeshwara Perera (Sri Lanka), thuộc bộ sưu tập Alpha Recipes của Sony."
+  },
+  {
+    "recipeId": "SCL-CL-020",
+    "locale": "vi",
+    "description": "Công thức Creative Look Instant (IN) của Eranga Siriwardhana (Sri Lanka), thuộc bộ sưu tập Alpha Recipes của Sony."
+  },
+  {
+    "recipeId": "SCL-CL-021",
+    "locale": "vi",
+    "description": "Công thức Creative Look Instant (IN) của Sony Asia (châu Á – Thái Bình Dương), thuộc bộ sưu tập Alpha Recipes của Sony."
+  },
+  {
+    "recipeId": "SCL-CL-022",
+    "locale": "vi",
+    "description": "Công thức Creative Look Instant (IN) của Sony Asia (châu Á – Thái Bình Dương), thuộc bộ sưu tập Alpha Recipes của Sony."
+  },
+  {
+    "recipeId": "SCL-CL-023",
+    "locale": "vi",
+    "description": "Công thức Creative Look Instant (IN) của Jonpoon.jpg (Singapore), thuộc bộ sưu tập Alpha Recipes của Sony."
+  },
+  {
+    "recipeId": "SCL-CL-024",
+    "locale": "vi",
+    "description": "Công thức Creative Look Instant (IN) của Check In Siemreap ដើរលេងសៀមរាប (Campuchia), thuộc bộ sưu tập Alpha Recipes của Sony."
+  },
+  {
+    "recipeId": "SCL-CL-025",
+    "locale": "vi",
+    "description": "Công thức Creative Look Film Look (FL) của Sandeeshwara Perera (Sri Lanka), thuộc bộ sưu tập Alpha Recipes của Sony. Chụp bằng Creative Look; đường cong, tương phản và vùng tối được chỉnh thêm ở hậu kỳ."
+  },
+  {
+    "recipeId": "SCL-CL-026",
+    "locale": "vi",
+    "description": "Công thức Creative Look Film Look (FL) của Sandeeshwara Perera (Sri Lanka), thuộc bộ sưu tập Alpha Recipes của Sony."
+  },
+  {
+    "recipeId": "SCL-CL-027",
+    "locale": "vi",
+    "description": "Công thức Creative Look Film Look (FL) của Sandeeshwara Perera (Sri Lanka), thuộc bộ sưu tập Alpha Recipes của Sony."
+  },
+  {
+    "recipeId": "SCL-CL-028",
+    "locale": "vi",
+    "description": "Công thức Creative Look Film Look (FL) của Lahiru Rumesh (Sri Lanka), thuộc bộ sưu tập Alpha Recipes của Sony."
+  },
+  {
+    "recipeId": "SCL-CL-029",
+    "locale": "vi",
+    "description": "Công thức Creative Look Film Look (FL) của Isuru Mudalige (Sri Lanka), thuộc bộ sưu tập Alpha Recipes của Sony."
+  },
+  {
+    "recipeId": "SCL-CL-030",
+    "locale": "vi",
+    "description": "Công thức Creative Look Film Look (FL) của Sony Asia (châu Á – Thái Bình Dương), thuộc bộ sưu tập Alpha Recipes của Sony."
+  },
+  {
+    "recipeId": "SCL-CL-031",
+    "locale": "vi",
+    "description": "Công thức Creative Look Film Look (FL) của Sony Asia (châu Á – Thái Bình Dương), thuộc bộ sưu tập Alpha Recipes của Sony."
+  },
+  {
+    "recipeId": "SCL-CL-032",
+    "locale": "vi",
+    "description": "Công thức Creative Look Film Look (FL) của Jonpoon.jpg (Singapore), thuộc bộ sưu tập Alpha Recipes của Sony."
+  },
+  {
+    "recipeId": "SCL-CL-033",
+    "locale": "vi",
+    "description": "Công thức Creative Look Film Look (FL) của Mardy Suong (Campuchia), thuộc bộ sưu tập Alpha Recipes của Sony."
+  },
+  {
+    "recipeId": "SCL-CL-034",
+    "locale": "vi",
+    "description": "Công thức Creative Look Film Look (FL) của Mardy Suong (Campuchia), thuộc bộ sưu tập Alpha Recipes của Sony."
+  },
+  {
+    "recipeId": "SCL-CL-035",
+    "locale": "vi",
+    "description": "Công thức Creative Look Film Look (FL) của Khong ខុង (Campuchia), thuộc bộ sưu tập Alpha Recipes của Sony."
+  },
+  {
+    "recipeId": "SCL-CL-036",
+    "locale": "vi",
+    "description": "Công thức Creative Look Film Look (FL) của Hea Kimhong ហ៊ាន គីមហុង (Campuchia), thuộc bộ sưu tập Alpha Recipes của Sony."
+  },
+  {
+    "recipeId": "SCL-CL-037",
+    "locale": "vi",
+    "description": "Công thức Creative Look Film Look (FL) của Filmreel (Campuchia), thuộc bộ sưu tập Alpha Recipes của Sony."
   }
 ]

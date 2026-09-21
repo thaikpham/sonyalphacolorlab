@@ -1,7 +1,7 @@
-import { getTranslations } from 'next-intl/server'
+import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { buildOutline, buildSummary } from '@/lib/lab/outline'
-import { levelLabel, topicLabel } from '@/lib/lab/articles'
+import { ARTICLE_LANG } from '@/lib/lab/articles'
 import type { Article, Block } from '@/lib/lab/types'
 import {
   ArticleEmbed,
@@ -10,6 +10,7 @@ import {
   ComparisonTable,
   Heading,
   MenuPair,
+  type MenuPairLabels,
   Paragraph,
   TldrCard,
 } from './blocks'
@@ -25,7 +26,7 @@ import { CompareSlider } from './compare-slider'
  * rewritten section cannot leave a stale summary behind it.
  */
 
-function renderBlock(block: Block, i: number, articleId: string) {
+function renderBlock(block: Block, i: number, articleId: string, menuLabels: MenuPairLabels) {
   switch (block.t) {
     case 'tldr':
       return <TldrCard key={i} block={block} />
@@ -34,7 +35,7 @@ function renderBlock(block: Block, i: number, articleId: string) {
     case 'p':
       return <Paragraph key={i} block={block} />
     case 'menu':
-      return <MenuPair key={i} block={block} />
+      return <MenuPair key={i} block={block} labels={menuLabels} />
     case 'table':
       return <ComparisonTable key={i} block={block} />
     case 'callout':
@@ -52,6 +53,8 @@ function renderBlock(block: Block, i: number, articleId: string) {
 
 export async function ArticleView({ article }: { article: Article }) {
   const t = await getTranslations('lab')
+  const locale = await getLocale()
+  const menuLabels = { old: t('menuOld'), new: t('menuNew') }
   const outline = buildOutline(article.blocks)
   const summary = buildSummary(article)
 
@@ -77,16 +80,28 @@ export async function ArticleView({ article }: { article: Article }) {
         </Link>
 
         <p className="label mb-3">
-          <span className="text-accent-400">{topicLabel(article.topic)}</span>
-          <span className="text-ink-faint"> · {levelLabel(article.level)} · {article.read}</span>
+          <span className="text-accent-400">{t(`topics.${article.topic}`)}</span>
+          <span className="text-ink-faint">
+            {' '}
+            · {t(`levels.${article.level}`)} · <span lang={ARTICLE_LANG}>{article.read}</span>
+          </span>
         </p>
 
-        <h1 className="text-display font-extrabold tracking-[-0.02em] leading-[1.1] text-ink [text-wrap:pretty]">
-          {article.title}
-        </h1>
-        <p className="mt-4 mb-8 text-body-lg text-ink-muted [text-wrap:pretty]">{article.dek}</p>
+        {/* The body is authored in Vietnamese on every locale (`types.ts`).
+            `lang` tells a screen reader to switch voice for it, and a reader
+            on another locale is told up front rather than left to find out. */}
+        {locale !== ARTICLE_LANG ? (
+          <p className="meta mb-3">{t('articleInVietnamese')}</p>
+        ) : null}
 
-        {article.blocks.map((block, i) => renderBlock(block, i, article.id))}
+        <div lang={ARTICLE_LANG}>
+          <h1 className="text-display font-extrabold tracking-[-0.02em] leading-[1.1] text-ink [text-wrap:pretty]">
+            {article.title}
+          </h1>
+          <p className="mt-4 mb-8 text-body-lg text-ink-muted [text-wrap:pretty]">{article.dek}</p>
+
+          {article.blocks.map((block, i) => renderBlock(block, i, article.id, menuLabels))}
+        </div>
 
         <footer className="mt-3 pt-5">
           <hr className="seam mb-5" />
@@ -106,7 +121,7 @@ export async function ArticleView({ article }: { article: Article }) {
       >
         <aside className="surface px-5 py-[18px]">
           <p className="label text-accent-400">{t('summary')}</p>
-          <ul className="mt-2">
+          <ul lang={ARTICLE_LANG} className="mt-2">
             {summary.map((line) => (
               <li key={line} className="flex gap-2 py-1">
                 <span aria-hidden className="text-ink-faint">
@@ -121,7 +136,7 @@ export async function ArticleView({ article }: { article: Article }) {
         {outline.length > 0 ? (
           <div>
             <p className="label">{t('inThisArticle')}</p>
-            <ul className="mt-1">
+            <ul lang={ARTICLE_LANG} className="mt-1">
               {outline.map((entry) => (
                 <li key={entry.id}>
                   <hr className="seam" />

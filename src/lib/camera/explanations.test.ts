@@ -60,7 +60,7 @@ describe('parameter explanations', () => {
     for (const p of ['fade', 'sharpness', 'clarity'] as const) {
       expect(CL_EXPLANATIONS[p].en.toLowerCase(), p).toContain('never negative');
     }
-    expect(CL_EXPLANATIONS.sharpnessRange.en).toContain('never signed');
+    expect(CL_EXPLANATIONS.sharpnessRange.en).toContain('never negative');
   });
 
   it('returns undefined for an unknown key instead of throwing', () => {

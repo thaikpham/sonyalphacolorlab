@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
-import { LEVELS, TOPICS, levelLabel, topicLabel } from '@/lib/lab/articles'
+import { ARTICLE_LANG, LEVELS, TOPICS } from '@/lib/lab/articles'
 import type { Article, LevelId, TopicId } from '@/lib/lab/types'
 
 /**
@@ -97,12 +97,12 @@ export async function LabFeed({
               solve for the level pills, and `.scroll-area` is the system's
               silent scrollbar, so neither half of this needs new CSS. */}
           <ul className="scroll-area flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:gap-1 lg:overflow-x-visible lg:pb-0">
-            {[{ id: 'all' as const, label: t('allTopics') }, ...TOPICS].map((topic) => {
-              const on = filter.topic === topic.id
+            {(['all', ...TOPICS.map((topic) => topic.id)] as const).map((id) => {
+              const on = filter.topic === id
               return (
-                <li key={topic.id}>
+                <li key={id}>
                   <Link
-                    href={filterHref(filter, { topic: topic.id })}
+                    href={filterHref(filter, { topic: id })}
                     aria-current={on ? 'true' : undefined}
                     className={
                       'flex min-h-[var(--layout-touch-target)] items-center gap-3 rounded-md px-3 py-2 text-body-sm whitespace-nowrap transition-colors ' +
@@ -112,13 +112,13 @@ export async function LabFeed({
                         : 'text-ink-muted hover:text-ink')
                     }
                   >
-                    <span>{topic.label}</span>
+                    <span>{id === 'all' ? t('allTopics') : t(`topics.${id}`)}</span>
                     <span
                       className={
                         'tabular-nums ' + (on ? 'text-white/70' : 'text-ink-faint')
                       }
                     >
-                      {countFor(topic.id)}
+                      {countFor(id)}
                     </span>
                   </Link>
                 </li>
@@ -130,19 +130,19 @@ export async function LabFeed({
         <nav aria-label={t('levelFilter')}>
           <p className="label mb-2">{t('levelFilter')}</p>
           <ul className="filter-scroll flex flex-wrap gap-2">
-            {[{ id: 'all' as const, label: t('allLevels') }, ...LEVELS].map((level) => {
-              const on = filter.level === level.id
+            {(['all', ...LEVELS.map((level) => level.id)] as const).map((id) => {
+              const on = filter.level === id
               return (
-                <li key={level.id}>
+                <li key={id}>
                   <Link
-                    href={filterHref(filter, { level: level.id })}
+                    href={filterHref(filter, { level: id })}
                     aria-current={on ? 'true' : undefined}
                     className={
                       'chip chip-action tracking-[0.08em] uppercase ' +
                       (on ? 'surface-selected text-white' : '')
                     }
                   >
-                    {level.label}
+                    {id === 'all' ? t('allLevels') : t(`levels.${id}`)}
                   </Link>
                 </li>
               )
@@ -181,10 +181,10 @@ export async function LabFeed({
                 <hr className="seam" />
                 <Link href={`/blog/${article.id}`} className="block py-6 group">
                   <p className="label">
-                    <span className="text-accent-400">{topicLabel(article.topic)}</span>
+                    <span className="text-accent-400">{t(`topics.${article.topic}`)}</span>
                     <span className="text-ink-faint">
                       {' '}
-                      · {levelLabel(article.level)} · {article.read}
+                      · {t(`levels.${article.level}`)} · <span lang={ARTICLE_LANG}>{article.read}</span>
                     </span>
                   </p>
                   <h3 className="mt-2 text-title-2 font-extrabold tracking-[-0.02em] leading-[1.2] text-ink transition-colors group-hover:text-accent-400 [text-wrap:pretty]">

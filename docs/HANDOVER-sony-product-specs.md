@@ -359,10 +359,10 @@ print(collections.Counter(x['category'] for x in d if 'specs' not in x))
   **not** generated and is safe to edit directly.
 - **`AGENTS.md` is the standing instruction file**, read every session; `CLAUDE.md`
   just points at it. Read it before your first edit.
-- The seed feeds `src/app/api/cameras/ai-specialist/route.ts`, which sends
-  product data to an LLM. Filling specs improves that endpoint's answers — and
-  means a fabricated spec would be repeated by the assistant as fact. One more
-  reason for rule 0.
+- The seed is read straight by the catalogue, the product pages and the compare
+  route. It used to feed `/api/cameras/ai-specialist`, which sent product data
+  to an LLM; that endpoint and its panel are gone, so a spec written here is now
+  shown to a reader verbatim rather than paraphrased. One more reason for rule 0.
 
 ---
 

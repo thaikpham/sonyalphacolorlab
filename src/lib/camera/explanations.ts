@@ -16,39 +16,39 @@ export type Explanation = { en: string; vi: string };
 /** Picture Profile — keyed to `ppSettingsSchema` fields and Color Depth channels. */
 export const PP_EXPLANATIONS = {
   blackLevel: {
-    en: "Adjusts the master black level. Lower (-) values deepen shadow contrast for rich, punchy blacks. Higher (+) values lift shadows for a soft, matte, film-like faded look without affecting highlight contrast.",
-    vi: "Điều chỉnh mức độ đen tổng thể của hình ảnh. Giá trị âm (-) làm sâu vùng tối, tăng tương phản. Giá trị dương (+) nâng vùng tối lên, tạo hiệu ứng mờ nhạt (matte) hoài cổ mà không làm cháy vùng sáng.",
+    en: "Adjusts the master black level. Lower (−) values deepen the shadows for rich, punchy blacks. Higher (+) values lift the shadows for a soft, matte, film-like faded look without affecting highlight contrast.",
+    vi: "Điều chỉnh mức đen tổng thể của hình ảnh. Giá trị âm (−) làm vùng tối sâu hơn, cho màu đen đậm và tương phản mạnh. Giá trị dương (+) nâng vùng tối lên, tạo vẻ mờ (matte) như phim cũ mà không ảnh hưởng đến tương phản vùng sáng.",
   },
   gamma: {
     en: "Selects the gamma curve that defines overall tonal response and contrast foundation. Options range from standard contrast (Movie/Still) to smooth filmic curves (Cine1–4, S-Cinetone) or ultra-wide dynamic range for grading (S-Log2/S-Log3, HLG).",
-    vi: "Lựa chọn đường cong Gamma định hình tương phản tổng thể và dải tương phản của ảnh. Bao gồm từ tương phản chuẩn (Movie/Still), tone màu điện ảnh dịu nhẹ (Cine1–4, S-Cinetone) cho đến dải tương phản rộng để hậu kỳ (S-Log2/S-Log3, HLG).",
+    vi: "Chọn đường cong Gamma, quyết định cách máy tái tạo dải sáng tối và độ tương phản nền. Từ tương phản chuẩn (Movie/Still), đường cong mềm kiểu điện ảnh (Cine1–4, S-Cinetone) đến dynamic range cực rộng để hậu kỳ (S-Log2/S-Log3, HLG).",
   },
   blackGamma: {
     en: "Controls contrast specifically in low-luminance shadow regions. 'Range' (Narrow/Middle/Wide) sets the shadow width affected, while 'Level' (-7 to +7) darkens or lightens that shadow zone to fine-tune shadow texture.",
-    vi: "Tinh chỉnh độ tương phản riêng cho vùng tối (bóng râm thấp). 'Range' (Narrow/Middle/Wide) xác định dải vùng tối bị ảnh hưởng, trong khi 'Level' (-7 đến +7) làm tối hoặc làm sáng riêng vùng đó để kiểm soát độ sâu shadow.",
+    vi: "Tinh chỉnh tương phản riêng cho vùng tối có độ sáng thấp. 'Range' (Narrow/Middle/Wide) chọn độ rộng của vùng tối chịu tác động, còn 'Level' (−7 đến +7) làm tối hoặc sáng riêng vùng đó để tinh chỉnh chi tiết vùng tối.",
   },
   knee: {
     en: "Controls highlight compression to preserve bright details and prevent highlight clipping. Auto mode handles highlight rolloff automatically; Manual mode lets you set the compression start threshold (Point: 75%–105%) and roll-off steepness (Slope: -5 to +5).",
-    vi: "Kiểm soát độ nén vùng sáng (highlight) để ngăn hiện tượng cháy sáng. Chế độ Auto tự động xử lý mượt mà; chế độ Manual cho phép tự chọn ngưỡng bắt đầu nén (Point: 75%–105%) và độ cuộn dốc của đường nén (Slope: -5 đến +5).",
+    vi: "Kiểm soát mức nén vùng sáng để giữ chi tiết và tránh cháy sáng. Chế độ Auto tự xử lý phần chuyển vùng sáng; chế độ Manual cho phép đặt ngưỡng bắt đầu nén (Point: 75%–105%) và độ dốc của đường nén (Slope: −5 đến +5).",
   },
   colorMode: {
     en: "Determines the color matrix and color space reproduction type. Matches color rendering characteristics to the chosen Gamma (e.g. S-Cinetone for natural skin tones, Cinema/Pro for rich movie colors, or ITU709 for standard broadcast).",
-    vi: "Xác định ma trận màu sắc và không gian tái tạo màu. Cần chọn phù hợp với Gamma (ví dụ S-Cinetone tái tạo skintone da người tự nhiên, Cinema/Pro cho màu điện ảnh đậm đà, hoặc ITU709 cho màu truyền hình chuẩn).",
+    vi: "Xác định ma trận màu và không gian màu. Cần chọn phù hợp với Gamma (ví dụ: S-Cinetone cho skintone tự nhiên, Cinema/Pro cho màu điện ảnh đậm đà, ITU709 cho màu truyền hình chuẩn).",
   },
   saturation: {
     en: "Adjusts overall color intensity across all channels. Higher values yield vibrant, vivid colors; lower values produce muted, desaturated tones. Range is -32 to +32 — dramatically wider than Creative Look saturation.",
-    vi: "Điều chỉnh độ bão hòa (cường độ đậm nhạt) của toàn bộ màu sắc trong ảnh. Giá trị cao cho màu sắc rực rỡ, tươi tắn; giá trị thấp tạo màu nhạt, dịu nhẹ. Dải điều chỉnh từ -32 đến +32 rộng hơn rất nhiều so với Creative Look.",
+    vi: "Điều chỉnh độ bão hoà (cường độ đậm nhạt) của toàn bộ màu sắc trong ảnh. Giá trị cao cho màu sắc rực rỡ, tươi tắn; giá trị thấp tạo màu nhạt, dịu nhẹ. Dải điều chỉnh từ -32 đến +32 rộng hơn rất nhiều so với Creative Look.",
   },
   colorPhase: {
     en: "Shifts the entire color spectrum hue globally. Negative (-) values shift all colors towards green; positive (+) values shift colors towards red/magenta. Useful for subtle global hue correction or matching camera bodies.",
     vi: "Xoay toàn bộ sắc độ (hue) của quang phổ màu sắc trên ảnh. Giá trị âm (-) ngả toàn bộ màu về phía xanh lá; giá trị dương (+) ngả về phía đỏ/hồng. Hữu ích khi cần cân chỉnh nhẹ tông màu tổng thể hoặc đồng bộ giữa hai máy.",
   },
   colorDepth: {
-    en: "Adjusts color luminance and saturation depth independently for 6 color channels (R, G, B, C, M, Y). Positive (+) values deepen the channel by making it darker and richer; negative (-) values lighten and pale the channel. Key tool for signature color recipes.",
-    vi: "Điều chỉnh độ sâu bão hòa và độ sáng riêng biệt cho 6 kênh màu (Đỏ, Xanh lá, Xanh dương, Xanh lam, Hồng cánh sen, Vàng). Giá trị dương (+) làm kênh màu đậm và sâu hơn; giá trị âm (-) làm kênh màu sáng và nhạt đi. Đây là công cụ nòng cốt tạo nên cá tính từng công thức màu.",
+    en: "Adjusts the luminance and saturation depth of 6 colour channels (R, G, B, C, M, Y) independently. Positive (+) values deepen a channel, making it darker and richer; negative (−) values lighten and pale it. A key tool for signature colour recipes.",
+    vi: "Điều chỉnh riêng độ đậm và độ sáng cho 6 kênh màu (R đỏ, G lục, B lam, C lục lam, M cánh sen, Y vàng). Giá trị dương (+) làm kênh màu đậm và sâu hơn; giá trị âm (−) làm kênh màu sáng và nhạt đi. Đây là công cụ chủ chốt tạo nên cá tính của từng công thức màu.",
   },
   detail: {
-    en: "Master control for in-camera edge sharpening signal processing. Lower values (-7 to -3) create a soft, organic filmic texture; higher values (+1 to +7) produce crisp, ultra-sharp modern digital images.",
+    en: "Master control for in-camera edge sharpening. Lower values (−7 to −3) give a soft, organic, film-like texture; higher values (+1 to +7) give a crisp, very sharp digital look.",
     vi: "Bộ điều khiển trung tâm xử lý độ sắc nét đường viền. Giá trị thấp (-7 đến -3) tạo cảm giác mềm mại, mượt mà như phim nhựa; giá trị cao (+1 đến +7) cho hình ảnh kỹ thuật số vô cùng sắc nét, chi tiết.",
   },
 } as const satisfies Record<string, Explanation>;
@@ -56,12 +56,12 @@ export const PP_EXPLANATIONS = {
 /** Picture Profile Detail sub-parameters (Adjust, V/H Balance, B/W Balance, Limit, Crispening, Hi-Light Detail). */
 export const PP_DETAIL_EXPLANATIONS = {
   level: {
-    en: "Sets the master sharpening level (-7 to +7). Negative (-) values soften edge contours for a organic filmic texture; positive (+) values sharpen fine details.",
-    vi: "Thiết lập mức độ sắc nét trung tâm (-7 đến +7). Giá trị âm (-) làm mềm đường viền cho cảm giác cinematic; giá trị dương (+) làm sắc nét các chi tiết nhỏ.",
+    en: "Sets the master sharpening level (−7 to +7). Negative (−) values soften edge contours for an organic, film-like texture; positive (+) values sharpen fine details.",
+    vi: "Thiết lập mức sắc nét chung (−7 đến +7). Giá trị âm (−) làm mềm đường viền cho cảm giác như phim; giá trị dương (+) làm sắc nét các chi tiết nhỏ.",
   },
   mode: {
     en: "Selects Auto for automatic camera detail processing or Manual to unlock full manual tuning of V/H Balance, B/W Balance, Limit, Crispening, and Hi-Light Detail.",
-    vi: "Chọn Auto để máy tự động điều chỉnh sắc nét hoặc Manual để mở khóa tinh chỉnh thủ công toàn bộ V/H Balance, B/W Balance, Limit, Crispening và Hi-Light Detail.",
+    vi: "Chọn Auto để máy tự động điều chỉnh sắc nét hoặc Manual để mở khoá tinh chỉnh thủ công toàn bộ V/H Balance, B/W Balance, Limit, Crispening và Hi-Light Detail.",
   },
   vhBalance: {
     en: "Adjusts the sharpening balance between vertical and horizontal edge lines. Range is -2 (accentuates vertical lines) to +2 (accentuates horizontal lines).",
@@ -72,7 +72,7 @@ export const PP_DETAIL_EXPLANATIONS = {
     vi: "Lựa chọn tỷ lệ sắc nét đường viền giữa viền tối (Black Detail) và viền sáng (White Detail), từ Type1 (thiên về viền đen đậm) đến Type5 (thiên về viền sáng rực).",
   },
   limit: {
-    en: "Sets the maximum ceiling limit (0 to 7) for detail sharpening to prevent unsightly white halos or harsh over-sharpened artifacts around high-contrast edges.",
+    en: "Caps how far detail sharpening can go (0 to 7), preventing white halos and harsh over-sharpened edges around high-contrast areas.",
     vi: "Giới hạn biên độ sắc nét tối đa (0 đến 7) nhằm ngăn chặn hiện tượng viền sáng (halo) hay vệt nhiễu gắt xung quanh các mép ảnh có độ tương phản cao.",
   },
   crispening: {
@@ -140,8 +140,8 @@ export const CL_EXPLANATIONS = {
     vi: 'Điều chỉnh độ sắc nét. Giá trị cao làm đường viền rõ hơn, giá trị thấp làm mềm đi. Không bao giờ âm.',
   },
   sharpnessRange: {
-    en: 'Sets the range the sharpening applies to. A larger value applies it to finer outlines. Runs 1 to 5, never signed.',
-    vi: 'Đặt phạm vi áp dụng độ nét. Giá trị lớn hơn áp dụng cho đường viền mảnh hơn. Từ 1 đến 5, không có dấu.',
+    en: 'Sets the range the sharpening applies to. A larger value applies it to finer outlines. Runs from 1 to 5 and is never negative.',
+    vi: 'Đặt phạm vi áp dụng độ nét. Giá trị lớn hơn áp dụng cho đường viền mảnh hơn. Từ 1 đến 5, không có giá trị âm.',
   },
   clarity: {
     en: 'Adjusts the degree of clarity — local contrast in the mid-tones. Larger values make the effect greater. Never negative.',
@@ -176,7 +176,7 @@ export const WB_OVERVIEW: { en: string[]; vi: string[] } = {
     'Ba nút điều chỉnh, một kết quả. Temperature khai báo bạn đang chụp dưới nguồn sáng nào, còn hai shift đẩy kết quả lệch khỏi khai báo đó.',
     'Chỗ gần như ai cũng nhầm: số Kelvin càng cao thì ảnh càng ấm, chứ không phải càng lạnh. Con số đó mô tả ánh sáng, không phải mô tả ảnh ra. Bảo máy rằng ánh sáng là 8000K — tức rất xanh — thì máy bù lại bằng cách thêm hổ phách, nên file cho ra vàng ruộm.',
     'Vì vậy Temperature và Shift A/B thực chất là cùng một trục hổ phách–xanh dương, chỉ khác đơn vị; và một mức Kelvin ấm đi kèm shift B không hề mâu thuẫn. Đó là đặt nền ấm rộng rồi chủ động kéo bớt lại. Cách này cho độ chính xác mà riêng nút Kelvin không có: một bước 100K đáng khoảng 15 mired ở vùng 2500K nhưng chỉ khoảng 1 mired ở vùng 9900K, nên shift là nút tinh hơn ở đầu ấm và thô hơn ở đầu lạnh.',
-    'Shift G/M là trục thứ hai, và Kelvin không bao giờ chạm tới. Đây là nút tint: G khử sắc xanh lá của đèn huỳnh quang và vùng bóng râm, M đi theo chiều ngược lại.',
+    'Shift G/M là trục thứ hai, và Kelvin không bao giờ chạm tới. Đây là nút chỉnh sắc lệch (tint): G khử sắc xanh lá của đèn huỳnh quang và vùng bóng râm, M đi theo chiều ngược lại.',
   ],
 };
 
@@ -186,12 +186,12 @@ export const WB_EXPLANATIONS = {
     vi: 'Nhiệt độ màu mà máy cân bằng theo. Đặt cao hơn ánh sáng thực thì ảnh ấm hơn; đặt thấp hơn thì ảnh lạnh hơn.',
   },
   shiftAb: {
-    en: 'Fine adjustment along the amber–blue axis, on top of the temperature. A warms the image, B cools it. Seven steps each way, in quarter increments.',
-    vi: 'Tinh chỉnh trên trục hổ phách–xanh dương, cộng thêm vào nhiệt độ màu. A làm ảnh ấm lên, B làm lạnh đi. Bảy bước mỗi phía, bước 0.25.',
+    en: 'Fine adjustment along the amber–blue axis, on top of the temperature. A warms the image, B cools it. Up to 7 each way, in 0.25 steps.',
+    vi: 'Tinh chỉnh trên trục hổ phách–xanh dương, cộng thêm vào nhiệt độ màu. A làm ảnh ấm lên, B làm lạnh đi. Tối đa 7 mỗi phía, bước 0,25.',
   },
   shiftGm: {
     en: 'Fine adjustment along the green–magenta axis. This is the tint control — it corrects casts that temperature alone cannot reach, such as fluorescent light.',
-    vi: 'Tinh chỉnh trên trục xanh lá–cánh sen. Đây là điều chỉnh tint — xử lý những sắc lệch mà nhiệt độ màu không chạm tới, ví dụ ánh đèn huỳnh quang.',
+    vi: 'Tinh chỉnh trên trục xanh lá–cánh sen. Đây là điều chỉnh sắc lệch (tint) — xử lý những sắc lệch mà nhiệt độ màu không chạm tới, ví dụ ánh đèn huỳnh quang.',
   },
 } as const satisfies Record<string, Explanation>;
 

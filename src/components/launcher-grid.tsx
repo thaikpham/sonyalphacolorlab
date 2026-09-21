@@ -54,7 +54,7 @@ const TILE =
  * 13px floor, so the third tile wraps to its own row instead. Same reasoning
  * that put the phone breakpoint at two columns, applied at the size above it.
  *
- * `sm:max-w-[400px]` is what keeps that wrap from reading as a mistake. The
+ * `sm:max-w-[460px]` is what keeps that wrap from reading as a mistake. The
  * columns are `1fr`, so an uncapped grid spreads two tiles across the full
  * 3xl and parks the orphaned third under the far left with half the row
  * empty beside it. On a phone the grid is already about as wide as the tiles
@@ -62,14 +62,21 @@ const TILE =
  * `sm` alone — `md:max-w-3xl` hands the full width back the moment all three
  * fit on one row.
  *
+ * The space between tiles is mostly the column, not the gap: each tile is
+ * centred in a `1fr` track, so the visible gutter is `(width + gap) / 3 - tile`
+ * and a wider gap alone buys a third of itself. That is why the widths move
+ * with the gaps. At `md` the grid is width-bound by the viewport (768 less the
+ * overlay's 80 is 688px), and 3 × 168 + 2 × 64 = 632 still fits; at `lg`,
+ * `max-w-4xl` (896px) inside 944px gives a ~127px gutter between 198px tiles.
+ *
  * Written out in full rather than derived from another string. Tailwind v4
  * scans source text for class names: a class assembled at runtime is one the
  * scanner never sees, so it emits no rule for it. Same trap as the inline
  * `min-[2100px]:` form that silently never changed a column count.
  */
 const GRID =
-  'grid w-full max-w-3xl sm:max-w-[400px] md:max-w-3xl grid-cols-2 md:grid-cols-3 ' +
-  'items-start justify-items-center gap-x-6 gap-y-8 sm:gap-x-10 sm:gap-y-10 lg:gap-x-[52px]';
+  'grid w-full max-w-3xl sm:max-w-[460px] md:max-w-3xl lg:max-w-4xl grid-cols-2 md:grid-cols-3 ' +
+  'items-start justify-items-center gap-x-10 gap-y-12 sm:gap-x-14 sm:gap-y-14 md:gap-x-16 lg:gap-x-20';
 
 /**
  * One tile: two glow layers behind an opaque icon face.

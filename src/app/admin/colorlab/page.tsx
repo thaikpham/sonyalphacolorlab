@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { RecipeAdmin } from '@/components/colorlab/admin/recipe-admin';
 
 /**
@@ -12,9 +13,10 @@ import { RecipeAdmin } from '@/components/colorlab/admin/recipe-admin';
  * from `/api/admin/recipes`, which is uncached and behind `adminGate()`.
  */
 
-export const metadata: Metadata = {
-  title: 'Công thức',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations({ locale: 'vi', namespace: 'adminUi' });
+  return { title: t('metaRecipes') };
+}
 
 export default function AdminColorLabPage() {
   return <RecipeAdmin />;

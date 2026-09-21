@@ -1,15 +1,17 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { Link } from '@/i18n/navigation';
+import { routing } from '@/i18n/routing';
 import { getSonyAudio, getSonyAudioById } from '@/lib/audio/data';
+import { priceLabel, subCategoryLabel } from '@/lib/cameras/display';
 import { ProductSpecTable } from '@/components/product-spec-table';
 import { SiteHeader } from '@/components/site-header';
 import { featureList } from '@/lib/cameras/features';
 
 export async function generateStaticParams() {
   const products = await getSonyAudio();
-  return ['en', 'vi'].flatMap((locale) => products.map((p) => ({ locale, id: p.id })));
+  return routing.locales.flatMap((locale) => products.map((p) => ({ locale, id: p.id })));
 }
 
 export async function generateMetadata({
@@ -18,15 +20,22 @@ export async function generateMetadata({
   params: Promise<{ locale: string; id: string }>;
 }): Promise<Metadata> {
   const { locale, id } = await params;
+  const t = await getTranslations({ locale, namespace: 'cameras' });
   const product = await getSonyAudioById(id);
-  if (!product) return { title: 'Product Not Found' };
+  if (!product) return { title: t('productNotFound') };
 
-  const isVi = locale === 'vi';
+  const pathFor = (l: string) =>
+    l === routing.defaultLocale ? `/audio/${id}` : `/${l}/audio/${id}`;
   return {
-    title: `${product.name} · ${isVi ? 'Thông số & Giá' : 'Specs & Price'}`,
-    description: isVi
-      ? `Thông số kỹ thuật và giá niêm yết ${product.priceFormatted} của ${product.fullName}.`
-      : `Specifications and listed price ${product.priceFormatted} for ${product.fullName}.`,
+    title: t('audioMetaTitle', { name: product.name }),
+    description: t('audioMetaDescription', {
+      price: priceLabel(product, t),
+      fullName: product.fullName,
+    }),
+    alternates: {
+      canonical: pathFor(locale),
+      languages: Object.fromEntries(routing.locales.map((l) => [l, pathFor(l)])),
+    },
     /* No `openGraph.images`: the FY26 sheets ship no product photography, and
        an OG card pointing at a URL that does not exist renders as a broken
        preview everywhere the link is shared. */
@@ -44,9 +53,7 @@ export default async function AudioProductPage({
   const product = await getSonyAudioById(id);
   if (!product) notFound();
 
-  const isVi = locale === 'vi';
   const t = await getTranslations('cameras');
-  const audioHref = isVi ? '/vi/audio' : '/audio';
 
   return (
     <div className="min-h-screen flex flex-col bg-void text-ink">
@@ -56,18 +63,18 @@ export default async function AudioProductPage({
       <main className="flex-1 w-full max-w-[86rem] mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6 flex flex-col gap-5">
         <div className="flex items-center justify-between gap-4 pb-3">
           <div className="flex items-center gap-2 text-meta text-ink-muted">
-            <Link href={isVi ? '/vi/colorlab' : '/colorlab'} className="hover:text-accent-400 transition-colors">
+            <Link href="/colorlab" className="hover:text-accent-400 transition-colors">
               ColorLab
             </Link>
             <span className="text-ink-faint">/</span>
-            <Link href={audioHref} className="hover:text-accent-400 transition-colors">
+            <Link href="/audio" className="hover:text-accent-400 transition-colors">
               {t('audioTitle')}
             </Link>
             <span className="text-ink-faint">/</span>
             <span className="text-ink font-semibold">{product.name}</span>
           </div>
 
-          <Link href={audioHref} className="btn-glass inline-flex items-center gap-1.5 shrink-0">
+          <Link href="/audio" className="btn-glass inline-flex items-center gap-1.5 shrink-0">
             {t('backToCatalog')}
           </Link>
         </div>
@@ -87,11 +94,11 @@ export default async function AudioProductPage({
             {/* Catalogue data, so never uppercased — the series names run past
                 three words and Vietnamese diacritics need the ascender room. */}
             <span className="px-3 py-1 rounded-sm text-label font-semibold bg-white/10 text-ink">
-              {product.subCategory1}
+              {subCategoryLabel(product.subCategory1, t)}
             </span>
             {product.subCategory2 && (
               <span className="px-3 py-1 rounded-sm text-label font-semibold bg-white/10 text-ink-muted">
-                {product.subCategory2}
+                {subCategoryLabel(product.subCategory2, t)}
               </span>
             )}
           </div>
@@ -114,7 +121,7 @@ export default async function AudioProductPage({
             {/* An emphasised number — accent 400, the on-dark text step — and
                 `tabular-nums` because it lines up with the catalogue column. */}
             <span className="text-title-2 sm:text-title-1 font-extrabold text-accent-400 leading-none tabular-nums">
-              {product.priceFormatted}
+              {priceLabel(product, t)}
             </span>
           </div>
         </section>

@@ -11,12 +11,10 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const isVi = locale === 'vi';
+  const t = await getTranslations({ locale, namespace: 'cameras' });
   return {
-    title: isVi ? 'So Sánh Chi Tiết Sản Phẩm Sony' : 'Compare Sony Alpha Products',
-    description: isVi
-      ? 'Chuyên trang so sánh thông số kỹ thuật chi tiết và tư vấn chọn máy bởi Sony Specialist AI.'
-      : 'Detailed side-by-side spec comparison and AI Sony Specialist advice.',
+    title: t('compareMetaTitle'),
+    description: t('compareMetaDescription'),
   };
 }
 

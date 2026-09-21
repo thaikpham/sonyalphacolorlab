@@ -78,11 +78,18 @@ export function Paragraph({ block }: { block: ParagraphBlock }) {
  * "Menu cũ" alone does not tell a ZV-E10 owner which of the two is theirs.
  * `break-words` because a path is a single unbroken run of `→` separators and
  * would otherwise push the card past the column on a phone.
+ *
+ * The generation names arrive translated from the server parent rather than
+ * through `getTranslations` here: two client modules import `BLOCK_GAP` from
+ * this file, so it cannot reach for a server-only API. The body names are
+ * product names and stay literal.
  */
-export function MenuPair({ block }: { block: MenuBlock }) {
+export type MenuPairLabels = { readonly old: string; readonly new: string }
+
+export function MenuPair({ block, labels }: { block: MenuBlock; labels: MenuPairLabels }) {
   const cards = [
-    { label: 'Menu cũ · a6400 · ZV-E10', path: block.old },
-    { label: 'Menu mới · a6700 · ZV-E10 II', path: block.new },
+    { label: `${labels.old} · a6400 · ZV-E10`, path: block.old },
+    { label: `${labels.new} · a6700 · ZV-E10 II`, path: block.new },
   ]
 
   return (

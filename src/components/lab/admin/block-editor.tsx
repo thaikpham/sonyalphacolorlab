@@ -24,6 +24,12 @@ import { AREA, FIELD, FIELD_SM } from '@/components/admin-ui/controls'
  * renderer.
  */
 
+/** Brand names as the brands write them; the stored enum is lowercase. */
+const PROVIDER_NAME: Record<Extract<Block, { t: 'embed' }>['provider'], string> = {
+  youtube: 'YouTube',
+  vimeo: 'Vimeo',
+}
+
 export type UploadResult = { assetId: string; previewUrl: string }
 
 /**
@@ -618,7 +624,7 @@ function EmbedFields({
         <p className="meta">
           {t('embedResolved')}{' '}
           <span className="text-ink tabular-nums">
-            {block.provider} · {block.id}
+            {PROVIDER_NAME[block.provider]} · {block.id}
           </span>
         </p>
       ) : (

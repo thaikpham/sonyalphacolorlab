@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { Link } from '@/i18n/navigation';
 import { WIKI_DIVISIONS } from '@/lib/ecosystem';
 
@@ -8,6 +9,22 @@ type Props = {
   current: string;
   /** Which width this mount point is for. The two are responsive opposites. */
   className?: string;
+};
+
+/** Glyph beside each mark: a camera for DI, headphones for PE. Decorative — the link's `aria-label` already names the division. */
+const DIVISION_ICONS: Record<(typeof WIKI_DIVISIONS)[number]['key'], ReactNode> = {
+  di: (
+    <>
+      <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+      <circle cx="12" cy="13" r="3" />
+    </>
+  ),
+  pe: (
+    <>
+      <path d="M3 14v-2a9 9 0 0 1 18 0v2" />
+      <path d="M21 16a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 16a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
+    </>
+  ),
 };
 
 /**
@@ -57,10 +74,22 @@ export function WikiDivisionSwitch({ current, className = '' }: Props) {
             title={division.name}
             aria-label={division.name}
             aria-current={isCurrent ? 'page' : undefined}
-            className={`flex min-h-10 items-center rounded-sm px-2.5 text-label font-semibold transition-colors sm:px-3 ${
+            className={`flex min-h-10 items-center gap-1.5 rounded-sm px-2.5 text-label font-semibold transition-colors sm:px-3 ${
               isCurrent ? 'surface-selected text-ink' : 'text-ink-muted hover:text-ink'
             }`}
           >
+            <svg
+              aria-hidden="true"
+              className="h-4 w-4 shrink-0"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              {DIVISION_ICONS[division.key]}
+            </svg>
             {division.mark}
           </Link>
         );

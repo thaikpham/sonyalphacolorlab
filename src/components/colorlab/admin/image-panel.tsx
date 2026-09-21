@@ -49,8 +49,15 @@ export function ImagePanel({ recipeId }: { recipeId: string }) {
   const [note, setNote] = useState<{ kind: 'ok' | 'err'; msg: string } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  /* An unknown code is never shown raw — a camelCase identifier is not a
+     message. It falls back to the generic failure for the call that raised it,
+     and the code goes to the console for whoever is debugging. */
   const codeMessage = useCallback(
-    (code: string) => (t.has(`errors.${code}` as never) ? t(`errors.${code}` as never) : code),
+    (code: string, fallback: 'loadFailed' | 'saveFailed' | 'uploadFailed' = 'saveFailed') => {
+      if (t.has(`errors.${code}` as never)) return t(`errors.${code}` as never);
+      console.warn('[recipeAdmin] unknown error code:', code);
+      return t(`errors.${fallback}`);
+    },
     [t],
   );
 
@@ -59,7 +66,7 @@ export function ImagePanel({ recipeId }: { recipeId: string }) {
       const res = await fetch(`/api/admin/recipes/${recipeId}/images`, { headers: authed() });
       const data = (await res.json()) as { images?: AdminImage[]; error?: string };
       if (!res.ok || !data.images) {
-        setNote({ kind: 'err', msg: codeMessage(data.error ?? 'loadFailed') });
+        setNote({ kind: 'err', msg: codeMessage(data.error ?? 'loadFailed', 'loadFailed') });
         return null;
       }
       return data.images;
@@ -103,7 +110,7 @@ export function ImagePanel({ recipeId }: { recipeId: string }) {
       });
       const data = (await res.json()) as { ok?: boolean; error?: string; pendingVendor?: boolean };
       if (!res.ok) {
-        setNote({ kind: 'err', msg: codeMessage(data.error ?? 'uploadFailed') });
+        setNote({ kind: 'err', msg: codeMessage(data.error ?? 'uploadFailed', 'uploadFailed') });
         return;
       }
       await reload();
@@ -131,7 +138,7 @@ export function ImagePanel({ recipeId }: { recipeId: string }) {
       });
       const data = (await res.json()) as { images?: AdminImage[]; error?: string };
       if (!res.ok) {
-        setNote({ kind: 'err', msg: codeMessage(data.error ?? 'saveFailed') });
+        setNote({ kind: 'err', msg: codeMessage(data.error ?? 'saveFailed', 'saveFailed') });
         await reload();
         return;
       }
@@ -154,7 +161,7 @@ export function ImagePanel({ recipeId }: { recipeId: string }) {
       });
       if (!res.ok) {
         const data = (await res.json()) as { error?: string };
-        setNote({ kind: 'err', msg: codeMessage(data.error ?? 'saveFailed') });
+        setNote({ kind: 'err', msg: codeMessage(data.error ?? 'saveFailed', 'saveFailed') });
       }
     } catch {
       setNote({ kind: 'err', msg: codeMessage('saveFailed') });
@@ -172,7 +179,7 @@ export function ImagePanel({ recipeId }: { recipeId: string }) {
       });
       const data = (await res.json()) as { error?: string; pendingVendor?: boolean };
       if (!res.ok) {
-        setNote({ kind: 'err', msg: codeMessage(data.error ?? 'saveFailed') });
+        setNote({ kind: 'err', msg: codeMessage(data.error ?? 'saveFailed', 'saveFailed') });
         return;
       }
       await reload();

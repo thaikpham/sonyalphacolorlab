@@ -42,7 +42,7 @@ export function SetupGuide() {
   const version = usePreference<MenuVersion>(MENU_VERSION_KEY, 'old', MENU_VERSIONS)
   const done = useTicks(SETUP_KEY)
 
-  const steps = useMemo(() => setupSteps(version), [version])
+  const steps = useMemo(() => setupSteps(version, t), [version, t])
   const recap = useMemo(() => recapRows(steps), [steps])
 
   const doneCount = steps.filter((s) => done[s.id]).length

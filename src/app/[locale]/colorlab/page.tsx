@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { SiteStructuredData } from '@/components/structured-data';
 import { RecipeCard } from '@/components/recipe-card';
@@ -5,6 +6,21 @@ import { SiteHeader } from '@/components/site-header';
 import { Link } from '@/i18n/navigation';
 import type { Locale } from '@/i18n/routing';
 import { listRecipes, listTags } from '@/lib/recipes/source';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: Locale }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  /* Without this the route inherited the layout's English description, so
+     /vi/colorlab described itself in English and its tab named no page. */
+  const t = await getTranslations({ locale, namespace: 'home' });
+  return {
+    title: t('title'),
+    description: t('metaDescription'),
+  };
+}
 
 /**
  * The recipe catalogue.
