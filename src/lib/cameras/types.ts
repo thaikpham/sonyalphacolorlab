@@ -274,16 +274,29 @@ export type CameraCard = Omit<SonyCamera, 'specs' | 'galleryUrls'> & {
    * never an empty chip: `specsMissing` is the catalogue's own record of what
    * it does not know, and for video the card falls back to `mediaSlots`, which
    * is what the reference does.
+   *
+   * Each chip carries the field it came from, not just its text. Spec values
+   * are stored in Vietnamese and reach an English reader through
+   * `translateSpecValue`, which is keyed *per field* — `điểm` is autofocus
+   * points in one row and screen dots in the next. Flattening to strings here
+   * threw that key away, and the card printed `425 điểm` on `/en` while the
+   * rule to say `425 points` already existed and was already tested.
    */
-  specChips: string[];
+  specChips: SpecChip[];
+};
+
+/** One card figure, with the field that decides how it translates. */
+export type SpecChip = {
+  readonly field: string;
+  readonly value: string;
 };
 
 /** The chip figures per product kind. Order is the order they are printed. */
-function chipsFor(specs: ProductSpecs | undefined): string[] {
+function chipsFor(specs: ProductSpecs | undefined): SpecChip[] {
   if (!specs) return [];
   const missing = new Set(specs.specsMissing ?? []);
-  const take = (value: string | null | undefined, field: string) =>
-    value && !missing.has(field) ? value : null;
+  const take = (value: string | null | undefined, field: string): SpecChip | null =>
+    value && !missing.has(field) ? { field, value } : null;
 
   switch (specs.kind) {
     case 'camera':
@@ -291,15 +304,18 @@ function chipsFor(specs: ProductSpecs | undefined): string[] {
         take(specs.effectivePixels, 'effectivePixels'),
         take(specs.autofocus, 'autofocus'),
         take(specs.video, 'video') ?? take(specs.mediaSlots, 'mediaSlots'),
-      ].filter((v): v is string => Boolean(v));
+      ].filter((c): c is SpecChip => Boolean(c));
     case 'lens':
       return [
         take(specs.focalLength, 'focalLength'),
         take(specs.maxAperture, 'maxAperture'),
         take(specs.format, 'format'),
-      ].filter((v): v is string => Boolean(v));
+      ].filter((c): c is SpecChip => Boolean(c));
     case 'accessory':
-      return (specs.keySpecs ?? []).slice(0, 3).map((s) => s.value);
+      /* `keySpecs` is authored per product, so there is no spec row to key a
+         rule on. `keySpecs` has no entry in the dictionary and a value with no
+         rule is returned unchanged, which is the documented fallback. */
+      return (specs.keySpecs ?? []).slice(0, 3).map((s) => ({ field: 'keySpecs', value: s.value }));
     default:
       return [];
   }

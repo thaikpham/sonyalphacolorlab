@@ -16,6 +16,7 @@ import {
 } from '@/lib/cameras/types';
 import { featureList, splitFeatures } from '@/lib/cameras/features';
 import { priceLabel, subCategoryLabel } from '@/lib/cameras/display';
+import { translateSpecValue } from '@/lib/cameras/spec-values';
 import { calculateMatchScore } from '@/lib/search/fuzzy-search';
 
 /**
@@ -800,7 +801,7 @@ function CameraWikiViewInner({ initialCameras, basePath = '/cameras' }: CameraWi
                       <div className="flex flex-wrap gap-[7px]">
                         {cam.specChips.map((chip, chipIdx) => (
                           <span key={chipIdx} className={CHIP}>
-                            {chip}
+                            {translateSpecValue(chip.field, chip.value, locale)}
                           </span>
                         ))}
                       </div>
