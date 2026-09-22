@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import loader from './catalogue-loader';
+import loader, { isResizable } from './catalogue-loader';
 
 /**
  * The loader stands where Vercel's optimizer used to, so a mistake here is not
@@ -199,6 +199,42 @@ describe('catalogueImageLoader', () => {
       ]) {
         expect(loader({ src, width: 320 })).toBe(src);
       }
+    });
+  });
+
+  /**
+   * `isResizable` is what the call sites pass to `unoptimized`, so if it ever
+   * disagrees with the loader Next either warns on an image that does have
+   * rungs, or builds a srcset of eight identical URLs for one that does not.
+   */
+  describe('isResizable', () => {
+    it('is true exactly where the loader offers more than one file', () => {
+      for (const src of [
+        `${LARGE}/1899230.jpg`,
+        'https://static.bhphoto.com/images/fb/1899230.jpg',
+        'https://static.bhphoto.com/images/items/1899230.jpg',
+        '/recipes/caspian-blue-640.webp',
+      ]) {
+        expect(isResizable(src), src).toBe(true);
+      }
+    });
+
+    it('is false for every source returned verbatim', () => {
+      for (const src of [
+        'https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-21?$primaryshotPreset$&fmt=png-alpha',
+        'https://www.sony.com.vn/image/c40743f1385344c5a54745b9130fba5c?fmt=png-alpha',
+        'https://static.bhphoto.com/images/multiple_images/whatever.jpg',
+        'https://static.bhphoto.com/images/articles/whatever.jpg',
+        '/logo.png',
+      ]) {
+        expect(isResizable(src), src).toBe(false);
+      }
+    });
+
+    it('agrees with the loader rather than restating its branches', () => {
+      const src = `${LARGE}/1899230.jpg`;
+      const differs = loader({ src, width: 16 }) !== loader({ src, width: 4000 });
+      expect(isResizable(src)).toBe(differs);
     });
   });
 

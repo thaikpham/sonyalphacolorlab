@@ -605,6 +605,10 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                     width={512}
                     height={512}
                     priority
+                    /* As on the blog mark beside it: an SVG has no raster rungs
+                       to choose between, and the custom loader returns it
+                       verbatim. */
+                    unoptimized
                     className="h-9 w-9 rounded-sm object-contain shrink-0"
                   />
                   {/* `truncate`, like the blog wordmark beside it. The row is

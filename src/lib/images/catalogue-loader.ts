@@ -131,6 +131,29 @@ interface LoaderArgs {
 const LOCAL_RECIPE_RUNG = /^\/recipes\/(.+)-(\d+)\.webp$/;
 const LOCAL_WIDTHS = [320, 640, 1024] as const;
 
+/**
+ * Whether this loader can offer a source at more than one size.
+ *
+ * Sony's own hosts and the B&H directories that publish no size variants are
+ * returned verbatim at every width, so Next builds a srcset of eight identical
+ * URLs and warns `next-image-missing-loader-width` on each one. `unoptimized`
+ * is the honest answer for those: it tells Next there is one file and no
+ * choice to make. Nothing about the bytes changes — there was never a smaller
+ * file to reach for.
+ *
+ * Both Sony hosts do accept an Adobe Scene7 `wid=` parameter, and it is
+ * deliberately not used. Their originals are already small, so it is not a
+ * saving: measured, `sony.com.vn` answers 59KB unmodified and 198KB at
+ * `wid=750`, which is the width a grid card asks for. Resizing there would
+ * cost bytes to remove a warning.
+ *
+ * The loader is its own oracle here rather than a second copy of the branch
+ * list, which could disagree with it after an edit.
+ */
+export function isResizable(src: string): boolean {
+  return catalogueImageLoader({ src, width: 16 }) !== catalogueImageLoader({ src, width: 4000 });
+}
+
 export default function catalogueImageLoader({ src, width }: LoaderArgs): string {
   const asset = LAB_ASSET_RUNG.exec(src);
   if (asset) {

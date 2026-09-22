@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
+import { isResizable } from '@/lib/images/catalogue-loader';
 
 interface ProductGalleryViewerProps {
   primaryImageUrl: string;
@@ -40,6 +41,8 @@ export function ProductGalleryViewer({
           sizes="(max-width: 1024px) 100vw, 33vw"
           priority={activeIndex === 0}
           className="object-contain p-2"
+          /* Sony's hosts publish one file; see `isResizable`. */
+          unoptimized={!isResizable(currentImage)}
         />
         {images.length > 1 && (
           <div className="absolute top-3 right-3 px-3 py-1 rounded-sm bg-void/70 backdrop-blur-[30px] shadow-[var(--elevation-1)] text-label font-semibold text-ink tabular-nums">
@@ -75,6 +78,7 @@ export function ProductGalleryViewer({
                     fill
                     sizes="64px"
                     className="object-contain p-1"
+                    unoptimized={!isResizable(imgUrl)}
                   />
                 </span>
               </button>

@@ -17,6 +17,7 @@ import {
 import { featureList, splitFeatures } from '@/lib/cameras/features';
 import { priceLabel, subCategoryLabel } from '@/lib/cameras/display';
 import { translateSpecValue } from '@/lib/cameras/spec-values';
+import { isResizable } from '@/lib/images/catalogue-loader';
 import { calculateMatchScore } from '@/lib/search/fuzzy-search';
 
 /**
@@ -141,6 +142,8 @@ function ProductPhoto({
         width={size}
         height={size}
         className={className}
+        /* One published file and no choice to make; see `isResizable`. */
+        unoptimized={!isResizable(src)}
         onError={() => setFailed(true)}
       />
     );
@@ -153,6 +156,7 @@ function ProductPhoto({
       fill
       sizes={sizes}
       className={className}
+      unoptimized={!isResizable(src)}
       onError={() => setFailed(true)}
     />
   );

@@ -9,6 +9,7 @@ import type { SonyCamera } from '@/lib/cameras/types';
 import { featureList, splitFeatures } from '@/lib/cameras/features';
 import { translateSpecValue } from '@/lib/cameras/spec-values';
 import { priceLabel, subCategoryLabel } from '@/lib/cameras/display';
+import { isResizable } from '@/lib/images/catalogue-loader';
 import {
   type CompareTabId,
   getSpecValue,
@@ -761,6 +762,7 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                         width={40}
                         height={40}
                         className="object-contain"
+                        unoptimized={!isResizable(cam.imageUrl)}
                       />
                     </span>
                     <span className="flex flex-col min-w-0">
