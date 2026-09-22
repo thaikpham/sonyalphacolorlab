@@ -20,15 +20,40 @@ import loader from './catalogue-loader';
  */
 
 const SMALL = 'https://static.bhphoto.com/images/images500x500';
+const MID = 'https://static.bhphoto.com/images/images750x750';
 const LARGE = 'https://static.bhphoto.com/images/images1000x1000';
 
 describe('catalogueImageLoader', () => {
-  it('serves the 500px variant at card widths and the 1000px one above', () => {
+  it('climbs three rungs, taking the smallest that covers the width', () => {
     const src = `${LARGE}/1899230.jpg`;
     expect(loader({ src, width: 64 })).toBe(`${SMALL}/1899230.jpg`);
     expect(loader({ src, width: 500 })).toBe(`${SMALL}/1899230.jpg`);
-    expect(loader({ src, width: 501 })).toBe(`${LARGE}/1899230.jpg`);
+    expect(loader({ src, width: 501 })).toBe(`${MID}/1899230.jpg`);
+    expect(loader({ src, width: 750 })).toBe(`${MID}/1899230.jpg`);
+    expect(loader({ src, width: 751 })).toBe(`${LARGE}/1899230.jpg`);
     expect(loader({ src, width: 1920 })).toBe(`${LARGE}/1899230.jpg`);
+  });
+
+  /**
+   * The regression this rung exists for.
+   *
+   * Next builds its srcset from `deviceSizes`, whose first entry above a grid
+   * card's declared `25vw` is 640. With a 500/1000 split that entry resolved to
+   * the 1000px file and every card on a desktop viewport pulled ~138KB where
+   * ~78KB would do.
+   */
+  it('answers the 640w srcset entry with the 750 rung, not the 1000 one', () => {
+    const src = `https://static.bhphoto.com/images/fb/1899230.jpg`;
+    expect(loader({ src, width: 640 })).toBe(`${MID}/1899230.jpg`);
+  });
+
+  /* A rung that is usually there is a 404 with extra steps: `images2500x2500`
+     answered for 22 of 25 sampled filenames, so nothing is ever sent to it. */
+  it('never sends a request to a rung it cannot count on', () => {
+    const src = `${LARGE}/1899230.jpg`;
+    for (const width of [16, 256, 640, 828, 1920, 3840]) {
+      expect(loader({ src, width })).not.toContain('images2500x2500');
+    }
   });
 
   it('keys on the directory, never on the filename shape', () => {
@@ -42,8 +67,8 @@ describe('catalogueImageLoader', () => {
     }
   });
 
-  it('rewrites every directory that publishes both sizes', () => {
-    for (const dir of ['fb', 'items', 'largeimages', 'images2500x2500']) {
+  it('rewrites every directory that publishes the rungs', () => {
+    for (const dir of ['fb', 'items', 'largeimages', 'images750x750', 'images2500x2500']) {
       const src = `https://static.bhphoto.com/images/${dir}/1899230.jpg`;
       expect(loader({ src, width: 64 })).toBe(`${SMALL}/1899230.jpg`);
     }

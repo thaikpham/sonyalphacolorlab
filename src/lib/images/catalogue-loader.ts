@@ -14,8 +14,21 @@
  * keyed by the **same numeric id**, so the responsive behaviour the layouts ask
  * for survives with no optimizer and no bill:
  *
- *     images500x500     ~59KB   what every surface here actually renders
- *     images1000x1000  ~201KB   the wide and detail cases
+ *     images500x500     ~51KB   phone cards, table thumbnails
+ *     images750x750     ~78KB   the grid card on a desktop viewport
+ *     images1000x1000  ~138KB   the detail page and anything wider
+ *
+ * Three rungs, not two, and that is the whole point of the ladder. With a
+ * 500/1000 split the only candidate below 501 was Next's 256w entry, so a
+ * 301px grid card — which declares `25vw`, about 360px — fell through to the
+ * 640w entry and pulled the 1000px file. Measured on `/cameras` at a 1440px
+ * viewport that was 63 requests and 7.27MB of a 7.8MB page, with the 500px
+ * variant fetched exactly zero times. The 750 rung catches that 640w entry.
+ *
+ * `images2500x2500` is deliberately not a rung: sampled against live B&H it
+ * answered for 22 of 25 filenames, and a rung that is usually there is a 404
+ * with extra steps. It stays in the source-directory set below, because
+ * rewriting *away* from it is always safe.
  *
  * The filename carries across unchanged — its *shape* does not matter, only the
  * directory does. Sampled against live B&H: 25/25 bare numeric ids, 10/10
@@ -60,16 +73,23 @@ const RESIZABLE_VARIANTS = new Set([
   'items',
   'largeimages',
   'images500x500',
+  'images750x750',
   'images1000x1000',
   'images2500x2500',
 ]);
 
 /**
- * The widest layout that renders a catalogue photo is a grid card. Anything at
- * or under this asks B&H for the 500px original; above it, the 1000px one.
- * Both are real files, so there is no upscaling either way.
+ * The rungs, ascending. The smallest one at or above the width asked for wins,
+ * and the largest is the ceiling — every rung is a real published file, so no
+ * request upscales and none can 404 on a directory in the set above. Verified
+ * against live B&H: 8/8 `fb`, 8/8 `items`, 1/1 `largeimages` and 25/25 mixed
+ * catalogue filenames resolve at all three.
  */
-const SMALL_VARIANT_MAX_WIDTH = 500;
+const BH_RUNGS = [
+  { maxWidth: 500, directory: 'images500x500' },
+  { maxWidth: 750, directory: 'images750x750' },
+  { maxWidth: 1000, directory: 'images1000x1000' },
+] as const;
 
 const BH_HOST = 'static.bhphoto.com';
 const BH_PATH = /^\/images\/([^/]+)\/([^/]+)$/;
@@ -142,7 +162,7 @@ export default function catalogueImageLoader({ src, width }: LoaderArgs): string
   const [, variant, filename] = match;
   if (!RESIZABLE_VARIANTS.has(variant)) return src;
 
-  const target = width <= SMALL_VARIANT_MAX_WIDTH ? 'images500x500' : 'images1000x1000';
-  url.pathname = `/images/${target}/${filename}`;
+  const rung = BH_RUNGS.find((r) => width <= r.maxWidth) ?? BH_RUNGS[BH_RUNGS.length - 1];
+  url.pathname = `/images/${rung.directory}/${filename}`;
   return url.toString();
 }
