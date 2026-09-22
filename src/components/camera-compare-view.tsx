@@ -8,6 +8,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import type { SonyCamera } from '@/lib/cameras/types';
 import { featureList, splitFeatures } from '@/lib/cameras/features';
 import { translateSpecValue } from '@/lib/cameras/spec-values';
+import { priceLabel, subCategoryLabel } from '@/lib/cameras/display';
 import {
   type CompareTabId,
   getSpecValue,
@@ -362,8 +363,16 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
           label: t('categoryLabel'),
           value: (cam) => t(CATEGORY_LABEL_KEY[cam.category] ?? 'catAll'),
         },
-        { key: 'subCategory1', label: t('specSub1'), value: (cam) => cam.subCategory1 },
-        { key: 'subCategory2', label: t('specSub2'), value: (cam) => cam.subCategory2 },
+        {
+          key: 'subCategory1',
+          label: t('specSub1'),
+          value: (cam) => subCategoryLabel(cam.subCategory1, t),
+        },
+        {
+          key: 'subCategory2',
+          label: t('specSub2'),
+          value: (cam) => subCategoryLabel(cam.subCategory2, t),
+        },
       ],
     });
   }
@@ -373,7 +382,7 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
       id: 'pricing',
       label: `${t('priceLabel')} · ${t('skuLabel')}`,
       rows: [
-        { key: 'priceFormatted', label: t('specPrice'), value: (cam) => cam.priceFormatted },
+        { key: 'priceFormatted', label: t('specPrice'), value: (cam) => priceLabel(cam, t) },
         { key: 'sku', label: t('specSku'), value: (cam) => cam.sku },
       ],
     });
@@ -762,7 +771,7 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                     </span>
                   </span>
                   <span className="text-body-sm font-semibold text-accent-400 tabular-nums shrink-0">
-                    {cam.priceFormatted}
+                    {priceLabel(cam, t)}
                   </span>
                 </button>
               ))}

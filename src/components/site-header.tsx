@@ -13,6 +13,7 @@ import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import { routing } from '@/i18n/routing';
 import { CREATIVE_LOOKS } from '@/lib/camera/constants';
 import { DEFAULT_WIKI_SORT } from '@/lib/cameras/types';
+import { subCategoryLabel } from '@/lib/cameras/display';
 
 
 interface TagItem {
@@ -1233,9 +1234,13 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                         className={WIKI_SELECT}
                       >
                         <option value="all">{tCameras('sub1All')}</option>
+                        {/* The `value` is the stored string, because it is the
+                            filter key the route and the catalogue share. Only
+                            the label is mapped — rendering the raw value put
+                            `Máy ảnh Alpha` in a dropdown on `/en`. */}
                         {['1-Inch', 'APS-C', 'Adapter', 'Audio', 'Full Frame', 'Grip / Tripod', 'Power'].map((sub1) => (
                           <option key={sub1} value={sub1}>
-                            {sub1}
+                            {subCategoryLabel(sub1, tCameras)}
                           </option>
                         ))}
                       </select>
@@ -1264,7 +1269,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                             ]
                         ).map((sub2) => (
                           <option key={sub2} value={sub2}>
-                            {sub2}
+                            {subCategoryLabel(sub2, tCameras)}
                           </option>
                         ))}
                       </select>

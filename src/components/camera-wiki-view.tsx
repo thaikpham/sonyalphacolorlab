@@ -15,6 +15,7 @@ import {
   type WikiSort,
 } from '@/lib/cameras/types';
 import { featureList, splitFeatures } from '@/lib/cameras/features';
+import { priceLabel, subCategoryLabel } from '@/lib/cameras/display';
 import { calculateMatchScore } from '@/lib/search/fuzzy-search';
 
 /**
@@ -251,10 +252,14 @@ function CameraWikiViewInner({ initialCameras, basePath = '/cameras' }: CameraWi
     const bySub1 = tally(inCategory, (c) => c.subCategory1);
     const bySub2 = tally(inSub1, (c) => c.subCategory2);
 
+    /* `value` stays the stored string — it is the filter key, and the URL, the
+       tally and the Supabase row all keep using it. Only `label` is mapped, and
+       the sort follows the label: ordering by the stored value put the chips in
+       Vietnamese alphabetical order on `/en`, which reads as no order at all. */
     const sorted = (counts: Map<string, number>) =>
       Array.from(counts.entries())
-        .sort((a, b) => a[0].localeCompare(b[0]))
-        .map(([value, count]) => ({ value, label: value, count }));
+        .map(([value, count]) => ({ value, label: subCategoryLabel(value, t), count }))
+        .sort((a, b) => a.label.localeCompare(b.label));
 
     return [
       {
@@ -639,14 +644,18 @@ function CameraWikiViewInner({ initialCameras, basePath = '/cameras' }: CameraWi
                         {/* Sub-categories */}
                         <td className="p-4 whitespace-nowrap">
                           <div className="flex flex-col gap-1">
-                            <span className="text-body-sm font-semibold text-ink">{cam.subCategory1}</span>
-                            {cam.subCategory2 && <span className="meta">{cam.subCategory2}</span>}
+                            <span className="text-body-sm font-semibold text-ink">
+                              {subCategoryLabel(cam.subCategory1, t)}
+                            </span>
+                            {cam.subCategory2 && (
+                              <span className="meta">{subCategoryLabel(cam.subCategory2, t)}</span>
+                            )}
                           </div>
                         </td>
 
                         {/* Price */}
                         <td className="p-4 font-semibold text-accent-400 tabular-nums whitespace-nowrap">
-                          {cam.priceFormatted}
+                          {priceLabel(cam, t)}
                         </td>
 
                         {/* Features (Expanded width with word-wrap) */}
@@ -707,52 +716,70 @@ function CameraWikiViewInner({ initialCameras, basePath = '/cameras' }: CameraWi
           <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
             {filteredCameras.map((cam) => {
               const isChecked = selectedForCompare.includes(cam.id);
-              /* The card fill is lifted off `.surface`'s 5% film to a flat 18%
-                 — at 5% over `void` the card and the page read as the same tone
-                 and the grid lost its edges. Everything else in the elevation
-                 (radius, blur, level-1 shadow, specular) still comes from
-                 `.surface`; only the film changes.
+              /* Plain `.surface` — the system's 5% film, unmodified.
 
-                 `bg-none` is not optional. `.surface` paints its film with the
-                 `background` shorthand, so the fill is a `background-image`
-                 gradient — a `bg-*` utility sets `background-color`, which
-                 paints *behind* that gradient and would never be seen. Clear
-                 the image first, then colour.
+                 It used to be `bg-none bg-white/[0.18]`, because a full-bleed
+                 opaque white photograph plate ran edge to edge across the top
+                 of every card and at 5% the card around it read as page. That
+                 was one compromise forcing a second: the white slab was the
+                 loudest thing on a `void` ground, and the fix for it was to
+                 make the card lighter too, until a grid of twenty cards had
+                 argued the dark interface away. Inset the plate instead (just
+                 below) and the card's own edge is legible again, so the film
+                 goes back to what DESIGN.md specifies.
 
-                 The film is `bg-white/[0.18]`, not `bg-[oklch(100%_0_0_/_0.18)]`.
-                 Tailwind reads the slash in an arbitrary value as the opacity
-                 modifier, so the oklch form parses as garbage and emits **no
-                 rule at all** — the class sits in the markup, the card stays at
-                 5%, and nothing errors. `bg-white/[0.18]` is also what the
-                 compare tray's buttons below already use. */
+                 Keeping the gotcha the old comment recorded, because the next
+                 person to reach for a film override will hit it: `.surface`
+                 paints its fill with the `background` shorthand, so the film is
+                 a `background-image` gradient. A `bg-*` utility sets
+                 `background-color` and paints *behind* it, invisibly — clear it
+                 with `bg-none` first. And write `bg-white/[0.18]`, never
+                 `bg-[oklch(100%_0_0_/_0.18)]`: Tailwind reads that slash as the
+                 opacity modifier, the arbitrary value parses as garbage, and it
+                 emits no rule at all. The class sits in the markup looking
+                 correct and changes nothing. */
               return (
-                <li
-                  key={cam.id}
-                  className="surface bg-none bg-white/[0.18] overflow-hidden flex flex-col"
-                >
-                  {/* Catalogue photography is shot on white, so the plate stays
-                      opaque white — a translucent surface behind it would put a
-                      white rectangle inside a dark one. */}
+                <li key={cam.id} className="surface overflow-hidden flex flex-col">
+                  {/* Catalogue photography is shot on white, so the plate is
+                      opaque white — tinting it would ring every product with a
+                      halo where the plate met the photograph's own background.
+
+                      What changed is its shape. Full-bleed, square-cornered and
+                      210px tall, it was not a photograph on a card, it was a
+                      hole cut in one; twenty of them made the highest-traffic
+                      page in the ecosystem read as a light interface with dark
+                      gaps. Inset by 14px and rounded to the `md` step, the same
+                      white becomes a lit shelf the card holds — the product is
+                      no less visible and the page is dark again.
+
+                      The inset span, not the button, is what `fill` measures
+                      against: it is the nearest positioned ancestor with a
+                      resolved size, which is why it carries `relative` and the
+                      button no longer does. */}
                   <button
                     type="button"
                     onClick={() => openProduct(cam)}
                     aria-label={cam.name}
-                    className="relative h-[210px] w-full bg-white flex items-center justify-center overflow-hidden cursor-pointer"
+                    className="flex h-[210px] w-full shrink-0 cursor-pointer items-center justify-center p-3.5"
                   >
-                    <ProductPhoto
-                      src={cam.imageUrl}
-                      alt=""
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                      className="object-contain p-5"
-                      label={t('noPhoto')}
-                    />
+                    <span className="relative block h-full w-full overflow-hidden rounded-md bg-white">
+                      <ProductPhoto
+                        src={cam.imageUrl}
+                        alt=""
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                        className="object-contain p-5"
+                        label={t('noPhoto')}
+                      />
+                    </span>
                   </button>
 
                   <div className="flex flex-col gap-[11px] px-5 pt-[19px] pb-[22px] flex-1">
                     <span
                       className={`label ${SUBGROUP_TINT[cam.subCategory2] ?? 'text-ink-muted'}`}
                     >
-                      {cam.subCategory2 || t(CATEGORY_LABEL_KEY[cam.category] ?? 'catAll')}
+                      {cam.subCategory2
+                        ? subCategoryLabel(cam.subCategory2, t)
+                        : t(CATEGORY_LABEL_KEY[cam.category] ?? 'catAll')}
                     </span>
 
                     <h2 className="text-title-3 font-semibold leading-tight text-ink">
@@ -783,7 +810,7 @@ function CameraWikiViewInner({ initialCameras, basePath = '/cameras' }: CameraWi
                         153.153.818 đ must never break mid-number. */}
                     <div className="mt-auto pt-[3px] flex flex-wrap items-center justify-between gap-x-3 gap-y-2.5">
                       <span className="text-body-lg font-extrabold tracking-[-0.02em] tabular-nums text-ink whitespace-nowrap">
-                        {cam.priceFormatted}
+                        {priceLabel(cam, t)}
                       </span>
 
                       <label
@@ -904,7 +931,7 @@ function CameraWikiViewInner({ initialCameras, basePath = '/cameras' }: CameraWi
                       </h3>
                       <span className="meta truncate">{cam.sku}</span>
                       <span className="text-body-sm font-semibold text-accent-400 tabular-nums mt-0.5">
-                        {cam.priceFormatted}
+                        {priceLabel(cam, t)}
                       </span>
                     </div>
                   </div>
