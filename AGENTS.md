@@ -28,6 +28,21 @@ Supabase is optional: with no credentials the app reads `data/*.seed.json`, so i
 builds, runs and tests offline. Add the env vars and it switches over — see
 `.env.example`.
 
+**Restart `next start` after every build, or you are testing a ghost.** `next
+dev` is safe to leave running — since Next 16 it writes `.next/dev`, not `.next`
+(`node_modules/next/dist/server/config.js`: `if (phase ===
+PHASE_DEVELOPMENT_SERVER) result.distDir = join(result.distDir, 'dev')`), so a
+build cannot disturb it and it cannot disturb a build. `next start` is the
+opposite: it reads the build manifests into memory once, at boot, and serves
+`.next` — which every `next build` wipes and rewrites with new content-hashed
+chunk names. A `next start` that predates the current build keeps serving HTML
+naming chunks that no longer exist. The page answers `200` with the right
+`<title>`, the browser throws `ChunkLoadError`, React never hydrates, and you
+get the error boundary with no content — while `.next` on disk is perfectly
+consistent, so every check you run against the files says the build is fine.
+Cost of not knowing this, on 2026-09-22: about an hour, and a confident wrong
+diagnosis that `dev` and `build` were fighting over `.next`. They are not.
+
 ## Two projects, and which one you mean
 
 There are **two** Supabase projects, in two organisations:
