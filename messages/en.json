@@ -326,6 +326,8 @@
     "productNotFound": "Product not found",
     "productMetaTitle": "{name} ({sku}) · Specs",
     "productMetaDescription": "Official specs, pricing {price}, and key features for {fullName}.",
+    "audioMetaTitle": "{name} · Specs & price",
+    "audioMetaDescription": "Official specs, pricing {price}, and key features for {fullName}.",
     "compareMetaTitle": "Compare Sony Alpha Products",
     "compareMetaDescription": "Detailed side-by-side spec comparison of Sony products.",
     "galleryPhotoAlt": "{name} — photo {index}",
