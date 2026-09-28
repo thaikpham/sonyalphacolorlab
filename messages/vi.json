@@ -326,6 +326,8 @@
     "productNotFound": "Không tìm thấy sản phẩm",
     "productMetaTitle": "{name} ({sku}) · Thông số",
     "productMetaDescription": "Thông số kỹ thuật chính hãng, giá niêm yết {price} và tính năng nổi bật của {fullName}.",
+    "audioMetaTitle": "{name} · Thông số & giá",
+    "audioMetaDescription": "Thông số kỹ thuật chính hãng, giá niêm yết {price} và tính năng nổi bật của {fullName}.",
     "compareMetaTitle": "So Sánh Chi Tiết Sản Phẩm Sony",
     "compareMetaDescription": "Chuyên trang so sánh thông số kỹ thuật chi tiết giữa các sản phẩm Sony.",
     "galleryPhotoAlt": "{name} — ảnh {index}",
