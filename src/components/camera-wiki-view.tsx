@@ -446,7 +446,7 @@ function CameraWikiViewInner({ initialCameras, basePath = '/cameras' }: CameraWi
             <h1 className="text-display font-extrabold tracking-[-0.02em] leading-[1.12] text-ink">
               {pageTitle}
             </h1>
-            <p className="text-body-lg text-ink-muted max-w-[58ch] leading-[1.5] text-pretty">
+            <p className="text-body text-ink-muted">
               {t('catalogueLede', { count: filteredCameras.length })}
             </p>
           </div>
@@ -883,12 +883,9 @@ function CameraWikiViewInner({ initialCameras, basePath = '/cameras' }: CameraWi
             <div className="surface-raised w-full h-full p-6 flex flex-col gap-6">
               {/* Modal Header */}
               <div className="flex items-center justify-between gap-4">
-                <div className="flex flex-col gap-1">
-                  <h2 className="text-title-3 font-semibold text-ink">
-                    {t('compareConfirmTitle')} ({comparedCameraObjects.length})
-                  </h2>
-                  <p className="meta">{t('compareConfirmSub')}</p>
-                </div>
+                <h2 className="text-title-3 font-semibold text-ink">
+                  {t('compareConfirmTitle')} ({comparedCameraObjects.length})
+                </h2>
                 <button
                   type="button"
                   onClick={() => setIsConfirmModalOpen(false)}

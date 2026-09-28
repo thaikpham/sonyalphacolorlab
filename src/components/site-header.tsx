@@ -53,7 +53,7 @@ const FALLBACK_TAGS: TagItem[] = [
  * overlap the bar's bottom edge on purpose.
  */
 const HEADER_BAR =
-  'rounded-xl ' +
+  'header-bar rounded-xl ' +
   'bg-[linear-gradient(180deg,oklch(100%_0_0/0.075),oklch(100%_0_0/0.035))] ' +
   '[backdrop-filter:var(--elevation-blur-strong)] [-webkit-backdrop-filter:var(--elevation-blur-strong)] ' +
   'shadow-[0_14px_34px_-18px_oklch(0%_0_0/0.9),var(--elevation-spec)]';
@@ -1306,7 +1306,6 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                       >
                         {t('clearAll')}
                       </button>
-                      <span className="meta hidden sm:inline">{t('escHint')}</span>
                     </div>
                   )}
                 </div>
@@ -1426,7 +1425,6 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                       >
                         {t('clearAll')}
                       </button>
-                      <span className="meta hidden sm:inline">{t('escHint')}</span>
                     </div>
                   )}
                 </>

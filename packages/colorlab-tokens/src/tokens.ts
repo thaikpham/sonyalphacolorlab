@@ -251,6 +251,78 @@ export const NAMESPACED_GROUPS: ReadonlyArray<{
 ]
 
 /**
+ * The paper room — the one light ground in the ecosystem, used by /blog only.
+ *
+ * "Dark only" (SURFACES) exists because recipes are judged by their colour and
+ * a light ground changes how every accent reads. The blog shows no recipes: it
+ * is long technical prose, tables and numbered sections, and on dark glass it
+ * read as a product page rather than as something to study. So it gets a
+ * paper ground, and nothing else does.
+ *
+ * Emitted as a restatement of the ordinary tokens under PAPER_SELECTOR, not as
+ * new names: every utility and every component recipe keeps working, and
+ * `html`, `body`, the header and anything portalled to <body> follow because
+ * the selector is `:root`. A client navigation away unmounts the
+ * `.theme-paper` element and the page is dark again.
+ *
+ * The accent ramp is MIRRORED rather than replaced. A step keeps its meaning
+ * as a distance from the ground — 400 is still "accent text", 900 still "a
+ * tinted field", 300 still "the label on that field" — so
+ * `bg-accent-900 text-accent-300` is correct in both rooms. `text-white` on a
+ * tinted field is not; `text-ink` is, being near-white in one room and
+ * near-black in the other.
+ */
+export const PAPER_SELECTOR = ':root:has(.theme-paper)'
+
+export const PAPER: ReadonlyArray<{
+  readonly namespace: string
+  readonly group: TokenGroup
+}> = [
+  {
+    namespace: 'color',
+    group: {
+      comment:
+        'Paper ground, a faint warm white. Films are ink at low alpha instead\n' +
+        'of white: a white film over white is nothing. Ink measured on this\n' +
+        'ground: 16.5:1, 10.4:1, 5.6:1 — the same three steps, still AA.',
+      tokens: {
+        void: 'oklch(98.2% 0.004 85)',
+        glass: 'oklch(21% 0.014 265 / 0.04)',
+        'glass-raised': 'oklch(21% 0.014 265 / 0.07)',
+        sunken: 'oklch(21% 0.014 265 / 0.045)',
+        ink: 'oklch(21% 0.014 265)',
+        'ink-muted': 'oklch(36% 0.014 265)',
+        'ink-faint': 'oklch(49% 0.014 265)',
+        'accent-100': 'oklch(23.5% 0.105 268)',
+        'accent-200': 'oklch(31.5% 0.135 268)',
+        'accent-300': 'oklch(41.5% 0.160 268)',
+        'accent-400': 'oklch(50.5% 0.185 268)',
+        'accent-600': 'oklch(71.5% 0.125 268)',
+        'accent-700': 'oklch(81.5% 0.080 268)',
+        'accent-800': 'oklch(89.5% 0.045 268)',
+        'accent-900': 'oklch(95.5% 0.020 268)',
+      },
+    },
+  },
+  {
+    namespace: 'elevation',
+    group: {
+      comment:
+        'Shadows in ink rather than black, and far softer: on paper a shadow\n' +
+        'is a lift, not a hole. The specular line becomes a white one, which\n' +
+        'on a white card is invisible — the shadow is the whole edge here.',
+      tokens: {
+        spec: 'inset 0 1px 0 oklch(100% 0 0 / 0.9)',
+        inset: 'inset 0 1px 3px oklch(21% 0.02 265 / 0.09)',
+        '1': '0 1px 2px oklch(21% 0.02 265 / 0.06), 0 10px 28px -14px oklch(21% 0.02 265 / 0.16)',
+        '2': '0 2px 6px oklch(21% 0.02 265 / 0.07), 0 20px 44px -20px oklch(21% 0.02 265 / 0.22)',
+        '3': '0 6px 16px oklch(21% 0.02 265 / 0.09), 0 32px 72px -24px oklch(21% 0.02 265 / 0.26)',
+      },
+    },
+  },
+]
+
+/**
  * Values that are NOT tokens and must stay per-app:
  *
  *  - `--accent`  ColorLab overrides it per recipe from that recipe's White

@@ -6,7 +6,6 @@
     "emptyAction": "Xoá bộ lọc",
     "emptyTail": "để xem cả {total} công thức.",
     "title": "Tất cả công thức",
-    "lede": "Lọc theo thẻ, xem thiết lập gốc, rồi áp dụng vào máy Sony Alpha của bạn.",
     "metaDescription": "Xem các công thức White Balance Shift cho Sony Alpha, lọc theo thẻ và áp dụng thiết lập vào máy ảnh của bạn.",
     "planeLabel": "Lưới White Balance Shift: {count, plural, other {# công thức}}, {shifted} công thức lệch khỏi trung tính"
   },
@@ -69,7 +68,6 @@
     "next": "Ảnh tiếp theo",
     "nextTitle": "Ảnh tiếp theo (phím →)",
     "goTo": "Chuyển đến ảnh {index}",
-    "lightboxHint": "Phím ← → hoặc nhấp vào ảnh hai bên để xem tiếp · Nhấn ESC hoặc nhấp ra ngoài để thoát",
     "wbEngineLabel": "Cân bằng trắng",
     "paramsLabel": "Cài đặt máy ảnh",
     "photoAlt": "{title} — ảnh {index}",
@@ -84,7 +82,6 @@
   },
   "tweak": {
     "title": "Tinh chỉnh bằng AI",
-    "subtitle": "Mô tả thay đổi để AI điều chỉnh thông số của công thức này",
     "close": "Đóng",
     "placeholder": "Mô tả thay đổi — ví dụ: “ấm hơn, vùng tối mềm hơn”",
     "submit": "Tinh chỉnh",
@@ -111,16 +108,13 @@
   },
   "community": {
     "title": "Cộng đồng & đề xuất tinh chỉnh",
-    "subtitle": "Thảo luận và bình chọn các biến thể công thức màu tốt nhất cho {title}",
     "tabComments": "Bình luận ({count})",
     "tabProposals": "Đề xuất & bình chọn ({count})",
     "commentPlaceholder": "Viết bình luận, mẹo chụp hoặc cảm nhận của bạn về công thức này…",
-    "commentHint": "Hãy giữ bình luận văn minh và hữu ích cho cộng đồng.",
     "commentSubmit": "Gửi bình luận",
     "commentSending": "Đang gửi…",
     "loginPrompt": "Vui lòng <a>đăng nhập bằng Google</a> trên thanh điều hướng để viết bình luận.",
     "noComments": "Chưa có bình luận nào. Hãy là người đầu tiên để lại ý kiến.",
-    "proposalIntro": "Điền thông số vào mẫu theo định dạng máy ảnh Sony để đề xuất phiên bản mới cho cộng đồng bình chọn tim.",
     "cancel": "Huỷ",
     "newProposal": "Đề xuất phiên bản mới",
     "templateTitle": "Mẫu tinh chỉnh {format}",
@@ -171,7 +165,6 @@
     "submit": "Tìm",
     "clear": "Xoá tìm kiếm",
     "clearAll": "Xoá tất cả bộ lọc",
-    "escHint": "Nhấn ESC để đóng",
     "close": "Đóng thanh tìm kiếm"
   },
   "cameras": {
@@ -192,7 +185,6 @@
     "compare": "So sánh",
     "compareBarTitle": "Đã chọn {count, plural, one {# sản phẩm} other {# sản phẩm}}",
     "compareBtn": "Mở bảng so sánh",
-    "compareConfirmSub": "Kiểm tra các sản phẩm đã chọn trước khi mở bảng so sánh thông số đầy đủ.",
     "compareConfirmTitle": "So sánh sản phẩm",
     "compareItemsBtn": "So sánh các sản phẩm này ({count})",
     "compareSummary": "{count} sản phẩm đang so sánh",
@@ -320,7 +312,7 @@
     "compareLegend": "Giá trị tốt hơn được tô màu nhấn; các ô giống nhau giữ màu chữ thường. Dấu — nghĩa là danh mục không công bố thông số đó.",
     "removeProduct": "Gỡ khỏi bảng so sánh",
     "closeDialog": "Đóng",
-    "catalogueLede": "{count, plural, other {# sản phẩm}} trong danh mục. Dùng bộ lọc ở đầu trang để thu hẹp danh sách.",
+    "catalogueLede": "{count, plural, other {# sản phẩm}}",
     "openCompare": "Mở bảng so sánh",
     "compareSelected": "Đã chọn",
     "productNotFound": "Không tìm thấy sản phẩm",
@@ -620,16 +612,21 @@
   },
   "lab": {
     "feedTitle": "Alpha Tech Blogs",
+    "feedHeading": "Bài viết kỹ thuật",
+    "pathLabel": "Lộ trình",
+    "comingSoon": "Sắp có",
+    "articleCount": "{count} bài",
     "feedDescription": "Bài viết kỹ thuật cho người dùng Sony Alpha, lọc theo chủ đề và trình độ.",
-    "brandSubline": "Sony Alpha · kỹ thuật",
     "topics": {
       "setup": "Thiết lập máy",
       "color": "Màu ảnh & Creative Look",
       "af": "Lấy nét & AF",
       "exposure": "Phơi sáng & đo sáng",
+      "composition": "Bố cục & ánh sáng",
       "lens": "Ống kính",
       "body": "Thân máy & so sánh",
       "video": "Video & quay phim",
+      "audio": "Âm thanh & thu âm",
       "post": "Hậu kỳ & LUT",
       "gear": "Phụ kiện & quy trình",
       "firmware": "Firmware"
@@ -658,7 +655,6 @@
     "firmwareDisclaimer": "Tên mục menu có thể khác đôi chút giữa các bản firmware và giữa các dòng máy. Nếu không thấy đúng tên, tìm mục gần nhất trong cùng nhóm — giá trị cần đặt vẫn như trên.",
     "compareControl": "Kéo để so sánh {before} và {after}",
     "setupWordmark": "SONY ALPHA · THIẾT LẬP NHANH",
-    "setupSubline": "8 bước chuẩn bị",
     "menuVersion": "Phiên bản menu",
     "menuOld": "Menu cũ",
     "menuNew": "Menu mới",
@@ -730,7 +726,55 @@
         "kicker": "Màn hình",
         "why": "Sunny Weather đẩy màn hình lên mức sáng nhất để bạn còn nhìn thấy khung ảnh khi chụp ngoài trời nắng — mức Manual mặc định thường tối om giữa trưa. Display Quality: High làm hình trong màn hình và trong ống ngắm mịn, chi tiết hơn, nên bạn kiểm tra nét chính xác hơn. Cả hai đều tốn pin hơn, đổi lại trải nghiệm ngắm và xem ảnh dễ hơn hẳn."
       }
-    }
+    },
+    "path": {
+      "newbie": {
+        "mindset": "Hiểu chiếc máy: vì sao ảnh sáng, tối, nét hay nhoè.",
+        "focus": {
+          "setup": "Những cài đặt nên đổi ngay khi mở hộp",
+          "exposure": "Khẩu độ, tốc độ, ISO và các chế độ A, S, P",
+          "composition": "Quy tắc một phần ba, đường dẫn và đọc ánh sáng tự nhiên",
+          "af": "Chế độ lấy nét và vùng lấy nét",
+          "lens": "Tiêu cự, khẩu độ và ống kính đầu tiên",
+          "color": "Cân bằng trắng và Creative Look có sẵn",
+          "video": "Độ phân giải, khung hình và nút quay",
+          "audio": "Mic gắn máy và mức thu không bị vỡ"
+        }
+      },
+      "mid": {
+        "mindset": "Chủ động theo tình huống: chọn cài đặt vì cảnh, không vì thói quen.",
+        "focus": {
+          "exposure": "Đo sáng, bù sáng, histogram và zebra",
+          "composition": "Hướng sáng, chụp ngược sáng và flash rời máy",
+          "af": "Nút AF-ON, tracking và cài AF theo chủ thể",
+          "color": "Picture Profile và tinh chỉnh Creative Look",
+          "video": "Màn trập 180°, S-Log, ND và chống rung",
+          "audio": "Mic rời, chỉnh gain và máy ghi âm riêng",
+          "lens": "Chọn ống kính theo thể loại: chân dung, tele, macro",
+          "post": "Chỉnh RAW và một quy trình hậu kỳ gọn",
+          "gear": "Thẻ nhớ, pin và thói quen trước buổi chụp",
+          "firmware": "Cập nhật an toàn và tính năng mới theo từng bản"
+        }
+      },
+      "pro": {
+        "mindset": "Xây hệ thống: kết quả tin cậy, màu nhất quán, phong cách riêng.",
+        "focus": {
+          "composition": "Dựng sáng nhiều đèn và ngôn ngữ hình ảnh riêng",
+          "color": "Màu nhất quán giữa nhiều máy và nhiều nguồn sáng",
+          "post": "LUT, quản lý màu và xuất file giao khách",
+          "video": "Log, RAW video, nhiều máy quay và timecode",
+          "audio": "Thu đa kênh, mic cài áo, boom và âm hiện trường",
+          "af": "Cài AF riêng cho thể thao, chim và sự kiện",
+          "body": "Chọn thân máy thứ hai và so sánh hệ thống",
+          "gear": "Sao lưu, dự phòng và làm việc theo ê-kíp"
+        }
+      }
+    },
+    "skillsLabel": "Kỹ năng ở chặng này",
+    "clearFilter": "Xoá lọc",
+    "stageEmptyTitle": "Chặng này đang được biên soạn",
+    "stageEmptyBody": "Các kỹ năng của chặng đã có trong lộ trình; bài viết sẽ được bổ sung dần. Trong lúc chờ, hãy xem các chặng khác.",
+    "stageLabel": "Chặng {n}"
   },
   "labAdmin": {
     "newArticle": "Bài mới",

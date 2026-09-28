@@ -12,7 +12,7 @@ import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { COLOR_GROUPS, NAMESPACED_GROUPS, type TokenGroup } from './tokens'
+import { COLOR_GROUPS, NAMESPACED_GROUPS, PAPER, PAPER_SELECTOR, type TokenGroup } from './tokens'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 
@@ -52,6 +52,15 @@ function sections(): string[] {
 }
 
 /**
+ * The paper room, as a plain rule after the theme. Outside `@theme` on purpose:
+ * it restates tokens under a selector, and `@theme` only defines them.
+ */
+function paper(): string {
+  const body = PAPER.map(({ namespace, group }) => block(group, namespace, '  ')).join('\n\n')
+  return `\n${PAPER_SELECTOR} {\n  color-scheme: light;\n\n${body}\n}\n`
+}
+
+/**
  * Every generated artefact, keyed by filename.
  *
  * Two flavours of the same tokens, because the consumers differ:
@@ -73,8 +82,8 @@ function sections(): string[] {
  */
 export function generate(): Record<string, string> {
   return {
-    'theme.css': `${BANNER}\n@theme static {\n${sections().join('\n\n')}\n}\n`,
-    'tokens.css': `${BANNER}\n:root {\n${sections().join('\n\n')}\n}\n`,
+    'theme.css': `${BANNER}\n@theme static {\n${sections().join('\n\n')}\n}\n${paper()}`,
+    'tokens.css': `${BANNER}\n:root {\n${sections().join('\n\n')}\n}\n${paper()}`,
     'primitives.css': BANNER + readFileSync(join(HERE, 'primitives.css'), 'utf8'),
   }
 }

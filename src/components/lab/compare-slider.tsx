@@ -68,10 +68,10 @@ export function CompareSlider({ block, articleId }: { block: CompareBlock; artic
         />
         {/* Both labels sit on a near-void scrim so they stay legible over a
             blown highlight as well as over a shadow. */}
-        <span className="chip absolute top-3 left-3 bg-void/60 text-white uppercase tracking-[0.08em] font-semibold">
+        <span className="chip absolute top-3 left-3 bg-black/60 text-white uppercase tracking-[0.08em] font-semibold">
           {block.beforeLabel}
         </span>
-        <span className="chip absolute top-3 right-3 bg-void/60 text-white uppercase tracking-[0.08em] font-semibold">
+        <span className="chip absolute top-3 right-3 bg-black/60 text-white uppercase tracking-[0.08em] font-semibold">
           {block.afterLabel}
         </span>
       </div>

@@ -850,9 +850,6 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
               ))}
             </div>
 
-            <span className="text-ink-faint hidden lg:inline">
-              {t('lightboxHint')}
-            </span>
           </div>
         </div>
       )}

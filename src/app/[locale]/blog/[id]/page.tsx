@@ -1,11 +1,16 @@
 import { Suspense } from 'react'
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { notFound } from 'next/navigation'
 import { setRequestLocale } from 'next-intl/server'
 import { ArticleView } from '@/components/lab/article-view'
 import { SiteHeader } from '@/components/site-header'
 import { getPublishedArticle, getPublishedArticles } from '@/lib/lab/data'
 import { routing, type Locale } from '@/i18n/routing'
+
+/* The paper room's ground, restated as sRGB for the browser chrome — the same
+   exemption the root layout takes for `--color-void`. Keep it in step with
+   `:root:has(.theme-paper)` in globals.css. */
+export const viewport: Viewport = { themeColor: '#F9F8F5', colorScheme: 'light' }
 
 /**
  * Every article published at build time, in every locale, prerendered.
@@ -84,7 +89,7 @@ export default async function ArticlePage({
   if (!article) notFound()
 
   return (
-    <>
+    <div className="theme-paper contents">
       {/* The boundary is load-bearing on a statically generated route.
           `SiteHeader` reads `useSearchParams()`, and during static generation
           that bails the nearest Suspense boundary to client-side rendering —
@@ -103,6 +108,6 @@ export default async function ArticlePage({
       <main className="mx-auto min-h-screen-dynamic w-full max-w-[86rem] inset-safe pt-8 pb-24">
         <ArticleView article={article} />
       </main>
-    </>
+    </div>
   )
 }

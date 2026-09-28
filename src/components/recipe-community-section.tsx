@@ -32,7 +32,6 @@ import type { ClSettings, PpSettings, WhiteBalance } from '@/lib/camera/schema';
 
 type Props = {
   recipeSlug: string;
-  recipeTitle: string;
   recipeFormat?: 'pp' | 'cl';
   currentSettings: Record<string, unknown>;
   /** The real schema type — the editor writes camera values, so it must not
@@ -134,7 +133,6 @@ const SELECT = 'surface-sunken text-body-sm text-ink px-3 py-2 cursor-pointer';
 
 export function RecipeCommunitySection({
   recipeSlug,
-  recipeTitle,
   recipeFormat = 'pp',
   currentSettings,
   currentWb,
@@ -558,10 +556,7 @@ export function RecipeCommunitySection({
     >
       {/* Header & Tabs */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-        <div className="flex flex-col gap-1 min-w-0">
-          <h2 className="text-title-3 font-semibold tracking-[-0.02em] text-ink">{t('title')}</h2>
-          <p className="meta">{t('subtitle', { title: recipeTitle })}</p>
-        </div>
+        <h2 className="min-w-0 text-title-3 font-semibold tracking-[-0.02em] text-ink">{t('title')}</h2>
 
         {/* The rut is sunken and the current tab is a FILL, never a stroke.
             Proposals tint theirs `proposal` violet, so a pending version is
@@ -627,8 +622,7 @@ export function RecipeCommunitySection({
                 className={`${FIELD} resize-y`}
               />
 
-              <div className="flex flex-wrap justify-between items-center gap-3">
-                <span className="meta">{t('commentHint')}</span>
+              <div className="flex flex-wrap justify-end items-center gap-3">
                 <button
                   type="submit"
                   disabled={isSubmittingComment || !newCommentText.trim()}
@@ -711,8 +705,7 @@ export function RecipeCommunitySection({
       {activeTab === 'proposals' && (
         <div className="flex flex-col gap-5 animate-fade-in">
           {/* Header Action */}
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-body-sm text-ink-muted max-w-[58ch]">{t('proposalIntro')}</p>
+          <div className="flex flex-wrap items-center justify-end gap-3">
 
             <button
               type="button"

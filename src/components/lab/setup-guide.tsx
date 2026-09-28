@@ -61,7 +61,6 @@ export function SetupGuide() {
             <span className="block text-body-lg font-extrabold tracking-[-0.02em] text-ink">
               {t('setupWordmark')}
             </span>
-            <span className="label mt-0.5 block">{t('setupSubline')}</span>
           </Link>
 
           {/* The page's central control: it rewrites every menu path on the
@@ -84,13 +83,13 @@ export function SetupGuide() {
                   onClick={() => setPreference(MENU_VERSION_KEY, v.id)}
                   className={
                     'flex min-h-[var(--layout-touch-target)] cursor-pointer flex-col justify-center rounded-[11px] px-4 py-1.5 text-left transition-colors ' +
-                    (on ? 'surface-selected text-white' : 'text-ink-muted hover:text-ink')
+                    (on ? 'surface-selected text-ink' : 'text-ink-muted hover:text-ink')
                   }
                 >
                   <span className="text-label font-semibold uppercase tracking-[0.08em]">
                     {v.label}
                   </span>
-                  <span className={on ? 'text-meta text-white/75' : 'meta'}>{v.bodies}</span>
+                  <span className={on ? 'text-meta text-ink-muted' : 'meta'}>{v.bodies}</span>
                 </button>
               )
             })}
@@ -161,9 +160,6 @@ export function SetupGuide() {
         <h1 className="mt-3 max-w-[16ch] text-[clamp(2.125rem,5.4vw,3.5rem)] font-extrabold leading-[1.05] tracking-[-0.02em] text-ink [text-wrap:pretty]">
           {t('setupTitle')}
         </h1>
-        <p className="mt-4 max-w-[56ch] text-body-lg text-ink-muted [text-wrap:pretty]">
-          {t('setupLede')}
-        </p>
 
         <dl className="mt-10 flex flex-wrap gap-4">
           {[

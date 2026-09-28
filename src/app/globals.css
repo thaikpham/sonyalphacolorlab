@@ -489,6 +489,153 @@ body {
   color: var(--color-ink);
 }
 
+/* ---------------------------------------------------------------------------
+   Paper — the one light room, /blog.
+
+   The tokens are restated by the token package (`PAPER` in
+   packages/colorlab-tokens/src/tokens.ts), under `:root:has(.theme-paper)`.
+   What is left here is what is not a token: the per-app `--accent`, the
+   body's washes, and the component recipes whose film is a literal white
+   alpha — correct over black, invisible over paper.
+--------------------------------------------------------------------------- */
+
+:root:has(.theme-paper) {
+  /* Restated, not inherited: `--accent` resolves against the ramp on the
+     element that declares it, and the `:root` declaration above has already
+     resolved to the dark room's 400. */
+  --accent: var(--color-accent-400);
+  --accent-halo: color-mix(in oklch, var(--accent) 30%, transparent);
+}
+
+/* The washes exist to give dark glass something to refract. Paper is flat. */
+:root:has(.theme-paper) body {
+  background: var(--color-void);
+}
+
+:root:has(.theme-paper) *:hover,
+:root:has(.theme-paper) *:focus-within {
+  scrollbar-color: oklch(21% 0.014 265 / 0.22) transparent;
+}
+
+:root:has(.theme-paper) *:hover::-webkit-scrollbar-thumb,
+:root:has(.theme-paper) *:focus-within::-webkit-scrollbar-thumb {
+  background: oklch(21% 0.014 265 / 0.22);
+  background-clip: content-box;
+}
+
+/* Unlayered on purpose: the header's film is a Tailwind arbitrary value, so
+   only an unlayered rule outranks it. */
+:root:has(.theme-paper) .header-bar {
+  background: linear-gradient(180deg, oklch(100% 0 0 / 0.88), oklch(100% 0 0 / 0.74));
+  box-shadow:
+    0 1px 2px oklch(21% 0.02 265 / 0.06),
+    0 14px 34px -18px oklch(21% 0.02 265 / 0.32);
+}
+
+/* The recipes whose film is a white alpha — correct over black, invisible over
+   paper. Layered, so a utility at the call site still wins, as it does in the
+   dark room. Shadows that go through the elevation tokens need nothing here. */
+@layer components {
+  :root:has(.theme-paper) {
+    .surface,
+    .surface-raised {
+      background: oklch(100% 0 0);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+
+    .row-tint {
+      background: oklch(21% 0.014 265 / 0.035);
+    }
+
+    .surface-selected {
+      background: linear-gradient(
+        180deg,
+        color-mix(in oklch, var(--selected-hue) 13%, white),
+        color-mix(in oklch, var(--selected-hue) 7%, white)
+      );
+      box-shadow:
+        0 1px 2px oklch(21% 0.02 265 / 0.08),
+        0 10px 24px -16px color-mix(in oklch, var(--selected-hue) 45%, transparent);
+    }
+
+    .chip {
+      background: oklch(21% 0.014 265 / 0.055);
+    }
+
+    .chip-action:hover {
+      background: oklch(21% 0.014 265 / 0.09);
+    }
+
+    .seam {
+      background: linear-gradient(
+        90deg,
+        transparent,
+        oklch(21% 0.014 265 / 0.14) 12%,
+        oklch(21% 0.014 265 / 0.14) 88%,
+        transparent
+      );
+    }
+
+    .btn-accent {
+      box-shadow: 0 1px 2px oklch(21% 0.02 265 / 0.12), var(--elevation-halo);
+    }
+
+    .btn-glass {
+      background: oklch(100% 0 0);
+      box-shadow: var(--elevation-1);
+    }
+
+    .btn-glass:hover {
+      background: oklch(97% 0.004 265);
+    }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Article apparatus — numbered sections, tables and figures.
+
+   Counted in CSS rather than in the renderer: the numbers are presentation,
+   and a section inserted in the editor renumbers everything after it without
+   anything having to be re-derived. Sections use `decimal-leading-zero` to
+   match the `01` the outline rail prints beside the same heading. The body
+   is always Vietnamese (`ARTICLE_LANG`), so the caption words are too.
+--------------------------------------------------------------------------- */
+
+.lab-article {
+  counter-reset: lab-section lab-table lab-figure lab-video;
+}
+
+.lab-article h2[id] {
+  counter-increment: lab-section;
+}
+
+.lab-article h2[id]::before {
+  content: counter(lab-section, decimal-leading-zero);
+  margin-right: 0.6em;
+  color: var(--color-accent-400);
+}
+
+.lab-article figure:has(table) > figcaption::before {
+  counter-increment: lab-table;
+  content: 'Bảng ' counter(lab-table) '. ';
+}
+
+.lab-article figure:has(img) > figcaption::before {
+  counter-increment: lab-figure;
+  content: 'Hình ' counter(lab-figure) '. ';
+}
+
+.lab-article figure:has(iframe) > figcaption::before {
+  counter-increment: lab-video;
+  content: 'Video ' counter(lab-video) '. ';
+}
+
+.lab-article figure > figcaption::before {
+  font-weight: 600;
+  color: var(--color-ink-muted);
+}
+
 @keyframes fade-in {
   from {
     opacity: 0;

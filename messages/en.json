@@ -6,7 +6,6 @@
     "emptyAction": "Clear them",
     "emptyTail": "to see all {total}.",
     "title": "All recipes",
-    "lede": "Filter by tag, read the original settings, then dial them into your Sony Alpha.",
     "metaDescription": "Browse White Balance Shift recipes for Sony Alpha, filter by tag, and dial the settings into your camera.",
     "planeLabel": "White Balance Shift grid: {count, plural, one {# recipe} other {# recipes}}, {shifted} shifted away from neutral"
   },
@@ -69,7 +68,6 @@
     "next": "Next photo",
     "nextTitle": "Next photo (→ key)",
     "goTo": "Go to photo {index}",
-    "lightboxHint": "← → or click the side frames to browse · ESC or click outside to exit",
     "wbEngineLabel": "White balance",
     "paramsLabel": "Camera settings",
     "photoAlt": "{title} — photo {index}",
@@ -84,7 +82,6 @@
   },
   "tweak": {
     "title": "Tweak with AI",
-    "subtitle": "Describe a change and let AI adjust this recipe’s settings",
     "close": "Close",
     "placeholder": "Describe the change — e.g. “warmer, softer shadows”",
     "submit": "Tweak",
@@ -111,16 +108,13 @@
   },
   "community": {
     "title": "Community & tweak proposals",
-    "subtitle": "Discuss and vote on the best colour recipe variants for {title}",
     "tabComments": "Comments ({count})",
     "tabProposals": "Proposals & votes ({count})",
     "commentPlaceholder": "Write a comment, a shooting tip, or how this recipe felt to use…",
-    "commentHint": "Keep comments civil and useful for the community.",
     "commentSubmit": "Post comment",
     "commentSending": "Sending…",
     "loginPrompt": "Please <a>sign in with Google</a> in the navigation bar to write a comment.",
     "noComments": "No comments yet. Be the first to share your thoughts.",
-    "proposalIntro": "Fill in the Sony camera-format template to propose a new version the community can heart-vote on.",
     "cancel": "Cancel",
     "newProposal": "Propose a new version",
     "templateTitle": "{format} tweak template",
@@ -171,7 +165,6 @@
     "submit": "Search",
     "clear": "Clear search",
     "clearAll": "Clear all filters",
-    "escHint": "Press ESC to close",
     "close": "Close search bar"
   },
   "cameras": {
@@ -192,7 +185,6 @@
     "compare": "Compare",
     "compareBarTitle": "{count, plural, one {# product selected} other {# products selected}}",
     "compareBtn": "Open comparison table",
-    "compareConfirmSub": "Review your selected products before opening the full spec comparison.",
     "compareConfirmTitle": "Compare products",
     "compareItemsBtn": "Compare these products ({count})",
     "compareSummary": "Comparing {count} products",
@@ -320,7 +312,7 @@
     "compareLegend": "The better value is tinted with the accent colour; matching cells stay plain. An em dash marks a spec the catalogue does not publish.",
     "removeProduct": "Remove from comparison",
     "closeDialog": "Close",
-    "catalogueLede": "{count, plural, one {# product} other {# products}} in the catalogue. Use the filters at the top of the page to narrow the list.",
+    "catalogueLede": "{count, plural, one {# product} other {# products}}",
     "openCompare": "Open comparison",
     "compareSelected": "Selected",
     "productNotFound": "Product not found",
@@ -620,16 +612,21 @@
   },
   "lab": {
     "feedTitle": "Alpha Tech Blogs",
+    "feedHeading": "Technical articles",
+    "pathLabel": "Learning path",
+    "comingSoon": "Coming soon",
+    "articleCount": "{count, plural, one {# article} other {# articles}}",
     "feedDescription": "Technical articles for Sony Alpha shooters, filtered by topic and skill level.",
-    "brandSubline": "Sony Alpha · techniques",
     "topics": {
       "setup": "Camera setup",
       "color": "Colour & Creative Look",
       "af": "Focus & AF",
       "exposure": "Exposure & metering",
+      "composition": "Composition & light",
       "lens": "Lenses",
       "body": "Bodies & comparisons",
       "video": "Video & filmmaking",
+      "audio": "Audio & recording",
       "post": "Post & LUTs",
       "gear": "Accessories & workflow",
       "firmware": "Firmware"
@@ -658,7 +655,6 @@
     "firmwareDisclaimer": "Menu item names can differ slightly between firmware versions and camera lines. If you can’t find the exact name, look for the closest item in the same group — the value to set is still the one above.",
     "compareControl": "Drag to compare {before} and {after}",
     "setupWordmark": "SONY ALPHA · QUICK SETUP",
-    "setupSubline": "8-step prep",
     "menuVersion": "Menu version",
     "menuOld": "Old menu",
     "menuNew": "New menu",
@@ -730,7 +726,55 @@
         "kicker": "Screen",
         "why": "Sunny Weather pushes the screen to its brightest setting so you can still see the frame outdoors — the default Manual level is usually unreadable at midday. Display Quality: High makes the screen and the viewfinder smoother and more detailed, so you can judge focus more accurately. Both cost battery, and both make framing and reviewing markedly easier in return."
       }
-    }
+    },
+    "path": {
+      "newbie": {
+        "mindset": "Understand the camera: why a shot comes out bright, dark, sharp or soft.",
+        "focus": {
+          "setup": "The settings to change straight out of the box",
+          "exposure": "Aperture, shutter, ISO and the A, S, P modes",
+          "composition": "The rule of thirds, leading lines and reading natural light",
+          "af": "Focus modes and focus areas",
+          "lens": "Focal length, aperture and a first lens",
+          "color": "White balance and the built-in Creative Looks",
+          "video": "Resolution, frame rate and the record button",
+          "audio": "An on-camera mic and levels that don't clip"
+        }
+      },
+      "mid": {
+        "mindset": "Shoot on purpose: choose settings for the scene, not out of habit.",
+        "focus": {
+          "exposure": "Metering, compensation, histogram and zebras",
+          "composition": "Light direction, backlight and off-camera flash",
+          "af": "Back-button AF, tracking and subject settings",
+          "color": "Picture Profiles and tuning Creative Looks",
+          "video": "The 180° shutter, S-Log, ND and stabilisation",
+          "audio": "External mics, gain staging and separate recorders",
+          "lens": "Lenses by genre: portrait, tele, macro",
+          "post": "Editing RAW and a lean post workflow",
+          "gear": "Cards, batteries and a pre-shoot routine",
+          "firmware": "Updating safely and what each version adds"
+        }
+      },
+      "pro": {
+        "mindset": "Build a system: reliable results, consistent colour, a style of your own.",
+        "focus": {
+          "composition": "Multi-light setups and a visual language of your own",
+          "color": "Matching colour across bodies and light sources",
+          "post": "LUTs, colour management and delivery",
+          "video": "Log, RAW video, multi-cam and timecode",
+          "audio": "Multi-track, lavaliers, boom and location sound",
+          "af": "Per-genre AF for sport, birds and events",
+          "body": "A second body and comparing systems",
+          "gear": "Backup, redundancy and working as a crew"
+        }
+      }
+    },
+    "skillsLabel": "Skills at this stage",
+    "clearFilter": "Clear filter",
+    "stageEmptyTitle": "This stage is being written",
+    "stageEmptyBody": "Its skills are already mapped in the path; articles will follow. Meanwhile, browse the other stages.",
+    "stageLabel": "Stage {n}"
   },
   "labAdmin": {
     "newArticle": "New article",

@@ -30,21 +30,25 @@ import type {
 /** Every block sits in the same 28px rhythm. One place to change it. */
 export const BLOCK_GAP = 'mb-7'
 
-export function TldrCard({ block }: { block: TldrBlock }) {
+/**
+ * The article's abstract. The label arrives translated from the server parent,
+ * for the same reason `MenuPair`'s do.
+ */
+export function TldrCard({ block, label }: { block: TldrBlock; label: string }) {
   return (
-    /* The one tinted accent field in the article. Rule 5 applies in full:
-       body copy is pure white, its label is step 300 of the same ramp — never
-       an ink step, which on this fill is the "dark type on a dark field" bug
-       the system was rebuilt to remove. */
+    /* The one tinted accent field in the article. Its label is step 300 of the
+       same ramp and its body is `text-ink`, which reads correctly in both
+       rooms: near-white on the dark field, near-black on the paper one, where
+       the ramp is mirrored and `900` is a pale tint (globals.css). */
     <aside className={`${BLOCK_GAP} rounded-lg bg-accent-900 px-6 py-[22px] shadow-[var(--elevation-spec)]`}>
-      <p className="label text-accent-300">TL;DR</p>
+      <p className="label text-accent-300">{label}</p>
       <ul className="mt-2">
         {block.items.map((item) => (
           <li key={item} className="flex gap-2.5 py-1">
             <span aria-hidden className="text-accent-300">
               —
             </span>
-            <span className="text-body text-white">{item}</span>
+            <span className="text-body-lg leading-[1.6] text-ink">{item}</span>
           </li>
         ))}
       </ul>
@@ -58,7 +62,7 @@ export function Heading({ block, index }: { block: HeadingBlock; index: number }
        under the viewport's top edge. */
     <h2
       id={headingId(index)}
-      className={`${BLOCK_GAP} mt-3 scroll-mt-6 text-title-2 font-extrabold tracking-[-0.02em] leading-[1.2] text-ink`}
+      className={`${BLOCK_GAP} mt-12 scroll-mt-6 text-title-2 font-semibold tracking-[-0.02em] leading-[1.25] text-ink`}
     >
       {block.text}
     </h2>
@@ -67,7 +71,12 @@ export function Heading({ block, index }: { block: HeadingBlock; index: number }
 
 export function Paragraph({ block }: { block: ParagraphBlock }) {
   return (
-    <p className={`${BLOCK_GAP} text-body text-ink-muted [text-wrap:pretty]`}>{block.text}</p>
+    /* 18px at 1.75 on paper. Long-form Vietnamese carries a diacritic above
+       or below most syllables, and at the 15px catalogue default a paragraph
+       of it set close became a texture rather than lines. */
+    <p className={`${BLOCK_GAP} text-body-lg leading-[1.75] text-ink [text-wrap:pretty]`}>
+      {block.text}
+    </p>
   )
 }
 
@@ -117,6 +126,11 @@ export function MenuPair({ block, labels }: { block: MenuBlock; labels: MenuPair
 export function ComparisonTable({ block }: { block: TableBlock }) {
   return (
     <figure className={BLOCK_GAP}>
+      {/* The caption states the measuring conditions; ARTICLE-SPEC makes it
+          mandatory precisely so a table cannot imply more than it measured.
+          It sits ABOVE the table, where a numbered table's caption goes — the
+          reader learns what was measured before reading the numbers. */}
+      <figcaption className="meta mb-2">{block.caption}</figcaption>
       <div className="surface scroll-area overflow-x-auto rounded-md">
         <table className="w-full min-w-[34rem] border-separate border-spacing-0 text-left">
           <thead>
@@ -148,9 +162,6 @@ export function ComparisonTable({ block }: { block: TableBlock }) {
           </tbody>
         </table>
       </div>
-      {/* The caption states the measuring conditions; ARTICLE-SPEC makes it
-          mandatory precisely so a table cannot imply more than it measured. */}
-      <figcaption className="meta mt-2">{block.caption}</figcaption>
     </figure>
   )
 }

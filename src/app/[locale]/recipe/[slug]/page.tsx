@@ -172,7 +172,6 @@ export default async function RecipePage({
             {/* Community Comments, Proposals & Heart Voting */}
             <RecipeCommunitySection
               recipeSlug={slug}
-              recipeTitle={title}
               recipeFormat={recipe.format}
               currentSettings={recipe.settings}
               currentWb={recipe.whiteBalance}

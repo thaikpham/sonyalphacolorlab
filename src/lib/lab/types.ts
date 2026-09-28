@@ -30,15 +30,17 @@
  * `messages/*.json`.
  */
 
-/** The ten topics, plus the synthetic `all` the filter adds. */
+/** The twelve topics, plus the synthetic `all` the filter adds. */
 export type TopicId =
   | 'setup'
   | 'color'
   | 'af'
   | 'exposure'
+  | 'composition'
   | 'lens'
   | 'body'
   | 'video'
+  | 'audio'
   | 'post'
   | 'gear'
   | 'firmware'
