@@ -461,6 +461,32 @@ async function pool<T>(items: T[], limit: number, work: (item: T) => Promise<voi
   await Promise.all(workers);
 }
 
+/**
+ * HEAD one photo, falling back to GET for CDNs that refuse HEAD. A 429 is
+ * retried twice, waiting as long as `Retry-After` asks (capped at 30s) or 5s
+ * and then 10s; after that the 429 is returned for the caller to classify.
+ */
+async function probe(url: string): Promise<Response> {
+  for (let attempt = 0; ; attempt++) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 15_000);
+    let res: Response;
+    try {
+      res = await fetch(url, { method: 'HEAD', signal: controller.signal });
+      // Some CDNs refuse HEAD outright; that is not a broken image.
+      if (res.status === 405 || res.status === 501) {
+        res = await fetch(url, { method: 'GET', signal: controller.signal });
+      }
+    } finally {
+      clearTimeout(timer);
+    }
+    if (res.status !== 429 || attempt === 2) return res;
+    const asked = Number(res.headers.get('retry-after'));
+    const wait = Number.isFinite(asked) && asked > 0 ? Math.min(asked, 30) * 1000 : 5000 * (attempt + 1);
+    await new Promise((r) => setTimeout(r, wait));
+  }
+}
+
 async function checkImageUrls(): Promise<Section> {
   // One product can carry the same shot twice across gallery and hero; the CDN
   // does not need to hear about it twice. Root-relative refs are already
@@ -478,29 +504,40 @@ async function checkImageUrls(): Promise<Section> {
     }
   }
 
-  const broken: string[] = [];
-  await pool([...targets], 8, async ([url, who]) => {
-    try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 15_000);
-      try {
-        let res = await fetch(url, { method: 'HEAD', signal: controller.signal });
-        // Some CDNs refuse HEAD outright; that is not a broken image.
-        if (res.status === 405 || res.status === 501) {
-          res = await fetch(url, { method: 'GET', signal: controller.signal });
-        }
-        if (!res.ok) broken.push(`${who} — ${res.status} ${url}`);
-      } finally {
-        clearTimeout(timer);
-      }
-    } catch (e) {
-      /* A timeout or DNS failure is not proof the image is gone, so it is
-         reported as its own thing rather than counted as a 404. */
-      broken.push(`${who} — ${(e as Error).name}: ${url}`);
-    }
-  });
+  /* Eight at once against one CDN is what got B&H to answer 429 for the rest
+     of the run. Each host gets its own small pool, so the hosts run side by
+     side but none of them sees more than two requests in flight. */
+  const byHost = new Map<string, [string, string][]>();
+  for (const entry of targets) {
+    const host = new URL(entry[0]).host;
+    byHost.set(host, [...(byHost.get(host) ?? []), entry]);
+  }
 
-  const findings = compact([issue('fail', broken, 'product photos do not resolve')]);
+  const broken: string[] = [];
+  const throttled: string[] = [];
+  await Promise.all(
+    [...byHost.values()].map((entries) =>
+      pool(entries, 2, async ([url, who]) => {
+        try {
+          const res = await probe(url);
+          /* A 429 that outlasted the retries says the CDN stopped answering
+             us, not that the photo is gone. Counting it as broken is how one
+             run reported 870 of 993 photos dead. */
+          if (res.status === 429) throttled.push(`${who} — 429 ${url}`);
+          else if (!res.ok) broken.push(`${who} — ${res.status} ${url}`);
+        } catch (e) {
+          /* A timeout or DNS failure is not proof the image is gone, so it is
+             reported as its own thing rather than counted as a 404. */
+          broken.push(`${who} — ${(e as Error).name}: ${url}`);
+        }
+      }),
+    ),
+  );
+
+  const findings = compact([
+    issue('fail', broken, 'product photos do not resolve'),
+    issue('warn', throttled, 'product photos not checked — the CDN rate-limited us (429)'),
+  ]);
   if (findings.length === 0) {
     findings.push({ level: 'ok', text: `${targets.size} product photos resolve` });
   }
