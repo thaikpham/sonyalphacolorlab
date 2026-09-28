@@ -1,9 +1,14 @@
 import { Suspense } from 'react'
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { SetupGuide } from '@/components/lab/setup-guide'
 import { SiteHeader } from '@/components/site-header'
 import type { Locale } from '@/i18n/routing'
+
+/* The paper room's ground, restated as sRGB for the browser chrome — the same
+   exemption the root layout takes for `--color-void`. Keep it in step with
+   `:root:has(.theme-paper)` in globals.css. */
+export const viewport: Viewport = { themeColor: '#F9F8F5', colorScheme: 'light' }
 
 export async function generateMetadata({
   params,
@@ -35,7 +40,7 @@ export default async function SetupPage({
        is `z-10` and stays. So while a reader is working down the eight steps
        the tool's bar is the only thing pinned, which is the one that carries
        the menu-version toggle and the progress. */
-    <>
+    <div className="theme-paper contents">
       {/* The boundary is load-bearing on a statically generated route.
           `SiteHeader` reads `useSearchParams()`, and during static generation
           that bails the nearest Suspense boundary to client-side rendering —
@@ -58,6 +63,6 @@ export default async function SetupPage({
           <SetupGuide />
         </Suspense>
       </main>
-    </>
+    </div>
   )
 }

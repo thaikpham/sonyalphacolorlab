@@ -132,3 +132,35 @@
   --layout-gap: clamp(16px, 1.4vw, 24px);
   --layout-gap-tight: clamp(10px, 1vw, 16px);
 }
+
+:root:has(.theme-paper) {
+  color-scheme: light;
+
+  /* Paper ground, a faint warm white. Films are ink at low alpha instead
+     of white: a white film over white is nothing. Ink measured on this
+     ground: 16.5:1, 10.4:1, 5.6:1 — the same three steps, still AA. */
+  --color-void: oklch(98.2% 0.004 85);
+  --color-glass: oklch(21% 0.014 265 / 0.04);
+  --color-glass-raised: oklch(21% 0.014 265 / 0.07);
+  --color-sunken: oklch(21% 0.014 265 / 0.045);
+  --color-ink: oklch(21% 0.014 265);
+  --color-ink-muted: oklch(36% 0.014 265);
+  --color-ink-faint: oklch(49% 0.014 265);
+  --color-accent-100: oklch(23.5% 0.105 268);
+  --color-accent-200: oklch(31.5% 0.135 268);
+  --color-accent-300: oklch(41.5% 0.160 268);
+  --color-accent-400: oklch(50.5% 0.185 268);
+  --color-accent-600: oklch(71.5% 0.125 268);
+  --color-accent-700: oklch(81.5% 0.080 268);
+  --color-accent-800: oklch(89.5% 0.045 268);
+  --color-accent-900: oklch(95.5% 0.020 268);
+
+  /* Shadows in ink rather than black, and far softer: on paper a shadow
+     is a lift, not a hole. The specular line becomes a white one, which
+     on a white card is invisible — the shadow is the whole edge here. */
+  --elevation-1: 0 1px 2px oklch(21% 0.02 265 / 0.06), 0 10px 28px -14px oklch(21% 0.02 265 / 0.16);
+  --elevation-2: 0 2px 6px oklch(21% 0.02 265 / 0.07), 0 20px 44px -20px oklch(21% 0.02 265 / 0.22);
+  --elevation-3: 0 6px 16px oklch(21% 0.02 265 / 0.09), 0 32px 72px -24px oklch(21% 0.02 265 / 0.26);
+  --elevation-spec: inset 0 1px 0 oklch(100% 0 0 / 0.9);
+  --elevation-inset: inset 0 1px 3px oklch(21% 0.02 265 / 0.09);
+}

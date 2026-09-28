@@ -82,9 +82,6 @@ export default async function ColorLabPage({
           <h1 className="text-display font-extrabold tracking-[-0.02em] leading-[1.08] text-ink text-pretty">
             {t('title')}
           </h1>
-          <p className="hero-intro text-body-lg text-ink-muted max-w-[58ch] leading-[1.5] text-pretty">
-            {t('lede')}
-          </p>
         </div>
 
         {recipes.length === 0 ? (

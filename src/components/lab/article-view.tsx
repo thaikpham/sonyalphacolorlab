@@ -1,6 +1,6 @@
 import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
-import { buildOutline, buildSummary } from '@/lib/lab/outline'
+import { buildOutline } from '@/lib/lab/outline'
 import { ARTICLE_LANG } from '@/lib/lab/articles'
 import type { Article, Block } from '@/lib/lab/types'
 import {
@@ -26,10 +26,13 @@ import { CompareSlider } from './compare-slider'
  * rewritten section cannot leave a stale summary behind it.
  */
 
-function renderBlock(block: Block, i: number, articleId: string, menuLabels: MenuPairLabels) {
+type BlockLabels = { readonly menu: MenuPairLabels; readonly tldr: string }
+
+function renderBlock(block: Block, i: number, articleId: string, labels: BlockLabels) {
+  const menuLabels = labels.menu
   switch (block.t) {
     case 'tldr':
-      return <TldrCard key={i} block={block} />
+      return <TldrCard key={i} block={block} label={labels.tldr} />
     case 'h':
       return <Heading key={i} block={block} index={i} />
     case 'p':
@@ -54,9 +57,8 @@ function renderBlock(block: Block, i: number, articleId: string, menuLabels: Men
 export async function ArticleView({ article }: { article: Article }) {
   const t = await getTranslations('lab')
   const locale = await getLocale()
-  const menuLabels = { old: t('menuOld'), new: t('menuNew') }
+  const labels = { menu: { old: t('menuOld'), new: t('menuNew') }, tldr: t('summary') }
   const outline = buildOutline(article.blocks)
-  const summary = buildSummary(article)
 
   return (
     /* `wrap-reverse` is deliberate and is the handoff's call: when the viewport
@@ -71,11 +73,15 @@ export async function ArticleView({ article }: { article: Article }) {
        level with the end of the article and below the fold on every screen.
        Under `wrap-reverse` the visual top is `flex-end`. */
     <div className="flex flex-wrap-reverse items-end gap-y-8 gap-x-[clamp(2rem,3.5vw,4rem)]">
-      <article className="min-w-0 max-w-[96ch] flex-1 basis-[32.5rem]">
-        <Link href="/blog" className="btn-glass mb-6 gap-2 text-label">
-          <span aria-hidden className="text-accent-400">
-            ←
-          </span>
+      {/* 46rem is the measure, not a layout width: at the 18px body it holds
+          roughly 70 characters of Vietnamese a line, which is where long
+          technical prose stops costing the reader their place. */}
+      <article className="lab-article min-w-0 max-w-[46rem] flex-1 basis-[32.5rem]">
+        <Link
+          href="/blog"
+          className="mb-6 inline-flex min-h-[var(--layout-touch-target)] items-center gap-2 text-body-sm font-semibold text-ink-muted transition-colors hover:text-accent-400"
+        >
+          <span aria-hidden>←</span>
           <span>{t('backToFeed')}</span>
         </Link>
 
@@ -95,12 +101,15 @@ export async function ArticleView({ article }: { article: Article }) {
         ) : null}
 
         <div lang={ARTICLE_LANG}>
-          <h1 className="text-display font-extrabold tracking-[-0.02em] leading-[1.1] text-ink [text-wrap:pretty]">
+          <h1 className="text-display font-semibold tracking-[-0.02em] leading-[1.15] text-ink [text-wrap:pretty]">
             {article.title}
           </h1>
-          <p className="mt-4 mb-8 text-body-lg text-ink-muted [text-wrap:pretty]">{article.dek}</p>
+          <p className="mt-4 text-title-3 font-normal leading-[1.5] text-ink-muted [text-wrap:pretty]">
+            {article.dek}
+          </p>
+          <hr className="seam mt-8 mb-8" />
 
-          {article.blocks.map((block, i) => renderBlock(block, i, article.id, menuLabels))}
+          {article.blocks.map((block, i) => renderBlock(block, i, article.id, labels))}
         </div>
 
         <footer className="mt-3 pt-5">
@@ -119,20 +128,6 @@ export async function ArticleView({ article }: { article: Article }) {
         aria-label={t('railLabel')}
         className="flex grow basis-[clamp(15rem,19vw,20rem)] flex-col gap-5 self-end lg:sticky lg:top-6 lg:grow-0"
       >
-        <aside className="surface px-5 py-[18px]">
-          <p className="label text-accent-400">{t('summary')}</p>
-          <ul lang={ARTICLE_LANG} className="mt-2">
-            {summary.map((line) => (
-              <li key={line} className="flex gap-2 py-1">
-                <span aria-hidden className="text-ink-faint">
-                  —
-                </span>
-                <span className="text-body-sm leading-normal text-ink">{line}</span>
-              </li>
-            ))}
-          </ul>
-        </aside>
-
         {outline.length > 0 ? (
           <div>
             <p className="label">{t('inThisArticle')}</p>

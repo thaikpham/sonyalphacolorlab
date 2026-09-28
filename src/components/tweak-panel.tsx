@@ -140,7 +140,6 @@ export function TweakPanel({ slug, locale, currentWb, currentSettings }: Props) 
               <h2 className="text-title-3 font-semibold tracking-[-0.02em] text-ink">
                 {t('title')}
               </h2>
-              <p className="meta mt-1">{t('subtitle')}</p>
             </div>
           </div>
 

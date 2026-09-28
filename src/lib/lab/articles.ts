@@ -16,7 +16,7 @@
 import type { Article, LevelId, TopicId } from './types'
 
 /**
- * Ten topics, in the order they appear in the rail. The order is editorial —
+ * Twelve topics, in the order they appear in the rail. The order is editorial —
  * setup first because it is where a new reader lands, firmware last because
  * it is the one nobody browses for. Not alphabetical, and not by count.
  *
@@ -31,9 +31,11 @@ export const TOPICS: readonly { readonly id: TopicId; readonly label: string }[]
   { id: 'color', label: 'Màu ảnh & Creative Look' },
   { id: 'af', label: 'Lấy nét & AF' },
   { id: 'exposure', label: 'Phơi sáng & đo sáng' },
+  { id: 'composition', label: 'Bố cục & ánh sáng' },
   { id: 'lens', label: 'Ống kính' },
   { id: 'body', label: 'Thân máy & so sánh' },
   { id: 'video', label: 'Video & quay phim' },
+  { id: 'audio', label: 'Âm thanh & thu âm' },
   { id: 'post', label: 'Hậu kỳ & LUT' },
   { id: 'gear', label: 'Phụ kiện & quy trình' },
   { id: 'firmware', label: 'Firmware' },

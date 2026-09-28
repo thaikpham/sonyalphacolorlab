@@ -16,6 +16,10 @@ rule below is the fix for something that was actually in this repo.
 2. **13px floor.** `--text-meta` is the smallest type in the ecosystem.
 3. **Dark only.** Blue-black ground, one blue-purple accent, three signal hues.
    No red, no yellow, no green — those are Canon, Nikon and Fuji.
+   The one light room is `/blog` (`.theme-paper`, `PAPER` in `tokens.ts`): long
+   prose and captioned tables read as study material on paper, and the blog
+   shows no recipe whose colour a light ground would distort. There, rule 5
+   inverts — text is darker than its ground.
 4. **No strokes.** Depth is translucency + blur + drop shadow + a 1px specular
    highlight. A border makes a component read as boxed in.
 5. **Text is always lighter than what it sits on.** No exceptions, ever.

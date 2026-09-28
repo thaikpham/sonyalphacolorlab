@@ -16,6 +16,9 @@ values and is the only source of truth. Run `/design-sync` to audit the tree.
    weight or step down the ink ramp — never its size.
 3. **Dark only.** Ground `void` #07080B. One blue-purple accent. No red, no yellow, no
    green in any new value: those are Canon, Nikon and Fuji signatures.
+   One exception, `/blog`: a `.theme-paper` element restates the tokens on `:root`
+   (`PAPER` in `tokens.ts`) for a light, paper ground. The accent ramp is mirrored, so
+   step meanings hold; on a tinted field use `text-ink`, never `text-white`.
 4. **No strokes.** Depth is translucency + blur + drop shadow + the 1px specular
    highlight (`--elevation-spec`). `border`, `ring` and `outline` are banned except on
    `:focus-visible`.
@@ -24,6 +27,19 @@ values and is the only source of truth. Run `/design-sync` to audit the tree.
    a bug.
 6. **Scrollbars are invisible until hovered** and never occupy layout. The rules live in
    `globals.css` only — never write per-component scrollbar CSS.
+
+## Copy — no explanatory lines
+
+Headings, labels, counts and the controls themselves carry the meaning. Do not add
+helper microcopy: a hint under a label, a lede or subtitle that restates the heading,
+an eyebrow over an `h1`, "you're here if…", "use the filters above to…", keyboard hints
+("Nhấn ESC để đóng", "Phím ← →"), "be civil" notes, or an intro paragraph above a form
+or button. All of it was removed site-wide on 2026-09-28 as too much information.
+
+Kept on purpose, because each does a job: safety and accuracy disclaimers (AI output,
+firmware menu differences), hard limits ("max 6 to compare"), error and 404 text, SEO
+`description` metadata (in `messages/`, not rendered), and field guidance in `/admin`.
+When unsure, leave it out.
 
 ## Type scale — a size outside it is a bug
 

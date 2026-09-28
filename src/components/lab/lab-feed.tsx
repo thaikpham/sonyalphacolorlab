@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { ARTICLE_LANG, LEVELS, TOPICS } from '@/lib/lab/articles'
+import { topicsForLevel } from '@/lib/lab/curriculum'
 import type { Article, LevelId, TopicId } from '@/lib/lab/types'
 
 /**
@@ -43,13 +44,85 @@ function matches(article: Article, { topic, level }: FeedFilter): boolean {
   )
 }
 
-/** A filter link that keeps the other axis where the reader left it. */
-function filterHref(current: FeedFilter, patch: Partial<FeedFilter>) {
+/**
+ * A filter link. `hash` lands a topic choice on the results rather than back
+ * at the top of the path: below `lg` the rail sits above the list, and an
+ * opened stage is most of a phone screen tall.
+ */
+function filterHref(current: FeedFilter, patch: Partial<FeedFilter>, hash?: string) {
   const next = { ...current, ...patch }
   const query: Record<string, string> = {}
   if (next.topic !== 'all') query.topic = next.topic
   if (next.level !== 'all') query.level = next.level
-  return { pathname: '/blog' as const, query }
+  return { pathname: '/blog' as const, query, ...(hash ? { hash } : {}) }
+}
+
+/** The setup tool is the newbie `setup` topic's content until articles exist. */
+const TOOL_FOR: Partial<Record<TopicId, '/blog/setup'>> = { setup: '/blog/setup' }
+
+/** Stage numbers, printed as the outline rail prints section numbers. */
+const stageNumber = (i: number) => String(i + 1).padStart(2, '0')
+
+function ArticleRow({
+  article,
+  t,
+}: {
+  article: Article
+  t: Awaited<ReturnType<typeof getTranslations<'lab'>>>
+}) {
+  return (
+    <li>
+      <hr className="seam" />
+      <Link href={`/blog/${article.id}`} className="group block py-6">
+        <p className="label">
+          <span className="text-accent-400">{t(`topics.${article.topic}`)}</span>
+          <span className="text-ink-faint">
+            {' '}
+            · <span lang={ARTICLE_LANG}>{article.read}</span>
+          </span>
+        </p>
+        <h3 className="mt-2 text-title-3 font-semibold tracking-[-0.02em] leading-[1.3] text-ink transition-colors group-hover:text-accent-400 [text-wrap:pretty]">
+          {article.title}
+        </h3>
+        <p className="mt-2 max-w-[70ch] text-body text-ink-muted [text-wrap:pretty]">
+          {article.dek}
+        </p>
+      </Link>
+    </li>
+  )
+}
+
+type LabT = Awaited<ReturnType<typeof getTranslations<'lab'>>>
+
+/**
+ * The pinned setup tool, as a grid cell. It keeps the row's seam and rhythm
+ * so it lines up with the articles beside it, and carries the one tinted
+ * field in the list — pinned is the only thing here that is not an article.
+ */
+function PinnedTool({ t }: { t: LabT }) {
+  return (
+    <li>
+      <hr className="seam" />
+      <div className="py-6">
+        <Link
+          href="/blog/setup"
+          className="group block rounded-lg bg-accent-900 px-5 py-4 shadow-[var(--elevation-spec)]"
+        >
+          <p className="label text-accent-300">
+            {t('pinned')} · {t('tool')}
+          </p>
+          <h3 className="mt-2 text-title-3 font-semibold tracking-[-0.02em] leading-[1.3] text-ink transition-colors group-hover:text-accent-400 [text-wrap:pretty]">
+            {t('pinnedTitle')}
+          </h3>
+          <p className="mt-2 text-body text-ink-muted [text-wrap:pretty]">{t('pinnedDek')}</p>
+          <span className="mt-3 inline-flex min-h-[var(--layout-touch-target)] items-center gap-2 text-body-sm font-semibold text-accent-400">
+            {t('pinnedCta')}
+            <span aria-hidden>→</span>
+          </span>
+        </Link>
+      </div>
+    </li>
+  )
 }
 
 export async function LabFeed({
@@ -59,14 +132,10 @@ export async function LabFeed({
   filter: FeedFilter
   articles: readonly Article[]
 }) {
-  const t = await getTranslations('lab')
+  const t: LabT = await getTranslations('lab')
   const visible = articles.filter((a) => matches(a, filter))
-
-  /* Counts follow the level filter but ignore the topic filter — a topic row
-     showing "0" because a different topic is selected would be telling the
-     reader the topic is empty when it is not. */
-  const countFor = (topic: TopicId | 'all') =>
-    articles.filter((a) => matches(a, { topic, level: filter.level })).length
+  const count = (level: LevelId | 'all', topic: TopicId | 'all') =>
+    articles.filter((a) => matches(a, { level, topic })).length
 
   /* The pinned tool is a setup topic at newbie level, so it hides under any
      filter that would exclude an article with those two properties. */
@@ -74,137 +143,125 @@ export async function LabFeed({
     (filter.topic === 'all' || filter.topic === 'setup') &&
     (filter.level === 'all' || filter.level === 'newbie')
 
+  const stageIndex = LEVELS.findIndex((l) => l.id === filter.level)
+  const groups = LEVELS.map((level, i) => ({
+    level,
+    n: stageNumber(i),
+    items: visible.filter((a) => a.level === level.id),
+    /* The setup tool is a newbie `setup` entry, so it sits in that stage's
+       grid as its first cell — the same width as an article beside it,
+       not a banner the full width of the page above all of them. */
+    pinned: showPinned && level.id === 'newbie',
+  })).filter((g) => g.items.length > 0 || g.pinned)
+
   return (
-    /* `max-w-[160rem] inset-safe` is the ecosystem's horizontal rhythm — the
-       same wrapper `/colorlab` uses, and the width the floating header bar
-       aligns to. The handoff asks for full-bleed and this still is one at any
-       real screen size (160rem is 2560px); what it fixes is content running
-       80px wider than the chrome above it, which read as the page escaping
-       its own header. */
-    <div className="mx-auto flex w-full max-w-[160rem] flex-wrap items-start gap-y-8 gap-x-[clamp(2rem,3.5vw,4rem)] inset-safe pb-24">
-      <aside className="flex grow basis-[clamp(14.375rem,17vw,18.75rem)] flex-col gap-6 self-start py-6 lg:sticky lg:top-0 lg:grow-0">
-        {/* No wordmark here any more — the ecosystem header above the feed
-            carries it, and links to this same route. Two "Alpha Tech Blogs"
-            stacked 60px apart read as a rendering fault, not as branding. The
-            rail keeps the subline as its own label, which is what a reader
-            needs at this position: what they are filtering. */}
-        <p className="label">{t('brandSubline')}</p>
+    /* Full bleed at the ecosystem's rhythm — `max-w-[160rem]`, the width the
+       floating header aligns to. A single column of titles at this width
+       left most of a wide monitor empty, so the list below becomes a grid
+       that adds columns as the room grows; each entry still keeps its own
+       ~70ch measure. */
+    <div className="mx-auto flex w-full max-w-[160rem] flex-wrap items-start gap-y-6 gap-x-[clamp(2rem,4vw,4rem)] inset-safe pb-24">
+      {/* Full width, above both columns: below `lg` the path wraps above the
+        list, and a page whose first screen is a syllabus with no title
+        does not say what it is. */}
+      <header className="basis-full pt-6">
+        <h1 className="text-display font-semibold tracking-[-0.02em] leading-[1.1] text-ink">
+          {t('feedHeading')}
+        </h1>
+      </header>
 
-        <nav aria-label={t('topicFilter')}>
-          {/* A rail below `lg`, a scrolling row above it. Eleven stacked rows
-              is a full phone screen of filters before the reader reaches a
-              single article — the same problem `.filter-scroll` exists to
-              solve for the level pills, and `.scroll-area` is the system's
-              silent scrollbar, so neither half of this needs new CSS. */}
-          <ul className="scroll-area flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:gap-1 lg:overflow-x-visible lg:pb-0">
-            {(['all', ...TOPICS.map((topic) => topic.id)] as const).map((id) => {
-              const on = filter.topic === id
-              return (
-                <li key={id}>
-                  <Link
-                    href={filterHref(filter, { topic: id })}
-                    aria-current={on ? 'true' : undefined}
-                    className={
-                      'flex min-h-[var(--layout-touch-target)] items-center gap-3 rounded-md px-3 py-2 text-body-sm whitespace-nowrap transition-colors ' +
-                      'lg:w-full lg:justify-between ' +
-                      (on
-                        ? 'surface-selected font-semibold text-white'
-                        : 'text-ink-muted hover:text-ink')
-                    }
-                  >
-                    <span>{id === 'all' ? t('allTopics') : t(`topics.${id}`)}</span>
-                    <span
-                      className={
-                        'tabular-nums ' + (on ? 'text-white/70' : 'text-ink-faint')
-                      }
-                    >
-                      {countFor(id)}
-                    </span>
-                  </Link>
-                </li>
-              )
-            })}
-          </ul>
-        </nav>
+      <PathRail filter={filter} articles={articles} count={count} t={t} />
 
-        <nav aria-label={t('levelFilter')}>
-          <p className="label mb-2">{t('levelFilter')}</p>
-          <ul className="filter-scroll flex flex-wrap gap-2">
-            {(['all', ...LEVELS.map((level) => level.id)] as const).map((id) => {
-              const on = filter.level === id
-              return (
-                <li key={id}>
-                  <Link
-                    href={filterHref(filter, { level: id })}
-                    aria-current={on ? 'true' : undefined}
-                    className={
-                      'chip chip-action tracking-[0.08em] uppercase ' +
-                      (on ? 'surface-selected text-white' : '')
-                    }
-                  >
-                    {id === 'all' ? t('allLevels') : t(`levels.${id}`)}
-                  </Link>
-                </li>
-              )
-            })}
-          </ul>
-        </nav>
-      </aside>
-
-      <div className="min-w-0 flex-1 basis-[32.5rem] pt-6">
-        {showPinned ? (
-          <section className="surface-raised mb-8 rounded-xl p-7">
-            <div className="flex flex-wrap gap-2">
-              <span className="chip bg-accent-500 font-semibold uppercase tracking-[0.08em] text-white">
-                {t('pinned')}
-              </span>
-              <span className="chip bg-accent-900 font-semibold uppercase tracking-[0.08em] text-white">
-                {t('tool')}
-              </span>
-            </div>
-            <h2 className="mt-4 text-title-1 font-extrabold tracking-[-0.02em] leading-[1.15] text-ink [text-wrap:pretty]">
-              {t('pinnedTitle')}
-            </h2>
-            <p className="mt-3 max-w-[52ch] text-body-lg text-ink-muted [text-wrap:pretty]">
-              {t('pinnedDek')}
-            </p>
-            <Link href="/blog/setup" className="btn-accent mt-6">
-              {t('pinnedCta')}
-            </Link>
-          </section>
-        ) : null}
-
-        {visible.length > 0 ? (
-          <ul>
-            {visible.map((article) => (
-              <li key={article.id}>
-                <hr className="seam" />
-                <Link href={`/blog/${article.id}`} className="block py-6 group">
-                  <p className="label">
-                    <span className="text-accent-400">{t(`topics.${article.topic}`)}</span>
-                    <span className="text-ink-faint">
-                      {' '}
-                      · {t(`levels.${article.level}`)} · <span lang={ARTICLE_LANG}>{article.read}</span>
-                    </span>
-                  </p>
-                  <h3 className="mt-2 text-title-2 font-extrabold tracking-[-0.02em] leading-[1.2] text-ink transition-colors group-hover:text-accent-400 [text-wrap:pretty]">
-                    {article.title}
-                  </h3>
-                  <p className="mt-2 max-w-[78ch] text-body text-ink-muted [text-wrap:pretty]">
-                    {article.dek}
-                  </p>
+      <div className="min-w-0 flex-1 basis-[32.5rem]">
+        {/* Where the reader is, in words, with the way back out. The rail
+            says the same thing by highlight — this line is for the reader
+            who arrived on a shared filtered link and the phone reader whose
+            rail is a screen above. */}
+        <div id="articles" className="flex min-h-[var(--layout-touch-target)] scroll-mt-4 flex-wrap items-center gap-x-3 gap-y-1">
+          {stageIndex >= 0 ? (
+            <>
+              <p className="label">
+                <span className="text-accent-400">
+                  {t('stageLabel', { n: stageNumber(stageIndex) })}
+                </span>
+                {' · '}
+                {t(`levels.${filter.level as LevelId}`)}
+                {filter.topic !== 'all' ? <> › {t(`topics.${filter.topic}`)}</> : null}
+              </p>
+              <Link
+                href="/blog"
+                className="text-body-sm font-semibold text-ink-muted transition-colors hover:text-accent-400"
+              >
+                {t('clearFilter')}
+              </Link>
+            </>
+          ) : (
+            /* A topic with no stage only arrives by an older shared link —
+               the path always pairs them now — but it still names itself. */
+            <p className="label">
+              {filter.topic !== 'all' ? t(`topics.${filter.topic}`) : t('allTopics')} ·{' '}
+              {t('articleCount', { count: visible.length })}
+              {filter.topic !== 'all' ? (
+                <Link
+                  href="/blog"
+                  className="ml-3 text-body-sm font-semibold normal-case tracking-normal text-ink-muted transition-colors hover:text-accent-400"
+                >
+                  {t('clearFilter')}
                 </Link>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <div className="max-w-[52ch]">
+              ) : null}
+            </p>
+          )}
+        </div>
+
+        {groups.length > 0 ? (
+          groups.map((g) => (
+            <section key={g.level.id} aria-labelledby={`stage-${g.level.id}`} className="mt-10">
+              {/* One stage selected, the context line above already names it
+                  — a second heading saying the same would be the stutter the
+                  header wordmark once caused. */}
+              <h2
+                id={`stage-${g.level.id}`}
+                className={
+                  stageIndex >= 0
+                    ? 'sr-only'
+                    : 'flex items-baseline gap-3 text-title-2 font-semibold tracking-[-0.02em] text-ink'
+                }
+              >
+                <span className="tabular-nums text-accent-400">{g.n}</span>
+                <span>{t(`levels.${g.level.id}`)}</span>
+                {g.items.length > 0 ? (
+                  <span className="meta font-normal tracking-normal">
+                    {t('articleCount', { count: g.items.length })}
+                  </span>
+                ) : null}
+              </h2>
+              <ul
+                className={
+                  'grid gap-x-[clamp(2rem,3vw,3.5rem)] xl:grid-cols-2 3xl:grid-cols-3 ' +
+                  (stageIndex >= 0 ? '' : 'mt-4')
+                }
+              >
+                {g.pinned ? <PinnedTool t={t} /> : null}
+                {g.items.map((article) => (
+                  <ArticleRow key={article.id} article={article} t={t} />
+                ))}
+              </ul>
+            </section>
+          ))
+        ) : showPinned ? null : (
+          <div className="mt-10 max-w-[52ch]">
             <hr className="seam" />
             <div className="py-14">
-              <h2 className="text-title-2 font-extrabold tracking-[-0.02em] text-ink">
-                {t('emptyTitle')}
+              <h2 className="text-title-2 font-semibold tracking-[-0.02em] text-ink">
+                {stageIndex >= 0 && count(filter.level, 'all') === 0
+                  ? t('stageEmptyTitle')
+                  : t('emptyTitle')}
               </h2>
-              <p className="mt-3 text-body text-ink-muted">{t('emptyBody')}</p>
+              <p className="mt-3 text-body text-ink-muted">
+                {stageIndex >= 0 && count(filter.level, 'all') === 0
+                  ? t('stageEmptyBody')
+                  : t('emptyBody')}
+              </p>
               <Link href="/blog" className="btn-glass mt-6">
                 {t('emptyCta')}
               </Link>
@@ -212,6 +269,193 @@ export async function LabFeed({
           </div>
         )}
       </div>
+    </div>
+  )
+}
+
+/**
+ * The learning path. Three stages; the one in the URL is open and lists the
+ * skills that stage is about — each topic with what it means AT this stage,
+ * so "Lấy nét & AF" under Cơ bản and under Nâng cao are visibly different
+ * lessons, not one filter shown twice.
+ *
+ * Opening a stage is a link, not a client toggle: the open stage IS the level
+ * filter, so the list beside it follows, the URL can be shared, and the whole
+ * feed stays a Server Component. Pressing the open stage closes it and walks
+ * back out to every article.
+ */
+function PathRail({
+  filter,
+  articles,
+  count,
+  t,
+}: {
+  filter: FeedFilter
+  articles: readonly Article[]
+  count: (level: LevelId | 'all', topic: TopicId | 'all') => number
+  t: LabT
+}) {
+  return (
+    <nav
+      aria-label={t('pathLabel')}
+      className="flex grow basis-[clamp(18rem,25vw,23rem)] flex-col self-start lg:sticky lg:top-0 lg:py-4 lg:grow-0"
+    >
+      <p className="label">{t('pathLabel')}</p>
+
+      <ol className="mt-4 flex flex-col gap-2">
+        {LEVELS.map((level, i) => {
+          const open = filter.level === level.id
+          const total = count(level.id, 'all')
+          return (
+            <li key={level.id}>
+              <Link
+                href={filterHref(filter, { level: open ? 'all' : level.id, topic: 'all' })}
+                aria-current={open ? 'true' : undefined}
+                className={
+                  'flex min-h-[var(--layout-touch-target)] gap-3 rounded-lg px-3 py-3 transition-colors ' +
+                  (open ? 'surface-selected' : 'hover:bg-glass')
+                }
+              >
+                <span
+                  className={
+                    'flex h-11 w-11 shrink-0 items-center justify-center rounded-sm text-body font-extrabold tabular-nums ' +
+                    (open ? 'bg-accent-500 text-white' : 'bg-accent-900 text-accent-300')
+                  }
+                >
+                  {stageNumber(i)}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-baseline justify-between gap-2">
+                    <span className="text-body-lg font-semibold text-ink">
+                      {t(`levels.${level.id}`)}
+                    </span>
+                    <span className={'meta shrink-0 ' + (total > 0 ? 'text-accent-400' : '')}>
+                      {total > 0 ? t('articleCount', { count: total }) : t('comingSoon')}
+                    </span>
+                  </span>
+                  <span className="mt-0.5 block text-body-sm leading-[1.45] text-ink-muted [text-wrap:pretty]">
+                    {t(`path.${level.id}.mindset`)}
+                  </span>
+                </span>
+              </Link>
+
+              {open ? <StageSkills level={level.id} filter={filter} articles={articles} count={count} t={t} /> : null}
+            </li>
+          )
+        })}
+      </ol>
+    </nav>
+  )
+}
+
+function StageSkills({
+  level,
+  filter,
+  articles,
+  count,
+  t,
+}: {
+  level: LevelId
+  filter: FeedFilter
+  articles: readonly Article[]
+  count: (level: LevelId | 'all', topic: TopicId | 'all') => number
+  t: LabT
+}) {
+  const focus = (topic: TopicId) =>
+    t.has(`path.${level}.focus.${topic}`) ? t(`path.${level}.focus.${topic}`) : null
+
+  return (
+    /* Full rail width, not indented under the stage's text column: the
+       indent cost 56px, and at a 21rem rail that was the difference between
+       two checkpoints a line and one. The open stage's tint above is what
+       ties them to it. */
+    <div className="animate-fade-in px-3 pb-2">
+      <p className="label mt-3">{t('skillsLabel')}</p>
+      {/* Checkpoints, not rows. A stage opened as a list of name + focus
+          line was eight to ten two-line rows — taller than the viewport, so
+          the sticky rail grew its own scrollbar beside the page's. As chips
+          the whole stage fits in a few lines; the focus line is still one
+          hover or one keyboard focus away.
+
+          Where the card opens depends on the room. From `lg` the `li` is
+          the anchor and the card opens under its own chip, over the article
+          column beside the rail. Below `lg` the rail is the full screen
+          width and a chip near the right edge would push a card off it, so
+          the `ul` is the anchor and every card opens full width under the
+          grid instead. */}
+      <ul className="relative mt-2 flex flex-wrap gap-1.5">
+        {topicsForLevel(level, articles).map((topic) => {
+          const n = count(level, topic)
+          const on = filter.topic === topic
+          const tool = level === 'newbie' ? TOOL_FOR[topic] : undefined
+          const status = n > 0 ? t('articleCount', { count: n }) : tool ? t('tool') : t('comingSoon')
+          const tipId = `skill-${level}-${topic}`
+
+          const chip =
+            /* 44px under a finger; a mouse gets the tighter 36px, which is
+               what lets two checkpoints share a line in a 23rem rail. */
+            'chip min-h-[var(--layout-touch-target)] pointer-fine:min-h-9 gap-2 transition-colors ' +
+            (on ? 'surface-selected text-ink font-semibold' : n > 0 || tool ? 'chip-action text-ink' : 'text-ink-faint')
+          const content = (
+            <>
+              {/* The checkpoint mark: filled where there is something to
+                  read, a pressed-in well where there is not yet. */}
+              <span
+                aria-hidden
+                className={
+                  'h-2 w-2 shrink-0 rounded-[3px] ' +
+                  (n > 0 || tool ? 'bg-accent-500' : 'bg-sunken shadow-[var(--elevation-inset)]')
+                }
+              />
+              <span className="whitespace-nowrap">{t(`topics.${topic}`)}</span>
+              {n > 0 ? <span className="tabular-nums text-accent-400">{n}</span> : null}
+            </>
+          )
+
+          return (
+            <li key={topic} className="group lg:relative">
+              {n > 0 ? (
+                <Link
+                  href={filterHref(filter, { topic: on ? 'all' : topic }, 'articles')}
+                  aria-current={on ? 'true' : undefined}
+                  aria-describedby={tipId}
+                  className={chip}
+                >
+                  {content}
+                </Link>
+              ) : tool ? (
+                <Link href={tool} aria-describedby={tipId} className={chip}>
+                  {content}
+                </Link>
+              ) : (
+                /* Focusable so a keyboard or a tap can open its card too;
+                   not a link, because there is nothing to go to yet. */
+                <span tabIndex={0} aria-describedby={tipId} className={`${chip} cursor-default`}>
+                  {content}
+                </span>
+              )}
+
+              <span
+                id={tipId}
+                role="tooltip"
+                className="surface-raised pointer-events-none invisible absolute inset-x-0 top-[calc(100%+0.5rem)] z-20 lg:right-auto lg:w-[18rem] rounded-md px-4 py-3 opacity-0 transition-opacity duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100"
+              >
+                <span className="flex items-baseline justify-between gap-3">
+                  <span className="text-body-sm font-semibold text-ink">{t(`topics.${topic}`)}</span>
+                  <span className={'meta shrink-0 ' + (n > 0 || tool ? 'text-accent-400' : '')}>
+                    {status}
+                  </span>
+                </span>
+                {focus(topic) ? (
+                  <span className="mt-1 block text-body-sm leading-[1.45] text-ink-muted [text-wrap:pretty]">
+                    {focus(topic)}
+                  </span>
+                ) : null}
+              </span>
+            </li>
+          )
+        })}
+      </ul>
     </div>
   )
 }
