@@ -244,7 +244,7 @@ export function ImagePanel({ recipeId }: { recipeId: string }) {
               <img
                 src={img.previewUrl}
                 alt={img.alt ?? ''}
-                className="h-24 w-32 shrink-0 rounded-sm bg-black/40 object-cover"
+                className="h-24 w-32 shrink-0 rounded-sm bg-sunken object-cover"
               />
 
               <div className="flex min-w-[14rem] grow flex-col gap-2">
