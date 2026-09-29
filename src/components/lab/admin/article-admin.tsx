@@ -429,7 +429,7 @@ export function ArticleAdmin() {
                         'chip font-semibold uppercase tracking-[0.08em] ' +
                         (a.status === 'published'
                           ? 'bg-accent-500 text-white'
-                          : 'bg-white/[0.08] text-ink-muted')
+                          : 'bg-glass-raised text-ink-muted')
                       }
                     >
                       {a.status === 'published' ? t('statusPublished') : t('statusDraft')}
@@ -649,7 +649,7 @@ export function ArticleAdmin() {
             {draft.blocks.map((block, i) => (
               <section key={i} className="surface flex flex-col gap-4 px-5 py-5">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="chip bg-accent-900 font-semibold uppercase tracking-[0.08em] text-white">
+                  <span className="chip bg-accent-900 font-semibold uppercase tracking-[0.08em] text-ink">
                     {t(`blocks.${block.t}` as never)}
                   </span>
                   <span className="meta tabular-nums">

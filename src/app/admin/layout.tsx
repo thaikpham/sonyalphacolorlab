@@ -15,7 +15,8 @@ import '../globals.css';
  *
  * - No `SiteHeader`: 1,536 lines, four namespaces and a `useSearchParams`
  *   Suspense requirement that an internal tool has no use for.
- * - No `.app-shell` radial washes. The admin ground is flat `--color-void`.
+ * - No `.app-shell` radial washes. The admin ground is flat `--color-void`,
+ *   and `.theme-paper` on the body makes it the blog's light paper room.
  * - No reach from `[locale]`'s `generateStaticParams`, so nothing here is
  *   prerendered into the public catalogue.
  * - One route tree instead of six near-identical page shells.
@@ -44,8 +45,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#07080B',
-  colorScheme: 'dark',
+  themeColor: '#F9F8F5',
+  colorScheme: 'light',
   viewportFit: 'cover',
   interactiveWidget: 'resizes-content',
   width: 'device-width',
@@ -71,7 +72,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <html lang={ADMIN_LOCALE} className="h-full antialiased">
-      <body className="font-sans min-h-screen-dynamic">
+      <body className="theme-paper font-sans min-h-screen-dynamic">
         <NextIntlClientProvider locale={ADMIN_LOCALE} messages={clientMessages}>
           <AuthProvider>
             <AdminShell>{children}</AdminShell>

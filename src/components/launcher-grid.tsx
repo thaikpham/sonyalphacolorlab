@@ -95,13 +95,24 @@ function Tile({ app }: { app: EcosystemAppDef }) {
         <span aria-hidden className="launcher-glow" />
         <span aria-hidden className="launcher-glow-rim" />
         <div className={`launcher-face ${app.iconInset}`}>
+          {/* Both marks are rendered and CSS picks one (`.mark-on-dark` /
+              `.mark-on-paper` in globals.css): the theme is a class on the
+              page, not a media query, so there is nothing to branch on here. */}
           <Image
             src={app.icon}
             alt=""
             width={200}
             height={200}
             unoptimized
-            className="w-full h-full object-contain"
+            className="mark-on-dark w-full h-full object-contain"
+          />
+          <Image
+            src={app.iconLight}
+            alt=""
+            width={200}
+            height={200}
+            unoptimized
+            className="mark-on-paper w-full h-full object-contain"
           />
         </div>
       </div>

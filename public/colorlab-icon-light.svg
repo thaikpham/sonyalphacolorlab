@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="ColorLab">
+  <title>ColorLab</title>
+  <!--
+    The paper version of colorlab-icon.svg, for `.theme-paper` rooms.
+
+    Same four discs, same order, same hues. Two values change, both because
+    the ground did. The neutral disc was `ink` white at 0.251 — white over
+    white is nothing — so it becomes paper `ink` at 0.12, a soft grey that
+    still sits at the back. The three saturated discs go from 0.561 to 0.72:
+    over black a translucent fill glows, over paper it washes out to pastel,
+    and the extra opacity is what gives it back its weight.
+  -->
+  <circle cx="176" cy="80" r="76" fill="#15181F" fill-opacity="0.12"/>
+  <circle cx="80" cy="80" r="76" fill="#5C74F0" fill-opacity="0.72"/>
+  <circle cx="80" cy="176" r="76" fill="#46B3C4" fill-opacity="0.72"/>
+  <circle cx="176" cy="176" r="76" fill="#E05B6E" fill-opacity="0.72"/>
+</svg>

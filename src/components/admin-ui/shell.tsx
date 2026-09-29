@@ -112,7 +112,7 @@ function Chrome({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen-dynamic flex-col bg-void font-sans text-ink">
-      <header className="flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-white/[0.06] px-[clamp(1rem,3vw,2rem)] py-3">
+      <header className="flex flex-wrap items-center gap-x-6 gap-y-3 px-[clamp(1rem,3vw,2rem)] py-3">
         <Link
           href="/admin"
           className="text-body-lg font-extrabold tracking-[-0.02em] text-ink shrink-0"
@@ -161,6 +161,7 @@ function Chrome({ children }: { children: React.ReactNode }) {
           </Link>
         </div>
       </header>
+      <div className="seam" />
 
       {gate === 'checking' ? (
         <main className="mx-auto w-full max-w-[86rem] inset-safe py-16">

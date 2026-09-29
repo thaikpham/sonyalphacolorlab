@@ -16,7 +16,7 @@ values and is the only source of truth. Run `/design-sync` to audit the tree.
    weight or step down the ink ramp — never its size.
 3. **Dark only.** Ground `void` #07080B. One blue-purple accent. No red, no yellow, no
    green in any new value: those are Canon, Nikon and Fuji signatures.
-   One exception, `/blog`: a `.theme-paper` element restates the tokens on `:root`
+   Two exceptions, `/blog` and `/admin`: a `.theme-paper` element restates the tokens on `:root`
    (`PAPER` in `tokens.ts`) for a light, paper ground. The accent ramp is mirrored, so
    step meanings hold; on a tinted field use `text-ink`, never `text-white`.
 4. **No strokes.** Depth is translucency + blur + drop shadow + the 1px specular

@@ -588,7 +588,16 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                     height={256}
                     priority
                     unoptimized
-                    className="h-9 w-9 shrink-0 rounded-sm object-contain"
+                    className="mark-on-dark h-9 w-9 shrink-0 rounded-sm object-contain"
+                  />
+                  <Image
+                    src="/alpha-tech-blogs-icon-light.svg"
+                    alt=""
+                    width={256}
+                    height={256}
+                    priority
+                    unoptimized
+                    className="mark-on-paper h-9 w-9 shrink-0 rounded-sm object-contain"
                   />
                   <span className="flex items-center gap-1.5 truncate whitespace-nowrap text-body-lg font-extrabold tracking-[-0.02em] text-ink">
                     ALPHA TECH <span className="text-accent-400">BLOGS</span>
@@ -609,7 +618,16 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                        to choose between, and the custom loader returns it
                        verbatim. */
                     unoptimized
-                    className="h-9 w-9 rounded-sm object-contain shrink-0"
+                    className="mark-on-dark h-9 w-9 rounded-sm object-contain shrink-0"
+                  />
+                  <Image
+                    src="/sony-wiki-icon-light.svg"
+                    alt=""
+                    width={512}
+                    height={512}
+                    priority
+                    unoptimized
+                    className="mark-on-paper h-9 w-9 rounded-sm object-contain shrink-0"
                   />
                   {/* `truncate`, like the blog wordmark beside it. The row is
                       `flex-nowrap` and everything else on it is `shrink-0`, so
@@ -650,7 +668,16 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                     height={256}
                     priority
                     unoptimized
-                    className="h-9 w-9 shrink-0 rounded-sm object-contain"
+                    className="mark-on-dark h-9 w-9 shrink-0 rounded-sm object-contain"
+                  />
+                  <Image
+                    src="/colorlab-icon-light.svg"
+                    alt=""
+                    width={256}
+                    height={256}
+                    priority
+                    unoptimized
+                    className="mark-on-paper h-9 w-9 shrink-0 rounded-sm object-contain"
                   />
                   <span className="flex min-w-0 items-center gap-1.5 truncate whitespace-nowrap text-body-lg font-extrabold tracking-[-0.02em] text-ink">
                     ALPHA AI <span className="text-accent-400">COLOR LAB</span>

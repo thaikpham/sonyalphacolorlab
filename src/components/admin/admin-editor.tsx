@@ -337,23 +337,9 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
 
   return (
     <main className="flex-1 w-full max-w-[110rem] mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-5">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-title-1 font-extrabold text-ink tracking-[-0.02em]">{tSafe('title', 'Quản trị sản phẩm')}</h1>
-          <p className="meta">{tSafe('subtitle', 'Sửa thông số và tính năng sản phẩm')}</p>
-        </div>
-        <div className="flex items-center gap-4 flex-wrap">
-          <button
-            type="button"
-            onClick={() => setIsCreateOpen(true)}
-            className="btn-accent gap-1.5 cursor-pointer"
-          >
-            {tSafe('createProductBtn', '＋ Thêm sản phẩm mới')}
-          </button>
-        </div>
-      </header>
-
-      <div className="seam" />
+      {/* No visible page header: the nav already names the section, and the
+          create action lives in the sticky save bar and the list column. */}
+      <h1 className="sr-only">{tSafe('title', 'Quản trị sản phẩm')}</h1>
 
       {/* Category Division Navigation Tabs & Admin Role Badge */}
       <div className="surface flex flex-wrap items-center justify-between gap-4 p-3.5">
@@ -418,9 +404,11 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-        {/* The review queue: a white 2.2% ground, surface cards on it, and the
-            item being edited tinted `proposal` — a fill, never a stroke. */}
-        <div className="lg:col-span-4 xl:col-span-3 flex flex-col gap-3 bg-white/[0.022] p-4 rounded-lg">
+        {/* The review queue: a film ground, surface cards on it, and the item
+            being edited tinted `proposal` — a fill, never a stroke. On desktop
+            it is sticky and as tall as the viewport, so the list scrolls on its
+            own and shows as many products as the screen can hold. */}
+        <div className="lg:col-span-4 xl:col-span-3 flex flex-col gap-3 bg-glass p-4 rounded-lg lg:sticky lg:top-4 lg:h-[calc(100dvh-2rem)]">
           <div className="flex items-center justify-between gap-2">
             <input
               value={query}
@@ -441,7 +429,7 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
               {tSafe('createProductBtn', '＋ Thêm sản phẩm mới')}
             </button>
           </div>
-          <ul className="flex flex-col gap-2.5 max-h-[34rem] scroll-area">
+          <ul className="flex flex-col gap-2.5 max-h-[34rem] lg:max-h-none lg:flex-1 lg:min-h-0 scroll-area">
             {filtered.map((p) => (
               <li key={p.id}>
                 <button
@@ -491,6 +479,40 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
             </div>
           ) : (
             <>
+              {/* SAVE BAR — sticky at the top of the editor column, level with
+                  the sticky product list, so saving never means scrolling back
+                  up past a long spec sheet. The ground-coloured strip above it
+                  hides the form scrolling through the 16px gap. */}
+              <div className="surface-raised sticky top-4 z-20 flex items-center justify-between gap-4 flex-wrap px-5 py-3 before:absolute before:inset-x-0 before:bottom-full before:h-4 before:bg-void">
+                <span className="text-body-sm font-semibold text-ink truncate min-w-0">{selected.name}</span>
+                <div className="flex items-center gap-4 flex-wrap">
+                  {/* The save state is text, never a coloured field or a border. */}
+                  {status && (
+                    <span
+                      role="status"
+                      className={`text-label font-semibold ${status.kind === 'ok' ? 'text-community' : 'text-danger'}`}
+                    >
+                      {status.msg}
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setIsCreateOpen(true)}
+                    className="btn-glass gap-1.5 cursor-pointer"
+                  >
+                    {tSafe('createProductBtn', '＋ Thêm sản phẩm mới')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={save}
+                    disabled={busy !== ''}
+                    className="btn-accent disabled:opacity-40 cursor-pointer"
+                  >
+                    {busy === 'saving' ? tSafe('saving', 'Đang lưu…') : tSafe('save', 'Lưu vào Supabase')}
+                  </button>
+                </div>
+              </div>
+
               {/* Product Basic Info & Gallery Images Section */}
               <div className="surface p-5 flex flex-col gap-4">
                 <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -683,10 +705,10 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
                     </p>
 
                     {/* Rows separate by an alternating film, never by a rule. */}
-                    <div className="overflow-x-auto rounded-md bg-white/[0.022]">
+                    <div className="overflow-x-auto rounded-md bg-glass">
                       <table className="w-full text-left text-body-sm border-collapse">
                         <thead>
-                          <tr className="label bg-white/[0.04]">
+                          <tr className="label bg-glass">
                             <th className="py-3 px-3 w-12 text-center font-semibold">
                               {tSafe('colIndex', 'STT')}
                             </th>
@@ -881,26 +903,6 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
                 )}
               </div>
 
-              {/* SAVE BUTTON & STATUS */}
-              <div className="flex items-center gap-4 flex-wrap">
-                <button
-                  type="button"
-                  onClick={save}
-                  disabled={busy !== ''}
-                  className="btn-accent disabled:opacity-40 cursor-pointer"
-                >
-                  {busy === 'saving' ? tSafe('saving', 'Đang lưu…') : tSafe('save', 'Lưu vào Supabase')}
-                </button>
-                {/* The save state is text, never a coloured field or a border. */}
-                {status && (
-                  <span
-                    role="status"
-                    className={`text-label font-semibold ${status.kind === 'ok' ? 'text-community' : 'text-danger'}`}
-                  >
-                    {status.msg}
-                  </span>
-                )}
-              </div>
             </>
           )}
         </div>
@@ -928,7 +930,7 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
               <button
                 type="button"
                 onClick={() => setIsCreateOpen(false)}
-                className="w-11 min-h-[var(--layout-touch-target)] shrink-0 rounded-md bg-white/[0.08] hover:bg-white/[0.13] text-ink-muted shadow-[var(--elevation-spec)] flex items-center justify-center cursor-pointer transition-colors"
+                className="w-11 min-h-[var(--layout-touch-target)] shrink-0 rounded-md bg-glass-raised hover:bg-ink/10 text-ink-muted shadow-[var(--elevation-spec)] flex items-center justify-center cursor-pointer transition-colors"
               >
                 ✕
               </button>
@@ -938,7 +940,7 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
 
             <form onSubmit={handleCreateProduct} className="flex flex-col gap-5">
               {/* Category & SubCategory Row */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white/[0.022] p-4 rounded-lg">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-glass p-4 rounded-lg">
                 <div className="flex flex-col gap-2">
                   <label className="label">{tSafe('categoryLabel', 'Danh mục (Category)')} *</label>
                   <select

@@ -31,4 +31,4 @@ export const SELECT =
  * beats a `text-*` utility on its own element.
  */
 export const TAG = 'text-label font-semibold px-2.5 py-1 rounded-sm shadow-[var(--elevation-spec)]';
-export const TAG_NEUTRAL = `${TAG} bg-white/[0.08] text-ink-muted`;
+export const TAG_NEUTRAL = `${TAG} bg-glass-raised text-ink-muted`;

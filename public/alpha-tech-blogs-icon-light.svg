@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Alpha Tech Blogs">
+  <title>Alpha Tech Blogs</title>
+  <!--
+    The paper version of alpha-tech-blogs-icon.svg, for `.theme-paper` rooms —
+    which is where this mark lives most of the time, since /blog is paper.
+
+    Same four lines of ragged-right type. The neutral line becomes paper `ink`
+    at 0.12 instead of white at 0.251, the first line takes the PAPER
+    accent-400 (the mirrored, deeper step), and the saturated lines go from
+    0.561 to 0.72 so the paragraph keeps its weight on a light ground.
+  -->
+  <rect x="6" y="7" width="244" height="78" rx="39" fill="#3957CC" fill-opacity="0.72"/>
+  <rect x="6" y="63" width="210" height="78" rx="39" fill="#15181F" fill-opacity="0.12"/>
+  <rect x="6" y="119" width="232" height="78" rx="39" fill="#9B7BF0" fill-opacity="0.72"/>
+  <rect x="6" y="175" width="150" height="78" rx="39" fill="#C77BD9" fill-opacity="0.72"/>
+</svg>
