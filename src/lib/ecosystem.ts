@@ -34,6 +34,8 @@ export type EcosystemAppDef = {
    * a 256px raster does not.
    */
   icon: string;
+  /** The paper version, shown instead of `icon` under `.theme-paper`. */
+  iconLight: string;
   href: string;
   /** Another origin → new tab. In-app routes navigate in place. */
   external: boolean;
@@ -62,6 +64,7 @@ export const ECOSYSTEM_APPS: readonly EcosystemAppDef[] = [
     name: 'ColorLab 2.0',
     shortName: 'ColorLab',
     icon: '/colorlab-icon.svg',
+    iconLight: '/colorlab-icon-light.svg',
     href: '/colorlab',
     external: false,
     iconInset: 'p-[13.5%]',
@@ -71,6 +74,7 @@ export const ECOSYSTEM_APPS: readonly EcosystemAppDef[] = [
     name: 'Sony Wiki',
     shortName: 'Sony Wiki',
     icon: '/sony-wiki-icon.svg',
+    iconLight: '/sony-wiki-icon-light.svg',
     href: '/cameras',
     external: false,
     iconInset: 'p-[13.5%]',
@@ -80,6 +84,7 @@ export const ECOSYSTEM_APPS: readonly EcosystemAppDef[] = [
     name: 'Alpha Tech Blogs',
     shortName: 'Tech Blogs',
     icon: '/alpha-tech-blogs-icon.svg',
+    iconLight: '/alpha-tech-blogs-icon-light.svg',
     href: '/blog',
     external: false,
     iconInset: 'p-[13.5%]',
