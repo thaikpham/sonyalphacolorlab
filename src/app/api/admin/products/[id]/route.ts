@@ -5,6 +5,8 @@ import { CONTENT_ADMIN_FROZEN, contentAdminWritesFrozen } from '@/lib/admin/cont
 import { revalidateTag } from 'next/cache';
 import { CATALOGUE_TAG, IMMEDIATE } from '@/lib/catalogue-cache';
 import { contentAdmin, hasContentConfig } from '@/lib/supabase/server';
+import { contentProjectRef } from '@/lib/supabase/config';
+import { PRODUCT_COLUMNS, productFromRow, type ProductRow } from '@/lib/cameras/row';
 import { SPEC_ROWS, type ProductSpecs, type SonyCamera } from '@/lib/cameras/types';
 
 /**
@@ -13,23 +15,23 @@ import { SPEC_ROWS, type ProductSpecs, type SonyCamera } from '@/lib/cameras/typ
  * This used to call the shared by-id reader, which goes through the tagged
  * catalogue cache — a sixty-second window in which this handler could be
  * looking at a copy that predates the save before it. Two edits a minute apart
- * were enough: the second built `fullRow` by filling unspecified columns from
- * the stale copy and upserted the first edit away, with both saves reporting
- * success.
+ * were enough: the second filled the columns the body did not mention from the
+ * stale copy and wrote the first edit away, with both saves reporting success.
  *
  * It is also the row the category/role check is made against, and a PE deciding
  * whether they may touch a product should not be answered from a cache.
  *
- * `contentAdmin()` rather than `contentRead()` because this needs the columns a
- * public select deliberately omits, and the caller has already passed
- * `adminGate()`.
+ * `contentAdmin()` rather than `contentRead()`: the caller has already passed
+ * `adminGate()`, and an admin read should not depend on the anon grants.
+ *
+ * No seed fallback. What this returns is what the database holds, because it is
+ * what the write below is checked against — a spec block borrowed from the seed
+ * would let the route believe a row had specs it does not.
  */
 async function currentProductRow(id: string): Promise<SonyCamera | null> {
   const { data, error } = await contentAdmin()
     .from('sony_cameras')
-    .select(
-      'id, sku, name, full_name, category, sub_category_1, sub_category_2, price_vnd, price_formatted, url, image_url, gallery_urls, features, specs',
-    )
+    .select(PRODUCT_COLUMNS)
     .eq('id', id)
     .maybeSingle();
 
@@ -37,24 +39,7 @@ async function currentProductRow(id: string): Promise<SonyCamera | null> {
     console.error('[admin/products] current row read failed:', error.message);
     throw new Error('currentProductRow');
   }
-  if (!data) return null;
-
-  return {
-    id: data.id,
-    sku: data.sku,
-    name: data.name,
-    fullName: data.full_name,
-    category: data.category as SonyCamera['category'],
-    subCategory1: data.sub_category_1 || '',
-    subCategory2: data.sub_category_2 || '',
-    priceVnd: Number(data.price_vnd),
-    priceFormatted: data.price_formatted,
-    url: data.url,
-    imageUrl: data.image_url,
-    galleryUrls: (data.gallery_urls as string[] | null) ?? undefined,
-    features: (data.features ?? []) as SonyCamera['features'],
-    specs: (data.specs as SonyCamera['specs']) ?? undefined,
-  };
+  return data ? productFromRow(data as ProductRow) : null;
 }
 
 /**
@@ -111,6 +96,36 @@ export function sanitizeSpecs(input: Record<string, unknown>, existing: ProductS
   return out as unknown as ProductSpecs;
 }
 
+/** The spec kinds a category may carry. Audio is the only one with a choice. */
+const KINDS_FOR: Record<SonyCamera['category'], readonly ProductSpecs['kind'][]> = {
+  camera: ['camera'],
+  lens: ['lens'],
+  accessory: ['accessory'],
+  audio: ['headphone', 'speaker'],
+};
+
+/**
+ * What `sanitizeSpecs` starts from when the row has no spec block yet.
+ *
+ * The catalogue readers fill a null `specs` column from the seed, so the editor
+ * can show — and send — a full sheet for a row whose database copy has none.
+ * Refusing that save with `noSpecBlock` refused the name and the features with
+ * it. The kind comes from the body, but only a kind this product's category can
+ * have is accepted, so a camera cannot be turned into a speaker by a request.
+ */
+export function blankSpecs(
+  category: SonyCamera['category'],
+  kind: unknown,
+): ProductSpecs | null {
+  const allowed = KINDS_FOR[category] ?? [];
+  if (typeof kind !== 'string' || !allowed.includes(kind as ProductSpecs['kind'])) return null;
+  const k = kind as ProductSpecs['kind'];
+  const out: Record<string, unknown> = { kind: k, specsSource: '', specsMissing: [] };
+  for (const field of SPEC_ROWS[k]) out[field] = null;
+  if (k === 'accessory') out.keySpecs = [];
+  return out as unknown as ProductSpecs;
+}
+
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const gate = await adminGate(request);
   if (!gate.ok) return NextResponse.json({ error: gate.error }, { status: gate.status });
@@ -141,6 +156,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     return NextResponse.json({ error: 'badRequest' }, { status: 400 });
   }
 
+  /* Only the columns this save changes. The route used to upsert a whole row
+     with every other column copied from the read above — left over from when
+     the product might not exist in the database yet and the upsert created it.
+     `currentProductRow` answers 404 for that case now, so the insert half was
+     dead, and the copy half rewrote prices and URLs it had no reason to touch. */
   const update: Record<string, unknown> = {
     updated_at: new Date().toISOString(),
     updated_by: gate.admin.email,
@@ -166,50 +186,49 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   }
 
   if (body.specs && typeof body.specs === 'object') {
-    if (!product.specs) return NextResponse.json({ error: 'noSpecBlock' }, { status: 409 });
-    update.specs = sanitizeSpecs(body.specs, product.specs);
+    const base = product.specs ?? blankSpecs(product.category, body.specs.kind);
+    if (!base) return NextResponse.json({ error: 'noSpecBlock' }, { status: 409 });
+    update.specs = sanitizeSpecs(body.specs, base);
   }
 
   if (body.features && typeof body.features === 'object') {
     update.features = { en: asLines(body.features.en), vi: asLines(body.features.vi) };
   }
 
-  const fullRow = {
-    id: product.id,
-    sku: product.sku,
-    name: (update.name as string) ?? product.name,
-    full_name: (update.full_name as string) ?? product.fullName,
-    category: product.category,
-    sub_category_1: product.subCategory1,
-    sub_category_2: product.subCategory2,
-    price_vnd: product.priceVnd,
-    price_formatted: product.priceFormatted,
-    url: product.url,
-    image_url: (update.image_url as string) ?? product.imageUrl,
-    gallery_urls: (update.gallery_urls as string[]) ?? product.galleryUrls ?? [],
-    features: update.features ?? product.features,
-    specs: update.specs ?? product.specs,
-    updated_at: update.updated_at,
-    updated_by: update.updated_by,
-  };
-
+  /* `.select()` is what turns the write into proof. PostgREST answers an
+     update that matched nothing with no error and zero rows, so without it a
+     row deleted between the read and the write would report "saved". And the
+     row that comes back is what the editor is handed: the stored values, after
+     sanitising, rather than its own draft echoed back to it. */
+  let saved: ProductRow | null;
   try {
-    const { error } = await contentAdmin().from('sony_cameras').upsert(fullRow, { onConflict: 'id' });
+    const { data, error } = await contentAdmin()
+      .from('sony_cameras')
+      .update(update)
+      .eq('id', product.id)
+      .select(PRODUCT_COLUMNS)
+      .maybeSingle();
     if (error) {
       console.error('[admin/products] update failed:', JSON.stringify(error));
       return NextResponse.json({ error: 'saveFailed' }, { status: 502 });
     }
+    saved = data as ProductRow | null;
   } catch (err) {
     console.error('[admin/products] update threw:', err);
     return NextResponse.json({ error: 'saveFailed' }, { status: 502 });
   }
+  if (!saved) return NextResponse.json({ error: 'notFound' }, { status: 404 });
 
   // After the commit and only after it — see the create route for why.
   revalidateTag(CATALOGUE_TAG, IMMEDIATE);
 
+  /* `project` names the database the row went to. There are two Supabase
+     projects in two organisations, and the catalogue lives in the CONTENT one
+     — an editor looking for their save in the control project's leftover
+     `sony_cameras` copy finds nothing and concludes the save failed. */
   return NextResponse.json({
     ok: true,
-    specs: update.specs ?? product.specs,
-    features: update.features ?? product.features,
+    product: productFromRow(saved),
+    project: contentProjectRef(process.env),
   });
 }

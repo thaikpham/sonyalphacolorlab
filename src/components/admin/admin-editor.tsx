@@ -14,6 +14,9 @@ type Props = {
 };
 
 type Draft = {
+  /** The product this draft was built from, so a late save answer can tell
+      whether the editor is still on it. */
+  id: string;
   name: string;
   fullName: string;
   imageUrl: string;
@@ -30,6 +33,7 @@ const asDraft = (p: SonyCamera): Draft => {
   const row = (p.specs ?? {}) as unknown as Record<string, string | null>;
   if (p.specs) for (const k of SPEC_ROWS[p.specs.kind]) specs[k] = row[k] ?? '';
   return {
+    id: p.id,
     name: p.name ?? '',
     fullName: p.fullName ?? '',
     imageUrl: p.imageUrl ?? '',
@@ -156,12 +160,17 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
     setCopiedMd(false);
   };
 
-  const err = (code: string) => {
-    const known = [
-      'notAdmin', 'notConfigured', 'saveFailed', 'badRequest', 'notFound',
-      'noSpecBlock', 'rateLimited', 'mismatch', 'declined', 'failed',
-    ];
-    return tSafe(`errors.${known.includes(code) ? code : 'failed'}`, 'Thao tác thất bại');
+  /* Every code the routes answer with has a message under `admin.errors`;
+     the lookup asks the catalogue rather than a hand-kept list. The list this
+     replaces stopped at ten codes and sent everything else — a write freeze, a
+     content outage, a missing second factor, a refused category — to `failed`,
+     which reads "Dịch không thành công" (translation failed) under the SAVE
+     button. The fallback is per call: a save that fails for an unknown reason
+     is a failed save, not a failed translation. */
+  const err = (code: string, fallback: 'saveFailed' | 'failed' = 'saveFailed') => {
+    if (t.has(`errors.${code}` as never)) return t(`errors.${code}` as never);
+    console.warn('[admin] unknown error code:', code);
+    return t(`errors.${fallback}` as never);
   };
 
   const translate = async (target: 'en' | 'vi') => {
@@ -178,13 +187,13 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
       });
       const data = (await res.json()) as { ok?: boolean; lines?: string[]; error?: string };
       if (!res.ok || !data.ok || !data.lines) {
-        setStatus({ kind: 'err', msg: err(data.error ?? 'failed') });
+        setStatus({ kind: 'err', msg: err(data.error ?? 'failed', 'failed') });
       } else {
         setDraft({ ...draft, [target]: data.lines.join('\n') });
         setStatus({ kind: 'ok', msg: tSafe('translateNote', 'Bản dịch máy. Hãy đọc lại trước khi lưu.') });
       }
     } catch {
-      setStatus({ kind: 'err', msg: err('failed') });
+      setStatus({ kind: 'err', msg: err('failed', 'failed') });
     } finally {
       setBusy('');
     }
@@ -208,27 +217,35 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
           imageUrl: primaryImg,
           galleryUrls: galleryList,
           features: { en: lines(draft.en), vi: lines(draft.vi) },
-          ...(selected.specs ? { specs: { ...draft.specs, specsSource: draft.source } } : {}),
+          /* `kind` lets the route start a spec block for a row whose database
+             copy has none; it only accepts a kind the category allows. */
+          ...(selected.specs
+            ? { specs: { ...draft.specs, kind: selected.specs.kind, specsSource: draft.source } }
+            : {}),
         }),
       });
-      const data = (await res.json()) as { ok?: boolean; error?: string };
-      if (!res.ok || !data.ok) {
+      const data = (await res.json()) as {
+        ok?: boolean;
+        error?: string;
+        product?: SonyCamera;
+        project?: string | null;
+      };
+      if (!res.ok || !data.ok || !data.product) {
         setStatus({ kind: 'err', msg: err(data.error ?? 'saveFailed') });
       } else {
-        setProducts((prev) =>
-          prev.map((p) =>
-            p.id === selected.id
-              ? {
-                  ...p,
-                  name: draft.name.trim() || p.name,
-                  fullName: draft.fullName.trim() || p.fullName,
-                  imageUrl: primaryImg,
-                  galleryUrls: galleryList,
-                }
-              : p,
-          ),
-        );
-        setStatus({ kind: 'ok', msg: tSafe('saved', 'Đã lưu') });
+        /* The stored row replaces the local one WHOLE, and the draft is rebuilt
+           from it. This used to merge four fields back by hand — name, full
+           name, image, gallery — and leave `features` and `specs` as they were
+           before the save. Reopening the product then showed the old bullets
+           and the old specs, and saving again from that screen wrote them back
+           over the edit that had just succeeded. */
+        const stored = data.product;
+        setProducts((prev) => prev.map((p) => (p.id === stored.id ? stored : p)));
+        setDraft((d) => (d && d.id === stored.id ? asDraft(stored) : d));
+        setStatus({
+          kind: 'ok',
+          msg: data.project ? t('savedTo', { project: data.project }) : t('saved'),
+        });
       }
     } catch {
       setStatus({ kind: 'err', msg: err('saveFailed') });

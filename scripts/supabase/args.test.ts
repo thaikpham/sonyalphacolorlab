@@ -26,7 +26,7 @@ describe('parseArgs', () => {
     expect(args).toMatchObject({ source: 'control', destination: 'content' });
   });
 
-  it.each(['--expect-empty', '--expect-baseline', '--dry-run', '--apply', '--rollback'])(
+  it.each(['--expect-empty', '--expect-baseline', '--dry-run', '--apply', '--rollback', '--overwrite'])(
     'reads %s',
     (flag) => {
       expect(Object.values(parseArgs([flag])).some((v) => v === true)).toBe(true);
@@ -49,6 +49,9 @@ describe('parseArgs', () => {
          which photographs the site serves, and a quiet shrink would read as a
          routine commit. */
       allowRemovals: false,
+      /* `push:supabase` inserts missing rows only unless told to replace:
+         the database holds the admin's edits and the seed does not. */
+      overwrite: false,
     });
   });
 

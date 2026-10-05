@@ -4,6 +4,7 @@ import { cache } from 'react';
 import { catalogueCache } from '@/lib/catalogue-cache';
 import { contentRead } from '@/lib/supabase/server';
 import { contentOrOfflineSeed } from '@/lib/supabase/content-source';
+import { PRODUCT_COLUMNS, productFromRow, type ProductRow } from './row';
 import { getSonyAudioById } from '@/lib/audio/data';
 import { compareCameras, type ProductCategory, type SonyCamera, type WikiSort } from './types';
 import { splitFeatures } from './features';
@@ -50,9 +51,7 @@ async function _getSonyCameras(options?: {
         /* Columns named, never `*`. `updated_by` is an email and this query runs
            under the anon key, which ships in the browser bundle — the same rule
            `no-email-leak.test.ts` pins for the community tables. */
-        .select(
-          'id, sku, name, full_name, category, sub_category_1, sub_category_2, price_vnd, price_formatted, url, image_url, features, specs',
-        )
+        .select(PRODUCT_COLUMNS)
         .neq('category', 'audio')
         .order('price_vnd', { ascending: false });
 
@@ -61,27 +60,10 @@ async function _getSonyCameras(options?: {
       /* The seed still supplies `specs` and `galleryUrls` for rows that have
          none in the database — those are packaging, not content, and they are
          keyed by id so they cannot attach to the wrong product. What the seed
-         no longer does is stand in for the *set* of products. */
+         no longer does is stand in for the *set* of products, or for a gallery
+         the database holds: that is what made an admin's gallery edit vanish. */
       const seedById = new Map(seed.map((c) => [c.id, c]));
-      return (data ?? []).map((row) => ({
-          id: row.id,
-          sku: row.sku,
-          name: row.name,
-          fullName: row.full_name,
-          category: row.category as SonyCamera['category'],
-          subCategory1: row.sub_category_1 || '',
-          subCategory2: row.sub_category_2 || '',
-          priceVnd: Number(row.price_vnd),
-          priceFormatted: row.price_formatted,
-          url: row.url,
-          imageUrl: row.image_url,
-          /* Either shape passes through untouched; `featureList()` resolves it
-             at render. Coercing to `string[]` here would flatten the admin's
-             Vietnamese away. */
-          features: (row.features ?? []) as SonyCamera['features'],
-        specs: (row.specs as SonyCamera['specs']) ?? seedById.get(row.id)?.specs,
-        galleryUrls: seedById.get(row.id)?.galleryUrls,
-      }));
+      return ((data ?? []) as ProductRow[]).map((row) => productFromRow(row, seedById.get(row.id)));
     },
     () => seed,
   );

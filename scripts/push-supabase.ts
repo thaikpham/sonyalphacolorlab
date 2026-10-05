@@ -10,8 +10,21 @@
  * project; pushing them into the control one would put the catalogue in the
  * project that holds Auth, and the script's output would not say so.
  *
- * Idempotent: rows are upserted on primary key, so re-running syncs rather than
- * duplicating. Nothing is deleted — removing a recipe is a deliberate act, not a
+ * Insert-only by default: a row that already exists is left exactly as it is.
+ * This used to upsert, which made re-running it a "sync" — and once the admin
+ * editors write to the content project, a sync from the seed is a revert. The
+ * seed is a Git-time snapshot; every product, recipe and translation edited in
+ * `/admin` since the last `pull:supabase` was silently put back to it, with the
+ * script reporting success. Filling in rows the project lacks — the audio
+ * catalogue, a recipe added to the seed — is still exactly what it does.
+ *
+ *   npm run push:supabase -- --target content               # add what is missing
+ *   npm run push:supabase -- --target content --overwrite   # replace existing rows
+ *
+ * `--overwrite` replaces existing rows WHOLE with the seed's copy. Run
+ * `pull:supabase` first, or the edits made in the admin are lost.
+ *
+ * Nothing is deleted either way — removing a recipe is a deliberate act, not a
  * side effect of a sync script.
  */
 
@@ -53,15 +66,27 @@ async function main() {
   });
   console.log(`✓ ${rows.length} recipes validated`);
 
-  const { target } = requireTarget(process.argv.slice(2));
+  const { target, args } = requireTarget(process.argv.slice(2));
   if (target !== 'content') {
     throw new Error('This script seeds content tables. Pass --target content.');
   }
   const db = adminClient(target);
 
-  const { error: recipeError } = await db.from('recipes').upsert(rows, { onConflict: 'id' });
+  /* `ignoreDuplicates` turns the upsert into INSERT … ON CONFLICT DO NOTHING:
+     a row the project already has keeps the values the admin gave it. */
+  const write = { ignoreDuplicates: !args.overwrite };
+  const verb = args.overwrite ? 'upserted (existing rows replaced)' : 'pushed (existing rows kept)';
+  console.log(
+    args.overwrite
+      ? '! --overwrite: rows that already exist are replaced by the seed copy.'
+      : '· Insert-only: rows that already exist are left as they are.',
+  );
+
+  const { error: recipeError } = await db
+    .from('recipes')
+    .upsert(rows, { onConflict: 'id', ...write });
   if (recipeError) throw new Error(`recipes upsert: ${recipeError.message}`);
-  console.log(`✓ ${rows.length} recipes upserted`);
+  console.log(`✓ ${rows.length} recipes ${verb}`);
 
   const translationRows = translations.map((t) => ({
     recipe_id: t.recipeId,
@@ -70,9 +95,9 @@ async function main() {
   }));
   const { error: translationError } = await db
     .from('recipe_translations')
-    .upsert(translationRows, { onConflict: 'recipe_id,locale' });
+    .upsert(translationRows, { onConflict: 'recipe_id,locale', ...write });
   if (translationError) throw new Error(`translations upsert: ${translationError.message}`);
-  console.log(`✓ ${translationRows.length} translations upserted`);
+  console.log(`✓ ${translationRows.length} translations ${verb}`);
 
   // Images were uploaded separately by migrate-images.ts; this records which
   // recipe each one belongs to. `(recipe_id, sort)` is unique, so re-running
@@ -85,14 +110,14 @@ async function main() {
     }));
     const { error: imageError } = await db
       .from('recipe_images')
-      .upsert(imageRows, { onConflict: 'recipe_id,sort' });
+      .upsert(imageRows, { onConflict: 'recipe_id,sort', ...write });
     if (imageError) throw new Error(`images upsert: ${imageError.message}`);
-    console.log(`✓ ${imageRows.length} image links upserted`);
+    console.log(`✓ ${imageRows.length} image links ${verb}`);
   }
 
   // Keep the product catalogue in the same remote database as its admin editor.
-  // Like recipes, this is deliberately upsert-only: deleting a product must be
-  // an explicit administrative action, never an incidental seed sync.
+  // Deleting a product must be an explicit administrative action, never an
+  // incidental seed sync — and, without --overwrite, so must changing one.
   const productRows = allProducts.map((p) => ({
     id: p.id,
     sku: p.sku,
@@ -111,9 +136,9 @@ async function main() {
   }));
   const { error: cameraError } = await db
     .from('sony_cameras')
-    .upsert(productRows, { onConflict: 'id' });
+    .upsert(productRows, { onConflict: 'id', ...write });
   if (cameraError) throw new Error(`sony_cameras upsert: ${cameraError.message}`);
-  console.log(`✓ ${productRows.length} products upserted`);
+  console.log(`✓ ${productRows.length} products ${verb}`);
 
   const { count, error: countError } = await db
     .from('recipes')

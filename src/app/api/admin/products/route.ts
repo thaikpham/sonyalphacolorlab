@@ -5,6 +5,8 @@ import { CONTENT_ADMIN_FROZEN, contentAdminWritesFrozen } from '@/lib/admin/cont
 import { revalidateTag } from 'next/cache';
 import { CATALOGUE_TAG, IMMEDIATE } from '@/lib/catalogue-cache';
 import { contentAdmin, hasContentConfig } from '@/lib/supabase/server';
+import { contentProjectRef } from '@/lib/supabase/config';
+import { PRODUCT_COLUMNS, productFromRow, type ProductRow } from '@/lib/cameras/row';
 import { SPEC_ROWS, type ProductSpecs, type SonyCamera } from '@/lib/cameras/types';
 
 /**
@@ -61,6 +63,10 @@ function buildInitialSpecs(
   } else {
     out.specsSource = 'https://www.sony.com.vn';
   }
+
+  /* `keySpecs` is the accessory's own list and is required by its type. A
+     block written without it rendered `undefined.map` on the product page. */
+  if (kind === 'accessory') out.keySpecs = [];
 
   out.specsMissing = missing.sort();
   return out as unknown as ProductSpecs;
@@ -164,12 +170,26 @@ export async function POST(request: Request) {
     updated_by: gate.admin.email,
   };
 
+  /* The inserted row is selected back and handed to the editor, so the list
+     shows what the database stored rather than what the form sent. */
+  let saved: ProductRow;
   try {
-    const { error } = await contentAdmin().from('sony_cameras').insert(cameraRow);
+    const { data, error } = await contentAdmin()
+      .from('sony_cameras')
+      .insert(cameraRow)
+      .select(PRODUCT_COLUMNS)
+      .single();
     if (error) {
+      /* 23505 is a unique violation: the id derived from this SKU or name, or
+         the SKU itself, is already taken. That is the editor's to fix, and
+         "could not save" gave them nothing to fix it with. */
+      if (error.code === '23505') {
+        return NextResponse.json({ error: 'duplicateProduct' }, { status: 409 });
+      }
       console.error('[admin/products] create failed:', JSON.stringify(error));
       return NextResponse.json({ error: 'saveFailed' }, { status: 502 });
     }
+    saved = data as ProductRow;
   } catch (err) {
     console.error('[admin/products] create threw:', err);
     return NextResponse.json({ error: 'saveFailed' }, { status: 502 });
@@ -184,6 +204,7 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     ok: true,
-    product: newProduct,
+    product: productFromRow(saved),
+    project: contentProjectRef(process.env),
   });
 }

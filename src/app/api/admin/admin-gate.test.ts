@@ -214,4 +214,17 @@ describe('the catalogue read path', () => {
     expect(selects.length).toBeGreaterThan(0);
     for (const call of selects) expect(call).not.toMatch(/updated_by/);
   });
+
+  it('selects through the shared column list, which names no editor', () => {
+    /* The list moved to `row.ts` so the camera reader, the audio reader and the
+       admin route cannot drift apart again — they did, over `gallery_urls`.
+       The guard follows it there rather than passing on a constant's name. */
+    for (const file of ['src/lib/cameras/data.ts', 'src/lib/audio/data.ts']) {
+      expect(readFileSync(file, 'utf8')).toMatch(/\.select\(PRODUCT_COLUMNS\)/);
+    }
+    const row = readFileSync('src/lib/cameras/row.ts', 'utf8');
+    const list = row.match(/export const PRODUCT_COLUMNS =\s*'([^']*)'/)?.[1] ?? '';
+    expect(list).not.toBe('');
+    expect(list).not.toMatch(/updated_by|\*/);
+  });
 });

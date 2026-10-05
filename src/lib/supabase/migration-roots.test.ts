@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { PGlite } from '@electric-sql/pglite';
 import { beforeAll, describe, expect, it } from 'vitest';
+import { PRODUCT_COLUMNS } from '@/lib/cameras/row';
 
 /**
  * Two migration roots, two databases, and the boundary between them.
@@ -220,6 +221,33 @@ describe('what a browser may read', () => {
     for (const [, db] of ROOTS()) {
       expect(await selectableColumns(db, 'sony_cameras', role)).not.toContain('updated_by');
     }
+  });
+
+  it.each(['anon', 'authenticated'])(
+    '%s can read every column the catalogue selects, on both projects',
+    async (role) => {
+      /* The catalogue reads run under the anon key and name their columns
+         (`PRODUCT_COLUMNS`). A column missing from the grant is not a missing
+         field, it is "permission denied" for the whole query — and through
+         `contentOrOfflineSeed` an outage of the entire Wiki. The control root
+         counts too: it serves the catalogue during a rollback. `gallery_urls`
+         is the column that was never granted there (0010 added it after 0008
+         narrowed the grant) until 0016. */
+      const wanted = PRODUCT_COLUMNS.split(',').map((c) => c.trim());
+      for (const [name, db] of ROOTS()) {
+        const granted = await selectableColumns(db, 'sony_cameras', role);
+        for (const column of wanted) {
+          expect(granted, `${name}: ${role} cannot select sony_cameras.${column}`).toContain(column);
+        }
+      }
+    },
+  );
+
+  it.each(['anon', 'authenticated'])('%s may not write sony_cameras on the control project either', async (role) => {
+    const granted = await tablePrivileges(control, 'sony_cameras', role);
+    expect(granted).not.toContain('INSERT');
+    expect(granted).not.toContain('UPDATE');
+    expect(granted).not.toContain('DELETE');
   });
 
   it.each(['anon', 'authenticated'])('%s cannot read lab_assets at all', async (role) => {

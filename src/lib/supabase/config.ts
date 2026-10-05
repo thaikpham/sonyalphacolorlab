@@ -129,6 +129,17 @@ export function contentOrigin(env: SupabaseEnv): string | null {
   return normaliseOrigin(env, CONTENT_URL_VAR);
 }
 
+/**
+ * The content project's ref — the first label of its host — or null in seed
+ * mode. Not a secret: the URL it comes from is `NEXT_PUBLIC_` and ships in the
+ * browser bundle. The admin editor prints it after a save so the editor can see
+ * which of the two projects the row went to.
+ */
+export function contentProjectRef(env: SupabaseEnv): string | null {
+  const origin = contentOrigin(env);
+  return origin ? new URL(origin).hostname.split('.')[0] : null;
+}
+
 /** The control project's origin, or null in seed mode. */
 export function controlOrigin(env: SupabaseEnv): string | null {
   if (configurationMode(env) === 'offline') return null;

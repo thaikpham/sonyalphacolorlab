@@ -20,7 +20,7 @@ npm run dev            # dev server
 npm test               # vitest — MUST pass before any commit
 npm run typecheck      # tsc --noEmit
 npm run seed:emit      # regenerate data/*.seed.json (merges data/translations.vi.json)
-npm run push:supabase -- --target content   # push the catalogue (needs a secret key)
+npm run push:supabase -- --target content   # add missing rows; never overwrites without --overwrite (needs a secret key)
 npm run supabase:health -- --target control # is a project actually answering?
 ```
 
