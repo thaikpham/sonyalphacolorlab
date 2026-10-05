@@ -1,13 +1,18 @@
 /**
  * Apply one migration root to one project, and say which before it does.
  *
- *   npm run supabase:migrations -- --target content            # prints the plan
- *   npm run supabase:migrations -- --target content --apply    # runs it
+ *   npm run supabase:migrations -- --target content             # lists the root's files
+ *   npm run supabase:migrations -- --target content --dry-run   # asks the project what would run
+ *   npm run supabase:migrations -- --target content --apply     # runs it
  *
  * There are two roots now and they are not interchangeable:
  *
  *   control -> supabase/migrations          the applied history, plus corrections
- *   content -> supabase/content/migrations  the new baseline, from zero
+ *   content -> supabase/content/migrations  the content plane, reconciled by 0004
+ *
+ * The listing is the local files only. Only `--dry-run` and `--apply` compare
+ * them with the project's recorded history, and the CLI compares version
+ * prefixes alone: a recorded `0003` counts as this root's 0003 whatever its name.
  *
  * `supabase db push` takes its target from `supabase/config.toml` and a linked
  * project file, both of which are ambient state — the second one,
@@ -20,6 +25,12 @@
  * containing exactly one thing — the resolved ref — and passes that ref on the
  * command line as well. Nothing is read from the repository's own Supabase
  * state.
+ *
+ * The CLI is `supabase` on PATH; `npm run` puts `node_modules/.bin` first. It
+ * reads the database password from `SUPABASE_DB_PASSWORD` and prompts without
+ * it, so the target's own `*_SUPABASE_DB_PASSWORD` is passed under that name and
+ * any inherited `SUPABASE_DB_PASSWORD` is dropped: one left over from the other
+ * project would be tried against this one.
  *
  * Credentials travel in the child environment, never in `argv`: a
  * `--db-password` on a command line is visible to every process on the machine
@@ -39,6 +50,11 @@ const ROOTS: Record<Target, string> = {
   content: join('supabase', 'content', 'migrations'),
 };
 
+const PASSWORDS: Record<Target, string> = {
+  control: 'CONTROL_SUPABASE_DB_PASSWORD',
+  content: 'CONTENT_SUPABASE_DB_PASSWORD',
+};
+
 async function main() {
   const { args, target } = requireTarget(process.argv.slice(2));
   const root = ROOTS[target];
@@ -52,8 +68,8 @@ async function main() {
   console.log(`  migrations    ${files.length}`);
   for (const file of files) console.log(`                ${file}`);
 
-  if (!args.apply) {
-    console.log('\n  Nothing was applied. Re-run with --apply.\n');
+  if (!args.apply && !args.dryRun) {
+    console.log('\n  Nothing was applied. --dry-run asks the project what would run; --apply runs it.\n');
     return;
   }
 
@@ -64,19 +80,30 @@ async function main() {
   await cp(root, join(work, 'supabase', 'migrations'), { recursive: true });
   await writeFile(join(work, 'supabase', 'config.toml'), `project_id = "${ref}"\n`, 'utf8');
 
-  console.log(`\n  applying to ${ref}...\n`);
+  const env = { ...process.env };
+  delete env.SUPABASE_DB_PASSWORD;
+  const password = process.env[PASSWORDS[target]];
+  if (password) env.SUPABASE_DB_PASSWORD = password;
+  else console.log(`\n  ${PASSWORDS[target]} is not set; the CLI will ask for the password.`);
+
+  console.log(`\n  ${args.dryRun ? 'asking' : 'applying to'} ${ref}...\n`);
 
   const result = spawnSync(
-    'npx',
-    ['--no-install', 'supabase', 'db', 'push', '--project-ref', ref, '--workdir', work],
-    { stdio: 'inherit', env: process.env },
+    'supabase',
+    ['db', 'push', '--project-ref', ref, '--workdir', work, ...(args.dryRun ? ['--dry-run'] : [])],
+    { stdio: 'inherit', env },
   );
 
+  if (result.error) {
+    console.error(`\n  Could not start the Supabase CLI: ${result.error.message}`);
+    console.error('  Install it (https://supabase.com/docs/guides/cli) so `supabase` is on PATH.\n');
+    process.exit(1);
+  }
   if (result.status !== 0) {
     console.error('\n  db push failed.\n');
     process.exit(result.status ?? 1);
   }
-  console.log('\n  OK applied.\n');
+  console.log(args.dryRun ? '\n  OK, nothing was applied.\n' : '\n  OK applied.\n');
 }
 
 main().catch((error) => {

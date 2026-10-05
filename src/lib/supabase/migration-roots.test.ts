@@ -11,8 +11,10 @@ import { PRODUCT_COLUMNS } from '@/lib/cameras/row';
  * history is the one thing a migration history exists to prevent, so the
  * article-privilege correction arrives as 0014 rather than as an edit to 0013.
  *
- * `supabase/content/migrations` is the new root, applied from zero to an empty
- * project. What matters most about it is what it does *not* contain. A content
+ * `supabase/content/migrations` is the content plane's root, run from zero here.
+ * The live content project was built from the control root instead, and 0004
+ * reconciles the two; the block on 0004 below proves it. What matters most
+ * about this root is what it does *not* contain. A content
  * project that grew an `admin_emails` table would be a second, unsupervised
  * answer to "who may edit this site" — and one with different RLS, in a
  * different organisation, reachable by a different credential.
@@ -36,8 +38,14 @@ const files = (root: string) =>
  * without these stubs the column privileges — the thing actually keeping editor
  * addresses out of the public API — would go untested, and the storage
  * statements would abort the file they are in and every later one.
+ *
+ * The default ACL is Supabase's too: every table created in `public` starts
+ * with ALL granted to anon and authenticated. Without it a table that a
+ * migration never revokes looks private here and is not in production. That
+ * is the difference between the two roots' recipe tables that this file could
+ * not see until 0004.
  */
-async function freshDatabase(root: string): Promise<PGlite> {
+async function freshDatabase(root: string, skip: readonly string[] = []): Promise<PGlite> {
   const db = new PGlite();
   await db.exec(`
     do $$ begin
@@ -48,6 +56,7 @@ async function freshDatabase(root: string): Promise<PGlite> {
         create role authenticated nologin;
       end if;
     end $$;
+    alter default privileges in schema public grant all on tables to anon, authenticated;
     create schema if not exists storage;
     create table if not exists storage.buckets (
       id text primary key,
@@ -61,6 +70,7 @@ async function freshDatabase(root: string): Promise<PGlite> {
     );
   `);
   for (const file of files(root)) {
+    if (skip.includes(file)) continue;
     await db.exec(readFileSync(`${root}/${file}`, 'utf8'));
   }
   return db;
@@ -92,6 +102,74 @@ async function tablePrivileges(db: PGlite, table: string, role: string): Promise
     [table, role],
   );
   return result.rows.map((r) => r.privilege_type);
+}
+
+/**
+ * Everything about the schema that a later migration or a reader can depend
+ * on, as sorted lines: tables, columns with their types, defaults and comments,
+ * constraints, indexes, policies, triggers, functions, enums, both kinds of
+ * grant, and buckets. Rows and column order are left out, because no migration
+ * depends on either.
+ */
+async function shape(db: PGlite): Promise<string[]> {
+  const result = await db.query<{ line: string }>(`
+    with r(oid, rolname) as (
+      select oid, rolname from pg_roles where rolname in ('anon', 'authenticated')
+    ), t(oid, relname) as (
+      select oid, relname from pg_class
+       where relnamespace = 'public'::regnamespace and relkind = 'r'
+    )
+    select line from (
+      select 'table ' || relname || ' rls=' || relrowsecurity as line
+        from pg_class where oid in (select oid from t)
+      union all
+      select 'column ' || t.relname || '.' || a.attname || ' ' || format_type(a.atttypid, a.atttypmod)
+             || ' notnull=' || a.attnotnull
+             || ' default=' || coalesce(pg_get_expr(d.adbin, d.adrelid), '-')
+             || ' comment=' || coalesce(col_description(a.attrelid, a.attnum), '-')
+        from t join pg_attribute a on a.attrelid = t.oid
+        left join pg_attrdef d on d.adrelid = a.attrelid and d.adnum = a.attnum
+       where a.attnum > 0 and not a.attisdropped
+      union all
+      select 'constraint ' || t.relname || ' ' || c.conname || ' ' || pg_get_constraintdef(c.oid)
+        from t join pg_constraint c on c.conrelid = t.oid where c.contype <> 'n'
+      union all
+      select 'index ' || indexname || ' ' || indexdef from pg_indexes where schemaname = 'public'
+      union all
+      select 'policy ' || schemaname || '.' || tablename || ' ' || policyname || ' ' || cmd
+             || ' ' || permissive || ' to ' || array_to_string(roles, ',')
+             || ' using ' || coalesce(qual, '-') || ' check ' || coalesce(with_check, '-')
+        from pg_policies where schemaname in ('public', 'storage')
+      union all
+      select 'trigger ' || pg_get_triggerdef(g.oid)
+        from pg_trigger g join t on t.oid = g.tgrelid where not g.tgisinternal
+      union all
+      select 'function ' || proname || '(' || pg_get_function_identity_arguments(oid) || ') '
+             || md5(prosrc)
+        from pg_proc where pronamespace = 'public'::regnamespace
+      union all
+      select 'enum ' || y.typname || ' ' || string_agg(e.enumlabel, ',' order by e.enumsortorder)
+        from pg_type y join pg_enum e on e.enumtypid = y.oid
+       where y.typnamespace = 'public'::regnamespace group by y.typname
+      union all
+      select 'table-grant ' || t.relname || ' ' || r.rolname || ' '
+             || coalesce((select string_agg(x.privilege_type, ',' order by x.privilege_type)
+                            from pg_class c, aclexplode(c.relacl) x
+                           where c.oid = t.oid and x.grantee = r.oid), '-')
+        from t cross join r
+      union all
+      select 'column-grant ' || t.relname || ' ' || r.rolname || ' '
+             || coalesce((select string_agg(a.attname, ',' order by a.attname)
+                            from pg_attribute a, aclexplode(a.attacl) x
+                           where a.attrelid = t.oid and x.grantee = r.oid
+                             and x.privilege_type = 'SELECT'), '-')
+        from t cross join r
+      union all
+      select 'bucket ' || id || ' public=' || public from storage.buckets
+    ) lines
+    order by line
+  `);
+  return result.rows.map((r) => r.line);
 }
 
 let content: PGlite;
@@ -199,6 +277,48 @@ describe('the control root', () => {
     const b = await selectableColumns(control, 'lab_assets', 'anon');
     expect(a).toEqual(b);
     expect(a).toEqual([]);
+  });
+});
+
+describe('content 0004, on the lineage the live content project came from', () => {
+  /* The content project was built by the control root, not by this one: its
+     integration ran `supabase/migrations` against it and the control-only
+     tables were dropped by hand. 0004 is what makes "this root describes the
+     content project" true, and it may be recorded as applied wherever it ran
+     only because it is a no-op on a database this root built. */
+  const RECONCILE = '0004_reconcile_control_lineage.sql';
+  const sql = () => readFileSync(`${CONTENT_ROOT}/${RECONCILE}`, 'utf8');
+  const CONTROL_ONLY = [
+    'proposal_votes',
+    'recipe_proposals',
+    'recipe_comments',
+    'community_photos',
+    'admin_emails',
+  ];
+
+  it('brings the control root, less its control-only tables, to exactly this root', async () => {
+    const lineage = await freshDatabase(CONTROL_ROOT);
+    await lineage.exec(`drop table ${CONTROL_ONLY.join(', ')} cascade`);
+    const target = await shape(await freshDatabase(CONTENT_ROOT));
+
+    // The difference is real before the file runs, or this test proves nothing.
+    expect(await shape(lineage)).not.toEqual(target);
+    await lineage.exec(sql());
+    expect(await shape(lineage)).toEqual(target);
+  }, 60_000);
+
+  it('changes nothing on a database this root built, however often it runs', async () => {
+    const db = await freshDatabase(CONTENT_ROOT, [RECONCILE]);
+    const before = await shape(db);
+    await db.exec(sql());
+    await db.exec(sql());
+    expect(await shape(db)).toEqual(before);
+  }, 60_000);
+
+  it('refuses the control plane before changing anything', async () => {
+    const before = await shape(control);
+    await expect(control.exec(sql())).rejects.toThrow(/control-plane tables/);
+    expect(await shape(control)).toEqual(before);
   });
 });
 

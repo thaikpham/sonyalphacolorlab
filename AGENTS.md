@@ -384,19 +384,25 @@ role alone. Pinned by `no-email-leak.test.ts` and the privilege tests in
 
 Two migration roots, two databases. `supabase/migrations` is the control
 plane's applied history — never rewrite it; a correction is a new file.
-`supabase/content/migrations` is the content baseline, applied from zero. Both
-are executed against PGlite: `migration.test.ts` for the control root,
-`migration-roots.test.ts` for both plus the boundary between them (the content
-project must never grow an `admin_emails`). Adding a `.sql` there is what proves
-it is valid. **Merging a control migration to `main` is what applies it:**
+`supabase/content/migrations` is the content plane's. The live content project
+was built from the control root and brought to this root's shape by content
+`0004`. Both roots are executed against PGlite: `migration.test.ts` for the
+control root, `migration-roots.test.ts` for both plus the boundary between them
+(the content project must never grow an `admin_emails`). Adding a `.sql` there
+is what proves it is valid.
+
+**Merging to `main` applies the control root to control, and nothing else.**
 Supabase's GitHub integration on `nqeedlgzaewccqztqvik` pushes
-`supabase/migrations` on every merge (the `Supabase Preview` check; a second one
-runs for `touiyczjvnuaxfzulgeq`). It refuses — red check, branch
-`MIGRATIONS_FAILED` — whenever the project's recorded versions are not exactly
-the file prefixes, and a migration applied from the dashboard or an MCP tool is
-recorded under a timestamp. So apply by hand only with
-`npm run supabase:migrations -- --target … --apply` (`supabase db push`, prefix
-versions). The check does not gate Vercel. Repair steps are in the runbook.
+`supabase/migrations` on every merge (the `Supabase Preview` check). It refuses
+— red check, branch `MIGRATIONS_FAILED` — whenever the recorded versions are not
+exactly the file prefixes; an MCP-applied migration is recorded under a
+timestamp, and one pasted into the SQL editor is not recorded at all. **The
+content project has no integration. Never connect one**: with this layout the
+only migrations folder it can read is the control root's, which is how control
+0001–0016 ran on content and how control 0016 reached it mid-build on
+2026-10-05. Apply a content migration by hand with
+`npm run supabase:migrations -- --target content --apply`, before merging the
+code that reads it. Neither check gates Vercel. Steps are in the runbook.
 
 ## Who the caller is
 

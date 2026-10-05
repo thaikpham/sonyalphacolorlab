@@ -49,16 +49,17 @@ locale error page), never by falling back to seeds. So:
    ```
    The project's own scheduled backup is the second line; confirm it exists in
    the Supabase dashboard before step 3.
-3. **Plan, then apply the content migration:**
+3. **Apply the content migration.** Production content: **done 2026-10-05**,
+   pasted whole into the content project's SQL editor. It is recorded as
+   `0003` once content's history is re-recorded ("Adopting the content root"
+   in `supabase-control-content.md`). On any other environment whose history
+   is this root's:
    ```bash
-   npm run supabase:migrations -- --target content            # prints the plan
+   npm run supabase:migrations -- --target content --dry-run  # what would run
    npm run supabase:migrations -- --target content --apply    # runs 0003
    ```
-   Without the CLI, the dashboard's SQL editor on the **content** project
-   does the same: paste `supabase/content/migrations/0003_lab_article_kind_and_meta.sql`
-   whole and run it. It is idempotent, so a later `--apply` re-running it is
-   harmless. Check the project name in the dashboard before pressing Run —
-   the control project has a `lab_articles` too.
+   Check the project name in the dashboard before pressing Run in an SQL
+   editor — the control project has a `lab_articles` too.
 4. **Verify the columns answer to the anon key** — the go/no-go for step 6:
    ```bash
    npm run supabase:health -- --target content
@@ -71,10 +72,11 @@ locale error page), never by falling back to seeds. So:
    ```
 5. **Apply the control rollback copy** (keeps a rollback import possible).
    Production control: **done 2026-10-05**, recorded as version `0017`
-   (release report §3a) — the plan below lists it, and `--apply` skips it.
-   Independent of step 3; on a fresh environment run it any time:
+   (release report §3a); merging this branch to `main` is what makes the
+   control check green again. Independent of step 3; on an environment without
+   the control integration run it any time:
    ```bash
-   npm run supabase:migrations -- --target control
+   npm run supabase:migrations -- --target control --dry-run
    npm run supabase:migrations -- --target control --apply    # runs 0017
    ```
 6. **Deploy** the branch.

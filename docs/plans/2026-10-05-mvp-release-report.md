@@ -2,8 +2,9 @@
 
 Brief: `Sony_ColorLab_Claude_Code_Handoff.md` (2026-10-05). Branch
 `claude/sleepy-fermi-4wk292`, from baseline `9a04713`. Five commits, one per
-PR block (PR0–PR4). Not merged, not deployed. One migration applied since:
-control 0017 (§3a); content 0003 is still pending and gates the deploy.
+PR block (PR0–PR4). Not merged, not deployed. Both migrations applied since:
+control 0017 (§3a) and content 0003 (by hand in the content SQL editor,
+2026-10-05).
 
 ## 1. What was done
 
@@ -43,10 +44,10 @@ refusals). **No real Supabase project was touched.**
 
 ## 3. Not done, and why
 
-- **Content 0003 not applied, nothing deployed, no PR opened.** The content
-  project is in a Supabase organisation this environment cannot reach, and
-  the deploy must wait for 0003 (§5). Sequence:
-  `docs/runbooks/knowledge-search.md`.
+- **Content 0003 not applied from here.** The content project is in a
+  Supabase organisation this environment cannot reach. It was applied by hand
+  in the content SQL editor on 2026-10-05, and the branch went up as PR #7.
+  Sequence: `docs/runbooks/knowledge-search.md`.
 - **Pilot content not published.** The six reference drafts now pass the
   publish rules — their sources were re-read and dated on 2026-10-05, once the
   owner opened `helpguide.sony.net` (two claims corrected) — and wait on the
