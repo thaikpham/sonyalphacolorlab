@@ -165,7 +165,24 @@
     "submit": "Tìm",
     "clear": "Xoá tìm kiếm",
     "clearAll": "Xoá tất cả bộ lọc",
-    "close": "Đóng thanh tìm kiếm"
+    "close": "Đóng thanh tìm kiếm",
+    "allLabel": "Tìm trên toàn trang",
+    "allPlaceholder": "Tìm công thức, sản phẩm, bài viết…",
+    "matchingRecipes": "Công thức khớp",
+    "matchingProducts": "Sản phẩm khớp",
+    "matchingAll": "Kết quả khớp",
+    "matchCount": "{count, plural, other {# gợi ý}}",
+    "finding": "Đang tìm…",
+    "noInstant": "Không có gợi ý khớp.",
+    "viewAll": "Mọi kết quả cho “{query}”",
+    "searchEverything": "Tìm “{query}” trên toàn trang",
+    "kinds": {
+      "recipe": "Công thức",
+      "product": "Sản phẩm",
+      "article": "Bài viết",
+      "knowledge": "Kiến thức"
+    },
+    "partial": "Một số nguồn chưa tìm được lúc này."
   },
   "cameras": {
     "actionLabel": "Chi tiết & so sánh",
@@ -1018,5 +1035,31 @@
     "relatedUnavailable": "Không tải được một phần liên kết liên quan.",
     "learnMore": "Tìm hiểu thêm",
     "forThisProduct": "Bài viết và kiến thức"
+  },
+  "searchPage": {
+    "title": "Tìm kiếm",
+    "description": "Tìm công thức màu, máy ảnh, ống kính, âm thanh, bài viết và kiến thức tham khảo của Sony Alpha trong một ô tìm kiếm.",
+    "label": "Tìm kiếm",
+    "placeholder": "Tìm công thức, sản phẩm, bài viết, thông số…",
+    "submit": "Tìm",
+    "scopeLabel": "Phạm vi",
+    "scopes": {
+      "all": "Tất cả",
+      "recipes": "Công thức",
+      "products": "Sản phẩm",
+      "articles": "Bài viết",
+      "knowledge": "Kiến thức"
+    },
+    "groups": {
+      "recipe": "Công thức",
+      "product": "Wiki và sản phẩm",
+      "article": "Bài viết",
+      "knowledge": "Kiến thức"
+    },
+    "resultCount": "{count, plural, other {# kết quả}}",
+    "noResults": "Không có kết quả cho “{query}”.",
+    "unavailable": "Chưa tìm được trong {kinds} lúc này, nên kết quả dưới đây chưa gồm phần đó.",
+    "moreInGroup": "Xem cả {count} trong {group}",
+    "next": "Thêm kết quả"
   }
 }

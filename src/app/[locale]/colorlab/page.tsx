@@ -44,8 +44,9 @@ export default async function ColorLabPage({
   const sp = await searchParams;
   const format = sp.format === 'pp' || sp.format === 'cl' ? sp.format : undefined;
 
-  const [t, recipes, tags] = await Promise.all([
+  const [t, tSearch, recipes, tags] = await Promise.all([
     getTranslations('home'),
+    getTranslations('search'),
     listRecipes(locale, { format, look: sp.look, tag: sp.tag, q: sp.q }),
     listTags(),
   ]);
@@ -94,6 +95,19 @@ export default async function ColorLabPage({
               {t('emptyAction')}
             </Link>{' '}
             {t('emptyTail', { total })}
+            {/* A query no recipe answers may still be answered elsewhere on
+                the site — "ISO Auto" is an article, "a7cii" a camera. */}
+            {sp.q?.trim() ? (
+              <>
+                {' '}
+                <Link
+                  href={{ pathname: '/search', query: { q: sp.q.trim() } }}
+                  className="text-accent-400 underline underline-offset-4"
+                >
+                  {tSearch('searchEverything', { query: sp.q.trim() })}
+                </Link>
+              </>
+            ) : null}
           </p>
         ) : (
           <>

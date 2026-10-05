@@ -63,7 +63,7 @@ export function recipeTarget(r: RecipeSummary): LinkTarget {
  * than a bare "6400", which out of the catalogue's context reads as a number.
  * The model code goes in the subtitle instead.
  */
-function productTitle(p: ProductSummary): string {
+export function productTitle(p: Pick<ProductSummary, 'name' | 'fullName'>): string {
   const full = p.fullName?.replace(/\s*\([^)]*\)\s*$/, '').trim()
   return full || p.name
 }

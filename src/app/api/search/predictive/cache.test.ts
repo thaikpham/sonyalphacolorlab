@@ -25,7 +25,26 @@ describe('the predictive search response', () => {
 
   it('still reads the catalogue through the tagged cache', () => {
     /* The point of the change is to stop caching the *response*, not to start
-       hitting the database on every keystroke. */
-    expect(source).toMatch(/getSonyCameras|listRecipes/);
+       hitting the database on every keystroke. The route delegates to the
+       unified service, which reads the same cached functions the pages do. */
+    expect(source).toContain('searchContent(');
+    const service = readFileSync('src/lib/search/service.ts', 'utf8');
+    expect(service).toMatch(/getSonyCameras\(\)/);
+    expect(service).toMatch(/listRecipes\(locale\)/);
+    expect(service).not.toMatch(/contentRead|contentAdmin|from\('/);
+  });
+});
+
+describe('the unified search response', () => {
+  const route = readFileSync('src/app/api/search/route.ts', 'utf8');
+
+  it('is never cached by a shared cache either', () => {
+    expect(route).toMatch(/const CACHE_CONTROL = 'no-store'/);
+    expect(route).not.toMatch(/s-maxage|stale-while-revalidate/);
+  });
+
+  it('validates the request before reading anything', () => {
+    expect(route.indexOf('safeParse(')).toBeGreaterThan(-1);
+    expect(route.indexOf('safeParse(')).toBeLessThan(route.indexOf('searchContent('));
   });
 });

@@ -40,3 +40,34 @@ describe('search form', () => {
     expect(source).toContain('type="hidden"');
   });
 });
+
+describe('the header search modes (ADR 0003)', () => {
+  it('posts each mode to the page that answers it', () => {
+    /* ColorLab to its own grid — not the launcher at `/` — the Wiki to its
+       catalogue, and the editorial pages to /search. */
+    expect(source).toMatch(/const base = isAll \? '\/search' : isWiki \? wikiBase : '\/colorlab'/);
+  });
+
+  it('searches everything on the blog, /learn and /search', () => {
+    expect(source).toMatch(/const isAll = isBlog \|\| isSearchPage/);
+    expect(source).toMatch(/\/api\/search\?q=\$\{encodeURIComponent\(q\)\}&scope=all/);
+  });
+
+  it('cancels a superseded request instead of only ignoring its answer', () => {
+    expect(source).toContain('new AbortController()');
+    expect(source).toMatch(/predictiveAbort\.current\?\.abort\(\)/);
+  });
+
+  it('does not navigate per keystroke where there is no grid behind the box', () => {
+    expect(source).toMatch(/if \(isAll\) return;\s*\n\s*searchTimer\.current = setTimeout/);
+  });
+
+  it('keeps every visible string in the message catalogues', () => {
+    /* `locale === 'vi' ? … : …` hides copy from the parity test (Rule 3). */
+    expect(source).not.toMatch(/locale === 'vi' \?/);
+  });
+
+  it('offers no keyboard hint as copy', () => {
+    expect(source).not.toMatch(/Press Enter|Nhấn Enter/);
+  });
+});

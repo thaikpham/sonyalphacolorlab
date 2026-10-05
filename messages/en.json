@@ -165,7 +165,24 @@
     "submit": "Search",
     "clear": "Clear search",
     "clearAll": "Clear all filters",
-    "close": "Close search bar"
+    "close": "Close search bar",
+    "allLabel": "Search everything",
+    "allPlaceholder": "Search recipes, products, articles…",
+    "matchingRecipes": "Matching recipes",
+    "matchingProducts": "Matching products",
+    "matchingAll": "Matches",
+    "matchCount": "{count, plural, one {# match} other {# matches}}",
+    "finding": "Finding matches…",
+    "noInstant": "No instant matches.",
+    "viewAll": "All results for “{query}”",
+    "searchEverything": "Search everything for “{query}”",
+    "kinds": {
+      "recipe": "Recipe",
+      "product": "Product",
+      "article": "Article",
+      "knowledge": "Reference"
+    },
+    "partial": "Some sources could not be searched right now."
   },
   "cameras": {
     "actionLabel": "Details & compare",
@@ -1018,5 +1035,31 @@
     "relatedUnavailable": "Some related links could not be loaded.",
     "learnMore": "Learn more",
     "forThisProduct": "Articles and reference"
+  },
+  "searchPage": {
+    "title": "Search",
+    "description": "Search Sony Alpha colour recipes, cameras, lenses, audio, articles and reference pages from one box.",
+    "label": "Search",
+    "placeholder": "Search recipes, products, articles, settings…",
+    "submit": "Search",
+    "scopeLabel": "Scope",
+    "scopes": {
+      "all": "All",
+      "recipes": "Recipes",
+      "products": "Products",
+      "articles": "Articles",
+      "knowledge": "Reference"
+    },
+    "groups": {
+      "recipe": "Recipes",
+      "product": "Wiki & products",
+      "article": "Articles",
+      "knowledge": "Reference"
+    },
+    "resultCount": "{count, plural, one {# result} other {# results}}",
+    "noResults": "No results for “{query}”.",
+    "unavailable": "{kinds} could not be searched right now, so the results below leave them out.",
+    "moreInGroup": "All {count} in {group}",
+    "next": "More results"
   }
 }

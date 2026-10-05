@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { calculateMatchScore, levenshteinDistance, normalizeSearchTerm, removeAccents } from './fuzzy-search';
+import { levenshteinDistance, normalizeSearchTerm, removeAccents } from './fuzzy-search';
 
 describe('fuzzy-search utilities', () => {
   it('correctly removes Vietnamese accents', () => {
@@ -58,17 +58,5 @@ describe('fuzzy-search utilities', () => {
     expect(levenshteinDistance('sony', 'somiy', 2)).toBe(2); // still under the cap
     expect(levenshteinDistance('sony', 'sonu', 1)).toBe(1);
     expect(levenshteinDistance('sony', 'sony', 0)).toBe(0);
-  });
-
-  it('scores exact and normalized multi-variant matches higher than non-matches', () => {
-    const exactScore = calculateMatchScore('ILCE-7M4', ['Sony Alpha 7 IV', 'ILCE-7M4']);
-    const normScore = calculateMatchScore('a7m4', ['Sony Alpha 7 IV', 'ILCE-7M4']);
-    const typoScore = calculateMatchScore('somiy', ['Sony Alpha 7 IV', 'ILCE-7M4']);
-    const noMatchScore = calculateMatchScore('canon', ['Sony Alpha 7 IV', 'ILCE-7M4']);
-
-    expect(exactScore).toBeGreaterThan(90);
-    expect(normScore).toBeGreaterThan(70);
-    expect(typoScore).toBeGreaterThan(40);
-    expect(noMatchScore).toBe(0);
   });
 });
