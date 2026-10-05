@@ -2,7 +2,8 @@
 
 Brief: `Sony_ColorLab_Claude_Code_Handoff.md` (2026-10-05). Branch
 `claude/sleepy-fermi-4wk292`, from baseline `9a04713`. Five commits, one per
-PR block (PR0–PR4). Not merged, not deployed, no migration applied anywhere.
+PR block (PR0–PR4). Not merged, not deployed. One migration applied since:
+control 0017 (§3a); content 0003 is still pending and gates the deploy.
 
 ## 1. What was done
 
@@ -41,8 +42,10 @@ refusals). **No real Supabase project was touched.**
 
 ## 3. Not done, and why
 
-- **Migrations not applied, nothing deployed, no PR opened** — outside this
-  session's mandate. Sequence: `docs/runbooks/knowledge-search.md`.
+- **Content 0003 not applied, nothing deployed, no PR opened.** The content
+  project is in a Supabase organisation this environment cannot reach, and
+  the deploy must wait for 0003 (§5). Sequence:
+  `docs/runbooks/knowledge-search.md`.
 - **Pilot content not published.** Six reference drafts need their sources
   re-read and dated; three experiment frames need a real shoot. Review sheet:
   `docs/plans/2026-10-05-pilot-content.md`.
@@ -59,6 +62,30 @@ refusals). **No real Supabase project was touched.**
   ColorLab, MCP) — roadmap only, per the brief.
 - `npm audit` reports 10 advisories in the existing dependency tree; not
   triaged here.
+
+## 3a. Applied after the report
+
+**Control 0017, production control project `nqeedlgzaewccqztqvik`,
+2026-10-05**, at the owner's request ("thực hiện những điều bị chặn").
+Runbook step 5, which does not depend on step 3.
+
+- Applied as one transaction with the file's exact SQL, and recorded in
+  `supabase_migrations.schema_migrations` as version `0017`, name
+  `lab_article_kind_and_meta_rollback_compat` — the same shape `db push`
+  gave 0001–0016, so `npm run supabase:migrations -- --target control --apply`
+  sees it as applied and runs nothing.
+- Verified afterwards: `kind text default 'article'` and `meta jsonb default
+  '{}'` present; both checks and the `(kind, status, updated_at)` index
+  present; `anon` and `authenticated` hold `select` on `kind` and `meta`, and
+  still not on `updated_by`; the three dormant rows read `article` / `{}`.
+- Security advisors after the change list nothing on `lab_articles`. The
+  three that remain predate this release: `rls_enabled_no_policy` on
+  `admin_emails`, `lab_assets`, `proposal_votes` (service-role-only by design),
+  a mutable `search_path` on `touch_updated_at`, and leaked-password
+  protection off in Auth.
+
+The application never reads this table on the control project, so nothing a
+reader sees changed.
 
 ## 4. Decisions for the owner
 
