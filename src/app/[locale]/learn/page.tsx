@@ -3,7 +3,8 @@ import type { Metadata, Viewport } from 'next'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { SiteHeader } from '@/components/site-header'
 import { Link } from '@/i18n/navigation'
-import { routing, type Locale } from '@/i18n/routing'
+import { bilingualAlternates } from '@/i18n/alternates'
+import { type Locale } from '@/i18n/routing'
 import { ARTICLE_LANG } from '@/lib/lab/articles'
 import { getPublishedKnowledge } from '@/lib/lab/data'
 import { KNOWLEDGE_SECTIONS } from '@/lib/lab/meta'
@@ -17,8 +18,6 @@ export const viewport: Viewport = { themeColor: '#F9F8F5', colorScheme: 'light' 
     actually refreshes this page. */
 export const revalidate = 3600
 
-const pathFor = (locale: string, rest: string) =>
-  locale === routing.defaultLocale ? rest : `/${locale}${rest}`
 
 export async function generateMetadata({
   params,
@@ -30,10 +29,7 @@ export async function generateMetadata({
   return {
     title: t('title'),
     description: t('description'),
-    alternates: {
-      canonical: pathFor(locale, '/learn'),
-      languages: Object.fromEntries(routing.locales.map((l) => [l, pathFor(l, '/learn')])),
-    },
+    alternates: bilingualAlternates(locale, '/learn'),
   }
 }
 

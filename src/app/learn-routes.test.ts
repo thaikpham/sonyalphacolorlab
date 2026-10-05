@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { bilingualAlternates } from '@/i18n/alternates';
 
 /**
  * `/learn` and the article pages, pinned at the source.
@@ -57,7 +58,18 @@ describe('canonical URLs for Vietnamese bodies (ADR 0004)', () => {
   });
 
   it.each([LEARN_INDEX, GLOSSARY])('%s is bilingual, so both locales are alternates', (path) => {
-    expect(read(path)).toMatch(/languages: Object\.fromEntries/);
+    expect(read(path)).toMatch(/alternates: bilingualAlternates\(locale, '\/learn(\/glossary)?'\)/);
+  });
+
+  it.each([
+    ['src/app/[locale]/page.tsx', '/'],
+    ['src/app/[locale]/colorlab/page.tsx', '/colorlab'],
+    ['src/app/[locale]/cameras/page.tsx', '/cameras'],
+    ['src/app/[locale]/audio/page.tsx', '/audio'],
+    ['src/app/[locale]/blog/page.tsx', '/blog'],
+    ['src/app/[locale]/blog/setup/page.tsx', '/blog/setup'],
+  ])('%s canonicalises its filtered views to the bare path', (path, rest) => {
+    expect(read(path)).toContain(`alternates: bilingualAlternates(locale, '${rest}')`);
   });
 
   it.each([BLOG_PAGE, LEARN_PAGE])('%s emits article structured data', (path) => {
@@ -77,5 +89,15 @@ describe('article structured data', () => {
   it('points SearchAction at the page that searches', () => {
     expect(src).toMatch(/urlTemplate: `\$\{home\}\/search\?q=\{search_term_string\}`/);
     expect(src).not.toMatch(/\$\{home\}\/\?q=/);
+  });
+});
+
+describe('bilingualAlternates', () => {
+  it('names each locale canonical for itself under the as-needed prefix', () => {
+    expect(bilingualAlternates('en', '/colorlab')).toEqual({
+      canonical: '/colorlab',
+      languages: { en: '/colorlab', vi: '/vi/colorlab' },
+    });
+    expect(bilingualAlternates('vi', '/').canonical).toBe('/vi');
   });
 });

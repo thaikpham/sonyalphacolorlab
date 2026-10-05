@@ -39,6 +39,19 @@ async function main() {
   console.log(`  ${origin}\n`);
   console.log(`  auth/v1/settings   ${await probe(`${origin}/auth/v1/settings`, anon)}`);
   console.log(`  rest/v1/           ${await probe(`${origin}/rest/v1/`, anon)}`);
+  if (target === 'content') {
+    /* The columns the reading path selects as anon since content 0003. A 200
+       here is the go-ahead to deploy code that names them; anything else
+       means the migration (or its grant) is not on this project yet, and the
+       blog and /learn would fail their published read. See
+       docs/runbooks/knowledge-search.md. */
+    console.log(
+      `  lab_articles kind/meta (anon)  ${await probe(
+        `${origin}/rest/v1/lab_articles?select=id,kind,meta&limit=1`,
+        anon,
+      )}`,
+    );
+  }
   console.log('');
 }
 

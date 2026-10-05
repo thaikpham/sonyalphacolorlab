@@ -3,7 +3,8 @@ import type { Metadata, Viewport } from 'next'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { SiteHeader } from '@/components/site-header'
 import { Link } from '@/i18n/navigation'
-import { routing, type Locale } from '@/i18n/routing'
+import { bilingualAlternates } from '@/i18n/alternates'
+import { type Locale } from '@/i18n/routing'
 import { pageTarget, knowledgeExplaining } from '@/lib/content/relations'
 import { ARTICLE_LANG } from '@/lib/lab/articles'
 import { getPublishedKnowledge } from '@/lib/lab/data'
@@ -12,8 +13,6 @@ import { buildGlossary } from '@/lib/learn/glossary'
 export const viewport: Viewport = { themeColor: '#F9F8F5', colorScheme: 'light' }
 export const revalidate = 3600
 
-const pathFor = (locale: string, rest: string) =>
-  locale === routing.defaultLocale ? rest : `/${locale}${rest}`
 
 export async function generateMetadata({
   params,
@@ -27,12 +26,7 @@ export async function generateMetadata({
   return {
     title: t('glossaryTitle'),
     description: t('glossaryDescription'),
-    alternates: {
-      canonical: pathFor(locale, '/learn/glossary'),
-      languages: Object.fromEntries(
-        routing.locales.map((l) => [l, pathFor(l, '/learn/glossary')]),
-      ),
-    },
+    alternates: bilingualAlternates(locale, '/learn/glossary'),
   }
 }
 

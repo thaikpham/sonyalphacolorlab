@@ -1,4 +1,5 @@
 import { Suspense } from 'react'
+import { bilingualAlternates } from '@/i18n/alternates'
 import type { Metadata, Viewport } from 'next'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { SetupGuide } from '@/components/lab/setup-guide'
@@ -17,7 +18,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'lab' })
-  return { title: t('setupTitle'), description: t('setupLede') }
+  return {
+    title: t('setupTitle'),
+    description: t('setupLede'),
+    alternates: bilingualAlternates(locale, '/blog/setup'),
+  }
 }
 
 /**

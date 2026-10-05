@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { bilingualAlternates } from '@/i18n/alternates';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { SiteStructuredData } from '@/components/structured-data';
 import { RecipeCard } from '@/components/recipe-card';
@@ -19,6 +20,7 @@ export async function generateMetadata({
   return {
     title: t('title'),
     description: t('metaDescription'),
+    alternates: bilingualAlternates(locale, '/colorlab'),
   };
 }
 

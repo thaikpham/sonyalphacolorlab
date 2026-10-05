@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { bilingualAlternates } from '@/i18n/alternates';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { LauncherGrid } from '@/components/launcher-grid';
 import type { Locale } from '@/i18n/routing';
@@ -10,7 +11,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'launcher' });
-  return { title: t('title'), description: t('subtitle') };
+  return { title: t('title'), description: t('subtitle'), alternates: bilingualAlternates(locale, '/') };
 }
 
 /**

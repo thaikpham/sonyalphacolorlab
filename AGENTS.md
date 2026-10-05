@@ -420,6 +420,31 @@ password stops being enough. `aal.ts` reads the claim only after GoTrue has
 verified the token, and `control-boundary.test.ts` pins every case including the
 one that matters most: an unreadable factor list is 503, never "no factor".
 
+## Knowledge pages, cross-links, search
+
+`docs/adr/0001`–`0004` hold the reasoning; these are the rules.
+
+- **Blog articles and knowledge pages are one table.** `lab_articles.kind` is
+  `article` (`/blog/<id>`) or `knowledge` (`/learn/<id>`); every reading path
+  filters on it (`getPublishedArticles` / `getPublishedKnowledge`). The hub is
+  `/learn`, not `/wiki` — "Sony Wiki" is the camera catalogue.
+- **Editorial facts live in `meta`, parsed by `parseMeta()`**, never cast:
+  related entities by real id, prerequisites, concepts (generated from
+  `explanations.ts`), dated sources, a public author name (no `@`), a review
+  date. Links resolve at render against what is published now — never store a
+  URL or a title as a link.
+- **Publish rules are per kind** (`validateForPublish`). A knowledge page needs
+  a dated source; anything still carrying `[CẦN BỔ SUNG` cannot publish.
+- **One search engine.** `src/lib/search/rank.ts` ranks for the header, the
+  Wiki grid, `/api/search`, `/api/search/predictive` and `/search`. Adapters read
+  the same cached published functions the pages read; there is no index to
+  keep in sync, and a failed source is reported, never back-filled. Camera
+  aliases are derived from catalogue SKUs (`cameras/aliases.ts`), never typed.
+- **`npm run search:eval`** is the ranking's regression gate: label new queries
+  from the documents, not from the ranker's output.
+- Pilot drafts (`pilot-drafts.ts`) are drafts. Nothing may publish them but an
+  editor in `/admin/blog`.
+
 ## AI ("Tweak with AI")
 
 `claude-sonnet-5` via structured outputs, so the JSON shape is constrained by the

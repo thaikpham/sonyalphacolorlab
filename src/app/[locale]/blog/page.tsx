@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next'
+import { bilingualAlternates } from '@/i18n/alternates'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { LabFeed, parseFilter } from '@/components/lab/lab-feed'
 import { SiteHeader } from '@/components/site-header'
@@ -17,7 +18,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'lab' })
-  return { title: t('feedTitle'), description: t('feedDescription') }
+  return {
+    title: t('feedTitle'),
+    description: t('feedDescription'),
+    alternates: bilingualAlternates(locale, '/blog'),
+  }
 }
 
 /**
