@@ -122,7 +122,10 @@ describe('the editor', () => {
        is still on screen — and `dirty` is false, so nothing prompts the editor
        to reconcile them. Left alone they keep editing blocks that no longer
        exist, and the next save drops them again. */
-    expect(source).toMatch(/if \(data\.dropped\)[\s\S]{0,400}openArticle\(savedId\)/);
+    expect(source).toMatch(/if \(data\.dropped[^)]*\)[\s\S]{0,400}openArticle\(savedId\)/);
+    /* The same holds for metadata the parser refused: a source row that did
+       not save must not stay on screen looking saved. */
+    expect(source).toMatch(/if \(data\.dropped \|\| data\.droppedMeta\)/);
   });
 
   it('never persists a signed preview into a block', () => {
@@ -135,5 +138,31 @@ describe('the editor', () => {
   it('will not upload against an article that has no row yet', () => {
     expect(source).toMatch(/if \(!articleId\)[\s\S]{0,200}saveBeforeUpload/);
     expect(source).toMatch(/canUpload=\{articleId !== null\}/);
+  });
+});
+
+describe('PATCH — kinds and references', () => {
+  const body = handler('PATCH');
+
+  it('refuses to move a published page between /blog and /learn', () => {
+    /* Changing kind changes the URL. On a draft that costs nothing; on a
+       published page it breaks every link already shared, so the editor has
+       to unpublish first. */
+    expect(body).toMatch(
+      /existing\.status === 'published' && existing\.kind !== write\.article\.kind[\s\S]{0,120}kindLocked[\s\S]{0,40}status: 409/,
+    );
+    expect(body.indexOf("'kindLocked'")).toBeLessThan(body.indexOf('updateArticleRecord('));
+  });
+
+  it('applies the publish rules for the page kind, not the blog rules to everything', () => {
+    expect(body).toContain('validateForPublish(write.article)');
+    expect(source).not.toContain('validateArticleShape(');
+  });
+
+  it('refuses to publish when the links could not be checked, before anything is written', () => {
+    const refused = body.indexOf("'referenceCheckFailed'");
+    expect(refused).toBeGreaterThan(-1);
+    expect(refused).toBeLessThan(body.indexOf("reconcileArticleAssets(id, write.article.blocks, 'published')"));
+    expect(refused).toBeLessThan(body.indexOf('updateArticleRecord('));
   });
 });

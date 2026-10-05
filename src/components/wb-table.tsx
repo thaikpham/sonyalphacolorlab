@@ -3,6 +3,7 @@ import { WB_EXPLANATIONS, WB_OVERVIEW, type Locale } from '@/lib/camera/explanat
 import { wbEffects, wbSummary } from '@/lib/camera/effects';
 import type { WhiteBalance } from '@/lib/camera/schema';
 import { wbHeadLabel } from '@/lib/camera/format';
+import { WB_PARAM_LABELS } from '@/lib/camera/constants';
 import { ParamRow, ROW_STRIPES } from './settings-table';
 import {
   getKelvinHexColor,
@@ -120,7 +121,7 @@ export function WbTable({ wb, locale = 'en' }: { wb: WhiteBalance; locale?: Loca
       <div className={`flex flex-col ${ROW_STRIPES}`}>
       <ParamRow
         locale={locale}
-        label="Temperature"
+        label={WB_PARAM_LABELS.temperature}
         value={temperature}
         valueStyle={{ color: kelvinColor, fontWeight: 700 }}
         effect={fx.temperature}
@@ -129,7 +130,7 @@ export function WbTable({ wb, locale = 'en' }: { wb: WhiteBalance; locale?: Loca
       {ab && (
         <ParamRow
           locale={locale}
-          label="Shift A/B"
+          label={WB_PARAM_LABELS.shiftAb}
           value={`${ab.axis}${ab.amount}`}
           valueStyle={{ color: getWbShiftAxisHexColor(ab.axis), fontWeight: 700 }}
           effect={fx.shiftAb}
@@ -139,7 +140,7 @@ export function WbTable({ wb, locale = 'en' }: { wb: WhiteBalance; locale?: Loca
       {gm && (
         <ParamRow
           locale={locale}
-          label="Shift G/M"
+          label={WB_PARAM_LABELS.shiftGm}
           value={`${gm.axis}${gm.amount}`}
           valueStyle={{ color: getWbShiftAxisHexColor(gm.axis), fontWeight: 700 }}
           effect={fx.shiftGm}

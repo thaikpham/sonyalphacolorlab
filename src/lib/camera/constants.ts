@@ -85,6 +85,13 @@ export const WB_PRESETS = [
 /** Sony documents Flash as "only when shooting still images". */
 export const WB_PRESETS_STILL_ONLY = ['Flash'] as const;
 
+/** The three White Balance controls as the recipe tables name them. */
+export const WB_PARAM_LABELS = {
+  temperature: 'Temperature',
+  shiftAb: 'Shift A/B',
+  shiftGm: 'Shift G/M',
+} as const;
+
 /** Axis letters. A=amber B=blue on one axis, G=green M=magenta on the other. */
 export const WB_AXIS_AB = ['A', 'B'] as const;
 export const WB_AXIS_GM = ['G', 'M'] as const;
@@ -130,6 +137,38 @@ export const PP_MENU_ITEMS = [
   'Black Level', 'Gamma', 'Black Gamma', 'Knee', 'Color Mode',
   'Saturation', 'Color Phase', 'Color Depth', 'Detail',
 ] as const;
+
+/**
+ * Display names for the nine Picture Profile settings, keyed like
+ * `ppSettingsSchema`. Technical terms — never translated (Rule 3). The
+ * `satisfies` clause makes every value one of `PP_MENU_ITEMS`, so a label
+ * cannot drift from the menu it names.
+ */
+export const PP_PARAM_LABELS = {
+  blackLevel: 'Black Level',
+  gamma: 'Gamma',
+  blackGamma: 'Black Gamma',
+  knee: 'Knee',
+  colorMode: 'Color Mode',
+  saturation: 'Saturation',
+  colorPhase: 'Color Phase',
+  colorDepth: 'Color Depth',
+  detail: 'Detail',
+} as const satisfies Record<string, (typeof PP_MENU_ITEMS)[number]>;
+
+/**
+ * The Detail sub-items as the camera's Detail screen names them (source
+ * TP0000909112). `mode` is the Auto/Manual switch Sony labels "Adjust".
+ */
+export const PP_DETAIL_LABELS = {
+  level: 'Level',
+  mode: 'Adjust',
+  vhBalance: 'V/H Balance',
+  bwBalance: 'B/W Balance',
+  limit: 'Limit',
+  crispening: 'Crispening',
+  hiLightDetail: 'Hi-Light Detail',
+} as const;
 
 export const PP_RANGES = {
   blackLevel: r(-15, 15),
@@ -213,6 +252,42 @@ export const CL_PARAM_LABELS: Record<ClParam, string> = {
   sharpnessRange: 'Sharpness Range',
   clarity: 'Clarity',
 };
+
+// ---------------------------------------------------------------------------
+// Citations, as data
+// ---------------------------------------------------------------------------
+
+/**
+ * The Sony Help Guide pages this file's values were read from — the same URLs
+ * as the header comment, exported so the reference pages can cite them rather
+ * than retyping them. Adding a source here is part of the sync skill's step 1.
+ */
+export const HELP_GUIDE_SOURCES = {
+  ppGammaColorMode: {
+    url: 'https://helpguide.sony.net/di/pp/v1/en/contents/TP0000909109.html',
+    title: 'Picture Profile — Gamma / Color Mode',
+  },
+  ppBlackKnee: {
+    url: 'https://helpguide.sony.net/di/pp/v1/en/contents/TP0000909110.html',
+    title: 'Picture Profile — Black Level / Black Gamma / Knee',
+  },
+  ppColor: {
+    url: 'https://helpguide.sony.net/di/pp/v1/en/contents/TP0000909111.html',
+    title: 'Picture Profile — Saturation / Color Phase / Color Depth',
+  },
+  ppDetail: {
+    url: 'https://helpguide.sony.net/di/pp/v1/en/contents/TP0000909112.html',
+    title: 'Picture Profile — Detail',
+  },
+  clIlce7m4: {
+    url: 'https://helpguide.sony.net/ilc/2110/v1/en/contents/TP1000640837.html',
+    title: 'ILCE-7M4 Help Guide — Creative Look',
+  },
+  wbIlce7m4: {
+    url: 'https://helpguide.sony.net/ilc/2110/v1/en/contents/TP1000640840.html',
+    title: 'ILCE-7M4 Help Guide — White Balance (still image/movie)',
+  },
+} as const satisfies Record<string, { url: string; title: string }>;
 
 // ---------------------------------------------------------------------------
 // Cross-format rule

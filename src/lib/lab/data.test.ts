@@ -65,6 +65,33 @@ describe('articleFromPublicRow', () => {
   it('survives blocks that are not an array at all', () => {
     expect(articleFromPublicRow({ ...ROW, blocks: 'nonsense' })?.blocks).toEqual([]);
   });
+
+  it('reads a row from before the migration as an article with no metadata', () => {
+    const mapped = articleFromPublicRow(ROW);
+    expect(mapped?.kind).toBe('article');
+    expect(mapped?.meta.related).toEqual([]);
+    expect(mapped?.updatedAt).toBe('2026-09-09T00:00:00.000Z');
+  });
+
+  it('keeps a knowledge page a knowledge page', () => {
+    expect(articleFromPublicRow({ ...ROW, kind: 'knowledge' })?.kind).toBe('knowledge');
+  });
+
+  it('refuses a row whose kind it does not know, rather than filing it on the blog', () => {
+    expect(articleFromPublicRow({ ...ROW, kind: 'wiki' })).toBeNull();
+  });
+
+  it('parses metadata instead of trusting it', () => {
+    const mapped = articleFromPublicRow({
+      ...ROW,
+      meta: {
+        related: [{ kind: 'recipe', id: 'SCL-PP-001' }, { kind: 'recipe', id: '<script>' }],
+        authorName: 'editor@example.com',
+      },
+    });
+    expect(mapped?.meta.related).toEqual([{ kind: 'recipe', id: 'SCL-PP-001' }]);
+    expect(mapped?.meta.authorName).toBeNull();
+  });
 });
 
 describe('the published query', () => {
@@ -87,6 +114,22 @@ describe('the published query', () => {
 
   it('filters to published rows in the query, not only in RLS', () => {
     expect(source).toMatch(/\.eq\('status', 'published'\)/);
+  });
+
+  it('selects kind and meta, which the two reading surfaces split on', () => {
+    const columns = source.match(/const PUBLIC_COLUMNS = '([^']*)'/)?.[1] ?? '';
+    expect(columns.split(', ')).toEqual(expect.arrayContaining(['kind', 'meta']));
+  });
+
+  it('gives the blog articles only and /learn knowledge pages only', () => {
+    /* The blog and /learn share one cached read. Forgetting the filter on
+       either side puts a page on a surface no editor chose for it. */
+    expect(source).toMatch(
+      /getPublishedArticles[\s\S]{0,160}filter\(\(a\) => a\.kind === 'article'\)/,
+    );
+    expect(source).toMatch(
+      /getPublishedKnowledge[\s\S]{0,160}filter\(\(a\) => a\.kind === 'knowledge'\)/,
+    );
   });
 
   it('reaches the compiled catalogue only through the offline branch', () => {

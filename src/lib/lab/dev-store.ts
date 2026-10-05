@@ -4,6 +4,7 @@ import { dirname, join } from 'node:path'
 import { hasContentConfig } from '@/lib/supabase/server'
 import { ARTICLES } from './articles'
 import { parseBlocks } from './parse'
+import { parseKind, parseMeta } from './meta'
 import type { ArticleRecord } from './types'
 
 /**
@@ -87,7 +88,11 @@ function readAll(): ArticleRecord[] {
       return [
         {
           ...(r as unknown as ArticleRecord),
+          /* A file written before knowledge pages existed has neither field;
+             it holds ordinary articles with no metadata. */
+          kind: parseKind(r.kind) ?? 'article',
           blocks: parseBlocks(r.blocks).blocks,
+          meta: parseMeta(r.meta).meta,
         },
       ]
     })

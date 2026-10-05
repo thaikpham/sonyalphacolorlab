@@ -46,6 +46,7 @@ async function main() {
     // Published, because these three are already live on the site. A draft
     // here would take them off it, which is the opposite of a seed.
     status: 'published',
+    kind: a.kind,
     topic: a.topic,
     level: a.level,
     archetype: a.archetype,
@@ -53,6 +54,7 @@ async function main() {
     title: a.title,
     dek: a.dek,
     blocks: a.blocks,
+    meta: a.meta,
     created_at: now,
     updated_at: now,
     updated_by: null,

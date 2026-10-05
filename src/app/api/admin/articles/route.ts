@@ -11,7 +11,8 @@ import {
   normaliseWrite,
   uniqueArticleId,
 } from '@/lib/lab/admin-store'
-import { validateArticleShape } from '@/lib/lab/parse'
+import { validateForPublish } from '@/lib/lab/parse'
+import { findUnknownReferences } from '@/lib/lab/reference-check'
 
 /**
  * The article list, and article creation.
@@ -94,13 +95,23 @@ export async function POST(request: Request) {
 
   revalidateTag(LAB_TAG, IMMEDIATE)
 
+  /* Advisory on create: a draft is allowed to link to things that are not
+     there yet, but the editor should see a typo now rather than at publish. A
+     failed check adds nothing here — the create already succeeded. */
+  const unknownRefs = (await findUnknownReferences(write.article.meta)) ?? []
+
   return NextResponse.json({
     ok: true,
     id,
     dropped: write.dropped,
+    droppedMeta: write.droppedMeta,
     /* Reported on create too, even though a new article always fails them.
        The editor renders them as a checklist of what is still missing rather
        than as errors, so the same field drives both screens. */
-    problems: validateArticleShape(write.article),
+    problems: [
+      ...validateForPublish(write.article),
+      ...(unknownRefs.length > 0 ? ['relatedUnknown'] : []),
+    ],
+    unknownRefs,
   })
 }

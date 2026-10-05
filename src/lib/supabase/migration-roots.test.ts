@@ -217,6 +217,47 @@ describe('what a browser may read', () => {
     }
   });
 
+  it.each(['anon', 'authenticated'])(
+    '%s can read lab_articles.kind and .meta on both projects, and still not updated_by',
+    async (role) => {
+      /* The published read names both columns (`PUBLIC_COLUMNS` in
+         `lab/data.ts`). A column missing from the grant is "permission denied"
+         for the whole query — the blog and /learn go down together. The grant
+         is additive, so the address must still be absent afterwards. */
+      for (const [name, db] of ROOTS()) {
+        const columns = await selectableColumns(db, 'lab_articles', role);
+        expect(columns, `${name}: kind`).toContain('kind');
+        expect(columns, `${name}: meta`).toContain('meta');
+        expect(columns, `${name}: updated_by`).not.toContain('updated_by');
+      }
+    },
+  );
+
+  it('defaults every existing row to an ordinary article with empty metadata', async () => {
+    for (const [, db] of ROOTS()) {
+      await db.exec(`
+        insert into lab_articles (id, topic, level, archetype, title)
+        values ('kind-default-probe', 'setup', 'mid', 'explainer', 'Kind default probe')
+        on conflict (id) do nothing;
+      `);
+      const row = await db.query<{ kind: string; meta: unknown }>(
+        `select kind, meta from lab_articles where id = 'kind-default-probe'`,
+      );
+      expect(row.rows[0]).toEqual({ kind: 'article', meta: {} });
+    }
+  });
+
+  it.each([
+    ['an unknown kind', `kind = 'wiki'`],
+    ['metadata that is not an object', `meta = '[]'::jsonb`],
+  ])('refuses %s', async (_label, assignment) => {
+    for (const [, db] of ROOTS()) {
+      await expect(
+        db.exec(`update lab_articles set ${assignment} where id = 'kind-default-probe'`),
+      ).rejects.toThrow();
+    }
+  });
+
   it.each(['anon', 'authenticated'])('%s cannot read sony_cameras.updated_by', async (role) => {
     for (const [, db] of ROOTS()) {
       expect(await selectableColumns(db, 'sony_cameras', role)).not.toContain('updated_by');

@@ -12,7 +12,8 @@ import {
   normaliseWrite,
   updateArticleRecord,
 } from '@/lib/lab/admin-store'
-import { validateArticleShape } from '@/lib/lab/parse'
+import { validateForPublish } from '@/lib/lab/parse'
+import { findUnknownReferences } from '@/lib/lab/reference-check'
 import { articlePreviews } from '@/lib/lab/asset-store'
 import { referencedAssetIds } from '@/lib/lab/assets'
 import { deleteArticleAssets, reconcileArticleAssets } from '@/lib/lab/asset-lifecycle'
@@ -44,9 +45,15 @@ export async function GET(request: Request, { params }: Ctx) {
      an article references, and a published article's public URLs would not
      cover the draft ones — so every preview comes from the private copy, which
      is retained through publication precisely so this stays uniform. */
+  const unknownRefs = (await findUnknownReferences(article.meta)) ?? []
+
   return NextResponse.json({
     article,
-    problems: validateArticleShape(article),
+    problems: [
+      ...validateForPublish(article),
+      ...(unknownRefs.length > 0 ? ['relatedUnknown'] : []),
+    ],
+    unknownRefs,
     previews: await articlePreviews(id, referencedAssetIds(article.blocks)),
   })
 }
@@ -73,16 +80,41 @@ export async function PATCH(request: Request, { params }: Ctx) {
   const write = normaliseWrite(id, body)
   if (!write) return NextResponse.json({ error: 'badRequest' }, { status: 400 })
 
-  const problems = validateArticleShape(write.article)
+  /* A published page keeps its kind. Changing it moves the page between
+     `/blog/<id>` and `/learn/<id>`, which breaks every link already shared;
+     the editor unpublishes first, which is a deliberate act with a visible
+     consequence. A lookup that fails falls through — the update below is what
+     reports a missing row. */
+  const existing = await getArticleRecord(id)
+  if (existing && existing.status === 'published' && existing.kind !== write.article.kind) {
+    return NextResponse.json({ error: 'kindLocked' }, { status: 409 })
+  }
+
+  const unknownRefs = await findUnknownReferences(write.article.meta)
+  const problems = [
+    ...validateForPublish(write.article),
+    ...(unknownRefs && unknownRefs.length > 0 ? ['relatedUnknown'] : []),
+  ]
 
   /* The gate, and the only place it is applied. Publishing is what makes the
      article a page a reader can land on, so it is the moment the countable
      half of ARTICLE-SPEC has to hold. The problems come back with the refusal
      rather than as a bare 400, because "which rule" is the whole content of
      the answer. */
+  if (write.status === 'published' && unknownRefs === null) {
+    /* Could not verify the links. A draft would save; a publish does not,
+       because "unverified" is not "fine". */
+    return NextResponse.json({ error: 'referenceCheckFailed' }, { status: 502 })
+  }
   if (write.status === 'published' && problems.length > 0) {
     return NextResponse.json(
-      { error: 'specViolation', problems, dropped: write.dropped },
+      {
+        error: 'specViolation',
+        problems,
+        unknownRefs: unknownRefs ?? [],
+        dropped: write.dropped,
+        droppedMeta: write.droppedMeta,
+      },
       { status: 422 },
     )
   }
@@ -126,7 +158,13 @@ export async function PATCH(request: Request, { params }: Ctx) {
     }
   }
 
-  return NextResponse.json({ ok: true, problems, dropped: write.dropped })
+  return NextResponse.json({
+    ok: true,
+    problems,
+    unknownRefs: unknownRefs ?? [],
+    dropped: write.dropped,
+    droppedMeta: write.droppedMeta,
+  })
 }
 
 export async function DELETE(request: Request, { params }: Ctx) {

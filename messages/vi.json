@@ -926,10 +926,63 @@
       "articleNotFound": "Bài viết này không còn tồn tại nên không gắn được ảnh vào.",
       "saveBeforeUpload": "Hãy lưu bài viết trước — ảnh cần được gắn với một bài.",
       "contentAdminFrozen": "Việc lưu đang tạm dừng trong lúc chuyển cơ sở dữ liệu nội dung. Chưa có gì thay đổi — hãy thử lại sau ít phút.",
-      "mfaRequired": "Phiên đăng nhập cần nhập lại mã authenticator. Hãy đăng nhập lại; chưa có gì thay đổi."
+      "mfaRequired": "Phiên đăng nhập cần nhập lại mã authenticator. Hãy đăng nhập lại; chưa có gì thay đổi.",
+      "knowledgeNeedsSection": "Trang kiến thức cần chọn nhóm.",
+      "knowledgeTooShort": "Trang kiến thức cần ít nhất ba khối.",
+      "knowledgeTooLong": "Hơn ba mươi hai khối — nên tách thành hai trang.",
+      "knowledgeNeedsHeading": "Trang kiến thức cần ít nhất một tiêu đề mục.",
+      "knowledgeNeedsSource": "Trang kiến thức cần ít nhất một nguồn.",
+      "sourceNeedsDate": "Mỗi nguồn cần ngày kiểm tra.",
+      "relatedUnknown": "Có liên kết trỏ tới mã không tồn tại.",
+      "kindLocked": "Bài đang đăng không đổi được loại trang. Hãy gỡ đăng trước.",
+      "referenceCheckFailed": "Không kiểm tra được các liên kết nên chưa đăng. Chưa có gì thay đổi — hãy thử lại."
     },
     "imageNone": "Chưa có ảnh. Hãy tải một ảnh lên — JPEG, PNG hoặc WebP, tối đa 8 MB.",
     "imagePreviewExpired": "Liên kết xem trước đã hết hạn. Hãy mở lại bài viết để xem lại ảnh.",
-    "saveBeforeUpload": "Hãy lưu bài viết trước — ảnh cần được gắn với một bài."
+    "saveBeforeUpload": "Hãy lưu bài viết trước — ảnh cần được gắn với một bài.",
+    "kind": "Loại trang",
+    "kinds": {
+      "article": "Bài blog",
+      "knowledge": "Trang kiến thức"
+    },
+    "kindLockedHint": "Gỡ đăng trước khi đổi loại trang — URL sẽ đổi theo.",
+    "section": "Nhóm kiến thức",
+    "sectionNone": "Chưa chọn",
+    "sections": {
+      "fundamentals": "Nền tảng",
+      "sony-color": "Màu Sony",
+      "workflows": "Quy trình"
+    },
+    "order": "Thứ tự trong nhóm",
+    "metaHeading": "Liên kết và nguồn",
+    "authorName": "Tên tác giả hiển thị",
+    "authorNameHint": "Tên công khai, không nhập email.",
+    "reviewedAt": "Ngày rà soát",
+    "related": "Liên kết liên quan",
+    "relatedKinds": {
+      "recipe": "Công thức",
+      "product": "Sản phẩm",
+      "article": "Bài blog",
+      "knowledge": "Trang kiến thức"
+    },
+    "relatedId": "Mã",
+    "addRelated": "Thêm liên kết",
+    "removeRelated": "Bỏ liên kết",
+    "prerequisites": "Nên đọc trước",
+    "addPrerequisite": "Thêm bài",
+    "removePrerequisite": "Bỏ bài",
+    "concepts": "Giải thích khái niệm",
+    "sources": "Nguồn",
+    "sourceUrl": "URL",
+    "sourceTitle": "Tiêu đề trang",
+    "sourcePublisher": "Nhà phát hành",
+    "sourceSection": "Mục",
+    "sourceCheckedAt": "Ngày kiểm tra",
+    "sourceScope": "Phạm vi (máy, firmware)",
+    "addSource": "Thêm nguồn",
+    "removeSource": "Bỏ nguồn",
+    "savedWithDroppedMeta": "Đã lưu. {n, plural, other {# liên kết hoặc nguồn}} không hợp lệ nên không được lưu.",
+    "unknownRefs": "Không tìm thấy mã:",
+    "refsUnavailable": "Không tải được danh sách mã để gợi ý."
   }
 }

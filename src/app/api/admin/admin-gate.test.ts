@@ -26,6 +26,7 @@ const ADMIN_ROUTES = [
   'src/app/api/admin/articles/route.ts',
   'src/app/api/admin/articles/[id]/route.ts',
   'src/app/api/admin/articles/upload/route.ts',
+  'src/app/api/admin/content-refs/route.ts',
   'src/app/api/admin/recipes/route.ts',
   'src/app/api/admin/recipes/[id]/route.ts',
   'src/app/api/admin/recipes/[id]/images/route.ts',

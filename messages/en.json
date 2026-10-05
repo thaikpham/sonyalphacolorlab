@@ -926,10 +926,63 @@
       "articleNotFound": "That article no longer exists, so the image could not be attached.",
       "saveBeforeUpload": "Save the article first — an image has to belong to it.",
       "contentAdminFrozen": "Saving is paused while the content database is being moved. Nothing was changed — try again shortly.",
-      "mfaRequired": "Your session needs the authenticator code again. Sign in once more; nothing was changed."
+      "mfaRequired": "Your session needs the authenticator code again. Sign in once more; nothing was changed.",
+      "knowledgeNeedsSection": "A reference page needs a section.",
+      "knowledgeTooShort": "A reference page needs at least three blocks.",
+      "knowledgeTooLong": "Over thirty-two blocks — this is two pages.",
+      "knowledgeNeedsHeading": "A reference page needs at least one heading.",
+      "knowledgeNeedsSource": "A reference page needs at least one source.",
+      "sourceNeedsDate": "Every source needs the date it was checked.",
+      "relatedUnknown": "A link points at an ID that does not exist.",
+      "kindLocked": "A published page cannot change type. Unpublish it first.",
+      "referenceCheckFailed": "The links could not be checked, so nothing was published. Nothing was changed — try again."
     },
     "imageNone": "No image yet. Upload one — JPEG, PNG or WebP, up to 8 MB.",
     "imagePreviewExpired": "Preview link expired. Reopen the article to see it again.",
-    "saveBeforeUpload": "Save the article first — an image has to belong to it."
+    "saveBeforeUpload": "Save the article first — an image has to belong to it.",
+    "kind": "Page type",
+    "kinds": {
+      "article": "Blog article",
+      "knowledge": "Reference page"
+    },
+    "kindLockedHint": "Unpublish before changing the page type — the URL changes with it.",
+    "section": "Reference section",
+    "sectionNone": "Not set",
+    "sections": {
+      "fundamentals": "Fundamentals",
+      "sony-color": "Sony colour",
+      "workflows": "Workflows"
+    },
+    "order": "Order in section",
+    "metaHeading": "Links and sources",
+    "authorName": "Public author name",
+    "authorNameHint": "A public name, never an email address.",
+    "reviewedAt": "Reviewed on",
+    "related": "Related",
+    "relatedKinds": {
+      "recipe": "Recipe",
+      "product": "Product",
+      "article": "Blog article",
+      "knowledge": "Reference page"
+    },
+    "relatedId": "ID",
+    "addRelated": "Add link",
+    "removeRelated": "Remove link",
+    "prerequisites": "Read first",
+    "addPrerequisite": "Add page",
+    "removePrerequisite": "Remove page",
+    "concepts": "Explains",
+    "sources": "Sources",
+    "sourceUrl": "URL",
+    "sourceTitle": "Page title",
+    "sourcePublisher": "Publisher",
+    "sourceSection": "Section",
+    "sourceCheckedAt": "Checked on",
+    "sourceScope": "Scope (body, firmware)",
+    "addSource": "Add source",
+    "removeSource": "Remove source",
+    "savedWithDroppedMeta": "Saved. {n, plural, one {# link or source was} other {# links or sources were}} invalid and not stored.",
+    "unknownRefs": "Not found:",
+    "refsUnavailable": "Could not load the ID suggestions."
   }
 }

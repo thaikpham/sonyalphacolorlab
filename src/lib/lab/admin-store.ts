@@ -10,7 +10,8 @@ import {
   RESERVED_IDS,
   slugify,
 } from './parse'
-import type { Article, ArticleRecord, ArticleStatus } from './types'
+import { parseKind, parseMeta } from './meta'
+import type { Article, ArticleKind, ArticleRecord, ArticleStatus } from './types'
 
 /**
  * The admin's view of the article store: every row, drafts included.
@@ -30,7 +31,7 @@ import type { Article, ArticleRecord, ArticleStatus } from './types'
  */
 
 const ADMIN_COLUMNS =
-  'id, status, topic, level, archetype, read, title, dek, blocks, updated_at, updated_by'
+  'id, status, kind, topic, level, archetype, read, title, dek, blocks, meta, updated_at, updated_by'
 
 type Row = Record<string, unknown>
 
@@ -50,6 +51,9 @@ function toRecord(row: Row): ArticleRecord | null {
 
   return {
     id,
+    /* An unreadable kind is shown as an article here rather than hidden: this
+       is the screen where it gets fixed. The reading path refuses it. */
+    kind: parseKind(row.kind) ?? 'article',
     topic: topic ?? 'setup',
     level: level ?? 'newbie',
     archetype: archetype ?? 'explainer',
@@ -57,6 +61,7 @@ function toRecord(row: Row): ArticleRecord | null {
     title,
     dek: typeof row.dek === 'string' ? row.dek : '',
     blocks,
+    meta: parseMeta(row.meta).meta,
     status: parseStatus(row.status),
     updatedAt: typeof row.updated_at === 'string' ? row.updated_at : '',
     updatedBy: typeof row.updated_by === 'string' ? row.updated_by : null,
@@ -97,6 +102,7 @@ export async function getArticleRecord(id: string): Promise<ArticleRecord | null
  * place a block's shape is checked before it reaches a renderer.
  */
 export type WritePayload = {
+  kind: ArticleKind
   topic: string
   level: string
   archetype: string
@@ -104,6 +110,7 @@ export type WritePayload = {
   title: string
   dek: string
   blocks: unknown
+  meta: unknown
   status: ArticleStatus
 }
 
@@ -113,6 +120,9 @@ export type NormalisedWrite = {
   /** Blocks the parser refused. Returned to the editor so a silent drop is
       impossible to miss — see `parse.ts`. */
   dropped: number
+  /** Metadata entries `parseMeta` refused — a bad URL, an unknown concept, an
+      author name that looked like an address. Reported the same way. */
+  droppedMeta: number
 }
 
 export function normaliseWrite(id: string, body: Record<string, unknown>): NormalisedWrite | null {
@@ -124,11 +134,19 @@ export function normaliseWrite(id: string, body: Record<string, unknown>): Norma
   const archetype = parseArchetype(body.archetype)
   if (!topic || !level || !archetype) return null
 
+  /* Absent means an ordinary article — the shape every editor sent before
+     knowledge pages existed. Present and unknown is refused, not defaulted:
+     guessing would publish a page on a surface nobody chose. */
+  const kind = body.kind === undefined ? 'article' : parseKind(body.kind)
+  if (!kind) return null
+
   const { blocks, dropped } = parseBlocks(body.blocks)
+  const { meta, dropped: droppedMeta } = parseMeta(body.meta)
 
   return {
     article: {
       id,
+      kind,
       topic,
       level,
       archetype,
@@ -136,9 +154,11 @@ export function normaliseWrite(id: string, body: Record<string, unknown>): Norma
       title,
       dek: typeof body.dek === 'string' ? body.dek.trim().slice(0, 400) : '',
       blocks,
+      meta,
     },
     status: parseStatus(body.status),
     dropped,
+    droppedMeta,
   }
 }
 
@@ -191,6 +211,7 @@ function devRecord(article: Article, status: ArticleStatus, email: string | null
 function row(article: Article, status: ArticleStatus, email: string) {
   return {
     status,
+    kind: article.kind,
     topic: article.topic,
     level: article.level,
     archetype: article.archetype,
@@ -198,6 +219,7 @@ function row(article: Article, status: ArticleStatus, email: string) {
     title: article.title,
     dek: article.dek,
     blocks: article.blocks,
+    meta: article.meta,
     updated_at: new Date().toISOString(),
     updated_by: email,
   }

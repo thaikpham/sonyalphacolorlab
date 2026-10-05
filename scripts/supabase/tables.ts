@@ -70,8 +70,8 @@ export const CONTENT_TABLES: readonly TableSpec[] = [
   {
     name: 'lab_articles',
     columns: [
-      'id', 'status', 'topic', 'level', 'archetype', 'read', 'title', 'dek', 'blocks',
-      'created_at', 'updated_at', 'updated_by',
+      'id', 'status', 'kind', 'topic', 'level', 'archetype', 'read', 'title', 'dek', 'blocks',
+      'meta', 'created_at', 'updated_at', 'updated_by',
     ],
     orderBy: ['id'],
     key: ['id'],
