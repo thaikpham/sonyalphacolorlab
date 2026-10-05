@@ -5,6 +5,7 @@ import { catalogueCache } from '@/lib/catalogue-cache';
 import { contentRead } from '@/lib/supabase/server';
 import { contentOrOfflineSeed } from '@/lib/supabase/content-source';
 import { compareCameras, type SonyCamera, type WikiSort } from '@/lib/cameras/types';
+import { PRODUCT_COLUMNS, productFromRow, type ProductRow } from '@/lib/cameras/row';
 
 /**
  * The audio catalogue — headphones and speakers.
@@ -21,8 +22,9 @@ import { compareCameras, type SonyCamera, type WikiSort } from '@/lib/cameras/ty
  * ordering rules, which is exactly the drift `compareCameras` was written to
  * end.
  *
- * Now connected to Supabase when configured so the admin editor (/admin/pe) can
- * update and read audio products seamlessly.
+ * Connected to Supabase when configured, through the same column list and row
+ * mapping as the camera catalogue (`cameras/row.ts`), so what the admin editor
+ * saves for a PE product is what this reads back.
  */
 
 let cached: SonyCamera[] | null = null;
@@ -55,31 +57,14 @@ async function _getSonyAudio(options?: { sortBy?: WikiSort }): Promise<SonyCamer
     async () => {
       const { data, error } = await contentRead()
         .from('sony_cameras')
-        .select(
-          'id, sku, name, full_name, category, sub_category_1, sub_category_2, price_vnd, price_formatted, url, image_url, features, specs',
-        )
+        .select(PRODUCT_COLUMNS)
         .eq('category', 'audio')
         .order('price_vnd', { ascending: false });
 
       if (error) throw new Error(`sony_cameras (audio): ${error.message}`);
 
       const seedById = new Map(seed.map((c) => [c.id, c]));
-      return (data ?? []).map((row) => ({
-          id: row.id,
-          sku: row.sku,
-          name: row.name,
-          fullName: row.full_name,
-          category: row.category as SonyCamera['category'],
-          subCategory1: row.sub_category_1 || '',
-          subCategory2: row.sub_category_2 || '',
-          priceVnd: Number(row.price_vnd),
-          priceFormatted: row.price_formatted,
-          url: row.url,
-          imageUrl: row.image_url,
-          features: (row.features ?? []) as SonyCamera['features'],
-        specs: (row.specs as SonyCamera['specs']) ?? seedById.get(row.id)?.specs,
-        galleryUrls: seedById.get(row.id)?.galleryUrls,
-      }));
+      return ((data ?? []) as ProductRow[]).map((row) => productFromRow(row, seedById.get(row.id)));
     },
     () => seed,
   );

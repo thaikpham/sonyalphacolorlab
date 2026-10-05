@@ -30,7 +30,10 @@ export async function ProductSpecTable({
      the two it is. On screen that placeholder is an em dash — a blank cell
      reads as a rendering bug — with the sentence kept for screen readers. */
   const rows = SPEC_ROWS[specs.kind].map((key) => [key, row[key] ?? null] as const);
-  const extra = specs.kind === 'accessory' ? specs.keySpecs : [];
+  /* `?? []` because the admin's create route wrote accessory blocks without
+     `keySpecs` until it was fixed, and those rows are still in the database —
+     `undefined.map` below took the whole product page down with them. */
+  const extra = specs.kind === 'accessory' ? (specs.keySpecs ?? []) : [];
 
   /* Rows separate by a 4% film on every other row, not by a line: on a dark
      ground a hairline grid reads as noise. The two lists are one visual run, so

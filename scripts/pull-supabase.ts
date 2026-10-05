@@ -1,6 +1,6 @@
 /**
  * Pulls the product catalogue back out of Supabase into
- * `data/sony-cameras.seed.json`.
+ * `data/sony-cameras.seed.json` and `data/sony-audio.seed.json`.
  *
  * Supabase is the source of truth once the admin UI is in use, but the seed is
  * what the test suite reads and what the app falls back to with no credentials
@@ -8,8 +8,13 @@
  * lives only in the database and `specs.test.ts` keeps asserting against a file
  * that is quietly months out of date.
  *
- *   npm run pull:supabase          # write the file
- *   npm run pull:supabase -- --dry # print what would change, touch nothing
+ *   npm run pull:supabase -- --target content         # write the files
+ *   npm run pull:supabase -- --target content --dry   # print what would change, touch nothing
+ *
+ * Every column the admin editor writes comes back — names, image, gallery,
+ * features and specs. It used to bring only features and specs, so a renamed
+ * product or a corrected gallery stayed in the database alone, and the next
+ * `push:supabase --overwrite` put the seed's old copy back over it.
  *
  * Run it before committing after an editing session. It is deliberately not
  * automatic: overwriting a tracked data file is a thing you should ask for.
@@ -29,6 +34,15 @@ const dry = process.argv.includes('--dry');
 
 type Row = Record<string, unknown>;
 
+const PULLED = [
+  ['name', 'name'],
+  ['full_name', 'fullName'],
+  ['image_url', 'imageUrl'],
+  ['gallery_urls', 'galleryUrls'],
+  ['features', 'features'],
+  ['specs', 'specs'],
+] as const;
+
 async function main() {
   const { target } = requireTarget(process.argv.slice(2).filter((a) => a !== '--dry'));
   if (target !== 'content') {
@@ -38,7 +52,7 @@ async function main() {
   const { data, error } = await db
     .from('sony_cameras')
     .select(
-      'id, sku, name, full_name, category, sub_category_1, sub_category_2, price_vnd, price_formatted, url, image_url, features, specs, updated_at, updated_by',
+      'id, sku, name, full_name, category, sub_category_1, sub_category_2, price_vnd, price_formatted, url, image_url, gallery_urls, features, specs, updated_at, updated_by',
     );
 
   if (error) {
@@ -74,14 +88,17 @@ async function main() {
     const local = entry.row;
     let rowUpdated = false;
 
-    for (const field of ['features', 'specs'] as const) {
-      const next = row[field];
+    /* Database column → seed key, for every column `/admin/wiki` can edit. A
+       null column is "never written", not "cleared", and leaves the seed alone
+       — the same reading `productFromRow` gives it. */
+    for (const [column, key] of PULLED) {
+      const next = row[column];
       if (next === null || next === undefined) continue;
-      if (JSON.stringify(next) === JSON.stringify(local[field])) continue;
-      local[field] = next;
+      if (JSON.stringify(next) === JSON.stringify(local[key])) continue;
+      local[key] = next;
       rowUpdated = true;
       const who = row.updated_by ? ` (by ${row.updated_by})` : '';
-      edits.push(`  ~ ${row.id}.${field}${who}`);
+      edits.push(`  ~ ${row.id}.${key}${who}`);
     }
 
     if (rowUpdated) {

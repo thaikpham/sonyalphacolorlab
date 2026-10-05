@@ -43,6 +43,15 @@ export type ParsedArgs = {
    * resulting commit would look like a routine manifest update.
    */
   allowRemovals: boolean;
+  /**
+   * Lets `push:supabase` replace rows that already exist.
+   *
+   * Without it the push only inserts what is missing. Once the admin editors
+   * write to the content project, the database is the source of truth and the
+   * seed is a Git-time snapshot of it — a push that replaced existing rows put
+   * that snapshot back over every edit made since, and reported success.
+   */
+  overwrite: boolean;
 };
 
 export class ArgumentError extends Error {
@@ -68,6 +77,7 @@ const BOOLEAN_FLAGS = new Map<string, keyof ParsedArgs>([
   ['--apply', 'apply'],
   ['--rollback', 'rollback'],
   ['--allow-removals', 'allowRemovals'],
+  ['--overwrite', 'overwrite'],
 ]);
 
 function readTarget(flag: string, raw: string | undefined): Target {
@@ -92,6 +102,7 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
     apply: false,
     rollback: false,
     allowRemovals: false,
+    overwrite: false,
   };
 
   for (let i = 0; i < argv.length; i += 1) {

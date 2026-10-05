@@ -371,6 +371,7 @@
     "save": "Lưu vào Supabase",
     "saving": "Đang lưu…",
     "saved": "Đã lưu",
+    "savedTo": "Đã lưu vào Supabase · {project}",
     "unsaved": "Có thay đổi chưa lưu",
     "createProductBtn": "Thêm sản phẩm",
     "createModalTitle": "Thêm sản phẩm mới",
@@ -418,7 +419,10 @@
       "failed": "Dịch không thành công. Chưa có gì thay đổi.",
       "controlUnavailable": "Dịch vụ đăng nhập hiện không phản hồi. Chưa có gì thay đổi — hãy thử lại sau ít phút.",
       "contentAdminFrozen": "Việc lưu đang tạm dừng trong lúc chuyển cơ sở dữ liệu nội dung. Chưa có gì thay đổi — hãy thử lại sau ít phút.",
-      "contentUnavailable": "Cơ sở dữ liệu nội dung hiện không phản hồi. Chưa có gì thay đổi — hãy thử lại sau ít phút."
+      "contentUnavailable": "Cơ sở dữ liệu nội dung hiện không phản hồi. Chưa có gì thay đổi — hãy thử lại sau ít phút.",
+      "notAllowedForCategory": "Quyền của bạn không bao gồm ngành hàng của sản phẩm này. Chưa có gì thay đổi.",
+      "mfaRequired": "Phiên này cần nhập lại mã authenticator. Chưa có gì thay đổi — hãy tải lại trang để hoàn tất đăng nhập.",
+      "duplicateProduct": "Đã có sản phẩm trùng SKU hoặc ID. Chưa có gì được tạo."
     },
     "basicInfoHeading": "Tên sản phẩm & Bộ sưu tập ảnh",
     "basicInfoHint": "Sửa tên hiển thị, tên đầy đủ và các URL ảnh trong bộ sưu tập.",

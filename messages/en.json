@@ -371,6 +371,7 @@
     "save": "Save to Supabase",
     "saving": "Saving…",
     "saved": "Saved",
+    "savedTo": "Saved to Supabase · {project}",
     "unsaved": "Unsaved changes",
     "createProductBtn": "Add product",
     "createModalTitle": "Add new product",
@@ -418,7 +419,10 @@
       "failed": "Translation failed. Nothing was changed.",
       "controlUnavailable": "The sign-in service is not answering right now. Nothing was changed — try again shortly.",
       "contentAdminFrozen": "Saving is paused while the content database is being moved. Nothing was changed — try again shortly.",
-      "contentUnavailable": "The content database is not answering right now. Nothing was changed — try again shortly."
+      "contentUnavailable": "The content database is not answering right now. Nothing was changed — try again shortly.",
+      "notAllowedForCategory": "Your role does not cover this product's division. Nothing was changed.",
+      "mfaRequired": "This session needs your authenticator code again. Nothing was changed — reload the page to finish signing in.",
+      "duplicateProduct": "A product with this SKU or ID already exists. Nothing was created."
     },
     "basicInfoHeading": "Product name & gallery",
     "basicInfoHint": "Edit the display name, the full name and the gallery image URLs.",

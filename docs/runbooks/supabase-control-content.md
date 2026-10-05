@@ -22,6 +22,38 @@ The browser never holds a content credential and never reaches the content
 project's API. Every content write goes through a route handler here, which
 verifies the control-plane session and the `admin_emails` row *first*.
 
+### Where an admin save goes
+
+`/admin/wiki` (DI and PE), `/admin/colorlab` and `/admin/blog` write to the
+**content** project — the one `NEXT_PUBLIC_CONTENT_SUPABASE_URL` names, in the
+content organisation. The save bar says which: "Đã lưu vào Supabase · <ref>".
+
+`nqeedlgzaewccqztqvik` still holds a `sony_cameras`, `recipes` and
+`lab_articles`. Those are the frozen pre-cutover rollback copy (94 products, no
+audio, last edited 2026-08-19). Nothing writes them while the split is in
+force, so a product edit will never appear there — look in the content project.
+
+`.env.local` decides this for `npm run dev` exactly as Vercel does for
+production. If a local save does not show on the live site, compare the two
+`NEXT_PUBLIC_CONTENT_SUPABASE_URL` values first.
+
+### Seed ⇄ database
+
+The database is the source of truth for the catalogue; the seeds are a Git-time
+snapshot the tests and offline mode read.
+
+```bash
+npm run pull:supabase -- --target content --dry   # what the admin changed since the seed
+npm run pull:supabase -- --target content         # bring it into data/*.seed.json
+npm run push:supabase -- --target content         # insert rows the project lacks, keep the rest
+npm run push:supabase -- --target content --overwrite   # replace rows WHOLE — pull first
+```
+
+`push:supabase` without `--overwrite` is safe to run at any time: it inserts
+missing rows (for example the 25 audio products, which the cutover did not
+carry because the control copy never had them) and leaves every existing row
+as the admin left it.
+
 ### The one cross-project reference
 
 Community rows reference a recipe by `recipe_slug`, a plain string. Postgres
