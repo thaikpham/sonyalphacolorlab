@@ -28,7 +28,7 @@ const recipes = [
   { id: 'SCL-CL-001', slug: 'film-look', name: 'SCL-CL-001: Film Look', format: 'cl' as const, wbLabel: 'AWB', look: 'FL' },
 ]
 const products = [
-  { id: 'sony-ilce-7m4-bq-ap2', name: '7 IV', sku: 'ILCE-7M4/BQ AP2', category: 'camera' },
+  { id: 'sony-ilce-7m4-bq-ap2', name: '7 IV', fullName: 'Sony 7 IV (ILCE-7M4/BQ AP2)', sku: 'ILCE-7M4/BQ AP2', category: 'camera' },
   { id: 'sony-wh-1000xm6', name: 'WH-1000XM6', sku: '', category: 'audio' },
 ]
 
@@ -58,7 +58,10 @@ describe('resolveRefs', () => {
     ])
     expect(links[0].subtitle).toBe('Picture Profile · 5600K, A2')
     expect(links[1].subtitle).toBe('Creative Look FL · AWB')
+    expect(links[2].title).toBe('Sony 7 IV')
     expect(links[2].subtitle).toBe('ILCE-7M4')
+    // No full name on record: the short name stands.
+    expect(links[3].title).toBe('WH-1000XM6')
     expect(links[3].subtitle).toBeUndefined()
   })
 

@@ -122,7 +122,13 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
      the recipe and product catalogues, and a box on an article page that
      silently searches recipes is worse than no box. Alpha Tech Blogs filters
      in its own rail, where the filters are. */
-  const isBlog = pathname === '/blog' || pathname.startsWith('/blog/');
+  /* `/learn` is the blog's reference shelf (ADR 0001) — same app, same
+     wordmark, same paper room. */
+  const isBlog =
+    pathname === '/blog' ||
+    pathname.startsWith('/blog/') ||
+    pathname === '/learn' ||
+    pathname.startsWith('/learn/');
   const searchParams = useSearchParams();
   const { user, openLoginModal, logout } = useAuth();
 

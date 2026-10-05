@@ -61,7 +61,7 @@ async function load(locale: Locale): Promise<LoadedUniverse> {
   const productList: ProductSummary[] = [
     ...(cameras.status === 'fulfilled' ? cameras.value : []),
     ...(audio.status === 'fulfilled' ? audio.value : []),
-  ].map((p) => ({ id: p.id, name: p.name, sku: p.sku, category: p.category }))
+  ].map((p) => ({ id: p.id, name: p.name, fullName: p.fullName, sku: p.sku, category: p.category }))
 
   return {
     universe: buildUniverse({ entries: pageList, recipes: recipeList, products: productList }),

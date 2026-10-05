@@ -52,6 +52,11 @@ export type ParsedArgs = {
    * that snapshot back over every edit made since, and reported success.
    */
   overwrite: boolean;
+  /**
+   * Lets `push:lab` also insert the pilot pages from `pilot-drafts.ts`, as
+   * drafts. Off by default so the script still does exactly what it did.
+   */
+  withPilotDrafts: boolean;
 };
 
 export class ArgumentError extends Error {
@@ -78,6 +83,7 @@ const BOOLEAN_FLAGS = new Map<string, keyof ParsedArgs>([
   ['--rollback', 'rollback'],
   ['--allow-removals', 'allowRemovals'],
   ['--overwrite', 'overwrite'],
+  ['--with-pilot-drafts', 'withPilotDrafts'],
 ]);
 
 function readTarget(flag: string, raw: string | undefined): Target {
@@ -103,6 +109,7 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
     rollback: false,
     allowRemovals: false,
     overwrite: false,
+    withPilotDrafts: false,
   };
 
   for (let i = 0; i < argv.length; i += 1) {

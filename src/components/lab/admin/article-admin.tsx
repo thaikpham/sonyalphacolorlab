@@ -499,12 +499,10 @@ export function ArticleAdmin() {
                     </span>
                     <span className="meta">{t('blockCount', { n: a.blocks.length })}</span>
                   </span>
-                  <span
-                    className={
-                      'text-body-sm font-semibold leading-[1.35] ' +
-                      (on ? 'text-white' : 'text-ink')
-                    }
-                  >
+                  {/* `text-ink` on the selected row too: the admin is the paper
+                      room, where `.surface-selected` is a pale tint and white
+                      text on it disappeared (CLAUDE.md rule 3). */}
+                  <span className="text-body-sm font-semibold leading-[1.35] text-ink">
                     {a.title}
                   </span>
                 </button>

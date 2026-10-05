@@ -365,6 +365,9 @@ export const RESERVED_IDS: ReadonlySet<string> = new Set([
   'search',
 ])
 
+/** Written into drafts where content is still owed — see `pilot-drafts.ts`. */
+export const PLACEHOLDER_MARK = '[CẦN BỔ SUNG'
+
 /**
  * The rules every published page obeys whatever its kind: the menu pair's
  * separator, the table and checklist bounds, labels that carry a condition,
@@ -416,6 +419,10 @@ function houseRules(article: Article): string[] {
   const prose = JSON.stringify([article.title, article.dek, article.read, article.blocks])
   if (/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(prose)) problems.push('emoji')
   if (prose.includes('!')) problems.push('exclamation')
+  /* The marker the pilot drafts use for what only a real shoot or a real
+     source can fill in. A page still carrying one is a frame, not an article,
+     and must not reach a reader by an accidental publish. */
+  if (prose.includes(PLACEHOLDER_MARK)) problems.push('placeholder')
 
   return problems
 }

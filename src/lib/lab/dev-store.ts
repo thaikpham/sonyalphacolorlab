@@ -3,6 +3,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { hasContentConfig } from '@/lib/supabase/server'
 import { ARTICLES } from './articles'
+import { PILOT_DRAFTS } from './pilot-drafts'
 import { parseBlocks } from './parse'
 import { parseKind, parseMeta } from './meta'
 import type { ArticleRecord } from './types'
@@ -59,7 +60,7 @@ function assertDev() {
  * opening the editor for the first time gets three real articles to edit,
  * which is a far better test of the screen than three blank ones they have to
  * type first. They are marked `published` because that is what they are on the
- * live site.
+ * live site. The pilot pages from `pilot-drafts.ts` come in as drafts.
  */
 function readAll(): ArticleRecord[] {
   assertDev()
@@ -67,12 +68,13 @@ function readAll(): ArticleRecord[] {
   try {
     raw = readFileSync(FILE, 'utf8')
   } catch {
-    return ARTICLES.map((a) => ({
-      ...a,
-      status: 'published' as const,
-      updatedAt: new Date().toISOString(),
-      updatedBy: null,
-    }))
+    const now = new Date().toISOString()
+    return [
+      ...ARTICLES.map((a) => ({ ...a, status: 'published' as const, updatedAt: now, updatedBy: null })),
+      /* The pilot pages arrive as drafts, which is what they are: content for
+         the owner to review in the editor, never a seed of the live site. */
+      ...PILOT_DRAFTS.map((a) => ({ ...a, status: 'draft' as const, updatedAt: now, updatedBy: null })),
+    ]
   }
 
   try {

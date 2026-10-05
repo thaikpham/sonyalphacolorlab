@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation'
 import { setRequestLocale } from 'next-intl/server'
 import { ArticleView } from '@/components/lab/article-view'
 import { SiteHeader } from '@/components/site-header'
+import { ArticleStructuredData } from '@/components/structured-data'
+import { ARTICLE_LANG } from '@/lib/lab/articles'
 import { getPublishedArticle, getPublishedArticles } from '@/lib/lab/data'
 import { routing, type Locale } from '@/i18n/routing'
 
@@ -66,6 +68,15 @@ export const dynamicParams = true
  */
 export const revalidate = 3600
 
+/**
+ * The body is Vietnamese on every locale (`types.ts`), so `/vi/blog/<id>` is
+ * the canonical URL for both, and no language alternates are declared — the
+ * English route is the same article under English chrome, not a translation
+ * of it (ADR 0004). Both URLs keep working; nothing redirects.
+ */
+const canonicalPath = (id: string) =>
+  ARTICLE_LANG === routing.defaultLocale ? `/blog/${id}` : `/${ARTICLE_LANG}/blog/${id}`
+
 export async function generateMetadata({
   params,
 }: {
@@ -74,7 +85,12 @@ export async function generateMetadata({
   const { id } = await params
   const article = await getPublishedArticle(id)
   if (!article) return {}
-  return { title: article.title, description: article.dek }
+  return {
+    title: article.title,
+    description: article.dek,
+    alternates: { canonical: canonicalPath(id) },
+    openGraph: { type: 'article', title: article.title, description: article.dek, locale: 'vi_VN' },
+  }
 }
 
 export default async function ArticlePage({
@@ -101,6 +117,7 @@ export default async function ArticlePage({
       <Suspense>
         <SiteHeader />
       </Suspense>
+      <ArticleStructuredData article={article} path={canonicalPath(id)} />
       {/* Measured, not full-bleed — the same call the handoff makes for the
           setup tool. The feed is a full-width index, but an article is
           96ch of body plus a 320px rail, and in a 160rem container that pair

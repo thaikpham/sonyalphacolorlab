@@ -35,6 +35,8 @@ export type RecipeSummary = {
 export type ProductSummary = {
   readonly id: string
   readonly name: string
+  /** "Sony 6400 (ILCE-6400/B AP2)". The display title drops the SKU. */
+  readonly fullName?: string
   readonly sku: string
   readonly category: string
 }
@@ -56,12 +58,22 @@ export function recipeTarget(r: RecipeSummary): LinkTarget {
   }
 }
 
+/**
+ * The catalogue's own full name without its trailing SKU — "Sony 6400" rather
+ * than a bare "6400", which out of the catalogue's context reads as a number.
+ * The model code goes in the subtitle instead.
+ */
+function productTitle(p: ProductSummary): string {
+  const full = p.fullName?.replace(/\s*\([^)]*\)\s*$/, '').trim()
+  return full || p.name
+}
+
 export function productTarget(p: ProductSummary): LinkTarget {
   const code = modelCode(p.sku)
   return {
     kind: 'product',
     id: p.id,
-    title: p.name,
+    title: productTitle(p),
     href: p.category === 'audio' ? `/audio/${p.id}` : `/cameras/${p.id}`,
     ...(code ? { subtitle: code } : {}),
   }

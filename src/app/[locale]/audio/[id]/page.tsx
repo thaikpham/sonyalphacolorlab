@@ -6,6 +6,7 @@ import { routing } from '@/i18n/routing';
 import { getSonyAudio, getSonyAudioById } from '@/lib/audio/data';
 import { priceLabel, subCategoryLabel } from '@/lib/cameras/display';
 import { ProductSpecTable } from '@/components/product-spec-table';
+import { ProductArticles } from '@/components/content/reverse-links';
 import { SiteHeader } from '@/components/site-header';
 import { featureList } from '@/lib/cameras/features';
 
@@ -145,6 +146,9 @@ export default async function AudioProductPage({
 
           {product.specs && <ProductSpecTable specs={product.specs} locale={locale} />}
         </div>
+
+        {/* Articles and reference pages that name this product, if any. */}
+        <ProductArticles productId={product.id} locale={locale === 'vi' ? 'vi' : 'en'} />
       </main>
 
       <div className="w-full max-w-[86rem] mx-auto px-4 sm:px-6 lg:px-8 mt-6">

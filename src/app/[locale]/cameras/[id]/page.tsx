@@ -7,6 +7,7 @@ import { getSonyCameraById, getSonyCameras } from '@/lib/cameras/data';
 import { PRODUCT_KIND_LABEL_KEY, priceLabel, subCategoryLabel } from '@/lib/cameras/display';
 import { SiteHeader } from '@/components/site-header';
 import { ProductSpecTable } from '@/components/product-spec-table';
+import { ProductArticles } from '@/components/content/reverse-links';
 import { ProductGalleryViewer } from '@/components/product-gallery-viewer';
 import { featureList } from '@/lib/cameras/features';
 
@@ -225,6 +226,9 @@ export default async function ProductDetailPage({
           {/* Scientific Specs Table */}
           {product.specs && <ProductSpecTable specs={product.specs} locale={locale} />}
         </div>
+
+        {/* Articles and reference pages that name this product, if any. */}
+        <ProductArticles productId={product.id} locale={locale === 'vi' ? 'vi' : 'en'} />
       </main>
 
       <div className="w-full max-w-[110rem] mx-auto px-4 sm:px-6 lg:px-8 mt-6">

@@ -778,7 +778,8 @@
     "clearFilter": "Xoá lọc",
     "stageEmptyTitle": "Chặng này đang được biên soạn",
     "stageEmptyBody": "Các kỹ năng của chặng đã có trong lộ trình; bài viết sẽ được bổ sung dần. Trong lúc chờ, hãy xem các chặng khác.",
-    "stageLabel": "Chặng {n}"
+    "stageLabel": "Chặng {n}",
+    "learnLink": "Kiến thức"
   },
   "labAdmin": {
     "newArticle": "Bài mới",
@@ -935,7 +936,8 @@
       "sourceNeedsDate": "Mỗi nguồn cần ngày kiểm tra.",
       "relatedUnknown": "Có liên kết trỏ tới mã không tồn tại.",
       "kindLocked": "Bài đang đăng không đổi được loại trang. Hãy gỡ đăng trước.",
-      "referenceCheckFailed": "Không kiểm tra được các liên kết nên chưa đăng. Chưa có gì thay đổi — hãy thử lại."
+      "referenceCheckFailed": "Không kiểm tra được các liên kết nên chưa đăng. Chưa có gì thay đổi — hãy thử lại.",
+      "placeholder": "Bài còn chỗ đánh dấu [CẦN BỔ SUNG]. Thay bằng nội dung thật trước khi đăng."
     },
     "imageNone": "Chưa có ảnh. Hãy tải một ảnh lên — JPEG, PNG hoặc WebP, tối đa 8 MB.",
     "imagePreviewExpired": "Liên kết xem trước đã hết hạn. Hãy mở lại bài viết để xem lại ảnh.",
@@ -984,5 +986,37 @@
     "savedWithDroppedMeta": "Đã lưu. {n, plural, other {# liên kết hoặc nguồn}} không hợp lệ nên không được lưu.",
     "unknownRefs": "Không tìm thấy mã:",
     "refsUnavailable": "Không tải được danh sách mã để gợi ý."
+  },
+  "learn": {
+    "title": "Kiến thức",
+    "description": "Kiến thức tham khảo về màu máy ảnh Sony Alpha: Picture Profile, Creative Look, White Balance Shift và các thông số khác, có nguồn đối chiếu.",
+    "glossaryTitle": "Thuật ngữ thông số",
+    "glossaryDescription": "Giải thích từng thông số màu trong công thức Sony Alpha: White Balance, Picture Profile và Creative Look.",
+    "sections": {
+      "fundamentals": "Nền tảng",
+      "sony-color": "Màu Sony",
+      "workflows": "Quy trình",
+      "glossary": "Thuật ngữ"
+    },
+    "pageCount": "{count, plural, other {# trang}}",
+    "entryCount": "{count, plural, other {# thuật ngữ}}",
+    "breadcrumb": "Vị trí trang",
+    "inThisPage": "Trong trang này",
+    "readFirst": "Nên đọc trước",
+    "sources": "Nguồn",
+    "checkedOn": "kiểm tra {date}",
+    "reviewedOn": "Rà soát {date}",
+    "byAuthor": "Viết bởi {name}",
+    "looks": "Các Look",
+    "related": "Liên quan",
+    "relatedKinds": {
+      "recipe": "Công thức",
+      "product": "Sản phẩm",
+      "article": "Bài viết",
+      "knowledge": "Kiến thức"
+    },
+    "relatedUnavailable": "Không tải được một phần liên kết liên quan.",
+    "learnMore": "Tìm hiểu thêm",
+    "forThisProduct": "Bài viết và kiến thức"
   }
 }

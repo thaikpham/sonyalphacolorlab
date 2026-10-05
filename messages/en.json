@@ -778,7 +778,8 @@
     "clearFilter": "Clear filter",
     "stageEmptyTitle": "This stage is being written",
     "stageEmptyBody": "Its skills are already mapped in the path; articles will follow. Meanwhile, browse the other stages.",
-    "stageLabel": "Stage {n}"
+    "stageLabel": "Stage {n}",
+    "learnLink": "Learn"
   },
   "labAdmin": {
     "newArticle": "New article",
@@ -935,7 +936,8 @@
       "sourceNeedsDate": "Every source needs the date it was checked.",
       "relatedUnknown": "A link points at an ID that does not exist.",
       "kindLocked": "A published page cannot change type. Unpublish it first.",
-      "referenceCheckFailed": "The links could not be checked, so nothing was published. Nothing was changed — try again."
+      "referenceCheckFailed": "The links could not be checked, so nothing was published. Nothing was changed — try again.",
+      "placeholder": "The page still has [CẦN BỔ SUNG] markers. Replace them with real content before publishing."
     },
     "imageNone": "No image yet. Upload one — JPEG, PNG or WebP, up to 8 MB.",
     "imagePreviewExpired": "Preview link expired. Reopen the article to see it again.",
@@ -984,5 +986,37 @@
     "savedWithDroppedMeta": "Saved. {n, plural, one {# link or source was} other {# links or sources were}} invalid and not stored.",
     "unknownRefs": "Not found:",
     "refsUnavailable": "Could not load the ID suggestions."
+  },
+  "learn": {
+    "title": "Learn",
+    "description": "Reference pages on Sony Alpha colour: Picture Profile, Creative Look, White Balance Shift and the other settings, with their sources.",
+    "glossaryTitle": "Parameter glossary",
+    "glossaryDescription": "What each colour setting in a Sony Alpha recipe does: White Balance, Picture Profile and Creative Look.",
+    "sections": {
+      "fundamentals": "Fundamentals",
+      "sony-color": "Sony colour",
+      "workflows": "Workflows",
+      "glossary": "Glossary"
+    },
+    "pageCount": "{count, plural, one {# page} other {# pages}}",
+    "entryCount": "{count, plural, one {# term} other {# terms}}",
+    "breadcrumb": "Breadcrumb",
+    "inThisPage": "On this page",
+    "readFirst": "Read first",
+    "sources": "Sources",
+    "checkedOn": "checked {date}",
+    "reviewedOn": "Reviewed {date}",
+    "byAuthor": "By {name}",
+    "looks": "Looks",
+    "related": "Related",
+    "relatedKinds": {
+      "recipe": "Recipes",
+      "product": "Products",
+      "article": "Articles",
+      "knowledge": "Reference"
+    },
+    "relatedUnavailable": "Some related links could not be loaded.",
+    "learnMore": "Learn more",
+    "forThisProduct": "Articles and reference"
   }
 }

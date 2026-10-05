@@ -6,6 +6,7 @@ import { RecipeGallery } from '@/components/recipe-gallery';
 import { RecipeStructuredData } from '@/components/structured-data';
 import { ClTable, PpTable } from '@/components/settings-table';
 import { RecipeCommunitySection } from '@/components/recipe-community-section';
+import { RecipeLearnMore } from '@/components/content/reverse-links';
 import { TweakPanel } from '@/components/tweak-panel';
 import { WbShiftPlane } from '@/components/wb-shift-plane';
 import { FormattedWb, WbTable } from '@/components/wb-table';
@@ -218,6 +219,11 @@ export default async function RecipePage({
                 <ClTable s={recipe.settings} locale={locale} />
               )}
             </div>
+
+            {/* What the rows above mean, and what has been written about this
+                recipe — computed from the published pages, never authored
+                here (ADR 0002). */}
+            <RecipeLearnMore recipeId={recipe.id} format={recipe.format} locale={locale} />
           </div>
         </div>
       </main>
