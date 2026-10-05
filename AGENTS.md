@@ -388,8 +388,15 @@ plane's applied history — never rewrite it; a correction is a new file.
 are executed against PGlite: `migration.test.ts` for the control root,
 `migration-roots.test.ts` for both plus the boundary between them (the content
 project must never grow an `admin_emails`). Adding a `.sql` there is what proves
-it is valid — applying it is `npm run supabase:migrations -- --target … --apply`,
-a separate, manual step that nothing in CI can do for you.
+it is valid. **Merging a control migration to `main` is what applies it:**
+Supabase's GitHub integration on `nqeedlgzaewccqztqvik` pushes
+`supabase/migrations` on every merge (the `Supabase Preview` check; a second one
+runs for `touiyczjvnuaxfzulgeq`). It refuses — red check, branch
+`MIGRATIONS_FAILED` — whenever the project's recorded versions are not exactly
+the file prefixes, and a migration applied from the dashboard or an MCP tool is
+recorded under a timestamp. So apply by hand only with
+`npm run supabase:migrations -- --target … --apply` (`supabase db push`, prefix
+versions). The check does not gate Vercel. Repair steps are in the runbook.
 
 ## Who the caller is
 

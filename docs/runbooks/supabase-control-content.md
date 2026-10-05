@@ -121,7 +121,8 @@ default, and none of them reads `supabase/.temp/linked-project.json`.
 npm run supabase:health -- --target control
 npm run supabase:health -- --target content
 
-# Migrations. Prints the plan; --apply is the only thing that runs it.
+# Migrations. Prints the plan; --apply runs it. For the control project a merge
+# to main runs it too — see "Control migrations run on merge" below.
 npm run supabase:migrations -- --target content
 npm run supabase:migrations -- --target content --apply
 
@@ -138,6 +139,35 @@ npm run content:verify -- --target content --manifest initial
 
 Export artifacts land under `artifacts/supabase/`, which is gitignored: they are
 a full JSON copy of the catalogue and carry `updated_by`, an editor's address.
+
+### Control migrations run on merge
+
+Supabase's GitHub integration is connected to `nqeedlgzaewccqztqvik` with
+branching on, and its production branch is git `main`. Every push to `main`
+posts a `Supabase Preview` check that runs the equivalent of `supabase db push`
+for `supabase/migrations` against the control project. A second integration
+posts the same check for `touiyczjvnuaxfzulgeq` on the same pushes.
+
+That push compares the project's recorded versions with the file prefixes and
+refuses on any difference ("Remote migration versions not found in local
+migrations directory"). The check goes red and the branch shows
+`MIGRATIONS_FAILED`. A migration applied from the dashboard SQL editor or an MCP
+tool is recorded under a timestamp (`20260814041545`) rather than its prefix
+(`0010`), which is how the check sat red on every merge from at least
+2026-09-29. On 2026-10-05 the seven timestamped rows were re-recorded as
+`0010`–`0016`, matching the files.
+
+Before merging a new control migration, check the history:
+
+```sql
+select version, name from supabase_migrations.schema_migrations order by version;
+```
+
+Every row must match a file in `supabase/migrations`, same prefix and same name.
+`supabase migration repair` fixes a mismatch without touching any table.
+
+The check does not gate the Vercel deployment. On 2026-09-29 it was red and
+production deployed; a failed Vercel build has its own cause in the build log.
 
 ---
 
