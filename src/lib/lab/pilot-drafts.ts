@@ -55,7 +55,24 @@ export const PILOT_EXTRA_SOURCES = {
     scope: 'ILCE-7M4',
     checkedAt: '2026-10-05',
   },
+  ppIlce7m5: {
+    url: 'https://helpguide.sony.net/ilc/2540/v1/en/contents/0412D_picture_profile.html',
+    title: 'ILCE-7M5 Help Guide — Picture Profile (still image/movie)',
+    publisher: 'Sony Help Guide',
+    scope: 'ILCE-7M5',
+    checkedAt: '2026-10-05',
+  },
+  ppIlce7cm2: {
+    url: 'https://helpguide.sony.net/ilc/2360/v1/en/contents/0412D_picture_profile.html',
+    title: 'ILCE-7CM2 Help Guide — Picture Profile (still image/movie)',
+    publisher: 'Sony Help Guide',
+    scope: 'ILCE-7CM2',
+    checkedAt: '2026-10-05',
+  },
 } as const satisfies Record<string, SourceRef>
+
+/** The two body pages `chon-cong-thuc-theo-may` names an example from. */
+const PILOT_BODY_SOURCES: SourceRef[] = [PILOT_EXTRA_SOURCES.ppIlce7m5, PILOT_EXTRA_SOURCES.ppIlce7cm2]
 
 const meta = (m: Partial<ArticleMeta>): ArticleMeta => ({ ...EMPTY_META, ...m })
 
@@ -343,18 +360,22 @@ export const PILOT_DRAFTS: readonly Article[] = [
     archetype: 'setup-guide',
     read: '4 phút đọc',
     title: 'Chọn công thức theo máy ảnh của bạn',
-    dek: 'Trước khi chọn theo màu, kiểm tra máy có hệ màu mà công thức dùng. ColorLab chưa xác minh từng đời máy, nên bước này bạn tự đối chiếu.',
+    dek: 'Trước khi chọn theo màu, kiểm tra máy có đủ các cài đặt công thức dùng. Trang công thức ghi kết quả cho những máy ColorLab đã đối chiếu; với máy khác, bạn tự đối chiếu.',
     meta: meta({
       section: 'workflows',
       order: 1,
       concepts: ['pp', 'cl'],
       prerequisites: ['picture-profile-va-creative-look'],
-      sources: [sony('clIlce7m4', 'ILCE-7M4'), sony('ppColor')],
+      sources: [sony('clIlce7m4', 'ILCE-7M4'), sony('ppColor'), ...PILOT_BODY_SOURCES],
     }),
     blocks: [
       {
         t: 'p',
-        text: 'Một công thức chỉ dùng được trọn vẹn khi máy có đủ các mục nó cần. Picture Profile và Creative Look không có mặt trên mọi đời máy, và dải giá trị có thể khác theo máy.',
+        text: 'Một công thức chỉ dùng được trọn vẹn khi máy có đủ các mục nó cần. Picture Profile và Creative Look không có mặt trên mọi đời máy, và các mục, lựa chọn có thể khác theo máy — ví dụ Picture Profile của ILCE-7M5 không có Color Depth, và Help Guide của ILCE-7CM2 không liệt kê gamma S-Log2.',
+      },
+      {
+        t: 'p',
+        text: 'Với những máy ColorLab đã đối chiếu Help Guide, trang công thức có mục Tương thích máy ảnh: đã xác minh, không tương thích hay chưa xác minh, riêng cho chụp ảnh và quay phim, kèm cài đặt nào gây vướng. Chưa xác minh không có nghĩa là không dùng được — chỉ là Sony chưa ghi đủ để khẳng định, như dải Kelvin và giới hạn WB Shift.',
       },
       { t: 'h', text: 'Ba bước đối chiếu' },
       {
@@ -364,7 +385,7 @@ export const PILOT_DRAFTS: readonly Article[] = [
       {
         t: 'callout',
         label: 'Khi Help Guide của máy bạn ghi khác',
-        text: 'Tin Help Guide của máy bạn. Dải giá trị ColorLab dùng được đối chiếu theo các trang trong mục Nguồn; các thông số Creative Look mới đối chiếu theo ILCE-7M4.',
+        text: 'Tin Help Guide của máy bạn. Dải giá trị ColorLab dùng được đối chiếu theo các trang trong mục Nguồn; dải Creative Look giống nhau trên ILCE-7M4, ILCE-7CM2, ILCE-6700 và ILCE-7M5.',
       },
       { t: 'h', text: 'Khi máy không có hệ màu công thức dùng' },
       {

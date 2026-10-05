@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { modelCode, productAliases } from './aliases'
+import { modelCode, productAliases, resolveCamera } from './aliases'
 
 const catalogue = JSON.parse(readFileSync('data/sony-cameras.seed.json', 'utf8')) as {
   id: string
@@ -56,5 +56,34 @@ describe('productAliases', () => {
         owners.set(alias, c.id)
       }
     }
+  })
+})
+
+describe('resolveCamera', () => {
+  const cameras = catalogue.filter((c) => c.category === 'camera')
+
+  it.each([
+    ['ILCE-7M4', 'sony-ilce-7m4-bq-ap2'],
+    ['α7 IV', 'sony-ilce-7m4-bq-ap2'],
+    ['a7iv', 'sony-ilce-7m4-bq-ap2'],
+    ['ILCE-7CM2', 'sony-ilce-7cm2-sqap2'],
+    ['α6700', 'sony-ilce-6700-bqap2'],
+    ['ZV-E10M2', 'sony-zv-e10m2-bq-ap2'],
+  ])('%s → %s', (text, id) => {
+    expect(resolveCamera(text, cameras)?.id).toBe(id)
+  })
+
+  it('resolves nothing it cannot name exactly', () => {
+    expect(resolveCamera('ILCE-9999', cameras)).toBeNull()
+    expect(resolveCamera('1', cameras)).toBeNull()
+    expect(resolveCamera('', cameras)).toBeNull()
+  })
+
+  it('is null, not a guess, when two products answer', () => {
+    const twins = [
+      { id: 'x', sku: 'ILCE-7M4/A', name: '7 IV' },
+      { id: 'y', sku: 'ILCE-7M4/B', name: '7 IV' },
+    ]
+    expect(resolveCamera('ILCE-7M4', twins)).toBeNull()
   })
 })

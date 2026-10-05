@@ -1063,5 +1063,43 @@
     "unavailable": "{kinds} could not be searched right now, so the results below leave them out.",
     "moreInGroup": "All {count} in {group}",
     "next": "More results"
+  },
+  "compat": {
+    "title": "Camera compatibility",
+    "photo": "Photo",
+    "video": "Video",
+    "body": "Body",
+    "verdict": {
+      "verified": "Verified",
+      "partial": "With changes",
+      "incompatible": "Not compatible",
+      "unknown": "Not verified"
+    },
+    "line": {
+      "missing": "{modes} · can't be set: {settings}",
+      "range": "{modes} · value outside the body's range: {settings}",
+      "firmware": "{modes} · needs body software {version} or later: {settings}",
+      "substitute": "{modes} · use {alternative} for {setting}",
+      "unverified": "{modes} · not verified: {settings}"
+    },
+    "disclaimer": "Verified means Sony's Help Guide lists every setting this recipe uses on that body. It does not mean another sensor renders the colours the same.",
+    "notChecked": "Other bodies: not checked yet.",
+    "featuresTitle": "Colour settings",
+    "rows": {
+      "items": "Items",
+      "gamma": "Gamma",
+      "colorMode": "Color Mode",
+      "look": "Look",
+      "adjustments": "Adjustments",
+      "auto": "Auto",
+      "presets": "Presets",
+      "temperature": "Colour temperature",
+      "stillsOnly": "Stills only",
+      "notOnBody": "Not on this body"
+    },
+    "noWbNumbers": "Sony's Help Guide for this body prints no Kelvin range and no White Balance shift limits, so recipes that set either stay not verified.",
+    "verifiedRecipes": "Recipes verified for stills",
+    "verifiedCount": "{photo, plural, =0 {None verified for stills} one {# verified for stills} other {# verified for stills}} · {video, plural, =0 {none for video} one {# for video} other {# for video}}",
+    "recipesUnavailable": "Recipes are unavailable right now."
   }
 }

@@ -24,6 +24,8 @@ const ROMAN: ReadonlyArray<readonly [RegExp, string]> = [
 
 const squash = (s: string) =>
   s
+    /* Sony prints the Alpha line with a Greek α: `α7 IV` is `a7 IV`. */
+    .replace(/α/gi, 'a')
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
     .toLowerCase()
@@ -89,4 +91,22 @@ export function productAliases(product: { sku: string; name: string }): readonly
   /* One character matches too much to be a name: the a1 is still `a1`,
      `alpha1` and `ilce1`, but not a bare `1`. */
   return [...out].filter((a) => a.length >= 2)
+}
+
+/**
+ * The one catalogue product a free-text camera name means — an EXIF `Model`
+ * tag, a marketing name, a model code — or `null` when no product, or more
+ * than one, answers to it.
+ *
+ * Matching is on the same normalised aliases search uses, so `ILCE-7M4`,
+ * `α7 IV` and `a7iv` all resolve to the a7 IV, and nothing is resolved by a
+ * table typed from memory. What a given body actually writes into its EXIF is
+ * not asserted here: photo discovery (brief PR6) must prove that against real
+ * files before it relies on any spelling.
+ */
+export function resolveCamera<T extends { sku: string; name: string }>(text: string, products: readonly T[]): T | null {
+  const wanted = squash(text)
+  if (wanted.length < 2) return null
+  const hits = products.filter((p) => productAliases(p).includes(wanted))
+  return hits.length === 1 ? hits[0] : null
 }

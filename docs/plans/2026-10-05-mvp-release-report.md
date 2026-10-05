@@ -14,6 +14,7 @@ control 0017 (§3a); content 0003 is still pending and gates the deploy.
 | PR2 | `/learn` hub, `/learn/glossary` (generated from `explanations.ts`, both locales), `/learn/<id>`; sources, review date, author, prerequisites, related links on articles; reverse links on recipe, camera and audio pages; 9 pilot drafts (6 reference + 3 experiment frames) that cannot publish until reviewed | `src/app/[locale]/learn/**`, `src/components/content/`, `src/lib/learn/glossary.ts`, `src/lib/lab/pilot-drafts.ts` |
 | PR3 | One search service, five adapters, no index; `/api/search`; `/search`; header "all" mode on blog/learn/search; predictive delegates; Wiki grid uses the same ranker; old scorer deleted; 42-query evaluation gate | `src/lib/search/`, `src/app/api/search/route.ts`, `src/app/[locale]/search/page.tsx`, `src/components/site-header.tsx` |
 | PR4 | Sitemap adds the camera catalogue and `/learn`, lists Vietnamese-bodied pages once; canonical/hreflang for every index page; article JSON-LD; SearchAction fixed; health probe for the new columns; runbook, editor guide, this report | `src/app/sitemap.ts`, `src/i18n/alternates.ts`, `docs/runbooks/knowledge-search.md`, `docs/guides/editor-knowledge-and-links.md` |
+| PR5 | Camera capabilities (ADR 0005): keys derived from `constants.ts`; evidence for ILCE-7M4, ILCE-7CM2, ILCE-6700, ILCE-7M5 quoted from the raw Help Guide topics and confirmed by `npm run capabilities:check`; four-verdict engine with mode, firmware, range and stand-in rules; compatibility on recipe pages, colour settings on camera pages; `resolveCamera` for model codes, marketing and EXIF-style names | `src/lib/cameras/capabilities/`, `scripts/check-camera-evidence.ts`, `data/camera-evidence.checks.json`, `src/components/compat/` |
 
 Fixes found on the way, in scope: header no-JS ColorLab form posted to the
 launcher; SearchAction pointed at the launcher; header dropdown copy lived in
@@ -57,8 +58,13 @@ refusals). **No real Supabase project was touched.**
   the same session; the gate guards regressions, not absolute quality.
 - **No online-path measurements** (Supabase cache-miss latency, cold starts,
   egress) — no credentials.
-- **PR5–PR9** (camera capabilities, photo discovery, hybrid/visual search, Ask
-  ColorLab, MCP) — roadmap only, per the brief.
+- **PR6–PR9** (photo discovery, hybrid/visual search, Ask ColorLab, MCP) —
+  roadmap. PR5 was started at the owner's "tiếp tục thực hiện kế hoạch".
+- **PR5 follow-ups**, each a `sync-camera-constants` change: ILCE-7M5's `FL2` /
+  `FL3` Looks (needs `constants.ts` and a `creative_look` enum value in both
+  migration roots); `BT.2020` / `709` only with HLG gammas, which Sony's generic
+  guide states and `recipeSchema` does not enforce (the one HLG recipe
+  complies); Black Gamma fixed at 0 under HLG, stated per body and not modelled.
 - `npm audit` reports 10 advisories in the existing dependency tree; not
   triaged here.
 
@@ -85,6 +91,38 @@ Runbook step 5, which does not depend on step 3.
 
 The application never reads this table on the control project, so nothing a
 reader sees changed.
+
+## 3b. PR5 — camera capabilities
+
+Checked against the live Help Guide on 2026-10-05 (`npm run capabilities:check`,
+12 topics, every literal found). Verdicts for the 83 seed recipes:
+
+| Body | Stills: verified / incompatible / unknown | Movie: verified / incompatible / unknown |
+|---|---|---|
+| ILCE-7M4 | 18 / 0 / 65 | 3 / 37 / 43 |
+| ILCE-7CM2 | 18 / 1 / 64 | 3 / 38 / 42 |
+| ILCE-6700 | 18 / 1 / 64 | 3 / 38 / 42 |
+| ILCE-7M5 | 15 / 46 / 22 | 0 / 83 / 0 |
+
+What the pages establish, and the engine now says:
+
+- **ILCE-7M5 has no Color Depth item** in Picture Profile — its item list
+  goes Color Phase → Detail, and its full guide never names one. Every PP
+  recipe sets Color Depth, so every PP recipe is incompatible there.
+- **S-Log2, ITU709(800%) and S-Gamut** are on ILCE-7M4 and absent from the
+  other three bodies' lists; **709tone** is on none of the four.
+- **Sharpness Range "cannot be adjusted" in movie mode** on all four, so every
+  Creative Look recipe is incompatible for movies.
+- **No Kelvin range and no WB shift limit or step** in any of the four full
+  guides — the main reason most recipes stay `unknown`. That is the honest
+  state: `constants.ts`' 2500–9900 K and 0.25 step are global and from the
+  dataset, not per body.
+
+Evidence: `capabilities` tests (engine, page reader, evidence-vs-checks, real
+recipes, feature summary, page pins), `resolveCamera` tests; Playwright on
+`next dev`: recipe page (CL and PP, 1400 and 390 px) and camera pages
+(ILCE-7M4, ILCE-7M5, 1400 and 390 px), no horizontal overflow, no console
+error; a body without evidence (ILCE-7M3) renders no section.
 
 ## 4. Decisions for the owner
 

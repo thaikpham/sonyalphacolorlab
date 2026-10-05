@@ -445,6 +445,22 @@ one that matters most: an unreadable factor list is 503, never "no factor".
 - Pilot drafts (`pilot-drafts.ts`) are drafts. Nothing may publish them but an
   editor in `/admin/blog`.
 
+## Camera compatibility (ADR 0005)
+
+- A body supports nothing until a **checked** claim says so. Evidence is
+  `src/lib/cameras/capabilities/evidence.ts`: per Help Guide topic, claims
+  that quote a short literal from the raw page. `npm run capabilities:check`
+  fetches each topic and writes `data/camera-evidence.checks.json` — its only
+  writer; never hand-edit it. A claim counts only when its literals were
+  found as it quotes them now, and `evidence.test.ts` fails on any that are not.
+- Quote the option *with* the start of its description (`Movie` is a Gamma and
+  a Color Mode). `unsupported` needs Sony's words or a whole list without the
+  option; a support with a known exception states its own mode.
+- No range without min, max and step quoted from the page. No Help Guide read
+  states a Kelvin range or a shift limit, so those stay `unknown` — do not fill
+  them from `constants.ts`, whose values are global, not per body.
+- Behind a proxy run the check with `NODE_USE_ENV_PROXY=1`.
+
 ## AI ("Tweak with AI")
 
 `claude-sonnet-5` via structured outputs, so the JSON shape is constrained by the

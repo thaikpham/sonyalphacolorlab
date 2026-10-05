@@ -94,6 +94,9 @@ export const WB_PRESETS = [
 /** Sony documents Flash as "only when shooting still images". */
 export const WB_PRESETS_STILL_ONLY = ['Flash'] as const;
 
+/** What the White Balance menu calls the Kelvin mode (WB_PRESETS' citation). */
+export const WB_KELVIN_MENU = 'C.Temp./Filter' as const;
+
 /** The three White Balance controls as the recipe tables name them. */
 export const WB_PARAM_LABELS = {
   temperature: 'Temperature',

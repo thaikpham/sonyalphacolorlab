@@ -1063,5 +1063,43 @@
     "unavailable": "Chưa tìm được trong {kinds} lúc này, nên kết quả dưới đây chưa gồm phần đó.",
     "moreInGroup": "Xem cả {count} trong {group}",
     "next": "Thêm kết quả"
+  },
+  "compat": {
+    "title": "Tương thích máy ảnh",
+    "photo": "Ảnh",
+    "video": "Video",
+    "body": "Máy",
+    "verdict": {
+      "verified": "Đã xác minh",
+      "partial": "Cần thay đổi",
+      "incompatible": "Không tương thích",
+      "unknown": "Chưa xác minh"
+    },
+    "line": {
+      "missing": "{modes} · không đặt được: {settings}",
+      "range": "{modes} · giá trị ngoài dải máy nhận: {settings}",
+      "firmware": "{modes} · cần phần mềm máy {version} trở lên: {settings}",
+      "substitute": "{modes} · dùng {alternative} thay cho {setting}",
+      "unverified": "{modes} · chưa xác minh: {settings}"
+    },
+    "disclaimer": "Đã xác minh nghĩa là Help Guide của Sony liệt kê đủ mọi cài đặt công thức dùng trên máy đó. Không có nghĩa là cảm biến khác cho ra màu giống hệt.",
+    "notChecked": "Các máy khác: chưa kiểm tra.",
+    "featuresTitle": "Cài đặt màu",
+    "rows": {
+      "items": "Các mục",
+      "gamma": "Gamma",
+      "colorMode": "Color Mode",
+      "look": "Look",
+      "adjustments": "Thông số chỉnh",
+      "auto": "Auto",
+      "presets": "Preset",
+      "temperature": "Nhiệt độ màu",
+      "stillsOnly": "Chỉ khi chụp ảnh",
+      "notOnBody": "Không có trên máy"
+    },
+    "noWbNumbers": "Help Guide của máy này không ghi dải Kelvin và giới hạn shift White Balance, nên công thức đặt một trong hai vẫn ở trạng thái chưa xác minh.",
+    "verifiedRecipes": "Công thức đã xác minh khi chụp ảnh",
+    "verifiedCount": "{photo, plural, =0 {Chưa có công thức nào xác minh khi chụp ảnh} other {# công thức xác minh khi chụp ảnh}} · {video, plural, =0 {chưa có cho video} other {# cho video}}",
+    "recipesUnavailable": "Hiện chưa tải được danh sách công thức."
   }
 }
