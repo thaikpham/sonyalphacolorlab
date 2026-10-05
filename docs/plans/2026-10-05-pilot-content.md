@@ -14,33 +14,51 @@ npm run push:lab -- --target content --with-pilot-drafts             # insert as
 The push inserts missing ids only, always with `status = 'draft'`, and never
 overwrites an existing row.
 
-## Why every knowledge page is blocked at publish
+## Source check — done 2026-10-05
 
-The session that wrote these could not reach `helpguide.sony.net` (the
-environment's network policy denied the host). So:
+The drafts were written while `helpguide.sony.net` was denied by the
+environment's network policy, restating only what `constants.ts` cites. Once
+the owner opened the host, every cited page was re-read in raw text (the
+`sync-camera-constants` extraction — never a search summary), plus the
+ILCE-7M4 Picture Profile and File Format pages and the complete ILCE-7M4
+guide in its print edition. Result:
 
-- every claim is restated from `src/lib/camera/constants.ts` (each block of
-  which cites a Help Guide page) or `src/lib/camera/explanations.ts` — nothing
-  was added from memory;
-- no source carries a `checkedAt` date, and publishing a knowledge page
-  requires one on every source (`sourceNeedsDate`). Entering the date is the
-  record that a person re-read the page.
+- **Two claims were wrong and are fixed.** `gamma-va-color-mode` called Color
+  Mode `Pro` a cinematic look; Sony describes it as the tones of Sony
+  professional cameras, used with the ITU709 gamma. It also grouped HLG with
+  S-Log2/S-Log3 as curves "for grading"; HLG is HDR recording to ITU-R
+  BT.2100, and only the log curves assume processing after shooting.
+- **Smaller corrections:** Color Phase + is "reddish" (not red and magenta);
+  Picture Profile's nine items are now stated for ILCE-7M4, with Sony's note
+  that items vary per body; the Saturation comparison now says what fraction
+  of what.
+- **Added from the pages:** the Color Mode ↔ Gamma pairings; BT.2020 and 709
+  only with HLG; ILCE-7M4's Color Mode list has no `709tone`; Color Depth
+  barely moves achromatic colour; RAW developed "with shooting settings"
+  drops Black Level, Black Gamma, Knee and Color Depth (ILCE-7M4).
+- **Not on any Sony page read:** the Kelvin range (2500–9900) and the WB
+  shift limit and 0.25 step. The full ILCE-7M4 guide names [C.Temp./Filter]
+  and a fine-adjustment screen and gives no numbers. `white-balance-shift`
+  now says so; `constants.ts` already flagged both as "confirm against your
+  body".
+- Every source now carries `checkedAt: 2026-10-05`, read from
+  `HELP_GUIDE_SOURCES` (or `PILOT_EXTRA_SOURCES` for the File Format page) —
+  the one place that records the reading.
 
-Review procedure for each page: open every source URL, confirm each claim in
-the table below against it **for the body named in Scope**, correct the page in
-the editor if needed, set "Ngày kiểm tra" on each source, set "Ngày rà soát",
-then publish.
+All six knowledge pages now **pass the publish rules**. They are still drafts:
+which go live is the owner's call in `/admin/blog`. Before publishing, set
+"Ngày rà soát" and the public author name.
 
 ## Knowledge pages
 
-| Id | Section | Claims to confirm | Source(s) attached | Blocked by |
-|---|---|---|---|---|
-| `picture-profile-va-creative-look` | Màu Sony #1 | PP set ≠ Off fixes Creative Look to `[-]`; PP has 9 items; 10 Looks; 8 CL adjustments; Saturation PP −32…+32 vs CL −9…+9; Detail Limit/Crispening 0…7, Hi-Light Detail 0…4; Fade/Sharpness/Clarity 0…9, Sharpness Range 1…5; BW/SE cannot adjust Saturation | ILCE-7M4 Creative Look (TP1000640837); PP Saturation/Color Phase/Color Depth (TP0000909111) | `sourceNeedsDate` |
-| `white-balance-shift` | Màu Sony #2 | Three WB modes; Auto names as Sony prints them; preset list; Custom 1–3 excluded (editorial); higher Kelvin → warmer output; shift up to 7 each way; **0.25 step is from the recipe corpus, not Sony** (page says so — confirm on a body and edit if the guide states it) | ILCE-7M4 White Balance (TP1000640840) | `sourceNeedsDate` |
-| `color-depth` | Màu Sony #3 | Six channels R G B C M Y; −7…+7; + deepens and darkens, − lightens; Saturation −32…+32; Color Phase −7…+7, − toward green, + toward red/magenta; Creative Look has no Color Depth | PP (TP0000909111) | `sourceNeedsDate` |
-| `gamma-va-color-mode` | Nền tảng #1 | Gamma and Color Mode option lists (match the body); S-Log/HLG are for grading | PP Gamma/Color Mode (TP0000909109); Black Level/Black Gamma/Knee (TP0000909110) | `sourceNeedsDate` |
-| `raw-jpeg-va-cai-dat-mau` | Nền tảng #2 | In-camera colour applies to the files the camera processes (JPEG); for RAW it depends on the converter | **none** — add a Sony page on file format / RAW, or rewrite | `knowledgeNeedsSource` |
-| `chon-cong-thuc-theo-may` | Quy trình #1 | PP and CL are not on every body; ranges may differ per body; CL ranges checked only against ILCE-7M4 | ILCE-7M4 Creative Look; PP (TP0000909111) | `sourceNeedsDate` |
+| Id | Section | Claims (all checked 2026-10-05) | Source(s) |
+|---|---|---|---|
+| `picture-profile-va-creative-look` | Màu Sony #1 | PP ≠ Off fixes Creative Look to `[-]`; nine PP items (ILCE-7M4); 10 Looks; 8 CL adjustments; Saturation PP −32…+32 vs CL −9…+9; Detail Limit/Crispening 0…7, Hi-Light Detail 0…4; Fade/Sharpness/Clarity 0…9, Sharpness Range 1…5; BW/SE cannot adjust Saturation | ILCE-7M4 Creative Look; ILCE-7M4 Picture Profile; PP Saturation/Color Phase/Color Depth |
+| `white-balance-shift` | Màu Sony #2 | Three WB modes; Auto names as Sony prints them; presets; Custom 1–3 excluded (editorial); higher Kelvin → warmer output (ColorLab's explanation); shift limit and step are ColorLab's data, not Sony's | ILCE-7M4 White Balance |
+| `color-depth` | Màu Sony #3 | R G B C M Y, −7…+7; + deepens and darkens, − lightens; achromatic barely changes; Saturation −32…+32; Color Phase −7 greenish … +7 reddish; Creative Look has no Color Depth | PP Saturation/Color Phase/Color Depth; ILCE-7M4 Picture Profile |
+| `gamma-va-color-mode` | Nền tảng #1 | Gamma and Color Mode lists; pairings; BT.2020/709 only with HLG; no `709tone` on ILCE-7M4; log curves assume grading, HLG is HDR | PP Gamma/Color Mode; Black Level/Black Gamma/Knee; ILCE-7M4 Picture Profile |
+| `raw-jpeg-va-cai-dat-mau` | Nền tảng #2 | RAW is not processed in camera; four PP items not reflected when RAW is developed with shooting settings | ILCE-7M4 File Format; ILCE-7M4 Picture Profile |
+| `chon-cong-thuc-theo-may` | Quy trình #1 | PP and CL are not on every body; items and ranges vary per body; CL ranges checked against ILCE-7M4 | ILCE-7M4 Creative Look; PP Saturation/Color Phase/Color Depth |
 
 ## Experiment frames
 

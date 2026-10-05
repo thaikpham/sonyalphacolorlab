@@ -15,7 +15,9 @@
   },
   "nav": {
     "ecosystem": "Hệ sinh thái Sony Alpha",
-    "cameras": "Tra cứu máy ảnh"
+    "cameras": "Tra cứu máy ảnh",
+    "articles": "Bài viết",
+    "learn": "Kiến thức"
   },
   "auth": {
     "signIn": "Đăng nhập",

@@ -46,12 +46,11 @@ refusals). **No real Supabase project was touched.**
   project is in a Supabase organisation this environment cannot reach, and
   the deploy must wait for 0003 (§5). Sequence:
   `docs/runbooks/knowledge-search.md`.
-- **Pilot content not published.** Six reference drafts need their sources
-  re-read and dated; three experiment frames need a real shoot. Review sheet:
-  `docs/plans/2026-10-05-pilot-content.md`.
-- **Sony Help Guide not re-verified.** `helpguide.sony.net` is denied by this
-  environment's network policy; the drafts restate only what `constants.ts`
-  already cites.
+- **Pilot content not published.** The six reference drafts now pass the
+  publish rules — their sources were re-read and dated on 2026-10-05, once the
+  owner opened `helpguide.sony.net` (two claims corrected) — and wait on the
+  owner's choice in `/admin/blog`. The three experiment frames need a real
+  shoot. Review sheet: `docs/plans/2026-10-05-pilot-content.md`.
 - **No authenticated draft preview** of an article as readers would see it;
   editors see the editor and, after publishing, the live page.
 - **Search labels not reviewed by a person.** Labels and weights were set in
@@ -89,14 +88,17 @@ reader sees changed.
 
 ## 4. Decisions for the owner
 
-1. `/learn` instead of `/wiki` (ADR 0001) — confirm the name, or pick another
-   before any URL is shared.
-2. Canonical URL of articles becomes `/vi/blog/<id>` with no hreflang
-   (ADR 0004) — confirm this SEO policy.
-3. Review and date each pilot source; decide which pilots to publish.
-4. Review the 42 evaluation labels; add real reader queries over time.
-5. Whether `/learn` should appear in the launcher or header (today it is
-   reached from the blog feed, recipe pages, the glossary links and search).
+Settled by the owner on 2026-10-05:
+
+1. `/learn` instead of `/wiki` (ADR 0001) — **confirmed**.
+2. Canonical URL of articles is `/vi/blog/<id>` with no hreflang
+   (ADR 0004) — **confirmed**.
+3. The 42 evaluation labels — **approved**; add real reader queries over time.
+4. `/learn` in navigation — **yes**: an Articles / Learn switch on the header
+   rail of the blog and `/learn` pages, from `sm` up (the phone rail has no
+   room; there the feed heading carries the link).
+
+Still open: which pilot drafts to publish, after their sources are dated.
 
 ## 5. Risks that remain
 

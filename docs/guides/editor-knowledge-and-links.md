@@ -89,8 +89,9 @@ nằm trong kho riêng tư; chỉ bài đã đăng mới có ảnh công khai.
 Chín bản nháp (sáu trang kiến thức, ba khung thử nghiệm) được tạo sẵn để duyệt
 — xem `docs/plans/2026-10-05-pilot-content.md`:
 
-- Trang kiến thức: đọc lại từng nguồn, sửa nội dung nếu cần, điền **ngày kiểm
-  tra**, rồi đăng.
+- Trang kiến thức: mọi nguồn đã được đọc lại và ghi ngày kiểm tra
+  2026-10-05; hai chỗ sai đã được sửa theo trang Sony. Đọc lại nội dung, điền
+  **ngày rà soát** và tên tác giả hiển thị, rồi đăng những trang bạn muốn.
 - Khung thử nghiệm: cần buổi chụp thật. Thay mọi chỗ `[CẦN BỔ SUNG: …]` bằng
   nội dung thật, tải cặp ảnh so sánh lên. Bài còn chỗ đánh dấu này sẽ không
   đăng được.

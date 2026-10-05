@@ -1,6 +1,6 @@
 # ADR 0004 — Article bodies are Vietnamese on every locale; canonicals say so
 
-Status: accepted · 2026-10-05
+Status: accepted · 2026-10-05 · owner confirmed the `/vi/…` canonical on 2026-10-05
 
 ## Context
 

@@ -1,6 +1,7 @@
 # ADR 0001 — Knowledge pages are `lab_articles` rows, served at `/learn`
 
-Status: accepted · 2026-10-05 · baseline `9a04713`
+Status: accepted · 2026-10-05 · baseline `9a04713` · owner confirmed `/learn` and its
+place in the header (Articles / Learn switch) on 2026-10-05
 
 ## Context
 

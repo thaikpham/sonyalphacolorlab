@@ -15,7 +15,9 @@
   },
   "nav": {
     "ecosystem": "Sony Alpha ecosystem",
-    "cameras": "Sony Wiki"
+    "cameras": "Sony Wiki",
+    "articles": "Articles",
+    "learn": "Learn"
   },
   "auth": {
     "signIn": "Sign in",

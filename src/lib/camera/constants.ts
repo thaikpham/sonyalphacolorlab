@@ -15,6 +15,11 @@
  *        https://helpguide.sony.net/di/pp/v1/en/contents/TP0000909111.html (Saturation / Color Phase / Color Depth)
  *        https://helpguide.sony.net/di/pp/v1/en/contents/TP0000909112.html (Detail)
  *  CL  — https://helpguide.sony.net/ilc/2110/v1/en/contents/TP1000640837.html (ILCE-7M4 Creative Look)
+ *  WB  — https://helpguide.sony.net/ilc/2110/v1/en/contents/TP1000640840.html (ILCE-7M4 White Balance)
+ *  PP on one body — https://helpguide.sony.net/ilc/2110/v1/en/contents/TP1000649066.html (ILCE-7M4 Picture Profile)
+ *
+ * Every page above was re-read in raw text on 2026-10-05 and agrees with the
+ * values below; `HELP_GUIDE_SOURCES` carries that date.
  */
 
 /** A closed numeric interval, inclusive of both bounds. */
@@ -29,6 +34,8 @@ const r = (min: number, max: number, step = 1): Range => ({ min, max, step });
 /**
  * Kelvin range for manual colour temperature.
  * NOTE: 2500–9900 is the standard Alpha range; confirm against your body.
+ * Not from a Help Guide: the complete ILCE-7M4 guide (print edition, read
+ * 2026-10-05) names [C.Temp./Filter] but states no Kelvin range or step.
  */
 export const WB_KELVIN = r(2500, 9900, 100);
 
@@ -36,6 +43,8 @@ export const WB_KELVIN = r(2500, 9900, 100);
  * WB Shift grid. The camera shows two axes: amber↔blue and green↔magenta.
  * Step 0.25 is derived from the existing 47-recipe corpus, which contains
  * values such as `A7-M0.25` and `B3-G0.25`. Confirm against your body.
+ * Not from a Help Guide: the complete ILCE-7M4 guide (read 2026-10-05) offers
+ * a "fine adjustment screen" but states neither the limit nor the step.
  */
 export const WB_SHIFT_AXIS = r(0, 7, 0.25);
 
@@ -261,33 +270,52 @@ export const CL_PARAM_LABELS: Record<ClParam, string> = {
  * The Sony Help Guide pages this file's values were read from — the same URLs
  * as the header comment, exported so the reference pages can cite them rather
  * than retyping them. Adding a source here is part of the sync skill's step 1.
+ *
+ * `checkedAt` is the day the page was last re-read in full and found to agree
+ * with this file. Change it only after doing that — it is what a published
+ * reference page shows as "checked".
  */
 export const HELP_GUIDE_SOURCES = {
   ppGammaColorMode: {
     url: 'https://helpguide.sony.net/di/pp/v1/en/contents/TP0000909109.html',
     title: 'Picture Profile — Gamma / Color Mode',
+    checkedAt: '2026-10-05',
   },
   ppBlackKnee: {
     url: 'https://helpguide.sony.net/di/pp/v1/en/contents/TP0000909110.html',
     title: 'Picture Profile — Black Level / Black Gamma / Knee',
+    checkedAt: '2026-10-05',
   },
   ppColor: {
     url: 'https://helpguide.sony.net/di/pp/v1/en/contents/TP0000909111.html',
     title: 'Picture Profile — Saturation / Color Phase / Color Depth',
+    checkedAt: '2026-10-05',
   },
   ppDetail: {
     url: 'https://helpguide.sony.net/di/pp/v1/en/contents/TP0000909112.html',
     title: 'Picture Profile — Detail',
+    checkedAt: '2026-10-05',
+  },
+  /* The generic pages above say "Available Picture Profile setting items and
+     options may vary depending on camera specifications." This is one body's
+     own list: the nine items and every range agree, and its Color Mode list
+     has no `709tone`. */
+  ppIlce7m4: {
+    url: 'https://helpguide.sony.net/ilc/2110/v1/en/contents/TP1000649066.html',
+    title: 'ILCE-7M4 Help Guide — Picture Profile (still image/movie)',
+    checkedAt: '2026-10-05',
   },
   clIlce7m4: {
     url: 'https://helpguide.sony.net/ilc/2110/v1/en/contents/TP1000640837.html',
     title: 'ILCE-7M4 Help Guide — Creative Look',
+    checkedAt: '2026-10-05',
   },
   wbIlce7m4: {
     url: 'https://helpguide.sony.net/ilc/2110/v1/en/contents/TP1000640840.html',
     title: 'ILCE-7M4 Help Guide — White Balance (still image/movie)',
+    checkedAt: '2026-10-05',
   },
-} as const satisfies Record<string, { url: string; title: string }>;
+} as const satisfies Record<string, { url: string; title: string; checkedAt: string }>;
 
 // ---------------------------------------------------------------------------
 // Cross-format rule

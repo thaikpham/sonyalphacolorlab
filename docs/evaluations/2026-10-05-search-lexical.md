@@ -16,9 +16,10 @@ npx vitest run src/lib/search/evaluation   # the thresholds, as a gate
   relevant ids were chosen by reading the documents, but the ranker was then
   tuned while looking at these queries (stopwords `ảnh`/`màu`, the glossary's
   searchable title, the cross-field tier). The numbers below are therefore an
-  upper bound on what an unseen query set would score. The brief asks for
-  labels a person has reviewed (§14.2); until the owner does, treat this as a
-  regression gate, not as a measured quality claim.
+  upper bound on what an unseen query set would score. The owner approved the
+  42 labels on 2026-10-05 (§14.2), which settles what counts as relevant; it
+  does not undo the tuning, so the numbers stay an upper bound until queries
+  written without the ranker in view — real reader queries — are added.
 - Three queries (†) are answered by pilot drafts and run against a corpus that
   includes them. They say nothing about production today, where those pages
   are unpublished.

@@ -11,14 +11,16 @@
  *
  * Two rules the content follows, and the gates that hold them to it:
  *
- * 1. **No claim beyond what the repository already cites.** Every range,
- *    enum and mechanism below is restated from `constants.ts` (each block
- *    cites its Sony Help Guide page) or `explanations.ts`. The help-guide host
- *    was unreachable from the session that wrote these, so no source carries a
- *    `checkedAt` — and a knowledge page cannot be published without one
- *    (`sourceNeedsDate`). Re-reading each page and entering the date is the
- *    owner's review step, not a formality. `docs/plans/2026-10-05-pilot-content.md`
- *    lists what to verify per page.
+ * 1. **No claim beyond a Sony page read in full.** Every range, enum and
+ *    mechanism below is restated from a Help Guide page — the ones
+ *    `constants.ts` cites, plus the ILCE-7M4 File Format page below — or is
+ *    ColorLab's own explanation (`explanations.ts`) and says so. The pages
+ *    were written against the repository's citations while the help-guide
+ *    host was unreachable, then re-read in raw text on 2026-10-05 once the
+ *    owner opened it; that pass corrected two claims (what Color Mode `Pro` is
+ *    for, and HLG grouped with the log curves) and dated every source. Which
+ *    pages to publish is still the owner's call in `/admin/blog` — see
+ *    `docs/plans/2026-10-05-pilot-content.md`.
  * 2. **No invented results.** The three experiment frames carry no photograph,
  *    no EXIF, no measured value and no "I tried this". What only a real shoot
  *    can fill in is marked `[CẦN BỔ SUNG: …]`, and publishing refuses any page
@@ -29,11 +31,31 @@ import { HELP_GUIDE_SOURCES } from '@/lib/camera/constants'
 import { EMPTY_META } from './meta'
 import type { Article, ArticleMeta, SourceRef } from './types'
 
-/** A Sony page, attributed but not yet re-checked — see rule 1 above. */
+/** A Sony page `constants.ts` cites, with the day it was last re-read there. */
 function sony(key: keyof typeof HELP_GUIDE_SOURCES, scope?: string): SourceRef {
   const s = HELP_GUIDE_SOURCES[key]
-  return { url: s.url, title: s.title, publisher: 'Sony Help Guide', ...(scope ? { scope } : {}) }
+  return {
+    url: s.url,
+    title: s.title,
+    publisher: 'Sony Help Guide',
+    checkedAt: s.checkedAt,
+    ...(scope ? { scope } : {}),
+  }
 }
+
+/**
+ * Help Guide pages a draft cites that hold no camera value, so they are not
+ * `constants.ts`'s to cite. Same rule: read in full, dated.
+ */
+export const PILOT_EXTRA_SOURCES = {
+  fileFormatIlce7m4: {
+    url: 'https://helpguide.sony.net/ilc/2110/v1/en/contents/TP1000659396.html',
+    title: 'ILCE-7M4 Help Guide — File Format (still image)',
+    publisher: 'Sony Help Guide',
+    scope: 'ILCE-7M4',
+    checkedAt: '2026-10-05',
+  },
+} as const satisfies Record<string, SourceRef>
 
 const meta = (m: Partial<ArticleMeta>): ArticleMeta => ({ ...EMPTY_META, ...m })
 
@@ -57,7 +79,7 @@ export const PILOT_DRAFTS: readonly Article[] = [
       order: 1,
       concepts: ['pp', 'cl', 'cl.look', 'pp.saturation', 'cl.saturation'],
       related: [{ kind: 'knowledge', id: 'white-balance-shift' }],
-      sources: [sony('clIlce7m4', 'ILCE-7M4'), sony('ppColor')],
+      sources: [sony('clIlce7m4', 'ILCE-7M4'), sony('ppIlce7m4', 'ILCE-7M4'), sony('ppColor')],
     }),
     blocks: [
       {
@@ -67,7 +89,7 @@ export const PILOT_DRAFTS: readonly Article[] = [
       { t: 'h', text: 'Picture Profile chỉnh từng tầng của tín hiệu' },
       {
         t: 'p',
-        text: 'Picture Profile có chín mục cài đặt: Black Level, Gamma, Black Gamma, Knee, Color Mode, Saturation, Color Phase, Color Depth và Detail. Gamma và Color Mode đặt nền tương phản và không gian màu; các mục còn lại tinh chỉnh vùng tối, vùng sáng, độ đậm từng kênh màu và độ nét.',
+        text: 'Trên ILCE-7M4, Picture Profile có chín mục cài đặt: Black Level, Gamma, Black Gamma, Knee, Color Mode, Saturation, Color Phase, Color Depth và Detail. Gamma và Color Mode đặt nền tương phản và không gian màu; các mục còn lại tinh chỉnh vùng tối, vùng sáng, độ đậm từng kênh màu và độ nét. Sony ghi rằng các mục và lựa chọn có thể khác theo máy.',
       },
       { t: 'h', text: 'Creative Look bắt đầu từ một Look rồi chỉnh tám thanh' },
       {
@@ -87,7 +109,7 @@ export const PILOT_DRAFTS: readonly Article[] = [
       {
         t: 'callout',
         label: 'Khi đọc Saturation trong một công thức',
-        text: 'Hai thanh cùng tên nhưng khác thang đo. Saturation +6 trên Picture Profile chưa tới một phần năm dải; trên Creative Look là hai phần ba dải.',
+        text: 'Hai thanh cùng tên nhưng khác thang đo. Từ 0 lên mức cao nhất, Saturation +6 trên Picture Profile mới đi chưa tới một phần năm quãng đường; trên Creative Look là hai phần ba.',
       },
       { t: 'h', text: 'Vì sao mỗi công thức chỉ chọn một hệ' },
       {
@@ -149,7 +171,7 @@ export const PILOT_DRAFTS: readonly Article[] = [
       { t: 'h', text: 'Hai trục shift' },
       {
         t: 'p',
-        text: 'Trục A–B lệch về hổ phách (A) hoặc xanh dương (B); trục G–M lệch về xanh lá (G) hoặc cánh sen (M). ColorLab ghi tối đa 7 mỗi phía với bước 0,25. Bước 0,25 lấy từ dữ liệu công thức hiện có — hãy đối chiếu trên máy của bạn.',
+        text: 'Trục A–B lệch về hổ phách (A) hoặc xanh dương (B); trục G–M lệch về xanh lá (G) hoặc cánh sen (M). ColorLab ghi tối đa 7 mỗi phía với bước 0,25, lấy từ dữ liệu công thức hiện có. Help Guide của ILCE-7M4 không ghi giới hạn hay bước của hai trục này, cũng không ghi dải Kelvin — hãy đối chiếu trên máy của bạn.',
       },
       {
         t: 'callout',
@@ -182,7 +204,7 @@ export const PILOT_DRAFTS: readonly Article[] = [
       order: 3,
       concepts: ['pp.colorDepth', 'pp.saturation', 'pp.colorPhase'],
       prerequisites: ['picture-profile-va-creative-look'],
-      sources: [sony('ppColor')],
+      sources: [sony('ppColor'), sony('ppIlce7m4', 'ILCE-7M4')],
     }),
     blocks: [
       {
@@ -192,7 +214,7 @@ export const PILOT_DRAFTS: readonly Article[] = [
       { t: 'h', text: 'Dấu của giá trị nói gì' },
       {
         t: 'p',
-        text: 'Mỗi kênh nhận giá trị từ −7 đến +7. Tăng (+) làm kênh đó đậm và tối hơn; giảm (−) làm kênh đó sáng và nhạt đi. Color Depth vì vậy đổi cả độ sáng của màu, không chỉ độ bão hoà.',
+        text: 'Mỗi kênh nhận giá trị từ −7 đến +7. Tăng (+) làm kênh đó đậm và tối hơn; giảm (−) làm kênh đó sáng và nhạt đi. Color Depth vì vậy đổi cả độ sáng của màu, không chỉ độ bão hoà. Màu càng đậm thì thay đổi càng rõ; màu trung tính như xám gần như không đổi.',
       },
       {
         t: 'table',
@@ -210,7 +232,7 @@ export const PILOT_DRAFTS: readonly Article[] = [
       { t: 'h', text: 'Color Depth khác Saturation và Color Phase thế nào' },
       {
         t: 'p',
-        text: 'Saturation (−32 đến +32) đổi cường độ của mọi màu cùng lúc. Color Phase (−7 đến +7) xoay toàn bộ sắc độ — âm ngả về xanh lá, dương ngả về đỏ và hồng. Trong ba công cụ, chỉ Color Depth tác động lên từng kênh riêng.',
+        text: 'Saturation (−32 đến +32) đổi cường độ của mọi màu cùng lúc. Color Phase (−7 đến +7) xoay toàn bộ sắc độ — âm ngả về xanh lá, dương ngả về đỏ. Trong ba công cụ, chỉ Color Depth tác động lên từng kênh riêng.',
       },
       {
         t: 'callout',
@@ -232,7 +254,7 @@ export const PILOT_DRAFTS: readonly Article[] = [
       section: 'fundamentals',
       order: 1,
       concepts: ['pp', 'pp.gamma', 'pp.colorMode', 'pp.knee', 'pp.blackGamma'],
-      sources: [sony('ppGammaColorMode'), sony('ppBlackKnee')],
+      sources: [sony('ppGammaColorMode'), sony('ppBlackKnee'), sony('ppIlce7m4', 'ILCE-7M4')],
     }),
     blocks: [
       {
@@ -247,7 +269,7 @@ export const PILOT_DRAFTS: readonly Article[] = [
       { t: 'h', text: 'Color Mode chọn ma trận và không gian màu' },
       {
         t: 'p',
-        text: 'Color Mode xác định ma trận màu và không gian màu: Movie, Still, S-Cinetone, Cinema, Pro, 709tone, ITU709 Matrix, Black & White, S-Gamut, S-Gamut3, S-Gamut3.Cine, BT.2020 và 709. Cần chọn phù hợp với Gamma — ví dụ S-Cinetone cho tông da tự nhiên, Cinema hoặc Pro cho màu điện ảnh đậm.',
+        text: 'Color Mode xác định ma trận màu và không gian màu: Movie, Still, S-Cinetone, Cinema, Pro, 709tone, ITU709 Matrix, Black & White, S-Gamut, S-Gamut3, S-Gamut3.Cine, BT.2020 và 709. Mỗi Color Mode được thiết kế để đi với một Gamma: Movie, Still và S-Cinetone với Gamma cùng tên; Cinema với Cine1 và Cine2; Pro (tông màu máy quay chuyên nghiệp của Sony) và ITU709 Matrix với ITU709; S-Gamut với S-Log2; S-Gamut3 và S-Gamut3.Cine với S-Log3. BT.2020 và 709 chỉ chọn được khi Gamma là HLG. Không phải máy nào cũng có đủ danh sách này — Color Mode của ILCE-7M4 không có 709tone.',
       },
       {
         t: 'table',
@@ -262,7 +284,7 @@ export const PILOT_DRAFTS: readonly Article[] = [
       {
         t: 'callout',
         label: 'Nếu chọn S-Log2, S-Log3 hoặc HLG',
-        text: 'Đây là các đường cong có dải động rộng để chỉnh màu sau khi quay. Một công thức dùng chúng chưa phải kết quả cuối cùng.',
+        text: 'S-Log2 và S-Log3 được thiết kế với giả định hình sẽ được xử lý sau khi quay, nên một công thức dùng chúng chưa phải kết quả cuối cùng. HLG thì khác: đó là gamma ghi HDR theo chuẩn ITU-R BT.2100, để xem trên màn hình hỗ trợ HLG.',
       },
     ],
   },
@@ -280,9 +302,7 @@ export const PILOT_DRAFTS: readonly Article[] = [
       order: 2,
       concepts: ['wb', 'pp', 'cl'],
       related: [{ kind: 'knowledge', id: 'picture-profile-va-creative-look' }],
-      /* No source yet, on purpose: the help-guide page for file formats was
-         not one `constants.ts` cites, so there is nothing to restate. The
-         publish gate refuses a knowledge page with no source. */
+      sources: [PILOT_EXTRA_SOURCES.fileFormatIlce7m4, sony('ppIlce7m4', 'ILCE-7M4')],
     }),
     blocks: [
       {
@@ -292,7 +312,12 @@ export const PILOT_DRAFTS: readonly Article[] = [
       { t: 'h', text: 'Với RAW, phần mềm quyết định' },
       {
         t: 'p',
-        text: 'File RAW lưu dữ liệu từ cảm biến để xử lý sau. Cài đặt màu trong máy có được áp dụng khi mở RAW hay không tuỳ phần mềm bạn dùng, nên hãy kiểm tra với phần mềm của mình trước khi đánh giá một công thức qua file RAW.',
+        text: 'Với file RAW, máy không xử lý ảnh — Sony mô tả định dạng này là để xử lý trên máy tính. Cài đặt màu trong máy có được áp dụng khi mở RAW hay không tuỳ phần mềm bạn dùng, nên hãy kiểm tra với phần mềm của mình trước khi đánh giá một công thức qua file RAW.',
+      },
+      {
+        t: 'callout',
+        label: 'Ngay cả khi phần mềm dùng cài đặt lúc chụp',
+        text: 'Help Guide của ILCE-7M4 ghi rằng khi phát triển RAW theo cài đặt lúc chụp, bốn mục Picture Profile không được áp dụng: Black Level, Black Gamma, Knee và Color Depth. Một công thức PP dựa nhiều vào các mục này sẽ trông khác trên RAW.',
       },
       { t: 'h', text: 'So công thức sao cho công bằng' },
       {

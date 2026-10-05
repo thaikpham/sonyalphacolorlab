@@ -1,15 +1,15 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { CL_RANGES, PP_RANGES } from '@/lib/camera/constants'
+import { CL_RANGES, HELP_GUIDE_SOURCES, PP_RANGES } from '@/lib/camera/constants'
 import { ARTICLES } from './articles'
 import { parseMeta } from './meta'
 import { PLACEHOLDER_MARK, RESERVED_IDS, parseBlocks, validateForPublish } from './parse'
-import { PILOT_DRAFTS } from './pilot-drafts'
+import { PILOT_DRAFTS, PILOT_EXTRA_SOURCES } from './pilot-drafts'
 
 /**
  * The pilot pages are drafts for the owner to review. These tests hold them
  * to the two promises in the file's header: they cannot become public by
- * accident, and they claim nothing the repository cannot back.
+ * accident, and they claim nothing a dated Sony page cannot back.
  */
 
 const knowledge = PILOT_DRAFTS.filter((d) => d.kind === 'knowledge')
@@ -61,26 +61,34 @@ describe('the pilot pages', () => {
 
 describe('the reference pages', () => {
   it.each(knowledge.map((d) => [d.id, d] as const))(
-    '%s cannot be published until a person re-checks its sources',
+    '%s cites only Help Guide pages read in full, each dated',
     (_id, draft) => {
-      /* No source carries a checked date — the help-guide host was unreachable
-         when these were written. That is the gate the owner's review clears. */
-      const problems = validateForPublish(draft)
-      expect(problems.length).toBeGreaterThan(0)
-      expect(
-        problems.every((p) => p === 'sourceNeedsDate' || p === 'knowledgeNeedsSource'),
-        problems.join(', '),
-      ).toBe(true)
-      expect(draft.meta.sources.every((s) => s.checkedAt === undefined)).toBe(true)
+      /* Written while the help-guide host was unreachable, then re-read in
+         raw text on 2026-10-05. The date is what the public page prints as
+         "checked", so it comes from the one place that records the reading —
+         `HELP_GUIDE_SOURCES` or `PILOT_EXTRA_SOURCES` — never typed here. */
+      const allowed = new Map<string, string>(
+        [...Object.values(HELP_GUIDE_SOURCES), ...Object.values(PILOT_EXTRA_SOURCES)].map(
+          (s) => [s.url, s.checkedAt] as const,
+        ),
+      )
+      expect(draft.meta.sources.length).toBeGreaterThan(0)
+      for (const s of draft.meta.sources) {
+        expect(s.url).toMatch(/^https:\/\/helpguide\.sony\.net\//)
+        expect(allowed.get(s.url), s.url).toBeDefined()
+        expect(s.checkedAt).toBe(allowed.get(s.url))
+      }
     },
   )
 
-  it('cite only the help-guide pages constants.ts already cites', () => {
-    const constants = readFileSync('src/lib/camera/constants.ts', 'utf8')
-    for (const d of knowledge) {
-      for (const s of d.meta.sources) expect(constants).toContain(s.url)
-    }
-  })
+  it.each(knowledge.map((d) => [d.id, d] as const))(
+    '%s passes the publish rules, and is still only a draft',
+    (_id, draft) => {
+      /* Publishable is not published: which pilots go live is the owner's
+         call in /admin/blog. The store-side draft status is pinned above. */
+      expect(validateForPublish(draft)).toEqual([])
+    },
+  )
 
   it('restate the ranges constants.ts holds, not remembered ones', () => {
     const prose = (id: string) => JSON.stringify(knowledge.find((d) => d.id === id)?.blocks)
