@@ -1,6 +1,12 @@
 # ADR 0005 — Camera capabilities from checked Help Guide evidence
 
-Status: accepted · 2026-10-05
+Status: accepted · 2026-10-05 · amended 2026-10-06
+
+> **Amended 2026-10-06.** The compatibility engine and its four verdicts are
+> removed: the recipe-page "Camera compatibility" section and the camera
+> page's list of verified recipes were judged not useful. The checked
+> evidence stays, and now only lists what a body's colour menus hold on its
+> camera page ("Colour settings"). The verdict sections below are history.
 
 ## Context
 
@@ -32,7 +38,8 @@ Three facts shaped the decision:
 **Evidence lives in the repository**, in `src/lib/cameras/capabilities/`:
 
 - `keys.ts` — capability keys derived from `constants.ts` (`pp.gamma:S-Log3`,
-  `cl.adjust:sharpnessRange`, `wb.preset:Flash`, …) and `requirementsFor(recipe)`.
+  `cl.adjust:sharpnessRange`, `wb.preset:Flash`, …) and `requirementsFor(recipe)`
+  (removed 2026-10-06).
 - `evidence.ts` — per body, per Help Guide topic: claims, each quoting a short
   literal from the raw page.
 - `checks.ts` + `data/camera-evidence.checks.json` — written only by
@@ -40,7 +47,7 @@ Three facts shaped the decision:
   and body (never the navigation tree), and records every literal found, with
   its surrounding sentence, and every literal missing. **A claim counts only
   when its last check found its literals as the claim quotes them now.**
-- `engine.ts` — `assess(requirements, body, { mode, firmware? })`.
+- `engine.ts` — `assess(requirements, body, { mode, firmware? })` (removed 2026-10-06).
 
 Rules the engine and the evidence follow:
 

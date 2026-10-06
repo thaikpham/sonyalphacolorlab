@@ -1,17 +1,17 @@
 import { describe, expect, it } from 'vitest'
 import camerasSeed from '../../../../data/sony-cameras.seed.json'
 import { modelCode } from '../aliases'
-import { EVIDENCE_SOURCES, type Claim } from './evidence'
+import { EVIDENCE_SOURCES, type Claim, type EvidenceSource } from './evidence'
 import { EVIDENCE_CHECKS } from './index'
-import { absentKey, confirmedClaims } from './checks'
+import { absentKey, confirmedClaims, type ConfirmedClaim, type SourceCheck } from './checks'
 import { isCapabilityKey } from './keys'
 import { normalise } from './page-text'
 
 /**
- * The rules in `evidence.ts`'s header, held. The last block is the one that
+ * The rules in `evidence.ts`'s header, held. The checks-file block is the one that
  * matters most: committed evidence and the committed checks file must agree,
  * so a claim edited without re-checking its page fails here rather than
- * quietly disappearing from every verdict.
+ * quietly disappearing from every camera page.
  */
 
 const catalogueModels = new Set(
@@ -61,17 +61,6 @@ describe('claims', () => {
     for (const [id, c] of all) {
       expect(c.match.length > 0 || c.absentFrom !== undefined, `${id} ${c.capability}`).toBe(true)
       if (c.absentFrom) expect(c.status, `${id} ${c.capability}`).toBe('unsupported')
-      if (c.alternative) expect(c.status).toBe('unsupported')
-    }
-  })
-
-  it('carry a range only where its numbers are quoted', () => {
-    for (const [id, c] of all) {
-      if (!c.range) continue
-      const quoted = c.match.join(' ')
-      for (const n of [c.range.min, c.range.max, c.range.step].filter((x) => x !== undefined)) {
-        expect(quoted, `${id} ${c.capability}`).toContain(String(n))
-      }
     }
   })
 
@@ -123,3 +112,60 @@ function sameClaim(a: Claim, b: Claim): boolean {
     a.absentFrom?.literal === b.absentFrom?.literal
   )
 }
+
+/* Fixtures for the confirmation rules. Bodies are named `TEST-*` so nothing
+   here can be mistaken for a claim about a real camera. */
+
+const source = (claims: Claim[], scope: EvidenceSource['scope'] = 'both'): EvidenceSource => ({
+  id: 'TEST-1/topic',
+  camera: 'TEST-1',
+  url: 'https://helpguide.sony.net/fixture.html',
+  topic: 'Topic (still image/movie)',
+  scope,
+  claims,
+})
+
+/** A check that found every literal and every absence the claims ask for. */
+const passing = (s: EvidenceSource): SourceCheck => ({
+  url: s.url,
+  checkedAt: '2026-10-05',
+  outcome: 'ok',
+  title: s.topic,
+  found: Object.fromEntries(s.claims.flatMap((c) => c.match).map((m) => [m, `…${m}…`])),
+  missing: [],
+  absent: Object.fromEntries(s.claims.filter((c) => c.absentFrom).map((c) => [absentKey(c.absentFrom!), 'absent'])),
+})
+
+describe('only confirmed claims count', () => {
+  const claims: Claim[] = [{ capability: 'cl.look:FL', status: 'supported', match: ['FL(Film):'] }]
+  const s = source(claims)
+
+  it.each([
+    ['no check', undefined],
+    ['an unreachable page', { ...passing(s), outcome: 'unreachable' as const }],
+    ['a check of another URL', { ...passing(s), url: 'https://helpguide.sony.net/other.html' }],
+    ['a check that read another topic', { ...passing(s), title: 'Something Else (still image)' }],
+    ['a literal the check did not find', { ...passing(s), found: {}, missing: ['FL(Film):'] }],
+  ])('%s confirms nothing', (_label, check) => {
+    expect(confirmedClaims(s, check)).toEqual([])
+  })
+
+  it('an absence counts only when the list itself was found', () => {
+    const absence: Claim = {
+      capability: 'pp.gamma:S-Log2',
+      status: 'unsupported',
+      match: [],
+      absentFrom: { after: 'a', before: 'b', literal: 'S-Log2:' },
+    }
+    const t = source([absence])
+    expect(confirmedClaims(t, { ...passing(t), absent: { [absentKey(absence.absentFrom!)]: 'no-list' } })).toEqual([])
+    expect(confirmedClaims(t, { ...passing(t), absent: { [absentKey(absence.absentFrom!)]: 'present' } })).toEqual([])
+    expect(confirmedClaims(t, passing(t))).toHaveLength(1)
+  })
+
+  it('carries the check date and resolves the mode from the topic', () => {
+    const [c] = confirmedClaims(s, passing(s)) as ConfirmedClaim[]
+    expect(c.mode).toBe('both')
+    expect(c.source.checkedAt).toBe('2026-10-05')
+  })
+})

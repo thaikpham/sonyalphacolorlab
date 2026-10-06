@@ -5,7 +5,7 @@
 
 import { WB_KELVIN_MENU } from '@/lib/camera/constants'
 import type { ConfirmedClaim } from './checks'
-import { covers } from './engine'
+import type { ModeScope, ShootingMode } from './evidence'
 import { CAPABILITY_KEYS, capabilityGroup, capabilityLabel, type CapabilityKey } from './keys'
 
 export type FeatureRow =
@@ -53,8 +53,8 @@ function rowOf(key: CapabilityKey): FeatureRow {
 
 /**
  * Looks and presets are listed by their own short names (`FL`, `Daylight`);
- * the long label is for a recipe's requirement list, where the code alone
- * would be cryptic.
+ * the long label (`capabilityLabel`) is for the stills-only row, where the
+ * code alone would be cryptic.
  */
 function shortLabel(key: CapabilityKey): string {
   if (key === 'wb.kelvin') return WB_KELVIN_MENU
@@ -62,6 +62,11 @@ function shortLabel(key: CapabilityKey): string {
   if (key.startsWith('pp.gamma:')) return key.slice('pp.gamma:'.length)
   if (key.startsWith('pp.colorMode:')) return key.slice('pp.colorMode:'.length)
   return capabilityLabel(key)
+}
+
+/** A claim scoped to both modes counts for each. */
+function covers(scope: ModeScope, mode: ShootingMode): boolean {
+  return scope === 'both' || scope === mode
 }
 
 export function summariseFeatures(byKey: ReadonlyMap<CapabilityKey, readonly ConfirmedClaim[]>): FeatureGroup[] {
@@ -75,8 +80,8 @@ export function summariseFeatures(byKey: ReadonlyMap<CapabilityKey, readonly Con
   for (const key of keys) {
     const claims = byKey.get(key)!
     const g = groups.get(capabilityGroup(key))!
-    const supported = (mode: 'photo' | 'video') => claims.some((c) => c.status === 'supported' && covers(c.mode, mode))
-    const refused = (mode: 'photo' | 'video') => claims.some((c) => c.status === 'unsupported' && covers(c.mode, mode))
+    const supported = (mode: ShootingMode) => claims.some((c) => c.status === 'supported' && covers(c.mode, mode))
+    const refused = (mode: ShootingMode) => claims.some((c) => c.status === 'unsupported' && covers(c.mode, mode))
     if (supported('photo') && supported('video')) {
       const row = rowOf(key)
       g.rows.set(row, [...(g.rows.get(row) ?? []), shortLabel(key)])

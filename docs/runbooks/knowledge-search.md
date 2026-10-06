@@ -145,7 +145,7 @@ query disappoints: label it from the documents, not from the ranker's output.
 A change to `rank.ts`, `text.ts` or `documents.ts` that breaks the gate is a
 regression until the new labels are reviewed.
 
-## Camera compatibility (ADR 0005)
+## Camera colour menus (ADR 0005)
 
 No table, no migration, no environment variable: evidence and its checks are
 two files in the repository, read at build time.
@@ -153,7 +153,6 @@ two files in the repository, read at build time.
 ```bash
 NODE_USE_ENV_PROXY=1 npm run capabilities:check      # re-fetch every cited topic, rewrite the checks file
 npm run capabilities:check -- --dry-run              # same, write nothing
-npm run capabilities:check -- --report               # verdict counts for the seed recipes, no network
 ```
 
 - **Re-check when Sony updates a guide** (new body software) and before a
@@ -165,17 +164,9 @@ npm run capabilities:check -- --report               # verdict counts for the se
 - `evidence.test.ts` fails if a committed claim is not confirmed by the
   committed checks — run the check, do not edit the JSON.
 
-Pilot, checked 2026-10-05 (83 seed recipes):
-
-| Body | Stills verified | Stills incompatible | Movie incompatible | Why most stay unknown |
-|---|---|---|---|---|
-| ILCE-7M4 | 18 | 0 | 37 | no Kelvin range or shift limit in the guide |
-| ILCE-7CM2 | 18 | 1 (S-Log2) | 38 | same |
-| ILCE-6700 | 18 | 1 (S-Log2) | 38 | same |
-| ILCE-7M5 | 15 | 46 (no Color Depth item) | 83 | same |
-
-Every Creative Look recipe is incompatible in movie mode on all four: each
-sets Sharpness Range, which Sony says "cannot be adjusted" in movie mode.
+The evidence feeds one thing: the "Colour settings" section of a camera page
+(ILCE-7M4, ILCE-7CM2, ILCE-6700, ILCE-7M5, checked 2026-10-05). The
+recipe × body compatibility verdicts were removed on 2026-10-06.
 
 ## Cost
 

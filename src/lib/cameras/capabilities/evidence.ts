@@ -6,7 +6,7 @@
  * capability key and quotes a short literal from that topic. A claim counts
  * when `npm run capabilities:check` has fetched the page, read the topic the
  * way `page-text.ts` does, and found every literal (`checks.ts`); until then
- * the capability is `unknown` on that body. A claim's literal is the evidence,
+ * the camera page does not list it for that body. A claim's literal is the evidence,
  * not a label: change the claim and it stops counting until the page is
  * checked again.
  *
@@ -18,17 +18,17 @@
  * - **A support with a known exception states its mode.** Sharpness Range is
  *   supported for stills and refused in movie mode, so the support claim says
  *   `photo` rather than inheriting the topic's still/movie scope. If the
- *   exception's literal ever stops matching, movie mode falls back to
- *   `unknown` — never to supported.
+ *   exception's literal ever stops matching, the camera page keeps it under
+ *   stills only — never widens it to both modes.
  * - **`unsupported` needs Sony's words or a whole list.** Either a sentence
  *   that refuses it ("… cannot be adjusted"), or an `absentFrom` list: the
  *   body's complete option list, bounded by the literals before and after it,
  *   with the option not in it. A list whose bounds are not found proves
  *   nothing and is never read as absence.
- * - **No range without its numbers on the page.** None of these topics states
- *   a Kelvin range, a shift limit or a step, so no claim carries one, and a
- *   recipe that needs one is `unknown` on every body — which is what Sony's
- *   pages support today (`constants.ts`, WB_KELVIN and WB_SHIFT_AXIS).
+ * - **Names, never numbers.** A claim says a body has an option, not what
+ *   values it accepts. None of these topics states a Kelvin range, a shift
+ *   limit or a step, and the camera page says so rather than borrowing the
+ *   global ones in `constants.ts` (WB_KELVIN and WB_SHIFT_AXIS).
  *
  * Read 2026-10-05: ILCE-7M4, ILCE-7CM2, ILCE-6700, ILCE-7M5 — the Creative
  * Look, White Balance and Picture Profile topics of each; for ILCE-7M4 and
@@ -51,12 +51,6 @@ export type Claim = {
   readonly match: readonly string[]
   /** For `unsupported` only: the body's whole option list, and the option missing from it. */
   readonly absentFrom?: { readonly after: string; readonly before: string; readonly literal: string }
-  /** What the body accepts, only where the page prints the numbers (every one in `match`). */
-  readonly range?: { readonly min: number; readonly max: number; readonly step?: number }
-  /** Earliest body software that has it, as Sony writes the version. */
-  readonly firmware?: string
-  /** For `unsupported`: a capability on this body that stands in for it, itself claimed. */
-  readonly alternative?: CapabilityKey
 }
 
 export type EvidenceSource = {
