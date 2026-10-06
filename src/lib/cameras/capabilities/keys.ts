@@ -1,5 +1,6 @@
 /**
- * What a recipe asks of a camera body, in keys derived from `constants.ts`.
+ * The colour capabilities a camera body can have, in keys derived from
+ * `constants.ts`.
  *
  * A capability key names one thing a body either has or lacks: a menu
  * (`picture-profile`), an item in it (`pp.item:Knee`), one option of an item
@@ -8,9 +9,9 @@
  * not hold, and a value added there gains its key without an edit here.
  *
  * The keys say nothing about whether any body has them. That is evidence
- * (`evidence.ts`), and a key without evidence for a body is `unknown` there —
- * never assumed from the global enum (brief §5.2: a value being legal somewhere
- * proves nothing about a particular camera).
+ * (`evidence.ts`), and a key without confirmed evidence for a body is simply
+ * not listed for it — never assumed from the global enum: a value being legal
+ * somewhere proves nothing about a particular camera.
  */
 
 import {
@@ -29,7 +30,6 @@ import {
   type PpColorMode,
   type PpGamma,
 } from '@/lib/camera/constants'
-import type { ClSettings, PpSettings, WhiteBalance } from '@/lib/camera/schema'
 
 export type PpMenuItem = (typeof PP_MENU_ITEMS)[number]
 export type WbAutoMode = (typeof WB_AUTO_MODES)[number]
@@ -68,58 +68,6 @@ const KEY_SET: ReadonlySet<string> = new Set(CAPABILITY_KEYS)
 
 export function isCapabilityKey(value: string): value is CapabilityKey {
   return KEY_SET.has(value)
-}
-
-/**
- * One thing a recipe needs from a body. `values` are the numbers the body
- * must accept — a Kelvin temperature, a shift amount — and are absent where the
- * key alone is the whole question.
- */
-export type Requirement = { readonly capability: CapabilityKey; readonly values?: readonly number[] }
-
-/** The part of a recipe a body has to reproduce — what `Recipe` and a recipe row both carry. */
-export type RecipeSettings =
-  | { readonly format: 'pp'; readonly settings: PpSettings; readonly whiteBalance: WhiteBalance }
-  | { readonly format: 'cl'; readonly settings: ClSettings; readonly whiteBalance: WhiteBalance }
-
-function wbRequirements(wb: WhiteBalance): Requirement[] {
-  const out: Requirement[] = []
-  if (wb.mode === 'kelvin') out.push({ capability: 'wb.kelvin', values: [wb.kelvin] })
-  else if (wb.mode === 'auto') out.push({ capability: `wb.auto:${wb.auto}` })
-  else out.push({ capability: `wb.preset:${wb.preset}` })
-  /* An axis at 0 asks nothing of the body; the shift screen opens at 0. */
-  for (const axis of ['ab', 'gm'] as const) {
-    const amount = wb.shift?.[axis]?.amount
-    if (amount) out.push({ capability: `wb.shift:${axis}`, values: [amount] })
-  }
-  return out
-}
-
-/**
- * Everything one recipe asks of a body, in a stable order: the menu, its
- * items, the options chosen, then White Balance.
- *
- * Every item of the format's menu is required, because a recipe states every
- * item — a body without `Sharpness Range` cannot reproduce a Creative Look
- * recipe that sets it. Saturation is the exception the schema already makes:
- * a monochrome Look has none, so a BW or SE recipe does not ask for it.
- */
-export function requirementsFor(recipe: RecipeSettings): Requirement[] {
-  const out: Requirement[] = []
-  if (recipe.format === 'pp') {
-    out.push({ capability: 'picture-profile' })
-    for (const item of PP_MENU_ITEMS) out.push({ capability: `pp.item:${item}` })
-    out.push({ capability: `pp.gamma:${recipe.settings.gamma}` })
-    out.push({ capability: `pp.colorMode:${recipe.settings.colorMode}` })
-  } else {
-    out.push({ capability: 'creative-look' })
-    out.push({ capability: `cl.look:${recipe.settings.look}` })
-    for (const param of CL_PARAM_ORDER) {
-      if (recipe.settings[param] !== undefined) out.push({ capability: `cl.adjust:${param}` })
-    }
-  }
-  out.push(...wbRequirements(recipe.whiteBalance))
-  return out
 }
 
 const LOOK_LABEL: Record<string, string> = Object.fromEntries(

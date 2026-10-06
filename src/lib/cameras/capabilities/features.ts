@@ -5,7 +5,7 @@
 
 import { WB_KELVIN_MENU } from '@/lib/camera/constants'
 import type { ConfirmedClaim } from './checks'
-import { covers } from './engine'
+import type { ModeScope, ShootingMode } from './evidence'
 import { CAPABILITY_KEYS, capabilityGroup, capabilityLabel, type CapabilityKey } from './keys'
 
 export type FeatureRow =
@@ -64,6 +64,11 @@ function shortLabel(key: CapabilityKey): string {
   return capabilityLabel(key)
 }
 
+/** A claim scoped to both modes counts for each. */
+function covers(scope: ModeScope, mode: ShootingMode): boolean {
+  return scope === 'both' || scope === mode
+}
+
 export function summariseFeatures(byKey: ReadonlyMap<CapabilityKey, readonly ConfirmedClaim[]>): FeatureGroup[] {
   const groups = new Map<FeatureGroup['group'], { rows: Map<FeatureRow, string[]>; stillsOnly: string[]; notOnBody: string[] }>()
   for (const g of ['pp', 'cl', 'wb'] as const) groups.set(g, { rows: new Map(), stillsOnly: [], notOnBody: [] })
@@ -75,8 +80,8 @@ export function summariseFeatures(byKey: ReadonlyMap<CapabilityKey, readonly Con
   for (const key of keys) {
     const claims = byKey.get(key)!
     const g = groups.get(capabilityGroup(key))!
-    const supported = (mode: 'photo' | 'video') => claims.some((c) => c.status === 'supported' && covers(c.mode, mode))
-    const refused = (mode: 'photo' | 'video') => claims.some((c) => c.status === 'unsupported' && covers(c.mode, mode))
+    const supported = (mode: ShootingMode) => claims.some((c) => c.status === 'supported' && covers(c.mode, mode))
+    const refused = (mode: ShootingMode) => claims.some((c) => c.status === 'unsupported' && covers(c.mode, mode))
     if (supported('photo') && supported('video')) {
       const row = rowOf(key)
       g.rows.set(row, [...(g.rows.get(row) ?? []), shortLabel(key)])

@@ -1,6 +1,12 @@
 # ADR 0005 — Camera capabilities from checked Help Guide evidence
 
-Status: accepted · 2026-10-05
+Status: accepted · 2026-10-05 · amended 2026-10-06
+
+> **Amended 2026-10-06.** The compatibility engine and its four verdicts are
+> removed: the recipe-page "Camera compatibility" section and the camera
+> page's list of verified recipes were judged not useful. The checked
+> evidence stays, and now only lists what a body's colour menus hold on its
+> camera page ("Colour settings"). The verdict sections below are history.
 
 ## Context
 

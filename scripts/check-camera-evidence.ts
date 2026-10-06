@@ -7,7 +7,6 @@
  *   npm run capabilities:check -- --dry-run        # fetch and report, write nothing
  *   npm run capabilities:check -- --only ILCE-7M4  # one body (others keep their last check)
  *   npm run capabilities:check -- --from <dir>     # read saved pages: <dir>/<id with / as __>.html
- *   npm run capabilities:check -- --report         # no fetch: verdicts for the seed recipes
  *
  * Behind an HTTP proxy (a cloud session, CI) Node's fetch ignores HTTPS_PROXY
  * unless started with NODE_USE_ENV_PROXY=1. A proxy that refuses the host
@@ -21,22 +20,19 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-import recipesSeed from '../data/recipes.seed.json'
-import { recipeSchema } from '../src/lib/camera/schema'
 import { absentKey, checksFileSchema, type ChecksFile, type SourceCheck } from '../src/lib/cameras/capabilities/checks'
 import { EVIDENCE_SOURCES, type EvidenceSource } from '../src/lib/cameras/capabilities/evidence'
 import { findLiteral, helpGuideText, normalise, section } from '../src/lib/cameras/capabilities/page-text'
 
 const CHECKS_PATH = join('data', 'camera-evidence.checks.json')
 
-type Args = { dryRun: boolean; only?: string; from?: string; report: boolean }
+type Args = { dryRun: boolean; only?: string; from?: string }
 
 function parseArgs(argv: string[]): Args {
-  const args: Args = { dryRun: false, report: false }
+  const args: Args = { dryRun: false }
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i]
     if (a === '--dry-run') args.dryRun = true
-    else if (a === '--report') args.report = true
     else if (a === '--only') args.only = argv[++i]
     else if (a === '--from') args.from = argv[++i]
     else throw new Error(`Unknown argument: ${a}`)
@@ -138,35 +134,8 @@ async function runChecks(args: Args) {
   if (problems) console.log(`  ${problems} source(s) need attention: a claim that did not match does not count.`)
 }
 
-async function report() {
-  /* Imported here so `--report` reflects the checks file on disk now. */
-  const { EVIDENCED_CAMERAS, assessRecipe, SHOOTING_MODES } = await import('../src/lib/cameras/capabilities/index')
-  const recipes = (recipesSeed as unknown[]).map((r) => recipeSchema.parse(r))
-  console.log(`| Body | Mode | verified | partial | incompatible | unknown |`)
-  console.log(`|---|---|---|---|---|---|`)
-  const gaps = new Map<string, number>()
-  for (const camera of EVIDENCED_CAMERAS) {
-    for (const mode of SHOOTING_MODES) {
-      const counts = { verified: 0, partial: 0, incompatible: 0, unknown: 0 }
-      for (const recipe of recipes) {
-        const a = assessRecipe(recipe, camera, mode)
-        counts[a.verdict]++
-        for (const o of a.outcomes) {
-          if (o.kind === 'unknown') {
-            const key = `${o.requirement.capability} (${o.reason})`
-            gaps.set(key, (gaps.get(key) ?? 0) + 1)
-          }
-        }
-      }
-      console.log(`| ${camera} | ${mode} | ${counts.verified} | ${counts.partial} | ${counts.incompatible} | ${counts.unknown} |`)
-    }
-  }
-  console.log(`\nWhat keeps recipes unknown (recipe × body × mode):`)
-  for (const [k, n] of [...gaps].sort((a, b) => b[1] - a[1]).slice(0, 12)) console.log(`  ${String(n).padStart(4)}  ${k}`)
-}
-
 const args = parseArgs(process.argv.slice(2))
-;(args.report ? report() : runChecks(args)).catch((error) => {
+runChecks(args).catch((error) => {
   console.error(error instanceof Error ? error.message : error)
   process.exit(1)
 })
