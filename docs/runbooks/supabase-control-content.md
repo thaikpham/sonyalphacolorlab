@@ -121,9 +121,14 @@ default, and none of them reads `supabase/.temp/linked-project.json`.
 npm run supabase:health -- --target control
 npm run supabase:health -- --target content
 
-# Migrations. Prints the plan; --apply runs it. For the control project a merge
-# to main runs it too — see "Control migrations run on merge" below.
+# Migrations. Lists the root's files; --dry-run asks the project what would run;
+# --apply runs it. Needs the Supabase CLI, `supabase login` (or
+# SUPABASE_ACCESS_TOKEN) with access to that project's organisation, and ideally
+# CONTENT_/CONTROL_SUPABASE_DB_PASSWORD — without it the CLI creates a temporary
+# login role. A merge to main runs the control root on control — see
+# "Migrations, per project".
 npm run supabase:migrations -- --target content
+npm run supabase:migrations -- --target content --dry-run
 npm run supabase:migrations -- --target content --apply
 
 # Snapshot + hashes.
@@ -140,20 +145,20 @@ npm run content:verify -- --target content --manifest initial
 Export artifacts land under `artifacts/supabase/`, which is gitignored: they are
 a full JSON copy of the catalogue and carry `updated_by`, an editor's address.
 
-### Control migrations run on merge
+### Migrations, per project
 
-Supabase's GitHub integration is connected to `nqeedlgzaewccqztqvik` with
-branching on, and its production branch is git `main`. Every push to `main`
-posts a `Supabase Preview` check that runs the equivalent of `supabase db push`
-for `supabase/migrations` against the control project. A second integration
-posts the same check for `touiyczjvnuaxfzulgeq` on the same pushes.
+**Control: a merge to `main` applies it.** Supabase's GitHub integration is
+connected to `nqeedlgzaewccqztqvik` with branching on, and its production branch
+is git `main`. Every push to `main` posts a `Supabase Preview` check that runs
+the equivalent of `supabase db push` for `supabase/migrations` against control.
 
 That push compares the project's recorded versions with the file prefixes and
 refuses on any difference ("Remote migration versions not found in local
 migrations directory"). The check goes red and the branch shows
-`MIGRATIONS_FAILED`. A migration applied from the dashboard SQL editor or an MCP
-tool is recorded under a timestamp (`20260814041545`) rather than its prefix
-(`0010`), which is how the check sat red on every merge from at least
+`MIGRATIONS_FAILED`. Only the prefix is compared, never the name. A migration
+applied through an MCP tool is recorded under a timestamp (`20260814041545`)
+rather than its prefix (`0010`); one pasted into the dashboard SQL editor is not
+recorded at all. That is how the check sat red on every merge from at least
 2026-09-29. On 2026-10-05 the seven timestamped rows were re-recorded as
 `0010`–`0016`, matching the files.
 
@@ -163,11 +168,99 @@ Before merging a new control migration, check the history:
 select version, name from supabase_migrations.schema_migrations order by version;
 ```
 
-Every row must match a file in `supabase/migrations`, same prefix and same name.
+Every row must match a file prefix in `supabase/migrations`.
 `supabase migration repair` fixes a mismatch without touching any table.
 
-The check does not gate the Vercel deployment. On 2026-09-29 it was red and
-production deployed; a failed Vercel build has its own cause in the build log.
+**Content: by hand, before the code that needs it.** The content project must
+have no GitHub integration; it was disabled on 2026-10-05. Never connect one.
+The integration's "Working directory" is the folder that *contains*
+`supabase/`, and it reads `<that folder>/supabase/migrations`. With this
+repository's layout the only such folder is the control root, and that is what
+a second integration pushed into `touiyczjvnuaxfzulgeq` on every merge until it
+was disabled (see "The content project's lineage" below). After a merge to
+`main`, exactly one `Supabase Preview` check should appear: control's.
+
+Apply a content migration with `npm run supabase:migrations -- --target content
+--apply`, and do it **before** merging the code that reads what it adds. Vercel
+prerenders against content while it builds. On 2026-10-05 the production build
+of `9a04713` failed at 03:54:17Z with "permission denied for table
+sony_cameras", because the grant it needed reached content eight seconds later.
+
+New content migrations are named with a 14-digit timestamp
+(`supabase migration new` does this), never a four-digit number: control owns
+`0001`–`0017` and up, and the integration compares version prefixes only. A
+content version that control's root also has is one a control-root push would
+read as its own.
+
+The control check does not gate the Vercel deployment. A failed Vercel build has
+its own cause in the build log.
+
+### The content project's lineage
+
+`touiyczjvnuaxfzulgeq` was not built from `0001_content_baseline.sql`. Its
+integration ran the control root against it. The live buckets were created on
+2026-09-16 at 07:28:23Z and 07:28:24Z, in control's order (`lab` from 0013,
+`lab-drafts` from 0015). The control-only tables were then dropped by hand, and
+the project recorded control's `0001`–`0016` as its own history.
+
+A read-only diagnostic on 2026-10-05 found the tables, columns, enums and
+function the same as the content root, and every constraint and index
+byte-identical by md5. Five things differed, and
+`content/migrations/20261006000000_reconcile_control_lineage.sql` fixes them:
+
+- two read policies under control's names;
+- no `lab_assets_touch` trigger;
+- table-level ALL for anon and authenticated on the three recipe tables;
+- no `recipe-uploads` bucket (created by hand on 2026-10-05);
+- possibly no column comments.
+
+It refuses a database holding control-plane tables, and one whose recipe tables
+have a column its read grant does not cover. `migration-roots.test.ts` runs it
+on a simulation of the live lineage (control `0001`–`0016`, the control tables
+dropped, content `0003`) and asserts the result is exactly the content root, and
+that it changes nothing on a database the content root built.
+
+**Adopting the content root (one-off).** After this, content's history is
+`0001`, `0002`, `0003`, `20261006000000`, and the control root can never be
+pushed into it: `20261006000000` is not a control file, so such a push refuses.
+
+1. Confirm the content integration is disabled: content project → Project
+   Settings → Integrations → GitHub Integration. Leave the Supabase GitHub App
+   and the account-level GitHub connection alone; control uses both.
+2. In the content project's SQL editor (check the project name first), run as
+   one execution:
+
+   ```sql
+   begin;
+   set local lock_timeout = '3s';
+
+   -- paste supabase/content/migrations/20261006000000_reconcile_control_lineage.sql here
+
+   do $$ begin
+     if not exists (select 1 from pg_trigger where tgname = 'lab_assets_touch') then
+       raise exception 'the reconcile migration was not pasted above';
+     end if;
+   end $$;
+
+   delete from supabase_migrations.schema_migrations
+    where version not in ('0001', '0002', '0003', '20261006000000');
+   insert into supabase_migrations.schema_migrations (version, name, statements) values
+     ('0001', 'content_baseline', null),
+     ('0002', 'recipe_upload_bucket', null),
+     ('0003', 'lab_article_kind_and_meta', null),
+     ('20261006000000', 'reconcile_control_lineage', null)
+   on conflict (version) do update set name = excluded.name, statements = excluded.statements;
+   commit;
+   ```
+
+   If it errors, nothing was applied. Run `rollback;` on its own before
+   anything else, then fix and rerun the whole block. A lock timeout means a
+   long-running read held the catalogue; retry. The editor may warn about the
+   `delete`; that is expected.
+3. Check `select version, name from supabase_migrations.schema_migrations order
+   by version;` returns exactly those four rows, that
+   `npm run supabase:health -- --target content` is clean, and that the site's
+   recipe, Wiki and blog pages load.
 
 ---
 

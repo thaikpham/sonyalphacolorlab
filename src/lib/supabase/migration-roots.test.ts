@@ -11,8 +11,10 @@ import { PRODUCT_COLUMNS } from '@/lib/cameras/row';
  * history is the one thing a migration history exists to prevent, so the
  * article-privilege correction arrives as 0014 rather than as an edit to 0013.
  *
- * `supabase/content/migrations` is the new root, applied from zero to an empty
- * project. What matters most about it is what it does *not* contain. A content
+ * `supabase/content/migrations` is the content plane's root, run from zero here.
+ * The live content project was built from the control root instead, and the
+ * reconcile migration closes the gap; the block on it below proves it. What matters most
+ * about this root is what it does *not* contain. A content
  * project that grew an `admin_emails` table would be a second, unsupervised
  * answer to "who may edit this site" — and one with different RLS, in a
  * different organisation, reachable by a different credential.
@@ -36,8 +38,17 @@ const files = (root: string) =>
  * without these stubs the column privileges — the thing actually keeping editor
  * addresses out of the public API — would go untested, and the storage
  * statements would abort the file they are in and every later one.
+ *
+ * The default ACL is Supabase's too: every table created in `public` starts
+ * with ALL granted to anon and authenticated. Without it a table that a
+ * migration never revokes looks private here and is not in production. That
+ * is the difference between the two roots' recipe tables that this file could
+ * not see until the reconcile migration.
  */
-async function freshDatabase(root: string): Promise<PGlite> {
+async function freshDatabase(
+  root: string,
+  include: (file: string) => boolean = () => true,
+): Promise<PGlite> {
   const db = new PGlite();
   await db.exec(`
     do $$ begin
@@ -48,6 +59,7 @@ async function freshDatabase(root: string): Promise<PGlite> {
         create role authenticated nologin;
       end if;
     end $$;
+    alter default privileges in schema public grant all on tables to anon, authenticated;
     create schema if not exists storage;
     create table if not exists storage.buckets (
       id text primary key,
@@ -61,6 +73,7 @@ async function freshDatabase(root: string): Promise<PGlite> {
     );
   `);
   for (const file of files(root)) {
+    if (!include(file)) continue;
     await db.exec(readFileSync(`${root}/${file}`, 'utf8'));
   }
   return db;
@@ -92,6 +105,80 @@ async function tablePrivileges(db: PGlite, table: string, role: string): Promise
     [table, role],
   );
   return result.rows.map((r) => r.privilege_type);
+}
+
+/**
+ * Everything about the schema that a later migration or a reader can depend
+ * on, as sorted lines: every relation in `public` with its RLS flags and ACL,
+ * columns with their types, defaults and comments, constraints, indexes,
+ * policies, triggers and whether they fire, functions with their security and
+ * ACL, enums, every privilege anon, authenticated or PUBLIC holds on a table or
+ * a column, and buckets. Rows and column order are left out, because no
+ * migration depends on either.
+ */
+async function shape(db: PGlite): Promise<string[]> {
+  const result = await db.query<{ line: string }>(`
+    with r(oid, rolname) as (
+      select oid, rolname from pg_roles where rolname in ('anon', 'authenticated')
+      union all select 0::oid, 'PUBLIC'
+    ), t(oid, relname) as (
+      select oid, relname from pg_class
+       where relnamespace = 'public'::regnamespace and relkind = 'r'
+    )
+    select line from (
+      select 'relation ' || relname || ' kind=' || relkind::text || ' rls=' || relrowsecurity
+             || ' force=' || relforcerowsecurity || ' acl=' || coalesce(relacl::text, '-') as line
+        from pg_class where relnamespace = 'public'::regnamespace
+      union all
+      select 'column ' || t.relname || '.' || a.attname || ' ' || format_type(a.atttypid, a.atttypmod)
+             || ' notnull=' || a.attnotnull
+             || ' default=' || coalesce(pg_get_expr(d.adbin, d.adrelid), '-')
+             || ' comment=' || coalesce(col_description(a.attrelid, a.attnum), '-')
+        from t join pg_attribute a on a.attrelid = t.oid
+        left join pg_attrdef d on d.adrelid = a.attrelid and d.adnum = a.attnum
+       where a.attnum > 0 and not a.attisdropped
+      union all
+      select 'constraint ' || t.relname || ' ' || c.conname || ' ' || pg_get_constraintdef(c.oid)
+        from t join pg_constraint c on c.conrelid = t.oid where c.contype <> 'n'
+      union all
+      select 'index ' || indexname || ' ' || indexdef from pg_indexes where schemaname = 'public'
+      union all
+      select 'policy ' || schemaname || '.' || tablename || ' ' || policyname || ' ' || cmd
+             || ' ' || permissive || ' to ' || array_to_string(roles, ',')
+             || ' using ' || coalesce(qual, '-') || ' check ' || coalesce(with_check, '-')
+        from pg_policies where schemaname in ('public', 'storage')
+      union all
+      select 'trigger ' || pg_get_triggerdef(g.oid) || ' enabled=' || g.tgenabled::text
+        from pg_trigger g join t on t.oid = g.tgrelid where not g.tgisinternal
+      union all
+      select 'function ' || proname || '(' || pg_get_function_identity_arguments(oid) || ') '
+             || md5(prosrc) || ' secdef=' || prosecdef
+             || ' config=' || coalesce(array_to_string(proconfig, ';'), '-')
+             || ' acl=' || coalesce(proacl::text, '-')
+        from pg_proc where pronamespace = 'public'::regnamespace
+      union all
+      select 'enum ' || y.typname || ' ' || string_agg(e.enumlabel, ',' order by e.enumsortorder)
+        from pg_type y join pg_enum e on e.enumtypid = y.oid
+       where y.typnamespace = 'public'::regnamespace group by y.typname
+      union all
+      select 'table-grant ' || t.relname || ' ' || r.rolname || ' '
+             || coalesce((select string_agg(x.privilege_type, ',' order by x.privilege_type)
+                            from pg_class c, aclexplode(c.relacl) x
+                           where c.oid = t.oid and x.grantee = r.oid), '-')
+        from t cross join r
+      union all
+      select 'column-grant ' || t.relname || ' ' || r.rolname || ' '
+             || coalesce((select string_agg(x.privilege_type || ':' || a.attname, ','
+                                            order by x.privilege_type, a.attname)
+                            from pg_attribute a, aclexplode(a.attacl) x
+                           where a.attrelid = t.oid and x.grantee = r.oid), '-')
+        from t cross join r
+      union all
+      select 'bucket ' || id || ' public=' || public from storage.buckets
+    ) lines
+    order by line
+  `);
+  return result.rows.map((r) => r.line);
 }
 
 let content: PGlite;
@@ -200,6 +287,131 @@ describe('the control root', () => {
     expect(a).toEqual(b);
     expect(a).toEqual([]);
   });
+});
+
+describe('the content reconcile, on the lineage the live content project came from', () => {
+  /* The content project was built by the control root, not by this one. Its
+     integration ran control 0001–0016, the control-only tables were dropped by
+     hand, and content 0003 was pasted into the SQL editor. The reconcile
+     migration is what makes "this root describes the content project" true,
+     and it may be recorded as applied wherever it ran only because it is a
+     no-op on a database this root built. */
+  const RECONCILE = '20261006000000_reconcile_control_lineage.sql';
+  const sql = () => readFileSync(`${CONTENT_ROOT}/${RECONCILE}`, 'utf8');
+  const CONTROL_ONLY = [
+    'proposal_votes',
+    'recipe_proposals',
+    'recipe_comments',
+    'community_photos',
+    'admin_emails',
+  ];
+
+  /** The live project as it stood before the reconcile, not today's roots. */
+  async function liveLineage(): Promise<PGlite> {
+    const db = await freshDatabase(CONTROL_ROOT, (f) => f.split('_')[0] <= '0016');
+    await db.exec(`drop table ${CONTROL_ONLY.join(', ')} cascade`);
+    await db.exec(readFileSync(`${CONTENT_ROOT}/0003_lab_article_kind_and_meta.sql`, 'utf8'));
+    return db;
+  }
+
+  /** This root up to, and not including, the reconcile. */
+  const contentRoot = () => freshDatabase(CONTENT_ROOT, (f) => f < RECONCILE);
+
+  /** What differs, by kind and name, so drift in either root fails loudly. */
+  function differing(a: string[], b: string[]): string[] {
+    const inA = new Set(a);
+    const inB = new Set(b);
+    return [...a.filter((l) => !inB.has(l)), ...b.filter((l) => !inA.has(l))]
+      .map((l) => l.split(' ').slice(0, 3).join(' '))
+      .filter((k, i, all) => all.indexOf(k) === i)
+      .sort();
+  }
+
+  it('versions itself so a control-root push cannot read it as its own', () => {
+    /* The integration compares version prefixes. A prefix the control root also
+       has would let a control-root push into content treat this project's
+       history as control's and run control's later files there. */
+    const version = RECONCILE.split('_')[0];
+    expect(files(CONTROL_ROOT).map((f) => f.split('_')[0])).not.toContain(version);
+    expect(version).toMatch(/^\d{14}$/);
+  });
+
+  it('brings the live lineage to exactly this root', async () => {
+    const lineage = await liveLineage();
+    const target = await shape(await contentRoot());
+
+    // These differences, and only these, are what the file is for.
+    expect(differing(await shape(lineage), target)).toEqual([
+      'bucket recipe-uploads public=false',
+      'column-grant recipe_images anon',
+      'column-grant recipe_images authenticated',
+      'column-grant recipe_translations anon',
+      'column-grant recipe_translations authenticated',
+      'column-grant recipes anon',
+      'column-grant recipes authenticated',
+      'policy public.lab_articles Allow',
+      'policy public.lab_articles lab_articles_public_read',
+      'policy public.sony_cameras Allow',
+      'policy public.sony_cameras sony_cameras_public_read',
+      'relation recipe_images kind=r',
+      'relation recipe_translations kind=r',
+      'relation recipes kind=r',
+      'table-grant recipe_images anon',
+      'table-grant recipe_images authenticated',
+      'table-grant recipe_translations anon',
+      'table-grant recipe_translations authenticated',
+      'table-grant recipes anon',
+      'table-grant recipes authenticated',
+      'trigger CREATE TRIGGER',
+    ]);
+
+    await lineage.exec(sql());
+    expect(await shape(lineage)).toEqual(target);
+  }, 60_000);
+
+  it('handles the live project as it may be found: bucket made by hand, comments gone, both policy names', async () => {
+    const lineage = await liveLineage();
+    await lineage.exec(`
+      create policy sony_cameras_public_read on sony_cameras
+        for select to anon, authenticated using (true);
+      create policy lab_articles_public_read on lab_articles
+        for select to anon, authenticated using (status = 'published');
+      insert into storage.buckets (id, name, public) values ('recipe-uploads', 'recipe-uploads', true);
+      comment on column recipes.wb_preset is null;
+      comment on column sony_cameras.features is null;
+    `);
+    await lineage.exec(sql());
+    expect(await shape(lineage)).toEqual(await shape(await contentRoot()));
+  }, 60_000);
+
+  it('changes nothing on a database this root built, however often it runs', async () => {
+    const db = await contentRoot();
+    const before = await shape(db);
+    await db.exec(sql());
+    await db.exec(sql());
+    expect(await shape(db)).toEqual(before);
+  }, 60_000);
+
+  it('refuses the control plane before changing anything', async () => {
+    const text = sql();
+    const firstChange = text.search(
+      /^\s*(create|revoke|grant|insert|comment|alter|drop)\b/m,
+    );
+    expect(text.indexOf('control-plane tables')).toBeGreaterThan(-1);
+    expect(text.indexOf('control-plane tables')).toBeLessThan(firstChange);
+
+    const before = await shape(control);
+    await expect(control.exec(text)).rejects.toThrow(/control-plane tables/);
+    expect(await shape(control)).toEqual(before);
+  });
+
+  it('refuses a recipes column the anon read grant would not cover', async () => {
+    /* The catalogue reads recipes as anon with select('*'). One ungranted
+       column turns that into "permission denied" for the whole table. */
+    const lineage = await liveLineage();
+    await lineage.exec(`alter table recipes add column internal_note text`);
+    await expect(lineage.exec(sql())).rejects.toThrow(/recipes\.internal_note not in the anon read grant/);
+  }, 60_000);
 });
 
 describe('what a browser may read', () => {
