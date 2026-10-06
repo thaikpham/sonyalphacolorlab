@@ -40,7 +40,7 @@ for install, offline seed mode — no Supabase credentials).
 
 Database behaviour is proven against PGlite only (`migration-roots.test.ts`
 applies both migration roots from zero and checks grants, defaults and
-refusals). **No real Supabase project was touched.**
+refusals). **No real Supabase project was touched by the tests.**
 
 ## 3. Not done, and why
 

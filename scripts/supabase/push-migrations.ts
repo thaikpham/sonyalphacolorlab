@@ -8,7 +8,7 @@
  * There are two roots now and they are not interchangeable:
  *
  *   control -> supabase/migrations          the applied history, plus corrections
- *   content -> supabase/content/migrations  the content plane, reconciled by 0004
+ *   content -> supabase/content/migrations  the content plane (see its reconcile migration)
  *
  * The listing is the local files only. Only `--dry-run` and `--apply` compare
  * them with the project's recorded history, and the CLI compares version
@@ -26,11 +26,14 @@
  * command line as well. Nothing is read from the repository's own Supabase
  * state.
  *
- * The CLI is `supabase` on PATH; `npm run` puts `node_modules/.bin` first. It
- * reads the database password from `SUPABASE_DB_PASSWORD` and prompts without
- * it, so the target's own `*_SUPABASE_DB_PASSWORD` is passed under that name and
- * any inherited `SUPABASE_DB_PASSWORD` is dropped: one left over from the other
- * project would be tried against this one.
+ * The CLI is `supabase` on PATH (tested with 2.117.0). It needs `supabase login`
+ * or `SUPABASE_ACCESS_TOKEN` even with a password: without IPv6 it reaches the
+ * database through the pooler, whose address comes from the Management API. It
+ * reads the password from `SUPABASE_DB_PASSWORD`, and without one it creates a
+ * temporary login role through that API rather than prompting. So the target's
+ * own `*_SUPABASE_DB_PASSWORD` is passed under that name, and any inherited
+ * `SUPABASE_DB_PASSWORD` is dropped: one left over from the other project would
+ * be tried against this one.
  *
  * Credentials travel in the child environment, never in `argv`: a
  * `--db-password` on a command line is visible to every process on the machine
@@ -84,7 +87,7 @@ async function main() {
   delete env.SUPABASE_DB_PASSWORD;
   const password = process.env[PASSWORDS[target]];
   if (password) env.SUPABASE_DB_PASSWORD = password;
-  else console.log(`\n  ${PASSWORDS[target]} is not set; the CLI will ask for the password.`);
+  else console.log(`\n  ${PASSWORDS[target]} is not set; the CLI will use your login to create a temporary role.`);
 
   console.log(`\n  ${args.dryRun ? 'asking' : 'applying to'} ${ref}...\n`);
 

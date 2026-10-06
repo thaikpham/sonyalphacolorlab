@@ -56,7 +56,7 @@ locale error page), never by falling back to seeds. So:
    is this root's:
    ```bash
    npm run supabase:migrations -- --target content --dry-run  # what would run
-   npm run supabase:migrations -- --target content --apply    # runs 0003
+   npm run supabase:migrations -- --target content --apply    # runs what --dry-run listed
    ```
    Check the project name in the dashboard before pressing Run in an SQL
    editor — the control project has a `lab_articles` too.
