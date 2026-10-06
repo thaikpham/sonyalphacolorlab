@@ -18,7 +18,8 @@ import { featureList, splitFeatures } from '@/lib/cameras/features';
 import { priceLabel, subCategoryLabel } from '@/lib/cameras/display';
 import { translateSpecValue } from '@/lib/cameras/spec-values';
 import { isResizable } from '@/lib/images/catalogue-loader';
-import { calculateMatchScore } from '@/lib/search/fuzzy-search';
+import { productDoc } from '@/lib/search/product-doc';
+import { prepare, rank } from '@/lib/search/rank';
 
 /**
  * Category chip label, per category.
@@ -368,23 +369,17 @@ function CameraWikiViewInner({ initialCameras, basePath = '/cameras' }: CameraWi
       result = result.filter((c) => c.subCategory2 === selectedSub2);
     }
 
+    /* The same ranking the header and `/search` use (ADR 0003) — one engine,
+       so a query cannot find a product in the dropdown and lose it in the
+       grid. Only membership matters here: the grid is re-sorted by the
+       reader's chosen order below. */
     if (searchQuery.trim()) {
-      result = result
-        .map((c) => ({
-          camera: c,
-          score: calculateMatchScore(searchQuery, [
-            c.name,
-            c.fullName,
-            c.sku,
-            c.subCategory1,
-            c.subCategory2,
-            ...splitFeatures(c.features).en,
-            ...splitFeatures(c.features).vi,
-          ]),
-        }))
-        .filter((item) => item.score > 0)
-        .sort((a, b) => b.score - a.score)
-        .map((item) => item.camera);
+      const docs = result.map((c) => {
+        const { en, vi } = splitFeatures(c.features);
+        return prepare(productDoc({ ...c, featureText: [...en, ...vi] }));
+      });
+      const matched = new Set(rank(searchQuery, docs).map((r) => r.doc.id));
+      result = result.filter((c) => matched.has(c.id));
     }
 
     // Same comparator the server list uses, so the order cannot change under

@@ -8,6 +8,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { LanguageToggle } from './language-toggle';
 import { GoogleMark, useAuth } from './auth-context';
 import { LauncherGrid } from './launcher-grid';
+import { BlogShelfSwitch } from './blog-shelf-switch';
 import { WikiDivisionSwitch } from './wiki-division-switch';
 import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import { routing } from '@/i18n/routing';
@@ -122,7 +123,21 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
      the recipe and product catalogues, and a box on an article page that
      silently searches recipes is worse than no box. Alpha Tech Blogs filters
      in its own rail, where the filters are. */
-  const isBlog = pathname === '/blog' || pathname.startsWith('/blog/');
+  /* `/learn` is the blog's reference shelf (ADR 0001) — same app, same
+     wordmark, same paper room. */
+  const isBlog =
+    pathname === '/blog' ||
+    pathname.startsWith('/blog/') ||
+    pathname === '/learn' ||
+    pathname.startsWith('/learn/');
+  /* The third search mode (ADR 0003). On the editorial pages and on /search
+     itself the box searches everything — recipes, products, articles and
+     reference pages — through `/api/search`, and Enter opens `/search`. It
+     used to be absent on the blog because the only box there was would have
+     searched recipes; a box that searches the whole site has a reason to be
+     on an article page. The filter console stays ColorLab's and the Wiki's. */
+  const isSearchPage = pathname === '/search';
+  const isAll = isBlog || isSearchPage;
   const searchParams = useSearchParams();
   const { user, openLoginModal, logout } = useAuth();
 
@@ -138,7 +153,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
   const wikiView = searchParams?.get('view') ?? 'grid';
 
   const tagList = providedTags && providedTags.length > 0 ? providedTags : FALLBACK_TAGS;
-  const hasActiveFilters = isBlog
+  const hasActiveFilters = isAll
     ? false
     : isWiki
       ? Boolean(currentQ || wikiCat !== 'all' || wikiSub1 !== 'all' || wikiSub2 !== 'all' || wikiSort !== DEFAULT_WIKI_SORT)
@@ -181,6 +196,19 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
     accentHex?: string;
   }
 
+  /** One hit from `/api/search`, the shape the "all" mode receives. */
+  interface SearchApiHit {
+    id: string;
+    kind: 'recipe' | 'product' | 'article' | 'knowledge';
+    title: string;
+    url: string;
+    subtitle?: string;
+    snippet?: string;
+    imageUrl?: string;
+    accentHex?: string;
+    price?: string;
+  }
+
   const [predictiveResults, setPredictiveResults] = useState<PredictiveItem[]>([]);
   const [isPredictiveLoading, setIsPredictiveLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
@@ -196,6 +224,10 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
    * bumping it is also how a cleared box cancels a request already in flight.
    */
   const predictiveSeq = useRef(0);
+  /* The request in flight, so a newer keystroke can cancel it rather than
+     only ignore its answer — the network and the server stop working on a
+     query nobody is waiting for. */
+  const predictiveAbort = useRef<AbortController | null>(null);
 
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!isPredictiveOpen || predictiveResults.length === 0) return;
@@ -308,14 +340,6 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
         e.target instanceof HTMLTextAreaElement ||
         (e.target instanceof HTMLElement && e.target.isContentEditable);
 
-      /* Both shortcuts open the search console, and the blog does not render
-         one — without this the keys open an empty 300ms animation over the
-         article and ⌘K appears broken. */
-      if (isBlog) {
-        if (e.key === 'Escape' && isEcosystemOpen) setIsEcosystemOpen(false);
-        return;
-      }
-
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         setIsSearchOpen((prev) => !prev);
@@ -338,7 +362,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isSearchOpen, isEcosystemOpen, isProfileOpen, isBlog]);
+  }, [isSearchOpen, isEcosystemOpen, isProfileOpen]);
 
   /**
    * Close either dropdown on a click outside it.
@@ -371,6 +395,13 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
     (patch: { q?: string; format?: string; look?: string; tag?: string }) => {
       const newQ = patch.q !== undefined ? patch.q : currentQ;
 
+      if (isAll) {
+        /* Nothing to filter in place here; a query is a trip to /search. */
+        const qs = new URLSearchParams(newQ.trim() ? { q: newQ.trim() } : {}).toString();
+        router.push(qs ? `/search?${qs}` : '/search');
+        return;
+      }
+
       if (isWiki) {
         const qs = new URLSearchParams(newQ.trim() ? { q: newQ.trim() } : {}).toString();
         router.push(qs ? `${wikiBase}?${qs}` : wikiBase, { scroll: false });
@@ -392,7 +423,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
         router.push(qs ? `/colorlab?${qs}` : '/colorlab', { scroll: false });
       }
     },
-    [currentQ, currentFormat, currentLook, currentTag, isWiki, wikiBase, router],
+    [currentQ, currentFormat, currentLook, currentTag, isAll, isWiki, wikiBase, router],
   );
 
   const updateWikiFilters = useCallback(
@@ -454,6 +485,8 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
     if (predictiveTimer.current) clearTimeout(predictiveTimer.current);
     const q = value.trim();
 
+    predictiveAbort.current?.abort();
+
     if (!q) {
       // Bumping the sequence orphans any in-flight response, so a request sent
       // before the box was cleared cannot repopulate an empty dropdown.
@@ -472,15 +505,38 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
     const seq = (predictiveSeq.current += 1);
     const mode = isWiki ? 'wiki' : 'colorlab';
     predictiveTimer.current = setTimeout(() => {
-      fetch(`/api/search/predictive?q=${encodeURIComponent(q)}&mode=${mode}&locale=${locale}`)
-        .then((res) => (res.ok ? res.json() : { results: [] }))
-        .then((data: { results?: PredictiveItem[] }) => {
+      const controller = new AbortController();
+      predictiveAbort.current = controller;
+      const url = isAll
+        ? `/api/search?q=${encodeURIComponent(q)}&scope=all&limit=6&locale=${locale}`
+        : `/api/search/predictive?q=${encodeURIComponent(q)}&mode=${mode}&locale=${locale}`;
+      fetch(url, { signal: controller.signal })
+        .then((res) => (res.ok ? res.json() : {}))
+        .then((data: { results?: PredictiveItem[]; hits?: SearchApiHit[] }) => {
           if (seq !== predictiveSeq.current) return;
+          if (isAll) {
+            const hits = Array.isArray(data.hits) ? data.hits : [];
+            setPredictiveResults(
+              hits.map((h) => ({
+                id: `${h.kind}:${h.id}`,
+                title: h.title,
+                subtitle: h.subtitle ?? h.snippet ?? '',
+                badge: t(`kinds.${h.kind}`),
+                url: h.url,
+                imageUrl: h.imageUrl,
+                accentHex: h.accentHex,
+                price: h.price,
+              })),
+            );
+            return;
+          }
           setPredictiveResults(Array.isArray(data.results) ? data.results : []);
         })
         /* An offline or 500 response leaves the previous query's matches on
-           screen otherwise, which reads as a result for what was just typed. */
-        .catch(() => {
+           screen otherwise, which reads as a result for what was just typed.
+           An abort is a newer query taking over, and changes nothing. */
+        .catch((err: unknown) => {
+          if (err instanceof DOMException && err.name === 'AbortError') return;
           if (seq === predictiveSeq.current) setPredictiveResults([]);
         })
         .finally(() => {
@@ -493,12 +549,17 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
     setQuery(value);
     queuePredictive(value);
     if (searchTimer.current) clearTimeout(searchTimer.current);
+    /* ColorLab and the Wiki filter the grid behind the box as you type. The
+       "all" mode has no grid behind it — navigating per keystroke would be a
+       trip to /search on every letter — so it waits for Enter. */
+    if (isAll) return;
     searchTimer.current = setTimeout(() => updateFilters({ q: value }), 250);
   };
 
   useEffect(() => () => {
     if (searchTimer.current) clearTimeout(searchTimer.current);
     if (predictiveTimer.current) clearTimeout(predictiveTimer.current);
+    predictiveAbort.current?.abort();
   }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -510,7 +571,10 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
   const handleClearQuery = () => {
     setQuery('');
     queuePredictive('');
-    updateFilters({ q: '' });
+    /* Clearing the box filters the catalogue back to everything; in the
+       "all" mode there is no catalogue behind the box, and clearing it must
+       not navigate the reader off the article they are on. */
+    if (!isAll) updateFilters({ q: '' });
     inputRef.current?.focus();
   };
 
@@ -723,6 +787,9 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                 the reasoning, and the pixel budget behind it, are on the
                 component. */}
             {isWiki && <WikiDivisionSwitch current={wikiBase} className="hidden sm:flex" />}
+            {/* Articles / Learn — the same control and the same `sm` gate,
+                for the blog's two shelves. */}
+            {isBlog && <BlogShelfSwitch pathname={pathname} className="hidden sm:flex" />}
 
             {/* Center: Search Trigger or Expanded Live Search Form.
 
@@ -735,7 +802,6 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
             {/* 300px at rest, 520px while searching — the field growing is what
                 tells the reader the bar has changed mode, and the wordmark and
                 the console give up the width for it. */}
-            {!isBlog && (
             <div
               className={`${
                 isSearchOpen ? 'flex sm:max-w-[520px]' : 'hidden sm:flex sm:max-w-[300px]'
@@ -747,7 +813,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                   type="button"
                   onClick={() => setIsSearchOpen(true)}
                   aria-expanded="false"
-                  aria-label={t('label')}
+                  aria-label={isAll ? t('allLabel') : t('label')}
                   className="surface-sunken w-full min-h-[var(--layout-touch-target)] flex items-center justify-between gap-3 px-4 text-body text-ink-faint hover:text-ink-muted transition-colors cursor-pointer"
                 >
                   <span className="flex items-center gap-2 truncate">
@@ -773,12 +839,12 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                       {query ? (
                         <strong className="font-semibold text-ink">&quot;{query}&quot;</strong>
                       ) : (
-                        isWiki ? t('wikiPlaceholder') : t('placeholder')
+                        isAll ? t('allPlaceholder') : isWiki ? t('wikiPlaceholder') : t('placeholder')
                       )}
                     </span>
 
                     {/* Active Filter Badges in Compact Bar (ColorLab mode) */}
-                    {!isWiki && currentFormat && (
+                    {!isWiki && !isAll && currentFormat && (
                       <span className="chip shrink-0">
                         {currentFormat === 'pp'
                           ? 'PP'
@@ -787,7 +853,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                           : 'CL'}
                       </span>
                     )}
-                    {!isWiki && currentTag && (
+                    {!isWiki && !isAll && currentTag && (
                       <span className="chip shrink-0 truncate max-w-[6rem]">#{currentTag}</span>
                     )}
                   </span>
@@ -807,16 +873,18 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                    searching silently clears them. */
                 <form
                   role="search"
-                  action={
-                    isWiki
-                      ? (locale === routing.defaultLocale ? wikiBase : `/${locale}${wikiBase}`)
-                      : (locale === routing.defaultLocale ? '/' : `/${locale}`)
-                  }
+                  /* `/colorlab`, not `/` — the root is the launcher, which has no
+                     grid, so a no-JS ColorLab search used to land there. */
+                  action={(() => {
+                    const base = isAll ? '/search' : isWiki ? wikiBase : '/colorlab';
+                    return locale === routing.defaultLocale ? base : `/${locale}${base}`;
+                  })()}
                   method="get"
                   onSubmit={handleSubmit}
                   className="relative flex min-h-[var(--layout-touch-target)] items-center w-full animate-fade-in"
                 >
                   {!isWiki &&
+                    !isAll &&
                     Object.entries({
                       format: currentFormat,
                       look: currentFormat === 'cl' ? currentLook : '',
@@ -825,7 +893,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                       value ? <input key={key} type="hidden" name={key} value={value} /> : null,
                     )}
                   <label htmlFor="header-search-input" className="sr-only">
-                    {t('label')}
+                    {isAll ? t('allLabel') : t('label')}
                   </label>
 
                   <div className="relative flex h-full items-center w-full">
@@ -858,7 +926,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                       value={query}
                       onChange={(e) => queueSearch(e.target.value)}
                       onKeyDown={handleInputKeyDown}
-                      placeholder={isWiki ? t('wikiPlaceholder') : t('placeholder')}
+                      placeholder={isAll ? t('allPlaceholder') : isWiki ? t('wikiPlaceholder') : t('placeholder')}
                       autoComplete="off"
                       /* No `focus:outline-none` and no focus ring of its own:
                          the sunken field is already the affordance, and the one
@@ -901,13 +969,17 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                         <div className="surface-raised">
                         {isPredictiveLoading && predictiveResults.length === 0 ? (
                           <div className="p-4 text-body-sm text-ink-muted">
-                            <span>{locale === 'vi' ? 'Đang tìm gợi ý phù hợp…' : 'Finding instant matches…'}</span>
+                            <span>{t('finding')}</span>
                           </div>
                         ) : predictiveResults.length > 0 ? (
                           <div className="p-2 flex flex-col gap-1">
                             <div className="label flex items-center justify-between gap-2 px-3 py-1.5">
-                              <span>{isWiki ? (locale === 'vi' ? 'Sản Phẩm Khớp Nhanh' : 'Matching Products') : (locale === 'vi' ? 'Công Thức Khớp Nhanh' : 'Matching Recipes')}</span>
-                              <span className="text-accent-400 tabular-nums">{predictiveResults.length} {locale === 'vi' ? 'gợi ý' : 'matches'}</span>
+                              <span>
+                                {isAll ? t('matchingAll') : isWiki ? t('matchingProducts') : t('matchingRecipes')}
+                              </span>
+                              <span className="text-accent-400 tabular-nums">
+                                {t('matchCount', { count: predictiveResults.length })}
+                              </span>
                             </div>
 
                             {predictiveResults.map((item, idx) => (
@@ -985,16 +1057,38 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                               onClick={handleSubmit}
                               className="w-full text-center min-h-[var(--layout-touch-target)] px-3 rounded-sm text-body-sm font-semibold text-accent-400 cursor-pointer"
                             >
-                              {locale === 'vi'
-                                ? `Nhấn Enter để xem tất cả kết quả cho "${query}" →`
-                                : `Press Enter to view all results for "${query}" →`}
+                              {t('viewAll', { query: query.trim() })} →
                             </button>
+                            {/* ColorLab and the Wiki filter their own catalogue;
+                                this is the way out to everything else. */}
+                            {!isAll ? (
+                              <Link
+                                href={{ pathname: '/search', query: { q: query.trim() } }}
+                                onClick={() => {
+                                  setIsSearchOpen(false);
+                                  setIsPredictiveOpen(false);
+                                }}
+                                className="flex w-full items-center justify-center min-h-[var(--layout-touch-target)] px-3 rounded-sm text-body-sm font-semibold text-ink-muted hover:text-ink"
+                              >
+                                {t('searchEverything', { query: query.trim() })}
+                              </Link>
+                            ) : null}
                           </div>
                         ) : (
-                          <div className="p-4 text-center text-body-sm text-ink-muted">
-                            {locale === 'vi'
-                              ? `Không có gợi ý khớp ngay lập tức. Nhấn Enter để tìm kiếm sâu.`
-                              : `No instant matches. Press Enter for deep search.`}
+                          /* No keyboard hint here: the copy rules removed
+                             them site-wide. The way forward is a control. */
+                          <div className="p-2 flex flex-col gap-1">
+                            <p className="px-3 py-2 text-center text-body-sm text-ink-muted">{t('noInstant')}</p>
+                            <Link
+                              href={{ pathname: '/search', query: { q: query.trim() } }}
+                              onClick={() => {
+                                setIsSearchOpen(false);
+                                setIsPredictiveOpen(false);
+                              }}
+                              className="flex w-full items-center justify-center min-h-[var(--layout-touch-target)] px-3 rounded-sm text-body-sm font-semibold text-accent-400"
+                            >
+                              {isAll ? t('viewAll', { query: query.trim() }) : t('searchEverything', { query: query.trim() })} →
+                            </Link>
                           </div>
                         )}
                         </div>
@@ -1004,15 +1098,13 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                 </form>
               )}
             </div>
-            )}
 
             {/* Right Side Controls */}
             <div className="flex flex-nowrap items-center gap-1.5 sm:gap-2.5 shrink-0">
-              {!isBlog && (
               <button
                 type="button"
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
-                aria-label={isSearchOpen ? t('close') : t('label')}
+                aria-label={isSearchOpen ? t('close') : isAll ? t('allLabel') : t('label')}
                 className={`sm:hidden ${ICON_BUTTON} ${ICON_BUTTON_IDLE}`}
               >
                 <svg
@@ -1030,7 +1122,6 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                   />
                 </svg>
               </button>
-              )}
 
               {/* Google Auth / Profile Button */}
               {user ? (
@@ -1164,12 +1255,12 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
 
           {/* Expanded Glass Console for Filters & Controls.
 
-              Not rendered on the blog: every control in it filters recipes or
-              catalogue products, so there it would be an empty drawer that ⌘K
-              opens over the article. Gating the render rather than hiding it
+              Not rendered in the "all" mode (blog, /learn, /search): every
+              control in it filters recipes or catalogue products, so there it
+              would be an empty drawer under the box. Gating the render rather than hiding it
               also keeps those controls out of the blog's tab order — collapsed,
               they are zero-height but still focusable. */}
-          {!isBlog && (
+          {!isAll && (
             <div
             className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${
               isSearchOpen

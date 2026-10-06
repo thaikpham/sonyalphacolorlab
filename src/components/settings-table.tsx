@@ -2,6 +2,8 @@ import {
   CL_PARAM_LABELS,
   CL_PARAM_ORDER,
   PP_COLOR_DEPTH_CHANNELS,
+  PP_DETAIL_LABELS,
+  PP_PARAM_LABELS,
 } from '@/lib/camera/constants';
 import {
   CL_EXPLANATIONS,
@@ -169,22 +171,22 @@ export function PpTable({ s, locale = 'en' }: { s: PpSettings; locale?: Locale }
   return (
     <div className="flex flex-col gap-4">
       <ParamBlock title="Picture Profile">
-        <ParamRow locale={locale} label="Black Level" value={signed(s.blackLevel)} effect={fx.blackLevel} explanation={e('blackLevel')} />
-        <ParamRow locale={locale} label="Gamma" value={s.gamma} effect={fx.gamma} explanation={e('gamma')} />
+        <ParamRow locale={locale} label={PP_PARAM_LABELS.blackLevel} value={signed(s.blackLevel)} effect={fx.blackLevel} explanation={e('blackLevel')} />
+        <ParamRow locale={locale} label={PP_PARAM_LABELS.gamma} value={s.gamma} effect={fx.gamma} explanation={e('gamma')} />
         <ParamRow
           locale={locale}
-          label="Black Gamma"
+          label={PP_PARAM_LABELS.blackGamma}
           value={`${s.blackGamma.range} ${signed(s.blackGamma.level)}`}
           effect={fx.blackGamma}
           explanation={e('blackGamma')}
         />
-        <ParamRow locale={locale} label="Knee" value={knee} effect={fx.knee} explanation={e('knee')} />
-        <ParamRow locale={locale} label="Color Mode" value={s.colorMode} effect={fx.colorMode} explanation={e('colorMode')} />
-        <ParamRow locale={locale} label="Saturation" value={signed(s.saturation)} effect={fx.saturation} explanation={e('saturation')} />
-        <ParamRow locale={locale} label="Color Phase" value={signed(s.colorPhase)} effect={fx.colorPhase} explanation={e('colorPhase')} />
+        <ParamRow locale={locale} label={PP_PARAM_LABELS.knee} value={knee} effect={fx.knee} explanation={e('knee')} />
+        <ParamRow locale={locale} label={PP_PARAM_LABELS.colorMode} value={s.colorMode} effect={fx.colorMode} explanation={e('colorMode')} />
+        <ParamRow locale={locale} label={PP_PARAM_LABELS.saturation} value={signed(s.saturation)} effect={fx.saturation} explanation={e('saturation')} />
+        <ParamRow locale={locale} label={PP_PARAM_LABELS.colorPhase} value={signed(s.colorPhase)} effect={fx.colorPhase} explanation={e('colorPhase')} />
       </ParamBlock>
 
-      <ParamBlock title="Color Depth">
+      <ParamBlock title={PP_PARAM_LABELS.colorDepth}>
         {PP_COLOR_DEPTH_CHANNELS.map((c) => {
           const hex = getColorDepthChannelHexColor(c);
           return (
@@ -202,15 +204,15 @@ export function PpTable({ s, locale = 'en' }: { s: PpSettings; locale?: Locale }
         })}
       </ParamBlock>
 
-      <ParamBlock title="Detail">
-        <ParamRow locale={locale} label="Level" value={signed(s.detail.level)} effect={fx.detailLevel} explanation={PP_DETAIL_EXPLANATIONS.level[locale]} />
-        <ParamRow locale={locale} label="Adjust" value={s.detail.mode} effect={fx.detailMode} explanation={PP_DETAIL_EXPLANATIONS.mode[locale]} />
-        <ParamRow locale={locale} label="V/H Balance" value={signed(s.detail.vhBalance)} effect={fx.vhBalance} explanation={PP_DETAIL_EXPLANATIONS.vhBalance[locale]} />
-        <ParamRow locale={locale} label="B/W Balance" value={s.detail.bwBalance} effect={fx.bwBalance} explanation={PP_DETAIL_EXPLANATIONS.bwBalance[locale]} />
+      <ParamBlock title={PP_PARAM_LABELS.detail}>
+        <ParamRow locale={locale} label={PP_DETAIL_LABELS.level} value={signed(s.detail.level)} effect={fx.detailLevel} explanation={PP_DETAIL_EXPLANATIONS.level[locale]} />
+        <ParamRow locale={locale} label={PP_DETAIL_LABELS.mode} value={s.detail.mode} effect={fx.detailMode} explanation={PP_DETAIL_EXPLANATIONS.mode[locale]} />
+        <ParamRow locale={locale} label={PP_DETAIL_LABELS.vhBalance} value={signed(s.detail.vhBalance)} effect={fx.vhBalance} explanation={PP_DETAIL_EXPLANATIONS.vhBalance[locale]} />
+        <ParamRow locale={locale} label={PP_DETAIL_LABELS.bwBalance} value={s.detail.bwBalance} effect={fx.bwBalance} explanation={PP_DETAIL_EXPLANATIONS.bwBalance[locale]} />
         {/* Limit and Crispening are unsigned 0–7; no sign, by design. */}
-        <ParamRow locale={locale} label="Limit" value={String(s.detail.limit)} effect={fx.detailLimit} explanation={PP_DETAIL_EXPLANATIONS.limit[locale]} />
-        <ParamRow locale={locale} label="Crispening" value={String(s.detail.crispening)} effect={fx.crispening} explanation={PP_DETAIL_EXPLANATIONS.crispening[locale]} />
-        <ParamRow locale={locale} label="Hi-Light Detail" value={String(s.detail.hiLightDetail)} effect={fx.hiLightDetail} explanation={PP_DETAIL_EXPLANATIONS.hiLightDetail[locale]} />
+        <ParamRow locale={locale} label={PP_DETAIL_LABELS.limit} value={String(s.detail.limit)} effect={fx.detailLimit} explanation={PP_DETAIL_EXPLANATIONS.limit[locale]} />
+        <ParamRow locale={locale} label={PP_DETAIL_LABELS.crispening} value={String(s.detail.crispening)} effect={fx.crispening} explanation={PP_DETAIL_EXPLANATIONS.crispening[locale]} />
+        <ParamRow locale={locale} label={PP_DETAIL_LABELS.hiLightDetail} value={String(s.detail.hiLightDetail)} effect={fx.hiLightDetail} explanation={PP_DETAIL_EXPLANATIONS.hiLightDetail[locale]} />
       </ParamBlock>
     </div>
   );

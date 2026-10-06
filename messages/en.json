@@ -15,7 +15,9 @@
   },
   "nav": {
     "ecosystem": "Sony Alpha ecosystem",
-    "cameras": "Sony Wiki"
+    "cameras": "Sony Wiki",
+    "articles": "Articles",
+    "learn": "Learn"
   },
   "auth": {
     "signIn": "Sign in",
@@ -165,7 +167,24 @@
     "submit": "Search",
     "clear": "Clear search",
     "clearAll": "Clear all filters",
-    "close": "Close search bar"
+    "close": "Close search bar",
+    "allLabel": "Search everything",
+    "allPlaceholder": "Search recipes, products, articles…",
+    "matchingRecipes": "Matching recipes",
+    "matchingProducts": "Matching products",
+    "matchingAll": "Matches",
+    "matchCount": "{count, plural, one {# match} other {# matches}}",
+    "finding": "Finding matches…",
+    "noInstant": "No instant matches.",
+    "viewAll": "All results for “{query}”",
+    "searchEverything": "Search everything for “{query}”",
+    "kinds": {
+      "recipe": "Recipe",
+      "product": "Product",
+      "article": "Article",
+      "knowledge": "Reference"
+    },
+    "partial": "Some sources could not be searched right now."
   },
   "cameras": {
     "actionLabel": "Details & compare",
@@ -778,7 +797,8 @@
     "clearFilter": "Clear filter",
     "stageEmptyTitle": "This stage is being written",
     "stageEmptyBody": "Its skills are already mapped in the path; articles will follow. Meanwhile, browse the other stages.",
-    "stageLabel": "Stage {n}"
+    "stageLabel": "Stage {n}",
+    "learnLink": "Learn"
   },
   "labAdmin": {
     "newArticle": "New article",
@@ -926,10 +946,160 @@
       "articleNotFound": "That article no longer exists, so the image could not be attached.",
       "saveBeforeUpload": "Save the article first — an image has to belong to it.",
       "contentAdminFrozen": "Saving is paused while the content database is being moved. Nothing was changed — try again shortly.",
-      "mfaRequired": "Your session needs the authenticator code again. Sign in once more; nothing was changed."
+      "mfaRequired": "Your session needs the authenticator code again. Sign in once more; nothing was changed.",
+      "knowledgeNeedsSection": "A reference page needs a section.",
+      "knowledgeTooShort": "A reference page needs at least three blocks.",
+      "knowledgeTooLong": "Over thirty-two blocks — this is two pages.",
+      "knowledgeNeedsHeading": "A reference page needs at least one heading.",
+      "knowledgeNeedsSource": "A reference page needs at least one source.",
+      "sourceNeedsDate": "Every source needs the date it was checked.",
+      "relatedUnknown": "A link points at an ID that does not exist.",
+      "kindLocked": "A published page cannot change type. Unpublish it first.",
+      "referenceCheckFailed": "The links could not be checked, so nothing was published. Nothing was changed — try again.",
+      "placeholder": "The page still has [CẦN BỔ SUNG] markers. Replace them with real content before publishing."
     },
     "imageNone": "No image yet. Upload one — JPEG, PNG or WebP, up to 8 MB.",
     "imagePreviewExpired": "Preview link expired. Reopen the article to see it again.",
-    "saveBeforeUpload": "Save the article first — an image has to belong to it."
+    "saveBeforeUpload": "Save the article first — an image has to belong to it.",
+    "kind": "Page type",
+    "kinds": {
+      "article": "Blog article",
+      "knowledge": "Reference page"
+    },
+    "kindLockedHint": "Unpublish before changing the page type — the URL changes with it.",
+    "section": "Reference section",
+    "sectionNone": "Not set",
+    "sections": {
+      "fundamentals": "Fundamentals",
+      "sony-color": "Sony colour",
+      "workflows": "Workflows"
+    },
+    "order": "Order in section",
+    "metaHeading": "Links and sources",
+    "authorName": "Public author name",
+    "authorNameHint": "A public name, never an email address.",
+    "reviewedAt": "Reviewed on",
+    "related": "Related",
+    "relatedKinds": {
+      "recipe": "Recipe",
+      "product": "Product",
+      "article": "Blog article",
+      "knowledge": "Reference page"
+    },
+    "relatedId": "ID",
+    "addRelated": "Add link",
+    "removeRelated": "Remove link",
+    "prerequisites": "Read first",
+    "addPrerequisite": "Add page",
+    "removePrerequisite": "Remove page",
+    "concepts": "Explains",
+    "sources": "Sources",
+    "sourceUrl": "URL",
+    "sourceTitle": "Page title",
+    "sourcePublisher": "Publisher",
+    "sourceSection": "Section",
+    "sourceCheckedAt": "Checked on",
+    "sourceScope": "Scope (body, firmware)",
+    "addSource": "Add source",
+    "removeSource": "Remove source",
+    "savedWithDroppedMeta": "Saved. {n, plural, one {# link or source was} other {# links or sources were}} invalid and not stored.",
+    "unknownRefs": "Not found:",
+    "refsUnavailable": "Could not load the ID suggestions."
+  },
+  "learn": {
+    "title": "Learn",
+    "description": "Reference pages on Sony Alpha colour: Picture Profile, Creative Look, White Balance Shift and the other settings, with their sources.",
+    "glossaryTitle": "Parameter glossary",
+    "glossaryDescription": "What each colour setting in a Sony Alpha recipe does: White Balance, Picture Profile and Creative Look.",
+    "sections": {
+      "fundamentals": "Fundamentals",
+      "sony-color": "Sony colour",
+      "workflows": "Workflows",
+      "glossary": "Glossary"
+    },
+    "pageCount": "{count, plural, one {# page} other {# pages}}",
+    "entryCount": "{count, plural, one {# term} other {# terms}}",
+    "breadcrumb": "Breadcrumb",
+    "inThisPage": "On this page",
+    "readFirst": "Read first",
+    "sources": "Sources",
+    "checkedOn": "checked {date}",
+    "reviewedOn": "Reviewed {date}",
+    "byAuthor": "By {name}",
+    "looks": "Looks",
+    "related": "Related",
+    "relatedKinds": {
+      "recipe": "Recipes",
+      "product": "Products",
+      "article": "Articles",
+      "knowledge": "Reference"
+    },
+    "relatedUnavailable": "Some related links could not be loaded.",
+    "learnMore": "Learn more",
+    "forThisProduct": "Articles and reference"
+  },
+  "searchPage": {
+    "title": "Search",
+    "description": "Search Sony Alpha colour recipes, cameras, lenses, audio, articles and reference pages from one box.",
+    "label": "Search",
+    "placeholder": "Search recipes, products, articles, settings…",
+    "submit": "Search",
+    "scopeLabel": "Scope",
+    "scopes": {
+      "all": "All",
+      "recipes": "Recipes",
+      "products": "Products",
+      "articles": "Articles",
+      "knowledge": "Reference"
+    },
+    "groups": {
+      "recipe": "Recipes",
+      "product": "Wiki & products",
+      "article": "Articles",
+      "knowledge": "Reference"
+    },
+    "resultCount": "{count, plural, one {# result} other {# results}}",
+    "noResults": "No results for “{query}”.",
+    "unavailable": "{kinds} could not be searched right now, so the results below leave them out.",
+    "moreInGroup": "All {count} in {group}",
+    "next": "More results"
+  },
+  "compat": {
+    "title": "Camera compatibility",
+    "photo": "Photo",
+    "video": "Video",
+    "body": "Body",
+    "verdict": {
+      "verified": "Verified",
+      "partial": "With changes",
+      "incompatible": "Not compatible",
+      "unknown": "Not verified"
+    },
+    "line": {
+      "missing": "{modes} · can't be set: {settings}",
+      "range": "{modes} · value outside the body's range: {settings}",
+      "firmware": "{modes} · needs body software {version} or later: {settings}",
+      "substitute": "{modes} · use {alternative} for {setting}",
+      "unverified": "{modes} · not verified: {settings}"
+    },
+    "disclaimer": "Verified means Sony's Help Guide lists every setting this recipe uses on that body. It does not mean another sensor renders the colours the same.",
+    "notChecked": "Other bodies: not checked yet.",
+    "featuresTitle": "Colour settings",
+    "rows": {
+      "items": "Items",
+      "gamma": "Gamma",
+      "colorMode": "Color Mode",
+      "look": "Look",
+      "adjustments": "Adjustments",
+      "auto": "Auto",
+      "presets": "Presets",
+      "temperature": "Colour temperature",
+      "stillsOnly": "Stills only",
+      "notOnBody": "Not on this body"
+    },
+    "noWbNumbers": "Sony's Help Guide for this body prints no Kelvin range and no White Balance shift limits, so recipes that set either stay not verified.",
+    "verifiedRecipes": "Recipes verified for stills",
+    "verifiedCount": "{photo, plural, =0 {None verified for stills} one {# verified for stills} other {# verified for stills}} · {video, plural, =0 {none for video} one {# for video} other {# for video}}",
+    "recipesUnavailable": "Recipes are unavailable right now."
   }
 }

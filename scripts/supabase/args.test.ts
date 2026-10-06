@@ -26,7 +26,7 @@ describe('parseArgs', () => {
     expect(args).toMatchObject({ source: 'control', destination: 'content' });
   });
 
-  it.each(['--expect-empty', '--expect-baseline', '--dry-run', '--apply', '--rollback', '--overwrite'])(
+  it.each(['--expect-empty', '--expect-baseline', '--dry-run', '--apply', '--rollback', '--overwrite', '--with-pilot-drafts'])(
     'reads %s',
     (flag) => {
       expect(Object.values(parseArgs([flag])).some((v) => v === true)).toBe(true);
@@ -52,6 +52,8 @@ describe('parseArgs', () => {
       /* `push:supabase` inserts missing rows only unless told to replace:
          the database holds the admin's edits and the seed does not. */
       overwrite: false,
+      /* `push:lab` adds the pilot pages — as drafts — only when asked. */
+      withPilotDrafts: false,
     });
   });
 

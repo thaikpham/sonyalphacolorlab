@@ -5,8 +5,24 @@ import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { useAdminSession } from '@/components/admin-ui/session'
 import { LEVELS, TOPICS } from '@/lib/lab/articles'
-import type { Archetype, Article, ArticleRecord, ArticleStatus, Block } from '@/lib/lab/types'
+import type {
+  Archetype,
+  Article,
+  ArticleKind,
+  ArticleRecord,
+  ArticleStatus,
+  Block,
+  ContentRef,
+} from '@/lib/lab/types'
 import { BLOCK_TYPES, BlockFields, emptyBlock, type UploadFn } from './block-editor'
+import {
+  MetaEditor,
+  emptyMetaDraft,
+  toMetaDraft,
+  toMetaPayload,
+  type MetaDraft,
+  type RefOptions,
+} from './meta-editor'
 import { AREA, FIELD, SELECT } from '@/components/admin-ui/controls'
 
 /**
@@ -40,9 +56,16 @@ const ARCHETYPES: readonly Archetype[] = [
   'recipe',
 ]
 
+const KINDS: readonly ArticleKind[] = ['article', 'knowledge']
+
+/** Where a saved page lives. One definition for the path hint and the link. */
+const pathFor = (kind: ArticleKind, id: string) =>
+  kind === 'knowledge' ? `/learn/${id}` : `/blog/${id}`
+
 type Draft = {
   id: string | null
   status: ArticleStatus
+  kind: ArticleKind
   topic: Article['topic']
   level: Article['level']
   archetype: Archetype
@@ -50,11 +73,13 @@ type Draft = {
   title: string
   dek: string
   blocks: Block[]
+  meta: MetaDraft
 }
 
 const asDraft = (a: ArticleRecord): Draft => ({
   id: a.id,
   status: a.status,
+  kind: a.kind,
   topic: a.topic,
   level: a.level,
   archetype: a.archetype,
@@ -62,11 +87,13 @@ const asDraft = (a: ArticleRecord): Draft => ({
   title: a.title,
   dek: a.dek,
   blocks: [...a.blocks],
+  meta: toMetaDraft(a.meta),
 })
 
 const blankDraft = (): Draft => ({
   id: null,
   status: 'draft',
+  kind: 'article',
   topic: 'setup',
   level: 'newbie',
   archetype: 'explainer',
@@ -74,6 +101,7 @@ const blankDraft = (): Draft => ({
   title: '',
   dek: '',
   blocks: [],
+  meta: emptyMetaDraft(),
 })
 
 export function ArticleAdmin() {
@@ -97,6 +125,13 @@ export function ArticleAdmin() {
      that no longer describes where the picture lives. */
   const [previews, setPreviews] = useState<Readonly<Record<string, string>>>({})
   const [query, setQuery] = useState('')
+  /* Ids the link picker may suggest, loaded once. A failure leaves the picker
+     working as plain text fields — the server still checks every id on save. */
+  const [refs, setRefs] = useState<RefOptions | null>(null)
+  const [refsFailed, setRefsFailed] = useState(false)
+  /* The references the server could not find, from the last read or save.
+     Highlighted in the picker and listed under the spec checklist. */
+  const [unknownRefs, setUnknownRefs] = useState<readonly ContentRef[]>([])
 
   /* An error code, never a sentence from the server. The routes answer with
      codes for the same reason the community ones do: a literal renders
@@ -143,6 +178,24 @@ export function ArticleAdmin() {
       live = false
     }
   }, [fetchList])
+
+  useEffect(() => {
+    let live = true
+    ;(async () => {
+      try {
+        const res = await fetch('/api/admin/content-refs', { headers: authed() })
+        const data = (await res.json()) as RefOptions & { error?: string }
+        if (!live) return
+        if (res.ok && Array.isArray(data.recipes)) setRefs(data)
+        else setRefsFailed(true)
+      } catch {
+        if (live) setRefsFailed(true)
+      }
+    })()
+    return () => {
+      live = false
+    }
+  }, [authed])
 
   /* The one guard against losing a draft. Nothing autosaves, so the browser's
      own prompt is what stands between an unsaved rewrite and a closed tab. */
@@ -228,6 +281,7 @@ export function ArticleAdmin() {
       const data = (await res.json()) as {
         article?: ArticleRecord
         problems?: string[]
+        unknownRefs?: ContentRef[]
         previews?: Record<string, string>
         error?: string
       }
@@ -237,6 +291,7 @@ export function ArticleAdmin() {
       }
       setDraft(asDraft(data.article))
       setProblems(data.problems ?? [])
+      setUnknownRefs(data.unknownRefs ?? [])
       setPreviews(data.previews ?? {})
       setDirty(false)
     } finally {
@@ -249,6 +304,7 @@ export function ArticleAdmin() {
     setDraft(blankDraft())
     setPreviews({})
     setProblems([])
+    setUnknownRefs([])
     setStatus(null)
     setDirty(false)
   }
@@ -267,6 +323,7 @@ export function ArticleAdmin() {
     setStatus(null)
 
     const body = JSON.stringify({
+      kind: draft.kind,
       topic: draft.topic,
       level: draft.level,
       archetype: draft.archetype,
@@ -274,6 +331,7 @@ export function ArticleAdmin() {
       title: draft.title,
       dek: draft.dek,
       blocks: draft.blocks,
+      meta: toMetaPayload(draft.meta, draft.kind),
       status: nextStatus,
     })
 
@@ -287,11 +345,14 @@ export function ArticleAdmin() {
         ok?: boolean
         id?: string
         problems?: string[]
+        unknownRefs?: ContentRef[]
         dropped?: number
+        droppedMeta?: number
         error?: string
       }
 
       if (data.problems) setProblems(data.problems)
+      if (data.unknownRefs) setUnknownRefs(data.unknownRefs)
 
       if (!res.ok) {
         setStatus({ kind: 'err', msg: codeMessage(data.error ?? 'saveFailed') })
@@ -304,7 +365,7 @@ export function ArticleAdmin() {
       await loadList()
 
       if (savedId) {
-        if (data.dropped) {
+        if (data.dropped || data.droppedMeta) {
           /* The parser refused a block, so the row no longer matches what is on
              screen — and `dirty` is false, so nothing would prompt the editor
              to reconcile them. Left alone they would keep editing blocks that
@@ -326,7 +387,9 @@ export function ArticleAdmin() {
            who is not told will find out by scrolling past a gap next week. */
         msg: data.dropped
           ? t('savedWithDropped', { n: data.dropped })
-          : creating
+          : data.droppedMeta
+            ? t('savedWithDroppedMeta', { n: data.droppedMeta })
+            : creating
             ? t('created')
             : nextStatus === 'published'
               ? t('published')
@@ -436,12 +499,10 @@ export function ArticleAdmin() {
                     </span>
                     <span className="meta">{t('blockCount', { n: a.blocks.length })}</span>
                   </span>
-                  <span
-                    className={
-                      'text-body-sm font-semibold leading-[1.35] ' +
-                      (on ? 'text-white' : 'text-ink')
-                    }
-                  >
+                  {/* `text-ink` on the selected row too: the admin is the paper
+                      room, where `.surface-selected` is a pale tint and white
+                      text on it disappeared (CLAUDE.md rule 3). */}
+                  <span className="text-body-sm font-semibold leading-[1.35] text-ink">
                     {a.title}
                   </span>
                 </button>
@@ -490,7 +551,7 @@ export function ArticleAdmin() {
               ) : null}
 
               {draft.id && draft.status === 'published' ? (
-                <Link href={`/blog/${draft.id}`} className="chip chip-action">
+                <Link href={pathFor(draft.kind, draft.id)} className="chip chip-action">
                   {t('viewLive')}
                 </Link>
               ) : null}
@@ -533,7 +594,18 @@ export function ArticleAdmin() {
                       <span aria-hidden className="text-ink-faint">
                         —
                       </span>
-                      <span className="text-body-sm text-ink-muted">{codeMessage(code)}</span>
+                      <span className="text-body-sm text-ink-muted">
+                        {codeMessage(code)}
+                        {code === 'relatedUnknown' && unknownRefs.length > 0 ? (
+                          <>
+                            {' '}
+                            {t('unknownRefs')}{' '}
+                            <span className="font-semibold text-ink">
+                              {unknownRefs.map((r) => r.id).join(', ')}
+                            </span>
+                          </>
+                        ) : null}
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -553,7 +625,7 @@ export function ArticleAdmin() {
                   onChange={(e) => edit({ title: e.target.value })}
                   className={FIELD}
                 />
-                {draft.id ? <p className="meta">/blog/{draft.id}</p> : <p className="meta">{t('slugOnCreate')}</p>}
+                {draft.id ? <p className="meta">{pathFor(draft.kind, draft.id)}</p> : <p className="meta">{t('slugOnCreate')}</p>}
               </div>
 
               <div className="flex flex-col gap-1.5">
@@ -574,7 +646,29 @@ export function ArticleAdmin() {
                 />
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="art-kind" className="label">
+                    {t('kind')}
+                  </label>
+                  {/* Locked while published: the kind is the URL prefix, and
+                      the route refuses the change anyway (409). */}
+                  <select
+                    id="art-kind"
+                    value={draft.kind}
+                    onChange={(e) => edit({ kind: e.target.value as ArticleKind })}
+                    disabled={draft.status === 'published'}
+                    title={draft.status === 'published' ? t('kindLockedHint') : undefined}
+                    className={`${SELECT} disabled:opacity-60`}
+                  >
+                    {KINDS.map((k) => (
+                      <option key={k} value={k}>
+                        {t(`kinds.${k}` as never)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor="art-topic" className="label">
                     {t('topic')}
@@ -644,6 +738,15 @@ export function ArticleAdmin() {
                 </div>
               </div>
             </div>
+
+            <MetaEditor
+              kind={draft.kind}
+              meta={draft.meta}
+              onChange={(meta) => edit({ meta })}
+              refs={refs}
+              refsFailed={refsFailed}
+              unknownRefs={unknownRefs}
+            />
 
             {/* --- blocks --- */}
             {draft.blocks.map((block, i) => (

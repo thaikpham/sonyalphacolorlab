@@ -57,6 +57,17 @@ i=o.find('Go to Page Top'); print(o[:i] if i>0 else o)"
    monochrome (`CL_MONOCHROME_LOOKS` gates the Saturation rule).
 5. `npm test` — the count assertions and negative cases will catch a typo'd enum.
 
+## Bodies differ — per-body evidence lives elsewhere
+
+What one body has or lacks is not `constants.ts`'s job: it is
+`src/lib/cameras/capabilities/evidence.ts`, confirmed by
+`npm run capabilities:check` (ADR 0005). Adding a body there is: read its
+Creative Look, White Balance and Picture Profile topics with the extraction
+below, add a source per topic, run the check, read the diff. Add a value to
+`constants.ts` only when a body offers something the global enum lacks — as
+ILCE-7M5's `FL2` / `FL3` do (that also needs a `creative_look` enum value in
+both migration roots, each in its own file).
+
 ## Bodies differ
 
 Ranges are not universal: `Sharpness Range` exists on the a7 IV but not every

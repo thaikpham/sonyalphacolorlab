@@ -15,7 +15,9 @@
   },
   "nav": {
     "ecosystem": "Hệ sinh thái Sony Alpha",
-    "cameras": "Tra cứu máy ảnh"
+    "cameras": "Tra cứu máy ảnh",
+    "articles": "Bài viết",
+    "learn": "Kiến thức"
   },
   "auth": {
     "signIn": "Đăng nhập",
@@ -165,7 +167,24 @@
     "submit": "Tìm",
     "clear": "Xoá tìm kiếm",
     "clearAll": "Xoá tất cả bộ lọc",
-    "close": "Đóng thanh tìm kiếm"
+    "close": "Đóng thanh tìm kiếm",
+    "allLabel": "Tìm trên toàn trang",
+    "allPlaceholder": "Tìm công thức, sản phẩm, bài viết…",
+    "matchingRecipes": "Công thức khớp",
+    "matchingProducts": "Sản phẩm khớp",
+    "matchingAll": "Kết quả khớp",
+    "matchCount": "{count, plural, other {# gợi ý}}",
+    "finding": "Đang tìm…",
+    "noInstant": "Không có gợi ý khớp.",
+    "viewAll": "Mọi kết quả cho “{query}”",
+    "searchEverything": "Tìm “{query}” trên toàn trang",
+    "kinds": {
+      "recipe": "Công thức",
+      "product": "Sản phẩm",
+      "article": "Bài viết",
+      "knowledge": "Kiến thức"
+    },
+    "partial": "Một số nguồn chưa tìm được lúc này."
   },
   "cameras": {
     "actionLabel": "Chi tiết & so sánh",
@@ -778,7 +797,8 @@
     "clearFilter": "Xoá lọc",
     "stageEmptyTitle": "Chặng này đang được biên soạn",
     "stageEmptyBody": "Các kỹ năng của chặng đã có trong lộ trình; bài viết sẽ được bổ sung dần. Trong lúc chờ, hãy xem các chặng khác.",
-    "stageLabel": "Chặng {n}"
+    "stageLabel": "Chặng {n}",
+    "learnLink": "Kiến thức"
   },
   "labAdmin": {
     "newArticle": "Bài mới",
@@ -926,10 +946,160 @@
       "articleNotFound": "Bài viết này không còn tồn tại nên không gắn được ảnh vào.",
       "saveBeforeUpload": "Hãy lưu bài viết trước — ảnh cần được gắn với một bài.",
       "contentAdminFrozen": "Việc lưu đang tạm dừng trong lúc chuyển cơ sở dữ liệu nội dung. Chưa có gì thay đổi — hãy thử lại sau ít phút.",
-      "mfaRequired": "Phiên đăng nhập cần nhập lại mã authenticator. Hãy đăng nhập lại; chưa có gì thay đổi."
+      "mfaRequired": "Phiên đăng nhập cần nhập lại mã authenticator. Hãy đăng nhập lại; chưa có gì thay đổi.",
+      "knowledgeNeedsSection": "Trang kiến thức cần chọn nhóm.",
+      "knowledgeTooShort": "Trang kiến thức cần ít nhất ba khối.",
+      "knowledgeTooLong": "Hơn ba mươi hai khối — nên tách thành hai trang.",
+      "knowledgeNeedsHeading": "Trang kiến thức cần ít nhất một tiêu đề mục.",
+      "knowledgeNeedsSource": "Trang kiến thức cần ít nhất một nguồn.",
+      "sourceNeedsDate": "Mỗi nguồn cần ngày kiểm tra.",
+      "relatedUnknown": "Có liên kết trỏ tới mã không tồn tại.",
+      "kindLocked": "Bài đang đăng không đổi được loại trang. Hãy gỡ đăng trước.",
+      "referenceCheckFailed": "Không kiểm tra được các liên kết nên chưa đăng. Chưa có gì thay đổi — hãy thử lại.",
+      "placeholder": "Bài còn chỗ đánh dấu [CẦN BỔ SUNG]. Thay bằng nội dung thật trước khi đăng."
     },
     "imageNone": "Chưa có ảnh. Hãy tải một ảnh lên — JPEG, PNG hoặc WebP, tối đa 8 MB.",
     "imagePreviewExpired": "Liên kết xem trước đã hết hạn. Hãy mở lại bài viết để xem lại ảnh.",
-    "saveBeforeUpload": "Hãy lưu bài viết trước — ảnh cần được gắn với một bài."
+    "saveBeforeUpload": "Hãy lưu bài viết trước — ảnh cần được gắn với một bài.",
+    "kind": "Loại trang",
+    "kinds": {
+      "article": "Bài blog",
+      "knowledge": "Trang kiến thức"
+    },
+    "kindLockedHint": "Gỡ đăng trước khi đổi loại trang — URL sẽ đổi theo.",
+    "section": "Nhóm kiến thức",
+    "sectionNone": "Chưa chọn",
+    "sections": {
+      "fundamentals": "Nền tảng",
+      "sony-color": "Màu Sony",
+      "workflows": "Quy trình"
+    },
+    "order": "Thứ tự trong nhóm",
+    "metaHeading": "Liên kết và nguồn",
+    "authorName": "Tên tác giả hiển thị",
+    "authorNameHint": "Tên công khai, không nhập email.",
+    "reviewedAt": "Ngày rà soát",
+    "related": "Liên kết liên quan",
+    "relatedKinds": {
+      "recipe": "Công thức",
+      "product": "Sản phẩm",
+      "article": "Bài blog",
+      "knowledge": "Trang kiến thức"
+    },
+    "relatedId": "Mã",
+    "addRelated": "Thêm liên kết",
+    "removeRelated": "Bỏ liên kết",
+    "prerequisites": "Nên đọc trước",
+    "addPrerequisite": "Thêm bài",
+    "removePrerequisite": "Bỏ bài",
+    "concepts": "Giải thích khái niệm",
+    "sources": "Nguồn",
+    "sourceUrl": "URL",
+    "sourceTitle": "Tiêu đề trang",
+    "sourcePublisher": "Nhà phát hành",
+    "sourceSection": "Mục",
+    "sourceCheckedAt": "Ngày kiểm tra",
+    "sourceScope": "Phạm vi (máy, firmware)",
+    "addSource": "Thêm nguồn",
+    "removeSource": "Bỏ nguồn",
+    "savedWithDroppedMeta": "Đã lưu. {n, plural, other {# liên kết hoặc nguồn}} không hợp lệ nên không được lưu.",
+    "unknownRefs": "Không tìm thấy mã:",
+    "refsUnavailable": "Không tải được danh sách mã để gợi ý."
+  },
+  "learn": {
+    "title": "Kiến thức",
+    "description": "Kiến thức tham khảo về màu máy ảnh Sony Alpha: Picture Profile, Creative Look, White Balance Shift và các thông số khác, có nguồn đối chiếu.",
+    "glossaryTitle": "Thuật ngữ thông số",
+    "glossaryDescription": "Giải thích từng thông số màu trong công thức Sony Alpha: White Balance, Picture Profile và Creative Look.",
+    "sections": {
+      "fundamentals": "Nền tảng",
+      "sony-color": "Màu Sony",
+      "workflows": "Quy trình",
+      "glossary": "Thuật ngữ"
+    },
+    "pageCount": "{count, plural, other {# trang}}",
+    "entryCount": "{count, plural, other {# thuật ngữ}}",
+    "breadcrumb": "Vị trí trang",
+    "inThisPage": "Trong trang này",
+    "readFirst": "Nên đọc trước",
+    "sources": "Nguồn",
+    "checkedOn": "kiểm tra {date}",
+    "reviewedOn": "Rà soát {date}",
+    "byAuthor": "Viết bởi {name}",
+    "looks": "Các Look",
+    "related": "Liên quan",
+    "relatedKinds": {
+      "recipe": "Công thức",
+      "product": "Sản phẩm",
+      "article": "Bài viết",
+      "knowledge": "Kiến thức"
+    },
+    "relatedUnavailable": "Không tải được một phần liên kết liên quan.",
+    "learnMore": "Tìm hiểu thêm",
+    "forThisProduct": "Bài viết và kiến thức"
+  },
+  "searchPage": {
+    "title": "Tìm kiếm",
+    "description": "Tìm công thức màu, máy ảnh, ống kính, âm thanh, bài viết và kiến thức tham khảo của Sony Alpha trong một ô tìm kiếm.",
+    "label": "Tìm kiếm",
+    "placeholder": "Tìm công thức, sản phẩm, bài viết, thông số…",
+    "submit": "Tìm",
+    "scopeLabel": "Phạm vi",
+    "scopes": {
+      "all": "Tất cả",
+      "recipes": "Công thức",
+      "products": "Sản phẩm",
+      "articles": "Bài viết",
+      "knowledge": "Kiến thức"
+    },
+    "groups": {
+      "recipe": "Công thức",
+      "product": "Wiki và sản phẩm",
+      "article": "Bài viết",
+      "knowledge": "Kiến thức"
+    },
+    "resultCount": "{count, plural, other {# kết quả}}",
+    "noResults": "Không có kết quả cho “{query}”.",
+    "unavailable": "Chưa tìm được trong {kinds} lúc này, nên kết quả dưới đây chưa gồm phần đó.",
+    "moreInGroup": "Xem cả {count} trong {group}",
+    "next": "Thêm kết quả"
+  },
+  "compat": {
+    "title": "Tương thích máy ảnh",
+    "photo": "Ảnh",
+    "video": "Video",
+    "body": "Máy",
+    "verdict": {
+      "verified": "Đã xác minh",
+      "partial": "Cần thay đổi",
+      "incompatible": "Không tương thích",
+      "unknown": "Chưa xác minh"
+    },
+    "line": {
+      "missing": "{modes} · không đặt được: {settings}",
+      "range": "{modes} · giá trị ngoài dải máy nhận: {settings}",
+      "firmware": "{modes} · cần phần mềm máy {version} trở lên: {settings}",
+      "substitute": "{modes} · dùng {alternative} thay cho {setting}",
+      "unverified": "{modes} · chưa xác minh: {settings}"
+    },
+    "disclaimer": "Đã xác minh nghĩa là Help Guide của Sony liệt kê đủ mọi cài đặt công thức dùng trên máy đó. Không có nghĩa là cảm biến khác cho ra màu giống hệt.",
+    "notChecked": "Các máy khác: chưa kiểm tra.",
+    "featuresTitle": "Cài đặt màu",
+    "rows": {
+      "items": "Các mục",
+      "gamma": "Gamma",
+      "colorMode": "Color Mode",
+      "look": "Look",
+      "adjustments": "Thông số chỉnh",
+      "auto": "Auto",
+      "presets": "Preset",
+      "temperature": "Nhiệt độ màu",
+      "stillsOnly": "Chỉ khi chụp ảnh",
+      "notOnBody": "Không có trên máy"
+    },
+    "noWbNumbers": "Help Guide của máy này không ghi dải Kelvin và giới hạn shift White Balance, nên công thức đặt một trong hai vẫn ở trạng thái chưa xác minh.",
+    "verifiedRecipes": "Công thức đã xác minh khi chụp ảnh",
+    "verifiedCount": "{photo, plural, =0 {Chưa có công thức nào xác minh khi chụp ảnh} other {# công thức xác minh khi chụp ảnh}} · {video, plural, =0 {chưa có cho video} other {# cho video}}",
+    "recipesUnavailable": "Hiện chưa tải được danh sách công thức."
   }
 }

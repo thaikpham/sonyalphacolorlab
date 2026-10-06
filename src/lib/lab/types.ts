@@ -30,6 +30,8 @@
  * `messages/*.json`.
  */
 
+import type { ConceptKey } from '@/lib/content/concepts'
+
 /** The twelve topics, plus the synthetic `all` the filter adds. */
 export type TopicId =
   | 'setup'
@@ -174,9 +176,72 @@ export type Block =
   | FigureBlock
   | EmbedBlock
 
+/**
+ * Which reading surface a row belongs to (ADR 0001).
+ *
+ * `article` is the blog — `/blog/<id>`, the feed, the learning path.
+ * `knowledge` is an evergreen reference page — `/learn/<id>`. They share the
+ * block vocabulary, the editor, the asset ledger and the id namespace, so an
+ * id is unique across both and a page is a 404 under the other prefix.
+ */
+export type ArticleKind = 'article' | 'knowledge'
+
+/**
+ * The three authored sections of `/learn`. The glossary is the fourth and is
+ * generated from `explanations.ts`, so it is not a value an editor picks.
+ */
+export type KnowledgeSection = 'fundamentals' | 'sony-color' | 'workflows'
+
+export type ContentRefKind = 'recipe' | 'product' | 'article' | 'knowledge'
+
+/**
+ * A link to another entity, by its real primary key — `SCL-PP-001`,
+ * `sony-ilce-7m4-bq-ap2`, an article id. Never a title and never a URL: a URL
+ * bakes a route shape into the row, and a title changes.
+ */
+export type ContentRef = { readonly kind: ContentRefKind; readonly id: string }
+
+/**
+ * Where a technical claim was checked. `checkedAt` is the day an editor read
+ * the page, `YYYY-MM-DD`; `scope` says which bodies or firmware it covers when
+ * that matters ("ILCE-7M4, firmware 2.00").
+ */
+export type SourceRef = {
+  readonly url: string
+  readonly title: string
+  readonly publisher?: string
+  readonly section?: string
+  readonly checkedAt?: string
+  readonly scope?: string
+}
+
+/**
+ * The editorial facts beside the body (ADR 0002). Parsed by `parseMeta()` on
+ * the way in and out — a row is untrusted input, exactly like `blocks`.
+ *
+ * Everything here is public: the column is granted to anon. Who saved the row
+ * is `updated_by`, which is not.
+ */
+export type ArticleMeta = {
+  readonly related: readonly ContentRef[]
+  /** Article or knowledge ids to read first. */
+  readonly prerequisites: readonly string[]
+  readonly concepts: readonly ConceptKey[]
+  readonly sources: readonly SourceRef[]
+  /** A public display name. Never an address — the parser refuses `@`. */
+  readonly authorName: string | null
+  /** `YYYY-MM-DD`. Shown as "reviewed"; never a published or modified date. */
+  readonly reviewedAt: string | null
+  /** Knowledge pages only. */
+  readonly section: KnowledgeSection | null
+  /** Knowledge pages only: position within the section, ascending. */
+  readonly order: number | null
+}
+
 export type Article = {
   /** Stable, URL-safe. This is the `/blog/<id>` segment and the storage key. */
   readonly id: string
+  readonly kind: ArticleKind
   readonly topic: TopicId
   readonly level: LevelId
   readonly archetype: Archetype
@@ -186,6 +251,13 @@ export type Article = {
   /** 1–2 sentences, ≤ 220 characters. Falls back to the summary card. */
   readonly dek: string
   readonly blocks: readonly Block[]
+  readonly meta: ArticleMeta
+  /**
+   * ISO 8601 from the row, when the store has one. Absent for the compiled
+   * offline catalogue, which has no history. Used as `dateModified` and for
+   * nothing else — there is no published date, and none is invented.
+   */
+  readonly updatedAt?: string
 }
 
 /**

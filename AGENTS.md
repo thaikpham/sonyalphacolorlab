@@ -427,6 +427,47 @@ password stops being enough. `aal.ts` reads the claim only after GoTrue has
 verified the token, and `control-boundary.test.ts` pins every case including the
 one that matters most: an unreadable factor list is 503, never "no factor".
 
+## Knowledge pages, cross-links, search
+
+`docs/adr/0001`–`0004` hold the reasoning; these are the rules.
+
+- **Blog articles and knowledge pages are one table.** `lab_articles.kind` is
+  `article` (`/blog/<id>`) or `knowledge` (`/learn/<id>`); every reading path
+  filters on it (`getPublishedArticles` / `getPublishedKnowledge`). The hub is
+  `/learn`, not `/wiki` — "Sony Wiki" is the camera catalogue.
+- **Editorial facts live in `meta`, parsed by `parseMeta()`**, never cast:
+  related entities by real id, prerequisites, concepts (generated from
+  `explanations.ts`), dated sources, a public author name (no `@`), a review
+  date. Links resolve at render against what is published now — never store a
+  URL or a title as a link.
+- **Publish rules are per kind** (`validateForPublish`). A knowledge page needs
+  a dated source; anything still carrying `[CẦN BỔ SUNG` cannot publish.
+- **One search engine.** `src/lib/search/rank.ts` ranks for the header, the
+  Wiki grid, `/api/search`, `/api/search/predictive` and `/search`. Adapters read
+  the same cached published functions the pages read; there is no index to
+  keep in sync, and a failed source is reported, never back-filled. Camera
+  aliases are derived from catalogue SKUs (`cameras/aliases.ts`), never typed.
+- **`npm run search:eval`** is the ranking's regression gate: label new queries
+  from the documents, not from the ranker's output.
+- Pilot drafts (`pilot-drafts.ts`) are drafts. Nothing may publish them but an
+  editor in `/admin/blog`.
+
+## Camera compatibility (ADR 0005)
+
+- A body supports nothing until a **checked** claim says so. Evidence is
+  `src/lib/cameras/capabilities/evidence.ts`: per Help Guide topic, claims
+  that quote a short literal from the raw page. `npm run capabilities:check`
+  fetches each topic and writes `data/camera-evidence.checks.json` — its only
+  writer; never hand-edit it. A claim counts only when its literals were
+  found as it quotes them now, and `evidence.test.ts` fails on any that are not.
+- Quote the option *with* the start of its description (`Movie` is a Gamma and
+  a Color Mode). `unsupported` needs Sony's words or a whole list without the
+  option; a support with a known exception states its own mode.
+- No range without min, max and step quoted from the page. No Help Guide read
+  states a Kelvin range or a shift limit, so those stay `unknown` — do not fill
+  them from `constants.ts`, whose values are global, not per body.
+- Behind a proxy run the check with `NODE_USE_ENV_PROXY=1`.
+
 ## AI ("Tweak with AI")
 
 `claude-sonnet-5` via structured outputs, so the JSON shape is constrained by the

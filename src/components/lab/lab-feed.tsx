@@ -164,10 +164,19 @@ export async function LabFeed({
       {/* Full width, above both columns: below `lg` the path wraps above the
         list, and a page whose first screen is a syllabus with no title
         does not say what it is. */}
-      <header className="basis-full pt-6">
+      <header className="flex basis-full flex-wrap items-end justify-between gap-x-6 gap-y-2 pt-6">
         <h1 className="text-display font-semibold tracking-[-0.02em] leading-[1.1] text-ink">
           {t('feedHeading')}
         </h1>
+        {/* The reference shelf beside the feed — evergreen pages and the
+            parameter glossary, which an article links into. */}
+        <Link
+          href="/learn"
+          className="inline-flex min-h-[var(--layout-touch-target)] items-center gap-2 text-body font-semibold text-accent-400"
+        >
+          {t('learnLink')}
+          <span aria-hidden>→</span>
+        </Link>
       </header>
 
       <PathRail filter={filter} articles={articles} count={count} t={t} />

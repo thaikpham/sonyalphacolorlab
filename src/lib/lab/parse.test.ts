@@ -3,9 +3,13 @@ import {
   parseBlock,
   parseBlocks,
   parseEmbedUrl,
+  RESERVED_IDS,
   slugify,
   validateArticleShape,
+  validateForPublish,
+  validateKnowledgeShape,
 } from './parse'
+import { EMPTY_META } from './meta'
 import type { Article, Block } from './types'
 
 /**
@@ -265,6 +269,8 @@ describe('validateArticleShape', () => {
      checklist. Each test below breaks exactly one thing about it. */
   const valid: Article = {
     id: 'x',
+    kind: 'article',
+    meta: EMPTY_META,
     topic: 'setup',
     level: 'newbie',
     archetype: 'explainer',
@@ -342,5 +348,81 @@ describe('validateArticleShape', () => {
     })
     expect(problems).toContain('exclamation')
     expect(problems).toContain('emoji')
+  })
+})
+
+describe('validateKnowledgeShape — the reference page contract', () => {
+  /* A reference page: a section, a heading, enough body, one dated source.
+     None of the blog's shape rules — no TL;DR first, no closing checklist. */
+  const page: Article = {
+    id: 'white-balance-shift',
+    kind: 'knowledge',
+    topic: 'color',
+    level: 'newbie',
+    archetype: 'explainer',
+    read: '6 phút đọc',
+    title: 'White Balance Shift',
+    dek: 'Hai trục, một kết quả.',
+    blocks: [
+      { t: 'p', text: 'Mở đầu.' },
+      { t: 'h', text: 'Hai trục làm gì' },
+      { t: 'p', text: 'Thân bài.' },
+    ],
+    meta: {
+      ...EMPTY_META,
+      section: 'sony-color',
+      sources: [
+        {
+          url: 'https://helpguide.sony.net/ilc/2110/v1/en/contents/TP1000640840.html',
+          title: 'White Balance',
+          checkedAt: '2026-10-05',
+        },
+      ],
+    },
+  }
+
+  it('passes a page without the blog-only rules', () => {
+    expect(validateKnowledgeShape(page)).toEqual([])
+    // The same body as a blog article fails the blog's contract.
+    expect(validateArticleShape({ ...page, kind: 'article' })).toContain('mustOpenWithTldr')
+  })
+
+  it.each([
+    ['no section', { meta: { ...page.meta, section: null } }, 'knowledgeNeedsSection'],
+    ['no source', { meta: { ...page.meta, sources: [] } }, 'knowledgeNeedsSource'],
+    [
+      'an undated source',
+      { meta: { ...page.meta, sources: [{ url: 'https://example.com/a', title: 'A' }] } },
+      'sourceNeedsDate',
+    ],
+    ['no heading', { blocks: [{ t: 'p', text: 'a' }, { t: 'p', text: 'b' }, { t: 'p', text: 'c' }] }, 'knowledgeNeedsHeading'],
+    ['too little body', { blocks: [{ t: 'h', text: 'a' }] }, 'knowledgeTooShort'],
+    ['an exclamation mark', { title: 'Hay quá!' }, 'exclamation'],
+  ] as const)('refuses %s', (_label, patch, code) => {
+    expect(validateKnowledgeShape({ ...page, ...(patch as Partial<Article>) })).toContain(code)
+  })
+
+  it('does not count a source title or URL as prose', () => {
+    /* A quoted page title and a URL are someone else's text; the house rule
+       is about what this site writes. */
+    const quoted = {
+      ...page,
+      meta: {
+        ...page.meta,
+        sources: [{ url: 'https://example.com/#!/a', title: 'Hello!', checkedAt: '2026-10-05' }],
+      },
+    }
+    expect(validateKnowledgeShape(quoted)).toEqual([])
+  })
+
+  it('routes publish validation by kind', () => {
+    expect(validateForPublish(page)).toEqual([])
+    expect(validateForPublish({ ...page, kind: 'article' })).toContain('tooFewBlocks')
+  })
+
+  it('reserves the static siblings of both dynamic segments', () => {
+    for (const id of ['setup', 'admin', 'new', 'glossary', 'search']) {
+      expect(RESERVED_IDS.has(id)).toBe(true)
+    }
   })
 })

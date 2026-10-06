@@ -24,8 +24,10 @@
  *   so a silent drop cannot pass review unnoticed.
  * - The counts that bound an *article* (8–16 blocks, closes on a checklist)
  *   are not enforced here. They belong to a finished article, and a draft is
- *   by definition unfinished. `validateArticleShape` applies them, and only
- *   on the way to `published`.
+ *   by definition unfinished. `validateForPublish` applies them — the blog's
+ *   contract or a knowledge page's, by `kind` — and only on the way to
+ *   `published`. The parser is the same for both kinds; the publish rules are
+ *   not (ADR 0001).
  */
 
 import type {
@@ -351,7 +353,79 @@ export function slugify(title: string): string {
  * be unreachable — a 200 page nobody can open. Refused at save time, where the
  * editor can still change the title, rather than discovered as a dead link.
  */
-export const RESERVED_IDS: ReadonlySet<string> = new Set(['setup', 'admin', 'new'])
+export const RESERVED_IDS: ReadonlySet<string> = new Set([
+  'setup',
+  'admin',
+  'new',
+  /* `/learn/glossary` is a static sibling of `/learn/[id]` (ADR 0001). The id
+     namespace is shared by both kinds, so it is reserved for both. */
+  'glossary',
+  /* Not a sibling of either dynamic segment today, but `/search` is a
+     top-level route and an article named for it would read as a page of it. */
+  'search',
+])
+
+/** Written into drafts where content is still owed — see `pilot-drafts.ts`. */
+export const PLACEHOLDER_MARK = '[CẦN BỔ SUNG'
+
+/**
+ * The rules every published page obeys whatever its kind: the menu pair's
+ * separator, the table and checklist bounds, labels that carry a condition,
+ * and §4's ban on emoji and exclamation marks — both read as marketing copy,
+ * and this is a reference product.
+ *
+ * The prose test reads the title, dek, read-time and body only. `meta` is not
+ * prose: a source title is quoted from someone else's page, and a URL may
+ * legitimately carry a `!`.
+ */
+function houseRules(article: Article): string[] {
+  const problems: string[] = []
+  for (const b of article.blocks) {
+    if (b.t === 'menu' && (!b.old.includes(' → ') || !b.new.includes(' → '))) {
+      problems.push('menuSeparator')
+      break
+    }
+  }
+
+  for (const b of article.blocks) {
+    if (b.t === 'table' && (b.rows.length < 3 || b.rows.length > 6)) {
+      problems.push('tableRows')
+      break
+    }
+  }
+
+  for (const b of article.blocks) {
+    if (b.t === 'checklist' && (b.items.length < 3 || b.items.length > 6)) {
+      problems.push('checklistItems')
+      break
+    }
+  }
+
+  for (const b of article.blocks) {
+    if (b.t !== 'compare') continue
+    if (/^(trước|sau|before|after)$/i.test(b.beforeLabel) || /^(trước|sau|before|after)$/i.test(b.afterLabel)) {
+      problems.push('compareLabels')
+      break
+    }
+  }
+
+  for (const b of article.blocks) {
+    if (b.t === 'callout' && /^(lưu ý|chú ý|note)$/i.test(b.label.trim())) {
+      problems.push('calloutLabel')
+      break
+    }
+  }
+
+  const prose = JSON.stringify([article.title, article.dek, article.read, article.blocks])
+  if (/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(prose)) problems.push('emoji')
+  if (prose.includes('!')) problems.push('exclamation')
+  /* The marker the pilot drafts use for what only a real shoot or a real
+     source can fill in. A page still carrying one is a frame, not an article,
+     and must not reach a reader by an accidental publish. */
+  if (prose.includes(PLACEHOLDER_MARK)) problems.push('placeholder')
+
+  return problems
+}
 
 /**
  * The editorial rules that bind a *finished* article, checked on publish only.
@@ -389,46 +463,44 @@ export function validateArticleShape(article: Article): readonly string[] {
     }
   }
 
-  for (const b of article.blocks) {
-    if (b.t === 'menu' && (!b.old.includes(' → ') || !b.new.includes(' → '))) {
-      problems.push('menuSeparator')
-      break
-    }
-  }
-
-  for (const b of article.blocks) {
-    if (b.t === 'table' && (b.rows.length < 3 || b.rows.length > 6)) {
-      problems.push('tableRows')
-      break
-    }
-  }
-
-  for (const b of article.blocks) {
-    if (b.t === 'checklist' && (b.items.length < 3 || b.items.length > 6)) {
-      problems.push('checklistItems')
-      break
-    }
-  }
-
-  for (const b of article.blocks) {
-    if (b.t !== 'compare') continue
-    if (/^(trước|sau|before|after)$/i.test(b.beforeLabel) || /^(trước|sau|before|after)$/i.test(b.afterLabel)) {
-      problems.push('compareLabels')
-      break
-    }
-  }
-
-  for (const b of article.blocks) {
-    if (b.t === 'callout' && /^(lưu ý|chú ý|note)$/i.test(b.label.trim())) {
-      problems.push('calloutLabel')
-      break
-    }
-  }
-
-  // §4: both read as marketing copy, and this is a reference product.
-  const prose = JSON.stringify(article)
-  if (/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(prose)) problems.push('emoji')
-  if (prose.includes('!')) problems.push('exclamation')
-
+  problems.push(...houseRules(article))
   return problems
+}
+
+/** A reference page is at least this long — a heading and two blocks of body. */
+const KNOWLEDGE_MIN_BLOCKS = 3
+/** And at most this. Above it, the page is two pages. */
+const KNOWLEDGE_MAX_BLOCKS = 32
+
+/**
+ * What a *knowledge* page needs before it is visible (ADR 0001).
+ *
+ * Not the blog's editorial contract. A reference page has no TL;DR-first
+ * shape, does not close on a checklist, and may run longer than sixteen
+ * blocks. What it must have instead is what makes it a reference: a place in
+ * the hub, a heading to navigate by, and at least one source with the day it
+ * was checked — a technical claim nobody can trace is exactly what the hub
+ * exists to replace.
+ */
+export function validateKnowledgeShape(article: Article): readonly string[] {
+  const problems: string[] = []
+  const types = article.blocks.map((b) => b.t)
+
+  if (!article.meta.section) problems.push('knowledgeNeedsSection')
+  if (article.blocks.length < KNOWLEDGE_MIN_BLOCKS) problems.push('knowledgeTooShort')
+  if (article.blocks.length > KNOWLEDGE_MAX_BLOCKS) problems.push('knowledgeTooLong')
+  if (!types.includes('h')) problems.push('knowledgeNeedsHeading')
+  if (article.dek.length > 220) problems.push('dekTooLong')
+  if (article.meta.sources.length === 0) problems.push('knowledgeNeedsSource')
+  if (article.meta.sources.some((src) => !src.checkedAt)) problems.push('sourceNeedsDate')
+
+  problems.push(...houseRules(article))
+  return problems
+}
+
+/** The publish gate, by kind. One entry point so no route can pick the wrong one. */
+export function validateForPublish(article: Article): readonly string[] {
+  return article.kind === 'knowledge'
+    ? validateKnowledgeShape(article)
+    : validateArticleShape(article)
 }

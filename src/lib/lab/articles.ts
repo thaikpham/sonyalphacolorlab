@@ -13,6 +13,7 @@
  * CMS cannot: `ARTICLE-SPEC.md`'s block vocabulary is checked at build time.
  */
 
+import { EMPTY_META } from './meta'
 import type { Article, LevelId, TopicId } from './types'
 
 /**
@@ -57,6 +58,7 @@ export const ARTICLE_LANG = 'vi'
 export const ARTICLES: readonly Article[] = [
   {
     id: 'back-button-af',
+    kind: 'article',
     topic: 'af',
     level: 'mid',
     archetype: 'technique',
@@ -125,9 +127,21 @@ export const ARTICLES: readonly Article[] = [
         ],
       },
     ],
+    meta: {
+      ...EMPTY_META,
+      related: [
+        /* The two menu trees the MenuPair blocks print: a6400 · ZV-E10 for the
+           old one, a6700 · ZV-E10 II for the new. */
+        { kind: 'product', id: 'sony-ilce-6400-b-ap2' },
+        { kind: 'product', id: 'sony-zv-e10-bq-ap2' },
+        { kind: 'product', id: 'sony-ilce-6700-bqap2' },
+        { kind: 'product', id: 'sony-zv-e10m2-bq-ap2' },
+      ],
+    },
   },
   {
     id: 'iso-auto-min-ss',
+    kind: 'article',
     topic: 'exposure',
     level: 'newbie',
     archetype: 'setup-guide',
@@ -194,9 +208,21 @@ export const ARTICLES: readonly Article[] = [
         ],
       },
     ],
+    meta: {
+      ...EMPTY_META,
+      related: [
+        /* The two menu trees the MenuPair blocks print: a6400 · ZV-E10 for the
+           old one, a6700 · ZV-E10 II for the new. */
+        { kind: 'product', id: 'sony-ilce-6400-b-ap2' },
+        { kind: 'product', id: 'sony-zv-e10-bq-ap2' },
+        { kind: 'product', id: 'sony-ilce-6700-bqap2' },
+        { kind: 'product', id: 'sony-zv-e10m2-bq-ap2' },
+      ],
+    },
   },
   {
     id: 'body-ev-vs-flash-ev-sony-flash-ttl',
+    kind: 'article',
     topic: 'exposure',
     level: 'mid',
     archetype: 'explainer',
@@ -285,5 +311,19 @@ export const ARTICLES: readonly Article[] = [
         ],
       },
     ],
+    meta: {
+      ...EMPTY_META,
+      related: [
+        /* The two menu trees the MenuPair blocks print: a6400 · ZV-E10 for the
+           old one, a6700 · ZV-E10 II for the new. */
+        { kind: 'product', id: 'sony-ilce-6400-b-ap2' },
+        { kind: 'product', id: 'sony-zv-e10-bq-ap2' },
+        { kind: 'product', id: 'sony-ilce-6700-bqap2' },
+        { kind: 'product', id: 'sony-zv-e10m2-bq-ap2' },
+      ],
+      /* The page sets ISO Auto before anything else, which is that article's
+         whole subject. */
+      prerequisites: ['iso-auto-min-ss'],
+    },
   },
 ] as const

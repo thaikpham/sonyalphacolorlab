@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { bilingualAlternates } from '@/i18n/alternates';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { getSonyCameras } from '@/lib/cameras/data';
 import { toCameraCard } from '@/lib/cameras/types';
@@ -19,6 +20,7 @@ export async function generateMetadata({
   return {
     title: t('camerasTitle'),
     description: t('camerasSubtitle'),
+    alternates: bilingualAlternates(locale, '/cameras'),
   };
 }
 

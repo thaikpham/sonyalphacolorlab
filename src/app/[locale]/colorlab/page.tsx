@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { bilingualAlternates } from '@/i18n/alternates';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { SiteStructuredData } from '@/components/structured-data';
 import { RecipeCard } from '@/components/recipe-card';
@@ -19,6 +20,7 @@ export async function generateMetadata({
   return {
     title: t('title'),
     description: t('metaDescription'),
+    alternates: bilingualAlternates(locale, '/colorlab'),
   };
 }
 
@@ -44,8 +46,9 @@ export default async function ColorLabPage({
   const sp = await searchParams;
   const format = sp.format === 'pp' || sp.format === 'cl' ? sp.format : undefined;
 
-  const [t, recipes, tags] = await Promise.all([
+  const [t, tSearch, recipes, tags] = await Promise.all([
     getTranslations('home'),
+    getTranslations('search'),
     listRecipes(locale, { format, look: sp.look, tag: sp.tag, q: sp.q }),
     listTags(),
   ]);
@@ -94,6 +97,19 @@ export default async function ColorLabPage({
               {t('emptyAction')}
             </Link>{' '}
             {t('emptyTail', { total })}
+            {/* A query no recipe answers may still be answered elsewhere on
+                the site — "ISO Auto" is an article, "a7cii" a camera. */}
+            {sp.q?.trim() ? (
+              <>
+                {' '}
+                <Link
+                  href={{ pathname: '/search', query: { q: sp.q.trim() } }}
+                  className="text-accent-400 underline underline-offset-4"
+                >
+                  {tSearch('searchEverything', { query: sp.q.trim() })}
+                </Link>
+              </>
+            ) : null}
           </p>
         ) : (
           <>

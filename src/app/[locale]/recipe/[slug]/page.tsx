@@ -6,6 +6,8 @@ import { RecipeGallery } from '@/components/recipe-gallery';
 import { RecipeStructuredData } from '@/components/structured-data';
 import { ClTable, PpTable } from '@/components/settings-table';
 import { RecipeCommunitySection } from '@/components/recipe-community-section';
+import { RecipeLearnMore } from '@/components/content/reverse-links';
+import { RecipeCompatibility } from '@/components/compat/camera-compatibility';
 import { TweakPanel } from '@/components/tweak-panel';
 import { WbShiftPlane } from '@/components/wb-shift-plane';
 import { FormattedWb, WbTable } from '@/components/wb-table';
@@ -218,6 +220,15 @@ export default async function RecipePage({
                 <ClTable s={recipe.settings} locale={locale} />
               )}
             </div>
+
+            {/* Which bodies Sony's Help Guide says can take these settings —
+                only from claims a live check confirmed (ADR 0005). */}
+            <RecipeCompatibility recipe={recipe} />
+
+            {/* What the rows above mean, and what has been written about this
+                recipe — computed from the published pages, never authored
+                here (ADR 0002). */}
+            <RecipeLearnMore recipeId={recipe.id} format={recipe.format} locale={locale} />
           </div>
         </div>
       </main>

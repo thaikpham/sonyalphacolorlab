@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { bilingualAlternates } from '@/i18n/alternates';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { getSonyAudio } from '@/lib/audio/data';
 import { toCameraCard } from '@/lib/cameras/types';
@@ -12,7 +13,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'cameras' });
-  return { title: t('audioTitle'), description: t('audioSubtitle') };
+  return {
+    title: t('audioTitle'),
+    description: t('audioSubtitle'),
+    alternates: bilingualAlternates(locale, '/audio'),
+  };
 }
 
 export default async function AudioPage({

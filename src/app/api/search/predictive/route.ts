@@ -1,23 +1,21 @@
 import { NextResponse } from 'next/server';
-import { accentHex } from '@/lib/camera/color';
-import { getSonyCameras } from '@/lib/cameras/data';
-import { splitFeatures } from '@/lib/cameras/features';
-import { listRecipes } from '@/lib/recipes/source';
-import { calculateMatchScore } from '@/lib/search/fuzzy-search';
+import { searchContent } from '@/lib/search/service';
+import { MAX_QUERY } from '@/lib/search/types';
 
 /**
- * Type-ahead for the header search box.
+ * Type-ahead for the ColorLab and Wiki header boxes.
  *
- * Scoring is O(products x fields) with an edit-distance step inside, and it runs
- * per keystroke, so the two guards below matter more than they look:
+ * The contract is unchanged — `?q&mode=wiki|colorlab&locale`, five
+ * suggestions, the same result shape the header renders — but the ranking is
+ * no longer its own. It used to score the catalogue with a private copy of
+ * the matching rules; it now asks the unified service (ADR 0003) for one
+ * scope, so a query cannot rank one way in this dropdown and another on
+ * `/search`. `wiki` covers the audio catalogue too, which the old route
+ * silently left out on `/audio`.
  *
- * - `MAX_QUERY` bounds the work. Edit distance is O(query x field), so an
- *   unbounded `?q=` is a way to make the server do arbitrary work for one cheap
- *   request. Nothing a person types comes close to 64 characters.
- * - `SUGGESTIONS` is the slice the dropdown renders. Scoring the whole
- *   catalogue is what makes the ranking meaningful; returning all of it is not.
+ * `MAX_QUERY` still bounds the work (edit distance is O(query × field)), and
+ * `SUGGESTIONS` is the slice the dropdown renders.
  */
-const MAX_QUERY = 64;
 const SUGGESTIONS = 5;
 
 /**
@@ -47,74 +45,23 @@ export async function GET(request: Request) {
 
   if (!query) return answer([]);
 
-  if (mode === 'wiki') {
-    const cameras = await getSonyCameras();
-    const results = cameras
-      .map((camera) => {
-        /* The feature bullets are two locales of prose, and both are worth
-           searching. This used to hand `JSON.stringify(features)` to the
-           scorer, which fed it the object's own punctuation — `{"en":[` — as
-           searchable text, and rebuilt that string for every product on every
-           keystroke. */
-        const { en, vi } = splitFeatures(camera.features);
-        const score = calculateMatchScore(query, [
-          camera.name,
-          camera.fullName,
-          camera.sku,
-          camera.subCategory1,
-          camera.subCategory2,
-          ...en,
-          ...vi,
-        ]);
-        return { camera, score };
-      })
-      .filter((item) => item.score > 0)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, SUGGESTIONS)
-      .map(({ camera }) => ({
-        id: camera.id,
-        title: camera.name,
-        subtitle: [camera.sku, camera.subCategory1 || camera.category, camera.subCategory2]
-          .filter(Boolean)
-          .join(' · '),
-        badge: camera.subCategory1 || camera.category,
-        price: camera.priceFormatted,
-        url: `/cameras/${camera.id}`,
-        imageUrl: camera.imageUrl,
-      }));
+  const { hits } = await searchContent({
+    q: query,
+    locale,
+    scope: mode === 'wiki' ? 'products' : 'recipes',
+    limit: SUGGESTIONS,
+  });
 
-    return answer(results);
-  }
-
-  const recipes = await listRecipes(locale);
-  const results = recipes
-    .map((recipe) => {
-      const look = recipe.format === 'cl' ? recipe.settings.look : '';
-      const score = calculateMatchScore(query, [
-        recipe.name,
-        recipe.format,
-        look,
-        recipe.wbLabel,
-        recipe.description,
-        ...(recipe.tags ?? []),
-      ]);
-      return { recipe, score };
-    })
-    .filter((item) => item.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, SUGGESTIONS)
-    .map(({ recipe }) => {
-      const look = recipe.format === 'cl' ? recipe.settings.look : '';
-      return {
-        id: recipe.slug,
-        title: recipe.name,
-        subtitle: `${recipe.format === 'pp' ? 'Picture Profile' : `Creative Look (${look})`} · ${recipe.wbLabel}`,
-        badge: recipe.format === 'pp' ? 'PP' : `CL:${look}`,
-        url: `/recipe/${recipe.slug}`,
-        imageUrl: recipe.images?.[0] || undefined,
-        accentHex: recipe.accent ? accentHex(recipe.accent) : undefined,
-      };
-    });
-
-  return answer(results);
+  return answer(
+    hits.map((hit) => ({
+      id: hit.id,
+      title: hit.title,
+      subtitle: hit.subtitle ?? '',
+      badge: hit.badge,
+      price: hit.price,
+      url: hit.url,
+      imageUrl: hit.imageUrl,
+      accentHex: hit.accentHex,
+    })),
+  );
 }
