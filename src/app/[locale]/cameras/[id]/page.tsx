@@ -228,8 +228,8 @@ export default async function ProductDetailPage({
           {product.specs && <ProductSpecTable specs={product.specs} locale={locale} />}
         </div>
 
-        {/* What Sony's Help Guide confirms this body's colour menus hold, and
-            the recipes that fit it — only for a body with checked evidence. */}
+        {/* What Sony's Help Guide confirms this body's colour menus hold — only
+            for a body with checked evidence. */}
         <CameraColourSettings sku={product.sku} />
 
         {/* Articles and reference pages that name this product, if any. */}

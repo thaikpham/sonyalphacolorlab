@@ -8,7 +8,7 @@ import { isCapabilityKey } from './keys'
 import { normalise } from './page-text'
 
 /**
- * The rules in `evidence.ts`'s header, held. The last block is the one that
+ * The rules in `evidence.ts`'s header, held. The checks-file block is the one that
  * matters most: committed evidence and the committed checks file must agree,
  * so a claim edited without re-checking its page fails here rather than
  * quietly disappearing from every camera page.
@@ -61,17 +61,6 @@ describe('claims', () => {
     for (const [id, c] of all) {
       expect(c.match.length > 0 || c.absentFrom !== undefined, `${id} ${c.capability}`).toBe(true)
       if (c.absentFrom) expect(c.status, `${id} ${c.capability}`).toBe('unsupported')
-      if (c.alternative) expect(c.status).toBe('unsupported')
-    }
-  })
-
-  it('carry a range only where its numbers are quoted', () => {
-    for (const [id, c] of all) {
-      if (!c.range) continue
-      const quoted = c.match.join(' ')
-      for (const n of [c.range.min, c.range.max, c.range.step].filter((x) => x !== undefined)) {
-        expect(quoted, `${id} ${c.capability}`).toContain(String(n))
-      }
     }
   })
 

@@ -360,7 +360,7 @@ export const PILOT_DRAFTS: readonly Article[] = [
     archetype: 'setup-guide',
     read: '4 phút đọc',
     title: 'Chọn công thức theo máy ảnh của bạn',
-    dek: 'Trước khi chọn theo màu, kiểm tra máy có đủ các cài đặt công thức dùng. Trang công thức ghi kết quả cho những máy ColorLab đã đối chiếu; với máy khác, bạn tự đối chiếu.',
+    dek: 'Trước khi chọn theo màu, kiểm tra máy có đủ các cài đặt công thức dùng. Trang máy ảnh ghi cài đặt màu của những máy ColorLab đã đối chiếu; với máy khác, bạn tự đối chiếu.',
     meta: meta({
       section: 'workflows',
       order: 1,

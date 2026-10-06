@@ -41,14 +41,13 @@ export const checksFileSchema = z.strictObject({
 export type SourceCheck = z.infer<typeof sourceCheckSchema>
 export type ChecksFile = z.infer<typeof checksFileSchema>
 
-export const EMPTY_CHECKS: ChecksFile = { version: 1, sources: {} }
 
 /** The key an absence is recorded under: the option, and the list it was looked for in. */
 export function absentKey(a: NonNullable<Claim['absentFrom']>): string {
   return `${normalise(a.literal)} ∉ ${normalise(a.after)} … ${normalise(a.before)}`
 }
 
-/** A claim as the engine uses it: confirmed, with its mode resolved and its page attached. */
+/** A claim as the camera page uses it: confirmed, with its mode resolved and its page attached. */
 export type ConfirmedClaim = Claim & {
   readonly mode: ModeScope
   readonly source: {

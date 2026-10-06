@@ -38,7 +38,8 @@ Three facts shaped the decision:
 **Evidence lives in the repository**, in `src/lib/cameras/capabilities/`:
 
 - `keys.ts` — capability keys derived from `constants.ts` (`pp.gamma:S-Log3`,
-  `cl.adjust:sharpnessRange`, `wb.preset:Flash`, …) and `requirementsFor(recipe)`.
+  `cl.adjust:sharpnessRange`, `wb.preset:Flash`, …) and `requirementsFor(recipe)`
+  (removed 2026-10-06).
 - `evidence.ts` — per body, per Help Guide topic: claims, each quoting a short
   literal from the raw page.
 - `checks.ts` + `data/camera-evidence.checks.json` — written only by
@@ -46,7 +47,7 @@ Three facts shaped the decision:
   and body (never the navigation tree), and records every literal found, with
   its surrounding sentence, and every literal missing. **A claim counts only
   when its last check found its literals as the claim quotes them now.**
-- `engine.ts` — `assess(requirements, body, { mode, firmware? })`.
+- `engine.ts` — `assess(requirements, body, { mode, firmware? })` (removed 2026-10-06).
 
 Rules the engine and the evidence follow:
 

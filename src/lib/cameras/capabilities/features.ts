@@ -53,8 +53,8 @@ function rowOf(key: CapabilityKey): FeatureRow {
 
 /**
  * Looks and presets are listed by their own short names (`FL`, `Daylight`);
- * the long label is for a recipe's requirement list, where the code alone
- * would be cryptic.
+ * the long label (`capabilityLabel`) is for the stills-only row, where the
+ * code alone would be cryptic.
  */
 function shortLabel(key: CapabilityKey): string {
   if (key === 'wb.kelvin') return WB_KELVIN_MENU

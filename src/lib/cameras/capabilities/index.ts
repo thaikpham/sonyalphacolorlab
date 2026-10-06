@@ -13,17 +13,14 @@ import type { CapabilityKey } from './keys'
 
 export const EVIDENCE_CHECKS: ChecksFile = checksFileSchema.parse(checksJson)
 
-const CAMERA_OF_SOURCE = new Map(EVIDENCE_SOURCES.map((s) => [s.id, s.camera]))
-
 /** Confirmed claims, by body, then by capability. */
 const CAPABILITY_INDEX: ReadonlyMap<string, ReadonlyMap<CapabilityKey, readonly ConfirmedClaim[]>> = (() => {
   const index = new Map<string, Map<CapabilityKey, ConfirmedClaim[]>>()
   for (const s of EVIDENCE_SOURCES) {
     for (const claim of confirmedClaims(s, EVIDENCE_CHECKS.sources[s.id])) {
-      const camera = CAMERA_OF_SOURCE.get(claim.source.id) ?? ''
-      const byKey = index.get(camera) ?? new Map<CapabilityKey, ConfirmedClaim[]>()
+      const byKey = index.get(s.camera) ?? new Map<CapabilityKey, ConfirmedClaim[]>()
       byKey.set(claim.capability, [...(byKey.get(claim.capability) ?? []), claim])
-      index.set(camera, byKey)
+      index.set(s.camera, byKey)
     }
   }
   return index

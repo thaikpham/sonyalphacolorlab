@@ -475,7 +475,7 @@ not useful, so do not put one back on recipe or camera pages.
 - Quote the option *with* the start of its description (`Movie` is a Gamma and
   a Color Mode). `unsupported` needs Sony's words or a whole list without the
   option; a support with a known exception states its own mode.
-- No range without min, max and step quoted from the page. No Help Guide read
+- A claim names an option, never the values it accepts. No Help Guide read
   states a Kelvin range or a shift limit, so none is listed per body — do not
   fill them from `constants.ts`, whose values are global, not per body.
 - Behind a proxy run the check with `NODE_USE_ENV_PROXY=1`.
