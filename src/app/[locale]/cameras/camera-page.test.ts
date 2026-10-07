@@ -13,6 +13,16 @@ describe('the highlights editor', () => {
     expect(editor).toContain('draftToHighlights(draft.hl)');
     expect(editor).toContain('highlightsToDraft(parseHighlights(p.highlights))');
   });
+
+  it('sends highlights only when the editor actually changed them', () => {
+    /* Otherwise an unrelated save (a price edit, a feature line) re-sends
+       `highlights` every time, and a stored value that fails the schema
+       round-trips to an empty draft and then to `null` — silently erasing it
+       on a save that never meant to touch it. */
+    expect(editor).toContain('initialHl: HighlightsDraft');
+    expect(editor).toContain('JSON.stringify(draft.hl) !== JSON.stringify(draft.initialHl)');
+    expect(editor).toContain("selected.category === 'camera' && highlightsChanged");
+  });
 });
 
 describe('the camera page', () => {
@@ -23,6 +33,20 @@ describe('the camera page', () => {
 
   it('collapses the full table under its own heading', () => {
     expect(page).toMatch(/<details[\s\S]*fullSpecsHeading[\s\S]*<ProductSpecTable[^>]*embedded[\s\S]*<\/details>/);
+  });
+
+  it('gives the collapsed table a disclosure marker that switches on group-open, with no stroke and no motion', () => {
+    const details = page.match(/<details className="group surface p-5">[\s\S]*?<\/details>/)?.[0] ?? '';
+    expect(details).toBeTruthy();
+    // `marker:content-none` replaces the native triangle, which `display: flex`
+    // on `<summary>` hides inconsistently across browsers to begin with.
+    expect(details).toContain('list-none');
+    expect(details).toContain('marker:content-none');
+    // One glyph for "closed", hidden once open; one for "open", hidden until then.
+    expect(details).toMatch(/group-open:hidden/);
+    expect(details).toMatch(/group-open:inline/);
+    expect(details).not.toMatch(/\btransition\b|\banimate-/);
+    expect(details).toContain('min-h-11');
   });
 
   it('keeps today\'s feature list as the fallback', () => {

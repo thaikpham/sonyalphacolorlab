@@ -16,8 +16,8 @@ export async function CameraHighlights({ points }: { points: HighlightsSide['poi
         {t('featuresLabel')}
       </h2>
       <ul className="grid grid-cols-1 gap-2.5 md:grid-cols-2">
-        {points.map((p) => (
-          <li key={p.title} className="row-tint flex flex-col gap-1 rounded-sm p-4">
+        {points.map((p, i) => (
+          <li key={`${i}-${p.title}`} className="row-tint flex flex-col gap-1 rounded-sm p-4">
             <h3 className="text-body font-semibold text-ink">{p.title}</h3>
             <p className="text-body-sm leading-relaxed text-ink-muted">{p.body}</p>
           </li>

@@ -392,7 +392,7 @@
     "featuresEn": "English",
     "featuresVi": "Vietnamese",
     "featuresHint": "One bullet per line.",
-    "highlightsHeading": "Buyer highlights",
+    "highlightsHeading": "Highlights",
     "highlightsHint": "One point per line: Title :: explanation. 4–6 points, in both languages.",
     "coreSpecsHeading": "Key specs",
     "translateToVi": "Translate to Vietnamese",
@@ -457,7 +457,7 @@
       "notAllowedForCategory": "Your role does not cover this product's division. Nothing was changed.",
       "mfaRequired": "This session needs your authenticator code again. Nothing was changed — reload the page to finish signing in.",
       "duplicateProduct": "A product with this SKU or ID already exists. Nothing was created.",
-      "invalidHighlights": "Highlights need 4–6 lines of Title :: explanation in both languages, on a camera."
+      "invalidHighlights": "Highlights need 4–6 lines of Title :: explanation in both languages, on a camera — title up to 80 characters, explanation up to 320, no line break inside a point, and each core spec value up to 160 characters."
     },
     "basicInfoHeading": "Product name & gallery",
     "basicInfoHint": "Edit the display name, the full name and the gallery image URLs.",

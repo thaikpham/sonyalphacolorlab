@@ -268,7 +268,8 @@ describe('PATCH /api/admin/products/[id]', () => {
 
   it('clears highlights with null', async () => {
     db.row = storedRow({ highlights: { en: hlSide, vi: hlSide } });
-    await patch({ highlights: null });
+    const res = await patch({ highlights: null });
+    expect(res.status).toBe(200);
     expect(db.row?.highlights).toBeNull();
   });
 
@@ -276,6 +277,8 @@ describe('PATCH /api/admin/products/[id]', () => {
     db.row = storedRow({ category: 'lens' });
     const res = await patch({ highlights: { en: hlSide, vi: hlSide } });
     expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: 'invalidHighlights' });
+    expect(db.calls.some((c) => c.op === 'update')).toBe(false);
   });
 });
 

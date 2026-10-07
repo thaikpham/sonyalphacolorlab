@@ -33,6 +33,13 @@ type Draft = {
   specs: Record<string, string>;
   source: string;
   hl: HighlightsDraft;
+  /** The highlights draft the moment this product was opened — never mutated
+      by `setHl`. `save()` diffs `hl` against this to decide whether to send
+      `highlights` at all: without the diff, an unrelated edit (the price, a
+      feature line) always re-sends `highlights` too, and a stored value that
+      fails `highlightsSchema` turns into an empty draft here, then `null`
+      through `draftToHighlights`, silently erasing it on that save. */
+  initialHl: HighlightsDraft;
 };
 
 const asDraft = (p: SonyCamera): Draft => {
@@ -40,6 +47,7 @@ const asDraft = (p: SonyCamera): Draft => {
   const specs: Record<string, string> = {};
   const row = (p.specs ?? {}) as unknown as Record<string, string | null>;
   if (p.specs) for (const k of SPEC_ROWS[p.specs.kind]) specs[k] = row[k] ?? '';
+  const hl = highlightsToDraft(parseHighlights(p.highlights));
   return {
     id: p.id,
     name: p.name ?? '',
@@ -50,7 +58,8 @@ const asDraft = (p: SonyCamera): Draft => {
     vi: f.vi.join('\n'),
     specs,
     source: p.specs?.specsSource ?? '',
-    hl: highlightsToDraft(parseHighlights(p.highlights)),
+    hl,
+    initialHl: hl,
   };
 };
 
@@ -219,6 +228,9 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
 
     const galleryList = lines(draft.galleryUrls);
     const primaryImg = draft.imageUrl.trim() || galleryList[0] || selected.imageUrl;
+    /* Only when the editor actually touched the highlights fields — see the
+       note on `Draft.initialHl`. */
+    const highlightsChanged = JSON.stringify(draft.hl) !== JSON.stringify(draft.initialHl);
 
     try {
       const res = await fetch(`/api/admin/products/${encodeURIComponent(selected.id)}`, {
@@ -235,7 +247,9 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
           ...(selected.specs
             ? { specs: { ...draft.specs, kind: selected.specs.kind, specsSource: draft.source } }
             : {}),
-          ...(selected.category === 'camera' ? { highlights: draftToHighlights(draft.hl) } : {}),
+          ...(selected.category === 'camera' && highlightsChanged
+            ? { highlights: draftToHighlights(draft.hl) }
+            : {}),
         }),
       });
       const data = (await res.json()) as {

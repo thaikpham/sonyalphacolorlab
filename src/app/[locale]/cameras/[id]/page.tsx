@@ -72,7 +72,7 @@ export default async function ProductDetailPage({
 
   /* Parsed here as well as in `productFromRow`: offline, the seed reaches the
      page without passing through the row mapper. */
-  const highlights = highlightsFor(parseHighlights(product.highlights), locale);
+  const highlights = highlightsFor(parseHighlights(product.highlights, product.id), locale);
 
   /* Product kind is not a signal. `community`, `proposal`, `ai` and `danger`
      name what a piece of content *is*, so borrowing one of them for "lens"
@@ -216,9 +216,15 @@ export default async function ProductDetailPage({
               <CameraHighlights points={highlights.points} />
               {highlights.keySpecs.length > 0 && <CoreSpecs rows={highlights.keySpecs} />}
               {product.specs && (
-                <details className="surface p-5">
-                  <summary className="flex min-h-11 cursor-pointer items-center text-title-3 font-semibold tracking-[-0.02em] text-ink">
+                <details className="group surface p-5">
+                  <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 marker:content-none text-title-3 font-semibold tracking-[-0.02em] text-ink">
                     {t('specs.fullSpecsHeading')}
+                    <span aria-hidden className="text-ink-faint group-open:hidden">
+                      +
+                    </span>
+                    <span aria-hidden className="hidden text-ink-faint group-open:inline">
+                      −
+                    </span>
                   </summary>
                   <div className="mt-3">
                     <ProductSpecTable specs={product.specs} locale={locale} embedded />

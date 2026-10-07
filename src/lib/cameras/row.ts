@@ -82,6 +82,6 @@ export function productFromRow(row: ProductRow, seed?: SonyCamera): SonyCamera {
     specs: (row.specs as ProductSpecs | null) ?? seed?.specs,
     /* No seed fallback: a null column is "no highlights", and the page then
        renders the feature bullets, which is the fallback. */
-    highlights: parseHighlights(row.highlights),
+    highlights: parseHighlights(row.highlights, row.id),
   };
 }

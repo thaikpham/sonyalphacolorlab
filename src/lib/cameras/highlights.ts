@@ -13,10 +13,31 @@ export const CORE_SPEC_KEYS = [
 ] as const;
 export type CoreSpecKey = (typeof CORE_SPEC_KEYS)[number];
 
-const text = (max: number) => z.string().trim().min(1).max(max);
+/** The editor's text form: one point per line, `Title :: body`. Declared here,
+    ahead of the schema, so both the schema's refinement and the draft helpers
+    below read from one literal rather than two copies of "::" drifting apart. */
+const SEPARATOR = ' :: ';
+
+/* A title or body with a `\r`/`\n` inside it is schema-valid but cannot
+   round-trip through the editor's one-point-per-line text form: joining
+   points with `\n` and splitting on `\n` would turn one point into two (or
+   swallow the line break silently). `.trim()` only strips the ends, so an
+   embedded break still fails this check after trimming. */
+const noLineBreak = (s: string) => !/[\r\n]/.test(s);
+const text = (max: number) =>
+  z.string().trim().min(1).max(max).refine(noLineBreak, 'must not contain a line break');
+
+/* A title containing the literal separator is schema-valid but ambiguous in
+   the text form: `draftToHighlights` cuts at the FIRST "::" it finds, so
+   "Fast :: AF :: Locks on" would be read back as title "Fast" — silently
+   losing "AF" into the body. Body is unaffected: only the first "::" on a
+   line is ever treated as the boundary, so "::" later in the body round-trips
+   fine. */
+const titleText = (max: number) =>
+  text(max).refine((s) => !s.includes(SEPARATOR.trim()), `must not contain "${SEPARATOR.trim()}"`);
 
 const sideSchema = z.strictObject({
-  points: z.array(z.strictObject({ title: text(80), body: text(320) })).min(4).max(6),
+  points: z.array(z.strictObject({ title: titleText(80), body: text(320) })).min(4).max(6),
   keySpecs: z
     .array(z.strictObject({ key: z.enum(CORE_SPEC_KEYS), value: text(160) }))
     .max(CORE_SPEC_KEYS.length)
@@ -27,11 +48,17 @@ export const highlightsSchema = z.strictObject({ en: sideSchema, vi: sideSchema 
 export type Highlights = z.infer<typeof highlightsSchema>;
 export type HighlightsSide = Highlights['en'];
 
-export function parseHighlights(value: unknown): Highlights | null {
+/** `id` is the product this value was read from, so the log names which row
+    to go fix — a validation failure with no id is a search through the whole
+    catalogue. */
+export function parseHighlights(value: unknown, id?: string): Highlights | null {
   if (value === null || value === undefined) return null;
   const parsed = highlightsSchema.safeParse(value);
   if (!parsed.success) {
-    console.warn('[highlights] stored value failed validation; rendering the fallback page');
+    console.error(
+      `[highlights] ${id ?? 'unknown product'} failed validation; rendering the fallback page:`,
+      parsed.error.issues.map((issue) => issue.path.join('.')),
+    );
     return null;
   }
   return parsed.data;
@@ -41,9 +68,6 @@ export function highlightsFor(h: Highlights | null | undefined, locale: string):
   if (!h) return null;
   return locale === 'vi' ? h.vi : h.en;
 }
-
-/** The editor's text form: one point per line, `Title :: body`. */
-const SEPARATOR = ' :: ';
 
 export type HighlightsDraft = Record<'en' | 'vi', { points: string; specs: Record<CoreSpecKey, string> }>;
 
