@@ -78,3 +78,20 @@ describe('one photograph', () => {
     expect(calls.remove).toHaveBeenCalledWith('SCL-PP-001', 'dev-SCL-PP-001-3');
   });
 });
+
+describe('uploading a photograph', () => {
+  it('refuses a body the platform would cut off, from its declared length alone', async () => {
+    const { MAX_UPLOAD_REQUEST_BYTES } = await import('@/lib/recipes/upload-limits');
+    const many = await import('./[id]/images/route');
+    const request = new Request('http://localhost/api', {
+      method: 'POST',
+      headers: { 'content-length': String(MAX_UPLOAD_REQUEST_BYTES + 1) },
+      body: 'not really that long',
+    });
+
+    const res = await many.POST(request, { params: Promise.resolve({ id: 'SCL-PP-001' }) });
+    expect(res.status).toBe(413);
+    expect(await res.json()).toEqual({ error: 'tooLarge' });
+    expect(calls.process).not.toHaveBeenCalled();
+  });
+});

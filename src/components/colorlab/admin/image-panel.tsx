@@ -108,6 +108,12 @@ export function ImagePanel({ recipeId }: { recipeId: string }) {
         headers: bearer(),
         body: form,
       });
+      /* The platform's own 413 is plain text, so it is read by status: parsing
+         it as JSON would report "upload failed" for a file that is too large. */
+      if (res.status === 413) {
+        setNote({ kind: 'err', msg: codeMessage('tooLarge') });
+        return;
+      }
       const data = (await res.json()) as { ok?: boolean; error?: string; pendingVendor?: boolean };
       if (!res.ok) {
         setNote({ kind: 'err', msg: codeMessage(data.error ?? 'uploadFailed', 'uploadFailed') });

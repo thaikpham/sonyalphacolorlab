@@ -4,7 +4,8 @@ import { adminGate } from '@/lib/auth/admin-gate';
 import { CATALOGUE_TAG, IMMEDIATE } from '@/lib/catalogue-cache';
 import { CONTENT_ADMIN_FROZEN, contentAdminWritesFrozen } from '@/lib/admin/content-freeze';
 import { hasContentConfig } from '@/lib/supabase/server';
-import { processLabImage, MAX_UPLOAD_BYTES } from '@/lib/lab/image-process';
+import { processLabImage } from '@/lib/lab/image-process';
+import { MAX_UPLOAD_BYTES, declaresOversizedBody } from '@/lib/recipes/upload-limits';
 import { RECIPE_ID_RE } from '@/lib/camera/schema';
 import { isRecipeDevStore } from '@/lib/recipes/dev-store';
 import { getRecipeRecord } from '@/lib/recipes/admin-store';
@@ -103,6 +104,9 @@ export async function POST(request: Request, { params }: Params) {
   }
   const { id } = await params;
   if (!RECIPE_ID_RE.test(id)) return NextResponse.json({ error: 'notFound' }, { status: 404 });
+  if (declaresOversizedBody(request)) {
+    return NextResponse.json({ error: 'tooLarge' }, { status: 413 });
+  }
 
   /* The recipe is confirmed before a multipart body is buffered: an upload for
      a recipe that does not exist would otherwise cost megabytes of parsing to
