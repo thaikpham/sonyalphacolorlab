@@ -1063,21 +1063,5 @@
     "unavailable": "{kinds} could not be searched right now, so the results below leave them out.",
     "moreInGroup": "All {count} in {group}",
     "next": "More results"
-  },
-  "colourSettings": {
-    "title": "Colour settings",
-    "rows": {
-      "items": "Items",
-      "gamma": "Gamma",
-      "colorMode": "Color Mode",
-      "look": "Look",
-      "adjustments": "Adjustments",
-      "auto": "Auto",
-      "presets": "Presets",
-      "temperature": "Colour temperature",
-      "stillsOnly": "Stills only",
-      "notOnBody": "Not on this body"
-    },
-    "noWbNumbers": "Sony's Help Guide for this body prints no Kelvin range and no White Balance shift limits."
   }
 }

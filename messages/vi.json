@@ -1063,21 +1063,5 @@
     "unavailable": "Chưa tìm được trong {kinds} lúc này, nên kết quả dưới đây chưa gồm phần đó.",
     "moreInGroup": "Xem cả {count} trong {group}",
     "next": "Thêm kết quả"
-  },
-  "colourSettings": {
-    "title": "Cài đặt màu",
-    "rows": {
-      "items": "Các mục",
-      "gamma": "Gamma",
-      "colorMode": "Color Mode",
-      "look": "Look",
-      "adjustments": "Thông số chỉnh",
-      "auto": "Auto",
-      "presets": "Preset",
-      "temperature": "Nhiệt độ màu",
-      "stillsOnly": "Chỉ khi chụp ảnh",
-      "notOnBody": "Không có trên máy"
-    },
-    "noWbNumbers": "Help Guide của máy này không ghi dải Kelvin và giới hạn shift White Balance."
   }
 }
