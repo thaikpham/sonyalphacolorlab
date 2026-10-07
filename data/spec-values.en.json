@@ -85,6 +85,10 @@
         "each earbud"
       ],
       [
+        "có pin và thẻ Memory Stick PRO Duo",
+        "with battery and Memory Stick PRO Duo"
+      ],
+      [
         "có pin và thẻ nhớ",
         "with battery and card"
       ],
@@ -118,7 +122,8 @@
     "literals": {
       "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục": "Image sensor-shift mechanism with 5-axis compensation",
       "Chống rung quang học SteadyShot": "Optical SteadyShot",
-      "Không hỗ trợ (hỗ trợ ổn định hình ảnh bằng ống kính)": "Not supported (supports lens-based stabilization)"
+      "Không hỗ trợ (hỗ trợ ổn định hình ảnh bằng ống kính)": "Not supported (supports lens-based stabilization)",
+      "Chống rung điện tử SteadyShot": "Electronic SteadyShot"
     }
   },
   "construction": {

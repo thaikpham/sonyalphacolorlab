@@ -13,42 +13,42 @@
     "imageUrl": "https://static.bhphoto.com/images/fb/1899230.jpg",
     "features": {
       "en": [
-        "33MP Full-Frame Exmor R CMOS BSI Sensor",
+        "26MP APS-C Exmor R CMOS BSI Sensor",
         "UHD 4K up to 120p, 1080p up to 240p",
         "10-Bit 4:2:2 XAVC S-I, S-Cinetone",
-        "759-Pt. Fast Hybrid AF, Real-time Eye AF",
+        "495-Pt. Fast Hybrid AF, Real-time Eye AF",
         "5-Axis SteadyShot Image Stabilization",
         "Dual CFexpress Type A / SD Card Slots",
         "Detachable XLR Handle Unit",
         "Built-In Cooling Fan & Active Heatsink"
       ],
       "vi": [
-        "Cảm biến 33MP Full-Frame Exmor R CMOS BSI",
-        "Quay UHD 4K lên tới 120p, 1080p lên tới 240p",
-        "Ghi hình 10-Bit 4:2:2 XAVC S-I, hỗ trợ S-Cinetone",
-        "Lấy nét Fast Hybrid AF 759 điểm, Real-time Eye AF",
+        "Cảm biến 26MP APS-C Exmor R CMOS BSI",
+        "Quay video UHD 4K lên đến 120p, 1080p lên đến 240p",
+        "Quay video 10-Bit 4:2:2 XAVC S-I, S-Cinetone",
+        "Lấy nét Fast Hybrid AF 495 điểm, Real-time Eye AF",
         "Chống rung hình ảnh 5 trục SteadyShot",
-        "Khe cắm thẻ nhớ kép CFexpress Type A / SD",
+        "Khe thẻ nhớ kép CFexpress Type A / SD",
         "Bộ tay cầm XLR tháo rời",
-        "Tích hợp quạt làm mát và tản nhiệt chủ động"
+        "Quạt tản nhiệt tích hợp & tản nhiệt chủ động"
       ]
     },
     "specs": {
+      "lcd": "TFT 7,5 cm (3,0 inch), 1 036 800 điểm",
       "kind": "camera",
-      "sensor": "Full-Frame Exmor R CMOS BSI",
-      "effectivePixels": "33,0 MP",
+      "video": "DCI 4K 60p",
+      "sensor": "APS-C Exmor R CMOS BSI",
+      "weight": "679 g",
+      "battery": "520 ảnh (LCD)",
       "isoRange": "100–51200 (mở rộng 50–204800)",
       "autofocus": "759 điểm",
-      "video": "DCI 4K 60p",
-      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
-      "viewfinder": "3 686 400 điểm ảnh",
-      "lcd": "TFT 7,5 cm (3,0 inch), 1 036 800 điểm",
-      "mediaSlots": "CFexpress Type A / SD x2",
-      "battery": "520 ảnh (LCD)",
-      "weight": "679 g",
       "dimensions": "129,7 x 77,8 x 103,7 mm",
+      "mediaSlots": "CFexpress Type A / SD x2",
+      "viewfinder": "3 686 400 điểm ảnh",
       "specsSource": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilme-fx2/specifications",
-      "specsMissing": []
+      "specsMissing": [],
+      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
+      "effectivePixels": "33,0 MP"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1899230.jpg",
@@ -80,33 +80,33 @@
       ],
       "vi": [
         "Cảm biến 12.1MP Full-Frame Exmor R CMOS BSI",
-        "Quay UHD 4K lên tới 120p, 1080p lên tới 240p",
-        "Ghi hình 10-Bit 4:2:2 XAVC S-I, hỗ trợ S-Cinetone",
+        "Quay video UHD 4K lên đến 120p, 1080p lên đến 240p",
+        "Quay video 10-Bit 4:2:2 XAVC S-I, S-Cinetone",
         "Lấy nét Fast Hybrid AF 627 điểm, Real-time Eye AF",
         "Chống rung hình ảnh 5 trục SteadyShot",
-        "Khe cắm thẻ nhớ kép CFexpress Type A / SD",
-        "Bộ tay cầm XLR gắn trên nóc máy, tháo rời được",
-        "Quạt tản nhiệt tích hợp cho khả năng quay không giới hạn"
+        "Khe thẻ nhớ kép CFexpress Type A / SD",
+        "Bộ tay cầm trên XLR tháo rời",
+        "Quạt tản nhiệt tích hợp cho quay không giới hạn"
       ]
     },
     "specs": {
+      "lcd": "7,5 cm (3.0), 2,36 triệu điểm",
       "kind": "camera",
+      "video": "DCI 4K 60p",
       "sensor": "Full-Frame Exmor R CMOS BSI",
-      "effectivePixels": "12,1 MP",
+      "weight": "715 g (có pin và thẻ nhớ); 630 g (chỉ thân máy)",
+      "battery": "95 phút",
       "isoRange": "80–102400 (mở rộng 40–409600)",
       "autofocus": "759 điểm",
-      "video": "DCI 4K 60p",
-      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
-      "viewfinder": null,
-      "lcd": "7,5 cm (3.0), 2,36 triệu điểm",
-      "mediaSlots": "CFexpress Type A / SD",
-      "battery": "95 phút",
-      "weight": "715 g (có pin và thẻ nhớ); 630 g (chỉ thân máy)",
       "dimensions": "129,7 x 77,8 x 84,5 mm",
+      "mediaSlots": "CFexpress Type A / SD",
+      "viewfinder": null,
       "specsSource": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilme-fx3a/specifications",
       "specsMissing": [
         "viewfinder"
-      ]
+      ],
+      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
+      "effectivePixels": "12,1 MP"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1624226.jpg",
@@ -138,33 +138,33 @@
       ],
       "vi": [
         "Cảm biến 26MP APS-C Exmor R CMOS BSI",
-        "Quay UHD 4K lên tới 120p, 1080p lên tới 240p",
-        "Ghi hình 10-Bit 4:2:2 XAVC S-I, hỗ trợ S-Cinetone",
+        "Quay video UHD 4K lên đến 120p, 1080p lên đến 240p",
+        "Quay video 10-Bit 4:2:2 XAVC S-I, S-Cinetone",
         "Lấy nét Fast Hybrid AF 495 điểm, Real-time Eye AF",
         "Chống rung hình ảnh 5 trục SteadyShot",
-        "Khe cắm thẻ nhớ kép CFexpress Type A / SD",
+        "Khe thẻ nhớ kép CFexpress Type A / SD",
         "Thân máy Cinema Line nhỏ gọn",
-        "Quạt tản nhiệt tích hợp cho các buổi quay kéo dài"
+        "Quạt tản nhiệt tích hợp cho quay thời gian dài"
       ]
     },
     "specs": {
+      "lcd": "7,5 cm (3.0), 2,36 triệu điểm",
       "kind": "camera",
+      "video": "DCI 4K 60p",
       "sensor": "APS-C Exmor R CMOS BSI",
-      "effectivePixels": "26,0 MP",
+      "weight": "646 g (có pin và thẻ nhớ); 562 g (chỉ thân máy)",
+      "battery": "115 phút",
       "isoRange": "100–32000 (mở rộng 50–102400)",
       "autofocus": "759 điểm",
-      "video": "DCI 4K 60p",
-      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
-      "viewfinder": null,
-      "lcd": "7,5 cm (3.0), 2,36 triệu điểm",
-      "mediaSlots": "CFexpress Type A / SD",
-      "battery": "115 phút",
-      "weight": "646 g (có pin và thẻ nhớ); 562 g (chỉ thân máy)",
       "dimensions": "129,7 x 77,8 x 84,5 mm",
+      "mediaSlots": "CFexpress Type A / SD",
+      "viewfinder": null,
       "specsSource": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilme-fx30/spec?sku=ILME-FX30B%2FQAP2",
       "specsMissing": [
         "viewfinder"
-      ]
+      ],
+      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
+      "effectivePixels": "26,0 MP"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1729317.jpg",
@@ -187,7 +187,7 @@
     "priceVnd": 130990000,
     "priceFormatted": "130.990.000 đ",
     "url": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilme-fx5?sku=ilme-fx5b-q-fs1",
-    "imageUrl": "https://static.bhphoto.com/images/fb/1600161.jpg",
+    "imageUrl": "https://static.bhphoto.com/images/images1000x1000/1784716472_1989701.jpg",
     "features": {
       "en": [
         "24.2MP Full-Frame Exmor R CMOS BSI Sensor",
@@ -202,35 +202,40 @@
         "Cảm biến 24.2MP Full-Frame Exmor R CMOS BSI",
         "Quay video UHD 4K 60p 10-Bit 4:2:2",
         "Lấy nét Fast Hybrid AF 693 điểm, Real-time Eye AF",
-        "Hỗ trợ gamma S-Cinetone, S-Log3, HLG",
+        "Cấu hình Gamma S-Cinetone, S-Log3, HLG",
         "Chống rung hình ảnh 5 trục SteadyShot",
-        "Khe cắm thẻ nhớ kép CFexpress Type A / SD",
+        "Khe thẻ nhớ kép CFexpress Type A / SD",
         "Thiết kế công thái học Cinema Line & vòng xoay điều khiển"
       ]
     },
     "specs": {
+      "lcd": "8,8 cm (3,5) TFT, 2 764 800 điểm",
       "kind": "camera",
+      "video": null,
       "sensor": "Full-Frame Exmor R CMOS BSI",
-      "effectivePixels": "16,6 MP",
+      "weight": "734 g",
+      "battery": "105 phút",
       "isoRange": "320–409600",
       "autofocus": "759 điểm",
-      "video": null,
-      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
-      "viewfinder": null,
-      "lcd": "8,8 cm (3,5) TFT, 2 764 800 điểm",
-      "mediaSlots": "CFexpress Type A",
-      "battery": "105 phút",
-      "weight": "734 g",
       "dimensions": "132.2 x 79.0 x 87.0 mm",
+      "mediaSlots": "CFexpress Type A",
+      "viewfinder": null,
       "specsSource": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilme-fx5/specifications",
       "specsMissing": [
         "video",
         "viewfinder"
-      ]
+      ],
+      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
+      "effectivePixels": "16,6 MP"
     },
     "galleryUrls": [
-      "https://static.bhphoto.com/images/fb/1600161.jpg",
-      "https://static.bhphoto.com/images/images1000x1000/1600161.jpg"
+      "https://static.bhphoto.com/images/images1000x1000/1784716472_1989701.jpg",
+      "https://static.bhphoto.com/images/multiple_images/images1000x1000/1784716536_IMG_2794722.jpg",
+      "https://static.bhphoto.com/images/multiple_images/images1000x1000/1784716536_IMG_2794723.jpg",
+      "https://static.bhphoto.com/images/multiple_images/images1000x1000/1784716536_IMG_2794724.jpg",
+      "https://static.bhphoto.com/images/multiple_images/images1000x1000/1784716536_IMG_2794725.jpg",
+      "https://static.bhphoto.com/images/multiple_images/images1000x1000/1784716536_IMG_2794726.jpg",
+      "https://static.bhphoto.com/images/multiple_images/images1000x1000/1784716536_IMG_2794727.jpg"
     ]
   },
   {
@@ -247,51 +252,52 @@
     "imageUrl": "https://static.bhphoto.com/images/fb/1592066.jpg",
     "features": {
       "en": [
-        "10.2MP Full-Frame Exmor R CMOS BSI Sensor",
+        "4K 4.2K Full-Frame 10.2MP CMOS Sensor",
         "DCI 4K 60p, UHD 4K 120p, 1080p 240p",
         "15+ Stops of Dynamic Range in S-Log3",
         "Base ISO 800 / ISO 12800 Dual Native ISO",
-        "627-Pt. Fast Hybrid AF with Real-time Eye AF",
+        "627-Pt. Fast Hybrid AF with Real-Time Eye AF",
         "Electronic Variable ND Filter (1/4 to 1/128)",
         "16-Bit RAW Output via 12G-SDI",
         "Top Handle with Dual XLR Audio Inputs"
       ],
       "vi": [
-        "Cảm biến 10.2MP Full-Frame Exmor R CMOS BSI",
-        "Quay DCI 4K 60p, UHD 4K 120p, 1080p 240p",
-        "Dynamic range hơn 15 stop với S-Log3",
-        "Dual Native ISO với ISO gốc 800 / 12800",
-        "Lấy nét Fast Hybrid AF 627 điểm với Real-time Eye AF",
-        "Kính lọc Electronic Variable ND (1/4 đến 1/128)",
-        "Xuất tín hiệu 16-Bit RAW qua cổng 12G-SDI",
-        "Tay cầm gắn nóc máy có 2 cổng âm thanh XLR"
+        "Cảm biến 4K 4.2K Full-Frame 10.2MP CMOS",
+        "Quay video DCI 4K 60p, UHD 4K 120p, 1080p 240p",
+        "Dải tương phản động 15+ stop với S-Log3",
+        "Dual Native ISO với mức ISO cơ sở 800 / 12800",
+        "Lấy nét Fast Hybrid AF 627 điểm hỗ trợ Real-Time Eye AF",
+        "Bộ lọc ND biến thiên điện tử (từ 1/4 đến 1/128)",
+        "Xuất RAW 16-Bit qua 12G-SDI",
+        "Tay cầm trên với cổng vào âm thanh XLR kép"
       ]
     },
     "specs": {
+      "lcd": "8,8 cm (3,5), 2,76 triệu điểm",
       "kind": "camera",
+      "video": "DCI 4K 60p",
       "sensor": "Full-Frame Exmor R CMOS BSI",
-      "effectivePixels": "12,9 MP",
+      "weight": "890 g",
+      "battery": "105 phút",
       "isoRange": null,
       "autofocus": null,
-      "video": "DCI 4K 60p",
-      "stabilization": null,
-      "viewfinder": null,
-      "lcd": "8,8 cm (3,5), 2,76 triệu điểm",
-      "mediaSlots": "SD",
-      "battery": "105 phút",
-      "weight": "890 g",
       "dimensions": "114 x 116 x 153 mm",
+      "mediaSlots": "SD",
+      "viewfinder": null,
       "specsSource": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilme-fx6/spec?sku=ILME-FX6V%2F%2FCAP2",
       "specsMissing": [
         "autofocus",
         "isoRange",
         "stabilization",
         "viewfinder"
-      ]
+      ],
+      "stabilization": null,
+      "effectivePixels": "12,9 MP"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1592066.jpg",
-      "https://static.bhphoto.com/images/images1000x1000/1592066.jpg"
+      "https://static.bhphoto.com/images/images1000x1000/sony_pxw_fx6_cinema_camera_body_1592066.jpg",
+      "https://static.bhphoto.com/images/images1000x1000/sony_ilme_fx6vk_fx6_digital_cinema_camera_1600161.jpg"
     ]
   },
   {
@@ -317,29 +323,27 @@
         "Dual CFexpress Type A / SD Card Slots"
       ],
       "vi": [
-        "Máy quay PTZ cảm biến Full-Frame, dùng ống kính rời",
-        "Tương thích ống kính ngàm E-mount",
-        "Quay UHD 4K 120p & 1080p 240p",
+        "Máy quay PTZ ống kính rời, cảm biến Full-Frame",
+        "Tương thích ống kính ngàm E-Mount",
+        "Quay video UHD 4K 120p & 1080p 240p",
         "Điều khiển từ xa qua trình duyệt web hoặc RM-IP500",
-        "Kính lọc Electronic Variable ND",
-        "Xuất tín hiệu 12G-SDI, HDMI & NDI|HX",
-        "Khe cắm thẻ nhớ kép CFexpress Type A / SD"
+        "Bộ lọc ND biến thiên điện tử",
+        "Đầu ra 12G-SDI, HDMI & NDI|HX",
+        "Khe thẻ nhớ kép CFexpress Type A / SD"
       ]
     },
     "specs": {
+      "lcd": null,
       "kind": "camera",
+      "video": "DCI 4K 60p",
       "sensor": "Full-Frame Exmor R CMOS BSI",
-      "effectivePixels": "12,9 MP",
+      "weight": "4,6 kg (chỉ tính thân máy)",
+      "battery": null,
       "isoRange": null,
       "autofocus": "627 điểm",
-      "video": "DCI 4K 60p",
-      "stabilization": null,
-      "viewfinder": null,
-      "lcd": null,
-      "mediaSlots": "CFexpress Type A / SD",
-      "battery": null,
-      "weight": "4,6 kg (chỉ tính thân máy)",
       "dimensions": "227 x 289 x 233 mm",
+      "mediaSlots": "CFexpress Type A / SD",
+      "viewfinder": null,
       "specsSource": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilme-fr7/spec?sku=ILME-FR7%2F%2FC%20AP2",
       "specsMissing": [
         "battery",
@@ -347,7 +351,9 @@
         "lcd",
         "stabilization",
         "viewfinder"
-      ]
+      ],
+      "stabilization": null,
+      "effectivePixels": "12,9 MP"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1724296.jpg",
@@ -382,35 +388,35 @@
         "Cảm biến 20.1MP 1.0-Type Exmor RS CMOS",
         "Ống kính ZEISS Vario-Sonnar T* 24-600mm f/2.4-4",
         "Bộ xử lý hình ảnh BIONZ X & Front-End LSI",
-        "Hệ thống lấy nét Phase-Detection AF 315 điểm",
-        "Chụp liên tục 24 fps với AF/AE",
-        "Quay video UHD 4K30p & Super Slow Motion",
-        "Khung ngắm điện tử OLED 2.36 triệu điểm ảnh",
-        "Màn hình cảm ứng LCD 3.0\" 1.44 triệu điểm ảnh, lật được"
+        "Hệ thống lấy nét theo pha 315 điểm",
+        "Chụp liên tục 24 fps hỗ trợ AF/AE",
+        "Quay video UHD 4K30p & quay siêu chậm",
+        "Kính ngắm điện tử OLED 2.36 triệu điểm ảnh",
+        "Màn hình cảm ứng LCD 3.0\" lật, 1.44 triệu điểm ảnh"
       ]
     },
     "specs": {
+      "lcd": "TFT 7,5 cm (3,0 inch), 1 620 000 điểm",
       "kind": "camera",
+      "video": "4K 120p",
       "sensor": "1\"-Type Exmor RS Stacked CMOS",
-      "effectivePixels": "20,1 MP",
+      "weight": "1111 g",
+      "battery": "570 ảnh (LCD)",
       "isoRange": "100–12800",
       "autofocus": "575 điểm",
-      "video": "4K 120p",
-      "stabilization": null,
-      "viewfinder": "3 686 400 điểm ảnh",
-      "lcd": "TFT 7,5 cm (3,0 inch), 1 620 000 điểm",
-      "mediaSlots": "SD",
-      "battery": "570 ảnh (LCD)",
-      "weight": "1111 g",
       "dimensions": "136,4 x 94,5 x 151,3 mm",
+      "mediaSlots": "SD",
+      "viewfinder": "3 686 400 điểm ảnh",
       "specsSource": "https://www.sony.com.vn/electronics/may-anh-nho-gon-cyber-shot/dsc-rx10m5/specifications",
       "specsMissing": [
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "effectivePixels": "20,1 MP"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1985961.jpg",
-      "https://static.bhphoto.com/images/images1000x1000/1985961.jpg"
+      "https://static.bhphoto.com/images/images1000x1000/sony_dsc_rx10m3_cyber_shot_dsc_rx10_iii_digital_1242612.jpg"
     ]
   },
   {
@@ -429,7 +435,7 @@
       "en": [
         "20.1MP 1.0-Type Exmor RS CMOS Sensor",
         "ZEISS Vario-Sonnar T* 24-200mm f/2.8-4.5 Lens",
-        "357-Pt. Phase-Detection AF & Real-time Eye AF",
+        "357-Pt. Phase-Detection AF & Real-Time Eye AF",
         "20 fps Blackout-Free Shooting",
         "UHD 4K30p Video & Active SteadyShot",
         "Pop-Up 2.36m-Dot OLED EVF",
@@ -439,32 +445,32 @@
       "vi": [
         "Cảm biến 20.1MP 1.0-Type Exmor RS CMOS",
         "Ống kính ZEISS Vario-Sonnar T* 24-200mm f/2.8-4.5",
-        "Lấy nét Phase-Detection AF 357 điểm & Real-time Eye AF",
-        "Chụp liên tục 20 fps không tối màn hình (Blackout-Free)",
-        "Quay video UHD 4K30p & Active SteadyShot",
-        "Khung ngắm EVF OLED dạng bật lên, 2.36 triệu điểm ảnh",
-        "Màn hình cảm ứng LCD 3.0\" 921k điểm ảnh, lật 180°",
+        "Lấy nét theo pha 357 điểm & Real-Time Eye AF",
+        "Chụp liên tục 20 fps không tối màn hình",
+        "Quay video UHD 4K30p & chống rung Active SteadyShot",
+        "Kính ngắm OLED EVF dạng bật lên, 2.36 triệu điểm ảnh",
+        "Màn hình cảm ứng LCD 3.0\" lật 180°, 921 nghìn điểm ảnh",
         "Cổng micro ngoài 3.5mm"
       ]
     },
     "specs": {
+      "lcd": "TFT 7,5 cm (3,0 inch) (4:3), 921.600 điểm, Xtra Fine",
       "kind": "camera",
+      "video": "4K 30p",
       "sensor": "1\"-Type Exmor RS Stacked CMOS",
-      "effectivePixels": "20.1 MP",
+      "weight": "302 g (có pin và thẻ nhớ); 275 g (chỉ thân máy)",
+      "battery": "130 phút",
       "isoRange": null,
       "autofocus": "357 điểm",
-      "video": "4K 30p",
-      "stabilization": "Optical SteadyShot",
-      "viewfinder": "2,359,296 điểm ảnh",
-      "lcd": "Xtra Fine TFT 7,5 cm (3,0 inch, 4:3), 921.600 điểm",
-      "mediaSlots": "SD",
-      "battery": "130 phút",
-      "weight": "302 g (có pin và thẻ nhớ); 275 g (chỉ thân máy)",
       "dimensions": "101.6 x 58.1 x 42.8 mm",
+      "mediaSlots": "SD",
+      "viewfinder": "2,359,296 điểm ảnh",
       "specsSource": "https://www.sony-asia.com/electronics/cyber-shot-compact-cameras/dsc-rx100m7/specifications",
       "specsMissing": [
         "isoRange"
-      ]
+      ],
+      "stabilization": "Chống rung quang học SteadyShot",
+      "effectivePixels": "20.1 MP"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1496248.jpg",
@@ -499,32 +505,32 @@
       "vi": [
         "Cảm biến 42.4MP Full-Frame Exmor R CMOS BSI",
         "Ống kính ZEISS Sonnar T* 35mm f/2",
-        "Tích hợp Variable Optical Low-Pass Filter",
+        "Bộ lọc thông thấp quang học thay đổi được",
         "Hệ thống lấy nét Fast Hybrid AF 399 điểm",
         "Quay video Full HD 1080p60",
-        "Khung ngắm EVF OLED dạng bật lên, 2.36 triệu điểm ảnh",
-        "Màn hình LCD 3.0\" 1.23 triệu điểm ảnh, lật được",
-        "Ảnh RAW 14-Bit không nén"
+        "Kính ngắm OLED EVF dạng bật lên, 2.36 triệu điểm ảnh",
+        "Màn hình LCD 3.0\" lật, 1.23 triệu điểm ảnh",
+        "Xuất RAW 14-Bit không nén"
       ]
     },
     "specs": {
+      "lcd": "TFT 7,5 cm (3,0 inch) (4:3), 1.228.800 điểm, Xtra Fine",
       "kind": "camera",
+      "video": "HD 60p",
       "sensor": "Full-Frame Exmor CMOS",
-      "effectivePixels": "42.4 MP",
+      "weight": "507 g (có pin và thẻ Memory Stick PRO Duo); 480 g (chỉ thân máy)",
+      "battery": "110 phút",
       "isoRange": "100–25600",
       "autofocus": "399 điểm",
-      "video": "HD 60p",
-      "stabilization": null,
-      "viewfinder": "2,359,296 điểm ảnh",
-      "lcd": "Xtra Fine TFT 7,5 cm (3,0 inch, 4:3), 1.228.800 điểm",
-      "mediaSlots": "SD",
-      "battery": "110 phút",
-      "weight": "480 g (chỉ thân máy); 507 g (có pin và thẻ nhớ Memory Stick PRO Duo)",
       "dimensions": "113.3 x 65.4 x 72.0 mm",
+      "mediaSlots": "SD",
+      "viewfinder": "2,359,296 điểm ảnh",
       "specsSource": "https://www.sony-asia.com/electronics/cyber-shot-compact-cameras/dsc-rx1rm2/specifications",
       "specsMissing": [
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "effectivePixels": "42.4 MP"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1907791.jpg",
@@ -555,35 +561,35 @@
         "Ultra-Lightweight 178g Design"
       ],
       "vi": [
-        "Định dạng APS-C | Khẩu độ không đổi f/4",
-        "Tiêu cự tương đương 15-30mm (định dạng 35mm)",
-        "Cơ chế Power Zoom & zoom trong",
-        "Hai động cơ AF Linear Motor & lấy nét trong (Internal Focus)",
-        "ED Elements & Aspherical Elements",
-        "Thiết kế chống bụi và chống ẩm",
+        "Định dạng APS-C | Khẩu độ cố định f/4",
+        "15-30mm (tương đương định dạng 35mm)",
+        "Cơ chế zoom điện & zoom trong",
+        "Động cơ lấy nét kép Linear Motor & lấy nét trong",
+        "ED và Aspherical Elements",
+        "Kết cấu chống bụi và chống ẩm",
         "Cấu tạo 7 lá khẩu tròn",
-        "Thiết kế siêu nhẹ, chỉ 178g"
+        "Thiết kế siêu nhẹ 178g"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "APS-C",
+      "weight": "178 g",
+      "dimensions": "69,8 x 55,0 mm",
+      "angleOfView": "109°–70°",
       "focalLength": "10–20 mm",
       "maxAperture": "F4",
       "minAperture": "F22",
-      "construction": "11 thành phần / 8 nhóm",
-      "angleOfView": "109°–70°",
-      "minFocusDistance": "0,20 m",
-      "maxMagnification": "0,14x",
-      "filterDiameter": "62 mm",
-      "apertureBlades": "7 (khẩu tròn)",
-      "stabilization": null,
-      "weight": "178 g",
-      "dimensions": "69,8 x 55,0 mm",
       "specsSource": "https://www.sony.com.vn/lenses/products/selp1020g/spec?sku=SELP1020G%2F%2FCSYX",
+      "construction": "11 thành phần / 8 nhóm",
       "specsMissing": [
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": "7 (khẩu tròn)",
+      "filterDiameter": "62 mm",
+      "maxMagnification": "0,14x",
+      "minFocusDistance": "0,20 m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1709233.jpg",
@@ -614,35 +620,35 @@
         "Focus Hold Button and AF/MF Switch"
       ],
       "vi": [
-        "Định dạng APS-C | Khẩu độ không đổi f/2.8",
-        "Tiêu cự tương đương 24-82.5mm (định dạng 35mm)",
-        "4 Aspherical Elements & 3 ED Elements",
-        "Lớp phủ Nano AR giảm loá",
-        "Hệ thống AF dùng động cơ XD Linear Motor",
+        "Định dạng APS-C | Khẩu độ cố định f/2.8",
+        "24-82.5mm (tương đương định dạng 35mm)",
+        "4 Aspherical & 3 ED Elements",
+        "Lớp phủ Nano AR Coating giúp hạn chế loá sáng",
+        "Hệ thống lấy nét dùng động cơ XD Linear Motor",
         "Thiết kế chống bụi và chống ẩm",
         "Cấu tạo 9 lá khẩu tròn",
-        "Focus Hold Button & công tắc AF/MF"
+        "Nút giữ lấy nét Focus Hold Button và công tắc AF/MF"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "APS-C",
+      "weight": "494 g",
+      "dimensions": "73 x 100 mm",
+      "angleOfView": "83°–29°",
       "focalLength": "16–55 mm",
       "maxAperture": "F2.8",
       "minAperture": "F22",
-      "construction": "17 thành phần / 12 nhóm",
-      "angleOfView": "83°–29°",
-      "minFocusDistance": "0,33 m",
-      "maxMagnification": "0,2x",
-      "filterDiameter": "67 mm",
-      "apertureBlades": "9 (khẩu tròn)",
-      "stabilization": null,
-      "weight": "494 g",
-      "dimensions": "73 x 100 mm",
       "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel1655g/specifications",
+      "construction": "17 thành phần / 12 nhóm",
       "specsMissing": [
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": "9 (khẩu tròn)",
+      "filterDiameter": "67 mm",
+      "maxMagnification": "0,2x",
+      "minFocusDistance": "0,33 m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1502819.jpg",
@@ -673,33 +679,33 @@
         "Ideal for Video & Still Photography"
       ],
       "vi": [
-        "Định dạng APS-C | Khẩu độ không đổi f/4",
-        "Tiêu cự tương đương 27-157.5mm (định dạng 35mm)",
-        "Cần gạt Power Zoom & Smooth Motion Optics",
-        "2 ED Elements & 3 Aspherical Elements",
+        "Định dạng APS-C | Khẩu độ cố định f/4",
+        "27-157.5mm (tương đương định dạng 35mm)",
+        "Cần gạt zoom điện & Smooth Motion Optics",
+        "2 ED & 3 Aspherical Elements",
         "Chống rung quang học Optical SteadyShot",
-        "Thiết kế zoom trong & lấy nét trong (Internal Focus)",
+        "Thiết kế zoom trong & lấy nét trong",
         "Cấu tạo 7 lá khẩu tròn",
-        "Lý tưởng cho cả quay video và chụp ảnh"
+        "Lý tưởng cho quay video & chụp ảnh"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "APS-C",
+      "weight": "427 g",
+      "dimensions": "78 x 110 mm",
+      "angleOfView": "76°–15°",
       "focalLength": "18–105 mm",
       "maxAperture": "F4",
       "minAperture": "F22",
-      "construction": "16 thành phần / 12 nhóm",
-      "angleOfView": "76°–15°",
-      "minFocusDistance": "0,45 (Rộng)-0,95 m",
-      "maxMagnification": "0,11x",
-      "filterDiameter": "72 mm",
-      "apertureBlades": "7 (khẩu tròn)",
-      "stabilization": "Chống rung quang học SteadyShot",
-      "weight": "427 g",
-      "dimensions": "78 x 110 mm",
       "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/selp18105g/specifications",
-      "specsMissing": []
+      "construction": "16 thành phần / 12 nhóm",
+      "specsMissing": [],
+      "stabilization": "Chống rung quang học SteadyShot",
+      "apertureBlades": "7 (khẩu tròn)",
+      "filterDiameter": "72 mm",
+      "maxMagnification": "0,11x",
+      "minFocusDistance": "0,45 (Rộng)-0,95 m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1001011.jpg",
@@ -731,32 +737,32 @@
       ],
       "vi": [
         "Định dạng APS-C | Khẩu độ thay đổi f/4.5-6.3",
-        "Tiêu cự tương đương 105-525mm (định dạng 35mm)",
+        "105-525mm (tương đương định dạng 35mm)",
         "1 Aspherical Element & 3 ED Elements",
-        "Hệ thống AF dùng động cơ XD Linear Motor",
+        "Hệ thống lấy nét dùng động cơ XD Linear Motor",
         "Chống rung quang học Optical SteadyShot",
-        "Công tắc khoá zoom & Focus Hold Button tuỳ chỉnh được",
-        "Thiết kế chống bụi và chống ẩm",
+        "Công tắc khoá zoom & nút giữ lấy nét Focus Hold tuỳ chỉnh được",
+        "Kết cấu chống bụi và chống ẩm",
         "Cấu tạo 7 lá khẩu tròn"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "APS-C",
+      "weight": "625 g",
+      "dimensions": "77 x 142 mm",
+      "angleOfView": "22°–4°40'",
       "focalLength": "70–350 mm",
       "maxAperture": "F4.5–6.3",
       "minAperture": "F22–32",
-      "construction": "19 thành phần / 13 nhóm",
-      "angleOfView": "22°–4°40'",
-      "minFocusDistance": "1,1-1,5 m",
-      "maxMagnification": "0,23x",
-      "filterDiameter": "67 mm",
-      "apertureBlades": "7 (khẩu tròn)",
-      "stabilization": "Chống rung quang học SteadyShot",
-      "weight": "625 g",
-      "dimensions": "77 x 142 mm",
       "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel70350g/specifications",
-      "specsMissing": []
+      "construction": "19 thành phần / 13 nhóm",
+      "specsMissing": [],
+      "stabilization": "Chống rung quang học SteadyShot",
+      "apertureBlades": "7 (khẩu tròn)",
+      "filterDiameter": "67 mm",
+      "maxMagnification": "0,23x",
+      "minFocusDistance": "1,1-1,5 m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1502821.jpg",
@@ -787,36 +793,36 @@
         "7-Blade Circular Diaphragm"
       ],
       "vi": [
-        "Định dạng Full-Frame | Khẩu độ không đổi f/4",
-        "4 Aspherical Elements, 1 Super ED Element & 3 ED Elements",
-        "Lớp phủ Nano AR loại bỏ hiện tượng bóng ma",
-        "Lấy nét bằng động cơ Direct Drive Super Sonic Wave Motor",
-        "Focus Hold Button & công tắc AF/MF",
+        "Định dạng Full-Frame | Khẩu độ cố định f/4",
+        "4 Aspherical, 1 Super ED & 3 ED Elements",
+        "Lớp phủ Nano AR Coating giúp loại bỏ bóng ma",
+        "Lấy nét dùng động cơ Direct Drive Super Sonic Wave Motor",
+        "Nút giữ lấy nét Focus Hold Button & công tắc AF/MF",
         "Loa che nắng tích hợp",
-        "Thiết kế chống bụi và chống ẩm",
+        "Kết cấu chống bụi và chống ẩm",
         "Cấu tạo 7 lá khẩu tròn"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "565 g",
+      "dimensions": "87 x 117,4 mm",
+      "angleOfView": "99°–61°",
       "focalLength": "12–24 mm",
       "maxAperture": "F4",
       "minAperture": "F22",
-      "construction": "17 thành phần / 13 nhóm",
-      "angleOfView": "99°–61°",
-      "minFocusDistance": "0,28 m",
-      "maxMagnification": "0,14x",
-      "filterDiameter": null,
-      "apertureBlades": "7 (khẩu tròn)",
-      "stabilization": null,
-      "weight": "565 g",
-      "dimensions": "87 x 117,4 mm",
       "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel1224g/specifications",
+      "construction": "17 thành phần / 13 nhóm",
       "specsMissing": [
         "filterDiameter",
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": "7 (khẩu tròn)",
+      "filterDiameter": null,
+      "maxMagnification": "0,14x",
+      "minFocusDistance": "0,28 m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1338517.jpg",
@@ -848,12 +854,12 @@
         "Compact Ultra-Wide Astro & Landscape Lens"
       ],
       "vi": [
-        "Định dạng Full-Frame | Ống kính prime siêu rộng",
+        "Định dạng Full-Frame | Ống kính một tiêu cự siêu rộng",
         "Khẩu độ tối đa lớn f/1.8",
         "2 XA Elements & ED Glass Elements",
-        "Hệ thống AF hai động cơ XD Linear Motor",
+        "Hệ thống lấy nét dùng động cơ kép XD Linear Motor",
         "Công tắc De-Click khẩu độ cho quay video",
-        "Thiết kế chống bụi và chống ẩm",
+        "Thiết kế kín chống bụi và chống ẩm",
         "Cấu tạo 9 lá khẩu tròn",
         "Ống kính siêu rộng nhỏ gọn cho thiên văn & phong cảnh"
       ]
@@ -861,22 +867,22 @@
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "304 g",
+      "dimensions": "73,8 x 75 mm",
+      "angleOfView": "83°",
       "focalLength": "16 mm",
       "maxAperture": "F1.8",
       "minAperture": "F22",
-      "construction": "15 thành phần / 12 nhóm",
-      "angleOfView": "83°",
-      "minFocusDistance": "0,15 m",
-      "maxMagnification": "0,25x",
-      "filterDiameter": "67 mm",
-      "apertureBlades": "11 (khẩu tròn)",
-      "stabilization": null,
-      "weight": "304 g",
-      "dimensions": "73,8 x 75 mm",
       "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel16f18g/specifications",
+      "construction": "15 thành phần / 12 nhóm",
       "specsMissing": [
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": "11 (khẩu tròn)",
+      "filterDiameter": "67 mm",
+      "maxMagnification": "0,25x",
+      "minFocusDistance": "0,15 m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1881960.jpg",
@@ -907,35 +913,35 @@
         "Lightest Full-Frame Power Zoom Lens (353g)"
       ],
       "vi": [
-        "Định dạng Full-Frame | Khẩu độ không đổi f/4",
-        "Cơ chế Power Zoom điện tử",
-        "6 động cơ XD Linear Motor (cho zoom & AF)",
-        "Super ED, ED & Aspherical Elements",
+        "Định dạng Full-Frame | Khẩu độ cố định f/4",
+        "Cơ chế zoom điện tử",
+        "6 động cơ XD Linear Motor (zoom & lấy nét)",
+        "Super ED, ED và Aspherical Elements",
         "Vòng khẩu độ hỗ trợ De-Click",
-        "Hạn chế hiện tượng focus breathing",
+        "Hạn chế Focus Breathing",
         "Cấu tạo 7 lá khẩu tròn",
-        "Ống kính Power Zoom Full-Frame nhẹ nhất (353g)"
+        "Ống kính zoom điện Full-Frame nhẹ nhất (353g)"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "353 g",
+      "dimensions": "80,5 x 88,1 mm",
+      "angleOfView": "83°–4°",
       "focalLength": "16–35 mm",
       "maxAperture": "F4",
       "minAperture": "F22",
-      "construction": "13 thành phần / 12 nhóm",
-      "angleOfView": "83°–4°",
-      "minFocusDistance": "0,28 - 0,24 m",
-      "maxMagnification": "0,23x",
-      "filterDiameter": "72 mm",
-      "apertureBlades": "7 (khẩu tròn)",
-      "stabilization": null,
-      "weight": "353 g",
-      "dimensions": "80,5 x 88,1 mm",
       "specsSource": "https://www.sony.com.vn/lenses/products/selp1635g/spec?sku=SELP1635G%2F%2FQSYX",
+      "construction": "13 thành phần / 12 nhóm",
       "specsMissing": [
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": "7 (khẩu tròn)",
+      "filterDiameter": "72 mm",
+      "maxMagnification": "0,23x",
+      "minFocusDistance": "0,28 - 0,24 m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1697010.jpg",
@@ -965,35 +971,35 @@
         "Robust Professional Cinema Housing"
       ],
       "vi": [
-        "Ống kính điện ảnh Full-Frame | Khẩu độ không đổi T3.1",
-        "Vòng răng chuẩn 0.8 MOD cho lấy nét, zoom và khẩu độ",
-        "Bộ Servo Zoom tháo rời",
+        "Ống kính điện ảnh Full-Frame | Khẩu độ cố định T3.1",
+        "Vòng răng tiêu chuẩn 0.8 MOD cho lấy nét, zoom, khẩu độ",
+        "Bộ zoom servo tháo rời",
         "Thiết kế quang học tiên tiến với 2 XA Elements",
-        "Linear Response MF & kiểm soát focus breathing",
+        "Linear Response MF & kiểm soát Focus Breathing",
         "Cấu tạo 11 lá khẩu tròn",
-        "Thân ống kính điện ảnh chuyên nghiệp, bền bỉ"
+        "Vỏ điện ảnh chuyên nghiệp bền bỉ"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "1390 g",
+      "dimensions": "118,5 x 147 mm",
+      "angleOfView": "83°–4°",
       "focalLength": "16–35 mm",
       "maxAperture": "F3.1–2.8",
       "minAperture": "F25–22",
-      "construction": "16 thành phần / 13 nhóm",
-      "angleOfView": "83°–4°",
-      "minFocusDistance": "0,28 m",
-      "maxMagnification": "0,19x",
-      "filterDiameter": null,
-      "apertureBlades": "11 (khẩu tròn)",
-      "stabilization": null,
-      "weight": "1390 g",
-      "dimensions": "118,5 x 147 mm",
       "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/selc1635g/specifications",
+      "construction": "16 thành phần / 13 nhóm",
       "specsMissing": [
         "filterDiameter",
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": "11 (khẩu tròn)",
+      "filterDiameter": null,
+      "maxMagnification": "0,19x",
+      "minFocusDistance": "0,28 m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1506716.jpg",
@@ -1026,39 +1032,37 @@
       ],
       "vi": [
         "Định dạng Full-Frame | Khẩu độ lớn f/2.8",
-        "3 Aspherical Elements & 3 ED Elements",
-        "Hệ thống AF hai động cơ XD Linear Motor",
+        "3 Aspherical & 3 ED Elements",
+        "Hệ thống lấy nét dùng động cơ kép XD Linear Motor",
         "Vòng khẩu độ vật lý với công tắc De-Click",
         "Hỗ trợ Focus Breathing Compensation",
-        "Thiết kế chống bụi và chống ẩm",
+        "Kết cấu chống bụi và chống ẩm",
         "Cấu tạo 11 lá khẩu tròn",
-        "Thiết kế siêu gọn, 409g"
+        "Thiết kế siêu nhỏ gọn 409g"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "409 g",
+      "dimensions": "74,8 x 91,4 mm",
+      "angleOfView": "83ﾟ–59ﾟ",
       "focalLength": "16–25 mm",
       "maxAperture": "F2.8",
       "minAperture": "F22",
-      "construction": "16 thành phần / 13 nhóm",
-      "angleOfView": "83ﾟ–59ﾟ",
-      "minFocusDistance": "0,18 (W) – 0,24 (T) (AF), 0,17 (W) – 0,22(T) (MF) m",
-      "maxMagnification": "0,20x",
-      "filterDiameter": "67 mm",
-      "apertureBlades": "11 (khẩu tròn)",
-      "stabilization": null,
-      "weight": "409 g",
-      "dimensions": "74,8 x 91,4 mm",
       "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel1625g/specifications",
+      "construction": "16 thành phần / 13 nhóm",
       "specsMissing": [
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": "11 (khẩu tròn)",
+      "filterDiameter": "67 mm",
+      "maxMagnification": "0,20x",
+      "minFocusDistance": "0,18 (W) – 0,24 (T) (AF), 0,17 (W) – 0,22(T) (MF) m"
     },
     "galleryUrls": [
-      "https://static.bhphoto.com/images/fb/1855937.jpg",
-      "https://static.bhphoto.com/images/fb/1823773.jpg",
-      "https://static.bhphoto.com/images/images1000x1000/1855937.jpg"
+      "https://static.bhphoto.com/images/fb/1823773.jpg"
     ]
   },
   {
@@ -1084,11 +1088,11 @@
         "Compact Ultra-Wide Landscape & Astro Lens"
       ],
       "vi": [
-        "Định dạng Full-Frame | Ống kính prime siêu rộng f/1.8",
-        "2 Advanced Aspherical Elements & 3 ED Elements",
-        "Hệ thống AF hai động cơ XD Linear Motor",
+        "Định dạng Full-Frame | Ống kính một tiêu cự siêu rộng f/1.8",
+        "2 Advanced Aspherical & 3 ED Elements",
+        "Hệ thống lấy nét dùng động cơ kép XD Linear Motor",
         "Vòng khẩu độ với công tắc De-Click",
-        "Lớp phủ Fluorine & thân chống chịu thời tiết",
+        "Lớp phủ Fluorine Coating & kết cấu chống chịu thời tiết",
         "Cấu tạo 9 lá khẩu tròn",
         "Ống kính siêu rộng nhỏ gọn cho phong cảnh & thiên văn"
       ]
@@ -1096,22 +1100,22 @@
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "373 g",
+      "dimensions": "73,5 x 84,7 mm",
+      "angleOfView": "70",
       "focalLength": "20 mm",
       "maxAperture": "F1.8",
       "minAperture": "F22",
-      "construction": "14 thành phần / 12 nhóm",
-      "angleOfView": "70",
-      "minFocusDistance": "0,19 m",
-      "maxMagnification": "0,20x",
-      "filterDiameter": "67 mm",
-      "apertureBlades": "9 (khẩu tròn)",
-      "stabilization": null,
-      "weight": "373 g",
-      "dimensions": "73,5 x 84,7 mm",
       "specsSource": "https://www.sony.com.vn/lenses/products/sel20f18g/spec?sku=SEL20F18G%2F%2FQSYX",
+      "construction": "14 thành phần / 12 nhóm",
       "specsMissing": [
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": "9 (khẩu tròn)",
+      "filterDiameter": "67 mm",
+      "maxMagnification": "0,20x",
+      "minFocusDistance": "0,19 m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1549627.jpg",
@@ -1143,35 +1147,35 @@
         "Lightweight 488g All-Rounder Zoom"
       ],
       "vi": [
-        "Định dạng Full-Frame | Dải tiêu cự từ siêu rộng đến tele ngắn",
-        "Khẩu độ tối đa không đổi f/4",
-        "Hệ thống AF hai động cơ XD Linear Motor",
-        "2 AA Elements, 1 ED Element & 3 Aspherical Elements",
+        "Định dạng Full-Frame | Từ siêu rộng đến tele ngắn",
+        "Khẩu độ tối đa cố định f/4",
+        "Hệ thống lấy nét dùng động cơ kép XD Linear Motor",
+        "2 AA Elements, 1 ED & 3 Aspherical Elements",
         "Vòng khẩu độ với công tắc Click/De-Click",
         "Điều khiển khẩu độ Micro-Step & Active Breathing Compensation",
         "Cấu tạo 9 lá khẩu tròn",
-        "Ống kính zoom đa dụng, nhẹ 488g"
+        "Ống kính zoom đa dụng nhẹ 488g"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "488 g",
+      "dimensions": "78,7 x 99 mm",
+      "angleOfView": "70°–23°",
       "focalLength": "20–70 mm",
       "maxAperture": "F4",
       "minAperture": "F22",
-      "construction": "16 thành phần / 13 nhóm",
-      "angleOfView": "70°–23°",
-      "minFocusDistance": "Rộng: 0,30 m",
-      "maxMagnification": "0,39x",
-      "filterDiameter": "72 mm",
-      "apertureBlades": "9 (khẩu tròn)",
-      "stabilization": null,
-      "weight": "488 g",
-      "dimensions": "78,7 x 99 mm",
       "specsSource": "https://www.sony.com.vn/lenses/products/sel2070g/spec?sku=SEL2070G%2F%2FQ%20SYX",
+      "construction": "16 thành phần / 13 nhóm",
       "specsMissing": [
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": "9 (khẩu tròn)",
+      "filterDiameter": "72 mm",
+      "maxMagnification": "0,39x",
+      "minFocusDistance": "Rộng: 0,30 m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1745126.jpg",
@@ -1189,7 +1193,7 @@
     "priceVnd": 45153818,
     "priceFormatted": "45.153.818 đ",
     "url": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel200600g?sku=sel200600g-csyx",
-    "imageUrl": "https://static.bhphoto.com/images/fb/1532686.jpg",
+    "imageUrl": "https://cdn.vjshop.vn/ong-kinh/mirrorless/sony/sony-fe-200-600mm-f56-63-g-oss/sony-fe-200-600mm-f56-63-g-oss-1-500x500.jpg",
     "features": {
       "en": [
         "Full-Frame Format | Telephoto Super-Zoom",
@@ -1205,35 +1209,33 @@
         "Định dạng Full-Frame | Ống kính siêu zoom tele",
         "Khẩu độ thay đổi từ f/5.6 đến f/6.3",
         "5 ED Elements & 1 Aspherical Element",
-        "Lấy nét bằng động cơ Direct Drive Super Sonic Wave Motor",
+        "Lấy nét dùng động cơ Direct Drive Super Sonic Wave Motor",
         "Chống rung quang học Optical SteadyShot",
-        "Thiết kế zoom trong & lấy nét trong (Internal Focus)",
-        "Vòng gắn chân máy xoay được, có thể tháo rời",
+        "Thiết kế zoom trong & lấy nét trong",
+        "Đế gắn chân máy xoay, tháo rời được",
         "Cấu tạo 11 lá khẩu tròn"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "2115 g",
+      "dimensions": "111.5 x 318 mm",
+      "angleOfView": "8°–2°40'",
       "focalLength": "200–600 mm",
       "maxAperture": "F5.6–6.3",
       "minAperture": "F32–36",
-      "construction": "24 thành phần / 17 nhóm",
-      "angleOfView": "8°–2°40'",
-      "minFocusDistance": "2.4 m",
-      "maxMagnification": "0.2x",
-      "filterDiameter": "95 mm",
-      "apertureBlades": "11 (khẩu tròn)",
-      "stabilization": "Optical SteadyShot",
-      "weight": "2115 g",
-      "dimensions": "111.5 x 318 mm",
       "specsSource": "https://www.sony-asia.com/electronics/camera-lenses/sel200600g/specifications",
-      "specsMissing": []
+      "construction": "24 thành phần / 17 nhóm",
+      "specsMissing": [],
+      "stabilization": "Chống rung quang học SteadyShot",
+      "apertureBlades": "11 (khẩu tròn)",
+      "filterDiameter": "95 mm",
+      "maxMagnification": "0.2x",
+      "minFocusDistance": "2.4 m"
     },
     "galleryUrls": [
-      "https://static.bhphoto.com/images/fb/1532686.jpg",
-      "https://static.bhphoto.com/images/fb/1485540.jpg",
-      "https://static.bhphoto.com/images/images1000x1000/1532686.jpg"
+      "https://cdn.vjshop.vn/ong-kinh/mirrorless/sony/sony-fe-200-600mm-f56-63-g-oss/sony-fe-200-600mm-f56-63-g-oss-1-500x500.jpg"
     ]
   },
   {
@@ -1260,35 +1262,35 @@
         "Ultra-Compact 162g Pancake-Style Form Factor"
       ],
       "vi": [
-        "Định dạng Full-Frame | Ống kính prime góc rộng nhỏ gọn",
-        "Khẩu độ lớn f/2.8 & vỏ nhôm",
+        "Định dạng Full-Frame | Ống kính một tiêu cự góc rộng nhỏ gọn",
+        "Khẩu độ lớn f/2.8 & vỏ ngoài kim loại nhôm",
         "3 Aspherical Elements & 1 ED Element",
-        "Hệ thống AF hai động cơ XD Linear Motor",
+        "Hệ thống lấy nét dùng động cơ kép XD Linear Motor",
         "Vòng khẩu độ với công tắc De-Click",
-        "Thiết kế chống bụi và chống ẩm",
+        "Kết cấu chống bụi và chống ẩm",
         "Cấu tạo 7 lá khẩu tròn",
-        "Kiểu dáng pancake siêu gọn, 162g"
+        "Kiểu dáng pancake siêu nhỏ gọn 162g"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "162 g",
+      "dimensions": "68 x 45 mm",
+      "angleOfView": "61",
       "focalLength": "24 mm",
       "maxAperture": "F2.8",
       "minAperture": "F22",
-      "construction": "8 thành phần / 7 nhóm",
-      "angleOfView": "61",
-      "minFocusDistance": "0,24 m",
-      "maxMagnification": "0,13x",
-      "filterDiameter": "49 mm",
-      "apertureBlades": "7 (khẩu tròn)",
-      "stabilization": null,
-      "weight": "162 g",
-      "dimensions": "68 x 45 mm",
       "specsSource": "https://www.sony.com.vn/lenses/products/sel24f28g/spec?sku=SEL24F28G%2F%2FCSYX",
+      "construction": "8 thành phần / 7 nhóm",
       "specsMissing": [
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": "7 (khẩu tròn)",
+      "filterDiameter": "49 mm",
+      "maxMagnification": "0,13x",
+      "minFocusDistance": "0,24 m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1630080.jpg",
@@ -1320,33 +1322,33 @@
         "9-Blade Circular Diaphragm"
       ],
       "vi": [
-        "Định dạng Full-Frame | Khẩu độ không đổi f/4",
+        "Định dạng Full-Frame | Khẩu độ cố định f/4",
         "4 Aspherical Elements & 3 ED Elements",
-        "Lớp phủ Nano AR giảm thiểu hiện tượng bóng ma",
-        "Lấy nét bằng động cơ Direct Drive Super Sonic Wave Motor",
+        "Lớp phủ Nano AR Coating giúp giảm thiểu bóng ma",
+        "Lấy nét dùng động cơ Direct Drive Super Sonic Wave Motor",
         "Chống rung quang học Optical SteadyShot",
-        "Focus Hold Button & công tắc AF/MF",
-        "Thiết kế chống bụi và chống ẩm",
+        "Nút giữ lấy nét Focus Hold Button & công tắc AF/MF",
+        "Kết cấu chống bụi và chống ẩm",
         "Cấu tạo 9 lá khẩu tròn"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "663 g",
+      "dimensions": "83,4 x 113,3 mm",
+      "angleOfView": "61°–15°",
       "focalLength": "24–105 mm",
       "maxAperture": "F4",
       "minAperture": "F22",
-      "construction": "17 thành phần / 14 nhóm",
-      "angleOfView": "61°–15°",
-      "minFocusDistance": "0,38 m",
-      "maxMagnification": "0,31x",
-      "filterDiameter": "77 mm",
-      "apertureBlades": "9 (khẩu tròn)",
-      "stabilization": "Chống rung quang học SteadyShot",
-      "weight": "663 g",
-      "dimensions": "83,4 x 113,3 mm",
       "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel24105g/specifications",
-      "specsMissing": []
+      "construction": "17 thành phần / 14 nhóm",
+      "specsMissing": [],
+      "stabilization": "Chống rung quang học SteadyShot",
+      "apertureBlades": "9 (khẩu tròn)",
+      "filterDiameter": "77 mm",
+      "maxMagnification": "0,31x",
+      "minFocusDistance": "0,38 m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1369442.jpg",
@@ -1377,34 +1379,34 @@
         "Compact Everyday Standard Zoom (440g)"
       ],
       "vi": [
-        "Định dạng Full-Frame | Khẩu độ không đổi f/2.8",
-        "4 Aspherical Elements & 2 ED Glass Elements",
-        "Hệ thống AF hai động cơ XD Linear Motor",
-        "Vòng khẩu độ riêng với công tắc De-Click",
-        "Thiết kế chống bụi và chống ẩm",
+        "Định dạng Full-Frame | Khẩu độ cố định f/2.8",
+        "4 Aspherical & 2 ED Glass Elements",
+        "Hệ thống lấy nét dùng động cơ kép XD Linear Motor",
+        "Vòng khẩu độ chuyên dụng với công tắc De-Click",
+        "Vỏ kín chống bụi và chống ẩm",
         "Cấu tạo 11 lá khẩu tròn",
-        "Ống kính zoom tiêu chuẩn nhỏ gọn cho mọi ngày (440g)"
+        "Ống kính zoom tiêu chuẩn nhỏ gọn dùng hằng ngày (440g)"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "440 g",
+      "dimensions": "74,8 x 92,3 mm",
+      "angleOfView": "61ﾟ–32ﾟ",
       "focalLength": "24–50 mm",
       "maxAperture": "F2.8",
       "minAperture": "F22",
-      "construction": "16 thành phần / 13 nhóm",
-      "angleOfView": "61ﾟ–32ﾟ",
-      "minFocusDistance": "0,19(W)-0,30(T) (AF), 0,18(W)-0,29(T) (MF) m",
-      "maxMagnification": "0,30x",
-      "filterDiameter": "67 mm",
-      "apertureBlades": "11 (khẩu tròn)",
-      "stabilization": null,
-      "weight": "440 g",
-      "dimensions": "74,8 x 92,3 mm",
       "specsSource": "https://www.sony.com.vn/lenses/products/sel2450g/spec?sku=SEL2450G%2F%2FZ%20SYX",
+      "construction": "16 thành phần / 13 nhóm",
       "specsMissing": [
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": "11 (khẩu tròn)",
+      "filterDiameter": "67 mm",
+      "maxMagnification": "0,30x",
+      "minFocusDistance": "0,19(W)-0,30(T) (AF), 0,18(W)-0,29(T) (MF) m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1812335.jpg",
@@ -1434,32 +1436,32 @@
         "9-Blade Circular Diaphragm"
       ],
       "vi": [
-        "Ống kính zoom điện ảnh Full-Frame | Khẩu độ không đổi f/4",
-        "Quang học Smooth Motion Optics (SMO) chống focus breathing",
-        "Vòng lấy nét, zoom và khẩu độ độc lập",
-        "Lấy nét bằng động cơ Super Sonic Wave Motor (SSM)",
+        "Ống kính zoom điện ảnh Full-Frame | Khẩu độ cố định f/4",
+        "Smooth Motion Optics (SMO) ngăn Focus Breathing",
+        "Vòng điều khiển lấy nét, zoom và khẩu độ độc lập",
+        "Động cơ Super Sonic Wave Motor (SSM)",
         "Chống rung quang học Optical SteadyShot",
-        "Vòng gắn chân máy có thể tháo rời",
+        "Đế gắn chân máy tháo rời",
         "Cấu tạo 9 lá khẩu tròn"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "1215 g (Không có đế gắn chân máy)",
+      "dimensions": "105 x 162,5 mm",
+      "angleOfView": "54°–12°",
       "focalLength": "28–135 mm",
       "maxAperture": "F4",
       "minAperture": "F22",
-      "construction": "18 thành phần / 12 nhóm",
-      "angleOfView": "54°–12°",
-      "minFocusDistance": "0,4 (Rộng) - 0,95 m",
-      "maxMagnification": "0.15x",
-      "filterDiameter": "95 mm",
-      "apertureBlades": "9 (khẩu tròn)",
-      "stabilization": "Chống rung quang học SteadyShot",
-      "weight": "1215 g (Không có đế gắn chân máy)",
-      "dimensions": "105 x 162,5 mm",
       "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/selp28135g/specifications",
-      "specsMissing": []
+      "construction": "18 thành phần / 12 nhóm",
+      "specsMissing": [],
+      "stabilization": "Chống rung quang học SteadyShot",
+      "apertureBlades": "9 (khẩu tròn)",
+      "filterDiameter": "95 mm",
+      "maxMagnification": "0.15x",
+      "minFocusDistance": "0,4 (Rộng) - 0,95 m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1082051.jpg",
@@ -1491,12 +1493,12 @@
         "Ultra-Lightweight 173g Compact Design"
       ],
       "vi": [
-        "Định dạng Full-Frame | Ống kính prime nhỏ gọn",
-        "Khẩu độ tối đa f/2.5 & thân nhôm",
+        "Định dạng Full-Frame | Ống kính một tiêu cự nhỏ gọn",
+        "Khẩu độ tối đa f/2.5 & kết cấu kim loại nhôm",
         "3 Aspherical Elements",
-        "Hệ thống AF hai động cơ XD Linear Motor",
+        "Hệ thống lấy nét dùng động cơ kép XD Linear Motor",
         "Vòng khẩu độ vật lý với công tắc De-Click",
-        "Thiết kế chống bụi và chống ẩm",
+        "Kết cấu chống bụi và chống ẩm",
         "Cấu tạo 7 lá khẩu tròn",
         "Thiết kế nhỏ gọn, siêu nhẹ 173g"
       ]
@@ -1504,22 +1506,22 @@
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "173 g",
+      "dimensions": "68 x 45 mm",
+      "angleOfView": "39",
       "focalLength": "40 mm",
       "maxAperture": "F2.5",
       "minAperture": "F22",
-      "construction": "9 thành phần / 9 nhóm",
-      "angleOfView": "39",
-      "minFocusDistance": "0,28 m",
-      "maxMagnification": "0,2x",
-      "filterDiameter": "49 mm",
-      "apertureBlades": "7 (khẩu tròn)",
-      "stabilization": null,
-      "weight": "173 g",
-      "dimensions": "68 x 45 mm",
       "specsSource": "https://www.sony.com.vn/lenses/products/sel40f25g/spec?sku=SEL40F25G%2F%2FCSYX",
+      "construction": "9 thành phần / 9 nhóm",
       "specsMissing": [
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": "7 (khẩu tròn)",
+      "filterDiameter": "49 mm",
+      "maxMagnification": "0,2x",
+      "minFocusDistance": "0,28 m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1630081.jpg",
@@ -1550,10 +1552,10 @@
         "11-Blade Circular Diaphragm"
       ],
       "vi": [
-        "Định dạng Full-Frame | Ống kính zoom siêu tele",
-        "Khẩu độ thay đổi từ f/6.3 đến f/8",
-        "6 ED Glass Elements & Advanced Aspherical Element",
-        "Hệ thống AF hai động cơ XD Linear Motor",
+        "Định dạng Full-Frame | Ống kính zoom siêu tele tầm cực xa",
+        "Dải khẩu độ thay đổi f/6.3-8",
+        "6 ED Glass Elements & Advanced Aspherical Lens",
+        "Hệ thống lấy nét dùng động cơ kép XD Linear Motor",
         "Chống rung quang học Optical SteadyShot",
         "Thân ống kính hợp kim magie chống chịu thời tiết",
         "Cấu tạo 11 lá khẩu tròn"
@@ -1562,20 +1564,20 @@
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "2475 g",
+      "dimensions": "119,8 x 346 mm",
+      "angleOfView": "4°10'–2°",
       "focalLength": "400–800 mm",
       "maxAperture": "F6.3–8",
       "minAperture": "F36–45",
-      "construction": "27 thành phần / 19 nhóm",
-      "angleOfView": "4°10'–2°",
-      "minFocusDistance": "1,7–3,5 m",
-      "maxMagnification": "0,23x",
-      "filterDiameter": "105 mm",
-      "apertureBlades": "11 (khẩu tròn)",
-      "stabilization": "Chống rung quang học SteadyShot",
-      "weight": "2475 g",
-      "dimensions": "119,8 x 346 mm",
       "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel400800g/specifications",
-      "specsMissing": []
+      "construction": "27 thành phần / 19 nhóm",
+      "specsMissing": [],
+      "stabilization": "Chống rung quang học SteadyShot",
+      "apertureBlades": "11 (khẩu tròn)",
+      "filterDiameter": "105 mm",
+      "maxMagnification": "0,23x",
+      "minFocusDistance": "1,7–3,5 m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1881961.jpg",
@@ -1606,35 +1608,35 @@
         "Compact 174g Form Factor"
       ],
       "vi": [
-        "Định dạng Full-Frame | Ống kính prime tiêu chuẩn",
-        "Khẩu độ tối đa lớn f/2.5 & thân kim loại",
+        "Định dạng Full-Frame | Ống kính một tiêu cự tiêu chuẩn",
+        "Khẩu độ tối đa lớn f/2.5 & vỏ kim loại",
         "2 Aspherical Elements & 1 ED Element",
-        "Hệ thống AF hai động cơ XD Linear Motor",
+        "Hệ thống lấy nét dùng động cơ kép XD Linear Motor",
         "Vòng khẩu độ với công tắc De-Click",
-        "Thiết kế chống bụi và chống ẩm",
+        "Kết cấu chống bụi và chống ẩm",
         "Cấu tạo 7 lá khẩu tròn",
-        "Kiểu dáng nhỏ gọn, 174g"
+        "Kiểu dáng nhỏ gọn 174g"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "174 g",
+      "dimensions": "68 x 45 mm",
+      "angleOfView": "32",
       "focalLength": "50 mm",
       "maxAperture": "F2.5",
       "minAperture": "F22",
-      "construction": "9 thành phần / 9 nhóm",
-      "angleOfView": "32",
-      "minFocusDistance": "0,35 m",
-      "maxMagnification": "0,18x",
-      "filterDiameter": "49 mm",
-      "apertureBlades": "7 (khẩu tròn)",
-      "stabilization": null,
-      "weight": "174 g",
-      "dimensions": "68 x 45 mm",
       "specsSource": "https://www.sony.com.vn/lenses/products/sel50f25g/spec?sku=SEL50F25G%2F%2FCSYX",
+      "construction": "9 thành phần / 9 nhóm",
       "specsMissing": [
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": "7 (khẩu tròn)",
+      "filterDiameter": "49 mm",
+      "maxMagnification": "0,18x",
+      "minFocusDistance": "0,35 m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1630082.jpg",
@@ -1662,37 +1664,37 @@
         "Advanced Aspherical & Super ED Elements",
         "Optical SteadyShot Image Stabilization",
         "Compatible with 1.4x & 2.0x Teleconverters",
-        "15% Smaller & 46g Lighter Than Mark I",
+        "15% Smaller & 46g Lighter than Gen 1",
         "9-Blade Circular Diaphragm"
       ],
       "vi": [
-        "Định dạng Full-Frame | Khẩu độ không đổi f/4",
-        "Độ phóng đại 0.5x (half-macro) trên toàn dải zoom",
-        "Hệ thống AF bốn động cơ XD Linear Motor",
-        "Advanced Aspherical & Super ED Elements",
+        "Định dạng Full-Frame | Khẩu độ cố định f/4",
+        "Độ phóng đại bán macro 0.5x trên toàn dải zoom",
+        "4 động cơ lấy nét XD Linear Motor",
+        "Thiết kế quang học với Advanced Aspherical & Super ED Elements",
         "Chống rung quang học Optical SteadyShot",
         "Tương thích với Teleconverter 1.4x & 2.0x",
-        "Nhỏ hơn 15% và nhẹ hơn 46g so với thế hệ đầu",
+        "Nhỏ hơn 15% & nhẹ hơn 46g so với Gen 1",
         "Cấu tạo 9 lá khẩu tròn"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "794 g",
+      "dimensions": "82,2 x 149,0 mm",
+      "angleOfView": "23ﾟ–8ﾟ",
       "focalLength": "70–200 mm",
       "maxAperture": "F4.0",
       "minAperture": "F22",
-      "construction": "19 thành phần / 13 nhóm",
-      "angleOfView": "23ﾟ–8ﾟ",
-      "minFocusDistance": "0,26–0,42 m",
-      "maxMagnification": "0,5x",
-      "filterDiameter": "72 mm",
-      "apertureBlades": "9 (khẩu tròn)",
-      "stabilization": "Chống rung quang học SteadyShot",
-      "weight": "794 g",
-      "dimensions": "82,2 x 149,0 mm",
       "specsSource": "https://www.sony.com.vn/lenses/products/sel70200g2/spec?sku=SEL70200G2%2FCSYX",
-      "specsMissing": []
+      "construction": "19 thành phần / 13 nhóm",
+      "specsMissing": [],
+      "stabilization": "Chống rung quang học SteadyShot",
+      "apertureBlades": "9 (khẩu tròn)",
+      "filterDiameter": "72 mm",
+      "maxMagnification": "0,5x",
+      "minFocusDistance": "0,26–0,42 m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1776284.jpg",
@@ -1724,32 +1726,32 @@
       ],
       "vi": [
         "Định dạng Full-Frame | Khẩu độ tối đa f/2.8",
-        "Tỷ lệ phóng đại 1:1 | Macro đúng tỷ lệ thật",
-        "Aspherical, ED & Super ED Elements",
-        "Lớp phủ Nano AR giảm phản xạ",
-        "Lấy nét bằng động cơ Direct Drive Super Sonic Wave Motor",
+        "Tỉ lệ phóng đại 1:1 | Macro tỉ lệ thật",
+        "Aspherical, ED và Super ED Elements",
+        "Lớp phủ Nano AR Coating giúp giảm phản xạ",
+        "Lấy nét dùng động cơ Direct Drive Super Sonic Wave Motor",
         "Chống rung quang học Optical SteadyShot",
-        "Vòng lấy nét trượt để chuyển AF/MF",
+        "Vòng lấy nét trượt để chuyển đổi AF/MF",
         "Cấu tạo 9 lá khẩu tròn"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "602 g",
+      "dimensions": "79 x 130,5 mm",
+      "angleOfView": "17°",
       "focalLength": "90 mm",
       "maxAperture": "F2.8",
       "minAperture": "F22",
-      "construction": "15 thành phần / 11 nhóm",
-      "angleOfView": "17°",
-      "minFocusDistance": "0,28 m",
-      "maxMagnification": "1.0x",
-      "filterDiameter": "62 mm",
-      "apertureBlades": "9 (khẩu tròn)",
-      "stabilization": "Chống rung quang học SteadyShot",
-      "weight": "602 g",
-      "dimensions": "79 x 130,5 mm",
       "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel90m28g/specifications",
-      "specsMissing": []
+      "construction": "15 thành phần / 11 nhóm",
+      "specsMissing": [],
+      "stabilization": "Chống rung quang học SteadyShot",
+      "apertureBlades": "9 (khẩu tròn)",
+      "filterDiameter": "62 mm",
+      "maxMagnification": "1.0x",
+      "minFocusDistance": "0,28 m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1126140.jpg",
@@ -1782,32 +1784,32 @@
       ],
       "vi": [
         "Ống kính macro tele G Master Full-Frame",
-        "Khẩu độ lớn f/2.8, Bokeh mềm mại",
-        "Chụp macro tỷ lệ 1:1 đúng kích thước thật",
-        "XA Element & Super ED Elements",
-        "Hệ thống AF hai động cơ XD Linear Motor",
+        "Khẩu độ lớn f/2.8 với tinh chỉnh bokeh mềm",
+        "Khả năng chụp macro tỉ lệ thật, độ phóng đại 1:1",
+        "Thiết kế quang học gồm XA Element & Super ED Glass Elements",
+        "Hệ thống lấy nét dùng động cơ kép XD Linear Motor",
         "Chống rung quang học Optical SteadyShot",
-        "Thiết kế chống bụi và chống ẩm",
+        "Kết cấu chống bụi và chống ẩm",
         "Cấu tạo 11 lá khẩu tròn"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "700g",
+      "dimensions": "85.2 x 118.1 mm",
+      "angleOfView": "16°",
       "focalLength": "100 mm",
       "maxAperture": "F2.8–5.6",
       "minAperture": "F20–22",
-      "construction": "13 thành phần / 10 nhóm",
-      "angleOfView": "16°",
-      "minFocusDistance": "0,85m / 2,79 ft. (ở vị trí \"0,85m-∞\"); 0,57m / 1,87 ft. (ở vị trí \"0,57m-1,0m\")",
-      "maxMagnification": "0.14x",
-      "filterDiameter": "72 mm",
-      "apertureBlades": "11 (khẩu tròn)",
-      "stabilization": "Optical SteadyShot",
-      "weight": "700g",
-      "dimensions": "85.2 x 118.1 mm",
       "specsSource": "https://www.sony-asia.com/electronics/camera-lenses/sel100f28gm/specifications",
-      "specsMissing": []
+      "construction": "13 thành phần / 10 nhóm",
+      "specsMissing": [],
+      "stabilization": "Chống rung quang học SteadyShot",
+      "apertureBlades": "11 (khẩu tròn)",
+      "filterDiameter": "72 mm",
+      "maxMagnification": "0.14x",
+      "minFocusDistance": "0.85m / 2.79 ft. (ở vị trí \"0.85m-∞\"); 0.57m / 1.87 ft. (ở vị trí \"0.57m-1.0m\")"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1924425.jpg",
@@ -1841,8 +1843,8 @@
         "Định dạng Full-Frame | Ống kính zoom siêu tele G Master",
         "Khẩu độ thay đổi từ f/4.5 đến f/5.6",
         "1 Super ED Element & 2 ED Elements",
-        "Lớp phủ Nano AR & lớp phủ Fluorine",
-        "Lấy nét bằng động cơ Direct Drive SSM & Double Linear Motor",
+        "Lớp phủ Nano AR Coating & Fluorine Coating",
+        "Lấy nét dùng động cơ Direct Drive SSM và động cơ kép Linear Motor",
         "Chống rung quang học Optical SteadyShot",
         "Vòng điều chỉnh độ nặng zoom",
         "Cấu tạo 9 lá khẩu tròn"
@@ -1851,20 +1853,20 @@
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "1840 g",
+      "dimensions": "119,8 x 328 mm",
+      "angleOfView": "16°–4°10'",
       "focalLength": "100–400 mm",
       "maxAperture": "F4.5",
       "minAperture": "F32",
-      "construction": "28 thành phần / 20 nhóm",
-      "angleOfView": "16°–4°10'",
-      "minFocusDistance": "0,64-1,5 m",
-      "maxMagnification": "0,25x",
-      "filterDiameter": "95 mm",
-      "apertureBlades": "11 (khẩu tròn)",
-      "stabilization": "Chống rung quang học SteadyShot",
-      "weight": "1840 g",
-      "dimensions": "119,8 x 328 mm",
       "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel100400mc/specifications",
-      "specsMissing": []
+      "construction": "28 thành phần / 20 nhóm",
+      "specsMissing": [],
+      "stabilization": "Chống rung quang học SteadyShot",
+      "apertureBlades": "11 (khẩu tròn)",
+      "filterDiameter": "95 mm",
+      "maxMagnification": "0,25x",
+      "minFocusDistance": "0,64-1,5 m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1333230.jpg",
@@ -1898,8 +1900,8 @@
         "Định dạng Full-Frame | Ống kính zoom siêu tele G Master",
         "Khẩu độ thay đổi từ f/4.5 đến f/5.6",
         "1 Super ED Element & 2 ED Elements",
-        "Lớp phủ Nano AR & lớp phủ Fluorine",
-        "Lấy nét bằng động cơ Direct Drive SSM & Double Linear Motor",
+        "Lớp phủ Nano AR Coating & Fluorine Coating",
+        "Lấy nét dùng động cơ Direct Drive SSM và động cơ kép Linear Motor",
         "Chống rung quang học Optical SteadyShot",
         "Vòng điều chỉnh độ nặng zoom",
         "Cấu tạo 9 lá khẩu tròn"
@@ -1908,20 +1910,20 @@
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "1395 g (Không có đế gắn chân máy",
+      "dimensions": "93,9 x 205 mm",
+      "angleOfView": "16°–4°10'",
       "focalLength": "100–400 mm",
       "maxAperture": "F4.5–5.6",
       "minAperture": "F32–40",
-      "construction": "22 thành phần / 16 nhóm",
-      "angleOfView": "16°–4°10'",
-      "minFocusDistance": "0,98 m",
-      "maxMagnification": "0,35x",
-      "filterDiameter": "77 mm",
-      "apertureBlades": "9 (khẩu tròn)",
-      "stabilization": "Chống rung quang học SteadyShot",
-      "weight": "1395 g (Không có đế gắn chân máy",
-      "dimensions": "93,9 x 205 mm",
       "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel100400gm/specifications",
-      "specsMissing": []
+      "construction": "22 thành phần / 16 nhóm",
+      "specsMissing": [],
+      "stabilization": "Chống rung quang học SteadyShot",
+      "apertureBlades": "9 (khẩu tròn)",
+      "filterDiameter": "77 mm",
+      "maxMagnification": "0,35x",
+      "minFocusDistance": "0,98 m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1333230.jpg",
@@ -1949,17 +1951,17 @@
         "Two ED Elements & Two Aspherical Elements",
         "Optical SteadyShot Image Stabilization",
         "Focus Range Limiter & Focus Hold Button",
-        "Dust and Moisture-Resistant Design",
+        "Dust & Moisture-Resistant Design",
         "9-Blade Circular Diaphragm",
         "Compact Super-Telephoto Zoom (654g)"
       ],
       "vi": [
         "Định dạng Full-Frame | Ống kính zoom siêu tele",
         "Khẩu độ thay đổi từ f/5.6 đến f/8",
-        "Tương đương 150-600mm trên máy APS-C",
+        "150-600mm tương đương APS-C",
         "2 ED Elements & 2 Aspherical Elements",
         "Chống rung quang học Optical SteadyShot",
-        "Công tắc giới hạn khoảng lấy nét & Focus Hold Button",
+        "Chức năng giới hạn khoảng lấy nét & Nút giữ lấy nét Focus Hold Button",
         "Thiết kế chống bụi và chống ẩm",
         "Cấu tạo 9 lá khẩu tròn",
         "Ống kính zoom siêu tele nhỏ gọn (654g)"
@@ -1968,20 +1970,20 @@
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "654 g",
+      "dimensions": "78,2 x 164,5 mm",
+      "angleOfView": "24°–6°10'",
       "focalLength": "100–400 mm",
       "maxAperture": "F5.6–8",
       "minAperture": "F32–45",
-      "construction": "15 thành phần / 10 nhóm",
-      "angleOfView": "24°–6°10'",
-      "minFocusDistance": "1,13 (W)–0,86 (T) m",
-      "maxMagnification": "0,41x",
-      "filterDiameter": "67 mm",
-      "apertureBlades": "9 (khẩu tròn)",
-      "stabilization": "Chống rung quang học SteadyShot",
-      "weight": "654 g",
-      "dimensions": "78,2 x 164,5 mm",
       "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-e-mount/sel100400/specifications",
-      "specsMissing": []
+      "construction": "15 thành phần / 10 nhóm",
+      "specsMissing": [],
+      "stabilization": "Chống rung quang học SteadyShot",
+      "apertureBlades": "9 (khẩu tròn)",
+      "filterDiameter": "67 mm",
+      "maxMagnification": "0,41x",
+      "minFocusDistance": "1,13 (W)–0,86 (T) m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1333230.jpg",
@@ -2013,10 +2015,10 @@
       ],
       "vi": [
         "Định dạng Full-Frame | Ống kính Smooth Trans Focus (STF)",
-        "Thấu kính APD (Apodization) cho Bokeh siêu mịn",
-        "Khẩu độ f/2.8 (T5.6)",
+        "APD Apodization Element cho bokeh siêu mịn",
+        "Khẩu độ danh định f/2.8 (T5.6)",
         "1 Aspherical Element & 1 ED Element",
-        "Lấy nét bằng động cơ Direct Drive SSM",
+        "Động cơ lấy nét Direct Drive SSM",
         "Chống rung quang học Optical SteadyShot",
         "Vòng chuyển chế độ macro & vòng khẩu độ",
         "Cấu tạo 11 lá khẩu tròn"
@@ -2025,20 +2027,20 @@
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "700g",
+      "dimensions": "85,2 x 118,1 mm",
+      "angleOfView": "16°",
       "focalLength": "100 mm",
       "maxAperture": "F2.8–5.6",
       "minAperture": "F20–22",
-      "construction": "13 thành phần / 10 nhóm",
-      "angleOfView": "16°",
-      "minFocusDistance": "0,85m / 2,79 ft. (ở vị trí \"0,85m-∞\"); 0,57m / 1,87 ft. (ở vị trí \"0,57m-1,0m\")",
-      "maxMagnification": "0,14x",
-      "filterDiameter": "72 mm",
-      "apertureBlades": "11 (khẩu tròn)",
-      "stabilization": "Chống rung quang học SteadyShot",
-      "weight": "700g",
-      "dimensions": "85,2 x 118,1 mm",
       "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel100f28gm/specifications",
-      "specsMissing": []
+      "construction": "13 thành phần / 10 nhóm",
+      "specsMissing": [],
+      "stabilization": "Chống rung quang học SteadyShot",
+      "apertureBlades": "11 (khẩu tròn)",
+      "filterDiameter": "72 mm",
+      "maxMagnification": "0,14x",
+      "minFocusDistance": "0,85m / 2,79 ft. (ở vị trí \"0,85m-∞\"); 0,57m / 1,87 ft. (ở vị trí \"0,57m-1,0m\")"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1317561.jpg",
@@ -2070,36 +2072,36 @@
         "Ultra-Wide Angle G Master Performance"
       ],
       "vi": [
-        "Định dạng Full-Frame | Khẩu độ không đổi f/2.8",
+        "Định dạng Full-Frame | Khẩu độ cố định f/2.8",
         "3 XA Elements & 1 Aspherical Element",
-        "Lớp phủ Nano AR II giảm loá",
-        "Hệ thống AF bốn động cơ XD Linear Motor",
-        "Khe gắn kính lọc gel phía sau & loa che nắng tích hợp",
-        "Thiết kế chống bụi và chống ẩm",
+        "Lớp phủ Nano AR Coating II giúp giảm loá sáng",
+        "Hệ thống lấy nét dùng 4 động cơ XD Linear Motor",
+        "Giá gắn kính lọc gel phía sau & loa che nắng tích hợp",
+        "Kết cấu chống bụi và chống ẩm",
         "Cấu tạo 9 lá khẩu tròn",
-        "Chất lượng G Master ở góc siêu rộng"
+        "Hiệu năng G Master ở góc siêu rộng"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "847 g",
+      "dimensions": "97,6 x 137 mm",
+      "angleOfView": "99°–61°",
       "focalLength": "12–24 mm",
       "maxAperture": "F2.8",
       "minAperture": "F22",
-      "construction": "17 thành phần / 14 nhóm",
-      "angleOfView": "99°–61°",
-      "minFocusDistance": "0,28 m",
-      "maxMagnification": "0,14x",
-      "filterDiameter": null,
-      "apertureBlades": "9 (khẩu tròn)",
-      "stabilization": null,
-      "weight": "847 g",
-      "dimensions": "97,6 x 137 mm",
       "specsSource": "https://www.sony.com.vn/lenses/products/sel1224gm/spec?sku=SEL1224GM%2F%2FJSYX",
+      "construction": "17 thành phần / 14 nhóm",
       "specsMissing": [
         "filterDiameter",
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": "9 (khẩu tròn)",
+      "filterDiameter": null,
+      "maxMagnification": "0,14x",
+      "minFocusDistance": "0,28 m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1573884.jpg",
@@ -2131,35 +2133,35 @@
         "11-Blade Circular Diaphragm"
       ],
       "vi": [
-        "Định dạng Full-Frame | Ống kính prime tele tầm trung",
+        "Định dạng Full-Frame | Ống kính một tiêu cự tele tầm trung",
         "Khẩu độ tối đa lớn f/1.8",
-        "XA, Super ED & ED Elements",
-        "Lớp phủ Nano AR cho độ tương phản cao",
-        "Hệ thống AF hai động cơ XD Linear Motor",
+        "XA, Super ED và ED Elements",
+        "Lớp phủ Nano AR Coating cho độ tương phản cao",
+        "Hệ thống lấy nét dùng động cơ kép XD Linear Motor",
         "Vòng khẩu độ vật lý với công tắc De-Click",
-        "Thiết kế chống bụi và chống ẩm",
+        "Kết cấu chống bụi và chống ẩm",
         "Cấu tạo 11 lá khẩu tròn"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "950 g",
+      "dimensions": "89,5 x 127 mm",
+      "angleOfView": "12ﾟ",
       "focalLength": "135 mm",
       "maxAperture": "F1.8",
       "minAperture": "F22",
-      "construction": "13 thành phần / 10 nhóm",
-      "angleOfView": "12ﾟ",
-      "minFocusDistance": "0,7 m",
-      "maxMagnification": "0,25x",
-      "filterDiameter": "82 mm",
-      "apertureBlades": "11 (khẩu tròn)",
-      "stabilization": null,
-      "weight": "950 g",
-      "dimensions": "89,5 x 127 mm",
       "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel135f18gm/specifications",
+      "construction": "13 thành phần / 10 nhóm",
       "specsMissing": [
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": "11 (khẩu tròn)",
+      "filterDiameter": "82 mm",
+      "maxMagnification": "0,25x",
+      "minFocusDistance": "0,7 m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1462821.jpg",
@@ -2191,36 +2193,36 @@
         "Lightweight 460g Astro & Landscape Master"
       ],
       "vi": [
-        "Định dạng Full-Frame | Ống kính prime siêu rộng f/1.8",
+        "Định dạng Full-Frame | Ống kính một tiêu cự siêu rộng f/1.8",
         "2 XA Elements & 2 ED Elements",
-        "Lớp phủ Nano AR II chống loá vượt trội",
-        "Hệ thống AF hai động cơ XD Linear Motor",
+        "Lớp phủ Nano AR Coating II cho khả năng chống loá sáng vượt trội",
+        "Hệ thống lấy nét dùng động cơ kép XD Linear Motor",
         "Vòng khẩu độ với công tắc De-Click",
-        "Khe gắn kính lọc gel phía sau",
+        "Giá gắn kính lọc gel phía sau",
         "Cấu tạo 9 lá khẩu tròn",
-        "Ống kính nhẹ 460g chuyên thiên văn & phong cảnh"
+        "Ống kính chuyên thiên văn & phong cảnh, nhẹ 460g"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "460 g",
+      "dimensions": "83 x 99,8 mm",
+      "angleOfView": "91°",
       "focalLength": "14 mm",
       "maxAperture": "F1.8",
       "minAperture": "F16",
-      "construction": "14 thành phần / 11 nhóm",
-      "angleOfView": "91°",
-      "minFocusDistance": "0,25 m",
-      "maxMagnification": "0,1x",
-      "filterDiameter": null,
-      "apertureBlades": "9 (khẩu tròn)",
-      "stabilization": null,
-      "weight": "460 g",
-      "dimensions": "83 x 99,8 mm",
       "specsSource": "https://www.sony.com.vn/lenses/products/sel14f18gm/spec?sku=SEL14F18GM%2FJSYX",
+      "construction": "14 thành phần / 11 nhóm",
       "specsMissing": [
         "filterDiameter",
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": "9 (khẩu tròn)",
+      "filterDiameter": null,
+      "maxMagnification": "0,1x",
+      "minFocusDistance": "0,25 m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1635847.jpg",
@@ -2251,12 +2253,12 @@
         "Ultimate 16-35mm G Master Optics"
       ],
       "vi": [
-        "Định dạng Full-Frame | Khẩu độ không đổi f/2.8",
-        "Nhẹ hơn 20% và nhỏ hơn 10% so với Mark I",
-        "Hệ thống AF bốn động cơ XD Linear Motor",
+        "Định dạng Full-Frame | Khẩu độ cố định f/2.8",
+        "Nhẹ hơn 20% & nhỏ hơn 10% so với Mark I",
+        "Hệ thống lấy nét dùng 4 động cơ XD Linear Motor",
         "1 ED Aspherical, 2 XA & 2 ED Elements",
-        "Vòng khẩu độ với công tắc De-Click & Iris Lock",
-        "Lớp phủ Fluorine & thân chống chịu thời tiết",
+        "Vòng khẩu độ hỗ trợ De-Click và Iris Lock",
+        "Lớp phủ Fluorine Coating & vỏ chống chịu thời tiết",
         "Cấu tạo 11 lá khẩu tròn",
         "Quang học G Master 16-35mm đỉnh cao"
       ]
@@ -2264,22 +2266,22 @@
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "547 g",
+      "dimensions": "87,8 x 111,5 mm",
+      "angleOfView": "83°–4°",
       "focalLength": "16–35 mm",
       "maxAperture": "F2.8",
       "minAperture": "F22",
-      "construction": "15 thành phần / 12 nhóm",
-      "angleOfView": "83°–4°",
-      "minFocusDistance": "0,22 (W,T) m",
-      "maxMagnification": "0,32x",
-      "filterDiameter": "82 mm",
-      "apertureBlades": "11 (khẩu tròn)",
-      "stabilization": null,
-      "weight": "547 g",
-      "dimensions": "87,8 x 111,5 mm",
       "specsSource": "https://www.sony.com.vn/lenses/products/sel1635gm2/spec?sku=SEL1635GM2%2FQSYX",
+      "construction": "15 thành phần / 12 nhóm",
       "specsMissing": [
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": "11 (khẩu tròn)",
+      "filterDiameter": "82 mm",
+      "maxMagnification": "0,32x",
+      "minFocusDistance": "0,22 (W,T) m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1784822.jpg",
@@ -2305,40 +2307,40 @@
         "Four XD Linear Motor AF System",
         "Two XA, Two ED & Two Super ED Elements",
         "Aperture Ring with De-Click Switch & Smooth Zoom Ring",
-        "Nano AR Coating II & Fluorine Front Element",
+        "Nano AR II Coating & Fluorine Front Element",
         "11-Blade Circular Iris Diaphragm",
         "Benchmark Standard Zoom Lens"
       ],
       "vi": [
-        "Định dạng Full-Frame | Khẩu độ không đổi f/2.8",
-        "Nhẹ hơn 22% và nhỏ hơn 18% so với Mark I",
-        "Hệ thống AF bốn động cơ XD Linear Motor",
+        "Định dạng Full-Frame | Khẩu độ cố định f/2.8",
+        "Nhẹ hơn 22% & nhỏ hơn 18% so với Mark I",
+        "Hệ thống lấy nét dùng 4 động cơ XD Linear Motor",
         "2 XA, 2 ED & 2 Super ED Elements",
         "Vòng khẩu độ với công tắc De-Click & vòng zoom mượt",
-        "Lớp phủ Nano AR II & thấu kính trước phủ Fluorine",
+        "Lớp phủ Nano AR II Coating & thấu kính trước phủ Fluorine",
         "Cấu tạo 11 lá khẩu tròn",
-        "Chuẩn mực của dòng zoom tiêu chuẩn"
+        "Ống kính zoom tiêu chuẩn mang tính chuẩn mực"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "695 g",
+      "dimensions": "87,8 x 119,9 mm",
+      "angleOfView": "61°–23°",
       "focalLength": "24–70 mm",
       "maxAperture": "F2.8",
       "minAperture": "F22",
-      "construction": "20 thành phần / 15 nhóm",
-      "angleOfView": "61°–23°",
-      "minFocusDistance": "0,21 (W)-0,3 (T) m",
-      "maxMagnification": "0,32x",
-      "filterDiameter": "82 mm",
-      "apertureBlades": "11 (khẩu tròn)",
-      "stabilization": null,
-      "weight": "695 g",
-      "dimensions": "87,8 x 119,9 mm",
       "specsSource": "https://www.sony.com.vn/lenses/products/sel2470gm2/spec?sku=SEL2470GM2%2FQSYX",
+      "construction": "20 thành phần / 15 nhóm",
       "specsMissing": [
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": "11 (khẩu tròn)",
+      "filterDiameter": "82 mm",
+      "maxMagnification": "0,32x",
+      "minFocusDistance": "0,21 (W)-0,3 (T) m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1702384.jpg",
@@ -2368,34 +2370,34 @@
         "9-Blade Circular Diaphragm"
       ],
       "vi": [
-        "Định dạng Full-Frame | Khẩu độ không đổi f/2.8",
+        "Định dạng Full-Frame | Khẩu độ cố định f/2.8",
         "1 XA Element & 2 Aspherical Elements",
         "1 ED Element & 1 Super ED Element",
-        "Lớp phủ Nano AR loại bỏ loá",
-        "Lấy nét bằng động cơ Direct Drive SSM",
-        "Focus Hold Button & công tắc AF/MF",
+        "Lớp phủ Nano AR Coating giúp loại bỏ loá sáng",
+        "Hệ thống lấy nét Direct Drive SSM",
+        "Nút giữ lấy nét Focus Hold Button & công tắc AF/MF",
         "Cấu tạo 9 lá khẩu tròn"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "886 g",
+      "dimensions": "87,6 x 136 mm",
+      "angleOfView": "61°–23°",
       "focalLength": "24–70 mm",
       "maxAperture": "F2.8",
       "minAperture": "F22",
-      "construction": "18 thành phần / 13 nhóm",
-      "angleOfView": "61°–23°",
-      "minFocusDistance": "0,38 m",
-      "maxMagnification": "0.24x",
-      "filterDiameter": "82 mm",
-      "apertureBlades": "9 (khẩu tròn)",
-      "stabilization": null,
-      "weight": "886 g",
-      "dimensions": "87,6 x 136 mm",
       "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel2470gm/specifications",
+      "construction": "18 thành phần / 13 nhóm",
       "specsMissing": [
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": "9 (khẩu tròn)",
+      "filterDiameter": "82 mm",
+      "maxMagnification": "0.24x",
+      "minFocusDistance": "0,38 m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1222774.jpg",
@@ -2429,33 +2431,33 @@
       "vi": [
         "Định dạng Full-Frame | Khẩu độ lớn f/1.4",
         "2 XA Elements & 3 ED Elements",
-        "Lớp phủ Nano AR hạn chế hiện tượng bóng ma",
-        "Lấy nét bằng động cơ Direct Drive SSM",
+        "Lớp phủ Nano AR Coating giúp hạn chế bóng ma",
+        "Động cơ lấy nét Direct Drive SSM",
         "Vòng khẩu độ vật lý với công tắc De-Click",
-        "Thiết kế chống bụi và chống ẩm",
+        "Kết cấu chống bụi và chống ẩm",
         "Cấu tạo 11 lá khẩu tròn",
-        "Ống kính prime góc rộng G Master nhỏ gọn, 445g"
+        "Ống kính một tiêu cự góc rộng G Master nhỏ gọn 445g"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "445 g",
+      "dimensions": "75,4 x 92,4 mm",
+      "angleOfView": "61ﾟ",
       "focalLength": "24 mm",
       "maxAperture": "F1.4",
       "minAperture": "F16",
-      "construction": "13 thành phần / 10 nhóm",
-      "angleOfView": "61ﾟ",
-      "minFocusDistance": "0,24 m",
-      "maxMagnification": "0,17x",
-      "filterDiameter": "67 mm",
-      "apertureBlades": "11 (khẩu tròn)",
-      "stabilization": null,
-      "weight": "445 g",
-      "dimensions": "75,4 x 92,4 mm",
       "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel24f14gm/specifications",
+      "construction": "13 thành phần / 10 nhóm",
       "specsMissing": [
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": "11 (khẩu tròn)",
+      "filterDiameter": "67 mm",
+      "maxMagnification": "0,17x",
+      "minFocusDistance": "0,24 m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1435887.jpg",
@@ -2476,7 +2478,7 @@
     "imageUrl": "https://static.bhphoto.com/images/fb/1862825.jpg",
     "features": {
       "en": [
-        "Full-Frame Format | World’s First Constant f/2 Standard Zoom",
+        "Full-Frame Format | World's First Constant f/2 Standard Zoom",
         "Replaces Multiple Prime Lenses in One Body",
         "Four XD Linear AF Motors",
         "Three XA Elements & Three ED Elements",
@@ -2485,34 +2487,34 @@
         "11-Blade Circular Iris Diaphragm"
       ],
       "vi": [
-        "Định dạng Full-Frame | Ống kính zoom tiêu chuẩn khẩu độ không đổi f/2 đầu tiên trên thế giới",
-        "Một ống kính thay cho nhiều ống kính prime",
-        "Hệ thống AF bốn động cơ XD Linear Motor",
+        "Định dạng Full-Frame | Ống kính zoom tiêu chuẩn khẩu độ cố định f/2 đầu tiên trên thế giới",
+        "Thay thế nhiều ống kính một tiêu cự trong 1 thân ống kính",
+        "4 động cơ lấy nét XD Linear Motor",
         "3 XA Elements & 3 ED Elements",
         "Vòng khẩu độ với công tắc Click & Iris Lock",
-        "Lớp phủ Nano AR II & thân chống chịu thời tiết",
+        "Lớp phủ Nano AR Coating II & vỏ chống chịu thời tiết",
         "Cấu tạo 11 lá khẩu tròn"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "918 g",
+      "dimensions": "92,9 x 139,8 mm",
+      "angleOfView": "54°–23°",
       "focalLength": "28–70 mm",
       "maxAperture": "F2",
       "minAperture": "F22",
-      "construction": "20 thành phần / 14 nhóm",
-      "angleOfView": "54°–23°",
-      "minFocusDistance": "0,38 m",
-      "maxMagnification": "0,23x",
-      "filterDiameter": "86 mm",
-      "apertureBlades": "11 (khẩu tròn)",
-      "stabilization": null,
-      "weight": "918 g",
-      "dimensions": "92,9 x 139,8 mm",
       "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-e-mount/sel2870gm/specifications",
+      "construction": "20 thành phần / 14 nhóm",
       "specsMissing": [
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": "11 (khẩu tròn)",
+      "filterDiameter": "86 mm",
+      "maxMagnification": "0,23x",
+      "minFocusDistance": "0,38 m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1862825.jpg",
@@ -2534,7 +2536,7 @@
     "features": {
       "en": [
         "Full-Frame Format | f/2.8 Constant Aperture",
-        "World’s Lightest 300mm f/2.8 Lens (1470g)",
+        "World's Lightest 300mm f/2.8 Lens (1470g)",
         "Three Super ED Elements & One ED Element",
         "Dual XD Linear Motor AF Drive",
         "Optical SteadyShot Image Stabilization with 3 Modes",
@@ -2543,12 +2545,12 @@
         "11-Blade Circular Diaphragm"
       ],
       "vi": [
-        "Định dạng Full-Frame | Khẩu độ không đổi f/2.8",
+        "Định dạng Full-Frame | Khẩu độ cố định f/2.8",
         "Ống kính 300mm f/2.8 nhẹ nhất thế giới (1470g)",
         "3 Super ED Elements & 1 ED Element",
-        "Hệ thống AF hai động cơ XD Linear Motor",
+        "Hệ thống lấy nét dùng động cơ kép XD Linear Motor",
         "Chống rung quang học Optical SteadyShot với 3 chế độ",
-        "Khay gắn kính lọc Drop-In cho kính lọc 40.5mm",
+        "Khe kính lọc Drop-In cho kính lọc 40.5mm",
         "Tương thích với Teleconverter 1.4x & 2.0x",
         "Cấu tạo 11 lá khẩu tròn"
       ]
@@ -2556,20 +2558,20 @@
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "1470 g (Không có đế gắn chân máy)",
+      "dimensions": "124 x 265 mm",
+      "angleOfView": "5°20'",
       "focalLength": "300 mm",
       "maxAperture": "F2.8",
       "minAperture": "F22",
-      "construction": "21 thành phần / 17 nhóm",
-      "angleOfView": "5°20'",
-      "minFocusDistance": "2 m",
-      "maxMagnification": "0,16x",
-      "filterDiameter": "40,5 mm",
-      "apertureBlades": "11 (khẩu tròn)",
-      "stabilization": "Chống rung quang học SteadyShot",
-      "weight": "1470 g (Không có đế gắn chân máy)",
-      "dimensions": "124 x 265 mm",
       "specsSource": "https://www.sony.com.vn/lenses/products/sel300f28gm/spec?sku=SEL300F28GM%2FSYX",
-      "specsMissing": []
+      "construction": "21 thành phần / 17 nhóm",
+      "specsMissing": [],
+      "stabilization": "Chống rung quang học SteadyShot",
+      "apertureBlades": "11 (khẩu tròn)",
+      "filterDiameter": "40,5 mm",
+      "maxMagnification": "0,16x",
+      "minFocusDistance": "2 m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1746375.jpg",
@@ -2597,38 +2599,38 @@
         "Physical Aperture Ring with De-Click Switch",
         "Dust and Moisture-Resistant Construction",
         "11-Blade Circular Diaphragm",
-        "Lightweight 524g G Master Street & Portrait Prime"
+        "Lightweight 524g Master Street & Portrait Prime"
       ],
       "vi": [
         "Định dạng Full-Frame | Khẩu độ tối đa lớn f/1.4",
         "2 XA Elements & 1 ED Element",
-        "Lớp phủ Nano AR II giảm thiểu phản xạ",
-        "Hệ thống AF hai động cơ XD Linear Motor",
+        "Lớp phủ Nano AR Coating II giúp giảm thiểu phản xạ",
+        "Hệ thống lấy nét dùng động cơ kép XD Linear Motor",
         "Vòng khẩu độ vật lý với công tắc De-Click",
-        "Thiết kế chống bụi và chống ẩm",
+        "Kết cấu chống bụi và chống ẩm",
         "Cấu tạo 11 lá khẩu tròn",
-        "Ống kính prime G Master nhẹ 524g cho đường phố & chân dung"
+        "Ống kính một tiêu cự G Master nhẹ 524g cho đường phố & chân dung"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "524 g",
+      "dimensions": "76 x 96 mm",
+      "angleOfView": "44°",
       "focalLength": "35 mm",
       "maxAperture": "F1.4",
       "minAperture": "F16",
-      "construction": "14 thành phần / 10 nhóm",
-      "angleOfView": "44°",
-      "minFocusDistance": "0,27 m",
-      "maxMagnification": "0,23x",
-      "filterDiameter": "67 mm",
-      "apertureBlades": "11 (khẩu tròn)",
-      "stabilization": null,
-      "weight": "524 g",
-      "dimensions": "76 x 96 mm",
       "specsSource": "https://www.sony.com.vn/lenses/products/sel35f14gm/spec?sku=SEL35F14GM%2FQSYX",
+      "construction": "14 thành phần / 10 nhóm",
       "specsMissing": [
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": "11 (khẩu tròn)",
+      "filterDiameter": "67 mm",
+      "maxMagnification": "0,23x",
+      "minFocusDistance": "0,27 m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1613424.jpg",
@@ -2660,32 +2662,32 @@
       "vi": [
         "Định dạng Full-Frame | Khẩu độ lớn f/1.4",
         "2 XA Elements & 1 ED Element",
-        "Hệ thống AF hai động cơ XD Linear Motor",
-        "Vòng khẩu độ với công tắc De-Click & Iris Lock",
-        "Lớp phủ Nano AR II & thân chống chịu thời tiết",
+        "Hệ thống lấy nét dùng động cơ kép XD Linear Motor",
+        "Vòng khẩu độ với công tắc De-Click và Iris Lock",
+        "Lớp phủ Nano AR Coating II & vỏ chống chịu thời tiết",
         "Cấu tạo 11 lá khẩu tròn",
-        "Nhẹ hơn 33% và nhỏ hơn 15% so với 50mm f/1.2"
+        "Nhẹ hơn 33% & nhỏ hơn 15% so với ống kính 50mm f/1.2"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "516 g",
+      "dimensions": "80.6 x 96 mm",
+      "angleOfView": "32°",
       "focalLength": "50 mm",
       "maxAperture": "F1.4",
       "minAperture": "F16",
-      "construction": "14 thành phần / 11 nhóm",
-      "angleOfView": "32°",
-      "minFocusDistance": "0.41 (AF), 0.38 (MF) m",
-      "maxMagnification": "0.16x",
-      "filterDiameter": "67 mm",
-      "apertureBlades": "11 (khẩu tròn)",
-      "stabilization": null,
-      "weight": "516 g",
-      "dimensions": "80.6 x 96 mm",
       "specsSource": "https://www.sony-asia.com/lenses/products/sel50f14gm/spec",
+      "construction": "14 thành phần / 11 nhóm",
       "specsMissing": [
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": "11 (khẩu tròn)",
+      "filterDiameter": "67 mm",
+      "maxMagnification": "0.16x",
+      "minFocusDistance": "0.41 (AF), 0.38 (MF) m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1752166.jpg",
@@ -2716,34 +2718,34 @@
         "11-Blade Circular Diaphragm"
       ],
       "vi": [
-        "Định dạng Full-Frame | Ống kính zoom khẩu độ lớn không đổi f/2",
-        "Thay cho các ống kính prime khẩu lớn 50mm, 85mm, 135mm",
-        "Hệ thống AF bốn động cơ XD Linear Motor",
+        "Định dạng Full-Frame | Ống kính zoom khẩu độ lớn cố định f/2",
+        "Thay thế các ống kính một tiêu cự khẩu độ lớn 50mm, 85mm, 135mm",
+        "Hệ thống lấy nét dùng 4 động cơ XD Linear Motor",
         "3 XA Elements & 2 Super ED Elements",
         "Vòng khẩu độ vật lý với công tắc De-Click",
-        "Thiết kế chống bụi và chống chịu thời tiết",
+        "Kết cấu chống bụi và chống chịu thời tiết",
         "Cấu tạo 11 lá khẩu tròn"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "1340 g",
+      "dimensions": "102,8 x 200 mm",
+      "angleOfView": "32°–11°",
       "focalLength": "50–150 mm",
       "maxAperture": "F2",
       "minAperture": "F22",
-      "construction": "19 thành phần / 17 nhóm",
-      "angleOfView": "32°–11°",
-      "minFocusDistance": "0,4(W)-0,74(T) m",
-      "maxMagnification": "0,2x",
-      "filterDiameter": "95 mm",
-      "apertureBlades": "11 (khẩu tròn)",
-      "stabilization": null,
-      "weight": "1340 g",
-      "dimensions": "102,8 x 200 mm",
       "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel50150gm/specifications",
+      "construction": "19 thành phần / 17 nhóm",
       "specsMissing": [
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": "11 (khẩu tròn)",
+      "filterDiameter": "95 mm",
+      "maxMagnification": "0,2x",
+      "minFocusDistance": "0,4(W)-0,74(T) m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1891016.jpg",
@@ -2774,33 +2776,33 @@
       ],
       "vi": [
         "Định dạng Full-Frame | Khẩu độ siêu lớn f/1.2",
-        "3 XA Elements cho độ phân giải vượt trội",
-        "Hệ thống AF bốn động cơ XD Linear Motor",
+        "3 XA Elements cho độ phân giải cực cao",
+        "Hệ thống lấy nét dùng 4 động cơ XD Linear Motor",
         "Vòng khẩu độ vật lý với công tắc De-Click",
-        "Lớp phủ Nano AR II & khả năng chống chịu thời tiết",
+        "Lớp phủ Nano AR Coating II & khả năng chống chịu thời tiết",
         "Cấu tạo 11 lá khẩu tròn",
-        "Ống kính prime tiêu chuẩn G Master hàng đầu"
+        "Ống kính một tiêu cự tiêu chuẩn G Master hàng đầu"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "778 g",
+      "dimensions": "87 x 108 mm",
+      "angleOfView": "32°",
       "focalLength": "50 mm",
       "maxAperture": "F1.2",
       "minAperture": "F16",
-      "construction": "14 thành phần / 10 nhóm",
-      "angleOfView": "32°",
-      "minFocusDistance": "0,4 m",
-      "maxMagnification": "0,17x",
-      "filterDiameter": "72 mm",
-      "apertureBlades": "11 (khẩu tròn)",
-      "stabilization": null,
-      "weight": "778 g",
-      "dimensions": "87 x 108 mm",
       "specsSource": "https://www.sony.com.vn/lenses/products/sel50f12gm/spec?sku=SEL50F12GM%2FQSYX",
+      "construction": "14 thành phần / 10 nhóm",
       "specsMissing": [
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": "11 (khẩu tròn)",
+      "filterDiameter": "72 mm",
+      "maxMagnification": "0,17x",
+      "minFocusDistance": "0,4 m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1630079.jpg",
@@ -2835,31 +2837,31 @@
       "vi": [
         "Định dạng Full-Frame | Ống kính siêu tele khẩu độ lớn f/4",
         "3 Fluorite Elements & 1 XA Element",
-        "Hệ thống AF hai động cơ XD Linear Motor",
+        "Hệ thống lấy nét dùng động cơ kép XD Linear Motor",
         "Chống rung quang học Optical SteadyShot",
-        "Khay gắn kính lọc Drop-In 40.5mm",
-        "Thiết kế quang học cân bằng trọng lượng phía trước (3040g)",
-        "Thân ống kính hợp kim magie chống chịu thời tiết",
+        "Khe gắn kính lọc Drop-In 40.5mm",
+        "Thiết kế quang học nhẹ, cân bằng trọng tâm phía trước (3040g)",
+        "Kết cấu hợp kim magie chống chịu thời tiết",
         "Cấu tạo 11 lá khẩu tròn"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "3040 g",
+      "dimensions": "163,6 x 449 mm",
+      "angleOfView": "2°40'",
       "focalLength": "600 mm",
       "maxAperture": "F4",
       "minAperture": "F22",
-      "construction": "24 thành phần / 18 nhóm",
-      "angleOfView": "2°40'",
-      "minFocusDistance": "4,5 m",
-      "maxMagnification": "0,14x",
-      "filterDiameter": "40,5 mm",
-      "apertureBlades": "11 (khẩu tròn)",
-      "stabilization": "Chống rung quang học SteadyShot",
-      "weight": "3040 g",
-      "dimensions": "163,6 x 449 mm",
       "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel600f40gm/specifications",
-      "specsMissing": []
+      "construction": "24 thành phần / 18 nhóm",
+      "specsMissing": [],
+      "stabilization": "Chống rung quang học SteadyShot",
+      "apertureBlades": "11 (khẩu tròn)",
+      "filterDiameter": "40,5 mm",
+      "maxMagnification": "0,14x",
+      "minFocusDistance": "4,5 m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1485539.jpg",
@@ -2889,11 +2891,11 @@
         "11-Blade Circular Diaphragm"
       ],
       "vi": [
-        "Định dạng Full-Frame | Khẩu độ không đổi f/2.8",
+        "Định dạng Full-Frame | Khẩu độ cố định f/2.8",
         "Nhẹ hơn 29% so với Mark I (1045g)",
-        "Hệ thống AF bốn động cơ XD Linear Motor (nhanh hơn 4 lần)",
-        "XA, Aspherical, Super ED & ED Elements",
-        "Chống rung quang học Optical SteadyShot có Mode 3",
+        "Hệ thống lấy nét dùng 4 động cơ XD Linear Motor (nhanh hơn 4 lần)",
+        "Thiết kế quang học với XA, Aspherical, Super ED & ED Elements",
+        "Chống rung quang học Optical SteadyShot hỗ trợ chế độ 3",
         "Vòng khẩu độ với công tắc De-Click & Iris Lock",
         "Cấu tạo 11 lá khẩu tròn"
       ]
@@ -2901,20 +2903,20 @@
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "1045 g (Không có đế gắn chân máy)",
+      "dimensions": "88 x 200 mm",
+      "angleOfView": "23ﾟ–8ﾟ",
       "focalLength": "70–200 mm",
       "maxAperture": "F2.8",
       "minAperture": "F22",
-      "construction": "17 thành phần / 14 nhóm",
-      "angleOfView": "23ﾟ–8ﾟ",
-      "minFocusDistance": "0,4 - 0,82 m",
-      "maxMagnification": "0,3x",
-      "filterDiameter": "77 mm",
-      "apertureBlades": "11 (khẩu tròn)",
-      "stabilization": "Chống rung quang học SteadyShot",
-      "weight": "1045 g (Không có đế gắn chân máy)",
-      "dimensions": "88 x 200 mm",
       "specsSource": "https://www.sony.com.vn/lenses/products/sel70200gm2/spec?sku=SEL70200GM2QSYX",
-      "specsMissing": []
+      "construction": "17 thành phần / 14 nhóm",
+      "specsMissing": [],
+      "stabilization": "Chống rung quang học SteadyShot",
+      "apertureBlades": "11 (khẩu tròn)",
+      "filterDiameter": "77 mm",
+      "maxMagnification": "0,3x",
+      "minFocusDistance": "0,4 - 0,82 m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1222776.jpg",
@@ -2944,34 +2946,34 @@
         "11-Blade Circular Iris Diaphragm"
       ],
       "vi": [
-        "Định dạng Full-Frame | Ống kính prime chân dung khẩu độ lớn f/1.4",
-        "Nhẹ hơn 20% và nhỏ hơn 13% so với Mark I",
+        "Định dạng Full-Frame | Ống kính một tiêu cự chân dung khẩu độ lớn f/1.4",
+        "Nhẹ hơn 20% & nhỏ hơn 13% so với Mark I",
         "2 XA Elements & 2 ED Glass Elements",
-        "Hệ thống AF hai động cơ XD Linear Motor (nhanh hơn 3 lần)",
+        "Hệ thống lấy nét dùng động cơ kép XD Linear Motor (nhanh hơn 3 lần)",
         "Vòng khẩu độ với công tắc Click & Iris Lock",
-        "Lớp phủ Nano AR II & lớp phủ Fluorine",
+        "Lớp phủ Nano AR Coating II & Fluorine Coating",
         "Cấu tạo 11 lá khẩu tròn"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "820 g",
+      "dimensions": "89,5 x 107,5 mm",
+      "angleOfView": "19°",
       "focalLength": "85 mm",
       "maxAperture": "F1.4",
       "minAperture": "F16",
-      "construction": "11 thành phần / 8 nhóm",
-      "angleOfView": "19°",
-      "minFocusDistance": "AF 0,85 m",
-      "maxMagnification": "0.12x",
-      "filterDiameter": "77 mm",
-      "apertureBlades": "11 (khẩu tròn)",
-      "stabilization": null,
-      "weight": "820 g",
-      "dimensions": "89,5 x 107,5 mm",
       "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel85f14gm/specifications",
+      "construction": "11 thành phần / 8 nhóm",
       "specsMissing": [
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": "11 (khẩu tròn)",
+      "filterDiameter": "77 mm",
+      "maxMagnification": "0.12x",
+      "minFocusDistance": "AF 0,85 m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1222775.jpg",
@@ -3004,32 +3006,32 @@
       "vi": [
         "Định dạng Full-Frame | Khẩu độ lớn f/1.4",
         "1 XA Element & 3 ED Elements",
-        "Lớp phủ Nano AR hạn chế hiện tượng bóng ma",
-        "Lấy nét bằng động cơ Linear SSM",
+        "Lớp phủ Nano AR Coating giúp hạn chế bóng ma",
+        "Động cơ lấy nét Linear SSM",
         "Vòng khẩu độ vật lý với công tắc De-Click",
-        "Thiết kế chống bụi và chống ẩm",
+        "Kết cấu chống bụi và chống ẩm",
         "Cấu tạo 11 lá khẩu tròn"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "820 g",
+      "dimensions": "89,5 x 107,5 mm",
+      "angleOfView": "19°",
       "focalLength": "85 mm",
       "maxAperture": "F1.4",
       "minAperture": "F16",
-      "construction": "11 thành phần / 8 nhóm",
-      "angleOfView": "19°",
-      "minFocusDistance": "AF 0,85 m",
-      "maxMagnification": "0.12x",
-      "filterDiameter": "77 mm",
-      "apertureBlades": "11 (khẩu tròn)",
-      "stabilization": null,
-      "weight": "820 g",
-      "dimensions": "89,5 x 107,5 mm",
       "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel85f14gm/specifications",
+      "construction": "11 thành phần / 8 nhóm",
       "specsMissing": [
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": "11 (khẩu tròn)",
+      "filterDiameter": "77 mm",
+      "maxMagnification": "0.12x",
+      "minFocusDistance": "AF 0,85 m"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1222775.jpg",
@@ -3062,34 +3064,34 @@
       ],
       "vi": [
         "Cảm biến 50.1MP Full-Frame Exmor RS Stacked CMOS",
-        "Chụp tới 30 fps, ISO 100-32000",
+        "Chụp liên tục lên đến 30 fps, ISO 100-32000",
         "Quay video 8K 30p & 4K 120p 10-Bit 4:2:2",
-        "Khung ngắm EVF 9.44 triệu điểm ảnh, tần số quét 240 fps",
+        "Kính ngắm EVF 9.44 triệu điểm ảnh, tần số quét 240 fps",
         "Lấy nét Fast Hybrid AF 759 điểm, Real-time Bird/Eye AF",
         "Chống rung hình ảnh 5 trục SteadyShot",
-        "Khe cắm thẻ nhớ kép CFexpress Type A / SD",
+        "Khe thẻ nhớ kép CFexpress Type A / SD",
         "Tốc độ đồng bộ đèn flash 1/400 giây"
       ]
     },
     "specs": {
+      "lcd": "TFT 7,5 cm (3,0 inch), 1.440.000 điểm",
       "kind": "camera",
+      "video": null,
       "sensor": "Full-Frame Exmor RS Stacked CMOS",
-      "effectivePixels": "50.1 MP",
+      "weight": "737 g",
+      "battery": "530 ảnh (LCD)",
       "isoRange": null,
       "autofocus": "759 điểm",
-      "video": null,
-      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
-      "viewfinder": "9 437 184 điểm ảnh",
-      "lcd": "TFT 7,5 cm (3,0 inch), 1.440.000 điểm",
-      "mediaSlots": "CFexpress Type A / SD x2",
-      "battery": "530 ảnh (LCD)",
-      "weight": "737 g",
       "dimensions": "128,9 x 96,9 x 80,8 mm",
+      "mediaSlots": "CFexpress Type A / SD x2",
+      "viewfinder": "9 437 184 điểm ảnh",
       "specsSource": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-1/spec?sku=ILCE-1%2FBQ%20%20%20AP2",
       "specsMissing": [
         "isoRange",
         "video"
-      ]
+      ],
+      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
+      "effectivePixels": "50.1 MP"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1619483.jpg",
@@ -3123,31 +3125,31 @@
       ],
       "vi": [
         "Cảm biến 50.1MP Full-Frame Exmor RS Stacked CMOS",
-        "AI Processing Unit cho Real-Time AF thế hệ mới",
-        "Chụp liên tục tới 30 fps không tối màn hình (Blackout-Free)",
+        "Bộ xử lý AI Processing Unit cho Real-Time AF thế hệ mới",
+        "Chụp liên tục lên đến 30 fps không tối màn hình",
         "Quay video 8K 30p & 4K 120p 10-Bit 4:2:2",
-        "Chống rung 5 trục trong thân máy, hiệu quả tới 8.5 stop",
-        "Khung ngắm EVF 9.44 triệu điểm ảnh, tần số quét 240 fps",
-        "Màn hình cảm ứng LCD 3.2\" xoay lật 4 trục Multi-Angle",
+        "Chống rung hình ảnh 5 trục trong thân máy, hiệu quả 8.5 stop",
+        "Kính ngắm EVF 9.44 triệu điểm ảnh, tần số quét 240 fps",
+        "Màn hình cảm ứng LCD 3.2\" đa góc 4 trục",
         "Chế độ chụp Pre-Capture & Speed Boost"
       ]
     },
     "specs": {
+      "lcd": "TFT 8,0 cm (3,2 inch), 2.095.104 điểm",
       "kind": "camera",
+      "video": "8K 30p",
       "sensor": "Full-Frame Exmor RS Stacked CMOS",
-      "effectivePixels": "50,1 MP",
+      "weight": "743 g",
+      "battery": "520 ảnh (LCD)",
       "isoRange": "100–32000 (mở rộng 50–102400)",
       "autofocus": "759 điểm",
-      "video": "8K 30p",
-      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
-      "viewfinder": "9 437 184 điểm ảnh",
-      "lcd": "TFT 8,0 cm (3,2 inch), 2.095.104 điểm",
-      "mediaSlots": "SD x2",
-      "battery": "520 ảnh (LCD)",
-      "weight": "743 g",
       "dimensions": "136,1 x 96,9 x 82,9 mm",
+      "mediaSlots": "SD x2",
+      "viewfinder": "9 437 184 điểm ảnh",
       "specsSource": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilce-1m2/specifications",
-      "specsMissing": []
+      "specsMissing": [],
+      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
+      "effectivePixels": "50,1 MP"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1794764.jpg",
@@ -3171,7 +3173,7 @@
       "en": [
         "24.2MP APS-C Exmor CMOS Sensor",
         "BIONZ X Image Processor",
-        "Real-time Eye AF & Real-Time Tracking",
+        "Real-Time Eye AF & Real-Time Tracking",
         "XGA OLED Tru-Finder 2.36m-Dot EVF",
         "3.0\" 921k-Dot 180° Tilting Touchscreen LCD",
         "UHD 4K30p Video with S-Log3 and HLG",
@@ -3181,33 +3183,33 @@
       "vi": [
         "Cảm biến 24.2MP APS-C Exmor CMOS",
         "Bộ xử lý hình ảnh BIONZ X",
-        "Real-time Eye AF & Real-Time Tracking",
-        "Khung ngắm EVF XGA OLED Tru-Finder 2.36 triệu điểm ảnh",
-        "Màn hình cảm ứng LCD 3.0\" 921k điểm ảnh, lật 180°",
-        "Quay video UHD 4K30p với S-Log3 & HLG",
-        "Tích hợp Wi-Fi & NFC",
-        "425 điểm lấy nét Phase-Detection & Contrast-Detection"
+        "Lấy nét Real-Time Eye AF & Real-Time Tracking",
+        "Kính ngắm XGA OLED Tru-Finder EVF 2.36 triệu điểm ảnh",
+        "Màn hình cảm ứng LCD 3.0\" lật 180°, 921 nghìn điểm ảnh",
+        "Quay video UHD 4K30p hỗ trợ S-Log3 và HLG",
+        "Tích hợp Wi-Fi hỗ trợ NFC",
+        "Lấy nét theo pha & tương phản 425 điểm"
       ]
     },
     "specs": {
+      "lcd": "TFT rộng 7,5 cm (3.0), 921 600 điểm",
       "kind": "camera",
+      "video": null,
       "sensor": "APS-C Exmor CMOS",
-      "effectivePixels": "24,2 MP",
+      "weight": "403 g",
+      "battery": "410 ảnh (LCD)",
       "isoRange": null,
       "autofocus": "425 điểm",
-      "video": null,
-      "stabilization": "Không hỗ trợ (hỗ trợ ổn định hình ảnh bằng ống kính)",
-      "viewfinder": "2 359 296 điểm ảnh",
-      "lcd": "TFT rộng 7,5 cm (3.0), 921 600 điểm",
-      "mediaSlots": "SD",
-      "battery": "410 ảnh (LCD)",
-      "weight": "403 g",
       "dimensions": "120,0 x 66,9 x 59,7 mm",
+      "mediaSlots": "SD",
+      "viewfinder": "2 359 296 điểm ảnh",
       "specsSource": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-6400/spec?sku=ILCE-6400%2FB%20AP2",
       "specsMissing": [
         "isoRange",
         "video"
-      ]
+      ],
+      "stabilization": "Không hỗ trợ (hỗ trợ ổn định hình ảnh bằng ống kính)",
+      "effectivePixels": "24,2 MP"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1453768.jpg",
@@ -3242,29 +3244,29 @@
         "Cảm biến 26MP APS-C Exmor R CMOS BSI",
         "Bộ xử lý BIONZ XR & AI Processing Unit",
         "Quay video UHD 4K 120p / FHD 240p / 10-Bit 4:2:2",
-        "Chụp tới 11 fps, ISO 100-32000",
-        "Chống rung 5 trục chính xác tới từng điểm ảnh",
-        "Lấy nét Real-Time Tracking cho cả ảnh và video",
-        "759 điểm lấy nét Phase-Detection",
-        "Màn hình cảm ứng LCD Vari-Angle 3.0\" 1.03 triệu điểm ảnh"
+        "Chụp liên tục lên đến 11 fps, ISO 100-32000",
+        "Chống rung hình ảnh 5 trục cấp độ điểm ảnh",
+        "Lấy nét Real-Time Tracking khi chụp ảnh tĩnh & quay video",
+        "Vùng phủ lấy nét theo pha 759 điểm",
+        "Màn hình cảm ứng LCD 3.0\" xoay lật đa hướng, 1.03 triệu điểm ảnh"
       ]
     },
     "specs": {
+      "lcd": "TFT 7,5 cm (3,0 inch), 1 036 800 điểm",
       "kind": "camera",
+      "video": "4K 120p",
       "sensor": "APS-C Exmor R CMOS BSI",
-      "effectivePixels": "26,0 MP",
+      "weight": "493 g",
+      "battery": "570 ảnh (LCD)",
       "isoRange": "100–32000 (mở rộng 50–102400)",
       "autofocus": "759 điểm",
-      "video": "4K 120p",
-      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
-      "viewfinder": "2 359 296 điểm ảnh",
-      "lcd": "TFT 7,5 cm (3,0 inch), 1 036 800 điểm",
-      "mediaSlots": "SD",
-      "battery": "570 ảnh (LCD)",
-      "weight": "493 g",
       "dimensions": "122,0 x 69,0 x 75,1 mm",
+      "mediaSlots": "SD",
+      "viewfinder": "2 359 296 điểm ảnh",
       "specsSource": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-6700/spec?sku=ILCE-6700%2FBQAP2",
-      "specsMissing": []
+      "specsMissing": [],
+      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
+      "effectivePixels": "26,0 MP"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1776281.jpg",
@@ -3299,38 +3301,35 @@
         "Cảm biến 24.2MP Full-Frame Exmor R CMOS BSI",
         "Bộ xử lý hình ảnh BIONZ X & Front-End LSI",
         "Hệ thống lấy nét Hybrid AF 693 điểm",
-        "Quay video UHD 4K30p với gamma HLG & S-Log3",
-        "Khung ngắm EVF Tru-Finder OLED 2.36 triệu điểm ảnh",
-        "Màn hình cảm ứng LCD 3.0\" 921k điểm ảnh, lật được",
+        "Quay video UHD 4K30p hỗ trợ Gamma HLG & S-Log3",
+        "Kính ngắm Tru-Finder OLED EVF 2.36 triệu điểm ảnh",
+        "Màn hình cảm ứng LCD 3.0\" lật, 921 nghìn điểm ảnh",
         "Chống rung 5 trục SteadyShot INSIDE",
-        "Khe cắm thẻ nhớ SD kép; USB 3.1 Gen 1 Type-C"
+        "Khe thẻ nhớ SD kép; cổng USB 3.1 Gen 1 Type-C"
       ]
     },
     "specs": {
+      "lcd": "TFT 7,5 cm (3,0 inch), 921.600 điểm",
       "kind": "camera",
+      "video": null,
       "sensor": "Full-Frame Exmor R CMOS BSI",
-      "effectivePixels": "24,2 MP",
+      "weight": "650 g",
+      "battery": "710 ảnh (LCD)",
       "isoRange": null,
       "autofocus": "693 điểm",
-      "video": null,
-      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
-      "viewfinder": "2 359 296 điểm ảnh",
-      "lcd": "TFT 7,5 cm (3,0 inch), 921.600 điểm",
-      "mediaSlots": "SD x2",
-      "battery": "710 ảnh (LCD)",
-      "weight": "650 g",
       "dimensions": "126,9 x 95,6 x 73,7 mm",
+      "mediaSlots": "SD x2",
+      "viewfinder": "2 359 296 điểm ảnh",
       "specsSource": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-7m3-body-kit/spec?sku=ILCE-7M3%2FBQ%20AP2",
       "specsMissing": [
         "isoRange",
         "video"
-      ]
+      ],
+      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
+      "effectivePixels": "24,2 MP"
     },
     "galleryUrls": [
-      "https://static.bhphoto.com/images/fb/1394219.jpg",
-      "https://static.bhphoto.com/images/images1000x1000/sony_ilce_7m3_alpha_a7_iii_mirrorless_1394217.jpg",
-      "https://static.bhphoto.com/images/images1000x1000/1394219.jpg",
-      "https://static.bhphoto.com/images/images1000x1000/1102009.jpg"
+      "https://static.bhphoto.com/images/images1000x1000/sony_ilce_7m3_alpha_a7_iii_mirrorless_1394217.jpg"
     ]
   },
   {
@@ -3360,37 +3359,37 @@
       ],
       "vi": [
         "Cảm biến 33MP Full-Frame Exmor R CMOS BSI",
-        "Chụp tới 10 fps, ISO 100-51200",
+        "Chụp liên tục lên đến 10 fps, ISO 100-51200",
         "Quay video 4K 60p 10-Bit, S-Cinetone",
-        "Khung ngắm EVF 3.68 triệu điểm ảnh, tần số quét 120 fps",
-        "Màn hình cảm ứng LCD Vari-Angle 3\" 1.03 triệu điểm ảnh",
+        "Kính ngắm EVF 3.68 triệu điểm ảnh, tần số quét 120 fps",
+        "Màn hình cảm ứng LCD 3\" xoay lật đa hướng, 1.03 triệu điểm ảnh",
         "Lấy nét Fast Hybrid AF 759 điểm, Real-time Eye AF",
-        "Hỗ trợ Focus Breathing Compensation",
+        "Tính năng Focus Breathing Compensation",
         "Chống rung hình ảnh 5 trục SteadyShot",
-        "Creative Look & Soft Skin Effect",
-        "Livestream 4K 15p UVC/UAC qua USB Type-C"
+        "Chế độ Creative Look và Soft Skin Effect",
+        "Phát trực tiếp 4K 15p UVC/UAC qua USB Type-C"
       ]
     },
     "specs": {
+      "lcd": "TFT 7,5 cm (3,0 inch), 1 036 800 điểm",
       "kind": "camera",
+      "video": null,
       "sensor": "Full-Frame Exmor R CMOS BSI",
-      "effectivePixels": "33 MP",
+      "weight": "658 g",
+      "battery": null,
       "isoRange": null,
       "autofocus": "759 điểm",
-      "video": null,
-      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
-      "viewfinder": "3 686 400 điểm ảnh",
-      "lcd": "TFT 7,5 cm (3,0 inch), 1 036 800 điểm",
-      "mediaSlots": "CFexpress Type A / SD x2",
-      "battery": null,
-      "weight": "658 g",
       "dimensions": "131,3 x 96,4 x 79,8 mm",
+      "mediaSlots": "CFexpress Type A / SD x2",
+      "viewfinder": "3 686 400 điểm ảnh",
       "specsSource": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-7m4/spec?sku=ILCE-7M4%2FBQ%20AP2",
       "specsMissing": [
         "battery",
         "isoRange",
         "video"
-      ]
+      ],
+      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
+      "effectivePixels": "33 MP"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1667800.jpg",
@@ -3422,30 +3421,30 @@
       ],
       "vi": [
         "Cảm biến 33MP Full-Frame Exmor R CMOS BSI",
-        "AI Processing Unit nhận diện người, động vật, phương tiện khi lấy nét",
-        "Quay video 4K 60p 10-Bit 4:2:2 với S-Cinetone",
-        "Chống rung 5 trục trong thân máy, hiệu quả tới 7.0 stop",
-        "Khung ngắm OLED 3.68 triệu điểm ảnh, 120 fps",
-        "Màn hình cảm ứng LCD 3.2\" xoay lật 4 trục Multi-Angle",
-        "Khe cắm thẻ nhớ kép CFexpress Type A / SD UHS-II"
+        "Bộ xử lý AI Processing Unit cho lấy nét nhận diện người/động vật/phương tiện",
+        "Quay video 4K 60p 10-Bit 4:2:2 S-Cinetone",
+        "Chống rung hình ảnh 5 trục trong thân máy, hiệu quả 7.0 stop",
+        "Kính ngắm OLED 3.68 triệu điểm ảnh, tần số quét 120 fps",
+        "Màn hình cảm ứng LCD 3.2\" đa góc 4 trục",
+        "Khe thẻ nhớ kép CFexpress Type A / SD UHS-II"
       ]
     },
     "specs": {
+      "lcd": "TFT 8,0 cm (3,2 inch), 2.095.104 điểm",
       "kind": "camera",
+      "video": "4K 120p",
       "sensor": "Full-Frame Exmor R CMOS BSI",
-      "effectivePixels": "33,0 MP",
+      "weight": "695 g",
+      "battery": "750 ảnh (LCD)",
       "isoRange": "100–51200 (mở rộng 50–204800)",
       "autofocus": "759 điểm",
-      "video": "4K 120p",
-      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
-      "viewfinder": "3 686 400 điểm ảnh",
-      "lcd": "TFT 8,0 cm (3,2 inch), 2.095.104 điểm",
-      "mediaSlots": "CFexpress Type A / SD x2",
-      "battery": "750 ảnh (LCD)",
-      "weight": "695 g",
       "dimensions": "130,3 x 96,4 x 82,4 mm",
+      "mediaSlots": "CFexpress Type A / SD x2",
+      "viewfinder": "3 686 400 điểm ảnh",
       "specsSource": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilce-7m5/specifications",
-      "specsMissing": []
+      "specsMissing": [],
+      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
+      "effectivePixels": "33,0 MP"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1935439.jpg",
@@ -3468,45 +3467,44 @@
       "en": [
         "24.2MP Full-Frame Exmor R CMOS BSI Sensor",
         "BIONZ X Image Processor & Front-End LSI",
-        "693-Pt. Hybrid AF System, Real-time Eye AF",
+        "693-Pt. Hybrid AF System, Real-Time Eye AF",
         "UHD 4K30p Video with HLG & S-Log3",
-        "Compact, Lightweight Full-Frame Body",
+        "Compact Lightest Full-Frame Body Design",
         "3.0\" 921k-Dot Vari-Angle Touchscreen LCD",
         "5-Axis In-Body Image Stabilization"
       ],
       "vi": [
         "Cảm biến 24.2MP Full-Frame Exmor R CMOS BSI",
         "Bộ xử lý hình ảnh BIONZ X & Front-End LSI",
-        "Hệ thống lấy nét Hybrid AF 693 điểm, Real-time Eye AF",
-        "Quay video UHD 4K30p với HLG & S-Log3",
-        "Thân máy Full-Frame nhỏ gọn, nhẹ",
-        "Màn hình cảm ứng LCD Vari-Angle 3.0\" 921k điểm ảnh",
-        "Chống rung 5 trục trong thân máy"
+        "Hệ thống lấy nét Hybrid AF 693 điểm, Real-Time Eye AF",
+        "Quay video UHD 4K30p hỗ trợ HLG & S-Log3",
+        "Thiết kế thân máy Full-Frame nhỏ gọn, nhẹ nhất",
+        "Màn hình cảm ứng LCD 3.0\" xoay lật đa hướng, 921 nghìn điểm ảnh",
+        "Chống rung hình ảnh 5 trục trong thân máy"
       ]
     },
     "specs": {
+      "lcd": "TFT 7,5 cm (3,0 inch), 921.600 điểm",
       "kind": "camera",
+      "video": null,
       "sensor": "Full-Frame Exmor R CMOS BSI",
-      "effectivePixels": "24,2 MP",
+      "weight": "509 g",
+      "battery": "740 ảnh (LCD)",
       "isoRange": null,
       "autofocus": "693 điểm",
-      "video": null,
-      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
-      "viewfinder": "2.359.296 điểm ảnh",
-      "lcd": "TFT 7,5 cm (3,0 inch), 921.600 điểm",
-      "mediaSlots": "SD",
-      "battery": "740 ảnh (LCD)",
-      "weight": "509 g",
       "dimensions": "124,0 x 71,1 x 59,7 mm",
+      "mediaSlots": "SD",
+      "viewfinder": "2.359.296 điểm ảnh",
       "specsSource": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-7c/spec?sku=ILCE-7C%2FSQ%20%20AP2",
       "specsMissing": [
         "isoRange",
         "video"
-      ]
+      ],
+      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
+      "effectivePixels": "24,2 MP"
     },
     "galleryUrls": [
-      "https://static.bhphoto.com/images/fb/1784820.jpg",
-      "https://static.bhphoto.com/images/images1000x1000/1784820.jpg"
+      "https://static.bhphoto.com/images/images1000x1000/sony_a7c_ii_mirrorless_camera_1784818.jpg"
     ]
   },
   {
@@ -3535,28 +3533,28 @@
         "Cảm biến 33MP Full-Frame Exmor R CMOS BSI",
         "Bộ xử lý BIONZ XR & AI Processing Unit",
         "Quay video 4K 60p 10-Bit 4:2:2 & S-Cinetone",
-        "Chống rung 5 trục trong thân máy, hiệu quả tới 7.0 stop",
+        "Chống rung hình ảnh 5 trục trong thân máy, hiệu quả 7.0 stop",
         "Lấy nét Fast Hybrid AF 759 điểm, Real-time Eye AF",
-        "Màn hình cảm ứng LCD Vari-Angle 3.0\" 1.03 triệu điểm ảnh",
+        "Màn hình cảm ứng LCD 3.0\" xoay lật đa hướng, 1.03 triệu điểm ảnh",
         "Thân máy kiểu rangefinder nhỏ gọn, nhẹ"
       ]
     },
     "specs": {
+      "lcd": "TFT 7,5 cm (3,0 inch), 1 036 800 điểm",
       "kind": "camera",
+      "video": "4K 60p",
       "sensor": "Full-Frame Exmor R CMOS BSI",
-      "effectivePixels": "33,0 MP",
+      "weight": "514 g",
+      "battery": "560 ảnh (LCD)",
       "isoRange": "100–51200 (mở rộng 50–204800)",
       "autofocus": "759 điểm",
-      "video": "4K 60p",
-      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
-      "viewfinder": "2 359 296 điểm ảnh",
-      "lcd": "TFT 7,5 cm (3,0 inch), 1 036 800 điểm",
-      "mediaSlots": "SD",
-      "battery": "560 ảnh (LCD)",
-      "weight": "514 g",
       "dimensions": "124,0 x 71,1 x 63,4 mm",
+      "mediaSlots": "SD",
+      "viewfinder": "2 359 296 điểm ảnh",
       "specsSource": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-7cm2/spec?sku=ILCE-7CM2%2FSQAP2",
-      "specsMissing": []
+      "specsMissing": [],
+      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
+      "effectivePixels": "33,0 MP"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1784820.jpg",
@@ -3589,29 +3587,29 @@
       "vi": [
         "Cảm biến 61MP Full-Frame Exmor R CMOS BSI",
         "Bộ xử lý BIONZ XR & AI Processing Unit",
-        "Pixel Shift Multi Shooting cho ảnh 240MP",
+        "Chế độ Pixel Shift Multi Shooting cho ảnh 240MP",
         "Quay video 4K 60p 10-Bit & S-Cinetone",
-        "Chống rung 5 trục, hiệu quả tới 7.0 stop",
+        "Chống rung hình ảnh 5 trục, hiệu quả 7.0 stop",
         "Hệ thống lấy nét Fast Hybrid AF 693 điểm",
-        "Thân máy nhỏ gọn 515g kèm báng cầm nối dài"
+        "Thân máy nhỏ gọn 515g với báng cầm mở rộng"
       ]
     },
     "specs": {
+      "lcd": "TFT 7,5 cm (3,0 inch), 1 036 800 điểm",
       "kind": "camera",
+      "video": "4K 60p",
       "sensor": "Full-Frame Exmor R CMOS BSI",
-      "effectivePixels": "61,0 MP",
+      "weight": "515 g",
+      "battery": "530 ảnh (LCD)",
       "isoRange": "100–32000 (mở rộng 50–102400)",
       "autofocus": "693 điểm",
-      "video": "4K 60p",
-      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
-      "viewfinder": "2 359 296 điểm ảnh",
-      "lcd": "TFT 7,5 cm (3,0 inch), 1 036 800 điểm",
-      "mediaSlots": "SD",
-      "battery": "530 ảnh (LCD)",
-      "weight": "515 g",
       "dimensions": "124,0 x 71,1 x 63,4 mm",
+      "mediaSlots": "SD",
+      "viewfinder": "2 359 296 điểm ảnh",
       "specsSource": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-7cr/spec?sku=ILCE-7CR%2FBQ%20AP2",
-      "specsMissing": []
+      "specsMissing": [],
+      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
+      "effectivePixels": "61,0 MP"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1784157.jpg",
@@ -3643,29 +3641,29 @@
       "vi": [
         "Cảm biến 42.4MP Full-Frame Exmor R CMOS BSI",
         "Bộ xử lý hình ảnh BIONZ X & Front-End LSI",
-        "Hệ thống lấy nét 399 điểm & chụp 10 fps",
-        "Quay video UHD 4K30p với gamma HLG & S-Log3",
-        "Khung ngắm EVF Tru-Finder OLED 3.68 triệu điểm ảnh",
-        "Màn hình cảm ứng LCD 3.0\" 2.36 triệu điểm ảnh, lật được",
+        "Hệ thống lấy nét 399 điểm & chụp liên tục 10 fps",
+        "Quay video UHD 4K30p hỗ trợ Gamma HLG & S-Log3",
+        "Kính ngắm Tru-Finder OLED EVF 3.68 triệu điểm ảnh",
+        "Màn hình cảm ứng LCD 3.0\" lật, 2.36 triệu điểm ảnh",
         "Chống rung 5 trục SteadyShot INSIDE"
       ]
     },
     "specs": {
+      "lcd": "TFT 7,5 cm (3,0 inch), 2.359.296 điểm",
       "kind": "camera",
+      "video": "HD 60p",
       "sensor": "Full-Frame Exmor R CMOS BSI",
-      "effectivePixels": "42,4 MP",
+      "weight": "657 g",
+      "battery": "640 ảnh (LCD)",
       "isoRange": "100–32000",
       "autofocus": "399 điểm",
-      "video": "HD 60p",
-      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
-      "viewfinder": "3 686 400 điểm ảnh",
-      "lcd": "TFT 7,5 cm (3,0 inch), 2.359.296 điểm",
-      "mediaSlots": "SD x2",
-      "battery": "640 ảnh (LCD)",
-      "weight": "657 g",
       "dimensions": "126,9 x 95,6 x 73,7 mm",
+      "mediaSlots": "SD x2",
+      "viewfinder": "3 686 400 điểm ảnh",
       "specsSource": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilce-7rm3a/specifications",
-      "specsMissing": []
+      "specsMissing": [],
+      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
+      "effectivePixels": "42,4 MP"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/fb/1394217.jpg",
@@ -3697,29 +3695,29 @@
       "vi": [
         "Cảm biến 61MP Full-Frame Exmor R CMOS BSI",
         "Bộ xử lý hình ảnh BIONZ X & Front-End LSI",
-        "Hệ thống lấy nét Phase-Detection AF 567 điểm",
-        "Chụp tới 10 fps, ISO 100-32000",
-        "Quay video UHD 4K30p với gamma HLG & S-Log3",
-        "Khung ngắm EVF UXGA OLED Tru-Finder 5.76 triệu điểm ảnh",
-        "240MP Pixel Shift Multi Shooting"
+        "Hệ thống lấy nét theo pha 567 điểm",
+        "Chụp liên tục lên đến 10 fps, ISO 100-32000",
+        "Quay video UHD 4K30p hỗ trợ Gamma HLG & S-Log3",
+        "Kính ngắm UXGA OLED Tru-Finder EVF 5.76 triệu điểm ảnh",
+        "Chế độ Pixel Shift Multi Shooting 240MP"
       ]
     },
     "specs": {
+      "lcd": "TFT 7,5 cm (3,0 inch), 2.359.296 điểm",
       "kind": "camera",
+      "video": "HD 60p",
       "sensor": "Full-Frame Exmor R CMOS BSI",
-      "effectivePixels": "61,0 MP",
+      "weight": "665 g",
+      "battery": "660 ảnh (LCD)",
       "isoRange": "100–32000",
       "autofocus": "567 điểm",
-      "video": "HD 60p",
-      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
-      "viewfinder": "5 760 000 điểm ảnh",
-      "lcd": "TFT 7,5 cm (3,0 inch), 2.359.296 điểm",
-      "mediaSlots": "SD x2",
-      "battery": "660 ảnh (LCD)",
-      "weight": "665 g",
       "dimensions": "128,9 x 96,4 x 77,5 mm",
+      "mediaSlots": "SD x2",
+      "viewfinder": "5 760 000 điểm ảnh",
       "specsSource": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilce-7rm4a/specifications",
-      "specsMissing": []
+      "specsMissing": [],
+      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
+      "effectivePixels": "61,0 MP"
     },
     "galleryUrls": [
       "https://www.sony.com.vn/image/c8a930c97af5746b7120d4b639cfe813?fmt=png-alpha"
@@ -3740,7 +3738,7 @@
     "features": {
       "en": [
         "61MP Full-Frame Exmor R CMOS BSI Sensor",
-        "BIONZ XR Processor & Dedicated AI Processing Unit",
+        "BIONZ XR Processor & Dedicated AI Unit",
         "8K 24p & 4K 60p 10-Bit Video",
         "8.0-Stop 5-Axis Image Stabilization System",
         "9.44m-Dot EVF with 120 fps Refresh Rate",
@@ -3750,33 +3748,33 @@
       ],
       "vi": [
         "Cảm biến 61MP Full-Frame Exmor R CMOS BSI",
-        "Bộ xử lý BIONZ XR & AI Processing Unit riêng",
+        "Bộ xử lý BIONZ XR & AI Unit chuyên dụng",
         "Quay video 8K 24p & 4K 60p 10-Bit",
-        "Hệ thống chống rung 5 trục, hiệu quả tới 8.0 stop",
-        "Khung ngắm EVF 9.44 triệu điểm ảnh, tần số quét 120 fps",
-        "Màn hình cảm ứng LCD 3.2\" xoay lật 4 trục Multi-Angle",
-        "Lấy nét Fast Hybrid AF 693 điểm với AI Tracking",
-        "240MP Pixel Shift Multi Shooting"
+        "Hệ thống chống rung hình ảnh 5 trục, hiệu quả 8.0 stop",
+        "Kính ngắm EVF 9.44 triệu điểm ảnh, tần số quét 120 fps",
+        "Màn hình cảm ứng LCD 3.2\" đa góc 4 trục",
+        "Lấy nét Fast Hybrid AF 693 điểm hỗ trợ theo dõi bằng AI",
+        "Chế độ Pixel Shift Multi Shooting 240MP"
       ]
     },
     "specs": {
+      "lcd": "TFT 8,0 cm (3,2 inch), 2.095.104 điểm",
       "kind": "camera",
+      "video": null,
       "sensor": "Full-Frame Exmor R CMOS BSI",
-      "effectivePixels": "61,0 MP",
+      "weight": "723 g",
+      "battery": "530 ảnh (LCD)",
       "isoRange": "100–32000",
       "autofocus": "693 điểm",
-      "video": null,
-      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
-      "viewfinder": "9 437 184 điểm ảnh",
-      "lcd": "TFT 8,0 cm (3,2 inch), 2.095.104 điểm",
-      "mediaSlots": "CFexpress Type A / SD x2",
-      "battery": "530 ảnh (LCD)",
-      "weight": "723 g",
       "dimensions": "131,3 x 96,9 x 82,4 mm",
+      "mediaSlots": "CFexpress Type A / SD x2",
+      "viewfinder": "9 437 184 điểm ảnh",
       "specsSource": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-7rm5/spec?sku=ILCE-7RM5%2FBQAP2",
       "specsMissing": [
         "video"
-      ]
+      ],
+      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
+      "effectivePixels": "61,0 MP"
     },
     "galleryUrls": [
       "https://sony.scene7.com/is/image/sonyglobalsolutions/og-2?$primaryshotPreset$&fmt=png-alpha"
@@ -3806,30 +3804,30 @@
       ],
       "vi": [
         "Cảm biến 61MP Full-Frame Exmor R CMOS BSI",
-        "AI Processing Unit thế hệ mới & BIONZ XR",
+        "Bộ xử lý AI Processing Unit thế hệ mới & BIONZ XR",
         "Quay video 8K 30p & 4K 60p 10-Bit 4:2:2",
-        "Chống rung trong thân máy, hiệu quả tới 8.5 stop",
-        "Khung ngắm EVF OLED 9.44 triệu điểm ảnh, 120 fps",
-        "Màn hình cảm ứng LCD 3.2\" xoay lật 4 trục Multi-Angle",
-        "Khe cắm thẻ nhớ kép CFexpress Type A / SD UHS-II"
+        "Chống rung hình ảnh trong thân máy, hiệu quả 8.5 stop",
+        "Kính ngắm OLED EVF 9.44 triệu điểm ảnh, tần số quét 120 fps",
+        "Màn hình cảm ứng LCD 3.2\" đa góc 4 trục",
+        "Khe thẻ nhớ kép CFexpress Type A / SD UHS-II"
       ]
     },
     "specs": {
+      "lcd": "TFT 8,0 cm (3,2 inch), 2.095.104 điểm",
       "kind": "camera",
+      "video": "8K 30p",
       "sensor": "Full-Frame Exmor R CMOS BSI",
-      "effectivePixels": "66,8 MP",
+      "weight": "713 g",
+      "battery": "600 ảnh (LCD)",
       "isoRange": "100–32000 (mở rộng 50–102400)",
       "autofocus": "759 điểm",
-      "video": "8K 30p",
-      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
-      "viewfinder": "9 437 184 điểm ảnh",
-      "lcd": "TFT 8,0 cm (3,2 inch), 2.095.104 điểm",
-      "mediaSlots": "CFexpress Type A / SD x2",
-      "battery": "600 ảnh (LCD)",
-      "weight": "713 g",
       "dimensions": "132,7 x 96,9 x 82,9 mm",
+      "mediaSlots": "CFexpress Type A / SD x2",
+      "viewfinder": "9 437 184 điểm ảnh",
       "specsSource": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/ilce-7rm6/specifications",
-      "specsMissing": []
+      "specsMissing": [],
+      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
+      "effectivePixels": "66,8 MP"
     },
     "galleryUrls": [
       "https://www.sony.com.vn/image/9bb73463633f22e8851c0d457f6fee10?fmt=png-alpha"
@@ -3852,7 +3850,7 @@
         "12.1MP Full-Frame Exmor R CMOS BSI Sensor",
         "UHD 4K 120p Video, 10-Bit 4:2:2 Internal",
         "16-Bit RAW Output, HLG & S-Cinetone",
-        "759-Pt. Fast Hybrid AF, Real-time Eye AF",
+        "759-Pt. Fast Hybrid AF, Real-Time Eye AF",
         "9.44m-Dot QXGA OLED EVF",
         "3.0\" 1.44m-Dot Vari-Angle Touchscreen LCD",
         "5-Axis SteadyShot INSIDE Stabilization",
@@ -3860,34 +3858,34 @@
       ],
       "vi": [
         "Cảm biến 12.1MP Full-Frame Exmor R CMOS BSI",
-        "Quay video UHD 4K 120p, ghi trong máy 10-Bit 4:2:2",
+        "Quay video UHD 4K 120p, 10-Bit 4:2:2 ghi trong máy",
         "Xuất RAW 16-Bit, HLG & S-Cinetone",
-        "Lấy nét Fast Hybrid AF 759 điểm, Real-time Eye AF",
-        "Khung ngắm EVF QXGA OLED 9.44 triệu điểm ảnh",
-        "Màn hình cảm ứng LCD Vari-Angle 3.0\" 1.44 triệu điểm ảnh",
+        "Lấy nét Fast Hybrid AF 759 điểm, Real-Time Eye AF",
+        "Kính ngắm QXGA OLED EVF 9.44 triệu điểm ảnh",
+        "Màn hình cảm ứng LCD 3.0\" xoay lật đa hướng, 1.44 triệu điểm ảnh",
         "Chống rung 5 trục SteadyShot INSIDE",
-        "Khe cắm thẻ nhớ kép CFexpress Type A / SD"
+        "Khe thẻ nhớ kép CFexpress Type A / SD"
       ]
     },
     "specs": {
+      "lcd": "TFT 7,5 cm (3,0 inch), 1.440.000 điểm",
       "kind": "camera",
+      "video": null,
       "sensor": "Full-Frame Exmor R CMOS BSI",
-      "effectivePixels": "12,1 MP",
+      "weight": "699 g",
+      "battery": "600 ảnh (LCD)",
       "isoRange": null,
       "autofocus": "759 điểm",
-      "video": null,
-      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
-      "viewfinder": "9 437 184 điểm ảnh",
-      "lcd": "TFT 7,5 cm (3,0 inch), 1.440.000 điểm",
-      "mediaSlots": "CFexpress Type A / SD x2",
-      "battery": "600 ảnh (LCD)",
-      "weight": "699 g",
       "dimensions": "128,9 x 96,9 x 80,8 mm",
+      "mediaSlots": "CFexpress Type A / SD x2",
+      "viewfinder": "9 437 184 điểm ảnh",
       "specsSource": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-7sm3/spec?sku=ILCE-7SM3%2FBQAP2",
       "specsMissing": [
         "isoRange",
         "video"
-      ]
+      ],
+      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
+      "effectivePixels": "12,1 MP"
     },
     "galleryUrls": [
       "https://sony.scene7.com/is/image/sonyglobalsolutions/02_Primary_image-3?$primaryshotPreset$&fmt=png-alpha"
@@ -3910,39 +3908,39 @@
         "24.6MP Full-Frame Global Shutter Sensor",
         "Up to 120 fps Continuous Shooting with AF/AE",
         "Pre-Capture & Speed Boost Functions",
-        "Flash Sync up to 1/80,000 sec",
+        "Flash Sync up to 1/80,000 sec Shutter",
         "4K 120p 10-Bit 4:2:2 Video Recording",
-        "759-Pt. Phase-Detection AF with AI Processing Unit",
+        "759-Pt. Phase-Detection AF with AI Unit",
         "9.44m-Dot EVF with 240 fps Refresh Rate",
         "3.2\" 4-Axis Multi-Angle Touchscreen LCD"
       ],
       "vi": [
         "Cảm biến 24.6MP Full-Frame Global Shutter",
-        "Chụp liên tục lên tới 120 fps hỗ trợ đầy đủ AF/AE",
+        "Chụp liên tục lên đến 120 fps hỗ trợ AF/AE",
         "Tính năng Pre-Capture & Speed Boost",
-        "Đồng bộ đèn flash ở tốc độ màn trập tới 1/80 000 giây",
+        "Đồng bộ đèn flash với tốc độ màn trập lên đến 1/80,000 giây",
         "Quay video 4K 120p 10-Bit 4:2:2",
-        "Lấy nét Phase-Detection AF 759 điểm, tích hợp AI Processing Unit",
-        "Khung ngắm EVF 9.44 triệu điểm ảnh, tần số quét 240 fps",
-        "Màn hình cảm ứng LCD 3.2\" xoay lật 4 trục Multi-Angle"
+        "Lấy nét theo pha 759 điểm với AI Unit",
+        "Kính ngắm EVF 9.44 triệu điểm ảnh, tần số quét 240 fps",
+        "Màn hình cảm ứng LCD 3.2\" đa góc 4 trục"
       ]
     },
     "specs": {
+      "lcd": "TFT 8,0 cm (3,2 inch), 2.095.104 điểm",
       "kind": "camera",
+      "video": "4K 120p",
       "sensor": "Full-Frame Exmor RS Global Shutter CMOS",
-      "effectivePixels": "24,6 MP",
+      "weight": "702 g",
+      "battery": "530 ảnh (LCD)",
       "isoRange": "250–25600 (mở rộng 125–51200)",
       "autofocus": "759 điểm",
-      "video": "4K 120p",
-      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
-      "viewfinder": "9 437 184 điểm ảnh",
-      "lcd": "TFT 8,0 cm (3,2 inch), 2.095.104 điểm",
-      "mediaSlots": "CFexpress Type A / SD x2",
-      "battery": "530 ảnh (LCD)",
-      "weight": "702 g",
       "dimensions": "136,1 x 96,9 x 82,9 mm",
+      "mediaSlots": "CFexpress Type A / SD x2",
+      "viewfinder": "9 437 184 điểm ảnh",
       "specsSource": "https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-9m3/spec?sku=ILCE-9M3%2FBQ%20AP2",
-      "specsMissing": []
+      "specsMissing": [],
+      "stabilization": "Cơ chế dịch chuyển cảm biến hình ảnh với bù 5 trục",
+      "effectivePixels": "24,6 MP"
     },
     "galleryUrls": [
       "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-21?$primaryshotPreset$&fmt=png-alpha"
@@ -3971,11 +3969,11 @@
         "Compact Lightweight Ultra-Wide Zoom (225g)"
       ],
       "vi": [
-        "Định dạng APS-C | Khẩu độ không đổi f/4",
-        "Tiêu cự tương đương 15-27mm (định dạng 35mm)",
+        "Định dạng APS-C | Khẩu độ cố định f/4",
+        "15-27mm (tương đương định dạng 35mm)",
         "3 Aspherical Elements & 1 Super ED Element",
         "Chống rung quang học Optical SteadyShot",
-        "Cơ chế lấy nét trong (Internal Focus)",
+        "Cơ chế lấy nét trong",
         "Cấu tạo 7 lá khẩu tròn",
         "Ống kính zoom siêu rộng nhỏ gọn, nhẹ (225g)"
       ]
@@ -3983,20 +3981,20 @@
     "specs": {
       "kind": "lens",
       "format": "APS-C",
+      "weight": "225 g",
+      "dimensions": "70,0 x 63,5 mm",
+      "angleOfView": "109°–76°",
       "focalLength": "10–18 mm",
       "maxAperture": "F4",
       "minAperture": "F22",
-      "construction": "10 thành phần / 8 nhóm",
-      "angleOfView": "109°–76°",
-      "minFocusDistance": "0,25 m",
-      "maxMagnification": "0.1x",
-      "filterDiameter": "62 mm",
-      "apertureBlades": "7 (khẩu tròn)",
-      "stabilization": "Chống rung quang học SteadyShot",
-      "weight": "225 g",
-      "dimensions": "70,0 x 63,5 mm",
       "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel1018/specifications",
-      "specsMissing": []
+      "construction": "10 thành phần / 8 nhóm",
+      "specsMissing": [],
+      "stabilization": "Chống rung quang học SteadyShot",
+      "apertureBlades": "7 (khẩu tròn)",
+      "filterDiameter": "62 mm",
+      "maxMagnification": "0.1x",
+      "minFocusDistance": "0,25 m"
     },
     "galleryUrls": [
       "https://www.sony.com.vn/image/091c300275b83c990e723865ea8ccb67?fmt=png-alpha"
@@ -4026,35 +4024,35 @@
         "Ultra-Compact 181g Vlog & Landscape Lens"
       ],
       "vi": [
-        "Định dạng APS-C | Ống kính prime siêu rộng f/1.8",
-        "Tiêu cự tương đương 16.5mm (định dạng 35mm)",
-        "3 Aspherical Elements & 3 ED Elements",
-        "Hệ thống AF hai động cơ Linear Motor",
-        "Lấy nét trong (Internal Focus) & hạn chế focus breathing",
-        "Thiết kế chống bụi và chống ẩm",
+        "Định dạng APS-C | Ống kính một tiêu cự siêu rộng f/1.8",
+        "16.5mm (tương đương định dạng 35mm)",
+        "3 Aspherical & 3 ED Elements",
+        "Hệ thống lấy nét dùng động cơ kép Linear Motor",
+        "Lấy nét trong & hạn chế Focus Breathing",
+        "Kết cấu chống bụi và chống ẩm",
         "Cấu tạo 7 lá khẩu tròn",
-        "Ống kính siêu gọn 181g cho vlog & phong cảnh"
+        "Ống kính siêu nhỏ gọn 181g cho vlog & phong cảnh"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "APS-C",
+      "weight": "181 g",
+      "dimensions": "66 x 57,5 mm",
+      "angleOfView": "104ﾟ",
       "focalLength": "11 mm",
       "maxAperture": "F1.8",
       "minAperture": "F16",
-      "construction": "12 thành phần / 11 nhóm",
-      "angleOfView": "104ﾟ",
-      "minFocusDistance": "0,15 m",
-      "maxMagnification": "0,13x",
-      "filterDiameter": "55 mm",
-      "apertureBlades": "7 (khẩu tròn)",
-      "stabilization": null,
-      "weight": "181 g",
-      "dimensions": "66 x 57,5 mm",
       "specsSource": "https://www.sony.com.vn/lenses/products/sel11f18/spec?sku=SEL11F18%2F%2FC%20SYX",
+      "construction": "12 thành phần / 11 nhóm",
       "specsMissing": [
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": "7 (khẩu tròn)",
+      "filterDiameter": "55 mm",
+      "maxMagnification": "0,13x",
+      "minFocusDistance": "0,15 m"
     },
     "galleryUrls": [
       "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-4?$primaryshotPreset$&fmt=png-alpha"
@@ -4084,33 +4082,33 @@
       ],
       "vi": [
         "Định dạng APS-C | Khẩu độ tối đa lớn f/1.4",
-        "Tiêu cự tương đương 22.5mm (định dạng 35mm)",
-        "3 Aspherical Elements, 1 ED Element & 1 Super ED Element",
-        "Hệ thống AF hai động cơ Linear Motor",
+        "22.5mm (tương đương định dạng 35mm)",
+        "3 Aspherical, 1 ED & 1 Super ED Element",
+        "Hệ thống lấy nét dùng động cơ kép Linear Motor",
         "Vòng khẩu độ vật lý với công tắc De-Click",
-        "Thiết kế chống bụi và chống ẩm",
+        "Kết cấu chống bụi và chống ẩm",
         "Cấu tạo 7 lá khẩu tròn"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "APS-C",
+      "weight": "219 g",
+      "dimensions": "66,6 x 69,5 mm",
+      "angleOfView": "87ﾟ",
       "focalLength": "15 mm",
       "maxAperture": "F1.4",
       "minAperture": "F16",
-      "construction": "13 thành phần / 12 nhóm",
-      "angleOfView": "87ﾟ",
-      "minFocusDistance": "0,20 m",
-      "maxMagnification": "0,12x",
-      "filterDiameter": "55 mm",
-      "apertureBlades": "7 (khẩu tròn)",
-      "stabilization": null,
-      "weight": "219 g",
-      "dimensions": "66,6 x 69,5 mm",
       "specsSource": "https://www.sony.com.vn/lenses/products/sel15f14g/spec?sku=SEL15F14G%2F%2FCSYX",
+      "construction": "13 thành phần / 12 nhóm",
       "specsMissing": [
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": "7 (khẩu tròn)",
+      "filterDiameter": "55 mm",
+      "maxMagnification": "0,12x",
+      "minFocusDistance": "0,20 m"
     },
     "galleryUrls": [
       "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image_1200-5?$primaryshotPreset$&fmt=png-alpha"
@@ -4139,32 +4137,32 @@
         "7-Blade Circular Diaphragm"
       ],
       "vi": [
-        "Định dạng APS-C | Ống kính zoom du lịch đa dụng",
-        "Tiêu cự tương đương 27-300mm (định dạng 35mm)",
+        "Định dạng APS-C | Ống kính zoom du lịch đa năng",
+        "27-300mm (tương đương định dạng 35mm)",
         "Khẩu độ thay đổi từ f/3.5 đến f/6.3",
         "4 Aspherical Elements & 2 ED Elements",
         "Chống rung quang học Optical SteadyShot",
-        "Thân ống kính nhỏ gọn, nhẹ (LE)",
+        "Vỏ nhỏ gọn, nhẹ (LE)",
         "Cấu tạo 7 lá khẩu tròn"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "APS-C",
+      "weight": "460 g (Không có đế gắn chân máy)",
+      "dimensions": "68 x 97,1 mm",
+      "angleOfView": "76°–8°",
       "focalLength": "18–200 mm",
       "maxAperture": "F3.5–6.3",
       "minAperture": "F22–40",
-      "construction": "17 thành phần / 13 nhóm",
-      "angleOfView": "76°–8°",
-      "minFocusDistance": "0,5 m",
-      "maxMagnification": "0.27x",
-      "filterDiameter": "62 mm",
-      "apertureBlades": "7 (khẩu tròn)",
-      "stabilization": "Chống rung quang học SteadyShot",
-      "weight": "460 g (Không có đế gắn chân máy)",
-      "dimensions": "68 x 97,1 mm",
       "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel18200le/specifications",
-      "specsMissing": []
+      "construction": "17 thành phần / 13 nhóm",
+      "specsMissing": [],
+      "stabilization": "Chống rung quang học SteadyShot",
+      "apertureBlades": "7 (khẩu tròn)",
+      "filterDiameter": "62 mm",
+      "maxMagnification": "0.27x",
+      "minFocusDistance": "0,5 m"
     },
     "galleryUrls": [
       "https://www.sony.com.vn/image/89ae4f3a5e89a6f134b3db282adf5e75?fmt=png-alpha"
@@ -4193,34 +4191,34 @@
         "Ultra-Lightweight 138g Macro Lens"
       ],
       "vi": [
-        "Định dạng APS-C | Tiêu cự tương đương 45mm",
+        "Định dạng APS-C | Tương đương 45mm",
         "Khẩu độ tối đa f/3.5",
-        "Tỷ lệ phóng đại 1:1 | Lấy nét gần nhất 9.5cm",
+        "Tỉ lệ phóng đại 1:1 | Lấy nét gần nhất 9.5cm",
         "1 ED Element & 3 Aspherical Elements",
-        "Thiết kế lấy nét trong (Internal Focus)",
+        "Thiết kế lấy nét trong",
         "Cấu tạo 7 lá khẩu tròn",
-        "Ống kính macro siêu nhẹ, 138g"
+        "Ống kính macro siêu nhẹ 138g"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "APS-C",
+      "weight": "138 g",
+      "dimensions": "62,0 x 55,5 mm",
+      "angleOfView": "50°",
       "focalLength": "30 mm",
       "maxAperture": "F3.5",
       "minAperture": "F22",
-      "construction": "7 thành phần / 6 nhóm",
-      "angleOfView": "50°",
-      "minFocusDistance": "0,095 m",
-      "maxMagnification": "1.0x",
-      "filterDiameter": "49 mm",
-      "apertureBlades": "7 (khẩu tròn)",
-      "stabilization": null,
-      "weight": "138 g",
-      "dimensions": "62,0 x 55,5 mm",
       "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel30m35/specifications",
+      "construction": "7 thành phần / 6 nhóm",
       "specsMissing": [
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": "7 (khẩu tròn)",
+      "filterDiameter": "49 mm",
+      "maxMagnification": "1.0x",
+      "minFocusDistance": "0,095 m"
     },
     "galleryUrls": [
       "https://www.sony.com.vn/image/c40743f1385344c5a54745b9130fba5c?fmt=png-alpha"
@@ -4249,32 +4247,32 @@
         "Compact Everyday Prime (154g)"
       ],
       "vi": [
-        "Định dạng APS-C | Tiêu cự tương đương 52.5mm (định dạng 35mm)",
+        "Định dạng APS-C | 52.5mm (tương đương định dạng 35mm)",
         "Khẩu độ tối đa lớn f/1.8",
         "Chống rung quang học Optical SteadyShot",
         "2 Aspherical Elements & 1 ED Element",
-        "Cơ chế lấy nét trong (Internal Focus)",
+        "Cơ chế lấy nét trong",
         "Cấu tạo 7 lá khẩu tròn",
-        "Ống kính prime nhỏ gọn cho mọi ngày (154g)"
+        "Ống kính một tiêu cự nhỏ gọn dùng hằng ngày (154g)"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "APS-C",
+      "weight": "154 g",
+      "dimensions": "63 x 45 mm",
+      "angleOfView": "44°",
       "focalLength": "35 mm",
       "maxAperture": "F1.8",
       "minAperture": "F22",
-      "construction": "8 thành phần / 6 nhóm",
-      "angleOfView": "44°",
-      "minFocusDistance": "0,3 m",
-      "maxMagnification": "0.15x",
-      "filterDiameter": "49 mm",
-      "apertureBlades": "7 (khẩu tròn)",
-      "stabilization": "Chống rung quang học SteadyShot",
-      "weight": "154 g",
-      "dimensions": "63 x 45 mm",
       "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel35f18/specifications",
-      "specsMissing": []
+      "construction": "8 thành phần / 6 nhóm",
+      "specsMissing": [],
+      "stabilization": "Chống rung quang học SteadyShot",
+      "apertureBlades": "7 (khẩu tròn)",
+      "filterDiameter": "49 mm",
+      "maxMagnification": "0.15x",
+      "minFocusDistance": "0,3 m"
     },
     "galleryUrls": [
       "https://www.sony.com.vn/image/353e8887e1749b516e7bddd8fe07fbe1?fmt=png-alpha"
@@ -4303,32 +4301,32 @@
         "Affordable Portrait Prime"
       ],
       "vi": [
-        "Định dạng APS-C | Tiêu cự tương đương 75mm (định dạng 35mm)",
+        "Định dạng APS-C | 75mm (tương đương định dạng 35mm)",
         "Khẩu độ lớn f/1.8 cho chân dung",
         "Chống rung quang học Optical SteadyShot",
-        "Hệ thống động cơ lấy nét trong (Internal Focus)",
+        "Hệ thống động cơ lấy nét trong",
         "Thân ống kính hợp kim nhôm",
         "Cấu tạo 7 lá khẩu tròn",
-        "Ống kính prime chân dung giá dễ tiếp cận"
+        "Ống kính một tiêu cự chân dung giá phải chăng"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "APS-C",
+      "weight": "202 g",
+      "dimensions": "62 x 62 mm",
+      "angleOfView": "32°",
       "focalLength": "50 mm",
       "maxAperture": "F1.8",
       "minAperture": "F22",
-      "construction": "9 thành phần / 8 nhóm",
-      "angleOfView": "32°",
-      "minFocusDistance": "0,39 m",
-      "maxMagnification": "0.16x",
-      "filterDiameter": "49 mm",
-      "apertureBlades": "7 (khẩu tròn)",
-      "stabilization": "Chống rung quang học SteadyShot",
-      "weight": "202 g",
-      "dimensions": "62 x 62 mm",
       "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel50f18/specifications",
-      "specsMissing": []
+      "construction": "9 thành phần / 8 nhóm",
+      "specsMissing": [],
+      "stabilization": "Chống rung quang học SteadyShot",
+      "apertureBlades": "7 (khẩu tròn)",
+      "filterDiameter": "49 mm",
+      "maxMagnification": "0.16x",
+      "minFocusDistance": "0,39 m"
     },
     "galleryUrls": [
       "https://www.sony.com.vn/image/21519f325ed91cd52c6c67651c907e1d?fmt=png-alpha"
@@ -4357,32 +4355,32 @@
         "7-Blade Circular Diaphragm"
       ],
       "vi": [
-        "Định dạng Full-Frame | Ống kính zoom du lịch đa dụng 10x",
+        "Định dạng Full-Frame | Ống kính zoom du lịch đa năng 10x",
         "Khẩu độ thay đổi từ f/3.5 đến f/6.3",
         "5 Aspherical Elements & 1 ED Element",
-        "Hệ thống AF dùng động cơ Linear Motor",
+        "Hệ thống lấy nét dùng động cơ Linear Motor",
         "Chống rung quang học Optical SteadyShot",
-        "Thiết kế chống bụi và chống ẩm",
+        "Kết cấu chống bụi và chống ẩm",
         "Cấu tạo 7 lá khẩu tròn"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "780 g",
+      "dimensions": "80,5 x 118,5 mm",
+      "angleOfView": "61°–6°50'",
       "focalLength": "24–240 mm",
       "maxAperture": "F3.5–6.3",
       "minAperture": "F22–40",
-      "construction": "17 thành phần / 12 nhóm",
-      "angleOfView": "61°–6°50'",
-      "minFocusDistance": "0,5-0,8 m",
-      "maxMagnification": "0.27x",
-      "filterDiameter": "72 mm",
-      "apertureBlades": "7 (khẩu tròn)",
-      "stabilization": "Chống rung quang học SteadyShot",
-      "weight": "780 g",
-      "dimensions": "80,5 x 118,5 mm",
       "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel24240/specifications",
-      "specsMissing": []
+      "construction": "17 thành phần / 12 nhóm",
+      "specsMissing": [],
+      "stabilization": "Chống rung quang học SteadyShot",
+      "apertureBlades": "7 (khẩu tròn)",
+      "filterDiameter": "72 mm",
+      "maxMagnification": "0.27x",
+      "minFocusDistance": "0,5-0,8 m"
     },
     "galleryUrls": [
       "https://www.sony.com.vn/image/9971cbdfe1271fab0f6d0dbd7d767679?fmt=png-alpha"
@@ -4412,33 +4410,33 @@
       ],
       "vi": [
         "Định dạng Full-Frame | Khẩu độ lớn f/2",
-        "3 Aspherical Elements & 2 ED Elements",
-        "Hệ thống AF dùng động cơ Linear Motor",
-        "Tương thích ống kính chuyển đổi siêu rộng & fisheye",
-        "Thiết kế chống bụi và chống ẩm",
+        "3 Aspherical & 2 ED Elements",
+        "Hệ thống lấy nét dùng động cơ Linear Motor",
+        "Tương thích với ống kính chuyển đổi góc siêu rộng & mắt cá",
+        "Kết cấu chống bụi và chống ẩm",
         "Cấu tạo 9 lá khẩu tròn",
-        "Ống kính prime nhỏ gọn, nhẹ 200g"
+        "Ống kính một tiêu cự nhỏ gọn, nhẹ 200g"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "200 g",
+      "dimensions": "64 x 60 mm",
+      "angleOfView": "54°",
       "focalLength": "28 mm",
       "maxAperture": "F2",
       "minAperture": "F22",
-      "construction": "9 thành phần / 8 nhóm",
-      "angleOfView": "54°",
-      "minFocusDistance": "0,29m(AF) / 0,25m(MF) / 0,82ft(MF)",
-      "maxMagnification": "0,13x",
-      "filterDiameter": "49 mm",
-      "apertureBlades": "9 (khẩu tròn)",
-      "stabilization": null,
-      "weight": "200 g",
-      "dimensions": "64 x 60 mm",
       "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel28f20-series/specifications",
+      "construction": "9 thành phần / 8 nhóm",
       "specsMissing": [
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": "9 (khẩu tròn)",
+      "filterDiameter": "49 mm",
+      "maxMagnification": "0,13x",
+      "minFocusDistance": "0,29m(AF) / 0,25m(MF) / 0,82ft(MF)"
     },
     "galleryUrls": [
       "https://www.sony.com.vn/image/073fb3e9185c4417630a02a292533536?fmt=png-alpha"
@@ -4469,32 +4467,32 @@
       "vi": [
         "Định dạng Full-Frame | Khẩu độ lớn f/1.8",
         "1 Aspherical Element",
-        "Động cơ AF Linear Motor & lấy nét trong (Internal Focus)",
-        "Focus Hold Button tuỳ chỉnh được",
-        "Thiết kế chống bụi và chống ẩm",
+        "Động cơ lấy nét Linear Motor & lấy nét trong",
+        "Nút giữ lấy nét Focus Hold Button tuỳ chỉnh được",
+        "Vỏ chống bụi và chống ẩm",
         "Cấu tạo 9 lá khẩu tròn",
-        "Ống kính prime đa dụng, nhẹ cho đường phố & du lịch (280g)"
+        "Ống kính một tiêu cự đa dụng, nhẹ cho đường phố & du lịch (280g)"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "280 g",
+      "dimensions": "65,6 x 73 mm",
+      "angleOfView": "44°",
       "focalLength": "35 mm",
       "maxAperture": "F1.8",
       "minAperture": "F22",
-      "construction": "11 thành phần / 9 nhóm",
-      "angleOfView": "44°",
-      "minFocusDistance": "0,22 m",
-      "maxMagnification": "0,24x",
-      "filterDiameter": "55 mm",
-      "apertureBlades": "9 (khẩu tròn)",
-      "stabilization": null,
-      "weight": "280 g",
-      "dimensions": "65,6 x 73 mm",
       "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel35f18f/specifications",
+      "construction": "11 thành phần / 9 nhóm",
       "specsMissing": [
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": "9 (khẩu tròn)",
+      "filterDiameter": "55 mm",
+      "maxMagnification": "0,24x",
+      "minFocusDistance": "0,22 m"
     },
     "galleryUrls": [
       "https://www.sony.com.vn/image/a4adc03f65f5e71a012cfca0f2e98a79?fmt=png-alpha"
@@ -4524,31 +4522,31 @@
       "vi": [
         "Định dạng Full-Frame | Khẩu độ tối đa lớn f/1.8",
         "1 Aspherical Element",
-        "Lấy nét bằng động cơ DC Actuator",
-        "Ngàm ống kính bằng kim loại",
+        "Động cơ DC Actuator",
+        "Kết cấu ngàm kim loại",
         "Cấu tạo 7 lá khẩu tròn",
-        "Ống kính 50mm nhẹ 186g, giá dễ tiếp cận"
+        "Ống kính một tiêu cự Nifty Fifty nhẹ 186g"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "186 g",
+      "dimensions": "68,6 x 59,5 mm",
+      "angleOfView": "32°",
       "focalLength": "50 mm",
       "maxAperture": "F1.8",
       "minAperture": "F22",
-      "construction": "6 thành phần / 5 nhóm",
-      "angleOfView": "32°",
-      "minFocusDistance": "0,45 m",
-      "maxMagnification": "0,14x",
-      "filterDiameter": "49 mm",
-      "apertureBlades": "7 (khẩu tròn)",
-      "stabilization": null,
-      "weight": "186 g",
-      "dimensions": "68,6 x 59,5 mm",
       "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel50f18f/specifications",
+      "construction": "6 thành phần / 5 nhóm",
       "specsMissing": [
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": "7 (khẩu tròn)",
+      "filterDiameter": "49 mm",
+      "maxMagnification": "0,14x",
+      "minFocusDistance": "0,45 m"
     },
     "galleryUrls": [
       "https://www.sony.com.vn/image/465f8a49b9faee76afee2d2e0d84ed80?fmt=png-alpha"
@@ -4578,33 +4576,33 @@
       ],
       "vi": [
         "Định dạng Full-Frame | Khẩu độ tối đa f/2.8",
-        "Tỷ lệ phóng đại 1:1 | Lấy nét gần nhất 16cm",
+        "Tỉ lệ phóng đại 1:1 | Lấy nét gần nhất 16cm",
         "1 ED Element & 1 Aspherical Element",
-        "Công tắc giới hạn khoảng lấy nét & Focus Hold Button",
-        "Thang đo khoảng cách & tỷ lệ phóng đại",
+        "Chức năng giới hạn khoảng lấy nét & Nút giữ lấy nét Focus Hold Button",
+        "Thang đo khoảng cách & độ phóng đại",
         "Cấu tạo 7 lá khẩu tròn",
-        "Ống kính macro tiêu chuẩn nhỏ gọn, 236g"
+        "Ống kính macro tiêu chuẩn nhỏ gọn 236g"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "236 g",
+      "dimensions": "70,8 x 71 mm",
+      "angleOfView": "32°",
       "focalLength": "50 mm",
       "maxAperture": "F2.8",
       "minAperture": "F16",
-      "construction": "8 thành phần / 7 nhóm",
-      "angleOfView": "32°",
-      "minFocusDistance": "0,16 m",
-      "maxMagnification": "1x",
-      "filterDiameter": "55 mm",
-      "apertureBlades": "7 (khẩu tròn)",
-      "stabilization": null,
-      "weight": "236 g",
-      "dimensions": "70,8 x 71 mm",
       "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel50m28/specifications",
+      "construction": "8 thành phần / 7 nhóm",
       "specsMissing": [
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": "7 (khẩu tròn)",
+      "filterDiameter": "55 mm",
+      "maxMagnification": "1x",
+      "minFocusDistance": "0,16 m"
     },
     "galleryUrls": [
       "https://www.sony.com.vn/image/ca7a2405d1899c07a004cd6238da7d13?fmt=png-alpha"
@@ -4625,7 +4623,7 @@
     "features": {
       "en": [
         "Full-Frame Format | Fast f/1.8 Portrait Prime",
-        "One ED Element",
+        "One Extra-Low Dispersion Element",
         "Double Linear AF Motor System",
         "Customizable Focus Hold Button & AF/MF Switch",
         "Dust and Moisture-Resistant Construction",
@@ -4633,34 +4631,34 @@
         "Sharp Portrait Optics at 371g"
       ],
       "vi": [
-        "Định dạng Full-Frame | Ống kính prime chân dung khẩu độ lớn f/1.8",
-        "1 ED Element",
-        "Hệ thống AF hai động cơ Linear Motor",
-        "Focus Hold Button tuỳ chỉnh được & công tắc AF/MF",
-        "Thiết kế chống bụi và chống ẩm",
+        "Định dạng Full-Frame | Ống kính một tiêu cự chân dung khẩu độ lớn f/1.8",
+        "1 Extra-Low Dispersion Element",
+        "Hệ thống lấy nét dùng động cơ kép Linear Motor",
+        "Nút giữ lấy nét Focus Hold Button tuỳ chỉnh được & công tắc AF/MF",
+        "Kết cấu chống bụi và chống ẩm",
         "Cấu tạo 9 lá khẩu tròn",
-        "Quang học chân dung sắc nét, chỉ 371g"
+        "Quang học chân dung sắc nét, trọng lượng 371g"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "371g",
+      "dimensions": "78 x 82 mm",
+      "angleOfView": "19°",
       "focalLength": "85 mm",
       "maxAperture": "F1.8",
       "minAperture": "F22",
-      "construction": "9 thành phần / 8 nhóm",
-      "angleOfView": "19°",
-      "minFocusDistance": "0,8 m",
-      "maxMagnification": "0,13x",
-      "filterDiameter": "67 mm",
-      "apertureBlades": "9 (khẩu tròn)",
-      "stabilization": null,
-      "weight": "371g",
-      "dimensions": "78 x 82 mm",
       "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel85f18/specifications",
+      "construction": "9 thành phần / 8 nhóm",
       "specsMissing": [
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": "9 (khẩu tròn)",
+      "filterDiameter": "67 mm",
+      "maxMagnification": "0,13x",
+      "minFocusDistance": "0,8 m"
     },
     "galleryUrls": [
       "https://www.sony.com.vn/image/994517cdbe6ea84bb69c922c11c0282d?fmt=png-alpha"
@@ -4687,29 +4685,24 @@
         "Compatible with FE 70-200mm, 100-400mm, 200-600mm, 300mm, 400mm, 600mm"
       ],
       "vi": [
-        "Nhân tiêu cự 1.4x",
-        "Chỉ giảm 1 stop sáng",
-        "Giữ đầy đủ AF, đo sáng & giao tiếp OSS",
-        "Thiết kế chống chịu thời tiết",
-        "Tương thích ống kính FE 70-200mm, 100-400mm, 200-600mm, 300mm, 400mm, 600mm"
+        "Hệ số nhân tiêu cự 1.4x",
+        "Chỉ giảm 1 stop ánh sáng truyền qua",
+        "Duy trì đầy đủ giao tiếp lấy nét, đo sáng & OSS",
+        "Kết cấu chống chịu thời tiết",
+        "Tương thích với FE 70-200mm, 100-400mm, 200-600mm, 300mm, 400mm, 600mm"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "167 g",
+      "dimensions": "62,4 x 33,6 mm",
+      "angleOfView": null,
       "focalLength": null,
       "maxAperture": null,
       "minAperture": null,
-      "construction": "6 thành phần / 5 nhóm",
-      "angleOfView": null,
-      "minFocusDistance": null,
-      "maxMagnification": null,
-      "filterDiameter": null,
-      "apertureBlades": null,
-      "stabilization": null,
-      "weight": "167 g",
-      "dimensions": "62,4 x 33,6 mm",
       "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel14tc/specifications",
+      "construction": "6 thành phần / 5 nhóm",
       "specsMissing": [
         "angleOfView",
         "apertureBlades",
@@ -4720,7 +4713,12 @@
         "minAperture",
         "minFocusDistance",
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": null,
+      "filterDiameter": null,
+      "maxMagnification": null,
+      "minFocusDistance": null
     },
     "galleryUrls": [
       "https://www.sony.com.vn/image/7fea66e12262d47478e13e223094ae8d?fmt=png-alpha"
@@ -4747,29 +4745,24 @@
         "Compatible with FE 70-200mm, 100-400mm, 200-600mm, 300mm, 400mm, 600mm"
       ],
       "vi": [
-        "Nhân tiêu cự 2.0x",
-        "Giảm 2 stop sáng",
-        "Giữ đầy đủ AF, đo sáng & giao tiếp OSS",
-        "Thiết kế chống chịu thời tiết",
-        "Tương thích ống kính FE 70-200mm, 100-400mm, 200-600mm, 300mm, 400mm, 600mm"
+        "Hệ số nhân tiêu cự 2.0x",
+        "Giảm 2 stop ánh sáng truyền qua",
+        "Duy trì đầy đủ giao tiếp lấy nét, đo sáng & OSS",
+        "Kết cấu chống chịu thời tiết",
+        "Tương thích với FE 70-200mm, 100-400mm, 200-600mm, 300mm, 400mm, 600mm"
       ]
     },
     "specs": {
       "kind": "lens",
       "format": "Full-frame",
+      "weight": "207 g",
+      "dimensions": "62,4 x 42,7 mm",
+      "angleOfView": null,
       "focalLength": null,
       "maxAperture": null,
       "minAperture": null,
-      "construction": "8 thành phần / 5 nhóm",
-      "angleOfView": null,
-      "minFocusDistance": null,
-      "maxMagnification": null,
-      "filterDiameter": null,
-      "apertureBlades": null,
-      "stabilization": null,
-      "weight": "207 g",
-      "dimensions": "62,4 x 42,7 mm",
       "specsSource": "https://www.sony.com.vn/electronics/ong-kinh-may-anh/sel20tc/specifications",
+      "construction": "8 thành phần / 5 nhóm",
       "specsMissing": [
         "angleOfView",
         "apertureBlades",
@@ -4780,7 +4773,12 @@
         "minAperture",
         "minFocusDistance",
         "stabilization"
-      ]
+      ],
+      "stabilization": null,
+      "apertureBlades": null,
+      "filterDiameter": null,
+      "maxMagnification": null,
+      "minFocusDistance": null
     },
     "galleryUrls": [
       "https://www.sony.com.vn/image/f57b85b6c5a8f45d97410a5d6b52d3be?fmt=png-alpha"
@@ -4797,49 +4795,55 @@
     "priceVnd": 15699273,
     "priceFormatted": "15.699.273 đ",
     "url": "https://sony.scene7.com/is/image/sonyglobalsolutions/slide5_Mobile_white?$productIntroPlatemobile$&fmt=png-alpha\nhttps://cdn.shopify.com/s/files/1/0298/6259/2571/files/ZV-1.png?v=1783588144\nhttps://cdn.shopify.com/s/files/1/0298/6259/2571/files/ZV-1_1_1_9860a3e5-15ab-47c1-9b61-d54e9d573aa6.png?v=1712816338\nhttps://cdn.shopify.com/s/files/1/0298/6259/2571/files/3_60ba6fa4-5b8a-427d-8b8b-9f8bcc8c2e29.png?v=1712816338\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/SEA_Localisation_1584_980_mobile?$productIntroPlatemobile$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/slide1_Mobile_white-1?$productIntroPlatemobile$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/slide3_1_Mobile_white?$productIntroPlatemobile$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/slide3_2_Mobile_white?$productIntroPlatemobile$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/slide4_Mobile_white-1?$productIntroPlatemobile$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/slide5_Mobile_white?$productIntroPlatemobile$&fmt=png-alpha\nhttps://cdn.shopify.com/s/files/1/0298/6259/2571/files/ZV-1.png?v=1783588144\nhttps://www.sony.com.vn/content/dam/sony/contents/global/cameras/compact-cameras/year2022/model-zv-1-migrated/product-summary/reddotwinner2021-100.jpg\nhttps://www.sony.com.vn/content/dam/sony/contents/global/cameras/compact-cameras/year2022/model-zv-1-migrated/product-summary/DesignAward2021-100.png\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/VN_1862_640_all_spans?$promotionTilesMobile$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/primary_image?$S7Product$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-19?$S7Product$&fmt=png-alpha\nhttps://www.sony.com/image/42e1383ea62c154f5fa8a65bd56f19a1?fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-17?$S7Product$&fmt=png-alpha\nhttps://www.sony.com/image/df480ae041307410b9aae9e3ecc4b502?fmt=png-alpha\nhttps://www.sony.com/image/a1c971f3f7dacdd2015af652a1eca2a2?fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image_black-1?$S7Product$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/primary_image-2?$S7Product$&fmt=png-alpha\nhttps://www.sony.com/image/94df45302e30919e157ef9aaa3b1dba6?fmt=png-alpha\nhttps://www.sony.com/image/593ee9bef1a5a280aa597a32b3eec684?fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/primary_image-1?$S7Product$&fmt=png-alpha\nhttps://www.sony.com/image/2ea19010a696190117f57f7a666e7230?fmt=png-alpha\nhttps://www.sony.com/image/52bc10e41acc5ec0326749525d4b265e?fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-15?$S7Product$&fmt=png-alpha\nhttps://www.sony.com/image/09c30323209c58ac8ebc7b2f6ae7fd8a?fmt=png-alpha\nhttps://www.sony.com/image/fa5e09f443737954476853d67fb65a13?fmt=png-alpha\nhttps://www.sony.com/image/97853a17952f240620b83732595b0e87?fmt=png-alpha\nhttps://www.sony.com/image/22e0aabe6ad2b57a55e5153c45ad9380?fmt=png-alpha",
-    "imageUrl": "https://static.bhphoto.com/images/fb/1852114.jpg",
+    "imageUrl": "https://static.bhphoto.com/images/multiple_images/images750x750/1665654541_IMG_1852107.jpg",
     "features": {
       "en": [
         "20.1MP 1.0-Type Exmor RS BSI CMOS Sensor",
         "ZEISS 24-70mm-Equiv. f/1.8-2.8 Lens",
         "UHD 4K30p Video with HLG & S-Log3",
         "3.0\" Side-Flip Vari-Angle Touchscreen LCD",
-        "Real-time Eye AF & Product Showcase Setting",
+        "Real-Time Eye AF & Product Showcase Setting",
         "Background Defocus Switch & Soft Skin Effect",
-        "Directional 3-Capsule Mic & Windscreen"
+        "Directional 3-Capsule Mic & Wind Screen"
       ],
       "vi": [
         "Cảm biến 20.1MP 1.0-Type Exmor RS BSI CMOS",
-        "Ống kính ZEISS f/1.8-2.8, tương đương 24-70mm",
-        "Quay video UHD 4K30p với HLG & S-Log3",
-        "Màn hình cảm ứng LCD Vari-Angle 3.0\" mở sang bên",
-        "Real-time Eye AF & Product Showcase Setting",
-        "Nút Background Defocus & Soft Skin Effect",
-        "Micro định hướng 3 capsule & bông chắn gió"
+        "Ống kính ZEISS tương đương 24-70mm f/1.8-2.8",
+        "Quay video UHD 4K30p hỗ trợ HLG & S-Log3",
+        "Màn hình cảm ứng LCD 3.0\" xoay lật đa hướng mở sang bên",
+        "Lấy nét Real-Time Eye AF & chế độ Product Showcase Setting",
+        "Công tắc Background Defocus & chế độ Soft Skin Effect",
+        "Micro định hướng 3 capsule & bộ chắn gió"
       ]
     },
     "specs": {
+      "lcd": "TFT 7,5 cm (3,0 inch) (4:3), 921.600 điểm, Xtra Fine",
       "kind": "camera",
+      "video": "4K 30p",
       "sensor": "1\"-Type Exmor RS Stacked CMOS",
-      "effectivePixels": "20.1 MP",
+      "weight": "294 g (có pin và thẻ nhớ); 267 g (chỉ thân máy)",
+      "battery": "130 phút",
       "isoRange": null,
       "autofocus": "315 điểm",
-      "video": "4K 30p",
-      "stabilization": "Optical SteadyShot",
-      "viewfinder": null,
-      "lcd": "Xtra Fine TFT 7,5 cm (3,0 inch, 4:3), 921.600 điểm",
-      "mediaSlots": "SD",
-      "battery": "130 phút",
-      "weight": "294 g (có pin và thẻ nhớ); 267 g (chỉ thân máy)",
       "dimensions": "105.5 x 60.0 x 43.5 mm",
+      "mediaSlots": "SD",
+      "viewfinder": null,
       "specsSource": "https://www.sony-asia.com/compact-cameras/products/zv-1/spec",
       "specsMissing": [
         "isoRange",
         "viewfinder"
-      ]
+      ],
+      "stabilization": "Chống rung quang học SteadyShot",
+      "effectivePixels": "20.1 MP"
     },
     "galleryUrls": [
-      "https://static.bhphoto.com/images/fb/1852114.jpg"
+      "https://static.bhphoto.com/images/multiple_images/images750x750/1665654541_IMG_1852107.jpg",
+      "https://static.bhphoto.com/images/multiple_images/images750x750/1765213797_IMG_1852106.jpg",
+      "https://static.bhphoto.com/images/multiple_images/images750x750/1765213797_IMG_1852108.jpg",
+      "https://static.bhphoto.com/images/multiple_images/images750x750/1765213797_IMG_1852109.jpg",
+      "https://static.bhphoto.com/images/multiple_images/images750x750/1765213797_IMG_1852110.jpg",
+      "https://static.bhphoto.com/images/multiple_images/images750x750/1765213797_IMG_1852111.jpg",
+      "https://static.bhphoto.com/images/multiple_images/images750x750/1765213797_IMG_1852112.jpg"
     ]
   },
   {
@@ -4866,35 +4870,35 @@
       ],
       "vi": [
         "Cảm biến 20.1MP 1.0-Type Exmor RS BSI CMOS",
-        "Ống kính siêu rộng ZEISS f/1.8-4, tương đương 18-50mm",
+        "Ống kính ZEISS siêu rộng tương đương 18-50mm f/1.8-4",
         "Quay video UHD 4K30p",
-        "Cinematic Vlog Setting & S-Cinetone",
+        "Chế độ Cinematic Vlog Setting & S-Cinetone",
         "Màn hình cảm ứng LCD 3.0\" mở sang bên",
-        "Product Showcase Setting & Face Priority AE",
-        "Micro thông minh 3 capsule & bông chắn gió"
+        "Chế độ Product Showcase Setting & Face Priority AE",
+        "Micro thông minh 3 capsule & bộ chắn gió"
       ]
     },
     "specs": {
+      "lcd": null,
       "kind": "camera",
+      "video": null,
       "sensor": "1\"-Type Exmor RS Stacked CMOS",
-      "effectivePixels": "20.1 MP",
+      "weight": "292 g",
+      "battery": "290 ảnh (LCD)",
       "isoRange": "125–12800 (mở rộng 80–12800)",
       "autofocus": "315 điểm",
-      "video": null,
-      "stabilization": null,
-      "viewfinder": null,
-      "lcd": null,
-      "mediaSlots": "SD",
-      "battery": "290 ảnh (LCD)",
-      "weight": "292 g",
       "dimensions": "105.5 x 60.0 x 46.7 mm",
+      "mediaSlots": "SD",
+      "viewfinder": null,
       "specsSource": "https://www.sony-asia.com/compact-cameras/products/zv-1m2/spec",
       "specsMissing": [
         "lcd",
         "stabilization",
         "video",
         "viewfinder"
-      ]
+      ],
+      "stabilization": null,
+      "effectivePixels": "20.1 MP"
     },
     "galleryUrls": [
       "https://static.bhphoto.com/images/multiple_images/images750x750/1684837971_IMG_2003238.jpg",
@@ -4916,7 +4920,7 @@
     "priceVnd": 13735636,
     "priceFormatted": "13.735.636 đ",
     "url": "https://sony.scene7.com/is/image/sonyglobalsolutions/slide12_Mobile?$productIntroPlatemobile$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/slide02_Mobile?$productIntroPlatemobile$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/slide04_Mobile?$productIntroPlatemobile$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/slide06_Mobile?$productIntroPlatemobile$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/slide08_Mobile?$productIntroPlatemobile$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/slide10_Mobile?$productIntroPlatemobile$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/slide12_Mobile?$productIntroPlatemobile$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/slide02_Mobile?$productIntroPlatemobile$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/primary_image?$S7Product$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-19?$S7Product$&fmt=png-alpha\nhttps://www.sony.com/image/42e1383ea62c154f5fa8a65bd56f19a1?fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-17?$S7Product$&fmt=png-alpha\nhttps://www.sony.com/image/df480ae041307410b9aae9e3ecc4b502?fmt=png-alpha\nhttps://www.sony.com/image/a1c971f3f7dacdd2015af652a1eca2a2?fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image_black-1?$S7Product$&fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/primary_image-2?$S7Product$&fmt=png-alpha\nhttps://www.sony.com/image/94df45302e30919e157ef9aaa3b1dba6?fmt=png-alpha\nhttps://www.sony.com/image/593ee9bef1a5a280aa597a32b3eec684?fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/primary_image-1?$S7Product$&fmt=png-alpha\nhttps://www.sony.com/image/2ea19010a696190117f57f7a666e7230?fmt=png-alpha\nhttps://www.sony.com/image/52bc10e41acc5ec0326749525d4b265e?fmt=png-alpha\nhttps://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-15?$S7Product$&fmt=png-alpha\nhttps://www.sony.com/image/09c30323209c58ac8ebc7b2f6ae7fd8a?fmt=png-alpha\nhttps://www.sony.com/image/fa5e09f443737954476853d67fb65a13?fmt=png-alpha\nhttps://www.sony.com/image/97853a17952f240620b83732595b0e87?fmt=png-alpha\nhttps://www.sony.com/image/22e0aabe6ad2b57a55e5153c45ad9380?fmt=png-alpha",
-    "imageUrl": "https://www.sony.com.vn/image/a090eb78c3396abea148bc3d65ca822b?fmt=png-alpha",
+    "imageUrl": "https://static.bhphoto.com/images/multiple_images/images750x750/1678108588_IMG_1950145.jpg",
     "features": {
       "en": [
         "20.1MP 1.0-Type Exmor RS BSI CMOS Sensor",
@@ -4929,36 +4933,43 @@
       ],
       "vi": [
         "Cảm biến 20.1MP 1.0-Type Exmor RS BSI CMOS",
-        "Ống kính prime siêu rộng, tương đương 20mm",
+        "Ống kính một tiêu cự siêu rộng tương đương 20mm",
         "Quay video UHD 4K30p & Full HD 120p",
         "Màn hình cảm ứng LCD 3.0\" mở sang bên",
-        "Product Showcase & Background Defocus",
-        "Micro định hướng 3 capsule & bông chắn gió",
-        "Hỗ trợ video dọc & dùng làm webcam qua USB"
+        "Chế độ Product Showcase & Background Defocus",
+        "Micro định hướng 3 capsule & bộ chắn gió",
+        "Hỗ trợ video dọc & webcam USB"
       ]
     },
     "specs": {
+      "lcd": "TFT 7,5 cm (3,0 inch) (4:3), 921.600 điểm, Xtra Fine",
       "kind": "camera",
+      "video": "4K 30p",
       "sensor": "1\"-Type Exmor RS Stacked CMOS",
-      "effectivePixels": "20.1 MP",
+      "weight": "256 g (có pin và thẻ nhớ); 229 g (chỉ thân máy)",
+      "battery": "180 phút",
       "isoRange": null,
       "autofocus": "425 điểm",
-      "video": "4K 30p",
-      "stabilization": "Electronic SteadyShot",
-      "viewfinder": null,
-      "lcd": "Xtra Fine TFT 7,5 cm (3,0 inch, 4:3), 921.600 điểm",
-      "mediaSlots": "SD",
-      "battery": "180 phút",
-      "weight": "256 g (có pin và thẻ nhớ); 229 g (chỉ thân máy)",
       "dimensions": "105.5 x 60.0 x 46.4 mm",
+      "mediaSlots": "SD",
+      "viewfinder": null,
       "specsSource": "https://www.sony-asia.com/compact-cameras/products/zv-1f/spec",
       "specsMissing": [
         "isoRange",
         "viewfinder"
-      ]
+      ],
+      "stabilization": "Chống rung điện tử SteadyShot",
+      "effectivePixels": "20.1 MP"
     },
     "galleryUrls": [
-      "https://www.sony.com.vn/image/a090eb78c3396abea148bc3d65ca822b?fmt=png-alpha"
+      "https://static.bhphoto.com/images/multiple_images/images750x750/1678108588_IMG_1950145.jpg",
+      "https://static.bhphoto.com/images/multiple_images/images750x750/1665654541_IMG_1852107.jpg",
+      "https://static.bhphoto.com/images/multiple_images/images750x750/1678108588_IMG_1950147.jpg",
+      "https://static.bhphoto.com/images/multiple_images/images750x750/1765213797_IMG_1852108.jpg",
+      "https://static.bhphoto.com/images/multiple_images/images750x750/1765213797_IMG_1852109.jpg",
+      "https://static.bhphoto.com/images/multiple_images/images750x750/1765213797_IMG_1852110.jpg",
+      "https://static.bhphoto.com/images/multiple_images/images750x750/1665654541_IMG_1852113.jpg",
+      "https://static.bhphoto.com/images/multiple_images/images750x750/1678108588_IMG_1950146.jpg"
     ]
   },
   {
@@ -4972,7 +4983,7 @@
     "priceVnd": 49081091,
     "priceFormatted": "49.081.091 đ",
     "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/zv-e1?sku=zv-e1-bq-ap2",
-    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/01_Primary_image-1?$primaryshotPreset$&fmt=png-alpha",
+    "imageUrl": "https://static.bhphoto.com/images/multiple_images/images1000x1000/1768317835_IMG_1966865.jpg",
     "features": {
       "en": [
         "12.1MP Full-Frame Exmor R CMOS BSI Sensor",
@@ -4980,35 +4991,33 @@
         "AI-Based Auto Framing & Framing Stabilizer",
         "Cinematic Vlog Setting & S-Cinetone",
         "Dynamic Active Mode Image Stabilization",
-        "759-Pt. Fast Hybrid AF, Real-time Eye AF",
+        "759-Pt. Fast Hybrid AF, Real-Time Eye AF",
         "Product Showcase & Bokeh Switch",
         "Compact Ultra-Lightweight Vlogging Body"
       ],
       "vi": [
         "Cảm biến 12.1MP Full-Frame Exmor R CMOS BSI",
         "Quay video UHD 4K 120p / FHD 240p / 10-Bit 4:2:2",
-        "Auto Framing bằng AI & Framing Stabilizer",
-        "Cinematic Vlog Setting & S-Cinetone",
-        "Chống rung Dynamic Active Mode",
-        "Lấy nét Fast Hybrid AF 759 điểm, Real-time Eye AF",
-        "Product Showcase & Bokeh Switch",
-        "Thân máy vlog nhỏ gọn, siêu nhẹ"
+        "Tính năng Auto Framing dựa trên AI & Framing Stabilizer",
+        "Chế độ Cinematic Vlog Setting & S-Cinetone",
+        "Chống rung hình ảnh Dynamic Active Mode",
+        "Lấy nét Fast Hybrid AF 759 điểm, Real-Time Eye AF",
+        "Chế độ Product Showcase & công tắc Bokeh Switch",
+        "Thân máy quay vlog nhỏ gọn, siêu nhẹ"
       ]
     },
     "specs": {
+      "lcd": null,
       "kind": "camera",
+      "video": "4K 60p",
       "sensor": "Full-Frame Exmor R CMOS BSI",
-      "effectivePixels": "12,1 MP",
+      "weight": null,
+      "battery": null,
       "isoRange": "80–102400 (mở rộng 40–409600)",
       "autofocus": "759 điểm",
-      "video": "4K 60p",
-      "stabilization": null,
-      "viewfinder": null,
-      "lcd": null,
-      "mediaSlots": "SD",
-      "battery": null,
-      "weight": null,
       "dimensions": "121,0 x 71,9 x 54,3 mm",
+      "mediaSlots": "SD",
+      "viewfinder": null,
       "specsSource": "https://www.sony.com.vn/interchangeable-lens-cameras/products/zv-e1/spec?sku=ZV-E1%2FBQ%20%20%20%20AP2",
       "specsMissing": [
         "battery",
@@ -5016,10 +5025,15 @@
         "stabilization",
         "viewfinder",
         "weight"
-      ]
+      ],
+      "stabilization": null,
+      "effectivePixels": "12,1 MP"
     },
     "galleryUrls": [
-      "https://sony.scene7.com/is/image/sonyglobalsolutions/01_Primary_image-1?$primaryshotPreset$&fmt=png-alpha"
+      "https://static.bhphoto.com/images/multiple_images/images1000x1000/1768317835_IMG_1966865.jpg",
+      "https://static.bhphoto.com/images/multiple_images/images1000x1000/1764008968_IMG_1966858.jpg",
+      "https://static.bhphoto.com/images/multiple_images/images1000x1000/1768317835_IMG_1966862.jpg",
+      "https://static.bhphoto.com/images/multiple_images/images1000x1000/1768317835_IMG_1966861.jpg"
     ]
   },
   {
@@ -5033,51 +5047,58 @@
     "priceVnd": 14226546,
     "priceFormatted": "14.226.546 đ",
     "url": "https://www.sony.com.vn/interchangeable-lens-cameras/products/zv-e10?sku=zv-e10-bq-ap2",
-    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image?$primaryshotPreset$&fmt=png-alpha",
+    "imageUrl": "https://static.bhphoto.com/images/multiple_images/images750x750/1768399430_IMG_1578927.jpg",
     "features": {
       "en": [
         "24.2MP APS-C Exmor CMOS Sensor",
-        "UHD 4K30p & Full HD 120p Video",
+        "UHD 4K30p and Full HD 120p Video",
         "3.0\" Side-Opening Touchscreen LCD",
-        "425-Pt. Fast Hybrid AF, Real-time Eye AF",
+        "425-Pt. Fast Hybrid AF, Real-Time Eye AF",
         "Product Showcase Setting & Background Defocus",
         "Directional 3-Capsule Mic & Windscreen",
         "Headphone & External Mic Ports"
       ],
       "vi": [
         "Cảm biến 24.2MP APS-C Exmor CMOS",
-        "Quay video UHD 4K30p & Full HD 120p",
+        "Quay video UHD 4K30p và Full HD 120p",
         "Màn hình cảm ứng LCD 3.0\" mở sang bên",
-        "Lấy nét Fast Hybrid AF 425 điểm, Real-time Eye AF",
-        "Product Showcase Setting & Background Defocus",
-        "Micro định hướng 3 capsule & bông chắn gió",
+        "Lấy nét Fast Hybrid AF 425 điểm, Real-Time Eye AF",
+        "Chế độ Product Showcase Setting & Background Defocus",
+        "Micro định hướng 3 capsule & bộ chắn gió",
         "Cổng tai nghe & micro ngoài"
       ]
     },
     "specs": {
+      "lcd": "TFT 7,5 cm (3,0 inch), 921 600 điểm",
       "kind": "camera",
+      "video": null,
       "sensor": "APS-C Exmor CMOS",
-      "effectivePixels": "24,2 MP",
+      "weight": "343 g",
+      "battery": "440 ảnh (LCD)",
       "isoRange": null,
       "autofocus": "425 điểm",
-      "video": null,
-      "stabilization": null,
-      "viewfinder": null,
-      "lcd": "TFT 7,5 cm (3,0 inch), 921 600 điểm",
-      "mediaSlots": "SD",
-      "battery": "440 ảnh (LCD)",
-      "weight": "343 g",
       "dimensions": "115,2 x 64,2 x 44,8 mm",
+      "mediaSlots": "SD",
+      "viewfinder": null,
       "specsSource": "https://www.sony.com.vn/interchangeable-lens-cameras/products/zv-e10/spec?sku=ZV-E10%2FBQ%20%20%20AP2",
       "specsMissing": [
         "isoRange",
         "stabilization",
         "video",
         "viewfinder"
-      ]
+      ],
+      "stabilization": null,
+      "effectivePixels": "24,2 MP"
     },
     "galleryUrls": [
-      "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image?$primaryshotPreset$&fmt=png-alpha"
+      "https://static.bhphoto.com/images/multiple_images/images750x750/1768399430_IMG_1578927.jpg",
+      "https://static.bhphoto.com/images/images750x750/1627386359_1649504.jpg",
+      "https://static.bhphoto.com/images/multiple_images/images750x750/1764008683_IMG_1578925.jpg",
+      "https://static.bhphoto.com/images/multiple_images/images750x750/1768399430_IMG_1578931.jpg",
+      "https://static.bhphoto.com/images/multiple_images/images750x750/1768399430_IMG_1578932.jpg",
+      "https://static.bhphoto.com/images/multiple_images/images750x750/1764008683_IMG_1578928.jpg",
+      "https://static.bhphoto.com/images/multiple_images/images750x750/1764008683_IMG_1578929.jpg",
+      "https://static.bhphoto.com/images/multiple_images/images750x750/1768399430_IMG_1578933.jpg"
     ]
   },
   {
@@ -5091,41 +5112,39 @@
     "priceVnd": 25517455,
     "priceFormatted": "25.517.455 đ",
     "url": "https://www.sony.com.vn/electronics/may-anh-ky-thuat-so-may-anh/zv-e10m2?sku=zv-e10m2-bq-ap2",
-    "imageUrl": "https://www.sony.com.vn/image/e97df1e13186cfff76cc74554dbf7745?fmt=png-alpha",
+    "imageUrl": "https://static.bhphoto.com/images/multiple_images/images750x750/1765974795_IMG_2284127.jpg",
     "features": {
       "en": [
         "26MP APS-C Exmor R CMOS BSI Sensor",
         "UHD 4K 60p 10-Bit 4:2:2 Video & S-Cinetone",
-        "759-Pt. Fast Hybrid AF, Real-time Eye AF",
+        "759-Pt. Fast Hybrid AF, Real-Time Eye AF",
         "Cinematic Vlog Setting & Creative Looks",
-        "3.0\" Vari-Angle Touchscreen LCD",
+        "3.0\" Vari-Angle Touchscreen LCD Screen",
         "NP-FZ100 Battery Compatibility (Longer Battery Life)",
         "Vertical User Interface & Live Streaming via USB-C"
       ],
       "vi": [
         "Cảm biến 26MP APS-C Exmor R CMOS BSI",
         "Quay video UHD 4K 60p 10-Bit 4:2:2 & S-Cinetone",
-        "Lấy nét Fast Hybrid AF 759 điểm, Real-time Eye AF",
-        "Cinematic Vlog Setting & Creative Look",
-        "Màn hình cảm ứng LCD Vari-Angle 3.0\"",
-        "Dùng pin NP-FZ100 (thời lượng pin dài hơn)",
-        "Giao diện dọc & livestream qua USB-C"
+        "Lấy nét Fast Hybrid AF 759 điểm, Real-Time Eye AF",
+        "Chế độ Cinematic Vlog Setting & Creative Look",
+        "Màn hình cảm ứng LCD 3.0\" xoay lật đa hướng",
+        "Tương thích pin NP-FZ100 (thời lượng pin dài hơn)",
+        "Giao diện người dùng dọc & phát trực tiếp qua USB-C"
       ]
     },
     "specs": {
+      "lcd": null,
       "kind": "camera",
+      "video": "4K 60p",
       "sensor": "APS-C Exmor R CMOS BSI",
-      "effectivePixels": "26.0 MP",
+      "weight": null,
+      "battery": null,
       "isoRange": "100–32000 (mở rộng 50–102400)",
       "autofocus": "759 điểm",
-      "video": "4K 60p",
-      "stabilization": null,
-      "viewfinder": null,
-      "lcd": null,
-      "mediaSlots": "SD",
-      "battery": null,
-      "weight": null,
       "dimensions": "114.8 x 67.5 x 54.2 mm",
+      "mediaSlots": "SD",
+      "viewfinder": null,
       "specsSource": "https://www.sony-asia.com/electronics/interchangeable-lens-cameras/zv-e10m2/specifications",
       "specsMissing": [
         "battery",
@@ -5133,16 +5152,25 @@
         "stabilization",
         "viewfinder",
         "weight"
-      ]
+      ],
+      "stabilization": null,
+      "effectivePixels": "26.0 MP"
     },
     "galleryUrls": [
-      "https://www.sony.com.vn/image/e97df1e13186cfff76cc74554dbf7745?fmt=png-alpha"
+      "https://static.bhphoto.com/images/multiple_images/images750x750/1765974795_IMG_2284127.jpg",
+      "https://static.bhphoto.com/images/multiple_images/images750x750/1764008502_IMG_2284101.jpg",
+      "https://static.bhphoto.com/images/multiple_images/images750x750/1765974794_IMG_2284105.jpg",
+      "https://static.bhphoto.com/images/multiple_images/images750x750/1765974794_IMG_2284104.jpg",
+      "https://static.bhphoto.com/images/multiple_images/images750x750/1765974794_IMG_2284125.jpg",
+      "https://static.bhphoto.com/images/multiple_images/images750x750/1765974794_IMG_2284103.jpg",
+      "https://static.bhphoto.com/images/multiple_images/images750x750/1764008502_IMG_2284106.jpg",
+      "https://static.bhphoto.com/images/multiple_images/images750x750/1765974803_IMG_2637365.jpg"
     ]
   },
   {
     "id": "sony-ecm-m1",
-    "name": "Microphone thu âm Shotgun ECM-M1",
-    "fullName": "Sony ECM-M1 Shotgun Microphone with 8 Pickup Patterns",
+    "name": "Microphone Shotgun ECM-M1",
+    "fullName": "Sony Shotgun Microphone ECM-M1 8 Chế độ hướng thu",
     "sku": "ECM-M1",
     "category": "accessory",
     "subCategory1": "Audio",
@@ -5153,14 +5181,14 @@
     "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/2_Primary_image?$S7Product$&fmt=png-alpha",
     "features": {
       "en": [
-        "8 selectable pickup patterns in an ultra-compact body",
-        "Digital audio interface via the Multi Interface (MI) Shoe",
-        "Advanced digital signal processing with noise reduction"
+        "8 chế độ hướng thu âm thanh linh hoạt trong một thiết kế cực kỳ nhỏ gọn",
+        "Giao diện âm thanh kỹ thuật số qua Chân cắm đa năng (MI Shoe)",
+        "Công nghệ xử lý tín hiệu kỹ thuật số tiên tiến và khả năng lọc tiếng ồn nhiễu"
       ],
       "vi": [
-        "8 chế độ hướng thu âm linh hoạt trong thiết kế siêu nhỏ gọn",
-        "Giao tiếp âm thanh kỹ thuật số qua Multi Interface Shoe (MI Shoe)",
-        "Xử lý tín hiệu số tiên tiến, có chức năng giảm tiếng ồn"
+        "8 chế độ hướng thu âm thanh linh hoạt trong một thiết kế cực kỳ nhỏ gọn",
+        "Giao diện âm thanh kỹ thuật số qua Chân cắm đa năng (MI Shoe)",
+        "Công nghệ xử lý tín hiệu kỹ thuật số tiên tiến và khả năng lọc tiếng ồn nhiễu"
       ]
     },
     "galleryUrls": [
@@ -5169,7 +5197,7 @@
   },
   {
     "id": "sony-ecm-b10",
-    "name": "Microphone thu âm Compact Shotgun ECM-B10",
+    "name": "Microphone Compact Shotgun ECM-B10",
     "fullName": "Sony Compact Shotgun Microphone ECM-B10",
     "sku": "ECM-B10",
     "category": "accessory",
@@ -5181,14 +5209,14 @@
     "imageUrl": "https://static.bhphoto.com/images/fb/1711447.jpg",
     "features": {
       "en": [
-        "3 selectable directional pickup patterns in an ultra-compact body",
-        "Cable-free digital audio via the MI Shoe",
-        "Dust- and moisture-resistant, with reduced mechanical handling noise"
+        "3 mô hình hướng thu thu âm định hướng siêu gọn nhẹ",
+        "Truyền tải âm thanh kỹ thuật số không dây qua MI Shoe",
+        "Kháng bụi ẩm tốt và chống rung nhiễu cơ học"
       ],
       "vi": [
-        "3 chế độ hướng thu có thể chọn, thiết kế siêu gọn nhẹ",
-        "Truyền âm thanh kỹ thuật số không cần cáp qua MI Shoe",
-        "Chống bụi, chống ẩm và giảm tiếng ồn do rung cơ học"
+        "3 mô hình hướng thu âm định hướng siêu gọn nhẹ",
+        "Truyền tải âm thanh kỹ thuật số không dây qua MI Shoe",
+        "Kháng bụi ẩm tốt và chống rung nhiễu cơ học"
       ]
     },
     "galleryUrls": [
@@ -5197,7 +5225,7 @@
   },
   {
     "id": "sony-np-fz100",
-    "name": "Pin sạc Lithium-ion NP-FZ100",
+    "name": "Lithium-ion NP-FZ100",
     "fullName": "Sony Rechargeable Battery Pack NP-FZ100 (2280mAh)",
     "sku": "NP-FZ100",
     "category": "accessory",
@@ -5214,9 +5242,9 @@
         "Genuine Sony built-in protection circuitry"
       ],
       "vi": [
-        "Dung lượng lớn 2280 mAh, thời lượng chụp và quay khoảng gấp đôi pin dòng W",
-        "Hiển thị chính xác % pin còn lại trên màn hình máy ảnh Alpha",
-        "Mạch bảo vệ an toàn tích hợp, chính hãng Sony"
+        "Pin dung lượng cao 2280 mAh, thời gian sử dụng khoảng gấp đôi so với pin dòng W",
+        "Hiển thị chính xác dung lượng pin còn lại (%) trên màn hình máy ảnh Alpha",
+        "Mạch bảo vệ tích hợp chính hãng Sony"
       ]
     },
     "galleryUrls": [
@@ -5225,7 +5253,7 @@
   },
   {
     "id": "sony-gp-vpt2bt",
-    "name": "Báng tay cầm kiêm chân máy không dây GP-VPT2BT",
+    "name": "GP-VPT2BT",
     "fullName": "Sony Wireless Shooting Grip GP-VPT2BT Bluetooth",
     "sku": "GP-VPT2BT",
     "category": "accessory",
@@ -5234,26 +5262,27 @@
     "priceVnd": 3190000,
     "priceFormatted": "3.190.000 đ",
     "url": "https://www.sony.com.vn/electronics/phu-kien-may-anh-ong-kinh-bang-tay-cam/gp-vpt2bt",
-    "imageUrl": "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-3?$&fmt=png-alpha",
+    "imageUrl": "https://static.bhphoto.com/images/images750x750/1675862122_1750234.jpg",
     "features": {
       "en": [
-        "Bluetooth wireless remote for shooting, recording and zoom",
-        "Switches quickly between a handheld grip and a mini tripod",
-        "Dust- and splash-resistant, with a multi-angle tilting head for vlogging"
+        "Kết nối không dây Bluetooth tiện lợi điều khiển chụp/quay/zoom từ xa",
+        "Thiết kế linh hoạt chuyển đổi nhanh giữa báng cầm tay và chân máy mini",
+        "Khả năng chống bụi ẩm và xoay gập đa góc chụp Vlog dễ dàng"
       ],
       "vi": [
-        "Điều khiển chụp, quay và zoom từ xa qua Bluetooth",
-        "Chuyển nhanh giữa báng cầm tay và chân máy mini",
-        "Chống bụi, chống ẩm, đầu xoay nhiều góc thuận tiện quay vlog"
+        "Kết nối không dây Bluetooth tiện lợi điều khiển chụp/quay/zoom từ xa",
+        "Thiết kế linh hoạt chuyển đổi nhanh giữa báng cầm tay và chân máy mini",
+        "Khả năng chống bụi ẩm và xoay gập đa góc chụp Vlog dễ dàng"
       ]
     },
     "galleryUrls": [
-      "https://sony.scene7.com/is/image/sonyglobalsolutions/Primary_image-3?$&fmt=png-alpha"
+      "https://static.bhphoto.com/images/images750x750/1675862122_1750234.jpg",
+      "https://static.bhphoto.com/images/multiple_images/images750x750/1675862153_IMG_1933699.jpg"
     ]
   },
   {
     "id": "sony-la-ea5",
-    "name": "Ngàm chuyển đổi ống kính A-mount sang E-mount LA-EA5",
+    "name": "A-mount to E-mount Converter LA-EA5",
     "fullName": "Sony Mount Adaptor LA-EA5 A-mount to E-mount",
     "sku": "LA-EA5",
     "category": "accessory",
@@ -5265,14 +5294,14 @@
     "imageUrl": "https://static.bhphoto.com/images/fb/1591320.jpg",
     "features": {
       "en": [
-        "Focal-plane phase-detection AF for A-mount SSM/SAM lenses on E-mount bodies",
-        "Built-in AF drive motor for A-mount lenses without an in-lens motor",
-        "Compact cylindrical design matched to the E-mount diameter"
+        "Hỗ trợ lấy nét tự động AF pha mặt phẳng tiêu cự cho ống kính A-mount SSM/SAM trên máy E-mount",
+        "Tích hợp động cơ lấy nét mô tơ cơ học cho các ống kính A-mount không có mô tơ trong",
+        "Thiết kế hình trụ gọn gàng đồng bộ đường kính ngàm E-mount"
       ],
       "vi": [
-        "Hỗ trợ lấy nét AF theo pha cho ống kính A-mount SSM/SAM trên máy ảnh E-mount",
-        "Tích hợp mô tơ lấy nét cho ống kính A-mount không có mô tơ trong",
-        "Thiết kế hình trụ gọn gàng, cùng đường kính với ngàm E-mount"
+        "Hỗ trợ lấy nét tự động AF pha mặt phẳng tiêu cự cho ống kính A-mount SSM/SAM trên máy E-mount",
+        "Tích hợp động cơ lấy nét mô tơ cơ học cho các ống kính A-mount không có mô tơ trong",
+        "Thiết kế hình trụ gọn gàng đồng bộ đường kính ngàm E-mount"
       ]
     },
     "galleryUrls": [
