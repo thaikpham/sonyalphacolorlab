@@ -15,7 +15,7 @@ import {
   uploadRecipeImage,
 } from '@/lib/recipes/image-store';
 import { publicRecipeImageUrl } from '@/lib/recipes/images';
-import imagesSeed from '../../../../../../../data/images.seed.json';
+import { isVendored } from '@/lib/recipes/vendored-images';
 
 /**
  * A recipe's photographs: list them, add one, reorder them.
@@ -49,11 +49,6 @@ function revalidateOffline() {
   if (isRecipeDevStore()) revalidateTag(CATALOGUE_TAG, IMMEDIATE);
 }
 
-/** Paths the deployed site is serving right now. */
-const VENDORED = new Set(
-  (imagesSeed as { storagePath: string }[]).map((i) => i.storagePath),
-);
-
 /*
  * The gate is written out in every handler rather than hidden behind a helper.
  *
@@ -70,10 +65,10 @@ async function withUrls(recipeId: string) {
   return Promise.all(
     rows.map(async (r) => ({
       ...r,
-      live: VENDORED.has(r.storagePath),
+      live: isVendored(r.storagePath),
       /* A vendored photograph is shown from `public/` — no signing, no Storage
          request. Only a pending one costs a signed URL. */
-      previewUrl: VENDORED.has(r.storagePath)
+      previewUrl: isVendored(r.storagePath)
         ? publicRecipeImageUrl(r.storagePath)
         : await signPreview(r.storagePath),
     })),
