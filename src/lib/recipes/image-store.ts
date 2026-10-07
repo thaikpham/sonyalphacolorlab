@@ -409,12 +409,3 @@ export async function deleteRecipeImage(recipeId: string, id: string): Promise<b
 
   return true;
 }
-
-/** Exported for the vendor script, which needs the bytes rather than a URL. */
-export async function downloadRecipeVariant(storagePath: string): Promise<Uint8Array> {
-  const { data, error } = await contentAdmin()
-    .storage.from(RECIPE_UPLOAD_BUCKET)
-    .download(storagePath);
-  if (error || !data) throw new Error(error?.message ?? 'downloadFailed');
-  return new Uint8Array(await data.arrayBuffer());
-}

@@ -103,10 +103,6 @@ export function devRecipeIds(): string[] {
   return readAll().map((r) => r.recipe.id);
 }
 
-export function devRecipeSlugs(): string[] {
-  return readAll().map((r) => r.recipe.slug);
-}
-
 export function devUpsertRecipe(record: RecipeRecord): void {
   const all = readAll();
   const i = all.findIndex((r) => r.recipe.id === record.recipe.id);

@@ -7,7 +7,6 @@ import {
   devGetRecipe,
   devListRecipes,
   devRecipeIds,
-  devRecipeSlugs,
   devUpsertRecipe,
   isRecipeDevStore,
 } from './dev-store';
@@ -171,13 +170,6 @@ export async function uniqueRecipeSlug(name: string, ownId?: string): Promise<st
     if (!(await taken(candidate))) return candidate;
   }
   return `${base}-${Date.now().toString(36)}`;
-}
-
-export async function recipeSlugs(): Promise<string[]> {
-  if (isRecipeDevStore()) return devRecipeSlugs();
-  const { data, error } = await contentAdmin().from('recipes').select('slug');
-  if (error || !Array.isArray(data)) throw new Error(error?.message ?? 'listFailed');
-  return (data as { slug: string }[]).map((r) => r.slug);
 }
 
 // ---------------------------------------------------------------------------
