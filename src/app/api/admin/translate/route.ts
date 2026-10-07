@@ -36,6 +36,10 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ error: 'badRequest' }, { status: 400 });
   }
+  /* Valid JSON is not necessarily an object: `null` threw at `body.lines`. */
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return NextResponse.json({ error: 'badRequest' }, { status: 400 });
+  }
 
   const lines = Array.isArray(body.lines)
     ? body.lines.filter((l): l is string => typeof l === 'string').slice(0, 40)

@@ -22,6 +22,8 @@ type Call = { op: 'select' | 'update' | 'insert'; payload?: Record<string, unkno
 
 const db = {
   row: null as ProductRow | null,
+  /** The verified admin's role, as `admin_emails` would answer it. */
+  role: 'super' as 'super' | 'di' | 'pe',
   calls: [] as Call[],
   failWith: null as { code: string; message: string } | null,
   /** Deleted between the route's read and its write. */
@@ -129,7 +131,7 @@ vi.mock('@/lib/supabase/server', () => ({
 vi.mock('@/lib/auth/admin-gate', () => ({
   adminGate: async () => ({
     ok: true,
-    admin: { id: 'u1', email: 'editor@example.com', name: 'Editor', avatarUrl: null, assuranceLevel: 'aal2', role: 'super' },
+    admin: { id: 'u1', email: 'editor@example.com', name: 'Editor', avatarUrl: null, assuranceLevel: 'aal2', role: db.role },
   }),
 }));
 
@@ -145,8 +147,12 @@ const patch = (body: unknown, id = 'sony-ilce-7m4-bq-ap2') =>
     { params: Promise.resolve({ id }) },
   );
 
+const create = (body: unknown) =>
+  POST(new Request('http://local/api/admin/products', { method: 'POST', body: JSON.stringify(body) }));
+
 beforeEach(() => {
   db.row = storedRow();
+  db.role = 'super';
   db.calls = [];
   db.failWith = null;
   db.vanishOnWrite = false;
@@ -297,9 +303,6 @@ describe('blankSpecs', () => {
 });
 
 describe('POST /api/admin/products', () => {
-  const create = (body: unknown) =>
-    POST(new Request('http://local/api/admin/products', { method: 'POST', body: JSON.stringify(body) }));
-
   it('returns the row the database stored', async () => {
     db.row = null;
     const res = await create({
@@ -331,5 +334,84 @@ describe('POST /api/admin/products', () => {
     const res = await create({ sku: 'ILCE-7M4/BQ AP2', name: 'A7 IV', category: 'camera', subCategory1: 'x' });
     expect(res.status).toBe(409);
     expect((await res.json()).error).toBe('duplicateProduct');
+  });
+});
+
+describe('malformed bodies', () => {
+  /* Valid JSON that is not an object, or fields that are not strings, used to
+     throw a TypeError inside the handler — an uncaught 500 the editor could only
+     report as a generic failure. Nothing was written either way; this is about
+     the answer naming the cause. */
+  it('answers a null body with 400 on POST and PATCH', async () => {
+    db.row = null;
+    expect((await create(null)).status).toBe(400);
+    db.row = storedRow();
+    const res = await patch(null);
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: 'badRequest' });
+    expect(db.calls.some((c) => c.op === 'update')).toBe(false);
+  });
+
+  it('answers non-string create fields with 400, not a crash', async () => {
+    db.row = null;
+    const res = await create({ sku: 1, name: 'x', category: 'lens', subCategory1: 'y' });
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: 'badRequest' });
+    expect(db.calls.some((c) => c.op === 'insert')).toBe(false);
+  });
+});
+
+describe('product ids', () => {
+  it('folds Vietnamese diacritics instead of dropping the letters', async () => {
+    /* Audio items may have no SKU, so the name becomes the public
+       /cameras/<id> URL. `[^a-z0-9]` alone turned "chống ồn" into "ch-ng-n". */
+    db.row = null;
+    const res = await create({ sku: '', name: 'Tai nghe chống ồn', category: 'audio', subCategory1: 'Tai nghe' });
+    expect(res.status).toBe(200);
+    expect((await res.json()).product.id).toBe('sony-tai-nghe-chong-on');
+  });
+});
+
+describe('category roles', () => {
+  /* `canManageCategory()` behind the routes, executed as each role. The row's
+     category is what is checked on PATCH — never the body's — and the
+     source-order assertion in content-write-boundaries.test.ts cannot tell an
+     inverted check from a correct one. */
+  it('refuses a PE admin a camera row, before any write', async () => {
+    db.role = 'pe';
+    const res = await patch({ name: 'x' });
+    expect(res.status).toBe(403);
+    expect(await res.json()).toEqual({ error: 'notAllowedForCategory' });
+    expect(db.calls.some((c) => c.op === 'update')).toBe(false);
+  });
+
+  it('refuses a PE admin a lens create', async () => {
+    db.role = 'pe';
+    db.row = null;
+    const res = await create({ sku: 'SEL-X', name: 'FE X', category: 'lens', subCategory1: 'FE-mount (Full-Frame)' });
+    expect(res.status).toBe(403);
+    expect(db.calls.some((c) => c.op === 'insert')).toBe(false);
+  });
+
+  it('refuses a DI admin an audio create', async () => {
+    db.role = 'di';
+    db.row = null;
+    const res = await create({ sku: '', name: 'WH-X', category: 'audio', subCategory1: 'Tai nghe' });
+    expect(res.status).toBe(403);
+    expect(await res.json()).toEqual({ error: 'notAllowedForCategory' });
+  });
+
+  it('lets a DI admin save a lens', async () => {
+    db.role = 'di';
+    db.row = storedRow({ category: 'lens', specs: null });
+    const res = await patch({ name: 'FE 50mm' });
+    expect(res.status).toBe(200);
+    expect(db.row?.name).toBe('FE 50mm');
+  });
+
+  it('refuses a DI admin an audio row', async () => {
+    db.role = 'di';
+    db.row = storedRow({ category: 'audio', specs: null });
+    expect((await patch({ name: 'x' })).status).toBe(403);
   });
 });

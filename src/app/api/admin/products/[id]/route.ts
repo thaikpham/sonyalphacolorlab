@@ -157,6 +157,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   } catch {
     return NextResponse.json({ error: 'badRequest' }, { status: 400 });
   }
+  /* Valid JSON is not necessarily an object: `null` threw at `body.highlights`. */
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return NextResponse.json({ error: 'badRequest' }, { status: 400 });
+  }
 
   /* Validated before `update` is built, so a refusal writes nothing. `null`
      clears the column; anything else must pass `highlightsSchema` and the
