@@ -29,6 +29,11 @@ const SHELL = 'src/components/admin-ui/shell.tsx';
 const ADMIN_CLIENTS = [
   'src/components/admin/admin-editor.tsx',
   'src/components/lab/admin/article-admin.tsx',
+  /* Not an admin screen any more, and listed so it cannot become one again
+     behind the gate's back: it carried its own tokenless session probe and two
+     bearer-less PATCH modals, so every edit it offered could only fail.
+     /admin/wiki is the product editor. */
+  'src/components/camera-compare-view.tsx',
   SHELL,
 ];
 
