@@ -41,6 +41,7 @@ const PULLED = [
   ['gallery_urls', 'galleryUrls'],
   ['features', 'features'],
   ['specs', 'specs'],
+  ['highlights', 'highlights'],
 ] as const;
 
 async function main() {
@@ -52,7 +53,7 @@ async function main() {
   const { data, error } = await db
     .from('sony_cameras')
     .select(
-      'id, sku, name, full_name, category, sub_category_1, sub_category_2, price_vnd, price_formatted, url, image_url, gallery_urls, features, specs, updated_at, updated_by',
+      'id, sku, name, full_name, category, sub_category_1, sub_category_2, price_vnd, price_formatted, url, image_url, gallery_urls, features, specs, highlights, updated_at, updated_by',
     );
 
   if (error) {

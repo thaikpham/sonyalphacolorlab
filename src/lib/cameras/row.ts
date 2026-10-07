@@ -14,6 +14,7 @@
  */
 
 import type { LocalizedFeatures } from './features';
+import { parseHighlights } from './highlights';
 import type { ProductSpecs, SonyCamera } from './types';
 
 /**
@@ -23,7 +24,7 @@ import type { ProductSpecs, SonyCamera } from './types';
  * migration roots — `migration-roots.test.ts` executes them to check.
  */
 export const PRODUCT_COLUMNS =
-  'id, sku, name, full_name, category, sub_category_1, sub_category_2, price_vnd, price_formatted, url, image_url, gallery_urls, features, specs';
+  'id, sku, name, full_name, category, sub_category_1, sub_category_2, price_vnd, price_formatted, url, image_url, gallery_urls, features, specs, highlights';
 
 export type ProductRow = {
   id: string;
@@ -40,6 +41,7 @@ export type ProductRow = {
   gallery_urls?: unknown;
   features: unknown;
   specs: unknown;
+  highlights?: unknown;
 };
 
 /**
@@ -78,5 +80,8 @@ export function productFromRow(row: ProductRow, seed?: SonyCamera): SonyCamera {
        render. Coercing to `string[]` here would flatten the Vietnamese away. */
     features: (row.features ?? []) as LocalizedFeatures,
     specs: (row.specs as ProductSpecs | null) ?? seed?.specs,
+    /* No seed fallback: a null column is "no highlights", and the page then
+       renders the feature bullets, which is the fallback. */
+    highlights: parseHighlights(row.highlights),
   };
 }

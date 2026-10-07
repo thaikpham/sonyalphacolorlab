@@ -1,4 +1,5 @@
 import type { LocalizedFeatures } from './features';
+import type { Highlights } from './highlights';
 export type ProductCategory = 'all' | 'camera' | 'lens' | 'accessory' | 'audio';
 
 /**
@@ -260,7 +261,7 @@ export function compareCameras<T extends { priceVnd: number; name: string; sku: 
  * component handed `CameraCard[]` cannot reach for `.specs` and quietly put it
  * back on the wire.
  */
-export type CameraCard = Omit<SonyCamera, 'specs' | 'galleryUrls'> & {
+export type CameraCard = Omit<SonyCamera, 'specs' | 'galleryUrls' | 'highlights'> & {
   /**
    * The two or three headline figures the catalogue card prints as chips.
    *
@@ -323,7 +324,7 @@ function chipsFor(specs: ProductSpecs | undefined): SpecChip[] {
 
 /** Drops the fields a listing does not render, keeping the three it does. */
 export function toCameraCard(c: SonyCamera): CameraCard {
-  const { specs, galleryUrls: _galleryUrls, ...card } = c;
+  const { specs, galleryUrls: _galleryUrls, highlights: _highlights, ...card } = c;
   return { ...card, specChips: chipsFor(specs) };
 }
 
@@ -360,4 +361,6 @@ export interface SonyCamera {
   features: LocalizedFeatures;
   /** Absent until the product has been extracted from its official page. */
   specs?: ProductSpecs;
+  /** Buyer-facing explained features and core specs (camera pages). */
+  highlights?: Highlights | null;
 }

@@ -62,7 +62,7 @@ export const CONTENT_TABLES: readonly TableSpec[] = [
     columns: [
       'id', 'sku', 'name', 'full_name', 'category', 'sub_category_1', 'sub_category_2',
       'price_vnd', 'price_formatted', 'url', 'image_url', 'gallery_urls', 'features', 'specs',
-      'created_at', 'updated_at', 'updated_by',
+      'highlights', 'created_at', 'updated_at', 'updated_by',
     ],
     orderBy: ['id'],
     key: ['id'],
