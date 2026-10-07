@@ -4,6 +4,7 @@ import { checkDailyBudget, checkRateLimit } from '@/lib/ai/rate-limit';
 import { tweakRecipe } from '@/lib/ai/tweak';
 import { getRecipe } from '@/lib/recipes/source';
 import { tweakErrorBody } from '@/lib/ai/errors';
+import { ContentUnavailableError } from '@/lib/supabase/errors';
 
 /**
  * POST /api/tweak — adjust a recipe from a natural-language request.
@@ -52,7 +53,17 @@ export async function POST(req: Request) {
     return NextResponse.json(tweakErrorBody('invalidRequest'), { status: 400 });
   }
 
-  const recipe = await getRecipe(input.slug, input.locale);
+  /* An unreachable content project throws rather than answering "no such
+     recipe" — see `contentOrOfflineSeed`. Left uncaught it was a bare 500, and
+     the panel's `res.json()` failed on the empty body. */
+  let recipe: Awaited<ReturnType<typeof getRecipe>>;
+  try {
+    recipe = await getRecipe(input.slug, input.locale);
+  } catch (e) {
+    if (!(e instanceof ContentUnavailableError)) throw e;
+    console.error('[tweak]', e.message);
+    return NextResponse.json(tweakErrorBody('contentUnavailable'), { status: 503 });
+  }
   if (!recipe) return NextResponse.json(tweakErrorBody('recipeNotFound'), { status: 404 });
 
   try {

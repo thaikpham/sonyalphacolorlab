@@ -101,6 +101,7 @@
       "budgetExhausted": "The daily AI budget is used up. Try again tomorrow.",
       "invalidRequest": "That request could not be read. Try rewording it.",
       "recipeNotFound": "That recipe no longer exists.",
+      "contentUnavailable": "We could not load that recipe just now. Try again shortly.",
       "notConfigured": "AI tweaking is not configured on this deployment.",
       "declined": "The request was declined.",
       "invalidResult": "The AI could not produce a valid recipe. Try rewording your request.",

@@ -101,6 +101,7 @@
       "budgetExhausted": "Hạn mức AI trong ngày đã hết. Hãy thử lại vào ngày mai.",
       "invalidRequest": "Không đọc được yêu cầu này. Hãy thử diễn đạt lại.",
       "recipeNotFound": "Công thức này không còn tồn tại.",
+      "contentUnavailable": "Hiện chưa tải được công thức đó. Hãy thử lại sau ít phút.",
       "notConfigured": "Tính năng tinh chỉnh bằng AI chưa được cấu hình trên bản triển khai này.",
       "declined": "Yêu cầu đã bị từ chối.",
       "invalidResult": "AI không tạo được công thức hợp lệ. Hãy thử diễn đạt lại yêu cầu.",

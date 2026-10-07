@@ -29,6 +29,8 @@ export const TWEAK_ERRORS = {
   invalidRequest: 400,
   /** No recipe with that slug. */
   recipeNotFound: 404,
+  /** The content project could not be read, so there is no recipe to adjust. */
+  contentUnavailable: 503,
   /** No `ANTHROPIC_API_KEY` on this deploy. */
   notConfigured: 422,
   /** The model refused the request. */
