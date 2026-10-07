@@ -172,13 +172,16 @@ export const clSettingsSchema = z
 /** `SCL-PP-001` / `SCL-CL-042` — the prefix is retained for SEO continuity. */
 export const RECIPE_ID_RE = /^SCL-(PP|CL)-\d{3}$/;
 
+/** A recipe tag: lower-case, digits and dashes. Also what a `?tag=` filter must be. */
+export const RECIPE_TAG_RE = /^[a-z0-9-]+$/;
+
 const baseRecipe = {
   id: z.string().regex(RECIPE_ID_RE, 'id must look like SCL-PP-001 or SCL-CL-001'),
   slug: z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'slug must be kebab-case'),
   /** Display title, e.g. "SCL-PP-001: Mojave Sun". Never translated. */
   name: z.string().min(1),
   whiteBalance: whiteBalanceSchema,
-  tags: z.array(z.string().regex(/^[a-z0-9-]+$/)).default([]),
+  tags: z.array(z.string().regex(RECIPE_TAG_RE)).default([]),
   published: z.boolean().default(false),
 };
 

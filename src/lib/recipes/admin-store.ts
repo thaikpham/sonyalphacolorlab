@@ -1,7 +1,7 @@
 import 'server-only';
 import { contentAdmin } from '@/lib/supabase/server';
 import { recipeSchema, type Recipe } from '../camera/schema';
-import { fromRow, toRow, type RecipeRow } from './row';
+import { fromRow, RECIPE_COLUMNS, toRow, type RecipeRow } from './row';
 import type { RecipeRecord } from './admin-types';
 import {
   devGetRecipe,
@@ -31,10 +31,7 @@ import {
 /* Every column `fromRow` needs, named rather than `*`: a `select('*')` here
    would start shipping any column added later to a screen that does not know
    about it, and silently widen what a write round-trips. */
-const ADMIN_COLUMNS =
-  'id, legacy_id, slug, name, format, wb_mode, wb_kelvin, wb_auto, wb_preset, ' +
-  'wb_shift_ab_axis, wb_shift_ab_amount, wb_shift_gm_axis, wb_shift_gm_amount, ' +
-  'look, settings, tags, published, updated_at';
+const ADMIN_COLUMNS = `${RECIPE_COLUMNS}, updated_at`;
 
 type Row = RecipeRow & { updated_at?: string };
 
