@@ -109,11 +109,11 @@ no grants to anon or authenticated, read only by `controlAdmin()`.
   (highlights)`), `20261007000002_camera_sales_talks.sql` (table, RLS, revokes).
   Timestamp versions, applied by hand **before** the code that reads them is
   merged (AGENTS.md).
-- Control: `0018_sales_staff.sql`, applied by the merge to `main`.
-- Control: `0019_sony_camera_highlights_rollback_compat.sql` adds the same
+- Control: `0018_sony_camera_highlights_rollback_compat.sql` adds the same
   nullable column to the dormant rollback copy, so export/import/verify keep
   one column list. Sales talk is not mirrored: it is internal and an admin can
   re-enter it after a rollback.
+- Control: `0019_sales_staff.sql`, applied by the merge to `main`.
 
 ## Reading the sales talk
 
