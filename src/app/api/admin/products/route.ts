@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { canManageCategory } from '@/lib/auth/require-admin';
+import { canManageCategory, PRODUCT_CATEGORIES } from '@/lib/admin/category-roles';
 import { adminGate } from '@/lib/auth/admin-gate';
 import { CONTENT_ADMIN_FROZEN, contentAdminWritesFrozen } from '@/lib/admin/content-freeze';
 import { revalidateTag } from 'next/cache';
@@ -32,8 +32,6 @@ type CreateBody = {
   features?: { en?: unknown; vi?: unknown } | null;
   specs?: Record<string, unknown> | null;
 };
-
-const CATEGORIES = ['camera', 'lens', 'accessory', 'audio'] as const;
 
 /* A string field, trimmed. Absent is `''`; present but not a string is
    `undefined` — that used to throw at `.trim()` and surface as a 500. */
@@ -103,7 +101,7 @@ export async function POST(request: Request) {
 
   const sku = text(body.sku);
   const name = text(body.name);
-  const category = CATEGORIES.find((c) => c === body.category);
+  const category = PRODUCT_CATEGORIES.find((c) => c === body.category);
   if (category && !canManageCategory(gate.admin.role, category)) {
     return NextResponse.json({ error: 'notAllowedForCategory' }, { status: 403 });
   }

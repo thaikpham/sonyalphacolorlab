@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { canManageCategory } from '@/lib/auth/require-admin';
+import { canManageCategory } from '@/lib/admin/category-roles';
 import { adminGate } from '@/lib/auth/admin-gate';
 import { CONTENT_ADMIN_FROZEN, contentAdminWritesFrozen } from '@/lib/admin/content-freeze';
 import { revalidateTag } from 'next/cache';

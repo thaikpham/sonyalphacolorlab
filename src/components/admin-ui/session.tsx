@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/components/auth-context';
+import type { AdminRole } from '@/lib/admin/category-roles';
 
 /**
  * Who the caller is, asked once for the whole admin department.
@@ -37,7 +38,7 @@ import { useAuth } from '@/components/auth-context';
  * deliberately does not tell them apart.
  */
 export type AdminGate = 'checking' | 'admin' | 'denied' | 'unavailable' | 'mfaRequired';
-export type AdminRole = 'super' | 'di' | 'pe';
+export type { AdminRole };
 
 export type AdminSession = {
   gate: AdminGate;
