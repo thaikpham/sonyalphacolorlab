@@ -507,6 +507,23 @@ describe('what a browser may read', () => {
     expect(await selectableColumns(content, 'lab_assets', role)).toEqual([]);
   });
 
+  it('stores highlights as an object or nothing, in both roots', async () => {
+    for (const [name, db] of ROOTS()) {
+      await expect(
+        db.exec(`update sony_cameras set highlights = '[]'::jsonb where false`),
+        `${name}: the column exists`,
+      ).resolves.toBeDefined();
+      await db.exec(`
+        insert into sony_cameras (id, sku, name, full_name, category, price_vnd, price_formatted, url, image_url)
+        values ('hl-probe', 'HL-1', 'Probe', 'Probe', 'camera', 1, '1 ₫', '', '')
+        on conflict (id) do nothing;
+      `);
+      await expect(db.exec(`update sony_cameras set highlights = '[]'::jsonb where id = 'hl-probe'`), name).rejects.toThrow();
+      await db.exec(`update sony_cameras set highlights = '{"en":{},"vi":{}}'::jsonb where id = 'hl-probe'`);
+      await db.exec(`update sony_cameras set highlights = null where id = 'hl-probe'`);
+    }
+  });
+
   it.each([
     'recipes',
     'recipe_translations',
