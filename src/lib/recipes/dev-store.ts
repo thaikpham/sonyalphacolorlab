@@ -45,44 +45,64 @@ function assertDev() {
  * on, which exercises the form far better than one blank recipe they have to
  * invent. `legacyId` is carried through so the dev store round-trips the same
  * shape the database holds.
+ *
+ * `intact` is false when the file exists and cannot be read as a list. Reads
+ * then come back empty, so the screen still opens, but `readForWrite` refuses:
+ * writing "empty plus one" back over a file with one stray comma in it is how
+ * every other local recipe silently disappeared.
  */
-function readAll(): RecipeRecord[] {
+function load(): { records: RecipeRecord[]; intact: boolean } {
   assertDev();
   let raw: string;
   try {
     raw = readFileSync(FILE, 'utf8');
-  } catch {
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code !== 'ENOENT') return { records: [], intact: false };
     const seed = recipesSeed as unknown as (Recipe & { legacyId?: string })[];
-    return seed.map((r) => ({
+    const records = seed.map((r) => ({
       recipe: recipeSchema.parse(r),
       legacyId: r.legacyId ?? null,
       updatedAt: new Date().toISOString(),
     }));
+    return { records, intact: true };
   }
 
+  let parsed: unknown;
   try {
-    const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) return [];
-    /* Parsed, not cast, for the same reason a database row is: this file is
-       hand-editable and has a shorter path to a renderer than the table does.
-       A row that no longer validates is dropped rather than thrown on — the
-       alternative is one bad hand-edit making the whole screen unreachable. */
-    return parsed.flatMap((row) => {
-      if (typeof row !== 'object' || row === null) return [];
-      const r = row as Record<string, unknown>;
-      const recipe = recipeSchema.safeParse(r.recipe);
-      if (!recipe.success) return [];
-      return [
-        {
-          recipe: recipe.data,
-          legacyId: typeof r.legacyId === 'string' ? r.legacyId : null,
-          updatedAt: typeof r.updatedAt === 'string' ? r.updatedAt : new Date().toISOString(),
-        },
-      ];
-    });
+    parsed = JSON.parse(raw);
   } catch {
-    return [];
+    return { records: [], intact: false };
   }
+  if (!Array.isArray(parsed)) return { records: [], intact: false };
+
+  /* Parsed, not cast, for the same reason a database row is: this file is
+     hand-editable and has a shorter path to a renderer than the table does.
+     A row that no longer validates is dropped rather than thrown on — the
+     alternative is one bad hand-edit making the whole screen unreachable. */
+  const records = parsed.flatMap((row) => {
+    if (typeof row !== 'object' || row === null) return [];
+    const r = row as Record<string, unknown>;
+    const recipe = recipeSchema.safeParse(r.recipe);
+    if (!recipe.success) return [];
+    return [
+      {
+        recipe: recipe.data,
+        legacyId: typeof r.legacyId === 'string' ? r.legacyId : null,
+        updatedAt: typeof r.updatedAt === 'string' ? r.updatedAt : new Date().toISOString(),
+      },
+    ];
+  });
+  return { records, intact: true };
+}
+
+const readAll = (): RecipeRecord[] => load().records;
+
+function readForWrite(): RecipeRecord[] {
+  const { records, intact } = load();
+  if (!intact) {
+    throw new Error(`${FILE} is not a JSON list of recipes. Fix it, or delete it to reseed.`);
+  }
+  return records;
 }
 
 function writeAll(records: readonly RecipeRecord[]) {
@@ -104,7 +124,7 @@ export function devRecipeIds(): string[] {
 }
 
 export function devUpsertRecipe(record: RecipeRecord): void {
-  const all = readAll();
+  const all = readForWrite();
   const i = all.findIndex((r) => r.recipe.id === record.recipe.id);
   if (i === -1) all.push(record);
   else all[i] = record;

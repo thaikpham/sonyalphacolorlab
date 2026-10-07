@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { normaliseRecipe, slugifyRecipe } from './admin-store';
+import { describe, expect, it, vi } from 'vitest';
+import { getRecipeRecord, normaliseRecipe, slugifyRecipe } from './admin-store';
 import recipesSeed from '../../../data/recipes.seed.json';
 import { recipeSchema } from '../camera/schema';
 
@@ -11,7 +11,29 @@ import { recipeSchema } from '../camera/schema';
  * where they may be called from. What is tested here is what has no backend:
  * the slug rule and the validation seam, both of which decide what a URL and a
  * column will contain and neither of which the database can check.
+ *
+ * Plus the one read whose failure mode decides a status code.
  */
+
+const answer = {
+  result: { data: null, error: null } as {
+    data: unknown;
+    error: { message: string; status?: number } | null;
+  },
+};
+
+vi.mock('@/lib/supabase/server', () => {
+  const builder = {
+    select: () => builder,
+    eq: () => builder,
+    maybeSingle: async () => answer.result,
+  };
+  return {
+    contentAdmin: () => ({ from: () => builder }),
+    hasContentConfig: () => true,
+    hasControlConfig: () => true,
+  };
+});
 
 describe('slugifyRecipe', () => {
   it('folds Vietnamese diacritics rather than dropping the words', () => {
@@ -104,6 +126,20 @@ describe('normaliseRecipe', () => {
     const out = normaliseRecipe(pp.id as string, body);
     expect(out.ok).toBe(false);
     if (!out.ok) expect(out.issues.length).toBeGreaterThan(1);
+  });
+});
+
+describe('getRecipeRecord', () => {
+  it('throws on a failed read rather than reporting the recipe missing', async () => {
+    /* It returned null on any error, and every caller reads null as 404: during
+       a 402 or a 5xx the editor's Save said "That recipe no longer exists". */
+    answer.result = { data: null, error: { message: 'restricted', status: 402 } };
+    await expect(getRecipeRecord('SCL-PP-001')).rejects.toThrow(/restricted/);
+  });
+
+  it('still answers null for a recipe that is not there', async () => {
+    answer.result = { data: null, error: null };
+    await expect(getRecipeRecord('SCL-PP-999')).resolves.toBeNull();
   });
 });
 

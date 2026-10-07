@@ -28,7 +28,7 @@ import { contentRead } from '../supabase/server';
 import { contentOrOfflineSeed } from '../supabase/content-source';
 import { fromRow, type RecipeRow } from './row';
 import { devListRecipes, isRecipeDevStore } from './dev-store';
-import { devListImages, DEV_IMAGE_URL_PREFIX } from './image-dev-store';
+import { devImageUrl, devListImages } from './image-dev-store';
 
 export type Locale = 'en' | 'vi';
 
@@ -83,10 +83,12 @@ const seedImages = (imagesSeed as { recipeId: string; storagePath: string; sort:
  *
  * - **Online and offline-elsewhere** — `data/images.seed.json`, which is what
  *   the deploy serves out of `public/recipes`.
- * - **Offline, development** — what `/admin/colorlab` just uploaded, out of the
- *   gitignored `public/recipes-dev`. Without this the image panel works on a
- *   laptop and the site beside it shows nothing, which is the same half-feature
- *   the recipe list had before `seedRecipes()` learned the same trick.
+ * - **Offline, development** — the dev photograph store, which starts as a copy
+ *   of the manifest and then follows what `/admin/colorlab` uploads (into the
+ *   gitignored `public/recipes-dev`) and deletes. Without this the image panel
+ *   works on a laptop and the site beside it shows nothing, which is the same
+ *   half-feature the recipe list had before `seedRecipes()` learned the same
+ *   trick.
  *
  * Note the ordering difference between the two branches, and that it is not a
  * difference in behaviour: the dev store keeps `sort` on each row, and
@@ -94,7 +96,7 @@ const seedImages = (imagesSeed as { recipeId: string; storagePath: string; sort:
  */
 const imagesFor = (recipeId: string): string[] => {
   if (isRecipeDevStore()) {
-    return devListImages(recipeId).map((i) => `${DEV_IMAGE_URL_PREFIX}${i.storagePath}`);
+    return devListImages(recipeId).map((i) => devImageUrl(i.storagePath));
   }
   return (seedImages[recipeId] ?? []).map(publicImageUrl);
 };

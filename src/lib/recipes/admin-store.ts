@@ -81,7 +81,11 @@ export async function getRecipeRecord(id: string): Promise<RecipeRecord | null> 
     .eq('id', id)
     .maybeSingle();
 
-  if (error || !data) return null;
+  /* A failed read throws, and only an answered one may say "no such recipe".
+     Every caller turns null into a 404, so returning it on error told an
+     editor mid-outage that the recipe they were saving had been deleted. */
+  if (error) throw new Error(error.message);
+  if (!data) return null;
   return toRecord(data as unknown as Row);
 }
 
