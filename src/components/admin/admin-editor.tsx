@@ -7,6 +7,13 @@ import { AREA, FIELD, FIELD_SM, TAG, TAG_NEUTRAL } from '@/components/admin-ui/c
 import { splitFeatures, needsTranslation } from '@/lib/cameras/features';
 import { SPEC_ROWS, type SonyCamera } from '@/lib/cameras/types';
 import { getSpecMeta } from '@/lib/cameras/spec-meta';
+import {
+  CORE_SPEC_KEYS,
+  draftToHighlights,
+  highlightsToDraft,
+  parseHighlights,
+  type HighlightsDraft,
+} from '@/lib/cameras/highlights';
 
 type Props = {
   products: SonyCamera[];
@@ -25,6 +32,7 @@ type Draft = {
   vi: string;
   specs: Record<string, string>;
   source: string;
+  hl: HighlightsDraft;
 };
 
 const asDraft = (p: SonyCamera): Draft => {
@@ -42,6 +50,7 @@ const asDraft = (p: SonyCamera): Draft => {
     vi: f.vi.join('\n'),
     specs,
     source: p.specs?.specsSource ?? '',
+    hl: highlightsToDraft(parseHighlights(p.highlights)),
   };
 };
 
@@ -67,6 +76,7 @@ const SUB1_OPTIONS: Record<'camera' | 'lens' | 'accessory' | 'audio', string[]> 
 export function AdminEditor({ products: initialProducts, initialTab }: Props) {
   const t = useTranslations('admin');
   const tSpec = useTranslations('cameras.specs');
+  const tCore = useTranslations('cameras.coreSpecs');
   /* One probe for the whole department, run by `<AdminShell>` above. This
      component renders only once the gate has opened, so it may assume an admin
      from its first line — the "checking", "not an admin" and "cannot verify"
@@ -160,6 +170,9 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
     setCopiedMd(false);
   };
 
+  const setHl = (side: 'en' | 'vi', patch: Partial<HighlightsDraft['en']>) =>
+    setDraft((d) => (d ? { ...d, hl: { ...d.hl, [side]: { ...d.hl[side], ...patch } } } : d));
+
   /* Every code the routes answer with has a message under `admin.errors`;
      the lookup asks the catalogue rather than a hand-kept list. The list this
      replaces stopped at ten codes and sent everything else — a write freeze, a
@@ -222,6 +235,7 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
           ...(selected.specs
             ? { specs: { ...draft.specs, kind: selected.specs.kind, specsSource: draft.source } }
             : {}),
+          ...(selected.category === 'camera' ? { highlights: draftToHighlights(draft.hl) } : {}),
         }),
       });
       const data = (await res.json()) as {
@@ -678,6 +692,44 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
                   ))}
                 </div>
               </div>
+
+              {selected.category === 'camera' && (
+                <div className="surface p-5 flex flex-col gap-4">
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <h2 className="label text-proposal">{tSafe('highlightsHeading', 'Điểm nổi bật cho người mua')}</h2>
+                    <span className="meta">
+                      {tSafe('highlightsHint', 'Mỗi dòng một điểm: Tiêu đề :: giải thích. 4–6 điểm, cả hai ngôn ngữ.')}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {(['en', 'vi'] as const).map((side) => (
+                      <div key={side} className="flex flex-col gap-3">
+                        <label htmlFor={`hl-${side}`} className="label">
+                          {tSafe(side === 'en' ? 'featuresEn' : 'featuresVi', side === 'en' ? 'Tiếng Anh' : 'Tiếng Việt')}
+                        </label>
+                        <textarea
+                          id={`hl-${side}`}
+                          value={draft.hl[side].points}
+                          onChange={(e) => setHl(side, { points: e.target.value })}
+                          rows={8}
+                          className={AREA}
+                        />
+                        <span className="label">{tSafe('coreSpecsHeading', 'Thông số chính')}</span>
+                        {CORE_SPEC_KEYS.map((key) => (
+                          <label key={key} className="flex flex-col gap-1">
+                            <span className="meta">{tCore(key)}</span>
+                            <input
+                              value={draft.hl[side].specs[key]}
+                              onChange={(e) => setHl(side, { specs: { ...draft.hl[side].specs, [key]: e.target.value } })}
+                              className={FIELD_SM}
+                            />
+                          </label>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* CORE SPECS SECTION: GOOGLE SHEET & MARKDOWN EDITOR */}
               <div className="surface p-5 flex flex-col gap-4">

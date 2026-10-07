@@ -5,6 +5,15 @@ import vi from '../../../../messages/vi.json';
 import { CORE_SPEC_KEYS } from '@/lib/cameras/highlights';
 
 const page = readFileSync('src/app/[locale]/cameras/[id]/page.tsx', 'utf8');
+const editor = readFileSync('src/components/admin/admin-editor.tsx', 'utf8');
+
+describe('the highlights editor', () => {
+  it('edits highlights for cameras only and sends them with the save', () => {
+    expect(editor).toContain("selected.category === 'camera'");
+    expect(editor).toContain('draftToHighlights(draft.hl)');
+    expect(editor).toContain('highlightsToDraft(parseHighlights(p.highlights))');
+  });
+});
 
 describe('the camera page', () => {
   it('shows highlights and core specs when a camera has them', () => {
