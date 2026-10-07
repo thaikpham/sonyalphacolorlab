@@ -1,6 +1,14 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useState,
+} from 'react';
 import { useAuth } from '@/components/auth-context';
 import type { AdminRole } from '@/lib/admin/category-roles';
 
@@ -27,6 +35,17 @@ import type { AdminRole } from '@/lib/admin/category-roles';
  *
  * A fetch that throws is the 503 case, not the 403 case: it says nothing about
  * the caller's rights.
+ *
+ * An answer is about ONE identity, and is only ever shown for that one. The
+ * probe used to re-run whenever the session object changed — every hourly
+ * token refresh — and a single failed re-probe turned an editor with an open
+ * draft into the outage panel, unmounting the draft. And it used to show the
+ * last answer to whoever was signed in now: a correct password sign-in fires
+ * SIGNED_IN before the new probe has answered, so for one round trip the
+ * tokenless probe's `denied` was shown to an administrator, as "not an
+ * admin", and the sign-in form was unmounted mid-submit. The probe is keyed on
+ * the signed-in address and the refresh nonce now, and while the current
+ * identity has no answer yet the gate reads `checking`.
  */
 
 /**
@@ -68,8 +87,13 @@ export type AdminSession = {
 const Ctx = createContext<AdminSession | undefined>(undefined);
 
 export function AdminSessionProvider({ children }: { children: React.ReactNode }) {
-  const { accessToken } = useAuth();
-  const [gate, setGate] = useState<AdminGate>('checking');
+  const { accessToken, user } = useAuth();
+  /* Who the session is, not which token it holds: a refreshed token is the
+     same person and needs no new answer. */
+  const identity = user?.email.toLowerCase() ?? '';
+  /* The last answer, and the identity it was given for. */
+  const [probe, setProbe] = useState<{ for: string; gate: AdminGate } | null>(null);
+  const gate: AdminGate = probe && probe.for === identity ? probe.gate : 'checking';
   const [email, setEmail] = useState('');
   const [role, setRole] = useState<AdminRole>('super');
   const [nonce, setNonce] = useState(0);
@@ -92,13 +116,21 @@ export function AdminSessionProvider({ children }: { children: React.ReactNode }
     return token ? { Authorization: `Bearer ${token}` } : {};
   }, [accessToken]);
 
+  /* The headers as of the moment the probe runs, without making the token a
+     dependency of the effect — see the note on `identity`. */
+  const headersNow = useEffectEvent(() => authed());
+
   useEffect(() => {
     let live = true;
+    const asked = identity;
+    const settle = (next: AdminGate) => {
+      if (live) setProbe({ for: asked, gate: next });
+    };
     (async () => {
       try {
-        const res = await fetch('/api/admin/session', { headers: authed() });
+        const res = await fetch('/api/admin/session', { headers: headersNow() });
         if (res.status === 503) {
-          if (live) setGate('unavailable');
+          settle('unavailable');
           return;
         }
         const data = (await res.json()) as {
@@ -111,22 +143,20 @@ export function AdminSessionProvider({ children }: { children: React.ReactNode }
         /* The code, not the status: a step-up request answers 200 with
            `isAdmin: false` on purpose, so that the shell can read it on every
            page load without a 403 in the console each time. */
-        setGate(
-          data.isAdmin ? 'admin' : data.error === 'mfaRequired' ? 'mfaRequired' : 'denied',
-        );
+        settle(data.isAdmin ? 'admin' : data.error === 'mfaRequired' ? 'mfaRequired' : 'denied');
         setEmail(data.email ?? '');
         setRole(data.role ?? 'super');
       } catch {
-        if (live) setGate('unavailable');
+        settle('unavailable');
       }
     })();
     return () => {
       live = false;
     };
-    /* `nonce` is the dependency that matters here: signing in or stepping up
-       changes nothing this effect reads, so without it the shell would keep
-       showing the login form to somebody who had just used it. */
-  }, [authed, nonce]);
+    /* `nonce` is the dependency that matters for a step-up: it changes the
+       session's assurance level, not who it is, so without it the shell would
+       keep showing the code form to somebody who had just used it. */
+  }, [identity, nonce]);
 
   const value = useMemo(
     () => ({ gate, email, role, authed, bearer, refresh }),
