@@ -6,7 +6,8 @@ import { revalidateTag } from 'next/cache';
 import { CATALOGUE_TAG, IMMEDIATE } from '@/lib/catalogue-cache';
 import { contentAdmin, hasContentConfig } from '@/lib/supabase/server';
 import { contentProjectRef } from '@/lib/supabase/config';
-import { PRODUCT_COLUMNS, productFromRow, type ProductRow } from '@/lib/cameras/row';
+import { productFromRow } from '@/lib/cameras/row';
+import { ADMIN_PRODUCT_COLUMNS, type AdminProductRow } from '@/lib/admin/product-row';
 import { SPEC_ROWS, type ProductSpecs, type SonyCamera } from '@/lib/cameras/types';
 import { highlightsSchema } from '@/lib/cameras/highlights';
 
@@ -28,11 +29,15 @@ import { highlightsSchema } from '@/lib/cameras/highlights';
  * No seed fallback. What this returns is what the database holds, because it is
  * what the write below is checked against — a spec block borrowed from the seed
  * would let the route believe a row had specs it does not.
+ *
+ * `updatedAt` is the row's version; see `ADMIN_PRODUCT_COLUMNS`.
  */
-async function currentProductRow(id: string): Promise<SonyCamera | null> {
+type CurrentRow = { product: SonyCamera; updatedAt: string | null };
+
+async function currentProductRow(id: string): Promise<CurrentRow | null> {
   const { data, error } = await contentAdmin()
     .from('sony_cameras')
-    .select(PRODUCT_COLUMNS)
+    .select(ADMIN_PRODUCT_COLUMNS)
     .eq('id', id)
     .maybeSingle();
 
@@ -40,7 +45,9 @@ async function currentProductRow(id: string): Promise<SonyCamera | null> {
     console.error('[admin/products] current row read failed:', error.message);
     throw new Error('currentProductRow');
   }
-  return data ? productFromRow(data as ProductRow) : null;
+  if (!data) return null;
+  const row = data as AdminProductRow;
+  return { product: productFromRow(row), updatedAt: row.updated_at ?? null };
 }
 
 /**
@@ -52,9 +59,17 @@ async function currentProductRow(id: string): Promise<SonyCamera | null> {
  * pointed at a different product than the URL says — and `updated_by` comes
  * from the verified JWT, never a field, which is the same rule
  * `identity-not-from-body.test.ts` pins for the community writes.
+ *
+ * `expectedUpdatedAt` is required: the version the editor opened the row at,
+ * from `GET` below or the previous save's answer. A row saved since then — by
+ * another admin, or by the same admin in another tab — refuses the write with
+ * 409 `staleEdit`. Without it the second of two saves silently reverted the
+ * first, and both screens said "Đã lưu". `null` is a real version: a row no
+ * admin has edited yet.
  */
 
 type Body = {
+  expectedUpdatedAt?: unknown;
   name?: unknown;
   fullName?: unknown;
   imageUrl?: unknown;
@@ -140,13 +155,14 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
   const { id } = await params;
 
-  let product: SonyCamera | null;
+  let current: CurrentRow | null;
   try {
-    product = await currentProductRow(id);
+    current = await currentProductRow(id);
   } catch {
     return NextResponse.json({ error: 'contentUnavailable' }, { status: 503 });
   }
-  if (!product) return NextResponse.json({ error: 'notFound' }, { status: 404 });
+  if (!current) return NextResponse.json({ error: 'notFound' }, { status: 404 });
+  const { product } = current;
   if (!canManageCategory(gate.admin.role, product.category)) {
     return NextResponse.json({ error: 'notAllowedForCategory' }, { status: 403 });
   }
@@ -160,6 +176,16 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   /* Valid JSON is not necessarily an object: `null` threw at `body.highlights`. */
   if (!body || typeof body !== 'object' || Array.isArray(body)) {
     return NextResponse.json({ error: 'badRequest' }, { status: 400 });
+  }
+
+  const expected = body.expectedUpdatedAt;
+  if (expected !== null && typeof expected !== 'string') {
+    return NextResponse.json({ error: 'badRequest' }, { status: 400 });
+  }
+  /* Already behind: refuse before writing anything. The filter on the update
+     below is what closes the window between this read and that write. */
+  if (current.updatedAt !== expected) {
+    return NextResponse.json({ error: 'staleEdit' }, { status: 409 });
   }
 
   /* Validated before `update` is built, so a refusal writes nothing. `null`
@@ -223,25 +249,43 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
      update that matched nothing with no error and zero rows, so without it a
      row deleted between the read and the write would report "saved". And the
      row that comes back is what the editor is handed: the stored values, after
-     sanitising, rather than its own draft echoed back to it. */
-  let saved: ProductRow | null;
+     sanitising, rather than its own draft echoed back to it.
+
+     The version filter is the precondition. `is` for a never-edited row:
+     `eq.null` compares with `=`, which is never true for NULL, so every first
+     edit would have read as stale. */
+  let saved: AdminProductRow | null;
   try {
-    const { data, error } = await contentAdmin()
-      .from('sony_cameras')
-      .update(update)
-      .eq('id', product.id)
-      .select(PRODUCT_COLUMNS)
+    const byId = contentAdmin().from('sony_cameras').update(update).eq('id', product.id);
+    const { data, error } = await (expected === null
+      ? byId.is('updated_at', null)
+      : byId.eq('updated_at', expected)
+    )
+      .select(ADMIN_PRODUCT_COLUMNS)
       .maybeSingle();
     if (error) {
       console.error('[admin/products] update failed:', JSON.stringify(error));
       return NextResponse.json({ error: 'saveFailed' }, { status: 502 });
     }
-    saved = data as ProductRow | null;
+    saved = data as AdminProductRow | null;
   } catch (err) {
     console.error('[admin/products] update threw:', err);
     return NextResponse.json({ error: 'saveFailed' }, { status: 502 });
   }
-  if (!saved) return NextResponse.json({ error: 'notFound' }, { status: 404 });
+  if (!saved) {
+    /* Nothing matched: the row went, or it moved on between the read and the
+       write. Asked again rather than guessed, so a deletion still reads as
+       one. A failed re-read is not evidence of either. */
+    let after: CurrentRow | null;
+    try {
+      after = await currentProductRow(product.id);
+    } catch {
+      return NextResponse.json({ error: 'contentUnavailable' }, { status: 503 });
+    }
+    return after
+      ? NextResponse.json({ error: 'staleEdit' }, { status: 409 })
+      : NextResponse.json({ error: 'notFound' }, { status: 404 });
+  }
 
   // After the commit and only after it — see the create route for why.
   revalidateTag(CATALOGUE_TAG, IMMEDIATE);
@@ -253,6 +297,37 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   return NextResponse.json({
     ok: true,
     product: productFromRow(saved),
+    updatedAt: saved.updated_at ?? null,
     project: contentProjectRef(process.env),
   });
+}
+
+/**
+ * The row as stored, and its version — what the editor opens a product from.
+ *
+ * The admin page renders the public catalogue, which is cached and does not
+ * carry `updated_at` (it is not granted to anon, and that page's HTML reaches
+ * anyone who types the URL). A version is only meaningful beside the content it
+ * versions, so both come from this one read: a fresh version over a stale
+ * draft would pass the precondition and write the stale draft anyway.
+ *
+ * No category check: everything here but the version is public already, and
+ * the PATCH above refuses a write the role does not cover.
+ */
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const gate = await adminGate(request);
+  if (!gate.ok) return NextResponse.json({ error: gate.error }, { status: gate.status });
+  if (!hasContentConfig()) {
+    return NextResponse.json({ error: 'notConfigured' }, { status: 503 });
+  }
+
+  const { id } = await params;
+  let current: CurrentRow | null;
+  try {
+    current = await currentProductRow(id);
+  } catch {
+    return NextResponse.json({ error: 'contentUnavailable' }, { status: 503 });
+  }
+  if (!current) return NextResponse.json({ error: 'notFound' }, { status: 404 });
+  return NextResponse.json({ ok: true, product: current.product, updatedAt: current.updatedAt });
 }

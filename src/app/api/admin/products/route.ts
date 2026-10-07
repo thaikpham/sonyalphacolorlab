@@ -6,7 +6,8 @@ import { revalidateTag } from 'next/cache';
 import { CATALOGUE_TAG, IMMEDIATE } from '@/lib/catalogue-cache';
 import { contentAdmin, hasContentConfig } from '@/lib/supabase/server';
 import { contentProjectRef } from '@/lib/supabase/config';
-import { PRODUCT_COLUMNS, productFromRow, type ProductRow } from '@/lib/cameras/row';
+import { productFromRow } from '@/lib/cameras/row';
+import { ADMIN_PRODUCT_COLUMNS, type AdminProductRow } from '@/lib/admin/product-row';
 import { SPEC_ROWS, type ProductSpecs, type SonyCamera } from '@/lib/cameras/types';
 import { slugify } from '@/lib/lab/parse';
 
@@ -186,13 +187,14 @@ export async function POST(request: Request) {
   };
 
   /* The inserted row is selected back and handed to the editor, so the list
-     shows what the database stored rather than what the form sent. */
-  let saved: ProductRow;
+     shows what the database stored rather than what the form sent — and with
+     its version, which the editor's first save of it has to name. */
+  let saved: AdminProductRow;
   try {
     const { data, error } = await contentAdmin()
       .from('sony_cameras')
       .insert(cameraRow)
-      .select(PRODUCT_COLUMNS)
+      .select(ADMIN_PRODUCT_COLUMNS)
       .single();
     if (error) {
       /* 23505 is a unique violation: the id derived from this SKU or name, or
@@ -204,7 +206,7 @@ export async function POST(request: Request) {
       console.error('[admin/products] create failed:', JSON.stringify(error));
       return NextResponse.json({ error: 'saveFailed' }, { status: 502 });
     }
-    saved = data as ProductRow;
+    saved = data as AdminProductRow;
   } catch (err) {
     console.error('[admin/products] create threw:', err);
     return NextResponse.json({ error: 'saveFailed' }, { status: 502 });
@@ -220,6 +222,7 @@ export async function POST(request: Request) {
   return NextResponse.json({
     ok: true,
     product: productFromRow(saved),
+    updatedAt: saved.updated_at ?? null,
     project: contentProjectRef(process.env),
   });
 }
