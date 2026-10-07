@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server';
-import { hasControlConfig, controlAdmin } from '@/lib/supabase/server';
+import { z } from 'zod';
+import { controlAdmin } from '@/lib/supabase/server';
 import { requireUser, UNAUTHENTICATED } from '@/lib/auth/require-user';
 import { checkRateLimit } from '@/lib/ai/rate-limit';
 import { COMMUNITY_ERRORS, communityErrorBody, outageErrorCode } from '@/lib/community/errors';
+import { readJsonBody } from '@/lib/community/request';
+
+/* `recipe_proposals.id` is a uuid. Anything else — the offline examples'
+   `seed-prop-1` among them — used to reach Postgres and come back as a 500. */
+const proposalIdSchema = z.string().uuid();
 
 /**
  * A vote is a purely control-plane transaction.
@@ -30,18 +36,16 @@ export async function POST(request: Request) {
       );
     }
 
-    const body = await request.json();
-    const { proposalId } = body;
-    const userEmail = user.email;
-
-    if (!proposalId) {
+    const read = await readJsonBody(request);
+    if (!read.ok) {
+      return NextResponse.json(communityErrorBody(read.error), { status: COMMUNITY_ERRORS[read.error] });
+    }
+    const parsedId = proposalIdSchema.safeParse(read.body.proposalId);
+    if (!parsedId.success) {
       return NextResponse.json(communityErrorBody('missingFields'), { status: 400 });
     }
-
-    if (!hasControlConfig()) {
-      // In-memory toggle for offline mode
-      return NextResponse.json({ ok: true, source: 'memory' });
-    }
+    const proposalId = parsedId.data;
+    const userEmail = user.email;
 
     const db = controlAdmin();
 

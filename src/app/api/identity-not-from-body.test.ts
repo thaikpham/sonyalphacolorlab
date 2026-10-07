@@ -51,6 +51,15 @@ describe.each(WRITE_ROUTES)('%s', (path) => {
     expect(source).toContain('checkRateLimit');
     expect(source).toMatch(/status:\s*429/);
   });
+
+  it('never writes an address into community_photos.submitted_by', () => {
+    /* The proposals route seeds the gallery too, and it wrote `user.email`
+       here while the guard below watched only community-photos/route.ts. */
+    expect(source).not.toMatch(/submitted_by:\s*user\.email/);
+    if (source.includes('submitted_by:')) {
+      expect(source).toMatch(/submitted_by:\s*clientKey\(req(uest)?\)/);
+    }
+  });
 });
 
 describe('community photos POST', () => {
@@ -70,10 +79,11 @@ describe('community photos POST', () => {
     expect(source).toMatch(/checkRateLimit\(`photos:\$\{user\.email\}`\)/);
   });
 
-  it('keeps an email out of the ungranted submitted_by column', () => {
-    /* community_photos has no column-level grant — unlike recipe_comments and
-       recipe_proposals in 0004 — so RLS alone leaves every column readable by
-       anon. An email here would be a fresh leak, not a stored secret. */
+  it('keeps an email out of the submitted_by column', () => {
+    /* community_photos had no column-level grant until 0019, so every column
+       was readable by anon and an email here was a published address. 0019
+       withholds submitted_by from the public roles; this keeps the route from
+       relying on that alone. */
     expect(source).not.toMatch(/submitted_by:\s*user\.email/);
     expect(source).toContain('submitted_by: clientKey(req)');
   });

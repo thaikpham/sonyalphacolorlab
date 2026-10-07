@@ -3,6 +3,7 @@ import { hasControlConfig, controlAdmin, controlRead } from '@/lib/supabase/serv
 import { requireUser, UNAUTHENTICATED } from '@/lib/auth/require-user';
 import { checkRateLimit } from '@/lib/ai/rate-limit';
 import { COMMUNITY_ERRORS, communityErrorBody, outageErrorCode } from '@/lib/community/errors';
+import { readJsonBody } from '@/lib/community/request';
 import { hasContentConfig } from '@/lib/supabase/server';
 import { publishedRecipeExists } from '@/lib/recipes/existence';
 
@@ -19,8 +20,11 @@ function logFallback(where: string, err: unknown) {
       : typeof err === 'object' && err
         ? JSON.stringify(err)
         : String(err);
-  console.error(`[${where}] Supabase unavailable, serving in-process memory:`, detail);
+  console.error(`[${where}] Supabase failed:`, detail);
 }
+
+/** A page of comments is a reading list, not an export. */
+const COMMENT_LIST_LIMIT = 200;
 
 
 export type CommentItem = {
@@ -32,7 +36,10 @@ export type CommentItem = {
   createdAt: string;
 };
 
-// In-memory fallback cache when running offline / without Supabase credentials
+/* Examples for a deployment with no control project at all — local work and
+   offline builds. Never served as a fallback when a configured project fails:
+   these are invented people on a real recipe, and during an outage they would
+   read as the only comments it had. */
 const memoryComments: CommentItem[] = [
   {
     id: 'seed-comment-1',
@@ -73,7 +80,8 @@ export async function GET(request: Request) {
       .from('recipe_comments')
       .select('id, recipe_slug, author_name, author_avatar, content, created_at')
       .eq('recipe_slug', slug)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(COMMENT_LIST_LIMIT);
 
     if (error) throw error;
 
@@ -88,9 +96,16 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ comments, source: 'supabase' });
   } catch (err) {
-    const filtered = memoryComments.filter((c) => c.recipeSlug === slug);
+    /* Configuration decides the source; failure is failure. This used to answer
+       with the offline examples above, flagged `degraded` in a field the client
+       never read — so an outage put two invented comments on daylight-cinema
+       and "be the first" on every other recipe. An empty list with a code says
+       what actually happened. */
     logFallback('comments', err);
-    return NextResponse.json({ comments: filtered, source: 'fallback', degraded: true });
+    return NextResponse.json(
+      { ...communityErrorBody('controlUnavailable'), comments: [] },
+      { status: COMMUNITY_ERRORS.controlUnavailable },
+    );
   }
 }
 
@@ -110,10 +125,17 @@ export async function POST(request: Request) {
       );
     }
 
-    const body = await request.json();
+    const read = await readJsonBody(request);
+    if (!read.ok) {
+      return NextResponse.json(communityErrorBody(read.error), { status: COMMUNITY_ERRORS[read.error] });
+    }
+    const body = read.body;
     const { recipeSlug, content } = body;
 
-    if (!recipeSlug || !content || typeof content !== 'string' || !content.trim()) {
+    if (
+      typeof recipeSlug !== 'string' || !recipeSlug ||
+      typeof content !== 'string' || !content.trim()
+    ) {
       return NextResponse.json(communityErrorBody('missingFields'), { status: 400 });
     }
 
@@ -125,20 +147,6 @@ export async function POST(request: Request) {
        catch below, which turns that into 503 and not 404. */
     if (hasContentConfig() && !(await publishedRecipeExists(recipeSlug))) {
       return NextResponse.json(communityErrorBody('recipeNotFound'), { status: 404 });
-    }
-
-    const newComment: CommentItem = {
-      id: `comment-${Date.now()}`,
-      recipeSlug,
-      authorName: user.name,
-      authorAvatar: user.avatarUrl,
-      content: content.slice(0, 2000),
-      createdAt: new Date().toISOString(),
-    };
-
-    if (!hasControlConfig()) {
-      memoryComments.unshift(newComment);
-      return NextResponse.json({ comment: newComment, source: 'memory' });
     }
 
     const db = controlAdmin();
