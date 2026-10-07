@@ -1,6 +1,11 @@
 # ADR 0005 — Camera capabilities from checked Help Guide evidence
 
-Status: accepted · 2026-10-05 · amended 2026-10-06
+Status: withdrawn · 2026-10-07 (accepted 2026-10-05, amended 2026-10-06)
+
+> **Withdrawn 2026-10-07.** The camera page's "Colour settings" section was
+> judged unnecessary and removed, and with it everything below: the evidence,
+> its checks file, `npm run capabilities:check` and `src/lib/cameras/capabilities/`.
+> Kept as the record of what was tried.
 
 > **Amended 2026-10-06.** The compatibility engine and its four verdicts are
 > removed: the recipe-page "Camera compatibility" section and the camera

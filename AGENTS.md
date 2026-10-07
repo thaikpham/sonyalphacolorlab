@@ -460,26 +460,6 @@ one that matters most: an unreadable factor list is 503, never "no factor".
 - Pilot drafts (`pilot-drafts.ts`) are drafts. Nothing may publish them but an
   editor in `/admin/blog`.
 
-## Camera colour menus (ADR 0005)
-
-A camera page lists what its colour menus hold ("Colour settings"). There
-is no recipe × body compatibility verdict: it was removed on 2026-10-06 as
-not useful, so do not put one back on recipe or camera pages.
-
-- A body supports nothing until a **checked** claim says so. Evidence is
-  `src/lib/cameras/capabilities/evidence.ts`: per Help Guide topic, claims
-  that quote a short literal from the raw page. `npm run capabilities:check`
-  fetches each topic and writes `data/camera-evidence.checks.json` — its only
-  writer; never hand-edit it. A claim counts only when its literals were
-  found as it quotes them now, and `evidence.test.ts` fails on any that are not.
-- Quote the option *with* the start of its description (`Movie` is a Gamma and
-  a Color Mode). `unsupported` needs Sony's words or a whole list without the
-  option; a support with a known exception states its own mode.
-- A claim names an option, never the values it accepts. No Help Guide read
-  states a Kelvin range or a shift limit, so none is listed per body — do not
-  fill them from `constants.ts`, whose values are global, not per body.
-- Behind a proxy run the check with `NODE_USE_ENV_PROXY=1`.
-
 ## AI ("Tweak with AI")
 
 `claude-sonnet-5` via structured outputs, so the JSON shape is constrained by the

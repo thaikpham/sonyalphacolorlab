@@ -145,29 +145,6 @@ query disappoints: label it from the documents, not from the ranker's output.
 A change to `rank.ts`, `text.ts` or `documents.ts` that breaks the gate is a
 regression until the new labels are reviewed.
 
-## Camera colour menus (ADR 0005)
-
-No table, no migration, no environment variable: evidence and its checks are
-two files in the repository, read at build time.
-
-```bash
-NODE_USE_ENV_PROXY=1 npm run capabilities:check      # re-fetch every cited topic, rewrite the checks file
-npm run capabilities:check -- --dry-run              # same, write nothing
-```
-
-- **Re-check when Sony updates a guide** (new body software) and before a
-  release that touches evidence. A topic Sony reworded shows up as `missing:`;
-  that claim stops counting until its literal is updated from the raw page.
-- **Read the diff of `data/camera-evidence.checks.json`.** Each found literal
-  carries its sentence; that sentence is what you approve.
-- **Adding a body:** see `sync-camera-constants` → "Bodies differ".
-- `evidence.test.ts` fails if a committed claim is not confirmed by the
-  committed checks — run the check, do not edit the JSON.
-
-The evidence feeds one thing: the "Colour settings" section of a camera page
-(ILCE-7M4, ILCE-7CM2, ILCE-6700, ILCE-7M5, checked 2026-10-05). The
-recipe × body compatibility verdicts were removed on 2026-10-06.
-
 ## Cost
 
 No paid service is called by anything in this release. Search is in-process

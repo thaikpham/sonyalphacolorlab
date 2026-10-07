@@ -360,7 +360,7 @@ export const PILOT_DRAFTS: readonly Article[] = [
     archetype: 'setup-guide',
     read: '4 phút đọc',
     title: 'Chọn công thức theo máy ảnh của bạn',
-    dek: 'Trước khi chọn theo màu, kiểm tra máy có đủ các cài đặt công thức dùng. Trang máy ảnh ghi cài đặt màu của những máy ColorLab đã đối chiếu; với máy khác, bạn tự đối chiếu.',
+    dek: 'Trước khi chọn theo màu, kiểm tra máy có đủ các cài đặt công thức dùng — trong Help Guide của đúng mẫu máy bạn có.',
     meta: meta({
       section: 'workflows',
       order: 1,
@@ -372,10 +372,6 @@ export const PILOT_DRAFTS: readonly Article[] = [
       {
         t: 'p',
         text: 'Một công thức chỉ dùng được trọn vẹn khi máy có đủ các mục nó cần. Picture Profile và Creative Look không có mặt trên mọi đời máy, và các mục, lựa chọn có thể khác theo máy — ví dụ Picture Profile của ILCE-7M5 không có Color Depth, và Help Guide của ILCE-7CM2 không liệt kê gamma S-Log2.',
-      },
-      {
-        t: 'p',
-        text: 'Với những máy ColorLab đã đối chiếu Help Guide, trang máy ảnh trong Sony Wiki có mục Cài đặt màu: các Gamma, Color Mode, Look và White Balance máy đó có, tách riêng những mục chỉ dùng khi chụp ảnh. Mục không được liệt kê chưa chắc máy không có — có thể Sony chỉ chưa ghi đủ để khẳng định, như dải Kelvin và giới hạn WB Shift.',
       },
       { t: 'h', text: 'Ba bước đối chiếu' },
       {
