@@ -35,6 +35,13 @@ export const COMMUNITY_ERRORS = {
   invalidImageUrl: 400,
   /** A proposal without the sample photograph that gives it evidence. */
   sampleUrlRequired: 400,
+  /**
+   * Proposal settings or white balance the camera schema rejects — out of
+   * range, a key from the other format, or the wrong format for the recipe.
+   */
+  invalidSettings: 400,
+  /** A request body over the route's byte cap. Refused before it is parsed. */
+  payloadTooLarge: 413,
   /** Persistence failed. Deliberately vague: the detail goes to the log. */
   saveFailed: 500,
   /** The control project could not be reached. Nothing was written. */
@@ -62,7 +69,9 @@ export function communityErrorBody(code: CommunityErrorCode): CommunityErrorBody
  * failure this module exists to prevent.
  */
 export function isCommunityErrorCode(value: unknown): value is CommunityErrorCode {
-  return typeof value === 'string' && value in COMMUNITY_ERRORS;
+  // Own keys only: `in` walks the prototype, so 'constructor' and 'toString'
+  // passed and rendered as a raw `errors.constructor` key path.
+  return typeof value === 'string' && Object.hasOwn(COMMUNITY_ERRORS, value);
 }
 
 /**

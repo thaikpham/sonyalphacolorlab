@@ -141,6 +141,8 @@
       "photoLimitReached": "This recipe already has all the community photos it can hold.",
       "invalidImageUrl": "That image URL is not valid. It must start with https://",
       "sampleUrlRequired": "A real sample photo URL is required.",
+      "invalidSettings": "Those camera settings are not valid for this recipe.",
+      "payloadTooLarge": "That request is too large to send.",
       "saveFailed": "Could not save that. Please try again.",
       "unknown": "Something went wrong. Please try again.",
       "controlUnavailable": "The community service is not answering right now. Nothing was saved — try again shortly.",

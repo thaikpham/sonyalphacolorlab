@@ -141,6 +141,8 @@
       "photoLimitReached": "Công thức này đã đạt giới hạn số ảnh cộng đồng.",
       "invalidImageUrl": "URL ảnh không hợp lệ, phải bắt đầu bằng https://",
       "sampleUrlRequired": "Vui lòng nhập URL ảnh mẫu thật.",
+      "invalidSettings": "Thông số máy ảnh này không hợp lệ cho công thức.",
+      "payloadTooLarge": "Yêu cầu này quá lớn để gửi.",
       "saveFailed": "Không lưu được. Vui lòng thử lại.",
       "unknown": "Đã có lỗi xảy ra. Vui lòng thử lại.",
       "controlUnavailable": "Dịch vụ cộng đồng hiện không phản hồi. Chưa có gì được lưu — hãy thử lại sau ít phút.",
