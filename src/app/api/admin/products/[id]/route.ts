@@ -8,6 +8,7 @@ import { contentAdmin, hasContentConfig } from '@/lib/supabase/server';
 import { contentProjectRef } from '@/lib/supabase/config';
 import { PRODUCT_COLUMNS, productFromRow, type ProductRow } from '@/lib/cameras/row';
 import { SPEC_ROWS, type ProductSpecs, type SonyCamera } from '@/lib/cameras/types';
+import { highlightsSchema } from '@/lib/cameras/highlights';
 
 /**
  * The row as it is *right now*, read past every cache.
@@ -60,6 +61,7 @@ type Body = {
   galleryUrls?: unknown;
   specs?: Record<string, unknown>;
   features?: { en?: unknown; vi?: unknown };
+  highlights?: unknown;
 };
 
 const asLines = (x: unknown): string[] =>
@@ -156,6 +158,22 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     return NextResponse.json({ error: 'badRequest' }, { status: 400 });
   }
 
+  /* Validated before `update` is built, so a refusal writes nothing. `null`
+     clears the column; anything else must pass `highlightsSchema` and the
+     product must be a camera — the sales-talk block has no meaning on a lens
+     or an accessory. */
+  let highlights: unknown | undefined;
+  if (body.highlights !== undefined) {
+    if (body.highlights === null) highlights = null;
+    else {
+      const parsed = highlightsSchema.safeParse(body.highlights);
+      if (!parsed.success || product.category !== 'camera') {
+        return NextResponse.json({ error: 'invalidHighlights' }, { status: 400 });
+      }
+      highlights = parsed.data;
+    }
+  }
+
   /* Only the columns this save changes. The route used to upsert a whole row
      with every other column copied from the read above — left over from when
      the product might not exist in the database yet and the upsert created it.
@@ -194,6 +212,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   if (body.features && typeof body.features === 'object') {
     update.features = { en: asLines(body.features.en), vi: asLines(body.features.vi) };
   }
+
+  if (highlights !== undefined) update.highlights = highlights;
 
   /* `.select()` is what turns the write into proof. PostgREST answers an
      update that matched nothing with no error and zero rows, so without it a

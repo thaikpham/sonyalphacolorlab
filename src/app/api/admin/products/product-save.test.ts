@@ -245,6 +245,38 @@ describe('PATCH /api/admin/products/[id]', () => {
     expect(specs.kind).toBe('camera');
     expect((specs as CameraSpecs).sensor).toBe('APS-C');
   });
+
+  const hlSide = {
+    points: [1, 2, 3, 4].map((i) => ({ title: `T${i}`, body: `B${i}.` })),
+    keySpecs: [{ key: 'sensor', value: '33MP' }],
+  };
+
+  it('saves valid highlights and hands them back', async () => {
+    const res = await patch({ highlights: { en: hlSide, vi: hlSide } });
+    const data = await res.json();
+    expect(res.status).toBe(200);
+    expect(db.row?.highlights).toEqual({ en: hlSide, vi: hlSide });
+    expect(data.product.highlights.vi.points).toHaveLength(4);
+  });
+
+  it('refuses highlights that fail the schema, writing nothing', async () => {
+    const res = await patch({ highlights: { en: hlSide } });
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: 'invalidHighlights' });
+    expect(db.calls.some((c) => c.op === 'update')).toBe(false);
+  });
+
+  it('clears highlights with null', async () => {
+    db.row = storedRow({ highlights: { en: hlSide, vi: hlSide } });
+    await patch({ highlights: null });
+    expect(db.row?.highlights).toBeNull();
+  });
+
+  it('refuses highlights on a product that is not a camera', async () => {
+    db.row = storedRow({ category: 'lens' });
+    const res = await patch({ highlights: { en: hlSide, vi: hlSide } });
+    expect(res.status).toBe(400);
+  });
 });
 
 describe('blankSpecs', () => {

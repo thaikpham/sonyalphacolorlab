@@ -453,7 +453,8 @@
       "contentUnavailable": "The content database is not answering right now. Nothing was changed — try again shortly.",
       "notAllowedForCategory": "Your role does not cover this product's division. Nothing was changed.",
       "mfaRequired": "This session needs your authenticator code again. Nothing was changed — reload the page to finish signing in.",
-      "duplicateProduct": "A product with this SKU or ID already exists. Nothing was created."
+      "duplicateProduct": "A product with this SKU or ID already exists. Nothing was created.",
+      "invalidHighlights": "Highlights need 4–6 lines of Title :: explanation in both languages, on a camera."
     },
     "basicInfoHeading": "Product name & gallery",
     "basicInfoHint": "Edit the display name, the full name and the gallery image URLs.",
