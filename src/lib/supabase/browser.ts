@@ -64,7 +64,9 @@ export async function isAuthOutage(): Promise<boolean> {
   if (!url || !anonKey) return false;
 
   try {
-    const res = await fetch(`${url}/auth/v1/settings`, {
+    /* Config accepts a trailing slash; the probe must hit the path the
+       redirect would, not `//auth/v1/settings`. */
+    const res = await fetch(`${url.replace(/\/+$/, '')}/auth/v1/settings`, {
       headers: { apikey: anonKey },
       cache: 'no-store',
       signal: AbortSignal.timeout(5000),

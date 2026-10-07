@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { CL_PARAM_LABELS } from '@/lib/camera/constants';
 import { listRecipes } from '@/lib/recipes/source';
 import { recipeChips } from './chips';
 
@@ -58,5 +59,20 @@ describe('recipe card chips', () => {
       sameOnBothDials.length,
       'no recipe now sets two dials to the same value; this guard has gone vacuous',
     ).toBeGreaterThan(0);
+  });
+
+  it('reads the Contrast label from constants.ts rather than retyping it', async () => {
+    /* Rule 3: parameter labels live in one place, so a rename there reaches
+       the card. The probe swaps the label and expects the chip to follow. */
+    const recipes = await listRecipes('en');
+    const cl = recipes.find((r) => r.format === 'cl')!;
+    const original = CL_PARAM_LABELS.contrast;
+    CL_PARAM_LABELS.contrast = 'Kontrast';
+    try {
+      const chip = recipeChips(cl).find((c) => c.slot === 'contrast')!;
+      expect(chip.value.startsWith('Kontrast ')).toBe(true);
+    } finally {
+      CL_PARAM_LABELS.contrast = original;
+    }
   });
 });
