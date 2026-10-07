@@ -97,6 +97,8 @@
     "sampleSkin": "Skintone mượt mà",
     "sampleGolden": "Tông ấm Golden Hour",
     "errors": {
+      "unauthenticated": "Hãy đăng nhập để tinh chỉnh công thức bằng AI.",
+      "controlUnavailable": "Hiện chưa kiểm tra được đăng nhập. Hãy thử lại sau ít phút.",
       "rateLimited": "Bạn đã gửi quá nhiều yêu cầu. Hãy thử lại sau ít phút.",
       "budgetExhausted": "Hạn mức AI trong ngày đã hết. Hãy thử lại vào ngày mai.",
       "invalidRequest": "Không đọc được yêu cầu này. Hãy thử diễn đạt lại.",

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { useAuth } from '@/components/auth-context';
 import { OPEN_TWEAK_EVENT } from '@/lib/community/events';
 import { isTweakErrorCode } from '@/lib/ai/errors';
 import { formatWhiteBalance } from '@/lib/camera/format';
@@ -38,6 +39,7 @@ function flatten(value: unknown, prefix = ''): Record<string, string> {
 
 export function TweakPanel({ slug, locale, currentWb, currentSettings }: Props) {
   const t = useTranslations('tweak');
+  const { user, openLoginModal, accessToken } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [request, setRequest] = useState('');
   const [busy, setBusy] = useState(false);
@@ -76,17 +78,29 @@ export function TweakPanel({ slug, locale, currentWb, currentSettings }: Props) 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!request.trim() || busy) return;
+    /* The model is a paid call and the route answers signed-in readers only.
+       Ask for sign-in here rather than sending a request that can only 401. */
+    if (!user) {
+      openLoginModal();
+      return;
+    }
 
     setBusy(true);
     setError(null);
     setResult(null);
     try {
+      const token = accessToken();
       const res = await fetch('/api/tweak', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ slug, request: request.trim(), locale }),
       });
       const data = await res.json();
+      /* A session that expired while the panel was open. */
+      if (res.status === 401) openLoginModal();
       /* The body carries a code, never a sentence. Rendering `data.error`
          directly is what put English on screen for Vietnamese readers, and once
          put a Zod validation message there naming internal fields. */

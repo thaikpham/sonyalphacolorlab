@@ -97,6 +97,8 @@
     "sampleSkin": "Smooth skintones",
     "sampleGolden": "Golden Hour warmth",
     "errors": {
+      "unauthenticated": "Sign in to tweak a recipe with AI.",
+      "controlUnavailable": "Sign-in could not be checked just now. Try again shortly.",
       "rateLimited": "Too many requests. Try again shortly.",
       "budgetExhausted": "The daily AI budget is used up. Try again tomorrow.",
       "invalidRequest": "That request could not be read. Try rewording it.",
