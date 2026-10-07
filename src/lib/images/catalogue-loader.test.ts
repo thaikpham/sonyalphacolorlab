@@ -267,6 +267,7 @@ describe('catalogueImageLoader', () => {
       'items',
       'largeimages',
       'images500x500',
+      'images750x750',
       'images1000x1000',
       'images2500x2500',
       'multiple_images',
