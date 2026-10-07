@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { NextIntlClientProvider } from 'next-intl';
 import { AuthProvider } from '@/components/auth-context';
 import { AdminShell } from '@/components/admin-ui/shell';
+import { ADMIN_LOCALE } from '@/lib/admin/locale';
 import '../globals.css';
 
 /**
@@ -29,12 +30,10 @@ import '../globals.css';
  * LOCALE. There is no `[locale]` param to read and `getLocale()` is the
  * `headers()` call that this app removed from the outermost layout. The admin
  * is one operator's tool and that operator reads Vietnamese, so it renders in
- * Vietnamese, named once below. Both catalogues keep their `adminUi` strings —
- * `messages.test.ts` enforces that — so making this switchable later is a
- * change to one constant, not a translation project.
+ * Vietnamese, named once in `lib/admin/locale.ts`. Both catalogues keep their
+ * `adminUi` strings — `messages.test.ts` enforces that — so making this
+ * switchable later is a change to one constant, not a translation project.
  */
-
-const ADMIN_LOCALE = 'vi' as const;
 
 export const metadata: Metadata = {
   title: {

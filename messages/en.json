@@ -548,7 +548,10 @@
     "metaRecipes": "Recipes",
     "unenrolFailed": "The authenticator could not be removed. Nothing was changed.",
     "factorName": "Authenticator app",
-    "factorsUnavailable": "Could not read your authenticators — the sign-in service is not answering. Do not enrol another until the list shows; reload the page shortly."
+    "factorsUnavailable": "Could not read your authenticators — the sign-in service is not answering. Do not enrol another until the list shows; reload the page shortly.",
+    "metaProducts": "Products",
+    "metaArticles": "Articles",
+    "metaSecurity": "Security"
   },
   "recipeAdmin": {
     "pickTitle": "Pick a recipe, or start a new one",

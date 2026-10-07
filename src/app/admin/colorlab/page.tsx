@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import { ADMIN_LOCALE } from '@/lib/admin/locale';
 import { RecipeAdmin } from '@/components/colorlab/admin/recipe-admin';
 
 /**
@@ -14,7 +15,7 @@ import { RecipeAdmin } from '@/components/colorlab/admin/recipe-admin';
  */
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations({ locale: 'vi', namespace: 'adminUi' });
+  const t = await getTranslations({ locale: ADMIN_LOCALE, namespace: 'adminUi' });
   return { title: t('metaRecipes') };
 }
 
