@@ -195,6 +195,18 @@ read as its own.
 The control check does not gate the Vercel deployment. A failed Vercel build has
 its own cause in the build log.
 
+**Pending: `20261007000001_camera_highlights.sql`.** The camera-highlights
+branch adds `highlights` to `PRODUCT_COLUMNS` (`src/lib/cameras/row.ts`), so
+every catalogue read selects that column by name. Apply this migration to
+content by hand — `npm run supabase:migrations -- --target content --apply`,
+then confirm `npm run supabase:migrations -- --target content --dry-run` shows
+nothing to apply — **before** merging the branch. This is the same ordering
+mistake that failed the `9a04713` build above: merged first, the column does
+not exist yet and every `select(PRODUCT_COLUMNS)` against content fails with
+"column sony_cameras.highlights does not exist". Nothing here should be made
+to tolerate the missing column — a read that cannot select a column it names
+must fail loudly, not fall back.
+
 ### The content project's lineage
 
 `touiyczjvnuaxfzulgeq` was not built from `0001_content_baseline.sql`. Its

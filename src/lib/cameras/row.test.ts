@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PRODUCT_COLUMNS, galleryFromRow, productFromRow, type ProductRow } from './row';
+import { toCameraCard } from './types';
 import type { SonyCamera } from './types';
 
 /**
@@ -79,6 +80,29 @@ describe('PRODUCT_COLUMNS', () => {
     /* These reads run under the anon key. `updated_by` is an email. */
     expect(columns).not.toContain('updated_by');
     expect(columns).not.toContain('*');
+  });
+});
+
+const hlSide = {
+  points: [1, 2, 3, 4].map((i) => ({ title: `T${i}`, body: `B${i}.` })),
+  keySpecs: [{ key: 'sensor' as const, value: '33MP' }],
+};
+
+describe('highlights', () => {
+  it('is selected by name', () => {
+    const columns = PRODUCT_COLUMNS.split(',').map((c) => c.trim());
+    expect(columns).toContain('highlights');
+  });
+
+  it('maps a valid column and drops an invalid one to null', () => {
+    expect(productFromRow(row({ highlights: { en: hlSide, vi: hlSide } })).highlights?.vi.points).toHaveLength(4);
+    expect(productFromRow(row({ highlights: { en: hlSide } })).highlights).toBeNull();
+    expect(productFromRow(row()).highlights).toBeNull();
+  });
+
+  it('never reaches a catalogue card', () => {
+    const card = toCameraCard(productFromRow(row({ highlights: { en: hlSide, vi: hlSide } })));
+    expect('highlights' in card).toBe(false);
   });
 });
 

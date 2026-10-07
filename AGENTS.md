@@ -460,6 +460,15 @@ one that matters most: an unreadable factor list is 503, never "no factor".
 - Pilot drafts (`pilot-drafts.ts`) are drafts. Nothing may publish them but an
   editor in `/admin/blog`.
 
+## Camera pages
+
+A camera with `highlights` (`sony_cameras.highlights`, validated by
+`highlightsSchema` in `src/lib/cameras/highlights.ts`) shows 4–6 explained
+features and up to eight core specs; the full spec table sits collapsed below.
+Without valid highlights the page renders the feature bullets and the open
+table — never an empty section. Highlights are content: every number in them
+must come from that camera's own sources.
+
 ## AI ("Tweak with AI")
 
 `claude-sonnet-5` via structured outputs, so the JSON shape is constrained by the

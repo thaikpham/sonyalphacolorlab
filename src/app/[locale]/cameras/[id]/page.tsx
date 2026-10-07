@@ -10,6 +10,8 @@ import { ProductSpecTable } from '@/components/product-spec-table';
 import { ProductArticles } from '@/components/content/reverse-links';
 import { ProductGalleryViewer } from '@/components/product-gallery-viewer';
 import { featureList } from '@/lib/cameras/features';
+import { CameraHighlights, CoreSpecs } from '@/components/camera-highlights';
+import { highlightsFor, parseHighlights } from '@/lib/cameras/highlights';
 
 export async function generateStaticParams() {
   const cameras = await getSonyCameras();
@@ -67,6 +69,10 @@ export default async function ProductDetailPage({
      a provider given `messages` replaces the inherited set rather than merging
      with it — a subset here silently dropped every other namespace. */
   const t = await getTranslations('cameras');
+
+  /* Parsed here as well as in `productFromRow`: offline, the seed reaches the
+     page without passing through the row mapper. */
+  const highlights = highlightsFor(parseHighlights(product.highlights, product.id), locale);
 
   /* Product kind is not a signal. `community`, `proposal`, `ai` and `danger`
      name what a piece of content *is*, so borrowing one of them for "lens"
@@ -205,26 +211,51 @@ export default async function ProductDetailPage({
             empty columns beside it is a layout still holding a shape for
             something that no longer exists. Specs take the full width. */}
         <div className="flex flex-col gap-5">
-          {/* Key Features Section */}
-          <div className="surface p-5 flex flex-col gap-3">
-            {/* h2, not h3: the only heading above this one is the product
-                name in the hero, and h1 → h3 is a level skip. */}
-            <h2 className="text-title-3 font-semibold text-ink tracking-[-0.02em]">
-              {t('featuresLabel')}
-            </h2>
+          {highlights ? (
+            <>
+              <CameraHighlights points={highlights.points} />
+              {highlights.keySpecs.length > 0 && <CoreSpecs rows={highlights.keySpecs} />}
+              {product.specs && (
+                <details className="group surface p-5">
+                  <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 marker:content-none text-title-3 font-semibold tracking-[-0.02em] text-ink">
+                    {t('specs.fullSpecsHeading')}
+                    <span aria-hidden className="text-ink-faint group-open:hidden">
+                      +
+                    </span>
+                    <span aria-hidden className="hidden text-ink-faint group-open:inline">
+                      −
+                    </span>
+                  </summary>
+                  <div className="mt-3">
+                    <ProductSpecTable specs={product.specs} locale={locale} embedded />
+                  </div>
+                </details>
+              )}
+            </>
+          ) : (
+            <>
+              {/* Key Features Section */}
+              <div className="surface p-5 flex flex-col gap-3">
+                {/* h2, not h3: the only heading above this one is the product
+                    name in the hero, and h1 → h3 is a level skip. */}
+                <h2 className="text-title-3 font-semibold text-ink tracking-[-0.02em]">
+                  {t('featuresLabel')}
+                </h2>
 
-            <ul className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-body-sm text-ink-muted leading-relaxed">
-              {featureList(product.features, locale).map((feat: string, idx: number) => (
-                <li key={idx} className="row-tint flex items-start gap-2.5 p-3">
-                  <span className="text-accent-400 shrink-0 leading-none">•</span>
-                  <span className="flex-1">{feat}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
+                <ul className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-body-sm text-ink-muted leading-relaxed">
+                  {featureList(product.features, locale).map((feat: string, idx: number) => (
+                    <li key={idx} className="row-tint flex items-start gap-2.5 p-3">
+                      <span className="text-accent-400 shrink-0 leading-none">•</span>
+                      <span className="flex-1">{feat}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
 
-          {/* Scientific Specs Table */}
-          {product.specs && <ProductSpecTable specs={product.specs} locale={locale} />}
+              {/* Scientific Specs Table */}
+              {product.specs && <ProductSpecTable specs={product.specs} locale={locale} />}
+            </>
+          )}
         </div>
 
         {/* Articles and reference pages that name this product, if any. */}

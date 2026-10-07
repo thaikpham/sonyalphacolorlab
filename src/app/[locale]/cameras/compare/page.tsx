@@ -4,6 +4,20 @@ import { getSonyCameras } from '@/lib/cameras/data';
 import { getSonyAudio } from '@/lib/audio/data';
 import { CameraCompareView } from '@/components/camera-compare-view';
 import { SiteHeader } from '@/components/site-header';
+import type { SonyCamera } from '@/lib/cameras/types';
+
+/**
+ * `highlights` is bilingual sales-talk copy the compare grid never reads —
+ * `compare-grouping.ts` builds its rows from `specs`, `features` and the
+ * identity fields alone. Sent whole, every camera's highlights in both
+ * languages ride into the RSC payload and the client bundle for nothing,
+ * which is the same shape of waste `CameraCard` exists to cut for the browse
+ * grid. A mapper, not just a narrower prop type, so the omission survives
+ * even though `highlights` is optional on `SonyCamera` and a bare type
+ * annotation would not have caught a `{ ...camera }` spread putting it back.
+ */
+const stripHighlights = ({ highlights: _highlights, ...camera }: SonyCamera): Omit<SonyCamera, 'highlights'> =>
+  camera;
 
 export async function generateMetadata({
   params,
@@ -34,7 +48,7 @@ export default async function CameraComparePage({
      body and a headset in the same list — resolving against cameras alone
      dropped every audio id silently, leaving a compare page with fewer columns
      than the reader ticked. */
-  const initialCameras = [...(await getSonyCameras()), ...(await getSonyAudio())];
+  const initialCameras = [...(await getSonyCameras()), ...(await getSonyAudio())].map(stripHighlights);
   const selectedIds = ids ? ids.split(',').filter(Boolean) : [];
 
   return (

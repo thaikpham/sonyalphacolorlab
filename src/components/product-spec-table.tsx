@@ -17,9 +17,12 @@ import { translateSpecValue } from '@/lib/cameras/spec-values';
 export async function ProductSpecTable({
   specs,
   locale,
+  embedded = false,
 }: {
   specs: ProductSpecs;
   locale: string;
+  /** Inside a `<details>` whose summary is the heading: no panel, no h3. */
+  embedded?: boolean;
 }) {
   const t = await getTranslations('cameras');
   const row = specs as unknown as Record<string, string | null>;
@@ -42,8 +45,8 @@ export async function ProductSpecTable({
   const cell = 'grid grid-cols-1 sm:grid-cols-[minmax(0,13rem)_1fr] sm:items-baseline px-4 py-3 gap-x-6 gap-y-1';
 
   return (
-    <div className="surface p-5 flex flex-col gap-3">
-      <h3 className="label">{t('specs.specsHeading')}</h3>
+    <div className={embedded ? 'flex flex-col gap-3' : 'surface p-5 flex flex-col gap-3'}>
+      {embedded ? null : <h3 className="label">{t('specs.specsHeading')}</h3>}
 
       {/* A fixed label track, with the value starting where the label ends.
           `justify-between` pinned the value to the far right edge, so on a wide
