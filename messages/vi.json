@@ -547,7 +547,8 @@
     "unenrolDone": "Đã gỡ authenticator.",
     "metaRecipes": "Công thức",
     "unenrolFailed": "Không gỡ được authenticator. Chưa có gì thay đổi.",
-    "factorName": "Ứng dụng authenticator"
+    "factorName": "Ứng dụng authenticator",
+    "factorsUnavailable": "Chưa đọc được danh sách authenticator — dịch vụ đăng nhập không phản hồi. Đừng đăng ký thêm cho đến khi danh sách hiện ra; hãy tải lại trang sau ít phút."
   },
   "recipeAdmin": {
     "pickTitle": "Chọn một công thức hoặc tạo công thức mới",
