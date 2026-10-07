@@ -89,7 +89,11 @@ export async function getArticleRecord(id: string): Promise<ArticleRecord | null
     .eq('id', id)
     .maybeSingle()
 
-  if (error || !data) return null
+  /* `null` is "no such row" and nothing else. Answering it for an error too
+     made a restricted content project read as a deleted article: every editor
+     opening any page was told it no longer existed. */
+  if (error) throw new Error(`lab_articles: ${error.message}`)
+  if (!data) return null
   return toRecord(data as Row)
 }
 

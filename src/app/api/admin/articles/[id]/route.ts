@@ -16,7 +16,11 @@ import { validateForPublish } from '@/lib/lab/parse'
 import { findUnknownReferences } from '@/lib/lab/reference-check'
 import { articlePreviews } from '@/lib/lab/asset-store'
 import { referencedAssetIds } from '@/lib/lab/assets'
-import { deleteArticleAssets, reconcileArticleAssets } from '@/lib/lab/asset-lifecycle'
+import {
+  deleteArticleAssets,
+  reconcileArticleAssets,
+  type LifecycleResult,
+} from '@/lib/lab/asset-lifecycle'
 
 /**
  * One article: read it with its drafts visible, save it, publish it, delete it.
@@ -30,6 +34,22 @@ import { deleteArticleAssets, reconcileArticleAssets } from '@/lib/lab/asset-lif
 
 type Ctx = { params: Promise<{ id: string }> }
 
+/**
+ * The asset lifecycle reports a Storage failure as a result, but its read of
+ * the `lab_assets` ledger throws — and a throw out of a handler is a bare 500
+ * with no body. The editor's `res.json()` then fails and they are told a save
+ * failed that, on the unpublish path, had already gone through. An outage is
+ * the same answer as any other asset failure: `assetSyncFailed`, 502.
+ */
+async function settled(work: Promise<LifecycleResult>): Promise<LifecycleResult> {
+  try {
+    return await work
+  } catch (err) {
+    console.error('[lab] asset lifecycle failed:', err instanceof Error ? err.message : err)
+    return { ok: false, error: 'assetSyncFailed' }
+  }
+}
+
 export async function GET(request: Request, { params }: Ctx) {
   const gate = await adminGate(request)
   if (!gate.ok) return NextResponse.json({ error: gate.error }, { status: gate.status })
@@ -38,7 +58,16 @@ export async function GET(request: Request, { params }: Ctx) {
   }
 
   const { id } = await params
-  const article = await getArticleRecord(id)
+
+  /* An unreachable project is not a missing article. Saying `notFound` here
+     would tell the editor their page was deleted when nothing happened to it. */
+  let article: Awaited<ReturnType<typeof getArticleRecord>>
+  try {
+    article = await getArticleRecord(id)
+  } catch (err) {
+    console.error('[lab] article read failed:', err instanceof Error ? err.message : err)
+    return NextResponse.json({ error: 'loadFailed' }, { status: 502 })
+  }
   if (!article) return NextResponse.json({ error: 'notFound' }, { status: 404 })
 
   /* Signed, ten minutes, private bucket. The editor needs to see the pictures
@@ -85,7 +114,7 @@ export async function PATCH(request: Request, { params }: Ctx) {
      the editor unpublishes first, which is a deliberate act with a visible
      consequence. A lookup that fails falls through — the update below is what
      reports a missing row. */
-  const existing = await getArticleRecord(id)
+  const existing = await getArticleRecord(id).catch(() => null)
   if (existing && existing.status === 'published' && existing.kind !== write.article.kind) {
     return NextResponse.json({ error: 'kindLocked' }, { status: 409 })
   }
@@ -124,7 +153,7 @@ export async function PATCH(request: Request, { params }: Ctx) {
      to a reader, and cleaned up by the next publish. The other order would put
      a live page in front of images that are not there yet. */
   if (write.status === 'published') {
-    const synced = await reconcileArticleAssets(id, write.article.blocks, 'published')
+    const synced = await settled(reconcileArticleAssets(id, write.article.blocks, 'published'))
     if (!synced.ok) {
       const status = synced.error === 'assetSyncFailed' ? 502 : 422
       return NextResponse.json({ error: synced.error }, { status })
@@ -152,7 +181,7 @@ export async function PATCH(request: Request, { params }: Ctx) {
      A failure is reported, but the article is already private — so the answer
      is 502 with the assets marked `cleanup_failed` for the cleanup view. */
   if (write.status !== 'published') {
-    const synced = await reconcileArticleAssets(id, write.article.blocks, 'draft')
+    const synced = await settled(reconcileArticleAssets(id, write.article.blocks, 'draft'))
     if (!synced.ok) {
       return NextResponse.json({ error: synced.error, problems }, { status: 502 })
     }
@@ -190,7 +219,7 @@ export async function DELETE(request: Request, { params }: Ctx) {
      `on delete restrict` enforces the same order in the schema, so a caller
      that skipped this would get a foreign-key violation rather than a bucket
      full of objects nothing can name. */
-  const cleaned = await deleteArticleAssets(id)
+  const cleaned = await settled(deleteArticleAssets(id))
   if (!cleaned.ok) {
     return NextResponse.json({ error: cleaned.error }, { status: 502 })
   }
