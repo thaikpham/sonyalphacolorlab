@@ -256,7 +256,7 @@ Product specifications, features, and available settings may differ by model, re
 
 ## Creator
 
-**Thai Pham**
+**Thai K. Pham**
 
 Photography enthusiast, imaging technology specialist, and creator of Sony Alpha ColorLab.
 
