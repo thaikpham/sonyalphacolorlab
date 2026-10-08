@@ -262,7 +262,13 @@ Photography enthusiast, imaging technology specialist, and creator of Sony Alpha
 
 Built with a passion for photography, color science, technology, and creative education.
 
-[Website](https://sonycolorlab.app) · [GitHub](https://github.com/thaikpham)
+🌐 [Website](https://sonycolorlab.app) · 💻 [GitHub](https://github.com/thaikpham) · 📘 [Facebook](https://www.facebook.com/thaikpham.art) · 📸 [Instagram](https://www.instagram.com/thaikpham)
+
+---
+
+**Made for creators who believe color is part of the story.**
+
+*Explore. Experiment. Create.*
 
 ---
 
