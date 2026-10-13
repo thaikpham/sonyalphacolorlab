@@ -240,3 +240,28 @@ describe('white balance summary', () => {
     }
   });
 });
+
+describe('unsigned intensity params grade up from their minimum', () => {
+  /* Fade, Sharpness and Clarity (0–9) and the PP Detail Limit, Crispening and
+     Hi-Light Detail were graded around their midpoint, so the whole low half
+     of each range fell back to the wording for the minimum: Fade 3 read
+     "No fade", Sharpness 4 "No sharpening", and every PP recipe at Limit 3
+     read "capped hard". Only the minimum itself may say "none". */
+  it('keeps the "none" wording for the minimum only', () => {
+    expect(clEffects({ ...baseCl, fade: 0 }).fade.en).toMatch(/^No fade/);
+    expect(clEffects({ ...baseCl, fade: 3 }).fade.en).not.toMatch(/^No fade/);
+    expect(clEffects({ ...baseCl, sharpness: 4 }).sharpness.en).not.toMatch(/^No sharpening/);
+    expect(clEffects({ ...baseCl, clarity: 1 }).clarity.en).not.toMatch(/^No clarity/);
+    expect(withPp({ detail: { ...basePp.detail, hiLightDetail: 2 } }).hiLightDetail.en).not.toMatch(/^No extra/);
+    expect(withPp({ detail: { ...basePp.detail, limit: 3 } }).detailLimit.en).not.toMatch(/capped hard/);
+  });
+
+  it('describes every value above the minimum with a non-minimum phrase', () => {
+    for (const param of ['fade', 'sharpness', 'clarity'] as const) {
+      const none = clEffects({ ...baseCl, [param]: 0 })[param].en;
+      for (let v = 1; v <= 9; v++) {
+        expect(clEffects({ ...baseCl, [param]: v })[param].en, `${param} ${v}`).not.toBe(none);
+      }
+    }
+  });
+});

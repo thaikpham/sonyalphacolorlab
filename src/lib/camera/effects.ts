@@ -44,11 +44,34 @@ function step(value: number, range: Range): Step {
   return value > pivot ? (strong ? 2 : 1) : strong ? -2 : -1;
 }
 
+/**
+ * Where an intensity sits above its minimum: 0 only AT the minimum, then
+ * mild, then strong past 55% of the range.
+ *
+ * Fade, Sharpness, Clarity and the PP Detail Limit / Crispening / Hi-Light
+ * Detail have no "less than neutral" — their minimum is "none" and every step
+ * up adds some. Grading them around the midpoint (`step()`) sent the whole low
+ * half of each range to the minimum's wording: Fade 3 read "No fade".
+ */
+function stepFromMin(value: number, range: Range): Step {
+  if (value <= range.min) return 0;
+  const span = range.max - range.min;
+  if (span === 0) return 0;
+  return (value - range.min) / span >= 0.55 ? 2 : 1;
+}
+
 type Phrases = Partial<Record<Step, [en: string, vi: string]>>;
 
 function pick(axis: EffectAxis, phrases: Phrases, s: Step): Effect {
   const [en, vi] = phrases[s] ?? phrases[0] ?? ['', ''];
   return { axis, en, vi };
+}
+
+/** A table with no negative steps describes an intensity that rises from its
+    minimum; every other table is graded around its centre. */
+function grade(axis: EffectAxis, phrases: Phrases, value: number, range: Range): Effect {
+  const centred = phrases[-1] !== undefined || phrases[-2] !== undefined;
+  return pick(axis, phrases, centred ? step(value, range) : stepFromMin(value, range));
 }
 
 // ---------------------------------------------------------------------------
@@ -267,9 +290,9 @@ export function ppEffects(s: PpSettings): Record<string, Effect> {
         : { axis: 'detail', en: 'Detail sub-settings dialled in by hand', vi: 'Các thông số chi tiết phụ được chỉnh tay' },
     vhBalance: pick('detail', vhBalance, step(s.detail.vhBalance, PP_RANGES.detailVhBalance)),
     bwBalance: bwBalanceEffect(s.detail.bwBalance),
-    detailLimit: pick('detail', detailLimit, step(s.detail.limit, PP_RANGES.detailLimit)),
-    crispening: pick('detail', crispening, step(s.detail.crispening, PP_RANGES.detailCrispening)),
-    hiLightDetail: pick('detail', hiLightDetail, step(s.detail.hiLightDetail, PP_RANGES.detailHiLightDetail)),
+    detailLimit: grade('detail', detailLimit, s.detail.limit, PP_RANGES.detailLimit),
+    crispening: grade('detail', crispening, s.detail.crispening, PP_RANGES.detailCrispening),
+    hiLightDetail: grade('detail', hiLightDetail, s.detail.hiLightDetail, PP_RANGES.detailHiLightDetail),
   };
 
   for (const [channel, names] of Object.entries(CHANNEL_NAMES)) {
@@ -716,7 +739,7 @@ export function clEffects(s: ClSettings): Record<string, Effect> {
   for (const [param, def] of Object.entries(CL_PHRASES) as [ClParam, (typeof CL_PHRASES)[ClParam]][]) {
     const value = s[param];
     if (value === undefined) continue; // Saturation on BW/SE
-    effects[param] = pick(def.axis, def.phrases, step(value, CL_RANGES[param]));
+    effects[param] = grade(def.axis, def.phrases, value, CL_RANGES[param]);
   }
 
   return effects;
