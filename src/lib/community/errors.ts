@@ -76,6 +76,24 @@ export function isCommunityErrorCode(value: unknown): value is CommunityErrorCod
   return typeof value === 'string' && Object.hasOwn(COMMUNITY_ERRORS, value);
 }
 
+/** What the client renders: a known code, or `community.errors.unknown`. */
+export type CommunityAlertCode = CommunityErrorCode | 'unknown';
+
+/**
+ * The code a non-2xx community response carries, for `community.errors.*`.
+ *
+ * One reader for every caller, because each one used to decide for itself and
+ * most decided to say nothing: the recipe page acted only on `res.ok`, so a
+ * 429, an expired session or an outage left the button reset, the draft in
+ * place and no word of why. A body that is not JSON — a proxy's error page —
+ * is `unknown`, never an exception the caller forgets to catch.
+ */
+export async function communityErrorOf(res: Response): Promise<CommunityAlertCode> {
+  const data: unknown = await res.json().catch(() => null);
+  const code = (data as { error?: unknown } | null)?.error;
+  return isCommunityErrorCode(code) ? code : 'unknown';
+}
+
 /**
  * Which plane just failed, if either did.
  *
