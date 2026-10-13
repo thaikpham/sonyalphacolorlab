@@ -84,6 +84,14 @@ describe('the client that renders these bodies', () => {
     expect(source).toContain('isTweakErrorCode(');
     expect(source).toContain('errors.${');
   });
+
+  it('sends the session token and asks for sign-in when the route refuses it', () => {
+    /* The route 401s without a verified session. A panel that sent no token
+       would fail for every reader, signed in or not. */
+    expect(source).toContain('accessToken()');
+    expect(source).toMatch(/Authorization: `Bearer \$\{token\}`/);
+    expect(source).toMatch(/res\.status === 401[\s\S]{0,80}openLoginModal\(\)/);
+  });
 });
 
 describe('the catalogue', () => {

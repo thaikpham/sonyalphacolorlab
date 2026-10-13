@@ -1,3 +1,5 @@
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { getSonyCameras } from './data';
 
@@ -57,5 +59,35 @@ describe('getSonyCameras cache safety', () => {
     expect(lenses.length).toBeGreaterThan(0);
     expect(lenses.every((c) => c.category === 'lens')).toBe(true);
     expect((await getSonyCameras()).map((c) => c.id)).toEqual(before);
+  });
+});
+
+/**
+ * A whole-table catalogue read is cached under its arguments — `unstable_cache`
+ * makes them part of the key. So a route handler that forwards a query string
+ * into one turns every distinct `?search=` into a cache miss, a full
+ * `sony_cameras` read against the content project and a fresh Data Cache entry.
+ * The public `/api/cameras` did exactly that, unauthenticated and unbounded,
+ * and nothing in the app called it. The pages call these with no arguments and
+ * filter what comes back; a route must do the same.
+ */
+describe('catalogue reads in route handlers', () => {
+  const WHOLE_TABLE = ['getSonyCameras', 'getSonyAudio', 'listSlugs'];
+
+  function routes(dir: string): string[] {
+    return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+      const path = join(dir, entry.name);
+      if (entry.isDirectory()) return routes(path);
+      return entry.name === 'route.ts' ? [path] : [];
+    });
+  }
+
+  it.each(routes('src/app'))('%s passes no request value into a cached whole-table read', (path) => {
+    const source = readFileSync(path, 'utf8');
+    for (const name of WHOLE_TABLE) {
+      expect(source, `${name} is called with arguments`).not.toMatch(
+        new RegExp(`\\b${name}\\(\\s*[^)\\s]`),
+      );
+    }
   });
 });
