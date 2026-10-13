@@ -81,6 +81,16 @@ describe('proposalPills', () => {
     expect(pills).toContain('Contrast: +2');
   });
 
+  it('draws no pills for a settings value that is not an object', () => {
+    /* Rows written before the POST validated strictly only had to be truthy,
+       so jsonb can hold a bare string or number. `in` throws on either, and
+       one such row took down the section for every reader of the recipe. */
+    for (const settings of ['x', 5, true, null, ['look']]) {
+      expect(proposalPills('pp', settings)).toEqual([]);
+      expect(proposalPills('cl', settings)).toEqual([]);
+    }
+  });
+
   it('labels from constants.ts, never the raw JSON key', () => {
     const pills = proposalPills('pp', { blackLevel: 3, colorPhase: -1 });
     expect(pills).toEqual(['Black Level: +3', 'Color Phase: -1']);

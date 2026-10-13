@@ -111,12 +111,13 @@ const CL_ORDER = ['look', ...CL_PARAM_ORDER] as const;
  * contrast. Keys the recipe's format does not have are skipped rather than
  * printed raw. The format is the recipe's: a proposal does not store one, and
  * the server holds its settings to that recipe's schema.
+ *
+ * `unknown`, because rows written before the POST validated strictly only had
+ * to be truthy: jsonb can hold a bare string or number there, `in` throws on
+ * one, and a single such row would take the section down for every reader.
  */
-export function proposalPills(
-  format: 'pp' | 'cl',
-  settings: Record<string, unknown>,
-  limit = 6,
-): string[] {
+export function proposalPills(format: 'pp' | 'cl', settings: unknown, limit = 6): string[] {
+  if (!isObj(settings)) return [];
   const pills =
     format === 'pp'
       ? PP_ORDER.filter((k) => k in settings).map((k) => ppPill(k, settings[k]))
