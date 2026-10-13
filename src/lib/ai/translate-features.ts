@@ -82,7 +82,14 @@ export async function translateFeatures(
        would be approving line 4's translation under line 3's text. */
     if (parsed.lines.length !== source.length) return { ok: false, error: 'mismatch' };
 
-    return { ok: true, lines: parsed.lines.map((l) => l.trim()) };
+    /* The count alone is not the contract. The editor joins the reply with
+       `\n` and the save splits it again, dropping blanks — so an empty item,
+       or one with a line break inside it, passes the count here and arrives as
+       five or seven bullets against six originals. */
+    const out = parsed.lines.map((l) => l.trim());
+    if (out.some((l) => l === '' || /[\r\n]/.test(l))) return { ok: false, error: 'mismatch' };
+
+    return { ok: true, lines: out };
   } catch {
     return { ok: false, error: 'failed' };
   }

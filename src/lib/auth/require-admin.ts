@@ -1,6 +1,7 @@
 import 'server-only';
 import { controlAdmin, hasControlConfig } from '@/lib/supabase/server';
 import { ControlUnavailableError } from '@/lib/supabase/errors';
+import type { AdminRole } from '@/lib/admin/category-roles';
 import { requireUser, type AuthedUser } from './require-user';
 
 /**
@@ -31,8 +32,6 @@ import { requireUser, type AuthedUser } from './require-user';
  * evidence that somebody is an administrator. It is 503.
  */
 
-export type AdminRole = 'super' | 'di' | 'pe';
-
 export type AdminUser = AuthedUser & {
   role: AdminRole;
 };
@@ -52,13 +51,6 @@ export type AdminUser = AuthedUser & {
  */
 export class MfaRequiredError extends Error {
   readonly code = 'mfaRequired';
-}
-
-export function canManageCategory(role: AdminRole, category: string): boolean {
-  if (role === 'super') return true;
-  if (role === 'di') return category !== 'audio';
-  if (role === 'pe') return category === 'audio';
-  return false;
 }
 
 /**
@@ -128,16 +120,6 @@ export async function requireAdmin(request: Request): Promise<AdminUser | null> 
 
   return { ...user, role: (data.role as AdminRole) || 'super' };
 }
-
-/**
- * The body every admin route returns when the caller is not an admin.
- *
- * A code, not a sentence, for the same reason the community routes use one: a
- * literal here renders untranslated to the other locale and is invisible to the
- * message parity test. The client looks it up under `admin.errors.*`.
- */
-export const NOT_ADMIN = { error: 'notAdmin' as const };
-
 
 /**
  * Whether this account has a TOTP factor it has finished enrolling.

@@ -32,7 +32,12 @@ type Factor = { id: string; status: string; friendly_name?: string; created_at?:
 export function SecurityPanel() {
   const t = useTranslations('adminUi');
   const format = useFormatter();
-  const [factors, setFactors] = useState<Factor[]>([]);
+  /* `null` until the list has been read. Unknown is not empty: rendering the
+     enrol state for a list that failed to load offered an operator who has an
+     authenticator a second one. */
+  const [factors, setFactors] = useState<Factor[] | null>(null);
+  /* The last read failed. Whatever `factors` held before is kept beside it. */
+  const [factorsFailed, setFactorsFailed] = useState(false);
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<{ kind: 'ok' | 'err'; key: string } | null>(null);
@@ -43,25 +48,35 @@ export function SecurityPanel() {
   const [code, setCode] = useState('');
 
   /* Fetches and returns; it sets no state, so the mount effect below can decide
-     for itself whether the answer still has anywhere to go. */
+     for itself whether the answer still has anywhere to go. `null` is "could
+     not read it": listFactors() reports a failure in `error` and does not
+     throw, so reading `data` alone turned an outage into "no factor". */
   const fetchFactors = useCallback(async (): Promise<Factor[] | null> => {
     const supabase = authBrowser();
     if (!supabase) return null;
-    const { data } = await supabase.auth.mfa.listFactors();
-    return (data?.totp ?? []) as Factor[];
+    try {
+      const { data, error } = await supabase.auth.mfa.listFactors();
+      if (error) return null;
+      return (data?.totp ?? []) as Factor[];
+    } catch {
+      return null;
+    }
   }, []);
 
   /** Refresh after an enrolment or a removal, where the panel is certainly alive. */
   const load = useCallback(async () => {
     const rows = await fetchFactors();
     if (rows) setFactors(rows);
+    setFactorsFailed(!rows);
   }, [fetchFactors]);
 
   useEffect(() => {
     let live = true;
     (async () => {
       const rows = await fetchFactors();
-      if (live && rows) setFactors(rows);
+      if (!live) return;
+      if (rows) setFactors(rows);
+      setFactorsFailed(!rows);
     })();
     return () => {
       live = false;
@@ -144,7 +159,7 @@ export function SecurityPanel() {
     }
   };
 
-  const verified = factors.filter((f) => f.status === 'verified');
+  const verified = (factors ?? []).filter((f) => f.status === 'verified');
 
   return (
     <main className="mx-auto flex w-full max-w-[44rem] flex-col gap-8 inset-safe py-12">
@@ -180,7 +195,11 @@ export function SecurityPanel() {
       <section className="surface-raised flex flex-col gap-4 rounded-md p-5">
         <h2 className="text-body-lg font-extrabold text-ink">{t('totpHeading')}</h2>
 
-        {verified.length > 0 ? (
+        {factors === null ? (
+          <p className={`text-body-sm ${factorsFailed ? 'text-danger' : 'text-ink-muted'}`}>
+            {factorsFailed ? t('factorsUnavailable') : t('checking')}
+          </p>
+        ) : verified.length > 0 ? (
           <>
             <p className="text-body-sm leading-relaxed text-ink-muted">{t('totpActive')}</p>
             <ul className="flex flex-col gap-2">
@@ -266,6 +285,12 @@ export function SecurityPanel() {
             </button>
           </>
         )}
+
+        {/* A re-read that failed after an earlier one succeeded: the list
+            above is the last one known, and says so. */}
+        {factors !== null && factorsFailed ? (
+          <p className="text-body-sm text-danger">{t('factorsUnavailable')}</p>
+        ) : null}
       </section>
 
       {note ? (

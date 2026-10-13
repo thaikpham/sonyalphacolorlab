@@ -1,13 +1,15 @@
 import { NextResponse } from 'next/server';
-import { canManageCategory } from '@/lib/auth/require-admin';
+import { canManageCategory, PRODUCT_CATEGORIES } from '@/lib/admin/category-roles';
 import { adminGate } from '@/lib/auth/admin-gate';
 import { CONTENT_ADMIN_FROZEN, contentAdminWritesFrozen } from '@/lib/admin/content-freeze';
 import { revalidateTag } from 'next/cache';
 import { CATALOGUE_TAG, IMMEDIATE } from '@/lib/catalogue-cache';
 import { contentAdmin, hasContentConfig } from '@/lib/supabase/server';
 import { contentProjectRef } from '@/lib/supabase/config';
-import { PRODUCT_COLUMNS, productFromRow, type ProductRow } from '@/lib/cameras/row';
+import { productFromRow } from '@/lib/cameras/row';
+import { ADMIN_PRODUCT_COLUMNS, type AdminProductRow } from '@/lib/admin/product-row';
 import { SPEC_ROWS, type ProductSpecs, type SonyCamera } from '@/lib/cameras/types';
+import { slugify } from '@/lib/lab/parse';
 
 /**
  * Creates a new camera/lens/accessory product in Supabase.
@@ -17,20 +19,25 @@ import { SPEC_ROWS, type ProductSpecs, type SonyCamera } from '@/lib/cameras/typ
  */
 
 type CreateBody = {
-  sku?: string;
-  name?: string;
-  fullName?: string;
-  category?: 'camera' | 'lens' | 'accessory' | 'audio';
-  subCategory1?: string;
-  subCategory2?: string;
-  priceVnd?: number;
-  priceFormatted?: string;
-  url?: string;
-  imageUrl?: string;
+  sku?: unknown;
+  name?: unknown;
+  fullName?: unknown;
+  category?: unknown;
+  subCategory1?: unknown;
+  subCategory2?: unknown;
+  priceVnd?: unknown;
+  priceFormatted?: unknown;
+  url?: unknown;
+  imageUrl?: unknown;
   galleryUrls?: unknown;
-  features?: { en?: unknown; vi?: unknown };
-  specs?: Record<string, unknown>;
+  features?: { en?: unknown; vi?: unknown } | null;
+  specs?: Record<string, unknown> | null;
 };
+
+/* A string field, trimmed. Absent is `''`; present but not a string is
+   `undefined` — that used to throw at `.trim()` and surface as a 500. */
+const text = (x: unknown): string | undefined =>
+  x === undefined || x === null ? '' : typeof x === 'string' ? x.trim() : undefined;
 
 const asLines = (x: unknown): string[] =>
   Array.isArray(x)
@@ -88,20 +95,29 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ error: 'badRequest' }, { status: 400 });
   }
+  /* Valid JSON is not necessarily an object: `null` threw at `body.sku`. */
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return NextResponse.json({ error: 'badRequest' }, { status: 400 });
+  }
 
-  const sku = (body.sku ?? '').trim();
-  const name = (body.name ?? '').trim();
-  const fullName = (body.fullName ?? name).trim();
-  const category = body.category;
-  if (!category || !canManageCategory(gate.admin.role, category)) {
+  const sku = text(body.sku);
+  const name = text(body.name);
+  const category = PRODUCT_CATEGORIES.find((c) => c === body.category);
+  if (category && !canManageCategory(gate.admin.role, category)) {
     return NextResponse.json({ error: 'notAllowedForCategory' }, { status: 403 });
   }
-  const subCategory1 = (body.subCategory1 ?? '').trim();
-  const subCategory2 = (body.subCategory2 ?? '').trim();
-  const priceVnd = typeof body.priceVnd === 'number' ? body.priceVnd : 0;
-  const priceFormatted = (body.priceFormatted ?? '').trim() || (priceVnd > 0 ? `${priceVnd.toLocaleString('vi-VN')} ₫` : 'Liên hệ');
-  const url = (body.url ?? '').trim() || 'https://www.sony.com.vn';
-  const imageUrl = (body.imageUrl ?? '').trim() || '/logo.png';
+  const subCategory1 = text(body.subCategory1);
+  /* A field that is there but is not a string is a malformed request, not an
+     empty one — `{"sku": 1}` must not become a product with no SKU. */
+  if (sku === undefined || name === undefined || subCategory1 === undefined) {
+    return NextResponse.json({ error: 'badRequest' }, { status: 400 });
+  }
+  const fullName = text(body.fullName) || name;
+  const subCategory2 = text(body.subCategory2) || '';
+  const priceVnd = typeof body.priceVnd === 'number' && Number.isFinite(body.priceVnd) ? body.priceVnd : 0;
+  const priceFormatted = text(body.priceFormatted) || (priceVnd > 0 ? `${priceVnd.toLocaleString('vi-VN')} ₫` : 'Liên hệ');
+  const url = text(body.url) || 'https://www.sony.com.vn';
+  const imageUrl = text(body.imageUrl) || '/logo.png';
   const galleryUrls = Array.isArray(body.galleryUrls)
     ? body.galleryUrls.filter((u): u is string => typeof u === 'string' && u.trim().length > 0).map((u) => u.trim())
     : [imageUrl].filter((u) => u && u !== '/logo.png');
@@ -114,11 +130,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'badRequest' }, { status: 400 });
   }
 
-  if (!['camera', 'lens', 'accessory', 'audio'].includes(category)) {
-    return NextResponse.json({ error: 'badRequest' }, { status: 400 });
-  }
-
-  const slugBase = (sku || name).toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+  /* Diacritics folded, not dropped: an audio item without a SKU takes its id
+     from the name, and the id is a public `/cameras/<id>` URL. Stripping every
+     non-ASCII letter turned "Tai nghe chống ồn" into `tai-nghe-ch-ng-n`, and
+     two names differing only in accents collided as a duplicate. */
+  const slugBase = slugify(sku || name);
   const id = `sony-${slugBase || Date.now()}`;
 
   const kind: ProductSpecs['kind'] =
@@ -127,7 +143,7 @@ export async function POST(request: Request) {
         ? 'speaker'
         : 'headphone'
       : category;
-  const specs = buildInitialSpecs(kind, body.specs || {});
+  const specs = buildInitialSpecs(kind, body.specs && typeof body.specs === 'object' ? body.specs : {});
   const features = {
     en: asLines(body.features?.en),
     vi: asLines(body.features?.vi),
@@ -171,13 +187,14 @@ export async function POST(request: Request) {
   };
 
   /* The inserted row is selected back and handed to the editor, so the list
-     shows what the database stored rather than what the form sent. */
-  let saved: ProductRow;
+     shows what the database stored rather than what the form sent — and with
+     its version, which the editor's first save of it has to name. */
+  let saved: AdminProductRow;
   try {
     const { data, error } = await contentAdmin()
       .from('sony_cameras')
       .insert(cameraRow)
-      .select(PRODUCT_COLUMNS)
+      .select(ADMIN_PRODUCT_COLUMNS)
       .single();
     if (error) {
       /* 23505 is a unique violation: the id derived from this SKU or name, or
@@ -189,7 +206,7 @@ export async function POST(request: Request) {
       console.error('[admin/products] create failed:', JSON.stringify(error));
       return NextResponse.json({ error: 'saveFailed' }, { status: 502 });
     }
-    saved = data as ProductRow;
+    saved = data as AdminProductRow;
   } catch (err) {
     console.error('[admin/products] create threw:', err);
     return NextResponse.json({ error: 'saveFailed' }, { status: 502 });
@@ -205,6 +222,7 @@ export async function POST(request: Request) {
   return NextResponse.json({
     ok: true,
     product: productFromRow(saved),
+    updatedAt: saved.updated_at ?? null,
     project: contentProjectRef(process.env),
   });
 }

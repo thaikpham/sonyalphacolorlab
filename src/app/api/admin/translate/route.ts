@@ -36,9 +36,19 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ error: 'badRequest' }, { status: 400 });
   }
+  /* Valid JSON is not necessarily an object: `null` threw at `body.lines`. */
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return NextResponse.json({ error: 'badRequest' }, { status: 400 });
+  }
 
+  /* Blank lines dropped here rather than inside `translateFeatures`, so the
+     count the reply is checked against is the count of bullets actually sent. */
   const lines = Array.isArray(body.lines)
-    ? body.lines.filter((l): l is string => typeof l === 'string').slice(0, 40)
+    ? body.lines
+        .filter((l): l is string => typeof l === 'string')
+        .map((l) => l.trim())
+        .filter(Boolean)
+        .slice(0, 40)
     : [];
   const target = body.target === 'en' ? 'en' : body.target === 'vi' ? 'vi' : null;
 

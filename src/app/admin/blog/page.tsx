@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
+import { ADMIN_LOCALE } from '@/lib/admin/locale';
 import { ArticleAdmin } from '@/components/lab/admin/article-admin';
 
 /**
@@ -11,9 +13,10 @@ import { ArticleAdmin } from '@/components/lab/admin/article-admin';
  * stays: `admin` is still a URL nobody should be able to take.
  */
 
-export const metadata: Metadata = {
-  title: 'Bài viết',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations({ locale: ADMIN_LOCALE, namespace: 'adminUi' });
+  return { title: t('metaArticles') };
+}
 
 export default function AdminBlogPage() {
   return <ArticleAdmin />;
