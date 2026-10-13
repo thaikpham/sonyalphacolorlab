@@ -134,6 +134,7 @@
     "proposalSending": "Đang gửi…",
     "noProposals": "Chưa có đề xuất tinh chỉnh nào. Hãy tạo phiên bản mới đầu tiên.",
     "voteStateUnknown": "Không tải được lượt bình chọn của bạn nên tạm khóa bình chọn. Hãy tải lại trang để thử lại.",
+    "loadUnavailable": "Dịch vụ cộng đồng hiện không phản hồi. Hãy thử lại sau ít phút.",
     "by": "của {author}",
     "errors": {
       "unauthenticated": "Bạn cần đăng nhập để thực hiện thao tác này.",

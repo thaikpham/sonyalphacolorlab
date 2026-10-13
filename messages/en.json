@@ -134,6 +134,7 @@
     "proposalSending": "Sending…",
     "noProposals": "No tweak proposals yet. Create the first new version.",
     "voteStateUnknown": "Your votes could not be loaded, so voting is paused. Reload the page to try again.",
+    "loadUnavailable": "The community service is not answering right now. Try again shortly.",
     "by": "by {author}",
     "errors": {
       "unauthenticated": "Please sign in to do that.",

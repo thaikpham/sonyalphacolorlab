@@ -166,12 +166,18 @@ function StepControl({
   );
 }
 
-/** One community error, in the reader's locale. */
-export function CommunityAlert({ code }: { code: CommunityAlertCode }) {
+/**
+ * One community error, in the reader's locale.
+ *
+ * `read` marks a failed load. `errors.*` is written for writes — its outage
+ * copy says nothing was saved, which is news to a reader who only opened the
+ * page — so a read outage has its own line.
+ */
+export function CommunityAlert({ code, read = false }: { code: CommunityAlertCode; read?: boolean }) {
   const t = useTranslations('community');
   return (
     <p role="alert" className={ALERT}>
-      {t(`errors.${code}`)}
+      {read && code === 'controlUnavailable' ? t('loadUnavailable') : t(`errors.${code}`)}
     </p>
   );
 }
@@ -254,13 +260,43 @@ export function CommentCard({ comment }: { comment: CommentItem }) {
 }
 
 /**
+ * The comments, or why they could not be read.
+ *
+ * A failed read used to look exactly like an empty one — "be the first"
+ * during an outage — so "no comments" is drawn only for a list that loaded.
+ * Comments already on screen stay there when a later load fails.
+ */
+export function CommentList({
+  comments,
+  loaded,
+  loadError,
+}: {
+  comments: CommentItem[];
+  loaded: boolean;
+  loadError: CommunityAlertCode | null;
+}) {
+  const t = useTranslations('community');
+  return (
+    <div className="flex flex-col gap-3">
+      {loadError && <CommunityAlert code={loadError} read />}
+      {comments.length > 0
+        ? comments.map((comment) => <CommentCard key={comment.id} comment={comment} />)
+        : loaded &&
+          !loadError && <p className="meta italic py-4 text-center">{t('noComments')}</p>}
+    </div>
+  );
+}
+
+/**
  * One proposal and its heart.
  *
  * `voteDisabled` is set when the server could not read this reader's votes:
  * the vote route toggles, so a heart drawn hollow for a proposal they did vote
- * for would turn their next click into an un-vote. `pending` holds the heart
- * while its own request is in flight — a double tap used to send two toggles
- * and apply their answers in arrival order.
+ * for would turn their next click into an un-vote. `pending` marks the heart
+ * busy while its own request is in flight. It is `aria-disabled`, not
+ * `disabled`: Chrome blurs a focused button the moment it is disabled, which
+ * dropped a keyboard reader's place after every vote. A second send is stopped
+ * by the handler's ref guard, not by the button.
  */
 export function ProposalCard({
   proposal,
@@ -320,9 +356,10 @@ export function ProposalCard({
         type="button"
         aria-pressed={hasVoted}
         aria-busy={pending || undefined}
-        disabled={voteDisabled || pending}
+        aria-disabled={pending || undefined}
+        disabled={voteDisabled}
         onClick={() => onToggleVote(proposal.id)}
-        className={`flex items-center justify-center gap-2 px-4 min-h-[var(--layout-touch-target)] shrink-0 text-body-sm font-semibold transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
+        className={`flex items-center justify-center gap-2 px-4 min-h-[var(--layout-touch-target)] shrink-0 text-body-sm font-semibold transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed aria-disabled:opacity-40 aria-disabled:cursor-not-allowed ${
           hasVoted
             ? 'surface-selected [--selected-hue:var(--color-heart)] text-white'
             : 'rounded-sm bg-white/[0.08] hover:bg-white/[0.13] text-ink-muted shadow-[var(--elevation-spec)]'
@@ -332,6 +369,65 @@ export function ProposalCard({
         <span className="tabular-nums">{proposal.voteCount}</span>
       </button>
     </div>
+  );
+}
+
+/**
+ * The proposals, the hearts and every reason a vote cannot be trusted.
+ *
+ * `voteStateUnknown` disables every heart and says why; `signedIn: false`
+ * draws every heart hollow, since `hasVoted` is per-viewer.
+ */
+export function ProposalList({
+  proposals,
+  loaded,
+  loadError,
+  voteStateUnknown,
+  voteError,
+  pendingVotes,
+  signedIn,
+  recipeFormat,
+  onToggleVote,
+}: {
+  proposals: ProposalItem[];
+  loaded: boolean;
+  loadError: CommunityAlertCode | null;
+  voteStateUnknown: boolean;
+  voteError: CommunityAlertCode | null;
+  pendingVotes: ReadonlySet<string>;
+  signedIn: boolean;
+  recipeFormat: 'pp' | 'cl';
+  onToggleVote: (proposalId: string) => void;
+}) {
+  const t = useTranslations('community');
+  return (
+    <>
+      {loadError && <CommunityAlert code={loadError} read />}
+      {voteStateUnknown && (
+        <p role="alert" className={ALERT}>
+          {t('voteStateUnknown')}
+        </p>
+      )}
+      {voteError && <CommunityAlert code={voteError} />}
+
+      {/* Proposal Cards Grid */}
+      <div className="grid grid-cols-1 gap-3">
+        {proposals.length > 0
+          ? proposals.map((prop) => (
+              <ProposalCard
+                key={prop.id}
+                proposal={prop}
+                recipeFormat={recipeFormat}
+                hasVoted={signedIn ? prop.hasVoted : false}
+                voteDisabled={voteStateUnknown}
+                pending={pendingVotes.has(prop.id)}
+                onToggleVote={onToggleVote}
+              />
+            ))
+          : loaded &&
+            !loadError && <p className="meta italic py-4 text-center">{t('noProposals')}</p>}
+      </div>
+    </>
   );
 }
 
@@ -973,14 +1069,7 @@ export function RecipeCommunitySection({
             </div>
           )}
 
-          {/* Comments List */}
-          <div className="flex flex-col gap-3">
-            {commentsLoadError && <CommunityAlert code={commentsLoadError} />}
-            {comments.length > 0
-              ? comments.map((comment) => <CommentCard key={comment.id} comment={comment} />)
-              : commentsLoaded &&
-                !commentsLoadError && <p className="meta italic py-4 text-center">{t('noComments')}</p>}
-          </div>
+          <CommentList comments={comments} loaded={commentsLoaded} loadError={commentsLoadError} />
         </div>
       )}
 
@@ -1383,33 +1472,17 @@ export function RecipeCommunitySection({
             </form>
           )}
 
-          {proposalsLoadError && <CommunityAlert code={proposalsLoadError} />}
-          {voteStateUnknown && (
-            <p role="alert" className={ALERT}>
-              {t('voteStateUnknown')}
-            </p>
-          )}
-          {voteError && <CommunityAlert code={voteError} />}
-
-          {/* Proposal Cards Grid */}
-          <div className="grid grid-cols-1 gap-3">
-            {proposals.length > 0
-              ? proposals.map((prop) => (
-                  <ProposalCard
-                    key={prop.id}
-                    proposal={prop}
-                    recipeFormat={recipeFormat}
-                    hasVoted={user ? prop.hasVoted : false}
-                    voteDisabled={voteStateUnknown}
-                    pending={pendingVotes.has(prop.id)}
-                    onToggleVote={handleToggleVote}
-                  />
-                ))
-              : proposalsLoaded &&
-                !proposalsLoadError && (
-                  <p className="meta italic py-4 text-center">{t('noProposals')}</p>
-                )}
-          </div>
+          <ProposalList
+            proposals={proposals}
+            loaded={proposalsLoaded}
+            loadError={proposalsLoadError}
+            voteStateUnknown={voteStateUnknown}
+            voteError={voteError}
+            pendingVotes={pendingVotes}
+            signedIn={user !== null}
+            recipeFormat={recipeFormat}
+            onToggleVote={handleToggleVote}
+          />
         </div>
       )}
     </section>
