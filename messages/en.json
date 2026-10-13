@@ -860,6 +860,7 @@
     "pickTitle": "Pick an article, or start a new one",
     "pickBody": "Every article is a list of typed blocks — a paragraph, a menu pair, a table, a comparison. There is no free-form body, which is what keeps the contents rail, the checklists and the comparison labels working.",
     "saveDraft": "Save draft",
+    "saveChanges": "Save changes",
     "saving": "Saving…",
     "publish": "Publish",
     "unpublish": "Move back to draft",

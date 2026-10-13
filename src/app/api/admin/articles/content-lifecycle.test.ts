@@ -135,6 +135,14 @@ describe('the editor', () => {
     expect(source).toMatch(/setPreviews\(/);
   });
 
+  it('saves a published article without unpublishing it', () => {
+    /* Both buttons used to send 'draft' on a live article: fixing a typo took
+       the page down for readers and pulled its images out of the public
+       bucket, under a toast that said only "Saved." */
+    expect(source).not.toMatch(/save\('draft'\)/);
+    expect(source).toMatch(/onClick=\{\(\) => void save\(draft\.status\)\}/);
+  });
+
   it('will not upload against an article that has no row yet', () => {
     expect(source).toMatch(/if \(!articleId\)[\s\S]{0,200}saveBeforeUpload/);
     expect(source).toMatch(/canUpload=\{articleId !== null\}/);

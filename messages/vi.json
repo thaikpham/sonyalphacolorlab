@@ -860,6 +860,7 @@
     "pickTitle": "Chọn một bài, hoặc tạo bài mới",
     "pickBody": "Mỗi bài là một chuỗi khối theo loại định sẵn — đoạn văn, cặp menu, bảng, khối so sánh. Không có ô soạn thảo tự do, và chính điều đó giúp mục lục bên phải, checklist và nhãn so sánh hoạt động đúng.",
     "saveDraft": "Lưu nháp",
+    "saveChanges": "Lưu thay đổi",
     "saving": "Đang lưu…",
     "publish": "Đăng bài",
     "unpublish": "Đưa về bản nháp",

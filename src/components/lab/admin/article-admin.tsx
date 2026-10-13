@@ -331,6 +331,7 @@ export function ArticleAdmin() {
    */
   async function save(nextStatus: ArticleStatus) {
     if (!draft) return
+    const wasStatus = draft.status
     setBusy('saving')
     setStatus(null)
 
@@ -403,7 +404,7 @@ export function ArticleAdmin() {
             ? t('savedWithDroppedMeta', { n: data.droppedMeta })
             : creating
             ? t('created')
-            : nextStatus === 'published'
+            : nextStatus === 'published' && wasStatus !== 'published'
               ? t('published')
               : t('saved'),
       })
@@ -544,11 +545,18 @@ export function ArticleAdmin() {
             <div className="surface-raised flex flex-wrap items-center gap-3 px-5 py-4">
               <button
                 type="button"
-                onClick={() => void save('draft')}
+                /* Keeps the article's status: on a live article this saves the
+                   edit and leaves it live. Publishing and unpublishing are the
+                   other button's job alone. */
+                onClick={() => void save(draft.status)}
                 disabled={busy !== '' || !draft.title.trim()}
                 className="btn-glass cursor-pointer disabled:opacity-40"
               >
-                {busy === 'saving' ? t('saving') : t('saveDraft')}
+                {busy === 'saving'
+                  ? t('saving')
+                  : draft.status === 'published'
+                    ? t('saveChanges')
+                    : t('saveDraft')}
               </button>
 
               {draft.id ? (
