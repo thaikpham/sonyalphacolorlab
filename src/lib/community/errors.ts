@@ -29,6 +29,8 @@ export const COMMUNITY_ERRORS = {
   missingFields: 400,
   /** No recipe with that slug. */
   recipeNotFound: 404,
+  /** No proposal with that id — deleted since the list was loaded, or never was. */
+  proposalNotFound: 404,
   /** This recipe already holds the maximum number of community photos. */
   photoLimitReached: 409,
   /** A photo URL that is not an https:// address. */

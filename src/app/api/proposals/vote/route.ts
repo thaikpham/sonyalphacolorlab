@@ -71,7 +71,22 @@ export async function POST(request: Request) {
     const write = existingVote
       ? await db.from('proposal_votes').delete().eq('id', existingVote.id)
       : await db.from('proposal_votes').insert({ proposal_id: proposalId, user_email: userEmail });
-    if (write.error) throw new Error(`${voted ? 'insert' : 'delete'} vote: ${write.error.message}`);
+    if (write.error) {
+      /* Two insert failures are answers, not outages.
+         23503 (foreign_key_violation): the proposal is gone — deleted after
+         the reader's list loaded. A stale id is the caller's 404, and was a
+         500 that sent the client into a refetch it could not explain.
+         23505 (unique_violation): a second request from the same reader read
+         "no vote" before the first one's insert landed. The vote they asked
+         for exists, so the answer is voted, with the recount below. */
+      const code = (write.error as { code?: string }).code;
+      if (voted && code === '23503') {
+        return NextResponse.json(communityErrorBody('proposalNotFound'), { status: 404 });
+      }
+      if (!(voted && code === '23505')) {
+        throw new Error(`${voted ? 'insert' : 'delete'} vote: ${write.error.message}`);
+      }
+    }
 
     /* `vote_count` is recomputed from the votes table, never adjusted by ±1
        against its own previous value.

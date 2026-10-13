@@ -82,7 +82,7 @@ export type ProposalItem = {
   title: string;
   authorName: string;
   authorAvatar: string | null;
-  sampleImageUrl?: string | null;
+  sampleImageUrl: string | null;
   settings: Record<string, unknown>;
   whiteBalance: Record<string, unknown>;
   voteCount: number;

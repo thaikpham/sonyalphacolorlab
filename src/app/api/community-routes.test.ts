@@ -481,6 +481,36 @@ describe('POST /api/proposals/vote', () => {
     expect(db.calls).toHaveLength(0);
   });
 
+  it('answers 404 for a proposal that does not exist, and writes nothing more', async () => {
+    /* 23503 is foreign_key_violation: proposal_votes.proposal_id references a
+       recipe_proposals row that is not there — deleted, or never was. That is
+       the caller's stale id, not a server failure. */
+    db.answer = (call) =>
+      call.table === 'proposal_votes' && call.op === 'insert'
+        ? { data: null, error: { code: '23503', message: 'fk' } }
+        : undefined;
+    const res = await vote.POST(post('/api/proposals/vote', { proposalId: PROPOSAL_ID }));
+    expect(res.status).toBe(404);
+    expect(await res.json()).toEqual({ ok: false, error: 'proposalNotFound' });
+    expect(callsTo('recipe_proposals', 'update')).toHaveLength(0);
+  });
+
+  it('treats a concurrent duplicate insert as already voted, and recounts', async () => {
+    /* Two requests both read "no vote", both insert; the second hits
+       unique(proposal_id, user_email) with 23505. The vote the reader asked
+       for exists, so the answer is voted: true with the real tally. */
+    db.answer = (call) => {
+      if (call.table === 'proposal_votes' && call.op === 'insert') {
+        return { data: null, error: { code: '23505', message: 'dup' } };
+      }
+      return tally(4)(call);
+    };
+    const res = await vote.POST(post('/api/proposals/vote', { proposalId: PROPOSAL_ID }));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ ok: true, voted: true, voteCount: 4 });
+    expect(callsTo('recipe_proposals', 'update')[0].payload).toEqual({ vote_count: 4 });
+  });
+
   it('fails the request rather than guessing when the vote read fails', async () => {
     db.answer = (call, terminal) =>
       terminal === 'maybe' ? { data: null, error: { message: 'x' } } : undefined;

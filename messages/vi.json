@@ -138,6 +138,7 @@
       "rateLimited": "Bạn đang thao tác quá nhanh. Vui lòng thử lại sau giây lát.",
       "missingFields": "Yêu cầu còn thiếu thông tin bắt buộc.",
       "recipeNotFound": "Công thức này không còn tồn tại.",
+      "proposalNotFound": "Đề xuất này không còn tồn tại.",
       "photoLimitReached": "Công thức này đã đạt giới hạn số ảnh cộng đồng.",
       "invalidImageUrl": "URL ảnh không hợp lệ, phải bắt đầu bằng https://",
       "sampleUrlRequired": "Vui lòng nhập URL ảnh mẫu thật.",
