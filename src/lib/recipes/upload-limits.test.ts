@@ -30,6 +30,19 @@ describe('upload limits', () => {
     }
   });
 
+  it('is checked by both editors before sending, and a 413 is read by its status', () => {
+    /* The platform's 413 is plain text: `res.json()` on it throws, and the
+       editor reported "upload failed" for a file that was simply too large. */
+    for (const editor of [
+      'src/components/colorlab/admin/image-panel.tsx',
+      'src/components/lab/admin/article-admin.tsx',
+    ]) {
+      const source = readFileSync(editor, 'utf8');
+      expect(source, editor).toMatch(/file\.size > MAX_UPLOAD_BYTES[\s\S]{0,120}tooLarge/);
+      expect(source, editor).toMatch(/res\.status === 413[\s\S]{0,120}tooLarge[\s\S]*?res\.json\(\)/);
+    }
+  });
+
   it('reads the declared length, so an overrun is refused before buffering', () => {
     const req = (length?: string) =>
       new Request('http://localhost/', {

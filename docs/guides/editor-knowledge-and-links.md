@@ -80,7 +80,7 @@ phạm vi (máy, firmware) và **ngày kiểm tra**.
 
 ## 5. Ảnh
 
-Không đổi so với trước: tải JPEG/PNG/WebP tối đa 8 MB, hệ thống tạo ba cỡ
+Tải JPEG/PNG/WebP tối đa 4 MB, hệ thống tạo ba cỡ
 WebP (320/640/1024) và bỏ siêu dữ liệu gốc. Không hỗ trợ ảnh động. Ảnh nháp
 nằm trong kho riêng tư; chỉ bài đã đăng mới có ảnh công khai.
 
