@@ -610,6 +610,7 @@
     "working": "Working…",
     "photoLive": "ON THE SITE",
     "photoPending": "AWAITING DEPLOY",
+    "previewMissing": "File missing from Storage",
     "altPlaceholder": "Describe the photograph for a screen reader",
     "moveUp": "Move up",
     "moveDown": "Move down",

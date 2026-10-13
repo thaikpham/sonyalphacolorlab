@@ -610,6 +610,7 @@
     "working": "Đang xử lý…",
     "photoLive": "ĐANG TRÊN TRANG",
     "photoPending": "CHỜ DEPLOY",
+    "previewMissing": "Không tìm thấy tệp trong Storage",
     "altPlaceholder": "Mô tả ảnh cho trình đọc màn hình",
     "moveUp": "Đưa lên",
     "moveDown": "Đưa xuống",

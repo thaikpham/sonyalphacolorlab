@@ -13,6 +13,8 @@ const calls = {
   alt: vi.fn(async (..._args: unknown[]) => true),
   remove: vi.fn(async (..._args: unknown[]) => true),
   process: vi.fn(async (..._args: unknown[]) => ({ ok: false, error: 'unsupportedType' })),
+  list: vi.fn(async (..._args: unknown[]): Promise<unknown[]> => []),
+  sign: vi.fn(async (path: string) => `signed:${path}`),
 };
 const env = { devStore: false };
 
@@ -27,9 +29,9 @@ vi.mock('@/lib/auth/admin-gate', () => ({
 vi.mock('@/lib/recipes/image-store', () => ({
   setRecipeImageAlt: (...args: unknown[]) => calls.alt(...args),
   deleteRecipeImage: (...args: unknown[]) => calls.remove(...args),
-  listRecipeImages: async () => [],
+  listRecipeImages: (...args: unknown[]) => calls.list(...args),
   reorderRecipeImages: async () => true,
-  signPreview: async () => '',
+  signPreview: (path: string) => calls.sign(path),
   uploadRecipeImage: async () => ({ ok: false, error: 'uploadFailed' }),
 }));
 vi.mock('@/lib/recipes/admin-store', () => ({
@@ -53,6 +55,8 @@ beforeEach(() => {
   calls.alt.mockClear();
   calls.remove.mockClear();
   calls.process.mockClear();
+  calls.list.mockReset().mockResolvedValue([]);
+  calls.sign.mockReset().mockImplementation(async (path: string) => `signed:${path}`);
 });
 
 describe('one photograph', () => {
@@ -93,5 +97,38 @@ describe('uploading a photograph', () => {
     expect(res.status).toBe(413);
     expect(await res.json()).toEqual({ error: 'tooLarge' });
     expect(calls.process).not.toHaveBeenCalled();
+  });
+});
+
+describe('listing photographs', () => {
+  it('still answers when one pending object cannot be signed', async () => {
+    /* An object removed by hand in Storage leaves its row behind. Failing the
+       whole list on it hid every photograph, including the row the editor
+       needed to delete. */
+    const row = (n: number) => ({
+      id: `${UUID.slice(0, -1)}${n}`,
+      recipeId: 'SCL-PP-001',
+      storagePath: `uploads/SCL-PP-001/${n}.webp`,
+      alt: null,
+      sort: n,
+      width: null,
+      height: null,
+    });
+    calls.list.mockResolvedValue([row(1), row(2)]);
+    calls.sign.mockImplementation(async (path: string) => {
+      if (path.endsWith('/2.webp')) throw new Error('Object not found');
+      return `signed:${path}`;
+    });
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const many = await import('./[id]/images/route');
+    const res = await many.GET(new Request('http://localhost/api'), {
+      params: Promise.resolve({ id: 'SCL-PP-001' }),
+    });
+    spy.mockRestore();
+
+    expect(res.status).toBe(200);
+    const { images } = (await res.json()) as { images: { previewUrl: string | null }[] };
+    expect(images.map((i) => i.previewUrl)).toEqual(['signed:uploads/SCL-PP-001/1.webp', null]);
   });
 });

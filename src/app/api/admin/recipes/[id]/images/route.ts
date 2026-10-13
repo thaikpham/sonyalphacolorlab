@@ -61,6 +61,20 @@ function revalidateOffline() {
  * unprovable. The repetition is the point.
  */
 
+/**
+ * A pending row whose object cannot be signed — removed by hand in Storage,
+ * say — gets `previewUrl: null` rather than failing the list. Failing it hid
+ * every photograph, including the one row the editor needed to delete.
+ */
+async function previewFor(storagePath: string): Promise<string | null> {
+  try {
+    return await signPreview(storagePath);
+  } catch (err) {
+    console.error('[admin/recipes/images] sign failed:', storagePath, err);
+    return null;
+  }
+}
+
 async function withUrls(recipeId: string) {
   const rows = await listRecipeImages(recipeId);
   return Promise.all(
@@ -71,7 +85,7 @@ async function withUrls(recipeId: string) {
          request. Only a pending one costs a signed URL. */
       previewUrl: isVendored(r.storagePath)
         ? publicRecipeImageUrl(r.storagePath)
-        : await signPreview(r.storagePath),
+        : await previewFor(r.storagePath),
     })),
   );
 }
