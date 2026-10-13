@@ -68,6 +68,10 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
   const [query, setQuery] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
+  /* The open draft's version lost to a save made elsewhere (409 staleEdit).
+     The message tells the operator to reopen the product; this is what lets
+     clicking the product that is already open actually reload it. */
+  const [stale, setStale] = useState(false);
   const [busy, setBusy] = useState<'' | 'saving' | 'translating' | 'creating'>('');
   /* `ok` is a save or a create; `note` is the machine-translation caveat,
      which must stay visible while its output is unsaved — that is when it
@@ -203,11 +207,12 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
   };
 
   const select = (p: SonyCamera) => {
-    if (p.id === selectedId && draft) return;
+    if (p.id === selectedId && draft && !stale) return;
     if (!confirmDiscard()) return;
     setSelectedId(p.id);
     setDraft(null);
     setCopiedMd(false);
+    setStale(false);
     void open(p);
   };
 
@@ -287,7 +292,10 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
         project?: string | null;
       };
       if (!res.ok || !data.ok || !data.product) {
-        if (onProduct.current === sent.id) setStatus({ kind: 'err', msg: err(data.error ?? 'saveFailed') });
+        if (onProduct.current === sent.id) {
+          if (data.error === 'staleEdit') setStale(true);
+          setStatus({ kind: 'err', msg: err(data.error ?? 'saveFailed') });
+        }
       } else {
         /* The stored row replaces the local one WHOLE, and the draft is rebuilt
            from it. This used to merge four fields back by hand — name, full

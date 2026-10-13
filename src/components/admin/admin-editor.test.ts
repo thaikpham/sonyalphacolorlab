@@ -37,6 +37,14 @@ describe('a late answer lands on the product it belongs to', () => {
     expect(code).toMatch(/afterSave\(/);
     expect(code).not.toMatch(/asDraft\(stored\)/);
   });
+
+  it('lets a 409 staleEdit be recovered by reopening the same product', () => {
+    /* The message says to reopen the product, but select() returned early for
+       the product already open — the only way out was a page reload. */
+    expect(code).toMatch(/data\.error === 'staleEdit'\) setStale\(true\)/);
+    expect(code).toMatch(/if \(p\.id === selectedId && draft && !stale\) return;/);
+    expect(code).toMatch(/setStale\(false\);\s*void open\(p\)/);
+  });
 });
 
 describe('a save carries only what changed, and the version it changed', () => {
