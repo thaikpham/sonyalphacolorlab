@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { OPEN_PROPOSAL_EVENT, OPEN_TWEAK_EVENT } from '@/lib/community/events';
@@ -203,6 +203,15 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
   const [authorSocial, setAuthorSocial] = useState('');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  /* The form now stays open while its request is in flight, so a second click
+     could send a second POST. A ref for the guard, because two clicks land
+     before a re-render; state for the busy button it draws. */
+  const sharingRef = useRef(false);
+  const [isSharing, setIsSharing] = useState(false);
+  const setSharing = (sharing: boolean) => {
+    sharingRef.current = sharing;
+    setIsSharing(sharing);
+  };
 
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
@@ -292,9 +301,9 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
 
   const handleAddPhoto = async (e: React.FormEvent) => {
     e.preventDefault();
-    /* The route 401s without a session, and the photo is saved to the device
-       before the request goes out — submitting while signed out would leave it
-       looking shared when nothing was. Ask for sign-in first. */
+    if (sharingRef.current) return;
+    /* The route 401s without a session, so a signed-out submit could only be
+       refused a round trip later. Ask for sign-in first. */
     if (!user) {
       openLoginModal();
       return;
@@ -323,6 +332,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
        in the collage looking shared when nothing was. Now a refusal keeps the
        form open, with the reason in it. */
     setErrorMsg(null);
+    setSharing(true);
     try {
       const token = accessToken();
       const res = await fetch('/api/community-photos', {
@@ -350,6 +360,8 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
     } catch {
       setErrorMsg(tCommunity('errors.unknown'));
       return;
+    } finally {
+      setSharing(false);
     }
 
     // Save credit & photo locally, under the same name the server stored, so
@@ -650,7 +662,12 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
             >
               {t('cancel')}
             </button>
-            <button type="submit" className="btn-accent cursor-pointer">
+            <button
+              type="submit"
+              disabled={isSharing}
+              aria-busy={isSharing || undefined}
+              className="btn-accent cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            >
               {t('addToGallery')}
             </button>
           </div>

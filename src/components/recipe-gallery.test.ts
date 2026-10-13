@@ -44,6 +44,18 @@ describe('handleAddPhoto', () => {
     expect(handler).toContain('communityErrorOf(res)');
     expect(handler).toContain('errors.${');
   });
+
+  it('sends one request at a time, now that the form stays open while it is in flight', () => {
+    const guard = handler.indexOf('if (sharingRef.current) return;');
+    expect(guard).toBeGreaterThan(-1);
+    expect(handler.indexOf("fetch('/api/community-photos'")).toBeGreaterThan(guard);
+    expect(handler).toMatch(/finally \{\s*setSharing\(false\)/);
+    expect(source).toMatch(/<button\s+type="submit"[^>]*disabled=\{isSharing\}[^>]*aria-busy=\{isSharing \|\| undefined\}/);
+  });
+
+  it('no longer says the photo is saved before the request goes out', () => {
+    expect(handler.replace(/\s+/g, ' ')).not.toContain('saved to the device before the request');
+  });
 });
 
 describe('the gallery copy', () => {
