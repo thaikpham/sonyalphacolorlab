@@ -24,6 +24,7 @@ import {
   type RefOptions,
 } from './meta-editor'
 import { AREA, FIELD, SELECT } from '@/components/admin-ui/controls'
+import { MAX_UPLOAD_BYTES } from '@/lib/recipes/upload-limits'
 
 /**
  * The Alpha Tech Blogs editor.
@@ -222,6 +223,10 @@ export function ArticleAdmin() {
         setStatus({ kind: 'err', msg: codeMessage('saveBeforeUpload') })
         return null
       }
+      if (file.size > MAX_UPLOAD_BYTES) {
+        setStatus({ kind: 'err', msg: codeMessage('tooLarge') })
+        return null
+      }
       const form = new FormData()
       form.append('file', file)
       form.append('articleId', articleId)
@@ -233,6 +238,13 @@ export function ArticleAdmin() {
           headers: bearer(),
           body: form,
         })
+        /* The platform's own 413 is plain text, so it is read by status:
+           parsing it as JSON would report "upload failed" for a file that is
+           simply too large. */
+        if (res.status === 413) {
+          setStatus({ kind: 'err', msg: codeMessage('tooLarge') })
+          return null
+        }
         const data = (await res.json()) as {
           assetId?: string
           previewUrl?: string

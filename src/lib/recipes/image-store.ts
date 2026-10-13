@@ -9,6 +9,7 @@ import {
   type RecipeImageWidth,
 } from './images';
 import { isRecipeDevStore } from './dev-store';
+import { VENDORED_IMAGES } from './vendored-images';
 import {
   devDeleteImage,
   devListImages,
@@ -32,7 +33,8 @@ import {
  *
  * - A failure after the objects land leaves bytes in a private bucket that
  *   nothing references. They cost storage, never egress, and the compensating
- *   delete below removes them in the ordinary case.
+ *   delete below removes them in the ordinary case. Uploads never overwrite,
+ *   so a leftover is stepped past rather than handed to a new photograph.
  * - A failure the other way round would leave a row pointing at nothing, and
  *   `vendor:images` would then fail the whole deploy on a download that 404s —
  *   turning one bad upload into a blocked release.
@@ -94,50 +96,78 @@ export async function listRecipeImages(recipeId: string): Promise<RecipeImageRec
   return (data as unknown as Row[]).map(toRecord);
 }
 
+/** The two-digit slot baked into a stored path, or NaN for a shape that has none. */
+function slotOf(storagePath: string): number {
+  const stem = recipeImageStem(storagePath);
+  return Number(stem.slice(stem.lastIndexOf('/') + 1));
+}
+
 /**
- * The next free slot, which is not the same as the next display position.
+ * The next slot, which is not the same as the next display position.
  *
  * A slot is baked into the file name and therefore into a CDN-cached URL, so it
- * is allocated once and never reused while the photograph exists. `sort` is
- * what reordering changes.
+ * is allocated once and never reused. "Used" has to include the deployed
+ * manifest as well as the table: deleting a vendored photograph removes its row
+ * but not its file, and an upload that took the freed slot was shown as
+ * already live, previewed the deleted photograph, and was skipped by
+ * `vendor:uploads` because its path was already in the manifest. So it is the
+ * slot after the highest one either source knows about, never a gap.
+ *
+ * `floor` is a slot Storage has just refused — see `uploadRecipeImage`.
  */
-async function nextSlot(recipeId: string): Promise<number> {
-  const used = new Set(
-    (await listRecipeImages(recipeId)).map((i) => {
-      const stem = recipeImageStem(i.storagePath);
-      return Number(stem.slice(stem.lastIndexOf('/') + 1));
-    }),
-  );
-  for (let n = 0; n < MAX_SLOTS; n += 1) if (!used.has(n)) return n;
-  return -1;
+function nextSlot(recipeId: string, rows: readonly RecipeImageRecord[], floor = 0): number {
+  const known = [
+    ...rows.map((r) => r.storagePath),
+    ...VENDORED_IMAGES.filter((i) => i.recipeId === recipeId).map((i) => i.storagePath),
+  ]
+    .map(slotOf)
+    .filter(Number.isInteger);
+  const slot = Math.max(floor, 0, ...known.map((n) => n + 1));
+  return slot < MAX_SLOTS ? slot : -1;
 }
+
+/**
+ * After the last photograph, whatever the gaps.
+ *
+ * Not the row count: a delete never renumbers, so after removing the first of
+ * three the sorts are 1 and 2, the count names one that is taken, and
+ * `unique (recipe_id, sort)` refused every later upload to that recipe.
+ */
+const nextSort = (rows: readonly RecipeImageRecord[]): number =>
+  rows.reduce((m, r) => Math.max(m, r.sort + 1), 0);
+
+/** Storage's answer for a path that already holds an object. */
+const isConflict = (error: { statusCode?: unknown; status?: unknown }) =>
+  String(error.statusCode ?? error.status) === '409';
+
+/**
+ * Two uploads can race for one slot and one sort — two tabs, two editors. Each
+ * loss costs one more read of the list, so a handful of attempts is plenty.
+ */
+const UPLOAD_ATTEMPTS = 5;
+
+type Attempt = ImageUploadResult | { ok: false; error: 'slotTaken' | 'sortTaken' };
 
 export async function uploadRecipeImage(
   recipeId: string,
   image: ProcessedLabImage,
 ): Promise<ImageUploadResult> {
-  const existing = await listRecipeImages(recipeId);
-  const slot = await nextSlot(recipeId);
-  if (slot < 0) return { ok: false, error: 'slotsFull' };
-  const sort = existing.length;
-
-  const paths = image.variants.map((v) => ({
-    path: recipeImagePath(recipeId, slot, v.rung as RecipeImageWidth),
-    bytes: v.bytes,
-  }));
-
   if (isRecipeDevStore()) {
     /* Offline, the bytes go straight to a gitignored folder under `public/`,
        because on a laptop `public/` is writable and is the origin — so an
        upload is live locally at once, with no vendor step and no deploy. That
        is the same affordance `public/lab/` gives the article editor. */
+    const existing = await listRecipeImages(recipeId);
+    const slot = nextSlot(recipeId, existing);
+    if (slot < 0) return { ok: false, error: 'slotsFull' };
+    const paths = variantPaths(recipeId, slot, image);
     for (const p of paths) await devWriteVariant(p.path, p.bytes);
     const record: RecipeImageRecord = {
       id: `dev-${recipeId}-${slot}`,
       recipeId,
       storagePath: paths[paths.length - 1].path,
       alt: null,
-      sort,
+      sort: nextSort(existing),
       width: image.width,
       height: image.height,
     };
@@ -145,23 +175,72 @@ export async function uploadRecipeImage(
     return { ok: true, image: record, previewUrl: `${DEV_IMAGE_URL_PREFIX}${record.storagePath}` };
   }
 
+  let floor = 0;
+  for (let attempt = 0; attempt < UPLOAD_ATTEMPTS; attempt += 1) {
+    const existing = await listRecipeImages(recipeId);
+    const slot = nextSlot(recipeId, existing, floor);
+    if (slot < 0) return { ok: false, error: 'slotsFull' };
+
+    const result = await putOnce(recipeId, slot, nextSort(existing), image);
+    if (result.ok) return result;
+    switch (result.error) {
+      /* Somebody else's objects are in this slot: a concurrent upload that got
+         there first, or the leftovers of a failed one whose cleanup failed
+         too. Either way they are not ours to overwrite, so step past it. */
+      case 'slotTaken':
+        floor = slot + 1;
+        continue;
+      /* A concurrent upload took the sort; our objects are gone, so re-read. */
+      case 'sortTaken':
+        continue;
+      default:
+        return { ok: false, error: result.error };
+    }
+  }
+  console.error('[recipe-images] gave up after repeated collisions:', recipeId);
+  return { ok: false, error: 'uploadFailed' };
+}
+
+function variantPaths(recipeId: string, slot: number, image: ProcessedLabImage) {
+  return image.variants.map((v) => ({
+    path: recipeImagePath(recipeId, slot, v.rung as RecipeImageWidth),
+    bytes: v.bytes,
+  }));
+}
+
+async function putOnce(
+  recipeId: string,
+  slot: number,
+  sort: number,
+  image: ProcessedLabImage,
+): Promise<Attempt> {
+  const paths = variantPaths(recipeId, slot, image);
   const bucket = contentAdmin().storage.from(RECIPE_UPLOAD_BUCKET);
 
-  /* Objects first — see the header. `upsert: true` so a retry after a partial
-     failure overwrites rather than colliding. */
+  /* Objects first — see the header. `upsert: false`, and the compensating
+     delete names only what THIS call wrote: with an overwrite, two uploads
+     racing for a slot wrote over each other, and the loser's cleanup deleted
+     the objects the winner's row pointed at. */
+  const written: string[] = [];
+  const undo = async () => {
+    if (written.length > 0) await bucket.remove(written).catch(() => undefined);
+  };
+
   for (const p of paths) {
     const { error } = await bucket.upload(p.path, p.bytes, {
       contentType: 'image/webp',
-      upsert: true,
+      upsert: false,
       /* A year, and immutable: the slot never changes for a given photograph,
          so a cached variant can never be stale. */
       cacheControl: '31536000',
     });
     if (error) {
-      await bucket.remove(paths.map((x) => x.path)).catch(() => undefined);
+      await undo();
+      if (isConflict(error)) return { ok: false, error: 'slotTaken' };
       console.error('[recipe-images] variant upload failed:', p.path, error.message);
       return { ok: false, error: 'uploadFailed' };
     }
+    written.push(p.path);
   }
 
   /* The 1024 variant is the row's `storage_path`, matching what
@@ -182,7 +261,8 @@ export async function uploadRecipeImage(
     .single();
 
   if (error || !data) {
-    await bucket.remove(paths.map((x) => x.path)).catch(() => undefined);
+    await undo();
+    if (error?.code === '23505') return { ok: false, error: 'sortTaken' };
     /* A foreign-key violation is the recipe having been deleted underneath the
        upload, which is a 404 for the editor rather than a server fault. */
     const missing = error?.code === '23503';
@@ -212,9 +292,20 @@ export async function signPreview(storagePath: string): Promise<string> {
   return data.signedUrl;
 }
 
-export async function setRecipeImageAlt(id: string, alt: string | null): Promise<boolean> {
+/*
+ * Alt text, reordering and deletion all address a photograph THROUGH its
+ * recipe, never by its id alone. The routes take both from the URL; filtering
+ * on the id only made `/recipes/SCL-PP-001/images/<id of another recipe's
+ * photograph>` act on the other recipe and report success.
+ */
+
+export async function setRecipeImageAlt(
+  recipeId: string,
+  id: string,
+  alt: string | null,
+): Promise<boolean> {
   if (isRecipeDevStore()) {
-    const row = devListImages().find((i) => i.id === id);
+    const row = devListImages(recipeId).find((i) => i.id === id);
     if (!row) return false;
     await devUpsertImage({ ...row, alt });
     return true;
@@ -223,6 +314,7 @@ export async function setRecipeImageAlt(id: string, alt: string | null): Promise
     .from('recipe_images')
     .update({ alt })
     .eq('id', id)
+    .eq('recipe_id', recipeId)
     .select('id');
   if (error) throw new Error(error.message);
   return Array.isArray(data) && data.length > 0;
@@ -232,9 +324,16 @@ export async function setRecipeImageAlt(id: string, alt: string | null): Promise
  * Reordering, done as a two-pass shuffle.
  *
  * `unique (recipe_id, sort)` means a straight renumbering collides the moment
- * two rows pass each other. So every row is first moved to a negative sort —
- * which the CHECK constraint on the column forbids for real values and which
- * nothing else can be using — and then moved down to its final position.
+ * two rows pass each other, and `check (sort >= 0)` rules out parking them at
+ * negative values — which is what this used to do, so the first UPDATE of
+ * every reorder failed online. So every row is first moved ABOVE the highest
+ * sort in use, where nothing can be, and then down to its final position.
+ * Neither pass can collide: the parked values are all greater than `max`, and
+ * `max` is at least n-1 because the n current sorts are distinct, so the final
+ * 0..n-1 are always below them.
+ *
+ * Not atomic. A failure part-way leaves some rows parked high, which is still
+ * a valid, ordered list, and the editor's next move renumbers it.
  */
 export async function reorderRecipeImages(recipeId: string, orderedIds: string[]): Promise<boolean> {
   const current = await listRecipeImages(recipeId);
@@ -251,18 +350,18 @@ export async function reorderRecipeImages(recipeId: string, orderedIds: string[]
     return true;
   }
 
+  const park = nextSort(current);
   const db = contentAdmin();
-  for (const [i, id] of orderedIds.entries()) {
+  const setSort = async (id: string, sort: number) => {
     const { error } = await db
       .from('recipe_images')
-      .update({ sort: -(i + 1) })
-      .eq('id', id);
+      .update({ sort })
+      .eq('id', id)
+      .eq('recipe_id', recipeId);
     if (error) throw new Error(error.message);
-  }
-  for (const [i, id] of orderedIds.entries()) {
-    const { error } = await db.from('recipe_images').update({ sort: i }).eq('id', id);
-    if (error) throw new Error(error.message);
-  }
+  };
+  for (const [i, id] of orderedIds.entries()) await setSort(id, park + i);
+  for (const [i, id] of orderedIds.entries()) await setSort(id, i);
   return true;
 }
 
@@ -275,14 +374,18 @@ export async function reorderRecipeImages(recipeId: string, orderedIds: string[]
  * here would leave the working tree disagreeing with the last deploy and
  * nothing to say why.
  */
-export async function deleteRecipeImage(id: string): Promise<boolean> {
-  if (isRecipeDevStore()) return devDeleteImage(id);
+export async function deleteRecipeImage(recipeId: string, id: string): Promise<boolean> {
+  if (isRecipeDevStore()) {
+    if (!devListImages(recipeId).some((i) => i.id === id)) return false;
+    return devDeleteImage(id);
+  }
 
   const db = contentAdmin();
   const { data, error } = await db
     .from('recipe_images')
     .select(ROW_COLUMNS)
     .eq('id', id)
+    .eq('recipe_id', recipeId)
     .maybeSingle();
   if (error) throw new Error(error.message);
   if (!data) return false;
@@ -290,7 +393,11 @@ export async function deleteRecipeImage(id: string): Promise<boolean> {
   const row = toRecord(data as unknown as Row);
   const stem = recipeImageStem(row.storagePath);
 
-  const { error: delError } = await db.from('recipe_images').delete().eq('id', id);
+  const { error: delError } = await db
+    .from('recipe_images')
+    .delete()
+    .eq('id', id)
+    .eq('recipe_id', recipeId);
   if (delError) throw new Error(delError.message);
 
   /* After the row, and best-effort. An object with no row is invisible and
@@ -301,13 +408,4 @@ export async function deleteRecipeImage(id: string): Promise<boolean> {
     .catch(() => undefined);
 
   return true;
-}
-
-/** Exported for the vendor script, which needs the bytes rather than a URL. */
-export async function downloadRecipeVariant(storagePath: string): Promise<Uint8Array> {
-  const { data, error } = await contentAdmin()
-    .storage.from(RECIPE_UPLOAD_BUCKET)
-    .download(storagePath);
-  if (error || !data) throw new Error(error?.message ?? 'downloadFailed');
-  return new Uint8Array(await data.arrayBuffer());
 }

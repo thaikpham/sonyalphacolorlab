@@ -32,7 +32,7 @@ import { LAB_ASSET_WIDTHS, type LabAssetWidth } from './assets';
  */
 
 /**
- * 8 MiB of *compressed* input. Checked before the decoder is handed anything.
+ * 4 MiB of *compressed* input. Checked before the decoder is handed anything.
  *
  * Declared in `lib/recipes/upload-limits.ts` and re-exported here: this module
  * is `server-only` because it imports Sharp, and the recipe editor needs the

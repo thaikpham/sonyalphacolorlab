@@ -1,13 +1,12 @@
 import 'server-only';
 import { contentAdmin } from '@/lib/supabase/server';
 import { recipeSchema, type Recipe } from '../camera/schema';
-import { fromRow, toRow, type RecipeRow } from './row';
+import { fromRow, RECIPE_COLUMNS, toRow, type RecipeRow } from './row';
 import type { RecipeRecord } from './admin-types';
 import {
   devGetRecipe,
   devListRecipes,
   devRecipeIds,
-  devRecipeSlugs,
   devUpsertRecipe,
   isRecipeDevStore,
 } from './dev-store';
@@ -32,10 +31,7 @@ import {
 /* Every column `fromRow` needs, named rather than `*`: a `select('*')` here
    would start shipping any column added later to a screen that does not know
    about it, and silently widen what a write round-trips. */
-const ADMIN_COLUMNS =
-  'id, legacy_id, slug, name, format, wb_mode, wb_kelvin, wb_auto, wb_preset, ' +
-  'wb_shift_ab_axis, wb_shift_ab_amount, wb_shift_gm_axis, wb_shift_gm_amount, ' +
-  'look, settings, tags, published, updated_at';
+const ADMIN_COLUMNS = `${RECIPE_COLUMNS}, updated_at`;
 
 type Row = RecipeRow & { updated_at?: string };
 
@@ -82,7 +78,11 @@ export async function getRecipeRecord(id: string): Promise<RecipeRecord | null> 
     .eq('id', id)
     .maybeSingle();
 
-  if (error || !data) return null;
+  /* A failed read throws, and only an answered one may say "no such recipe".
+     Every caller turns null into a 404, so returning it on error told an
+     editor mid-outage that the recipe they were saving had been deleted. */
+  if (error) throw new Error(error.message);
+  if (!data) return null;
   return toRecord(data as unknown as Row);
 }
 
@@ -171,13 +171,6 @@ export async function uniqueRecipeSlug(name: string, ownId?: string): Promise<st
     if (!(await taken(candidate))) return candidate;
   }
   return `${base}-${Date.now().toString(36)}`;
-}
-
-export async function recipeSlugs(): Promise<string[]> {
-  if (isRecipeDevStore()) return devRecipeSlugs();
-  const { data, error } = await contentAdmin().from('recipes').select('slug');
-  if (error || !Array.isArray(data)) throw new Error(error?.message ?? 'listFailed');
-  return (data as { slug: string }[]).map((r) => r.slug);
 }
 
 // ---------------------------------------------------------------------------

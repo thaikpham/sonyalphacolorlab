@@ -4,7 +4,8 @@ import { adminGate } from '@/lib/auth/admin-gate';
 import { CATALOGUE_TAG, IMMEDIATE } from '@/lib/catalogue-cache';
 import { CONTENT_ADMIN_FROZEN, contentAdminWritesFrozen } from '@/lib/admin/content-freeze';
 import { hasContentConfig } from '@/lib/supabase/server';
-import { processLabImage, MAX_UPLOAD_BYTES } from '@/lib/lab/image-process';
+import { processLabImage } from '@/lib/lab/image-process';
+import { MAX_UPLOAD_BYTES, declaresOversizedBody } from '@/lib/recipes/upload-limits';
 import { RECIPE_ID_RE } from '@/lib/camera/schema';
 import { isRecipeDevStore } from '@/lib/recipes/dev-store';
 import { getRecipeRecord } from '@/lib/recipes/admin-store';
@@ -15,7 +16,7 @@ import {
   uploadRecipeImage,
 } from '@/lib/recipes/image-store';
 import { publicRecipeImageUrl } from '@/lib/recipes/images';
-import imagesSeed from '../../../../../../../data/images.seed.json';
+import { isVendored } from '@/lib/recipes/vendored-images';
 
 /**
  * A recipe's photographs: list them, add one, reorder them.
@@ -49,11 +50,6 @@ function revalidateOffline() {
   if (isRecipeDevStore()) revalidateTag(CATALOGUE_TAG, IMMEDIATE);
 }
 
-/** Paths the deployed site is serving right now. */
-const VENDORED = new Set(
-  (imagesSeed as { storagePath: string }[]).map((i) => i.storagePath),
-);
-
 /*
  * The gate is written out in every handler rather than hidden behind a helper.
  *
@@ -65,17 +61,31 @@ const VENDORED = new Set(
  * unprovable. The repetition is the point.
  */
 
+/**
+ * A pending row whose object cannot be signed — removed by hand in Storage,
+ * say — gets `previewUrl: null` rather than failing the list. Failing it hid
+ * every photograph, including the one row the editor needed to delete.
+ */
+async function previewFor(storagePath: string): Promise<string | null> {
+  try {
+    return await signPreview(storagePath);
+  } catch (err) {
+    console.error('[admin/recipes/images] sign failed:', storagePath, err);
+    return null;
+  }
+}
+
 async function withUrls(recipeId: string) {
   const rows = await listRecipeImages(recipeId);
   return Promise.all(
     rows.map(async (r) => ({
       ...r,
-      live: VENDORED.has(r.storagePath),
+      live: isVendored(r.storagePath),
       /* A vendored photograph is shown from `public/` — no signing, no Storage
          request. Only a pending one costs a signed URL. */
-      previewUrl: VENDORED.has(r.storagePath)
+      previewUrl: isVendored(r.storagePath)
         ? publicRecipeImageUrl(r.storagePath)
-        : await signPreview(r.storagePath),
+        : await previewFor(r.storagePath),
     })),
   );
 }
@@ -108,6 +118,9 @@ export async function POST(request: Request, { params }: Params) {
   }
   const { id } = await params;
   if (!RECIPE_ID_RE.test(id)) return NextResponse.json({ error: 'notFound' }, { status: 404 });
+  if (declaresOversizedBody(request)) {
+    return NextResponse.json({ error: 'tooLarge' }, { status: 413 });
+  }
 
   /* The recipe is confirmed before a multipart body is buffered: an upload for
      a recipe that does not exist would otherwise cost megabytes of parsing to

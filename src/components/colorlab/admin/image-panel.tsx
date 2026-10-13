@@ -38,7 +38,9 @@ type AdminImage = {
   width: number | null;
   height: number | null;
   live: boolean;
-  previewUrl: string;
+  /** Null when the row's object could not be signed — the row stays listed
+      so it can still be deleted. */
+  previewUrl: string | null;
 };
 
 export function ImagePanel({ recipeId }: { recipeId: string }) {
@@ -108,6 +110,12 @@ export function ImagePanel({ recipeId }: { recipeId: string }) {
         headers: bearer(),
         body: form,
       });
+      /* The platform's own 413 is plain text, so it is read by status: parsing
+         it as JSON would report "upload failed" for a file that is too large. */
+      if (res.status === 413) {
+        setNote({ kind: 'err', msg: codeMessage('tooLarge') });
+        return;
+      }
       const data = (await res.json()) as { ok?: boolean; error?: string; pendingVendor?: boolean };
       if (!res.ok) {
         setNote({ kind: 'err', msg: codeMessage(data.error ?? 'uploadFailed', 'uploadFailed') });
@@ -240,12 +248,18 @@ export function ImagePanel({ recipeId }: { recipeId: string }) {
         <ul className="flex flex-col gap-3">
           {images.map((img, i) => (
             <li key={img.id} className="surface-raised flex flex-wrap gap-4 rounded-md p-3">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={img.previewUrl}
-                alt={img.alt ?? ''}
-                className="h-24 w-32 shrink-0 rounded-sm bg-sunken object-cover"
-              />
+              {img.previewUrl ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={img.previewUrl}
+                  alt={img.alt ?? ''}
+                  className="h-24 w-32 shrink-0 rounded-sm bg-sunken object-cover"
+                />
+              ) : (
+                <p className="meta flex h-24 w-32 shrink-0 items-center rounded-sm bg-sunken p-3 text-danger">
+                  {t('previewMissing')}
+                </p>
+              )}
 
               <div className="flex min-w-[14rem] grow flex-col gap-2">
                 <div className="flex items-center gap-2">

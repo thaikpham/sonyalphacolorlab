@@ -26,6 +26,16 @@ function revalidateOffline() {
   if (isRecipeDevStore()) revalidateTag(CATALOGUE_TAG, IMMEDIATE);
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * An id that can name a row. `recipe_images.id` is a uuid, and anything else
+ * made Postgres raise 22P02, which reached the editor as a 502 "could not
+ * save" for what is a 404. The dev store mints `dev-<recipe>-<slot>` instead.
+ */
+const isImageId = (imageId: string) =>
+  isRecipeDevStore() ? imageId.length > 0 : UUID_RE.test(imageId);
+
 /*
  * Written out per handler rather than behind a helper, for the reason its
  * sibling states: `admin-gate.test.ts` asserts the literal shape per route
@@ -43,7 +53,7 @@ export async function PATCH(request: Request, { params }: Params) {
     return NextResponse.json({ error: 'notConfigured' }, { status: 503 });
   }
   const { id, imageId } = await params;
-  if (!RECIPE_ID_RE.test(id) || !imageId) {
+  if (!RECIPE_ID_RE.test(id) || !isImageId(imageId)) {
     return NextResponse.json({ error: 'notFound' }, { status: 404 });
   }
 
@@ -62,7 +72,7 @@ export async function PATCH(request: Request, { params }: Params) {
 
   let done: boolean;
   try {
-    done = await setRecipeImageAlt(imageId, alt);
+    done = await setRecipeImageAlt(id, imageId, alt);
   } catch (err) {
     console.error('[admin/recipes/images] alt failed:', err);
     return NextResponse.json({ error: 'saveFailed' }, { status: 502 });
@@ -84,13 +94,13 @@ export async function DELETE(request: Request, { params }: Params) {
     return NextResponse.json({ error: 'notConfigured' }, { status: 503 });
   }
   const { id, imageId } = await params;
-  if (!RECIPE_ID_RE.test(id) || !imageId) {
+  if (!RECIPE_ID_RE.test(id) || !isImageId(imageId)) {
     return NextResponse.json({ error: 'notFound' }, { status: 404 });
   }
 
   let done: boolean;
   try {
-    done = await deleteRecipeImage(imageId);
+    done = await deleteRecipeImage(id, imageId);
   } catch (err) {
     console.error('[admin/recipes/images] delete failed:', err);
     return NextResponse.json({ error: 'saveFailed' }, { status: 502 });

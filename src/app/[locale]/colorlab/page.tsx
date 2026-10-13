@@ -38,12 +38,15 @@ export default async function ColorLabPage({
   searchParams,
 }: {
   params: Promise<{ locale: Locale }>;
-  searchParams: Promise<{ format?: string; look?: string; tag?: string; q?: string }>;
+  searchParams: Promise<Record<'format' | 'look' | 'tag' | 'q', string | string[] | undefined>>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const sp = await searchParams;
+  /* A repeated parameter (`?q=a&q=b`) arrives as an array; the first wins. */
+  const sp = Object.fromEntries(
+    Object.entries(await searchParams).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]),
+  ) as { format?: string; look?: string; tag?: string; q?: string };
   const format = sp.format === 'pp' || sp.format === 'cl' ? sp.format : undefined;
 
   const [t, tSearch, recipes, tags] = await Promise.all([

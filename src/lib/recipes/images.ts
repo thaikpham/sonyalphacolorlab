@@ -71,12 +71,3 @@ export function recipeImageStem(storagePath: string): string {
 export function publicRecipeImageUrl(storagePath: string): string {
   return `/recipes/${storagePath}`;
 }
-
-/**
- * The widths must round-trip through the loader's suffix rewrite.
- *
- * `catalogue-loader.ts` matches `/recipes/<stem>-<width>.webp` and swaps the
- * width for the rung it wants. A path this module produces that the loader
- * cannot parse would render at whatever width happened to be requested first.
- */
-export const RECIPE_IMAGE_PATH_RE = /^[A-Za-z0-9-]+\/\d{2}-(320|640|1024)\.webp$/;

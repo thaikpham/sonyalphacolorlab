@@ -29,6 +29,18 @@ export type RecipeRow = {
 };
 
 /**
+ * Every `RecipeRow` column, for a `select` that names them.
+ *
+ * Never `*`: the anon role is granted columns, not the table, so one column
+ * added outside that grant turns `select('*')` into "permission denied" for the
+ * whole catalogue — every recipe page down at once.
+ */
+export const RECIPE_COLUMNS =
+  'id, legacy_id, slug, name, format, wb_mode, wb_kelvin, wb_auto, wb_preset, ' +
+  'wb_shift_ab_axis, wb_shift_ab_amount, wb_shift_gm_axis, wb_shift_gm_amount, ' +
+  'look, settings, tags, published';
+
+/**
  * Rebuilds a Recipe from its row, re-validating on the way out.
  *
  * The database is not trusted to be well-formed just because it has CHECK
