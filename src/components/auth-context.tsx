@@ -22,6 +22,7 @@ import { authBrowser, isAuthOutage } from '@/lib/supabase/browser';
 export type UserProfile = {
   name: string;
   email: string;
+  /** The Google photo, or '' when the account has none. */
   avatarUrl: string;
 };
 
@@ -52,10 +53,13 @@ function toProfile(session: Session | null): UserProfile | null {
     (typeof meta.picture === 'string' && meta.picture.trim()) ||
     (typeof meta.avatarUrl === 'string' && meta.avatarUrl.trim()) ||
     '';
+  /* Empty when there is no usable photo, and each surface draws its own
+     fallback from tokens. This used to substitute a generated image from a
+     third-party avatar service, with a raw hex for its colour. */
   const avatarUrl =
     rawAvatar.startsWith('http://') || rawAvatar.startsWith('https://') || rawAvatar.startsWith('//')
       ? rawAvatar
-      : `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0D8ABC&color=fff&bold=true`;
+      : '';
   return { name, email: u.email, avatarUrl };
 }
 

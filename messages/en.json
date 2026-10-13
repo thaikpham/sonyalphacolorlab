@@ -110,7 +110,9 @@
   "community": {
     "title": "Community & tweak proposals",
     "tabComments": "Comments ({count})",
+    "tabCommentsPlain": "Comments",
     "tabProposals": "Proposals & votes ({count})",
+    "tabProposalsPlain": "Proposals & votes",
     "commentPlaceholder": "Write a comment, a shooting tip, or how this recipe felt to use…",
     "commentSubmit": "Post comment",
     "commentSending": "Sending…",
@@ -131,6 +133,7 @@
     "proposalSubmit": "Submit proposal",
     "proposalSending": "Sending…",
     "noProposals": "No tweak proposals yet. Create the first new version.",
+    "voteStateUnknown": "Your votes could not be loaded, so voting is paused. Reload the page to try again.",
     "by": "by {author}",
     "errors": {
       "unauthenticated": "Please sign in to do that.",

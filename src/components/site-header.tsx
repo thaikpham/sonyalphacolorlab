@@ -1141,21 +1141,25 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                        and it is the first line of the menu this opens. */
                     className="h-10 w-10 shrink-0 overflow-hidden rounded-full cursor-pointer bg-[linear-gradient(160deg,var(--color-accent-400),var(--color-accent-600))] shadow-[0_6px_16px_-6px_color-mix(in_oklch,var(--color-accent-500)_60%,transparent),var(--elevation-spec)]"
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element -- user avatar */}
-                    <img
-                      src={user.avatarUrl}
-                      alt=""
-                      referrerPolicy="no-referrer"
-                      /* A dead avatar URL uncovers the accent disc underneath.
-                         It used to swap in a generated one from an external
-                         avatar service, which put a third-party request and a
-                         colour from outside the ramp on the critical path for
-                         a 40px circle. */
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                      className="h-full w-full object-cover"
-                    />
+                    {/* No photo at all is the same as a dead one: the accent
+                        disc. `avatarUrl` is '' for an account without one. */}
+                    {user.avatarUrl && (
+                      /* eslint-disable-next-line @next/next/no-img-element -- user avatar */
+                      <img
+                        src={user.avatarUrl}
+                        alt=""
+                        referrerPolicy="no-referrer"
+                        /* A dead avatar URL uncovers the accent disc underneath.
+                           It used to swap in a generated one from an external
+                           avatar service, which put a third-party request and a
+                           colour from outside the ramp on the critical path for
+                           a 40px circle. */
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                        className="h-full w-full object-cover"
+                      />
+                    )}
                   </button>
 
                   {isProfileOpen && (

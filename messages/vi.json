@@ -110,7 +110,9 @@
   "community": {
     "title": "Cộng đồng & đề xuất tinh chỉnh",
     "tabComments": "Bình luận ({count})",
+    "tabCommentsPlain": "Bình luận",
     "tabProposals": "Đề xuất & bình chọn ({count})",
+    "tabProposalsPlain": "Đề xuất & bình chọn",
     "commentPlaceholder": "Viết bình luận, mẹo chụp hoặc cảm nhận của bạn về công thức này…",
     "commentSubmit": "Gửi bình luận",
     "commentSending": "Đang gửi…",
@@ -131,6 +133,7 @@
     "proposalSubmit": "Gửi đề xuất",
     "proposalSending": "Đang gửi…",
     "noProposals": "Chưa có đề xuất tinh chỉnh nào. Hãy tạo phiên bản mới đầu tiên.",
+    "voteStateUnknown": "Không tải được lượt bình chọn của bạn nên tạm khóa bình chọn. Hãy tải lại trang để thử lại.",
     "by": "của {author}",
     "errors": {
       "unauthenticated": "Bạn cần đăng nhập để thực hiện thao tác này.",
