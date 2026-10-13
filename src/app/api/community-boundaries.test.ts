@@ -65,12 +65,16 @@ describe.each(Object.entries(ROUTES))('%s', (name, path) => {
 describe.each(SLUG_ROUTES)('%s', (name) => {
   const source = sources[name];
 
+  /* Proposals ask for the recipe's format as well, to validate the settings
+     against it; the probe and its failure contract are the same. */
+  const probe = /publishedRecipe(Exists|Format)\(/;
+
   it('confirms the recipe against the content plane', () => {
-    expect(source).toContain('publishedRecipeExists');
+    expect(source).toMatch(probe);
   });
 
   it('confirms it before the control write, not after', () => {
-    const check = source.indexOf('publishedRecipeExists');
+    const check = source.search(probe);
     const insert = source.search(/\.insert\(/);
     expect(check).toBeGreaterThan(-1);
     expect(insert).toBeGreaterThan(-1);
@@ -94,7 +98,7 @@ describe('the vote route', () => {
        and both are on the control plane. A content lookup here would make every
        heart depend on the other project being up, for a constraint Postgres is
        already enforcing. */
-    expect(source).not.toContain('publishedRecipeExists');
+    expect(source).not.toMatch(/publishedRecipe(Exists|Format)/);
   });
 
   it('resolves vote state with the secret client, because the table is all emails', () => {

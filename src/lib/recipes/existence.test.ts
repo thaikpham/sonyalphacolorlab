@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { publishedRecipeExists } from './existence';
+import { publishedRecipeExists, publishedRecipeFormat } from './existence';
 import { ContentUnavailableError } from '@/lib/supabase/errors';
 
 /**
@@ -16,8 +16,12 @@ import { ContentUnavailableError } from '@/lib/supabase/errors';
 
 const query = {
   slug: '' as string,
+  columns: '' as string,
   published: undefined as unknown,
-  result: { data: null as { id: string } | null, error: null as { message: string } | null },
+  result: {
+    data: null as { id: string } | { format: string } | null,
+    error: null as { message: string } | null,
+  },
 };
 
 vi.mock('@/lib/supabase/server', () => ({
@@ -29,7 +33,8 @@ vi.mock('@/lib/supabase/server', () => ({
           /* Never `*`. A published-existence probe has no business reading the
              rest of the row, and a `select('*')` here is how a column added
              later starts travelling on a hot path. */
-          expect(columns).toBe('id');
+          expect(['id', 'format']).toContain(columns);
+          query.columns = columns;
           return builder;
         },
         eq: (column: string, value: unknown) => {
@@ -57,6 +62,7 @@ vi.mock('@/lib/supabase/server', () => ({
 
 beforeEach(() => {
   query.slug = '';
+  query.columns = '';
   query.published = undefined;
   query.result = { data: null, error: null };
 });
@@ -66,6 +72,7 @@ describe('publishedRecipeExists', () => {
     query.result = { data: { id: 'r1' }, error: null };
     await expect(publishedRecipeExists('daylight-cinema')).resolves.toBe(true);
     expect(query.slug).toBe('daylight-cinema');
+    expect(query.columns).toBe('id');
   });
 
   it('is false when no row matches', async () => {
@@ -87,5 +94,31 @@ describe('publishedRecipeExists', () => {
   it('keeps the upstream message out of the thrown error', async () => {
     query.result = { data: null, error: { message: 'relation "recipes" does not exist' } };
     await expect(publishedRecipeExists('x')).rejects.toThrow(/^recipes\.exists$/);
+  });
+});
+
+describe('publishedRecipeFormat', () => {
+  /* The proposals route validates settings against the recipe's own format —
+     a Picture Profile proposal on a Creative Look recipe is Rule 2 broken in a
+     jsonb column — so its existence probe has to say which format it found. */
+  it('names the format of a published recipe, reading only that column', async () => {
+    query.result = { data: { format: 'cl' }, error: null };
+    await expect(publishedRecipeFormat('fl-raoul-rutnam')).resolves.toBe('cl');
+    expect(query.columns).toBe('format');
+    expect(query.published).toBe(true);
+  });
+
+  it('is null when no published row matches', async () => {
+    await expect(publishedRecipeFormat('never-existed')).resolves.toBeNull();
+  });
+
+  it('throws ContentUnavailableError rather than reporting the recipe missing', async () => {
+    query.result = { data: null, error: { message: 'exceed_cached_egress_quota' } };
+    await expect(publishedRecipeFormat('x')).rejects.toBeInstanceOf(ContentUnavailableError);
+  });
+
+  it('refuses a format it does not know instead of passing it on', async () => {
+    query.result = { data: { format: 'raw' }, error: null };
+    await expect(publishedRecipeFormat('x')).rejects.toBeInstanceOf(ContentUnavailableError);
   });
 });

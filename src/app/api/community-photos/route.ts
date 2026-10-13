@@ -4,7 +4,9 @@ import { checkRateLimit } from '@/lib/ai/rate-limit';
 import { hasContentConfig, hasControlConfig, controlAdmin, controlRead } from '@/lib/supabase/server';
 import { publishedRecipeExists } from '@/lib/recipes/existence';
 import { COMMUNITY_ERRORS, communityErrorBody, outageErrorCode } from '@/lib/community/errors';
-import { requireUser, UNAUTHENTICATED } from '@/lib/auth/require-user';
+import { requireUser, UNAUTHENTICATED, type AuthedUser } from '@/lib/auth/require-user';
+import { MAX_PHOTOS_PER_RECIPE, clientKey } from '@/lib/community/gallery';
+import { httpsImageUrlSchema, readJsonBody, recipeSlugSchema } from '@/lib/community/request';
 
 /**
  * Community photo URLs & Author credits.
@@ -13,35 +15,18 @@ import { requireUser, UNAUTHENTICATED } from '@/lib/auth/require-user';
  * slug validation, and author credit persistence.
  */
 
-const MAX_PHOTOS_PER_RECIPE = 40;
-
-const slugSchema = z
-  .string()
-  .min(1)
-  .max(120)
-  .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'Invalid slug');
-
 /* No authorName: the credit is the verified session's name. It used to be
    taken from the payload, so an unauthenticated caller could credit a photo to
    anyone at all — the same hole the comment and vote routes already closed. */
 const postBody = z.object({
-  slug: slugSchema,
-  imageUrl: z
-    .string()
-    .url()
-    .max(2048)
-    .refine((u) => u.startsWith('https://'), { message: 'Image URL must use https://' }),
+  slug: recipeSlugSchema,
+  imageUrl: httpsImageUrlSchema,
   authorSocial: z.string().url().max(2048).optional(),
 });
 
-const clientKey = (req: Request) =>
-  req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-  req.headers.get('x-real-ip') ??
-  'local';
-
 /** GET /api/community-photos?slug=<slug> */
 export async function GET(req: Request) {
-  const parsed = slugSchema.safeParse(new URL(req.url).searchParams.get('slug'));
+  const parsed = recipeSlugSchema.safeParse(new URL(req.url).searchParams.get('slug'));
   if (!parsed.success) {
     return NextResponse.json(communityErrorBody('missingFields'), { status: 400 });
   }
@@ -89,8 +74,22 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   /* This route writes on a reader's behalf, so it needs a verified session.
      It had none: anyone could POST a photo URL onto any recipe, and the rate
-     limit keyed on a spoofable `x-forwarded-for` rather than on a person. */
-  const user = await requireUser(req);
+     limit keyed on a spoofable `x-forwarded-for` rather than on a person.
+
+     Inside a try of its own: `requireUser` throws ControlUnavailableError
+     when the control project cannot answer, and uncaught that escaped as
+     Next's bare 500 with no body, so the gallery showed `errors.unknown`
+     instead of saying the service was down. */
+  let user: AuthedUser | null;
+  try {
+    user = await requireUser(req);
+  } catch (e) {
+    const outage = outageErrorCode(e);
+    if (outage) {
+      return NextResponse.json(communityErrorBody(outage), { status: COMMUNITY_ERRORS[outage] });
+    }
+    throw e;
+  }
   if (!user) return NextResponse.json(UNAUTHENTICATED, { status: 401 });
 
   const limit = checkRateLimit(`photos:${user.email}`);
@@ -101,19 +100,20 @@ export async function POST(req: Request) {
     );
   }
 
-  let body: z.infer<typeof postBody>;
-  try {
-    body = postBody.parse(await req.json());
-  } catch {
-    return NextResponse.json(
-      communityErrorBody('invalidImageUrl'),
-      { status: 400 },
-    );
+  const read = await readJsonBody(req);
+  if (!read.ok) {
+    return NextResponse.json(communityErrorBody(read.error), { status: COMMUNITY_ERRORS[read.error] });
   }
-
-  if (!hasControlConfig()) {
-    return NextResponse.json({ ok: true, saved: false, source: 'offline' });
+  /* Blame the field that is wrong. Every failure used to answer
+     invalidImageUrl, so a reader whose social link was a bare `https://` was
+     told their (valid) image URL was not. */
+  const parsed = postBody.safeParse(read.body);
+  if (!parsed.success) {
+    return parsed.error.issues[0]?.path[0] === 'imageUrl'
+      ? NextResponse.json(communityErrorBody('invalidImageUrl'), { status: 400 })
+      : NextResponse.json(communityErrorBody('missingFields'), { status: 400 });
   }
+  const body = parsed.data;
 
   /* One row from the content project, not the whole slug list. `listSlugs()`
      read every recipe on every photo submission, which after the split would
@@ -155,8 +155,7 @@ export async function POST(req: Request) {
         image_url: body.imageUrl,
         author_name: user.name,
         author_social: body.authorSocial || null,
-        // Coarse origin marker, deliberately still the IP: this table has no
-        // column-level grant, so an email here would be readable by anon.
+        // Coarse origin marker, deliberately never an address — see clientKey.
         submitted_by: clientKey(req),
       })
       .select('id')
