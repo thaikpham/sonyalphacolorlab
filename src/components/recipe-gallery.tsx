@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { OPEN_PROPOSAL_EVENT, OPEN_TWEAK_EVENT } from '@/lib/community/events';
-import { isCommunityErrorCode } from '@/lib/community/errors';
+import { communityErrorOf } from '@/lib/community/errors';
 import { useAuth } from '@/components/auth-context';
 import catalogueImageLoader from '@/lib/images/catalogue-loader';
 import {
@@ -286,7 +286,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
     setErrorMsg(null);
     const trimmed = val.trim();
     setPreviewUrl(
-      trimmed.startsWith('http://') || trimmed.startsWith('https://') ? trimmed : null,
+      trimmed.startsWith('https://') ? trimmed : null,
     );
   };
 
@@ -306,7 +306,9 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
       setErrorMsg(t('errUrlRequired'));
       return;
     }
-    if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+    // https only, like the route: it refuses http://, and the page could not
+    // load a mixed-content image anyway.
+    if (!cleanUrl.startsWith('https://')) {
       setErrorMsg(t('errUrlScheme'));
       return;
     }
@@ -315,20 +317,12 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
       return;
     }
 
-    // Save credit & photo locally, under the same name the server will store,
-    // so the credit does not change when the page is reloaded from Supabase.
-    setLocalPhotos(slug, [...new Set([cleanUrl, ...localPhotos])]);
-    setLocalCredit(slug, {
-      url: cleanUrl,
-      authorName: user.name,
-      authorSocial: cleanSocial || undefined,
-    });
-
-    setInputUrl('');
-    setAuthorSocial('');
-    setPreviewUrl(null);
-    setIsFormOpen(false);
-
+    /* The request first, and nothing local until it succeeds. This used to
+       save the photo and close the form before asking, so a refusal set its
+       error inside a form that was no longer on screen, and the photo stayed
+       in the collage looking shared when nothing was. Now a refusal keeps the
+       form open, with the reason in it. */
+    setErrorMsg(null);
     try {
       const token = accessToken();
       const res = await fetch('/api/community-photos', {
@@ -348,13 +342,30 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
            directly is what put a Vietnamese string in front of English readers
            on every rate-limited share. Anything unrecognised falls back rather
            than reaching the screen raw. */
-        const data = await res.json().catch(() => null);
-        const code = isCommunityErrorCode(data?.error) ? data.error : 'unknown';
+        const code = await communityErrorOf(res);
         setErrorMsg(tCommunity(`errors.${code}`));
+        if (res.status === 401) openLoginModal();
+        return;
       }
     } catch {
-      setErrorMsg(t('errShareFailed'));
+      setErrorMsg(tCommunity('errors.unknown'));
+      return;
     }
+
+    // Save credit & photo locally, under the same name the server stored, so
+    // it shows now and the credit does not change when the page is reloaded
+    // from Supabase.
+    setLocalPhotos(slug, [...new Set([cleanUrl, ...localPhotos])]);
+    setLocalCredit(slug, {
+      url: cleanUrl,
+      authorName: user.name,
+      authorSocial: cleanSocial || undefined,
+    });
+
+    setInputUrl('');
+    setAuthorSocial('');
+    setPreviewUrl(null);
+    setIsFormOpen(false);
   };
 
   const handleDeleteUserPhoto = (photoToDelete: string) => {
