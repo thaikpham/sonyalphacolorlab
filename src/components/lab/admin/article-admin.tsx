@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { useAdminSession } from '@/components/admin-ui/session'
 import { LEVELS, TOPICS } from '@/lib/lab/articles'
+import { ARCHETYPES } from '@/lib/lab/parse'
 import type {
   Archetype,
   Article,
@@ -57,16 +58,6 @@ import { MAX_UPLOAD_BYTES } from '@/lib/recipes/upload-limits'
  * What lands on the draft, and when, is `article-draft.ts` — pure, so the
  * rules can run in a test with no DOM.
  */
-
-const ARCHETYPES: readonly Archetype[] = [
-  'setup-guide',
-  'versus',
-  'technique',
-  'explainer',
-  'fix',
-  'gear',
-  'recipe',
-]
 
 const KINDS: readonly ArticleKind[] = ['article', 'knowledge']
 

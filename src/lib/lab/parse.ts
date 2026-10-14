@@ -43,15 +43,22 @@ import { parseAssetId } from './assets'
 
 const TOPIC_IDS = new Set<string>(TOPICS.map((t) => t.id))
 const LEVEL_IDS = new Set<string>(LEVELS.map((l) => l.id))
-const ARCHETYPES = new Set<string>([
-  'setup-guide',
-  'versus',
-  'technique',
-  'explainer',
-  'fix',
-  'gear',
-  'recipe',
-])
+/* A `Record` so that an archetype added to the `Archetype` union and not here
+   fails to compile. The `Set<string>` this replaces accepted the gap, and every
+   save of the new archetype would have answered 400. */
+const ARCHETYPE_KEYS: Record<Archetype, true> = {
+  'setup-guide': true,
+  versus: true,
+  technique: true,
+  explainer: true,
+  fix: true,
+  gear: true,
+  recipe: true,
+}
+
+/** Every archetype, in the order the editor offers them — the one list. */
+export const ARCHETYPES = Object.keys(ARCHETYPE_KEYS) as readonly Archetype[]
+const ARCHETYPE_IDS: ReadonlySet<string> = new Set(ARCHETYPES)
 
 /** Long enough for the longest authored paragraph, short enough that a paste
     of an entire web page cannot become a single block. */
@@ -314,7 +321,7 @@ export function parseLevel(raw: unknown): LevelId | null {
 }
 
 export function parseArchetype(raw: unknown): Archetype | null {
-  return typeof raw === 'string' && ARCHETYPES.has(raw) ? (raw as Archetype) : null
+  return typeof raw === 'string' && ARCHETYPE_IDS.has(raw) ? (raw as Archetype) : null
 }
 
 export function parseStatus(raw: unknown): ArticleStatus {

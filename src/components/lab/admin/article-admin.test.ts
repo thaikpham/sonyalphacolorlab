@@ -140,6 +140,26 @@ describe('copy', () => {
   })
 })
 
+describe('one list of archetypes and link kinds', () => {
+  it('offers exactly what the parser accepts, from the parser’s own list', async () => {
+    /* Declared three times, a new archetype could compile, be offered, and
+       answer every save 400 — or be accepted and never offered. */
+    const { ARCHETYPES, parseArchetype } = await import('@/lib/lab/parse')
+    const { REF_KINDS } = await import('@/lib/lab/meta')
+    for (const a of ARCHETYPES) expect(parseArchetype(a)).toBe(a)
+
+    const meta = readFileSync('src/components/lab/admin/meta-editor.tsx', 'utf8')
+    expect(code).not.toMatch(/const ARCHETYPES/)
+    expect(meta).not.toMatch(/const REF_KINDS/)
+    expect(code).toMatch(/import \{[^}]*\bARCHETYPES\b[^}]*\} from '@\/lib\/lab\/parse'/)
+    expect(meta).toMatch(/import \{[^}]*\bREF_KINDS\b[^}]*\} from '@\/lib\/lab\/meta'/)
+
+    const labels = JSON.parse(readFileSync('messages/en.json', 'utf8')).labAdmin
+    expect(Object.keys(labels.archetypes).sort()).toEqual([...ARCHETYPES].sort())
+    expect(Object.keys(labels.relatedKinds).sort()).toEqual([...REF_KINDS].sort())
+  })
+})
+
 describe('leaving', () => {
   it('asks before a client-side navigation, which beforeunload never sees', () => {
     expect(code).toMatch(/window\.addEventListener\('click', guard, true\)/)

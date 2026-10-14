@@ -41,7 +41,17 @@ export const KNOWLEDGE_SECTIONS: readonly KnowledgeSection[] = [
   'workflows',
 ] as const
 
-const REF_KINDS: readonly ContentRefKind[] = ['recipe', 'product', 'article', 'knowledge']
+/* A `Record` so a kind added to `ContentRefKind` and not here fails to compile
+   — a plain array accepted the gap. */
+const REF_KIND_KEYS: Record<ContentRefKind, true> = {
+  recipe: true,
+  product: true,
+  article: true,
+  knowledge: true,
+}
+
+/** Every link kind, in the order the editor offers them — the one list. */
+export const REF_KINDS = Object.keys(REF_KIND_KEYS) as readonly ContentRefKind[]
 
 export const EMPTY_META: ArticleMeta = {
   related: [],

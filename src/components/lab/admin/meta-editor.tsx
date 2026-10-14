@@ -4,7 +4,7 @@ import { useId } from 'react'
 import { useTranslations } from 'next-intl'
 import { FIELD_SM, SELECT } from '@/components/admin-ui/controls'
 import { CONCEPTS, CONCEPT_GROUP_LABELS, type ConceptGroup } from '@/lib/content/concepts'
-import { KNOWLEDGE_SECTIONS } from '@/lib/lab/meta'
+import { KNOWLEDGE_SECTIONS, REF_KINDS } from '@/lib/lab/meta'
 import type { ArticleKind, ArticleMeta, ContentRef, ContentRefKind } from '@/lib/lab/types'
 
 /**
@@ -45,8 +45,6 @@ export type RefOptions = {
   products: { id: string; name: string; code: string }[]
   pages: { id: string; title: string; kind: ArticleKind }[]
 }
-
-const REF_KINDS: readonly ContentRefKind[] = ['recipe', 'product', 'article', 'knowledge']
 
 const blankSource = (): SourceDraft => ({
   url: '',
