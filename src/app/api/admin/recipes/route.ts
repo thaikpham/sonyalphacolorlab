@@ -68,6 +68,10 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ error: 'badRequest' }, { status: 400 });
   }
+  /* Valid JSON is not necessarily an object: `null` threw at `body.format`. */
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return NextResponse.json({ error: 'badRequest' }, { status: 400 });
+  }
 
   const format = body.format === 'cl' ? 'cl' : body.format === 'pp' ? 'pp' : null;
   if (!format) return NextResponse.json({ error: 'formatRequired' }, { status: 400 });
@@ -95,7 +99,9 @@ export async function POST(request: Request) {
      can see — and the slug is fixed at creation, because the control plane's
      community rows reference it as a plain string across a project boundary
      no foreign key spans. */
-  const write = normaliseRecipe(id, { ...body, slug, published: false });
+  /* `name` is the trimmed, capped value checked above. Spreading `body` alone
+     validated that and stored the raw one — a 5,000-character name in full. */
+  const write = normaliseRecipe(id, { ...body, name, slug, published: false });
   if (!write.ok) {
     return NextResponse.json({ error: 'invalidRecipe', issues: write.issues }, { status: 400 });
   }

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useAdminSession } from '@/components/admin-ui/session';
 import { FIELD_SM } from '@/components/admin-ui/controls';
-import { MAX_UPLOAD_BYTES } from '@/lib/recipes/upload-limits';
+import { MAX_ALT_CHARS, MAX_UPLOAD_BYTES } from '@/lib/recipes/upload-limits';
 
 /**
  * A recipe's photographs.
@@ -277,6 +277,7 @@ export function ImagePanel({ recipeId }: { recipeId: string }) {
                 <input
                   className={FIELD_SM}
                   defaultValue={img.alt ?? ''}
+                  maxLength={MAX_ALT_CHARS}
                   placeholder={t('altPlaceholder')}
                   /* Saved on blur rather than per keystroke: alt text is a
                      sentence, and one request per character is a request per

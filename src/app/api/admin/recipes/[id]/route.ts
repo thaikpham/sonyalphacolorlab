@@ -72,6 +72,10 @@ export async function PATCH(request: Request, { params }: Params) {
   } catch {
     return NextResponse.json({ error: 'badRequest' }, { status: 400 });
   }
+  /* Valid JSON is not necessarily an object. */
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return NextResponse.json({ error: 'badRequest' }, { status: 400 });
+  }
 
   /* The slug is read back from the stored row rather than taken from the body.
      `updateRecipeRecord` drops the column from its patch as well — two layers
@@ -87,7 +91,12 @@ export async function PATCH(request: Request, { params }: Params) {
   }
   if (!existing) return NextResponse.json({ error: 'notFound' }, { status: 404 });
 
-  const write = normaliseRecipe(id, { ...body, slug: existing.recipe.slug });
+  /* Trimmed and capped exactly as a create is. `recipeSchema` asks only for
+     `min(1)` and the table only for `length(name) > 0`, so a single space
+     saved a recipe card with a blank title; trimmed first, it fails `min(1)`
+     and the editor is told which field. */
+  const name = typeof body.name === 'string' ? body.name.trim().slice(0, 200) : body.name;
+  const write = normaliseRecipe(id, { ...body, name, slug: existing.recipe.slug });
   if (!write.ok) {
     return NextResponse.json({ error: 'invalidRecipe', issues: write.issues }, { status: 400 });
   }

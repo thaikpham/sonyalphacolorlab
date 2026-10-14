@@ -7,6 +7,7 @@ import { hasContentConfig } from '@/lib/supabase/server';
 import { RECIPE_ID_RE } from '@/lib/camera/schema';
 import { isRecipeDevStore } from '@/lib/recipes/dev-store';
 import { deleteRecipeImage, setRecipeImageAlt } from '@/lib/recipes/image-store';
+import { MAX_ALT_CHARS } from '@/lib/recipes/upload-limits';
 
 /**
  * One photograph: its alt text, or its removal.
@@ -63,11 +64,15 @@ export async function PATCH(request: Request, { params }: Params) {
   } catch {
     return NextResponse.json({ error: 'badRequest' }, { status: 400 });
   }
+  /* Valid JSON is not necessarily an object: `null` threw at `body.alt`. */
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return NextResponse.json({ error: 'badRequest' }, { status: 400 });
+  }
 
   /* Trimmed to nothing means "no alt text", which is a null column rather than
      an empty string — the renderer distinguishes a decorative image from one
      whose description somebody forgot. */
-  const raw = typeof body.alt === 'string' ? body.alt.trim().slice(0, 300) : '';
+  const raw = typeof body.alt === 'string' ? body.alt.trim().slice(0, MAX_ALT_CHARS) : '';
   const alt = raw === '' ? null : raw;
 
   let done: boolean;
