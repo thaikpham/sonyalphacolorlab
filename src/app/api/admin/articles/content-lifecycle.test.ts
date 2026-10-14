@@ -117,15 +117,15 @@ describe('the upload route', () => {
 describe('the editor', () => {
   const source = readFileSync('src/components/lab/admin/article-admin.tsx', 'utf8');
 
-  it('reloads the record when the parser dropped a block', () => {
+  it('rebuilds the draft from the stored row the save answered with', () => {
     /* A dropped block is gone from the row the moment the save returns, but it
-       is still on screen — and `dirty` is false, so nothing prompts the editor
-       to reconcile them. Left alone they keep editing blocks that no longer
-       exist, and the next save drops them again. */
-    expect(source).toMatch(/if \(data\.dropped[^)]*\)[\s\S]{0,400}openArticle\(savedId\)/);
-    /* The same holds for metadata the parser refused: a source row that did
-       not save must not stay on screen looking saved. */
-    expect(source).toMatch(/if \(data\.dropped \|\| data\.droppedMeta\)/);
+       used to stay on screen — and `dirty` was false, so nothing prompted the
+       editor to reconcile them. The same held for refused metadata and for
+       text the parser cut. The answer now carries what was stored, and the
+       draft is rebuilt from it (`afterSave`, executed in article-draft.test). */
+    expect(source).toMatch(/setDraft\(\(d\) => afterSave\(d, sent, stored\)\)/);
+    expect(source).toMatch(/data\.dropped\s*\?\s*t\('savedWithDropped'/);
+    expect(source).toMatch(/t\('savedWithDroppedMeta'/);
   });
 
   it('never persists a signed preview into a block', () => {
@@ -146,8 +146,10 @@ describe('the editor', () => {
   it('names the version it opened on every save', () => {
     /* Without it the route's 409 never fires: a second tab's save silently
        reverted the first, and both said "Saved". */
-    expect(source).toMatch(/expectedUpdatedAt: draft\.version/);
-    expect(source).toMatch(/version: a\.updatedAt/);
+    const draft = readFileSync('src/components/lab/admin/article-draft.ts', 'utf8');
+    expect(source).toMatch(/savePayload\(sent, nextStatus\)/);
+    expect(draft).toMatch(/expectedUpdatedAt: d\.version/);
+    expect(draft).toMatch(/version: a\.updatedAt/);
   });
 
   it('will not upload against an article that has no row yet', () => {
