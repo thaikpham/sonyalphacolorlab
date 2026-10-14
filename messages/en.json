@@ -582,7 +582,7 @@
     "tagsHint": "Comma-separated. Lower case and hyphens only — anything else is converted automatically.",
     "slugFixed": "Fixed URL",
     "publishedLabel": "Published",
-    "publishedHint": "Unticking this takes it off the site immediately.",
+    "publishedHint": "Unticking this takes it off the site when you save.",
     "save": "Save",
     "saving": "Saving…",
     "savedState": "Saved",

@@ -9,6 +9,14 @@ import type { ClSettings, PpSettings, Recipe } from '@/lib/camera/schema';
 import { PpFields, ClFields } from './settings-fields';
 import { WhiteBalanceFields } from './wb-fields';
 import { ImagePanel } from './image-panel';
+import {
+  afterSave,
+  committed,
+  isDirty,
+  opened,
+  type Editing,
+  type RecipeRecord,
+} from './recipe-draft';
 
 /**
  * The ColorLab recipe editor.
@@ -33,8 +41,6 @@ import { ImagePanel } from './image-panel';
  * components — Rule 1, and the server re-validates all of it through
  * `recipeSchema` anyway, because a form is a convenience and never a check.
  */
-
-type RecipeRecord = { recipe: Recipe; legacyId: string | null; updatedAt: string };
 
 const DEFAULT_PP: PpSettings = {
   blackLevel: 0,
@@ -73,8 +79,12 @@ export function RecipeAdmin() {
   const { authed } = useAdminSession();
 
   const [records, setRecords] = useState<RecipeRecord[]>([]);
-  const [draft, setDraft] = useState<Recipe | null>(null);
-  const [dirty, setDirty] = useState(false);
+  /* The open recipe as stored, the form over it, and the Tags box as typed —
+     one value, so an answer that arrives late is applied to all three at once
+     (`afterSave`). */
+  const [editing, setEditing] = useState<Editing | null>(null);
+  const draft = editing?.draft ?? null;
+  const dirty = isDirty(editing);
   const [busy, setBusy] = useState<'' | 'saving' | 'creating' | 'unpublishing'>('');
   const [status, setStatus] = useState<{ kind: 'ok' | 'err'; msg: string } | null>(null);
   const [issues, setIssues] = useState<readonly string[]>([]);
@@ -147,16 +157,15 @@ export function RecipeAdmin() {
 
   const open = (record: RecipeRecord) => {
     if (dirty && !window.confirm(t('discardConfirm'))) return;
-    setDraft(record.recipe);
-    setDirty(false);
+    setEditing(opened(record));
     setIssues([]);
     setStatus(null);
   };
 
-  const edit = (next: Recipe) => {
-    setDraft(next);
-    setDirty(true);
-  };
+  /* Only onto the recipe the edit was made on: a field's change built from
+     the previous render must not land on a draft that has since been replaced. */
+  const edit = (next: Recipe) =>
+    setEditing((cur) => (cur && cur.stored.recipe.id === next.id ? { ...cur, draft: next } : cur));
 
   const create = async () => {
     const name = newName.trim();
@@ -164,6 +173,9 @@ export function RecipeAdmin() {
       setStatus({ kind: 'err', msg: codeMessage('nameRequired') });
       return;
     }
+    /* Creating opens the new recipe, which replaces the draft — the same loss
+       `open()` asks about, and it used to happen without a word. */
+    if (isDirty(editing) && !window.confirm(t('discardConfirm'))) return;
     setBusy('creating');
     try {
       const res = await fetch('/api/admin/recipes', {
@@ -188,8 +200,8 @@ export function RecipeAdmin() {
         setRecords(rows);
         const made = rows.find((r) => r.recipe.id === data.id);
         if (made) {
-          setDraft(made.recipe);
-          setDirty(false);
+          setEditing(opened(made));
+          setIssues([]);
         }
       }
       setStatus({ kind: 'ok', msg: t('created', { id: data.id }) });
@@ -201,14 +213,18 @@ export function RecipeAdmin() {
   };
 
   const save = async () => {
-    if (!draft) return;
+    if (!editing) return;
+    /* What was sent, kept to tell an untouched draft from one edited while
+       the request was out — see `afterSave()`. */
+    const sent = editing;
+    const body = committed(sent);
     setBusy('saving');
     setIssues([]);
     try {
-      const res = await fetch(`/api/admin/recipes/${draft.id}`, {
+      const res = await fetch(`/api/admin/recipes/${body.id}`, {
         method: 'PATCH',
         headers: authed(),
-        body: JSON.stringify(draft),
+        body: JSON.stringify(body),
       });
       const data = (await res.json()) as {
         ok?: boolean;
@@ -225,8 +241,10 @@ export function RecipeAdmin() {
         setStatus({ kind: 'err', msg: codeMessage(data.error ?? 'saveFailed', 'saveFailed') });
         return;
       }
-      if (data.recipe) setDraft(data.recipe.recipe);
-      setDirty(false);
+      const fresh: RecipeRecord = data.recipe?.recipe
+        ? { ...sent.stored, ...data.recipe }
+        : { ...sent.stored, recipe: body };
+      setEditing((cur) => afterSave(cur, sent, fresh));
       await reload();
       setStatus({ kind: 'ok', msg: t('saved') });
     } catch {
@@ -237,10 +255,15 @@ export function RecipeAdmin() {
   };
 
   const unpublish = async () => {
-    if (!draft || !window.confirm(t('unpublishConfirm'))) return;
+    if (!editing) return;
+    /* The route unpublishes the stored row, so unsaved edits do not survive
+       it — and resetting `dirty` afterwards used to show them as "Saved". */
+    if (isDirty(editing) && !window.confirm(t('discardConfirm'))) return;
+    if (!window.confirm(t('unpublishConfirm'))) return;
+    const id = editing.stored.recipe.id;
     setBusy('unpublishing');
     try {
-      const res = await fetch(`/api/admin/recipes/${draft.id}`, {
+      const res = await fetch(`/api/admin/recipes/${id}`, {
         method: 'DELETE',
         headers: authed(),
       });
@@ -249,8 +272,11 @@ export function RecipeAdmin() {
         setStatus({ kind: 'err', msg: codeMessage(data.error ?? 'saveFailed', 'saveFailed') });
         return;
       }
-      setDraft({ ...draft, published: false });
-      setDirty(false);
+      setEditing((cur) =>
+        cur && cur.stored.recipe.id === id
+          ? opened({ ...cur.stored, recipe: { ...cur.stored.recipe, published: false } })
+          : cur,
+      );
       await reload();
       setStatus({ kind: 'ok', msg: t('unpublished') });
     } catch {
@@ -334,7 +360,25 @@ export function RecipeAdmin() {
       </aside>
 
       <section className="flex grow basis-[32rem] flex-col gap-6">
-        {!draft ? (
+        {/* Above the branch, so a failure says so whether or not a recipe is
+            open: a list that failed to load read as "0 recipes". */}
+        {status ? (
+          <p className={`text-body-sm ${status.kind === 'err' ? 'text-danger' : 'text-ink'}`}>
+            {status.msg}
+          </p>
+        ) : null}
+
+        {issues.length ? (
+          <ul className="surface-sunken flex flex-col gap-1 p-4 rounded-sm">
+            {issues.map((i) => (
+              <li key={i} className="text-body-sm text-danger">
+                {i}
+              </li>
+            ))}
+          </ul>
+        ) : null}
+
+        {!editing || !draft ? (
           <div className="surface-raised p-8 rounded-md flex flex-col gap-3">
             <h2 className="text-title-2 font-extrabold tracking-[-0.02em] text-ink">
               {t('pickTitle')}
@@ -362,7 +406,7 @@ export function RecipeAdmin() {
                 >
                   {busy === 'saving' ? t('saving') : dirty ? t('save') : t('savedState')}
                 </button>
-                {draft.published ? (
+                {editing.stored.recipe.published ? (
                   <button
                     type="button"
                     onClick={unpublish}
@@ -374,22 +418,6 @@ export function RecipeAdmin() {
                 ) : null}
               </div>
             </header>
-
-            {status ? (
-              <p className={`text-body-sm ${status.kind === 'err' ? 'text-danger' : 'text-ink'}`}>
-                {status.msg}
-              </p>
-            ) : null}
-
-            {issues.length ? (
-              <ul className="surface-sunken flex flex-col gap-1 p-4 rounded-sm">
-                {issues.map((i) => (
-                  <li key={i} className="text-body-sm text-danger">
-                    {i}
-                  </li>
-                ))}
-              </ul>
-            ) : null}
 
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="flex flex-col gap-1.5">
@@ -404,24 +432,18 @@ export function RecipeAdmin() {
                 <span className="label text-ink-muted">{t('tags')}</span>
                 <input
                   className={FIELD}
-                  value={draft.tags.join(', ')}
-                  /* Split and normalised on the way in, so the schema's
-                     `^[a-z0-9-]+$` is met by construction rather than by the
-                     editor remembering the rule. */
-                  onChange={(e) =>
-                    edit({
-                      ...draft,
-                      tags: e.target.value
-                        .split(',')
-                        .map((s) =>
-                          s
-                            .trim()
-                            .toLowerCase()
-                            .replace(/[^a-z0-9-]+/g, '-')
-                            .replace(/^-+|-+$/g, ''),
-                        )
-                        .filter(Boolean),
-                    })
+                  value={editing.tagText ?? draft.tags.join(', ')}
+                  /* Kept as typed and normalised on blur (and by the save),
+                     so the schema's `^[a-z0-9-]+$` is met by construction
+                     without eating the comma the editor just typed. */
+                  onChange={(e) => {
+                    const text = e.target.value;
+                    setEditing((cur) => (cur ? { ...cur, tagText: text } : cur));
+                  }}
+                  onBlur={() =>
+                    setEditing((cur) =>
+                      cur && cur.tagText !== null ? { ...cur, draft: committed(cur), tagText: null } : cur,
+                    )
                   }
                   placeholder={t('tagsPlaceholder')}
                 />

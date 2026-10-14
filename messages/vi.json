@@ -582,7 +582,7 @@
     "tagsHint": "Phân cách bằng dấu phẩy. Chỉ dùng chữ thường và dấu gạch nối — ký tự khác sẽ được tự động chuyển đổi.",
     "slugFixed": "URL cố định",
     "publishedLabel": "Đã đăng",
-    "publishedHint": "Bỏ chọn ô này sẽ gỡ công thức khỏi trang ngay lập tức.",
+    "publishedHint": "Bỏ chọn ô này sẽ gỡ công thức khỏi trang khi bạn lưu.",
     "save": "Lưu",
     "saving": "Đang lưu…",
     "savedState": "Đã lưu",
