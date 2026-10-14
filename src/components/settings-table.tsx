@@ -151,7 +151,8 @@ export function ParamRow({
 export function ParamBlock({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="surface p-5">
-      <h2 className="label mb-2">{title}</h2>
+      {/* h3: on the recipe page these sit under the "Camera settings" h2. */}
+      <h3 className="label mb-2">{title}</h3>
       <div className={`flex flex-col ${ROW_STRIPES}`}>{children}</div>
     </section>
   );

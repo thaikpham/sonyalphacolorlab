@@ -1,4 +1,4 @@
-import { createElement } from 'react';
+import { createElement, type ComponentProps } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { NextIntlClientProvider } from 'next-intl';
 import { describe, expect, it } from 'vitest';
@@ -17,10 +17,17 @@ import { WbTable } from './wb-table';
  * `src/**\/*.test.ts`.
  */
 
+/* The provider's props type requires `children`; the real child is passed
+   positionally, which is what createElement renders. */
+const INTL: ComponentProps<typeof NextIntlClientProvider> = {
+  locale: 'en',
+  messages: en,
+  timeZone: 'Asia/Ho_Chi_Minh',
+  children: null,
+};
+
 const render = (wb: WhiteBalance) =>
-  renderToStaticMarkup(
-    createElement(NextIntlClientProvider, { locale: 'en', messages: en }, createElement(WbTable, { wb })),
-  );
+  renderToStaticMarkup(createElement(NextIntlClientProvider, INTL, createElement(WbTable, { wb })));
 
 /* The first ParamRow label in the table: a `<span>` whose class starts with
    the row's text size. */

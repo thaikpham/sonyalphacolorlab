@@ -32,7 +32,7 @@ export function FormattedWb({ wb, className = '' }: { wb: WhiteBalance; classNam
   const gm = wb.shift?.gm;
 
   return (
-    <span className={`inline-flex items-center gap-1 font-bold tabular-nums ${className}`}>
+    <span className={`inline-flex flex-wrap items-center gap-1 font-bold tabular-nums ${className}`}>
       <span style={{ color: kelvinColor }}>{kelvinStr}</span>
       {wb.shift && <span className="font-normal text-ink-faint">, </span>}
       {ab && (

@@ -574,7 +574,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
              next section. */
           className="surface p-5 sm:p-6 mt-6 mb-0 animate-fade-in flex flex-col gap-4"
         >
-          <h4 className="text-body-lg font-semibold text-ink">{t('formTitle')}</h4>
+          <h2 className="text-body-lg font-semibold text-ink">{t('formTitle')}</h2>
 
           {/* 1. Image URL (Required) */}
           <div>

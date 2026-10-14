@@ -106,23 +106,30 @@ export default async function RecipePage({
               <rect x="1.5" y="9" width="5.5" height="5.5" rx="1.2" />
               <rect x="9" y="9" width="5.5" height="5.5" rx="1.2" />
             </svg>
-            <span className="uppercase tracking-wider">{t('back')}</span>
+            {/* Not uppercase: vi is four words, and uppercase is capped at
+                three because Vietnamese diacritics need the ascender room. */}
+            <span>{t('back')}</span>
           </Link>
         </nav>
 
         {/* Full-Bleed 2-Column Grid (Header + Collage Gallery on Left vs WB + Parameters on Right) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-          {/* Left Column (Lg 7/12): Header Info + Photographic Collage Gallery */}
-          <div className="lg:col-span-7 flex flex-col gap-8">
+        {/* Half and half at lg, 7/5 from xl. At 1024px a 5/12 column with
+            gap-12 is about 342px inside its card, and ParamRow's fixed 9rem +
+            8.5rem tracks left its effect text about 6px — rule 4's collapse. */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 xl:gap-12 items-start">
+          {/* Left Column: Header Info + Photographic Collage Gallery */}
+          <div className="lg:col-span-6 xl:col-span-7 flex flex-col gap-8">
             {/* Recipe Header & Description */}
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <span className="chip label text-ink">
                   {recipe.id}
                 </span>
+                {/* The code is uppercase on the camera; the Look's name is not,
+                    and in `.label` "BW (Black & White)" ran to four words. */}
                 {look && (
                   <span className="chip label bg-accent-900 text-accent-200">
-                    CL: {look.code} ({look.label})
+                    CL: {look.code} <span className="normal-case">({look.label})</span>
                   </span>
                 )}
                 {recipe.format === 'pp' && (
@@ -180,8 +187,8 @@ export default async function RecipePage({
             />
           </div>
 
-          {/* Right Column (Lg 5/12): White Balance (Top) + Exact Camera Settings Tables */}
-          <div className="lg:col-span-5 lg:sticky lg:top-24 flex flex-col gap-6">
+          {/* Right Column: White Balance (Top) + Exact Camera Settings Tables */}
+          <div className="lg:col-span-6 xl:col-span-5 lg:sticky lg:top-24 flex flex-col gap-6">
             {/* White Balance Core Engine (Top of Parameters Column) */}
             {/* p-5 matches ParamBlock deliberately. This card and the parameter
                 tables stack in one column, so a different padding put every WB
@@ -189,18 +196,16 @@ export default async function RecipePage({
                 left edge down the whole column instead. */}
             <section className="surface p-5">
               <div className="flex flex-col gap-4">
-                <div>
-                  <span className="label">{t('wbEngineLabel')}</span>
-                  <h2 className="text-title-3 font-semibold text-ink mt-0.5">
-                    White Balance Shift
-                  </h2>
-                </div>
+                <h2 className="text-title-3 font-semibold text-ink">White Balance Shift</h2>
 
                 {/* The readout sits beside the plane rather than above it: the
-                    plane is only 16rem wide and left a dead half-column here. */}
-                <div className="grid gap-4 sm:grid-cols-[16rem_1fr] sm:items-center sm:gap-6">
+                    plane is only 16rem wide and left a dead half-column here.
+                    Except while this column is narrow — lg up to 2xl — where the
+                    `1fr` beside 16rem was about 62px for a ~190px readout and
+                    the page scrolled sideways. */}
+                <div className="grid gap-4 sm:grid-cols-[16rem_1fr] lg:grid-cols-1 2xl:grid-cols-[16rem_1fr] sm:items-center sm:gap-6">
                   <WbShiftPlane recipes={[recipe]} />
-                  <div>
+                  <div className="min-w-0">
                     <FormattedWb wb={recipe.whiteBalance} className="text-title-2 font-extrabold" />
                   </div>
                 </div>
@@ -213,7 +218,9 @@ export default async function RecipePage({
 
             {/* Camera Parameters Setup Table */}
             <div>
-              <h3 className="label mb-3">{t('paramsLabel')}</h3>
+              {/* An h2 over the tables' h3s; it was an h3 above their h2s. Not
+                  `.label`: vi "Cài đặt máy ảnh" is four words. */}
+              <h2 className="mb-3 text-label font-semibold text-ink-faint">{t('paramsLabel')}</h2>
               {recipe.format === 'pp' ? (
                 <PpTable s={recipe.settings} locale={locale} />
               ) : (

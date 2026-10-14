@@ -68,7 +68,6 @@
     "next": "Next photo",
     "nextTitle": "Next photo (→ key)",
     "goTo": "Go to photo {index}",
-    "wbEngineLabel": "White balance",
     "paramsLabel": "Camera settings",
     "photoAlt": "{title} — photo {index}",
     "previewAlt": "Preview of the photo you are adding",
