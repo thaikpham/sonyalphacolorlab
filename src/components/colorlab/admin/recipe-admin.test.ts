@@ -133,3 +133,41 @@ describe('unsaved work is never dropped without asking', () => {
     expect(code).not.toMatch(/\.replace\(\/\[\^a-z0-9-\]\+\/g/);
   });
 });
+
+describe('the design rules, on this screen', () => {
+  const files = ['recipe-admin.tsx', 'fields.tsx', 'image-panel.tsx', 'wb-fields.tsx', 'settings-fields.tsx'].map(
+    (f) => [f, readFileSync(`src/components/colorlab/admin/${f}`, 'utf8')] as const,
+  );
+
+  it('has one h1, as every other admin screen does', () => {
+    /* The shell renders a wordmark link and no heading, so the recipe name's
+       h2 was the top of the page and axe's page-has-heading-one failed. */
+    expect(code.match(/<h1\b/g)).toHaveLength(1);
+    expect(code).toMatch(/<h1 className="sr-only">\{tUi\('metaRecipes'\)\}<\/h1>/);
+  });
+
+  it('sets no code element in the browser’s monospace (one family)', () => {
+    /* Tailwind's preflight gives <code> the default mono stack, and nothing
+       in the theme resets it. */
+    for (const [f, src] of files) {
+      for (const tag of src.match(/<code\b[^>]*>/g) ?? []) expect(tag, f).toMatch(/font-sans/);
+    }
+  });
+
+  it('tracks body-size headings at 0', () => {
+    for (const [f, src] of files) expect(src, f).not.toMatch(/tracking-\[-0\.01em\]/);
+  });
+
+  it('gives the format toggles and the checkbox labels a 44px target', () => {
+    const toggle = code.match(/onClick=\{\(\) => setNewFormat\(f\)\}\s*className=\{`([^`]*)`/);
+    expect(toggle?.[1]).toMatch(/min-h-\[var\(--layout-touch-target\)\]/);
+    let labels = 0;
+    for (const [f, src] of files) {
+      for (const label of src.match(/<label className="[^"]*">\s*<input\s+type="checkbox"/g) ?? []) {
+        labels += 1;
+        expect(label, f).toMatch(/min-h-\[var\(--layout-touch-target\)\]/);
+      }
+    }
+    expect(labels).toBe(3);
+  });
+});

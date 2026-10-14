@@ -76,6 +76,7 @@ const DEFAULT_CL: ClSettings = {
 
 export function RecipeAdmin() {
   const t = useTranslations('recipeAdmin');
+  const tUi = useTranslations('adminUi');
   const { authed } = useAdminSession();
 
   const [records, setRecords] = useState<RecipeRecord[]>([]);
@@ -313,6 +314,9 @@ export function RecipeAdmin() {
 
   return (
     <main className="mx-auto flex w-full max-w-[110rem] flex-wrap items-start gap-y-8 gap-x-[clamp(2rem,3vw,3.5rem)] inset-safe pb-24 pt-8">
+      {/* The shell's wordmark is a link, not a heading; the product and
+          article editors carry their own h1 for the same reason. */}
+      <h1 className="sr-only">{tUi('metaRecipes')}</h1>
       <aside className="flex grow basis-[clamp(16rem,20vw,22rem)] flex-col gap-4 self-start lg:sticky lg:top-6 lg:grow-0">
         <div className="flex flex-col gap-2 surface-raised p-4 rounded-md">
           <span className="label text-ink-muted">{t('newRecipe')}</span>
@@ -328,7 +332,7 @@ export function RecipeAdmin() {
                 key={f}
                 type="button"
                 onClick={() => setNewFormat(f)}
-                className={`flex-1 px-3 py-2 rounded-sm text-body-sm font-semibold cursor-pointer ${
+                className={`flex-1 min-h-[var(--layout-touch-target)] px-3 py-2 rounded-sm text-body-sm font-semibold cursor-pointer ${
                   newFormat === f ? 'surface-selected text-ink' : 'text-ink-muted hover:text-ink'
                 }`}
               >
@@ -419,7 +423,7 @@ export function RecipeAdmin() {
                   {draft.name}
                 </h2>
                 <span className="meta">
-                  {t('slugFixed')}: <code>/{draft.slug}</code>
+                  {t('slugFixed')}: <code className="font-sans">/{draft.slug}</code>
                 </span>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -476,7 +480,7 @@ export function RecipeAdmin() {
               </label>
             </div>
 
-            <label className="flex items-center gap-3">
+            <label className="flex min-h-[var(--layout-touch-target)] items-center gap-3">
               <input
                 type="checkbox"
                 checked={draft.published}

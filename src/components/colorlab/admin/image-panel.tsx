@@ -207,7 +207,7 @@ export function ImagePanel({ recipeId }: { recipeId: string }) {
   return (
     <section className="flex flex-col gap-4">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h3 className="text-body-sm font-extrabold tracking-[-0.01em] text-ink">{t('photos')}</h3>
+        <h3 className="text-body-sm font-extrabold text-ink">{t('photos')}</h3>
         <span className="meta">{t('photosHint')}</span>
       </div>
 
@@ -232,7 +232,7 @@ export function ImagePanel({ recipeId }: { recipeId: string }) {
            stands between them and the site. */
         <p className="surface-sunken rounded-sm p-3 text-body-sm text-ink">
           {t('pendingBanner', { n: pending })}
-          <code className="ml-2 text-accent-400">npm run vendor:uploads -- --target content</code>
+          <code className="ml-2 font-sans text-accent-400">npm run vendor:uploads -- --target content</code>
         </p>
       ) : null}
 

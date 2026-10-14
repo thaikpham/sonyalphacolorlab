@@ -147,7 +147,7 @@ export function EnumSelect<T extends string>({
 export function Group({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="flex flex-col gap-3">
-      <h3 className="text-body-sm font-extrabold tracking-[-0.01em] text-ink">{title}</h3>
+      <h3 className="text-body-sm font-extrabold text-ink">{title}</h3>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{children}</div>
     </section>
   );
