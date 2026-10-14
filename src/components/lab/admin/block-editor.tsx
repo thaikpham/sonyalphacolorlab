@@ -483,7 +483,7 @@ export function BlockFields({
               nothing at all until both halves exist, so a comparison with one
               image looks to the editor like a block that vanished. */}
           {!block.beforeAssetId || !block.afterAssetId ? (
-            <p className="meta text-community">{t('compareNeedsBoth')}</p>
+            <p className="meta text-ink-muted">{t('compareNeedsBoth')}</p>
           ) : null}
           <Labelled label={t('compareCaption')}>
             <input
@@ -640,7 +640,7 @@ function EmbedFields({
           </span>
         </p>
       ) : (
-        <p className="meta text-community">{t('embedNeedsId')}</p>
+        <p className="meta text-ink-muted">{t('embedNeedsId')}</p>
       )}
 
       <Labelled label={t('embedCaption')} hint={t('embedCaptionHint')}>

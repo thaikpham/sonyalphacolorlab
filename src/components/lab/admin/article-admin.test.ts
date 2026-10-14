@@ -112,6 +112,34 @@ describe('blocks', () => {
   })
 })
 
+describe('design', () => {
+  it('borrows no signal colour for an editor notice', () => {
+    /* Signals classify content and nothing else (CLAUDE.md). `community` tinted
+       "needs both images" and "needs a video id", which are neither. */
+    for (const file of ['article-admin.tsx', 'block-editor.tsx', 'meta-editor.tsx']) {
+      const src = readFileSync(`src/components/lab/admin/${file}`, 'utf8')
+      expect(src, file).not.toMatch(/(text|bg)-(community|proposal|ai)\b/)
+    }
+  })
+})
+
+describe('copy', () => {
+  const messages = {
+    en: JSON.parse(readFileSync('messages/en.json', 'utf8')).labAdmin,
+    vi: JSON.parse(readFileSync('messages/vi.json', 'utf8')).labAdmin,
+  }
+
+  it('names the panel a refused metadata entry came from, not only its links and sources', () => {
+    /* parseMeta also refuses an author name with an "@", a bad review date, a
+       section, an order and entries past its caps — and the message used to
+       send the editor checking links that were fine. */
+    for (const locale of ['en', 'vi'] as const) {
+      const m = messages[locale]
+      expect(m.savedWithDroppedMeta, locale).toContain(m.metaHeading)
+    }
+  })
+})
+
 describe('leaving', () => {
   it('asks before a client-side navigation, which beforeunload never sees', () => {
     expect(code).toMatch(/window\.addEventListener\('click', guard, true\)/)

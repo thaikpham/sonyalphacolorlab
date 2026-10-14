@@ -1054,7 +1054,7 @@
     "sourceScope": "Scope (body, firmware)",
     "addSource": "Add source",
     "removeSource": "Remove source",
-    "savedWithDroppedMeta": "Saved. {n, plural, one {# link or source was} other {# links or sources were}} invalid and not stored.",
+    "savedWithDroppedMeta": "Saved. {n, plural, one {# entry in Links and sources was} other {# entries in Links and sources were}} invalid and not stored.",
     "unknownRefs": "Not found:",
     "refsUnavailable": "Could not load the ID suggestions."
   },

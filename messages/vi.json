@@ -1054,7 +1054,7 @@
     "sourceScope": "Phạm vi (máy, firmware)",
     "addSource": "Thêm nguồn",
     "removeSource": "Bỏ nguồn",
-    "savedWithDroppedMeta": "Đã lưu. {n, plural, other {# liên kết hoặc nguồn}} không hợp lệ nên không được lưu.",
+    "savedWithDroppedMeta": "Đã lưu. {n, plural, other {# mục trong phần Liên kết và nguồn}} không hợp lệ nên không được lưu.",
     "unknownRefs": "Không tìm thấy mã:",
     "refsUnavailable": "Không tải được danh sách mã để gợi ý."
   },
