@@ -65,6 +65,10 @@ const pathFor = (kind: ArticleKind, id: string) =>
 
 type Draft = {
   id: string | null
+  /** The row's `updated_at` when it was opened or last saved, named on save
+      as `expectedUpdatedAt`. A row saved elsewhere since answers 409
+      `staleEdit` instead of being reverted. Empty until the row exists. */
+  version: string
   status: ArticleStatus
   kind: ArticleKind
   topic: Article['topic']
@@ -79,6 +83,7 @@ type Draft = {
 
 const asDraft = (a: ArticleRecord): Draft => ({
   id: a.id,
+  version: a.updatedAt,
   status: a.status,
   kind: a.kind,
   topic: a.topic,
@@ -93,6 +98,7 @@ const asDraft = (a: ArticleRecord): Draft => ({
 
 const blankDraft = (): Draft => ({
   id: null,
+  version: '',
   status: 'draft',
   kind: 'article',
   topic: 'setup',
@@ -346,6 +352,7 @@ export function ArticleAdmin() {
       blocks: draft.blocks,
       meta: toMetaPayload(draft.meta, draft.kind),
       status: nextStatus,
+      expectedUpdatedAt: draft.version,
     })
 
     try {
@@ -361,6 +368,7 @@ export function ArticleAdmin() {
         unknownRefs?: ContentRef[]
         dropped?: number
         droppedMeta?: number
+        updatedAt?: string
         error?: string
       }
 
@@ -368,12 +376,21 @@ export function ArticleAdmin() {
       if (data.unknownRefs) setUnknownRefs(data.unknownRefs)
 
       if (!res.ok) {
+        /* An asset failure after the row was written still names the new
+           version; keeping the old one would refuse the next save as stale. */
+        const version = data.updatedAt
+        if (version) setDraft((d) => (d && d.id === draft.id ? { ...d, version } : d))
         setStatus({ kind: 'err', msg: codeMessage(data.error ?? 'saveFailed') })
         return
       }
 
       const savedId = data.id ?? draft.id
-      setDraft({ ...draft, id: savedId, status: creating ? 'draft' : nextStatus })
+      setDraft({
+        ...draft,
+        id: savedId,
+        version: data.updatedAt ?? draft.version,
+        status: creating ? 'draft' : nextStatus,
+      })
       setDirty(false)
       await loadList()
 

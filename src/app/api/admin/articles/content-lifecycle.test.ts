@@ -143,6 +143,13 @@ describe('the editor', () => {
     expect(source).toMatch(/onClick=\{\(\) => void save\(draft\.status\)\}/);
   });
 
+  it('names the version it opened on every save', () => {
+    /* Without it the route's 409 never fires: a second tab's save silently
+       reverted the first, and both said "Saved". */
+    expect(source).toMatch(/expectedUpdatedAt: draft\.version/);
+    expect(source).toMatch(/version: a\.updatedAt/);
+  });
+
   it('will not upload against an article that has no row yet', () => {
     expect(source).toMatch(/if \(!articleId\)[\s\S]{0,200}saveBeforeUpload/);
     expect(source).toMatch(/canUpload=\{articleId !== null\}/);

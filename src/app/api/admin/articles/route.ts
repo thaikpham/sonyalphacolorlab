@@ -87,8 +87,9 @@ export async function POST(request: Request) {
      see — `validateArticleShape` refuses an eight-block minimum on a body that
      has just been created empty, and rejecting the create for it would mean an
      editor could not start writing at all. */
+  let updatedAt: string
   try {
-    await insertArticleRecord(write.article, 'draft', gate.admin.email)
+    updatedAt = await insertArticleRecord(write.article, 'draft', gate.admin.email)
   } catch {
     return NextResponse.json({ error: 'saveFailed' }, { status: 502 })
   }
@@ -103,6 +104,10 @@ export async function POST(request: Request) {
   return NextResponse.json({
     ok: true,
     id,
+    /* The stored row and its version, as PATCH answers them: the editor
+       rebuilds from this, and names `updatedAt` on its first save. */
+    article: { ...write.article, status: 'draft' },
+    updatedAt,
     dropped: write.dropped,
     droppedMeta: write.droppedMeta,
     /* Reported on create too, even though a new article always fails them.

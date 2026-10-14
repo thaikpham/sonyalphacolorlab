@@ -7,6 +7,7 @@ import { IMMEDIATE, LAB_TAG } from '@/lib/lab/data'
 import { isDevStore } from '@/lib/lab/dev-store'
 import {
   ArticleMissingError,
+  StaleEditError,
   deleteArticleRecord,
   getArticleRecord,
   normaliseWrite,
@@ -105,16 +106,42 @@ export async function PATCH(request: Request, { params }: Ctx) {
   } catch {
     return NextResponse.json({ error: 'badRequest' }, { status: 400 })
   }
+  /* Valid JSON is not necessarily an object: `null` threw at the first field. */
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return NextResponse.json({ error: 'badRequest' }, { status: 400 })
+  }
+
+  /* The version the editor opened the row at, from `GET` above or the previous
+     save's answer. Required: without it the second of two saves silently
+     reverted the first, and both editors were told "Saved". */
+  const expected = body.expectedUpdatedAt
+  if (typeof expected !== 'string') {
+    return NextResponse.json({ error: 'badRequest' }, { status: 400 })
+  }
+
+  /* Named before `normaliseWrite`, which answers `null` for a blank title and
+     a bad topic alike — and `badRequest` tells the editor to check the topic,
+     level and archetype of an article whose only fault is an empty title. */
+  if (typeof body.title !== 'string' || !body.title.trim()) {
+    return NextResponse.json({ error: 'titleRequired' }, { status: 400 })
+  }
 
   const write = normaliseWrite(id, body)
   if (!write) return NextResponse.json({ error: 'badRequest' }, { status: 400 })
 
+  /* A lookup that fails falls through — the update below is what reports a
+     missing row, and its version filter is what refuses a stale one. */
+  const existing = await getArticleRecord(id).catch(() => null)
+
+  /* Already behind: refuse before anything is copied or written. */
+  if (existing && existing.updatedAt !== expected) {
+    return NextResponse.json({ error: 'staleEdit' }, { status: 409 })
+  }
+
   /* A published page keeps its kind. Changing it moves the page between
      `/blog/<id>` and `/learn/<id>`, which breaks every link already shared;
      the editor unpublishes first, which is a deliberate act with a visible
-     consequence. A lookup that fails falls through — the update below is what
-     reports a missing row. */
-  const existing = await getArticleRecord(id).catch(() => null)
+     consequence. */
   if (existing && existing.status === 'published' && existing.kind !== write.article.kind) {
     return NextResponse.json({ error: 'kindLocked' }, { status: 409 })
   }
@@ -160,9 +187,14 @@ export async function PATCH(request: Request, { params }: Ctx) {
     }
   }
 
+  let updatedAt: string
   try {
-    await updateArticleRecord(write.article, write.status, gate.admin.email)
+    updatedAt = await updateArticleRecord(write.article, write.status, gate.admin.email, expected)
   } catch (err) {
+    /* Saved elsewhere between the read above and this write. */
+    if (err instanceof StaleEditError) {
+      return NextResponse.json({ error: 'staleEdit' }, { status: 409 })
+    }
     /* The row is gone — deleted in another tab, or by someone else. That is a
        404, not a 502: nothing failed, there is simply nothing to save into,
        and reporting it as a write failure would have the editor retry forever. */
@@ -174,6 +206,14 @@ export async function PATCH(request: Request, { params }: Ctx) {
 
   revalidateTag(LAB_TAG, IMMEDIATE)
 
+  /* What was stored and the version it was stored at. The parser trims, cuts
+     and skips without counting it as a drop — a TL;DR line past 140
+     characters, a table row with no first cell — so the editor rebuilds its
+     screen from this rather than trusting the draft it sent. Sent with the
+     asset failure below too: the row is written by then, and an editor left
+     holding the old version would have their next save refused as stale. */
+  const stored = { article: { ...write.article, status: write.status }, updatedAt }
+
   /* Unpublishing is the mirror: the article goes private and the cache is
      cleared first, and only then do the public objects come out. Removing them
      first would leave a *published* page with broken images, which is worse
@@ -183,12 +223,13 @@ export async function PATCH(request: Request, { params }: Ctx) {
   if (write.status !== 'published') {
     const synced = await settled(reconcileArticleAssets(id, write.article.blocks, 'draft'))
     if (!synced.ok) {
-      return NextResponse.json({ error: synced.error, problems }, { status: 502 })
+      return NextResponse.json({ error: synced.error, problems, ...stored }, { status: 502 })
     }
   }
 
   return NextResponse.json({
     ok: true,
+    ...stored,
     problems,
     unknownRefs: unknownRefs ?? [],
     dropped: write.dropped,
