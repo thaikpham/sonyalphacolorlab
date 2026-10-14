@@ -1,5 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
-import { getRecipeRecord, normaliseRecipe, slugifyRecipe } from './admin-store';
+import {
+  getRecipeRecord,
+  normaliseRecipe,
+  slugifyRecipe,
+  unpublishRecipe,
+  updateRecipeRecord,
+} from './admin-store';
 import recipesSeed from '../../../data/recipes.seed.json';
 import { recipeSchema } from '../camera/schema';
 
@@ -22,11 +28,31 @@ const answer = {
   },
 };
 
+/** What the writes asked for, as PostgREST would receive it. */
+const log = {
+  update: null as Record<string, unknown> | null,
+  filters: [] as string[],
+  reads: 0,
+  /** What an update `.select()` answers: the rows it matched. */
+  written: [] as Record<string, unknown>[],
+};
+
 vi.mock('@/lib/supabase/server', () => {
   const builder = {
     select: () => builder,
-    eq: () => builder,
-    maybeSingle: async () => answer.result,
+    update: (payload: Record<string, unknown>) => {
+      log.update = payload;
+      return builder;
+    },
+    eq: (column: string, value: unknown) => {
+      log.filters.push(`${column}=${String(value)}`);
+      return builder;
+    },
+    maybeSingle: async () => {
+      log.reads += 1;
+      return answer.result;
+    },
+    then: (resolve: (v: unknown) => void) => resolve({ data: log.written, error: null }),
   };
   return {
     contentAdmin: () => ({ from: () => builder }),
@@ -140,6 +166,47 @@ describe('getRecipeRecord', () => {
   it('still answers null for a recipe that is not there', async () => {
     answer.result = { data: null, error: null };
     await expect(getRecipeRecord('SCL-PP-999')).resolves.toBeNull();
+  });
+});
+
+describe('the writes', () => {
+  const recipe = (recipesSeed as unknown as Parameters<typeof updateRecipeRecord>[0][])[0];
+  const V1 = '2026-10-01T09:00:00.123456+00:00';
+  const V2 = '2026-10-02T10:30:00.654321+00:00';
+  const reset = () => {
+    log.update = null;
+    log.filters = [];
+    log.reads = 0;
+    log.written = [];
+  };
+
+  it('saves only over the version the editor opened, and answers the new one', async () => {
+    reset();
+    log.written = [{ id: recipe.id, updated_at: V2 }];
+    await expect(updateRecipeRecord(recipe, V1)).resolves.toBe(V2);
+    expect(log.filters).toEqual([`id=${recipe.id}`, `updated_at=${V1}`]);
+    expect(log.update).not.toHaveProperty('slug');
+    expect(log.update).toHaveProperty('updated_at');
+  });
+
+  it('answers null when the version filter matched nothing', async () => {
+    reset();
+    await expect(updateRecipeRecord(recipe, V1)).resolves.toBeNull();
+  });
+
+  it('unpublishes by id without reading the row, so a row that fails the schema can go offline', async () => {
+    /* It went through `getRecipeRecord`, which drops a row `fromRow` cannot
+       parse: DELETE answered 404 for a row that exists, and the one screen
+       that could take it off the site could not. */
+    reset();
+    log.written = [{ id: 'SCL-PP-010', updated_at: V2 }];
+    await expect(unpublishRecipe('SCL-PP-010')).resolves.toBe(V2);
+    expect(log.reads).toBe(0);
+    expect(log.update).toMatchObject({ published: false });
+    expect(log.filters).toEqual(['id=SCL-PP-010']);
+
+    reset();
+    await expect(unpublishRecipe('SCL-PP-999')).resolves.toBeNull();
   });
 });
 

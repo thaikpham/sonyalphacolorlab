@@ -211,21 +211,40 @@ export async function insertRecipeRecord(recipe: Recipe): Promise<void> {
   if (error) throw new Error(error.message);
 }
 
+/** The version an update `.select()` answers with, or null for no row. */
+function versionOf(data: unknown): string | null {
+  const row = Array.isArray(data) ? (data[0] as { updated_at?: unknown } | undefined) : undefined;
+  if (!row) return null;
+  return typeof row.updated_at === 'string' ? row.updated_at : '';
+}
+
 /**
- * Updates everything except the slug and the legacy id.
+ * Updates everything except the slug and the legacy id — and only over the
+ * version the editor opened.
  *
  * The slug is immutable after creation and the content baseline says why: the
  * control plane's `recipe_comments`, `recipe_proposals`, `proposal_votes` and
  * `community_photos` all reference `recipe_slug` as a plain string, across a
  * project and an organisation boundary that no foreign key spans. Renaming one
  * orphans every comment on it, silently, with nothing to join back on.
+ *
+ * `expectedUpdatedAt` is the precondition the product route has. The editor
+ * sends its whole draft, `published` included, so without it a tab opened
+ * before another tab unpublished a recipe put it back on the site with its
+ * next typo fix, and both tabs said "Saved". Answers the row's new version, or
+ * null when nothing matched — the row went, or moved on; the caller asks
+ * which.
  */
-export async function updateRecipeRecord(recipe: Recipe): Promise<boolean> {
+export async function updateRecipeRecord(
+  recipe: Recipe,
+  expectedUpdatedAt: string,
+): Promise<string | null> {
   if (isRecipeDevStore()) {
     const existing = devGetRecipe(recipe.id);
-    if (!existing) return false;
-    devUpsertRecipe(record({ ...recipe, slug: existing.recipe.slug }, existing.legacyId));
-    return true;
+    if (!existing || existing.updatedAt !== expectedUpdatedAt) return null;
+    const next = record({ ...recipe, slug: existing.recipe.slug }, existing.legacyId);
+    devUpsertRecipe(next);
+    return next.updatedAt;
   }
 
   const row = toRow(recipe, null);
@@ -235,18 +254,21 @@ export async function updateRecipeRecord(recipe: Recipe): Promise<boolean> {
      in this database can enforce. */
   const { slug: _slug, legacy_id: _legacyId, ...patch } = row;
 
-  /* `.select('id')` is what makes a missing row an error. An
+  /* `.select()` is what makes a missing row an error. An
      `update ... where id = ?` that matches nothing is a *success* in
      PostgREST: no error, zero rows. Without this an editor saving a recipe
-     somebody else had deleted would be told "Saved". */
+     somebody else had deleted would be told "Saved". `updated_at` is set here
+     as the product route sets it; `recipes_touch` sets it again in the
+     database, and the value that comes back is that one. */
   const { data, error } = await contentAdmin()
     .from('recipes')
     .update({ ...patch, updated_at: new Date().toISOString() })
     .eq('id', recipe.id)
-    .select('id');
+    .eq('updated_at', expectedUpdatedAt)
+    .select('id, updated_at');
 
   if (error) throw new Error(error.message);
-  return Array.isArray(data) && data.length > 0;
+  return versionOf(data);
 }
 
 /**
@@ -265,9 +287,29 @@ export async function updateRecipeRecord(recipe: Recipe): Promise<boolean> {
  * for real, because neither has a referent on the other plane. The asymmetry
  * between the three admin screens is deliberate, and the editor says
  * "unpublish" rather than "delete" so it is not a surprise.
+ *
+ * One column, by id, without reading the row first. It went through
+ * `getRecipeRecord`, which drops a row `fromRow` cannot parse — so a row that
+ * fails the schema (a script's write, or a range narrowed in `constants.ts`)
+ * answered 404 here while still breaking the public grid, and nothing could
+ * take it offline. No version precondition: taking a recipe off the site is
+ * right whatever was saved since. Answers the new version, or null for no row.
  */
-export async function unpublishRecipe(id: string): Promise<boolean> {
-  const existing = await getRecipeRecord(id);
-  if (!existing) return false;
-  return updateRecipeRecord({ ...existing.recipe, published: false });
+export async function unpublishRecipe(id: string): Promise<string | null> {
+  if (isRecipeDevStore()) {
+    const existing = devGetRecipe(id);
+    if (!existing) return null;
+    const next = record({ ...existing.recipe, published: false }, existing.legacyId);
+    devUpsertRecipe(next);
+    return next.updatedAt;
+  }
+
+  const { data, error } = await contentAdmin()
+    .from('recipes')
+    .update({ published: false, updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .select('id, updated_at');
+
+  if (error) throw new Error(error.message);
+  return versionOf(data);
 }

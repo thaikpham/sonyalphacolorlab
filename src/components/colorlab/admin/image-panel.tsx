@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useAdminSession } from '@/components/admin-ui/session';
 import { FIELD_SM } from '@/components/admin-ui/controls';
-import { MAX_UPLOAD_BYTES } from '@/lib/recipes/upload-limits';
+import { MAX_ALT_CHARS, MAX_UPLOAD_BYTES } from '@/lib/recipes/upload-limits';
 
 /**
  * A recipe's photographs.
@@ -207,7 +207,7 @@ export function ImagePanel({ recipeId }: { recipeId: string }) {
   return (
     <section className="flex flex-col gap-4">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h3 className="text-body-sm font-extrabold tracking-[-0.01em] text-ink">{t('photos')}</h3>
+        <h3 className="text-body-sm font-extrabold text-ink">{t('photos')}</h3>
         <span className="meta">{t('photosHint')}</span>
       </div>
 
@@ -232,7 +232,7 @@ export function ImagePanel({ recipeId }: { recipeId: string }) {
            stands between them and the site. */
         <p className="surface-sunken rounded-sm p-3 text-body-sm text-ink">
           {t('pendingBanner', { n: pending })}
-          <code className="ml-2 text-accent-400">npm run vendor:uploads -- --target content</code>
+          <code className="ml-2 font-sans text-accent-400">npm run vendor:uploads -- --target content</code>
         </p>
       ) : null}
 
@@ -277,6 +277,7 @@ export function ImagePanel({ recipeId }: { recipeId: string }) {
                 <input
                   className={FIELD_SM}
                   defaultValue={img.alt ?? ''}
+                  maxLength={MAX_ALT_CHARS}
                   placeholder={t('altPlaceholder')}
                   /* Saved on blur rather than per keystroke: alt text is a
                      sentence, and one request per character is a request per

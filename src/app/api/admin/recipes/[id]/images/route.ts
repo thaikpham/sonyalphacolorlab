@@ -196,9 +196,16 @@ export async function PATCH(request: Request, { params }: Params) {
   } catch {
     return NextResponse.json({ error: 'badRequest' }, { status: 400 });
   }
+  /* Valid JSON is not necessarily an object: `null` threw at `body.order`. */
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return NextResponse.json({ error: 'badRequest' }, { status: 400 });
+  }
 
   const order = Array.isArray(body.order) ? body.order.filter((x) => typeof x === 'string') : null;
-  if (!order || order.length === 0) {
+  /* A permutation or nothing. The store checks length and membership, which
+     `[a, a, b]` passes: it parked the rows, then collided on the
+     `(recipe_id, sort)` unique half way through and left them scrambled. */
+  if (!order || order.length === 0 || new Set(order).size !== order.length) {
     return NextResponse.json({ error: 'badRequest' }, { status: 400 });
   }
 

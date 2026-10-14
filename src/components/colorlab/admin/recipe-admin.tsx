@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useAdminSession } from '@/components/admin-ui/session';
 import { FIELD, FIELD_SM } from '@/components/admin-ui/controls';
@@ -9,6 +9,14 @@ import type { ClSettings, PpSettings, Recipe } from '@/lib/camera/schema';
 import { PpFields, ClFields } from './settings-fields';
 import { WhiteBalanceFields } from './wb-fields';
 import { ImagePanel } from './image-panel';
+import {
+  afterSave,
+  committed,
+  isDirty,
+  opened,
+  type Editing,
+  type RecipeRecord,
+} from './recipe-draft';
 
 /**
  * The ColorLab recipe editor.
@@ -33,8 +41,6 @@ import { ImagePanel } from './image-panel';
  * components — Rule 1, and the server re-validates all of it through
  * `recipeSchema` anyway, because a form is a convenience and never a check.
  */
-
-type RecipeRecord = { recipe: Recipe; legacyId: string | null; updatedAt: string };
 
 const DEFAULT_PP: PpSettings = {
   blackLevel: 0,
@@ -70,11 +76,20 @@ const DEFAULT_CL: ClSettings = {
 
 export function RecipeAdmin() {
   const t = useTranslations('recipeAdmin');
+  const tUi = useTranslations('adminUi');
   const { authed } = useAdminSession();
 
   const [records, setRecords] = useState<RecipeRecord[]>([]);
-  const [draft, setDraft] = useState<Recipe | null>(null);
-  const [dirty, setDirty] = useState(false);
+  /* The open recipe as stored, the form over it, and the Tags box as typed —
+     one value, so an answer that arrives late is applied to all three at once
+     (`afterSave`). */
+  const [editing, setEditing] = useState<Editing | null>(null);
+  const draft = editing?.draft ?? null;
+  const dirty = isDirty(editing);
+  /* The recipe the editor is on right now, for answers that arrive late — an
+     open, a save, an unpublish. State would be the closure's copy, which is
+     the recipe the request was made for, not the one on screen now. */
+  const onRecipe = useRef<string | null>(null);
   const [busy, setBusy] = useState<'' | 'saving' | 'creating' | 'unpublishing'>('');
   const [status, setStatus] = useState<{ kind: 'ok' | 'err'; msg: string } | null>(null);
   const [issues, setIssues] = useState<readonly string[]>([]);
@@ -145,18 +160,43 @@ export function RecipeAdmin() {
     );
   }, [records, query]);
 
-  const open = (record: RecipeRecord) => {
-    if (dirty && !window.confirm(t('discardConfirm'))) return;
-    setDraft(record.recipe);
-    setDirty(false);
-    setIssues([]);
-    setStatus(null);
+  /**
+   * Opens a recipe from the admin read, never from the list row.
+   *
+   * The list was read when the screen loaded and after the last write, so a
+   * row can be minutes old; and a save names the version it opened at. The
+   * draft and its version come from this one read so they describe the same
+   * row. Opening the recipe that is already open reads it again, which is how
+   * a `staleEdit` is recovered from.
+   */
+  const load = async (id: string) => {
+    onRecipe.current = id;
+    try {
+      const res = await fetch(`/api/admin/recipes/${id}`, { headers: authed() });
+      const data = (await res.json()) as { recipe?: RecipeRecord; error?: string };
+      if (onRecipe.current !== id) return;
+      if (!res.ok || !data.recipe) {
+        setStatus({ kind: 'err', msg: codeMessage(data.error ?? 'loadFailed', 'loadFailed') });
+        return;
+      }
+      setEditing(opened(data.recipe));
+    } catch {
+      if (onRecipe.current === id) setStatus({ kind: 'err', msg: codeMessage('loadFailed', 'loadFailed') });
+    }
   };
 
-  const edit = (next: Recipe) => {
-    setDraft(next);
-    setDirty(true);
+  const open = (record: RecipeRecord) => {
+    if (dirty && !window.confirm(t('discardConfirm'))) return;
+    setEditing(null);
+    setIssues([]);
+    setStatus(null);
+    void load(record.recipe.id);
   };
+
+  /* Only onto the recipe the edit was made on: a field's change built from
+     the previous render must not land on a draft that has since been replaced. */
+  const edit = (next: Recipe) =>
+    setEditing((cur) => (cur && cur.stored.recipe.id === next.id ? { ...cur, draft: next } : cur));
 
   const create = async () => {
     const name = newName.trim();
@@ -164,6 +204,9 @@ export function RecipeAdmin() {
       setStatus({ kind: 'err', msg: codeMessage('nameRequired') });
       return;
     }
+    /* Creating opens the new recipe, which replaces the draft — the same loss
+       `open()` asks about, and it used to happen without a word. */
+    if (isDirty(editing) && !window.confirm(t('discardConfirm'))) return;
     setBusy('creating');
     try {
       const res = await fetch('/api/admin/recipes', {
@@ -183,15 +226,10 @@ export function RecipeAdmin() {
         return;
       }
       setNewName('');
-      const rows = await fetchList();
-      if (rows) {
-        setRecords(rows);
-        const made = rows.find((r) => r.recipe.id === data.id);
-        if (made) {
-          setDraft(made.recipe);
-          setDirty(false);
-        }
-      }
+      setEditing(null);
+      setIssues([]);
+      await reload();
+      await load(data.id);
       setStatus({ kind: 'ok', msg: t('created', { id: data.id }) });
     } catch {
       setStatus({ kind: 'err', msg: codeMessage('saveFailed') });
@@ -201,14 +239,20 @@ export function RecipeAdmin() {
   };
 
   const save = async () => {
-    if (!draft) return;
+    if (!editing) return;
+    /* What was sent, kept to tell an untouched draft from one edited while
+       the request was out — see `afterSave()`. */
+    const sent = editing;
+    const body = committed(sent);
     setBusy('saving');
     setIssues([]);
     try {
-      const res = await fetch(`/api/admin/recipes/${draft.id}`, {
+      const res = await fetch(`/api/admin/recipes/${body.id}`, {
         method: 'PATCH',
         headers: authed(),
-        body: JSON.stringify(draft),
+        /* The version it was opened at. A row saved elsewhere since answers
+           409 `staleEdit` rather than being reverted. */
+        body: JSON.stringify({ ...body, expectedUpdatedAt: sent.stored.updatedAt }),
       });
       const data = (await res.json()) as {
         ok?: boolean;
@@ -221,14 +265,15 @@ export function RecipeAdmin() {
            path and a bound — far more use than "could not save", and the form
            cannot always prevent them: a Look change and a saturation value can
            each be legal while the pair is not. */
+        if (onRecipe.current !== body.id) return;
         if (data.issues) setIssues(data.issues);
         setStatus({ kind: 'err', msg: codeMessage(data.error ?? 'saveFailed', 'saveFailed') });
         return;
       }
-      if (data.recipe) setDraft(data.recipe.recipe);
-      setDirty(false);
+      const fresh = data.recipe;
+      if (fresh) setEditing((cur) => afterSave(cur, sent, fresh));
       await reload();
-      setStatus({ kind: 'ok', msg: t('saved') });
+      if (onRecipe.current === body.id) setStatus({ kind: 'ok', msg: t('saved') });
     } catch {
       setStatus({ kind: 'err', msg: codeMessage('saveFailed') });
     } finally {
@@ -237,10 +282,15 @@ export function RecipeAdmin() {
   };
 
   const unpublish = async () => {
-    if (!draft || !window.confirm(t('unpublishConfirm'))) return;
+    if (!editing) return;
+    /* The route unpublishes the stored row, so unsaved edits do not survive
+       it — and resetting `dirty` afterwards used to show them as "Saved". */
+    if (isDirty(editing) && !window.confirm(t('discardConfirm'))) return;
+    if (!window.confirm(t('unpublishConfirm'))) return;
+    const id = editing.stored.recipe.id;
     setBusy('unpublishing');
     try {
-      const res = await fetch(`/api/admin/recipes/${draft.id}`, {
+      const res = await fetch(`/api/admin/recipes/${id}`, {
         method: 'DELETE',
         headers: authed(),
       });
@@ -249,9 +299,11 @@ export function RecipeAdmin() {
         setStatus({ kind: 'err', msg: codeMessage(data.error ?? 'saveFailed', 'saveFailed') });
         return;
       }
-      setDraft({ ...draft, published: false });
-      setDirty(false);
+      /* Read again rather than patched locally: pairing the new version with
+         the fields as they were opened would let the next save pass the
+         precondition over anything saved elsewhere in between. */
       await reload();
+      if (onRecipe.current === id) await load(id);
       setStatus({ kind: 'ok', msg: t('unpublished') });
     } catch {
       setStatus({ kind: 'err', msg: codeMessage('saveFailed') });
@@ -262,6 +314,9 @@ export function RecipeAdmin() {
 
   return (
     <main className="mx-auto flex w-full max-w-[110rem] flex-wrap items-start gap-y-8 gap-x-[clamp(2rem,3vw,3.5rem)] inset-safe pb-24 pt-8">
+      {/* The shell's wordmark is a link, not a heading; the product and
+          article editors carry their own h1 for the same reason. */}
+      <h1 className="sr-only">{tUi('metaRecipes')}</h1>
       <aside className="flex grow basis-[clamp(16rem,20vw,22rem)] flex-col gap-4 self-start lg:sticky lg:top-6 lg:grow-0">
         <div className="flex flex-col gap-2 surface-raised p-4 rounded-md">
           <span className="label text-ink-muted">{t('newRecipe')}</span>
@@ -277,7 +332,7 @@ export function RecipeAdmin() {
                 key={f}
                 type="button"
                 onClick={() => setNewFormat(f)}
-                className={`flex-1 px-3 py-2 rounded-sm text-body-sm font-semibold cursor-pointer ${
+                className={`flex-1 min-h-[var(--layout-touch-target)] px-3 py-2 rounded-sm text-body-sm font-semibold cursor-pointer ${
                   newFormat === f ? 'surface-selected text-ink' : 'text-ink-muted hover:text-ink'
                 }`}
               >
@@ -334,7 +389,25 @@ export function RecipeAdmin() {
       </aside>
 
       <section className="flex grow basis-[32rem] flex-col gap-6">
-        {!draft ? (
+        {/* Above the branch, so a failure says so whether or not a recipe is
+            open: a list that failed to load read as "0 recipes". */}
+        {status ? (
+          <p className={`text-body-sm ${status.kind === 'err' ? 'text-danger' : 'text-ink'}`}>
+            {status.msg}
+          </p>
+        ) : null}
+
+        {issues.length ? (
+          <ul className="surface-sunken flex flex-col gap-1 p-4 rounded-sm">
+            {issues.map((i) => (
+              <li key={i} className="text-body-sm text-danger">
+                {i}
+              </li>
+            ))}
+          </ul>
+        ) : null}
+
+        {!editing || !draft ? (
           <div className="surface-raised p-8 rounded-md flex flex-col gap-3">
             <h2 className="text-title-2 font-extrabold tracking-[-0.02em] text-ink">
               {t('pickTitle')}
@@ -350,7 +423,7 @@ export function RecipeAdmin() {
                   {draft.name}
                 </h2>
                 <span className="meta">
-                  {t('slugFixed')}: <code>/{draft.slug}</code>
+                  {t('slugFixed')}: <code className="font-sans">/{draft.slug}</code>
                 </span>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -362,7 +435,7 @@ export function RecipeAdmin() {
                 >
                   {busy === 'saving' ? t('saving') : dirty ? t('save') : t('savedState')}
                 </button>
-                {draft.published ? (
+                {editing.stored.recipe.published ? (
                   <button
                     type="button"
                     onClick={unpublish}
@@ -374,22 +447,6 @@ export function RecipeAdmin() {
                 ) : null}
               </div>
             </header>
-
-            {status ? (
-              <p className={`text-body-sm ${status.kind === 'err' ? 'text-danger' : 'text-ink'}`}>
-                {status.msg}
-              </p>
-            ) : null}
-
-            {issues.length ? (
-              <ul className="surface-sunken flex flex-col gap-1 p-4 rounded-sm">
-                {issues.map((i) => (
-                  <li key={i} className="text-body-sm text-danger">
-                    {i}
-                  </li>
-                ))}
-              </ul>
-            ) : null}
 
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="flex flex-col gap-1.5">
@@ -404,24 +461,18 @@ export function RecipeAdmin() {
                 <span className="label text-ink-muted">{t('tags')}</span>
                 <input
                   className={FIELD}
-                  value={draft.tags.join(', ')}
-                  /* Split and normalised on the way in, so the schema's
-                     `^[a-z0-9-]+$` is met by construction rather than by the
-                     editor remembering the rule. */
-                  onChange={(e) =>
-                    edit({
-                      ...draft,
-                      tags: e.target.value
-                        .split(',')
-                        .map((s) =>
-                          s
-                            .trim()
-                            .toLowerCase()
-                            .replace(/[^a-z0-9-]+/g, '-')
-                            .replace(/^-+|-+$/g, ''),
-                        )
-                        .filter(Boolean),
-                    })
+                  value={editing.tagText ?? draft.tags.join(', ')}
+                  /* Kept as typed and normalised on blur (and by the save),
+                     so the schema's `^[a-z0-9-]+$` is met by construction
+                     without eating the comma the editor just typed. */
+                  onChange={(e) => {
+                    const text = e.target.value;
+                    setEditing((cur) => (cur ? { ...cur, tagText: text } : cur));
+                  }}
+                  onBlur={() =>
+                    setEditing((cur) =>
+                      cur && cur.tagText !== null ? { ...cur, draft: committed(cur), tagText: null } : cur,
+                    )
                   }
                   placeholder={t('tagsPlaceholder')}
                 />
@@ -429,7 +480,7 @@ export function RecipeAdmin() {
               </label>
             </div>
 
-            <label className="flex items-center gap-3">
+            <label className="flex min-h-[var(--layout-touch-target)] items-center gap-3">
               <input
                 type="checkbox"
                 checked={draft.published}

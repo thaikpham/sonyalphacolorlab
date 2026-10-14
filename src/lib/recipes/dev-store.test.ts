@@ -69,6 +69,19 @@ describe('the recipe dev store', () => {
     expect(readFileSync(RECIPES, 'utf8')).toBe('{"recipes": []}');
   });
 
+  it('gives an unsaved seed row the same version on every read', () => {
+    /* The version is what a save names as `expectedUpdatedAt`. Stamped with
+       the time of each read, a row nobody had saved yet was stale to every
+       save, so the offline editor could not save at all until something else
+       had written the file. */
+    rmSync(RECIPES, { force: true });
+    const id = firstRecipe().recipe.id;
+    const first = devStore.devGetRecipe(id)?.updatedAt;
+    const again = devStore.devGetRecipe(id)?.updatedAt;
+    expect(first).toBeTruthy();
+    expect(again).toBe(first);
+  });
+
   it('still seeds and saves when there is no file yet', () => {
     rmSync(RECIPES, { force: true });
 

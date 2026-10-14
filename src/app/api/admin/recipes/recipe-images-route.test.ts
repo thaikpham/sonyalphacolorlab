@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 /**
@@ -15,6 +16,7 @@ const calls = {
   process: vi.fn(async (..._args: unknown[]) => ({ ok: false, error: 'unsupportedType' })),
   list: vi.fn(async (..._args: unknown[]): Promise<unknown[]> => []),
   sign: vi.fn(async (path: string) => `signed:${path}`),
+  reorder: vi.fn(async (..._args: unknown[]) => true),
 };
 const env = { devStore: false };
 
@@ -30,7 +32,7 @@ vi.mock('@/lib/recipes/image-store', () => ({
   setRecipeImageAlt: (...args: unknown[]) => calls.alt(...args),
   deleteRecipeImage: (...args: unknown[]) => calls.remove(...args),
   listRecipeImages: (...args: unknown[]) => calls.list(...args),
-  reorderRecipeImages: async () => true,
+  reorderRecipeImages: (...args: unknown[]) => calls.reorder(...args),
   signPreview: (path: string) => calls.sign(path),
   uploadRecipeImage: async () => ({ ok: false, error: 'uploadFailed' }),
 }));
@@ -55,6 +57,7 @@ beforeEach(() => {
   calls.alt.mockClear();
   calls.remove.mockClear();
   calls.process.mockClear();
+  calls.reorder.mockClear();
   calls.list.mockReset().mockResolvedValue([]);
   calls.sign.mockReset().mockImplementation(async (path: string) => `signed:${path}`);
 });
@@ -80,6 +83,54 @@ describe('one photograph', () => {
     const d = await one.DELETE(del(), params('SCL-PP-001', 'dev-SCL-PP-001-3'));
     expect(d.status).toBe(200);
     expect(calls.remove).toHaveBeenCalledWith('SCL-PP-001', 'dev-SCL-PP-001-3');
+  });
+});
+
+describe('alt text', () => {
+  it('has one limit, which the editor enforces as the box fills', async () => {
+    /* The route cut alt text at 300 characters and the input had no
+       maxLength, so an editor kept seeing the sentence whose tail was never
+       saved. One constant, read by both. */
+    const { MAX_ALT_CHARS } = await import('@/lib/recipes/upload-limits');
+    await one.PATCH(patch({ alt: 'x'.repeat(MAX_ALT_CHARS + 1) }), params('SCL-PP-001', UUID));
+    expect(calls.alt).toHaveBeenCalledWith('SCL-PP-001', UUID, 'x'.repeat(MAX_ALT_CHARS));
+
+    const route = readFileSync('src/app/api/admin/recipes/[id]/images/[imageId]/route.ts', 'utf8');
+    expect(route).toMatch(/\.slice\(0, MAX_ALT_CHARS\)/);
+    const panel = readFileSync('src/components/colorlab/admin/image-panel.tsx', 'utf8');
+    expect(panel).toMatch(/maxLength=\{MAX_ALT_CHARS\}/);
+  });
+});
+
+describe('a body that is not an object', () => {
+  it('is a 400 at both PATCH handlers, never a TypeError', async () => {
+    /* `null` is valid JSON; reading `body.alt` or `body.order` off it threw,
+       and the editor got an unhandled 500. */
+    const many = await import('./[id]/images/route');
+    for (const raw of ['null', '[]']) {
+      const req = () => new Request('http://localhost/api', { method: 'PATCH', body: raw });
+      const a = await one.PATCH(req(), params('SCL-PP-001', UUID));
+      const o = await many.PATCH(req(), { params: Promise.resolve({ id: 'SCL-PP-001' }) });
+      expect([a.status, o.status], raw).toEqual([400, 400]);
+    }
+    expect(calls.alt).not.toHaveBeenCalled();
+    expect(calls.reorder).not.toHaveBeenCalled();
+  });
+});
+
+describe('reordering photographs', () => {
+  it('refuses an order that names one photograph twice, before the store', async () => {
+    /* [a, a, b] passed the store's length-and-membership check, parked the
+       rows, then collided on (recipe_id, sort) half way through — leaving the
+       sorts scrambled and the editor reading "could not save". */
+    const many = await import('./[id]/images/route');
+    const a = `${UUID.slice(0, -1)}a`;
+    const b = `${UUID.slice(0, -1)}b`;
+    const res = await many.PATCH(patch({ order: [a, a, b] }), {
+      params: Promise.resolve({ id: 'SCL-PP-001' }),
+    });
+    expect(res.status).toBe(400);
+    expect(calls.reorder).not.toHaveBeenCalled();
   });
 });
 

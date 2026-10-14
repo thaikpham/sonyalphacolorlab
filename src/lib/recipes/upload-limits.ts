@@ -15,6 +15,14 @@
  */
 export const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
 
+/**
+ * Longest alt text a photograph keeps. Here for the same reason as the byte
+ * ceiling: the route trims to it and the editor's input stops at it, and with
+ * the number only in the route the box kept a sentence whose tail was never
+ * saved.
+ */
+export const MAX_ALT_CHARS = 300;
+
 /** The file plus its multipart envelope — boundaries, part headers, an id. */
 export const MAX_UPLOAD_REQUEST_BYTES = MAX_UPLOAD_BYTES + 64 * 1024;
 

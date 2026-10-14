@@ -27,6 +27,11 @@ import type { RecipeRecord } from './admin-types';
 /** Local scratch, not a seed: written by the editor, gitignored. */
 const FILE = join(process.cwd(), 'data', 'recipes.dev.json');
 
+/* The version of a row this store has never written. Fixed rather than "now":
+   a save names the version it opened as `expectedUpdatedAt`, and a version
+   stamped at each read made every unsaved seed row stale to every save. */
+const UNSAVED = new Date(0).toISOString();
+
 export function isRecipeDevStore(): boolean {
   return !hasContentConfig() && process.env.NODE_ENV === 'development';
 }
@@ -62,7 +67,7 @@ function load(): { records: RecipeRecord[]; intact: boolean } {
     const records = seed.map((r) => ({
       recipe: recipeSchema.parse(r),
       legacyId: r.legacyId ?? null,
-      updatedAt: new Date().toISOString(),
+      updatedAt: UNSAVED,
     }));
     return { records, intact: true };
   }
@@ -88,7 +93,7 @@ function load(): { records: RecipeRecord[]; intact: boolean } {
       {
         recipe: recipe.data,
         legacyId: typeof r.legacyId === 'string' ? r.legacyId : null,
-        updatedAt: typeof r.updatedAt === 'string' ? r.updatedAt : new Date().toISOString(),
+        updatedAt: typeof r.updatedAt === 'string' ? r.updatedAt : UNSAVED,
       },
     ];
   });

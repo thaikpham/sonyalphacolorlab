@@ -25,6 +25,14 @@ import {
  * organisations, so a real delete orphans four tables silently and leaves
  * nothing to find them by. Articles and products delete for real because
  * neither has a referent on the other plane.
+ *
+ * `GET` is what the editor opens a recipe from: the row as stored and its
+ * version, from one read, so the two describe the same row. A save names that
+ * version as `expectedUpdatedAt`, and a row saved since — by another admin or
+ * another tab — refuses the write with 409 `staleEdit`, exactly as a product
+ * does (`products/[id]/route.ts`). The list row could be minutes old, and a
+ * fresh version beside a stale draft would pass the check and write the stale
+ * draft anyway.
  */
 
 type Params = { params: Promise<{ id: string }> };
@@ -72,6 +80,17 @@ export async function PATCH(request: Request, { params }: Params) {
   } catch {
     return NextResponse.json({ error: 'badRequest' }, { status: 400 });
   }
+  /* Valid JSON is not necessarily an object. */
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return NextResponse.json({ error: 'badRequest' }, { status: 400 });
+  }
+
+  /* Required. `updated_at` is `not null` on this table, so unlike a product
+     there is no never-edited row to name with `null`. */
+  const { expectedUpdatedAt: expected, ...fields } = body;
+  if (typeof expected !== 'string') {
+    return NextResponse.json({ error: 'badRequest' }, { status: 400 });
+  }
 
   /* The slug is read back from the stored row rather than taken from the body.
      `updateRecipeRecord` drops the column from its patch as well — two layers
@@ -86,31 +105,59 @@ export async function PATCH(request: Request, { params }: Params) {
     return NextResponse.json({ error: 'saveFailed' }, { status: 502 });
   }
   if (!existing) return NextResponse.json({ error: 'notFound' }, { status: 404 });
+  /* Already behind: refuse before writing anything. The version filter on the
+     write is what closes the window between this read and that write. */
+  if (existing.updatedAt !== expected) {
+    return NextResponse.json({ error: 'staleEdit' }, { status: 409 });
+  }
 
-  const write = normaliseRecipe(id, { ...body, slug: existing.recipe.slug });
+  /* Trimmed and capped exactly as a create is. `recipeSchema` asks only for
+     `min(1)` and the table only for `length(name) > 0`, so a single space
+     saved a recipe card with a blank title; trimmed first, it fails `min(1)`
+     and the editor is told which field. */
+  const name = typeof fields.name === 'string' ? fields.name.trim().slice(0, 200) : fields.name;
+  const write = normaliseRecipe(id, { ...fields, name, slug: existing.recipe.slug });
   if (!write.ok) {
     return NextResponse.json({ error: 'invalidRecipe', issues: write.issues }, { status: 400 });
   }
 
-  let saved: boolean;
+  let version: string | null;
   try {
-    saved = await updateRecipeRecord(write.recipe);
+    version = await updateRecipeRecord(write.recipe, expected);
   } catch (err) {
     console.error('[admin/recipes] update failed:', err);
     return NextResponse.json({ error: 'saveFailed' }, { status: 502 });
   }
-  if (!saved) return NextResponse.json({ error: 'notFound' }, { status: 404 });
+  if (version === null) {
+    /* Nothing matched: the row went, or it moved on between the read and the
+       write. Asked again rather than guessed, so a deletion still reads as
+       one. A failed re-read is not evidence of either, and nothing was
+       written. */
+    let after;
+    try {
+      after = await getRecipeRecord(id);
+    } catch (err) {
+      console.error('[admin/recipes] re-read after a missed write failed:', err);
+      return NextResponse.json({ error: 'saveFailed' }, { status: 502 });
+    }
+    return after
+      ? NextResponse.json({ error: 'staleEdit' }, { status: 409 })
+      : NextResponse.json({ error: 'notFound' }, { status: 404 });
+  }
 
   revalidateTag(CATALOGUE_TAG, IMMEDIATE);
 
   /* Refetched rather than echoed back: the row is what the next reader sees,
      and `updated_at` and any column a trigger touched are the store's answer,
-     not the editor's. */
+     not the editor's. When the re-read fails, the validated recipe and the
+     version the write answered are still a matching pair — the editor's next
+     save needs that version, and an answer without one strands it. */
+  const written = { recipe: write.recipe, legacyId: existing.legacyId, updatedAt: version };
   try {
     const fresh = await getRecipeRecord(id);
-    return NextResponse.json({ ok: true, recipe: fresh ?? { recipe: write.recipe } });
+    return NextResponse.json({ ok: true, recipe: fresh ?? written });
   } catch {
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, recipe: written });
   }
 }
 
@@ -127,19 +174,19 @@ export async function DELETE(request: Request, { params }: Params) {
   const { id } = await params;
   if (badId(id)) return NextResponse.json({ error: 'notFound' }, { status: 404 });
 
-  let done: boolean;
+  let version: string | null;
   try {
-    done = await unpublishRecipe(id);
+    version = await unpublishRecipe(id);
   } catch (err) {
     console.error('[admin/recipes] unpublish failed:', err);
     return NextResponse.json({ error: 'saveFailed' }, { status: 502 });
   }
-  if (!done) return NextResponse.json({ error: 'notFound' }, { status: 404 });
+  if (version === null) return NextResponse.json({ error: 'notFound' }, { status: 404 });
 
   revalidateTag(CATALOGUE_TAG, IMMEDIATE);
 
   /* `unpublished`, not `deleted`. The editor renders the two differently and
      the row is still there — a client that assumed a delete would drop it from
      a list it can still legitimately show. */
-  return NextResponse.json({ ok: true, unpublished: true });
+  return NextResponse.json({ ok: true, unpublished: true, updatedAt: version });
 }
