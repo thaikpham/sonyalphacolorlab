@@ -219,7 +219,9 @@ export async function PATCH(request: Request, { params }: Ctx) {
      first would leave a *published* page with broken images, which is worse
      than a private page whose objects are briefly still fetchable by URL.
      A failure is reported, but the article is already private — so the answer
-     is 502 with the assets marked `cleanup_failed` for the cleanup view. */
+     is 502 with the assets marked `cleanup_failed`, which every later save
+     retries. Draft saves run the same removal, and never refuse over a
+     reference: the row is already written, and nothing is being published. */
   if (write.status !== 'published') {
     const synced = await settled(reconcileArticleAssets(id, write.article.blocks, 'draft'))
     if (!synced.ok) {
