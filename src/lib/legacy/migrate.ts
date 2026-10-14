@@ -47,10 +47,15 @@ export const ID_REMAP: Record<string, string> = {
 // Field coercion
 // ---------------------------------------------------------------------------
 
-/** Legacy stored numbers as strings ("+25", "-7", "0"). */
+/**
+ * Legacy stored numbers as strings ("+25", "-7", "0"). `Number('')` is 0, so a
+ * blank field is refused by hand — an empty cell is a missing value, not zero.
+ */
 function toNum(v: unknown): number {
   if (typeof v === 'number') return v;
-  const n = Number(String(v).trim());
+  const s = String(v).trim();
+  if (s === '') throw new Error(`not numeric: ${JSON.stringify(v)}`);
+  const n = Number(s);
   if (!Number.isFinite(n)) throw new Error(`not numeric: ${JSON.stringify(v)}`);
   return n;
 }
@@ -115,7 +120,18 @@ function applyCorrections(legacy: LegacyRecipe): { data: LegacyRecipe; count: nu
     const leaf = parts.pop()!;
     let node: Record<string, unknown> | undefined = data;
     for (const p of parts) node = node?.[p] as Record<string, unknown> | undefined;
-    if (node) node[leaf] = fix.to;
+    // `from` is the claim the correction rests on. If the source no longer
+    // says it — the author confirmed a different value and the file was
+    // edited — overwriting it would be silent, so the recipe fails instead.
+    if (!node || !(leaf in node)) {
+      throw new Error(`${legacy.id}: correction path ${fix.path} is missing`);
+    }
+    if (String(node[leaf]) !== String(fix.from)) {
+      throw new Error(
+        `${legacy.id}: ${fix.path} is ${JSON.stringify(node[leaf])}, not the documented ${JSON.stringify(fix.from)} — re-check LEGACY_CORRECTIONS`,
+      );
+    }
+    node[leaf] = fix.to;
   }
   return { data, count: fixes.length };
 }
