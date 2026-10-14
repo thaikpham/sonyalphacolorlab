@@ -213,7 +213,13 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
     setIsSharing(sharing);
   };
 
-  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  /* The open photo, by src. It was an index into `allPhotos`, which shrinks
+     when a tile fails to load and reorders when the community fetch lands: the
+     open photo could vanish, the dialog unmounted while the index stayed set,
+     the keydown handler below went on swallowing arrow keys page-wide, and the
+     next arrow reopened a different photo. Derived, a src that leaves the list
+     simply closes the lightbox. */
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
   // Pull community photos & credits shared by other people from Supabase
   useEffect(() => {
@@ -264,20 +270,27 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
     [images, userPhotos, failedPhotos],
   );
 
+  const at = lightboxSrc === null ? -1 : allPhotos.indexOf(lightboxSrc);
+  const lightboxIndex = at === -1 ? null : at;
+
+  const openPhoto = useCallback((index: number | null) => {
+    setLightboxSrc(index === null ? null : (allPhotos[index] ?? null));
+  }, [allPhotos]);
+
   const nextPhoto = useCallback(() => {
-    setLightboxIndex((prev) => (prev !== null && allPhotos.length > 0 ? (prev + 1) % allPhotos.length : null));
-  }, [allPhotos.length]);
+    if (lightboxIndex !== null) openPhoto((lightboxIndex + 1) % allPhotos.length);
+  }, [lightboxIndex, allPhotos.length, openPhoto]);
 
   const prevPhoto = useCallback(() => {
-    setLightboxIndex((prev) => (prev !== null && allPhotos.length > 0 ? (prev - 1 + allPhotos.length) % allPhotos.length : null));
-  }, [allPhotos.length]);
+    if (lightboxIndex !== null) openPhoto((lightboxIndex - 1 + allPhotos.length) % allPhotos.length);
+  }, [lightboxIndex, allPhotos.length, openPhoto]);
 
   // Keyboard navigation (Arrow keys to slide, Escape to close)
   useEffect(() => {
     if (lightboxIndex === null) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        setLightboxIndex(null);
+        openPhoto(null);
       } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
         e.preventDefault();
         nextPhoto();
@@ -288,7 +301,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [lightboxIndex, nextPhoto, prevPhoto]);
+  }, [lightboxIndex, nextPhoto, prevPhoto, openPhoto]);
 
   const handleUrlChange = (val: string) => {
     setInputUrl(val);
@@ -333,6 +346,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
        form open, with the reason in it. */
     setErrorMsg(null);
     setSharing(true);
+    let body: { duplicate?: boolean } | null = null;
     try {
       const token = accessToken();
       const res = await fetch('/api/community-photos', {
@@ -357,6 +371,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
         if (res.status === 401) openLoginModal();
         return;
       }
+      body = await res.json().catch(() => null);
     } catch {
       setErrorMsg(tCommunity('errors.unknown'));
       return;
@@ -366,13 +381,17 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
 
     // Save credit & photo locally, under the same name the server stored, so
     // it shows now and the credit does not change when the page is reloaded
-    // from Supabase.
+    // from Supabase. A duplicate is a photo someone else already shared: the
+    // server kept their credit, and a local one here would name this reader
+    // over them on this device.
     setLocalPhotos(slug, [...new Set([cleanUrl, ...localPhotos])]);
-    setLocalCredit(slug, {
-      url: cleanUrl,
-      authorName: user.name,
-      authorSocial: cleanSocial || undefined,
-    });
+    if (!body?.duplicate) {
+      setLocalCredit(slug, {
+        url: cleanUrl,
+        authorName: user.name,
+        authorSocial: cleanSocial || undefined,
+      });
+    }
 
     setInputUrl('');
     setAuthorSocial('');
@@ -380,12 +399,12 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
     setIsFormOpen(false);
   };
 
-  const handleDeleteUserPhoto = (photoToDelete: string) => {
-    setLocalPhotos(
-      slug,
-      localPhotos.filter((p) => p !== photoToDelete),
-    );
-  };
+  /* No remove control. A photo reaches `localPhotos` only after its POST
+     succeeded, so every one of them is already a public `community_photos`
+     row, and the route has no DELETE. The ✕ that used to sit here filtered
+     localStorage and nothing else: the contributor saw the photo go while
+     every other reader still saw it. An owner-scoped delete needs an author
+     identity on the row, which the table does not have. */
 
   const handleContributePhotoClick = () => {
     const willOpen = !isFormOpen;
@@ -425,9 +444,11 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
       {allPhotos.length > 0 && (
         <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 mb-6">
           {allPhotos.map((src, i) => {
-            const isLocalPhoto = localPhotos.includes(src);
             const isUserPhoto = userPhotos.includes(src);
             const isHeroTile = i === 0;
+            /* Only a catalogue photograph is fetched early. On a recipe with
+               none, tile 0 is the first community upload — any https URL. */
+            const isCatalogueHero = isHeroTile && !isUserPhoto;
             const credit = allCredits[src];
 
             return (
@@ -439,7 +460,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
               >
                 <button
                   type="button"
-                  onClick={() => setLightboxIndex(i)}
+                  onClick={() => openPhoto(i)}
                   aria-label={t('zoomPhoto', { index: i + 1, title })}
                   className={`group relative block w-full overflow-hidden rounded-lg cursor-zoom-in shadow-[var(--elevation-1)] transition-transform duration-300 ${
                     isHeroTile ? 'aspect-[4/3] sm:aspect-[16/10] h-full min-h-[18rem]' : 'aspect-[4/3]'
@@ -454,7 +475,8 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
                         ? '(max-width: 1024px) 100vw, 50vw'
                         : '(max-width: 1024px) 50vw, 25vw'
                     }
-                    priority={isHeroTile}
+                    loading={isCatalogueHero ? 'eager' : undefined}
+                    fetchPriority={isCatalogueHero ? 'high' : undefined}
                     className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
                     unoptimized={isUserPhoto}
                     onError={() => markPhotoFailed(src)}
@@ -462,10 +484,12 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
 
                   <div className="absolute inset-0 bg-gradient-to-t from-void/90 via-transparent to-void/40 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-3 sm:p-4">
                     <span className="self-start text-label font-semibold uppercase tracking-[0.08em] px-2.5 py-1 rounded-sm bg-void/70 text-ink backdrop-blur-[30px]">
-                      {isHeroTile
-                        ? t('featuredShot')
-                        : isUserPhoto
-                          ? t('tagCommunity')
+                      {/* Community first: the hero slot is positional, and a
+                          reader's upload there is not a featured shot. */}
+                      {isUserPhoto
+                        ? t('tagCommunity')
+                        : isHeroTile
+                          ? t('featuredShot')
                           : t('frame', { index: i + 1 })}
                     </span>
 
@@ -484,22 +508,6 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
                     </div>
                   </div>
                 </button>
-
-                {isLocalPhoto && (
-                  <button
-                    type="button"
-                    title={t('deletePhoto')}
-                    aria-label={t('deletePhotoAt', { index: i + 1 })}
-                    onClick={() => handleDeleteUserPhoto(src)}
-                    /* Shown outright where there is no hover to reveal it with,
-                       revealed on hover where there is. It was `opacity-0
-                       group-hover:opacity-100` with `group` on the *sibling*
-                       image button, so it never appeared at all. */
-                    className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 w-11 h-11 rounded-md bg-danger/85 hover:bg-danger text-white flex items-center justify-center text-body transition-opacity backdrop-blur-[30px] shadow-[var(--elevation-1)] opacity-100 pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100 focus-visible:opacity-100"
-                  >
-                    <span aria-hidden>✕</span>
-                  </button>
-                )}
               </li>
             );
           })}
@@ -509,11 +517,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
       {/* Empty State */}
       {allPhotos.length === 0 && !isFormOpen && (
         <div className="surface p-8 text-center flex flex-col items-center justify-center gap-3 mb-6">
-          <p className="text-body text-ink-muted max-w-md">
-            {t.rich('galleryEmpty', {
-              b: (chunks) => <strong className="text-ink">{chunks}</strong>,
-            })}
-          </p>
+          <p className="text-body text-ink-muted max-w-md">{t('galleryEmpty')}</p>
         </div>
       )}
 
@@ -567,6 +571,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
       {isFormOpen && (
         <form
           id="contribute-photo-form"
+          noValidate
           onSubmit={handleAddPhoto}
           /* The separation from the tiles above lives here, not on the row —
              the row runs to `mb-0` so that when this form is closed it is the
@@ -574,6 +579,10 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
              next section. */
           className="surface p-5 sm:p-6 mt-6 mb-0 animate-fade-in flex flex-col gap-4"
         >
+          {/* `noValidate`: `type="url"` stays for the phone keyboard, but the
+              browser's own bubble — in the browser's language, not the page's —
+              used to block the submit before the localised checks in
+              `handleAddPhoto` could run. */}
           <h2 className="text-body-lg font-semibold text-ink">{t('formTitle')}</h2>
 
           {/* 1. Image URL (Required) */}
@@ -680,7 +689,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
           role="dialog"
           aria-modal="true"
           aria-label={t('lightboxLabel')}
-          onClick={() => setLightboxIndex(null)}
+          onClick={() => openPhoto(null)}
           className="fixed inset-0 z-50 bg-void/85 backdrop-blur-[30px] animate-fade-in flex flex-col items-center justify-between p-4 sm:p-8 cursor-zoom-out select-none"
         >
           {/* Header Bar */}
@@ -698,7 +707,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
             <button
               type="button"
               autoFocus
-              onClick={() => setLightboxIndex(null)}
+              onClick={() => openPhoto(null)}
               aria-label={t('close')}
               className="btn-glass w-11 h-11 flex items-center justify-center shrink-0 cursor-pointer"
             >
@@ -713,7 +722,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
               <button
                 type="button"
                 aria-label={t('prev')}
-                title={t('prevTitle')}
+                title={t('prev')}
                 onClick={(e) => {
                   e.stopPropagation();
                   prevPhoto();
@@ -760,7 +769,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
             {/* Main Center Active High-Res Photo */}
             <div
               className="relative flex-1 max-w-4xl h-full flex flex-col items-center justify-center z-20 cursor-zoom-out"
-              onClick={() => setLightboxIndex(null)}
+              onClick={() => openPhoto(null)}
             >
               {/* eslint-disable-next-line @next/next/no-img-element -- arbitrary URL */}
               <img
@@ -815,7 +824,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
               <button
                 type="button"
                 aria-label={t('next')}
-                title={t('nextTitle')}
+                title={t('next')}
                 onClick={(e) => {
                   e.stopPropagation();
                   nextPhoto();
@@ -858,7 +867,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
                   type="button"
                   aria-label={t('goTo', { index: idx + 1 })}
                   aria-current={idx === lightboxIndex ? 'true' : undefined}
-                  onClick={() => setLightboxIndex(idx)}
+                  onClick={() => openPhoto(idx)}
                   /* The current frame is a fill and a lift, never a ring. */
                   className={`relative shrink-0 w-12 h-9 rounded-sm overflow-hidden transition-all duration-300 cursor-pointer ${
                     idx === lightboxIndex
