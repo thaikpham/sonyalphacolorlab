@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { importSonyAsia, parseCsv, REJECTED, SCRAPE_CORRECTIONS } from './import';
+import { importSonyAsia, parseCsv, recipeKey, REJECTED, SCRAPE_CORRECTIONS } from './import';
+import { SONY_ASIA_IDS } from './ids';
 import {
   CL_MONOCHROME_LOOKS,
   CL_RANGES,
@@ -198,6 +199,73 @@ describe('White Balance names from constants.ts', () => {
       const { recipes } = importSonyAsia(csvOf(`${ST}, WB ${auto}`));
       expect(recipes[0]?.whiteBalance, auto).toEqual({ mode: 'auto', auto });
     }
+  });
+});
+
+/**
+ * Ids and slugs are public URLs, and `translations.vi.json` and the credits
+ * file are keyed by id. Numbering by row order meant un-skipping one row
+ * shifted every later id, and the Vietnamese prose then named the wrong
+ * photographer on every recipe after it.
+ */
+describe('stable ids', () => {
+  const keyOf = (r: (typeof result.recipes)[number]) =>
+    recipeKey(r.settings as Record<string, unknown>, r.whiteBalance, r.credit.photographer);
+
+  it('gives every imported recipe the id and slug it was first published under', () => {
+    expect(result.unpinned, 'add these to SONY_ASIA_IDS in ids.ts').toEqual([]);
+    for (const r of result.recipes) {
+      expect(SONY_ASIA_IDS[keyOf(r)], r.id).toEqual({ id: r.id, slug: r.slug });
+    }
+  });
+
+  it('still produces every pinned recipe, so none is renumbered by accident', () => {
+    // A pinned key that stops matching means a correction changed a recipe's
+    // settings: re-key the entry, never let the recipe take a new id.
+    const produced = new Set(result.recipes.map((r) => r.id));
+    for (const [key, pin] of Object.entries(SONY_ASIA_IDS)) {
+      expect(produced.has(pin.id), `${pin.id} (${key})`).toBe(true);
+    }
+  });
+
+  it('matches the ids and slugs the committed seed ships', () => {
+    const seed = JSON.parse(readFileSync('data/recipes.seed.json', 'utf8')) as { id: string; slug: string; format: string }[];
+    const shipped = seed.filter((r) => r.format === 'cl').map((r) => [r.id, r.slug]);
+    expect(result.recipes.map((r) => [r.id, r.slug])).toEqual(shipped);
+  });
+
+  it('keeps every id when a skipped row becomes importable', () => {
+    // Row 1 is Sandeeshwara Perera's FL "Default Settings", on the skip list.
+    const filled = csv.replace(
+      'FL (Film Look) | Default Settings',
+      'FL (Film Look) | Contrast +1, Highlights 0, Shadows 0, Fade +1, Saturation 0, Sharpness +3, Sharpness Range +3, Clarity +1, WB AWB',
+    );
+    expect(filled).not.toBe(csv);
+    const after = importSonyAsia(filled);
+    expect(after.recipes.length).toBe(result.recipes.length + 1);
+
+    for (const before of result.recipes) {
+      const same = after.recipes.find((r) => r.id === before.id);
+      expect(same?.slug, before.id).toBe(before.slug);
+      expect(same?.name, before.id).toBe(before.name);
+      expect(same?.credit.photographer, before.id).toBe(before.credit.photographer);
+      expect(same?.settings, before.id).toEqual(before.settings);
+      expect(after.descriptions[before.id], before.id).toBe(result.descriptions[before.id]);
+    }
+
+    // The newcomer takes the next free id and a slug no pinned recipe holds.
+    expect(after.unpinned).toHaveLength(1);
+    const added = after.recipes.find((r) => !result.recipes.some((b) => b.id === r.id))!;
+    expect(added.id).toBe('SCL-CL-038');
+    expect(added.slug).toBe('fl-sandeeshwara-perera-4');
+    expect(added.name).toBe('SCL-CL-038: Film Look · Sandeeshwara Perera 4');
+  });
+
+  it('never hands out a retired id or slug again', () => {
+    const retired = { ...SONY_ASIA_IDS, 'retired recipe': { id: 'SCL-CL-090', slug: 'st-test' } };
+    const { recipes } = importSonyAsia(csvOf(`${ST}, WB AWB`), retired);
+    expect(recipes[0]?.id).toBe('SCL-CL-091');
+    expect(recipes[0]?.slug).toBe('st-test-2');
   });
 });
 
