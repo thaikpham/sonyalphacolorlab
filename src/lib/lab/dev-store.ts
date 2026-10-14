@@ -54,6 +54,15 @@ function assertDev() {
 }
 
 /**
+ * The version every seeded record carries until the first write creates the
+ * file. Fixed, not the clock: `updatedAt` is what the editor sends back as
+ * `expectedUpdatedAt`, and the seed is rebuilt on every read, so a clock stamp
+ * gave GET one version and the save's re-read a later one — every save of a
+ * seeded article was refused as stale, and reopening it fetched another.
+ */
+const SEED_VERSION = '1970-01-01T00:00:00.000Z'
+
+/**
  * Read the file, falling back to the authored catalogue the first time.
  *
  * Seeding from `ARTICLES` rather than starting empty is the point: a developer
@@ -68,12 +77,11 @@ function readAll(): ArticleRecord[] {
   try {
     raw = readFileSync(FILE, 'utf8')
   } catch {
-    const now = new Date().toISOString()
     return [
-      ...ARTICLES.map((a) => ({ ...a, status: 'published' as const, updatedAt: now, updatedBy: null })),
+      ...ARTICLES.map((a) => ({ ...a, status: 'published' as const, updatedAt: SEED_VERSION, updatedBy: null })),
       /* The pilot pages arrive as drafts, which is what they are: content for
          the owner to review in the editor, never a seed of the live site. */
-      ...PILOT_DRAFTS.map((a) => ({ ...a, status: 'draft' as const, updatedAt: now, updatedBy: null })),
+      ...PILOT_DRAFTS.map((a) => ({ ...a, status: 'draft' as const, updatedAt: SEED_VERSION, updatedBy: null })),
     ]
   }
 
