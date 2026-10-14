@@ -187,6 +187,31 @@ describe('publishing', () => {
     ]);
   });
 
+  it('retires a cleanup_failed copy the body no longer references', async () => {
+    db.assets = [
+      { id: A, state: 'draft' },
+      { id: B, state: 'cleanup_failed' },
+    ];
+    await expect(reconcileArticleAssets(ARTICLE, [figure(A)], 'published')).resolves.toEqual({
+      ok: true,
+    });
+    const removed = calls.filter((c) => c.op === 'remove' && c.bucket === 'lab');
+    expect(removed.flatMap((c) => c.paths)).toEqual([
+      `${ARTICLE}/${B}/320.webp`,
+      `${ARTICLE}/${B}/640.webp`,
+      `${ARTICLE}/${B}/1024.webp`,
+    ]);
+  });
+
+  it('still refuses to publish a referenced cleanup_failed asset', async () => {
+    db.assets = [{ id: A, state: 'cleanup_failed' }];
+    await expect(reconcileArticleAssets(ARTICLE, [figure(A)], 'published')).resolves.toEqual({
+      ok: false,
+      error: 'incompleteAsset',
+    });
+    expect(calls).toEqual([]);
+  });
+
   it('reports a failed copy rather than flipping the article', async () => {
     db.copyFails = true;
     await expect(reconcileArticleAssets(ARTICLE, [figure(A)], 'published')).resolves.toEqual({
@@ -231,6 +256,42 @@ describe('unpublishing', () => {
     db.assets = [{ id: A, state: 'published' }];
     await reconcileArticleAssets(ARTICLE, [figure(A)], 'draft');
     expect(calls.some((c) => c.bucket === 'lab-drafts')).toBe(false);
+  });
+
+  it('retries the public copy a failed unpublish left behind, and returns it to draft', async () => {
+    /* The asset was marked cleanup_failed by an earlier unpublish whose removal
+       failed. Every later draft save used to refuse it as incompleteAsset
+       before anything was retried, so the public copy stayed fetchable for
+       good and each save answered 502 for a row that had saved. */
+    db.assets = [{ id: A, state: 'cleanup_failed' }];
+    await expect(reconcileArticleAssets(ARTICLE, [figure(A)], 'draft')).resolves.toEqual({
+      ok: true,
+    });
+    const removed = calls.filter((c) => c.op === 'remove' && c.bucket === 'lab');
+    expect(removed.flatMap((c) => c.paths)).toEqual([
+      `${ARTICLE}/${A}/320.webp`,
+      `${ARTICLE}/${A}/640.webp`,
+      `${ARTICLE}/${A}/1024.webp`,
+    ]);
+    expect(db.assets).toEqual([{ id: A, state: 'draft' }]);
+  });
+
+  it('removes an unreferenced cleanup_failed copy but keeps its label', async () => {
+    /* Unreferenced, it may be an upload whose own compensating delete failed:
+       there is no telling its private copy is whole, and the label is what
+       the cleanup count reads. */
+    db.assets = [{ id: B, state: 'cleanup_failed' }];
+    await expect(reconcileArticleAssets(ARTICLE, [], 'draft')).resolves.toEqual({ ok: true });
+    expect(calls.filter((c) => c.op === 'remove').flatMap((c) => c.paths)).toHaveLength(3);
+    expect(db.assets).toEqual([{ id: B, state: 'cleanup_failed' }]);
+  });
+
+  it('never refuses a draft save over a reference, because nothing is published from it', async () => {
+    db.assets = [{ id: A, state: 'orphaned' }];
+    await expect(
+      reconcileArticleAssets(ARTICLE, [figure(A), figure(FOREIGN)], 'draft'),
+    ).resolves.toEqual({ ok: true });
+    expect(calls.some((c) => c.op === 'copy')).toBe(false);
   });
 
   it('marks an asset cleanup_failed when its public copy will not go', async () => {

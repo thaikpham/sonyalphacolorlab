@@ -18,6 +18,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
  */
 
 const ID = 'body-ev-vs-flash-ev'
+const OPENED = '2026-10-14T01:00:00.000001+00:00'
+const SAVED = '2026-10-14T02:00:00.000002+00:00'
 
 const db = {
   articleError: null as { message: string } | null,
@@ -42,7 +44,11 @@ vi.mock('@/lib/supabase/server', async (importOriginal) => ({
             maybeSingle: async () => ({ data: db.articleError ? null : db.article, error: db.articleError }),
           }),
         }),
-        update: () => ({ eq: () => ({ select: async () => ({ data: [{ id: ID }], error: null }) }) }),
+        update: () => ({
+          eq: () => ({
+            eq: () => ({ select: async () => ({ data: [{ id: ID, updated_at: SAVED }], error: null }) }),
+          }),
+        }),
         delete: () => ({ eq: async () => ({ error: null }) }),
       }
     },
@@ -83,12 +89,20 @@ const draftBody = {
   archetype: 'explainer',
   blocks: [],
   status: 'draft',
+  expectedUpdatedAt: OPENED,
 }
 
 beforeEach(() => {
   db.articleError = null
   db.assetsError = null
-  db.article = { id: ID, title: 'Body EV vs flash EV', status: 'published', kind: 'article', blocks: [] }
+  db.article = {
+    id: ID,
+    title: 'Body EV vs flash EV',
+    status: 'published',
+    kind: 'article',
+    blocks: [],
+    updated_at: OPENED,
+  }
   vi.spyOn(console, 'error').mockImplementation(() => {})
 })
 

@@ -42,6 +42,20 @@ export type UploadResult = { assetId: string; previewUrl: string }
  */
 export type UploadFn = (file: File) => Promise<UploadResult | null>
 
+/** The block fields that hold an asset UUID. */
+export type AssetField = 'assetId' | 'beforeAssetId' | 'afterAssetId'
+
+/**
+ * Set or clear one image field, on the block as it is when the call lands.
+ *
+ * Separate from `onChange` because an upload answers seconds after the file
+ * was picked. `onChange` takes a whole block, and the only block an upload
+ * has in hand is the one from that moment — so writing it back reverted
+ * whatever had changed since, the comparison's other half included. The
+ * parent merges just this field into its current copy (`withAsset`).
+ */
+export type SetAssetFn = (field: AssetField, assetId: string | undefined) => void
+
 /** Every block type, in the order the "add block" row offers them — the order
     an article is actually built in, not alphabetical. */
 export const BLOCK_TYPES: readonly Block['t'][] = [
@@ -156,11 +170,11 @@ function ImageSlot({
   const t = useTranslations('labAdmin')
   const [busy, setBusy] = useState(false)
   const [failed, setFailed] = useState(false)
-  /* Held here, beside the upload that produced it, rather than lifted into the
-     draft: it expires, and a draft is what gets written to the database. */
-  const [fresh, setFresh] = useState<string | null>(null)
   const id = useId()
-  const preview = fresh ?? (assetId ? previews[assetId] : undefined)
+  /* From the parent's map only. The upload adds its signed URL there, so a
+     copy held here as well was redundant — and with index keys it outlived
+     its block, showing one article's photo in another's empty slot. */
+  const preview = assetId ? previews[assetId] : undefined
 
   async function pick(file: File | undefined) {
     if (!file) return
@@ -172,7 +186,6 @@ function ImageSlot({
       setFailed(true)
       return
     }
-    setFresh(result.previewUrl)
     onChange(result.assetId)
   }
 
@@ -224,10 +237,7 @@ function ImageSlot({
           {assetId ? (
             <button
               type="button"
-              onClick={() => {
-                setFresh(null)
-                onChange(undefined)
-              }}
+              onClick={() => onChange(undefined)}
               className="chip chip-action"
             >
               {t('clearImage')}
@@ -244,12 +254,14 @@ function ImageSlot({
 export function BlockFields({
   block,
   onChange,
+  onAsset,
   upload,
   previews,
   canUpload,
 }: {
   block: Block
   onChange: (next: Block) => void
+  onAsset: SetAssetFn
   upload: UploadFn
   previews: Readonly<Record<string, string>>
   canUpload: boolean
@@ -455,7 +467,7 @@ export function BlockFields({
               assetId={block.beforeAssetId}
               previews={previews}
               canUpload={canUpload}
-              onChange={(beforeAssetId) => onChange({ ...block, beforeAssetId })}
+              onChange={(assetId) => onAsset('beforeAssetId', assetId)}
               upload={upload}
             />
             <ImageSlot
@@ -463,7 +475,7 @@ export function BlockFields({
               assetId={block.afterAssetId}
               previews={previews}
               canUpload={canUpload}
-              onChange={(afterAssetId) => onChange({ ...block, afterAssetId })}
+              onChange={(assetId) => onAsset('afterAssetId', assetId)}
               upload={upload}
             />
           </div>
@@ -471,7 +483,7 @@ export function BlockFields({
               nothing at all until both halves exist, so a comparison with one
               image looks to the editor like a block that vanished. */}
           {!block.beforeAssetId || !block.afterAssetId ? (
-            <p className="meta text-community">{t('compareNeedsBoth')}</p>
+            <p className="meta text-ink-muted">{t('compareNeedsBoth')}</p>
           ) : null}
           <Labelled label={t('compareCaption')}>
             <input
@@ -544,7 +556,7 @@ export function BlockFields({
             assetId={block.assetId}
             previews={previews}
             canUpload={canUpload}
-            onChange={(assetId) => onChange({ ...block, assetId })}
+            onChange={(assetId) => onAsset('assetId', assetId)}
             upload={upload}
           />
           <Labelled label={t('figureCaption')} hint={t('figureCaptionHint')}>
@@ -628,7 +640,7 @@ function EmbedFields({
           </span>
         </p>
       ) : (
-        <p className="meta text-community">{t('embedNeedsId')}</p>
+        <p className="meta text-ink-muted">{t('embedNeedsId')}</p>
       )}
 
       <Labelled label={t('embedCaption')} hint={t('embedCaptionHint')}>

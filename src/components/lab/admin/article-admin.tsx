@@ -1,10 +1,11 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { useAdminSession } from '@/components/admin-ui/session'
 import { LEVELS, TOPICS } from '@/lib/lab/articles'
+import { ARCHETYPES } from '@/lib/lab/parse'
 import type {
   Archetype,
   Article,
@@ -14,15 +15,23 @@ import type {
   Block,
   ContentRef,
 } from '@/lib/lab/types'
-import { BLOCK_TYPES, BlockFields, emptyBlock, type UploadFn } from './block-editor'
+import { BLOCK_TYPES, BlockFields, type AssetField, type UploadFn } from './block-editor'
+import { MetaEditor, type RefOptions } from './meta-editor'
 import {
-  MetaEditor,
-  emptyMetaDraft,
-  toMetaDraft,
-  toMetaPayload,
-  type MetaDraft,
-  type RefOptions,
-} from './meta-editor'
+  addBlock as withNewBlock,
+  afterSave,
+  asDraft,
+  blankDraft,
+  edited,
+  isDirty,
+  leavesInPlace,
+  publishProblems,
+  savePayload,
+  withAsset,
+  type Draft,
+  type DraftFields,
+  type StoredArticle,
+} from './article-draft'
 import { AREA, FIELD, SELECT } from '@/components/admin-ui/controls'
 import { MAX_UPLOAD_BYTES } from '@/lib/recipes/upload-limits'
 
@@ -44,18 +53,11 @@ import { MAX_UPLOAD_BYTES } from '@/lib/recipes/upload-limits'
  *   after — which is the difference between a checklist and an error dialog.
  * - **Nothing autosaves.** An article is prose, and an autosave that publishes
  *   a half-rewritten sentence to a live URL is worse than losing a paragraph.
- *   `dirty` drives the leave warning instead.
+ *   `dirty` drives the leave warnings instead.
+ *
+ * What lands on the draft, and when, is `article-draft.ts` — pure, so the
+ * rules can run in a test with no DOM.
  */
-
-const ARCHETYPES: readonly Archetype[] = [
-  'setup-guide',
-  'versus',
-  'technique',
-  'explainer',
-  'fix',
-  'gear',
-  'recipe',
-]
 
 const KINDS: readonly ArticleKind[] = ['article', 'knowledge']
 
@@ -63,47 +65,7 @@ const KINDS: readonly ArticleKind[] = ['article', 'knowledge']
 const pathFor = (kind: ArticleKind, id: string) =>
   kind === 'knowledge' ? `/learn/${id}` : `/blog/${id}`
 
-type Draft = {
-  id: string | null
-  status: ArticleStatus
-  kind: ArticleKind
-  topic: Article['topic']
-  level: Article['level']
-  archetype: Archetype
-  read: string
-  title: string
-  dek: string
-  blocks: Block[]
-  meta: MetaDraft
-}
-
-const asDraft = (a: ArticleRecord): Draft => ({
-  id: a.id,
-  status: a.status,
-  kind: a.kind,
-  topic: a.topic,
-  level: a.level,
-  archetype: a.archetype,
-  read: a.read,
-  title: a.title,
-  dek: a.dek,
-  blocks: [...a.blocks],
-  meta: toMetaDraft(a.meta),
-})
-
-const blankDraft = (): Draft => ({
-  id: null,
-  status: 'draft',
-  kind: 'article',
-  topic: 'setup',
-  level: 'newbie',
-  archetype: 'explainer',
-  read: '',
-  title: '',
-  dek: '',
-  blocks: [],
-  meta: emptyMetaDraft(),
-})
+type ListResult = { ok: true; rows: ArticleRecord[] } | { ok: false; error: string }
 
 export function ArticleAdmin() {
   const t = useTranslations('labAdmin')
@@ -114,11 +76,14 @@ export function ArticleAdmin() {
   const { authed, bearer } = useAdminSession()
 
   const [articles, setArticles] = useState<ArticleRecord[]>([])
+  /* Whether the list has loaded at all, and why it last failed. "No articles
+     yet" is an answer, so it is shown only after one: during an outage the
+     aside used to say the blog was empty. */
+  const [listLoaded, setListLoaded] = useState(false)
+  const [listError, setListError] = useState<string | null>(null)
   const [draft, setDraft] = useState<Draft | null>(null)
-  const [dirty, setDirty] = useState(false)
   const [busy, setBusy] = useState<'' | 'loading' | 'saving' | 'deleting'>('')
   const [status, setStatus] = useState<{ kind: 'ok' | 'err'; msg: string } | null>(null)
-  const [problems, setProblems] = useState<readonly string[]>([])
   /* Asset id → short-lived signed URL. Editor-only state: the URLs expire in
      ten minutes and none of them is ever written into a block, which stores an
      asset UUID and nothing else. Refetched with the article, including after a
@@ -133,6 +98,13 @@ export function ArticleAdmin() {
   /* The references the server could not find, from the last read or save.
      Highlighted in the picker and listed under the spec checklist. */
   const [unknownRefs, setUnknownRefs] = useState<readonly ContentRef[]>([])
+  /* The article the last click asked for. A read that answers after a later
+     click is for a screen that has moved on; without this, two quick clicks
+     could leave the editor showing the first while the list showed the
+     second selected — and the next save wrote to the first. */
+  const opening = useRef<string | null>(null)
+
+  const dirty = isDirty(draft)
 
   /* An error code, never a sentence from the server. The routes answer with
      codes for the same reason the community ones do: a literal renders
@@ -142,28 +114,31 @@ export function ArticleAdmin() {
     [t],
   )
 
-  /* Fetches and reports failure, but sets no list state — so the mount effect
-     below can decide for itself whether the answer still has anywhere to go. */
-  const fetchList = useCallback(async (): Promise<ArticleRecord[] | null> => {
+  /* Fetches and sets no state, so each caller can decide whether the answer
+     still has anywhere to go. */
+  const fetchList = useCallback(async (): Promise<ListResult> => {
     try {
       const res = await fetch('/api/admin/articles', { headers: authed() })
       const data = (await res.json()) as { articles?: ArticleRecord[]; error?: string }
-      if (!res.ok || !data.articles) {
-        setStatus({ kind: 'err', msg: codeMessage(data.error ?? 'loadFailed') })
-        return null
-      }
-      return data.articles
+      if (!res.ok || !data.articles) return { ok: false, error: data.error ?? 'loadFailed' }
+      return { ok: true, rows: data.articles }
     } catch {
-      setStatus({ kind: 'err', msg: codeMessage('loadFailed') })
-      return null
+      return { ok: false, error: 'loadFailed' }
     }
-  }, [authed, codeMessage])
+  }, [authed])
+
+  const applyList = useCallback((result: ListResult) => {
+    if (result.ok) {
+      setArticles(result.rows)
+      setListLoaded(true)
+      setListError(null)
+    } else {
+      setListError(result.error)
+    }
+  }, [])
 
   /** Refresh after a save or a delete, where the component is certainly alive. */
-  const loadList = useCallback(async () => {
-    const rows = await fetchList()
-    if (rows) setArticles(rows)
-  }, [fetchList])
+  const loadList = useCallback(async () => applyList(await fetchList()), [applyList, fetchList])
 
   /* No session probe of its own any more — mounting IS the answer, because
      `<AdminShell>` renders this only when the gate opened. The `live` flag
@@ -172,13 +147,13 @@ export function ArticleAdmin() {
   useEffect(() => {
     let live = true
     ;(async () => {
-      const rows = await fetchList()
-      if (live && rows) setArticles(rows)
+      const result = await fetchList()
+      if (live) applyList(result)
     })()
     return () => {
       live = false
     }
-  }, [fetchList])
+  }, [fetchList, applyList])
 
   useEffect(() => {
     let live = true
@@ -198,18 +173,34 @@ export function ArticleAdmin() {
     }
   }, [authed])
 
-  /* The one guard against losing a draft. Nothing autosaves, so the browser's
-     own prompt is what stands between an unsaved rewrite and a closed tab. */
+  /* The guards against losing a draft. Nothing autosaves, so the browser's
+     own prompt is what stands between an unsaved rewrite and a closed tab —
+     and it never fires for a client-side navigation, which is what every link
+     in the admin header is. Those are asked about here, in the capture phase
+     on `window`, so the question comes before `<Link>` has routed anywhere.
+     Browser Back is a `popstate` and cannot be held this way. */
   useEffect(() => {
     if (!dirty) return
     const warn = (e: BeforeUnloadEvent) => e.preventDefault()
+    const guard = (e: MouseEvent) => {
+      const link = e.target instanceof Element ? e.target.closest('a[href]') : null
+      if (!link || !leavesInPlace(e, link)) return
+      if (window.confirm(t('discardConfirm'))) return
+      e.preventDefault()
+      e.stopPropagation()
+    }
     window.addEventListener('beforeunload', warn)
-    return () => window.removeEventListener('beforeunload', warn)
-  }, [dirty])
+    window.addEventListener('click', guard, true)
+    return () => {
+      window.removeEventListener('beforeunload', warn)
+      window.removeEventListener('click', guard, true)
+    }
+  }, [dirty, t])
 
-  const edit = useCallback((patch: Partial<Draft>) => {
-    setDraft((d) => (d ? { ...d, ...patch } : d))
-    setDirty(true)
+  /* Every edit goes through the updater, so it applies to the draft as it is
+     when React runs it rather than to the copy this render closed over. */
+  const edit = useCallback((patch: Partial<DraftFields>) => {
+    setDraft((d) => (d ? edited(d, patch) : d))
   }, [])
 
   /* The saved article's id, not the draft's working copy. An asset belongs to
@@ -240,7 +231,7 @@ export function ArticleAdmin() {
         })
         /* The platform's own 413 is plain text, so it is read by status:
            parsing it as JSON would report "upload failed" for a file that is
-           simply too large. */
+           simply too large. The route keeps 413 for bytes alone. */
         if (res.status === 413) {
           setStatus({ kind: 'err', msg: codeMessage('tooLarge') })
           return null
@@ -267,16 +258,15 @@ export function ArticleAdmin() {
   /**
    * Re-read the signed previews for one article.
    *
-   * Separate from `openArticle` because it runs after a save, where reloading
-   * the whole record would throw away the editor's unsaved scroll position and
-   * any block they were mid-edit on. Only the previews are stale.
+   * Merged rather than replaced: an image uploaded while the save was out is
+   * not in the stored row yet, and replacing the map would blank its slot.
    */
   async function refreshPreviews(id: string) {
     try {
       const res = await fetch(`/api/admin/articles/${id}`, { headers: authed() })
       if (!res.ok) return
       const data = (await res.json()) as { previews?: Record<string, string> }
-      setPreviews(data.previews ?? {})
+      setPreviews((p) => ({ ...p, ...(data.previews ?? {}) }))
     } catch {
       /* A stale preview is a cosmetic problem and the save already succeeded.
          Reporting a failure here would tell the editor their article did not
@@ -284,41 +274,52 @@ export function ArticleAdmin() {
     }
   }
 
-  async function openArticle(id: string) {
-    if (dirty && !window.confirm(t('discardConfirm'))) return
+  /**
+   * Read one article into the editor. Never asks about unsaved changes —
+   * `openArticle` does, from the click that knows the current answer. A save
+   * that reloaded through the asking version asked from a stale closure, and
+   * offered to "discard" an article that had just been saved.
+   */
+  async function loadArticle(id: string) {
+    opening.current = id
     setBusy('loading')
     setStatus(null)
     try {
       const res = await fetch(`/api/admin/articles/${id}`, { headers: authed() })
       const data = (await res.json()) as {
         article?: ArticleRecord
-        problems?: string[]
         unknownRefs?: ContentRef[]
         previews?: Record<string, string>
         error?: string
       }
+      if (opening.current !== id) return
       if (!res.ok || !data.article) {
         setStatus({ kind: 'err', msg: codeMessage(data.error ?? 'loadFailed') })
         return
       }
       setDraft(asDraft(data.article))
-      setProblems(data.problems ?? [])
       setUnknownRefs(data.unknownRefs ?? [])
       setPreviews(data.previews ?? {})
-      setDirty(false)
+    } catch {
+      /* A network failure, or a platform error page that is not JSON. */
+      if (opening.current === id) setStatus({ kind: 'err', msg: codeMessage('loadFailed') })
     } finally {
-      setBusy('')
+      if (opening.current === id) setBusy('')
     }
+  }
+
+  function openArticle(id: string) {
+    if (dirty && !window.confirm(t('discardConfirm'))) return
+    void loadArticle(id)
   }
 
   function startNew() {
     if (dirty && !window.confirm(t('discardConfirm'))) return
+    opening.current = null
     setDraft(blankDraft())
     setPreviews({})
-    setProblems([])
     setUnknownRefs([])
     setStatus(null)
-    setDirty(false)
   }
 
   /**
@@ -326,85 +327,73 @@ export function ArticleAdmin() {
    *
    * The two are one request because they are one row. `nextStatus` is what the
    * article becomes; the route refuses `published` when the spec problems are
-   * non-empty and returns the list, which is why a failed publish still leaves
-   * the editor holding an accurate problem list rather than a stale one.
+   * non-empty and returns the list.
+   *
+   * The answer carries the stored row, which `afterSave` applies to the draft
+   * as it is by then — not to `sent`, the copy this call closed over. That
+   * copy used to be written back whole, reverting anything typed during the
+   * round trip and marking it clean.
    */
   async function save(nextStatus: ArticleStatus) {
     if (!draft) return
-    const wasStatus = draft.status
+    const sent = draft
     setBusy('saving')
     setStatus(null)
 
-    const body = JSON.stringify({
-      kind: draft.kind,
-      topic: draft.topic,
-      level: draft.level,
-      archetype: draft.archetype,
-      read: draft.read,
-      title: draft.title,
-      dek: draft.dek,
-      blocks: draft.blocks,
-      meta: toMetaPayload(draft.meta, draft.kind),
-      status: nextStatus,
-    })
-
     try {
-      const creating = draft.id === null
+      const creating = sent.id === null
       const res = await fetch(
-        creating ? '/api/admin/articles' : `/api/admin/articles/${draft.id}`,
-        { method: creating ? 'POST' : 'PATCH', headers: authed(), body },
+        creating ? '/api/admin/articles' : `/api/admin/articles/${sent.id}`,
+        {
+          method: creating ? 'POST' : 'PATCH',
+          headers: authed(),
+          body: JSON.stringify(savePayload(sent, nextStatus)),
+        },
       )
       const data = (await res.json()) as {
         ok?: boolean
         id?: string
-        problems?: string[]
+        article?: Article & { status: ArticleStatus }
+        updatedAt?: string
         unknownRefs?: ContentRef[]
         dropped?: number
         droppedMeta?: number
         error?: string
       }
 
-      if (data.problems) setProblems(data.problems)
       if (data.unknownRefs) setUnknownRefs(data.unknownRefs)
 
-      if (!res.ok) {
+      /* The row was written whenever the answer carries it — including an
+         asset failure after the write, where keeping the old version would
+         refuse the next save as stale. */
+      const stored: StoredArticle | null =
+        data.article && data.updatedAt ? { ...data.article, updatedAt: data.updatedAt } : null
+      if (stored) setDraft((d) => afterSave(d, sent, stored))
+
+      if (!res.ok || !stored) {
         setStatus({ kind: 'err', msg: codeMessage(data.error ?? 'saveFailed') })
         return
       }
 
-      const savedId = data.id ?? draft.id
-      setDraft({ ...draft, id: savedId, status: creating ? 'draft' : nextStatus })
-      setDirty(false)
       await loadList()
-
-      if (savedId) {
-        if (data.dropped || data.droppedMeta) {
-          /* The parser refused a block, so the row no longer matches what is on
-             screen — and `dirty` is false, so nothing would prompt the editor
-             to reconcile them. Left alone they would keep editing blocks that
-             are already gone, and the next save would drop them again. Reload
-             the record: it is the only state that is true. */
-          await openArticle(savedId)
-        } else {
-          /* Read the previews back rather than trusting the draft in hand.
-             Publishing moves an asset's bytes between buckets, so a signed URL
-             taken before the save may point at the wrong copy. */
-          await refreshPreviews(savedId)
-        }
-      }
+      /* Read the previews back rather than trusting the ones in hand.
+         Publishing moves an asset's bytes between buckets, so a signed URL
+         taken before the save may point at the wrong copy. */
+      await refreshPreviews(stored.id)
 
       setStatus({
         kind: 'ok',
         /* The dropped count is surfaced, not swallowed. A block the parser
-           refused is gone from the row the moment this returns, and an editor
-           who is not told will find out by scrolling past a gap next week. */
+           refused is gone from the row the moment this returns, and from the
+           screen too once `afterSave` rebuilds it — an editor who is not told
+           will find out by scrolling past a gap next week. */
         msg: data.dropped
           ? t('savedWithDropped', { n: data.dropped })
           : data.droppedMeta
             ? t('savedWithDroppedMeta', { n: data.droppedMeta })
             : creating
             ? t('created')
-            : nextStatus === 'published' && wasStatus !== 'published'
+            : nextStatus === 'published' && sent.status !== 'published'
               ? t('published')
               : t('saved'),
       })
@@ -419,6 +408,7 @@ export function ArticleAdmin() {
     if (!draft?.id) return
     if (!window.confirm(t('deleteConfirm', { title: draft.title }))) return
     setBusy('deleting')
+    setStatus(null)
     try {
       const res = await fetch(`/api/admin/articles/${draft.id}`, {
         method: 'DELETE',
@@ -429,37 +419,56 @@ export function ArticleAdmin() {
         setStatus({ kind: 'err', msg: codeMessage(data.error ?? 'deleteFailed') })
         return
       }
+      opening.current = null
       setDraft(null)
-      setDirty(false)
-      setProblems([])
       setStatus({ kind: 'ok', msg: t('deleted') })
+      await loadList()
+    } catch {
+      /* No readable answer, so no telling whether the row went. The list is
+         re-read so it shows whichever is true. */
+      setStatus({ kind: 'err', msg: codeMessage('deleteFailed') })
       await loadList()
     } finally {
       setBusy('')
     }
   }
 
-  // --- block list operations, all immutable ------------------------------
+  // --- block list operations, all immutable, all by key -------------------
 
-  const setBlock = (i: number, next: Block) =>
-    edit({ blocks: draft ? draft.blocks.map((b, bi) => (bi === i ? next : b)) : [] })
+  const setBlock = (key: number, block: Block) =>
+    setDraft((d) =>
+      d ? edited(d, { blocks: d.blocks.map((b) => (b.key === key ? { key, block } : b)) }) : d,
+    )
 
-  const addBlock = (type: Block['t']) =>
-    edit({ blocks: draft ? [...draft.blocks, emptyBlock(type)] : [] })
+  /* The session is the one this render shows, so an upload picked now and
+     answering after another article has opened is dropped, not misfiled. */
+  const setAsset = (session: number, key: number, field: AssetField, assetId: string | undefined) =>
+    setDraft((d) => withAsset(d, session, key, field, assetId))
 
-  const removeBlock = (i: number) =>
-    edit({ blocks: draft ? draft.blocks.filter((_, bi) => bi !== i) : [] })
+  const addBlock = (type: Block['t']) => setDraft((d) => (d ? withNewBlock(d, type) : d))
+
+  const removeBlock = (key: number) =>
+    setDraft((d) => (d ? edited(d, { blocks: d.blocks.filter((b) => b.key !== key) }) : d))
 
   /** Move by swapping with the neighbour — the only reorder an article needs,
       and the one that works with a keyboard without a drag surface. */
-  const moveBlock = (i: number, by: -1 | 1) => {
-    if (!draft) return
-    const target = i + by
-    if (target < 0 || target >= draft.blocks.length) return
-    const blocks = [...draft.blocks]
-    ;[blocks[i], blocks[target]] = [blocks[target], blocks[i]]
-    edit({ blocks })
-  }
+  const moveBlock = (key: number, by: -1 | 1) =>
+    setDraft((d) => {
+      if (!d) return d
+      const i = d.blocks.findIndex((b) => b.key === key)
+      const target = i + by
+      if (i === -1 || target < 0 || target >= d.blocks.length) return d
+      const blocks = [...d.blocks]
+      ;[blocks[i], blocks[target]] = [blocks[target], blocks[i]]
+      return edited(d, { blocks })
+    })
+
+  /* Shown always, not only on a failed publish, and computed from the draft
+     on screen — see `publishProblems`. */
+  const problems = useMemo(
+    () => (draft ? publishProblems(draft, unknownRefs) : []),
+    [draft, unknownRefs],
+  )
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -471,9 +480,16 @@ export function ArticleAdmin() {
 
   return (
     <main className="mx-auto flex w-full max-w-[110rem] flex-wrap items-start gap-y-8 gap-x-[clamp(2rem,3vw,3.5rem)] inset-safe pb-24 pt-8">
-      {/* ---- the list ---- */}
+      {/* ---- the list ----
+          Held still while a request is out: opening another article mid-save
+          used to have the save's answer land on it. */}
       <aside className="flex grow basis-[clamp(16rem,20vw,22rem)] flex-col gap-4 self-start lg:sticky lg:top-6 lg:grow-0">
-        <button type="button" onClick={startNew} className="btn-accent w-full cursor-pointer">
+        <button
+          type="button"
+          onClick={startNew}
+          disabled={busy !== ''}
+          className="btn-accent w-full cursor-pointer disabled:opacity-40"
+        >
           {t('newArticle')}
         </button>
 
@@ -493,9 +509,10 @@ export function ArticleAdmin() {
                 <hr className="seam" />
                 <button
                   type="button"
-                  onClick={() => void openArticle(a.id)}
+                  onClick={() => openArticle(a.id)}
+                  disabled={busy !== ''}
                   className={
-                    'flex w-full min-h-[var(--layout-touch-target)] cursor-pointer flex-col gap-1 rounded-md px-3 py-3 text-left transition-colors ' +
+                    'flex w-full min-h-[var(--layout-touch-target)] cursor-pointer flex-col gap-1 rounded-md px-3 py-3 text-left transition-colors disabled:cursor-wait ' +
                     (on ? 'surface-selected' : 'hover:bg-glass')
                   }
                 >
@@ -522,7 +539,11 @@ export function ArticleAdmin() {
               </li>
             )
           })}
-          {visible.length === 0 ? (
+          {listError ? (
+            <li className="py-6">
+              <p className="meta text-danger">{codeMessage(listError)}</p>
+            </li>
+          ) : listLoaded && visible.length === 0 ? (
             <li className="py-6">
               <p className="meta">{t('listEmpty')}</p>
             </li>
@@ -531,7 +552,18 @@ export function ArticleAdmin() {
       </aside>
 
       {/* ---- the editor ---- */}
-      <div className="min-w-0 flex-1 basis-[34rem]">
+      <div className="flex min-w-0 flex-1 basis-[34rem] flex-col gap-5">
+        {/* Outside the draft branch: a delete clears the draft before it
+            reports, and a failed open has no draft to report beside. */}
+        {status ? (
+          <p
+            role="status"
+            className={`text-body-sm ${status.kind === 'ok' ? 'text-accent-400' : 'text-danger'}`}
+          >
+            {status.msg}
+          </p>
+        ) : null}
+
         {!draft ? (
           <div className="surface px-6 py-14">
             <h1 className="text-title-2 font-extrabold tracking-[-0.02em] text-ink">
@@ -563,7 +595,9 @@ export function ArticleAdmin() {
                 <button
                   type="button"
                   onClick={() => void save(draft.status === 'published' ? 'draft' : 'published')}
-                  disabled={busy !== ''}
+                  /* A blank title is refused by the route either way; disabled
+                     here as Save is, rather than answered with an error. */
+                  disabled={busy !== '' || !draft.title.trim()}
                   className="btn-accent cursor-pointer disabled:opacity-40"
                 >
                   {draft.status === 'published' ? t('unpublish') : t('publish')}
@@ -589,15 +623,6 @@ export function ArticleAdmin() {
                 </button>
               ) : null}
             </div>
-
-            {status ? (
-              <p
-                role="status"
-                className={`text-body-sm ${status.kind === 'ok' ? 'text-accent-400' : 'text-danger'}`}
-              >
-                {status.msg}
-              </p>
-            ) : null}
 
             {/* --- the spec checklist ---
                 Shown always, not only on a failed publish. These are the rules
@@ -769,8 +794,8 @@ export function ArticleAdmin() {
             />
 
             {/* --- blocks --- */}
-            {draft.blocks.map((block, i) => (
-              <section key={i} className="surface flex flex-col gap-4 px-5 py-5">
+            {draft.blocks.map(({ key, block }, i) => (
+              <section key={key} className="surface flex flex-col gap-4 px-5 py-5">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="chip bg-accent-900 font-semibold uppercase tracking-[0.08em] text-ink">
                     {t(`blocks.${block.t}` as never)}
@@ -781,7 +806,7 @@ export function ArticleAdmin() {
                   <span className="flex-1" />
                   <button
                     type="button"
-                    onClick={() => moveBlock(i, -1)}
+                    onClick={() => moveBlock(key, -1)}
                     disabled={i === 0}
                     className="chip chip-action disabled:opacity-30"
                     aria-label={t('moveUp')}
@@ -790,7 +815,7 @@ export function ArticleAdmin() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => moveBlock(i, 1)}
+                    onClick={() => moveBlock(key, 1)}
                     disabled={i === draft.blocks.length - 1}
                     className="chip chip-action disabled:opacity-30"
                     aria-label={t('moveDown')}
@@ -799,7 +824,7 @@ export function ArticleAdmin() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => removeBlock(i)}
+                    onClick={() => removeBlock(key)}
                     className="chip chip-action text-danger"
                   >
                     {t('removeBlock')}
@@ -808,7 +833,8 @@ export function ArticleAdmin() {
 
                 <BlockFields
                   block={block}
-                  onChange={(next) => setBlock(i, next)}
+                  onChange={(next) => setBlock(key, next)}
+                  onAsset={(field, assetId) => setAsset(draft.session, key, field, assetId)}
                   upload={upload}
                   previews={previews}
                   canUpload={articleId !== null}

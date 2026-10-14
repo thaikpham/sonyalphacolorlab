@@ -71,6 +71,23 @@ describe('article media upload', () => {
     expect(calls.upload).toHaveBeenCalledTimes(1);
   });
 
+  it('answers an image too large in pixels with 422, keeping 413 for bytes', async () => {
+    /* The editor reads every 413 as "over 4 MB" without parsing it, because
+       the platform's own 413 is plain text. A 2 MB panorama was told it was
+       over 4 MB, and `dimensionsTooLarge` could never be shown. */
+    calls.process.mockResolvedValueOnce({ ok: false, error: 'dimensionsTooLarge' } as never);
+    const res = await POST(request('cach-chinh-white-balance'));
+    expect(res.status).toBe(422);
+    expect(await res.json()).toEqual({ error: 'dimensionsTooLarge' });
+
+    calls.process.mockResolvedValueOnce({ ok: false, error: 'tooLarge' } as never);
+    expect((await POST(request('cach-chinh-white-balance'))).status).toBe(413);
+
+    calls.process.mockResolvedValueOnce({ ok: false, error: 'unsupportedType' } as never);
+    expect((await POST(request('cach-chinh-white-balance'))).status).toBe(415);
+    expect(calls.upload).not.toHaveBeenCalled();
+  });
+
   it('refuses a body the platform would cut off, from its declared length alone', async () => {
     const res = await POST(
       request('cach-chinh-white-balance', {
