@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { checkDailyBudget, checkRateLimit } from '@/lib/ai/rate-limit';
 import { tweakRecipe } from '@/lib/ai/tweak';
+import { TWEAK_REQUEST_MAX, TWEAK_REQUEST_MIN } from '@/lib/ai/tweak-form';
 import { getRecipe } from '@/lib/recipes/source';
 import { tweakErrorBody } from '@/lib/ai/errors';
 import { ContentUnavailableError, ControlUnavailableError } from '@/lib/supabase/errors';
@@ -17,7 +18,7 @@ import { requireUser } from '@/lib/auth/require-user';
 
 const body = z.object({
   slug: z.string().min(1).max(120),
-  request: z.string().min(3).max(500),
+  request: z.string().min(TWEAK_REQUEST_MIN).max(TWEAK_REQUEST_MAX),
   locale: z.enum(['en', 'vi']).default('en'),
 });
 

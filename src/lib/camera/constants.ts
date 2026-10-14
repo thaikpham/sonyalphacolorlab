@@ -94,8 +94,13 @@ export const WB_PRESETS = [
 /** Sony documents Flash as "only when shooting still images". */
 export const WB_PRESETS_STILL_ONLY = ['Flash'] as const;
 
-/** The three White Balance controls as the recipe tables name them. */
+/**
+ * The White Balance controls as the recipe tables name them. `whiteBalance` is
+ * the menu itself (TP1000640840): the head row of an Auto or preset recipe,
+ * which sets no Temperature, and the one-row summary in the AI diff.
+ */
 export const WB_PARAM_LABELS = {
+  whiteBalance: 'White Balance',
   temperature: 'Temperature',
   shiftAb: 'Shift A/B',
   shiftGm: 'Shift G/M',
