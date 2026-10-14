@@ -1,7 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { importSonyAsia, parseCsv, REJECTED, SCRAPE_CORRECTIONS } from './import';
-import { CL_MONOCHROME_LOOKS, CL_RANGES, CREATIVE_LOOK_CODES } from '../camera/constants';
+import {
+  CL_MONOCHROME_LOOKS,
+  CL_RANGES,
+  CREATIVE_LOOK_CODES,
+  WB_AUTO_MODES,
+  WB_PRESETS,
+} from '../camera/constants';
 import { recipeSchema } from '../camera/schema';
 
 /**
@@ -135,6 +141,63 @@ describe('White Balance from the scrape', () => {
       kelvin: 5000,
       shift: { ab: { axis: 'A', amount: 3 }, gm: { axis: 'G', amount: 1 } },
     });
+  });
+});
+
+/* Synthetic rows, so a parsing rule can be pinned without waiting for the
+   scrape to contain an instance of it. */
+const q = (s: string) => `"${s.replace(/"/g, '""')}"`;
+const csvOf = (...data: string[]) =>
+  ['name,data,data2,data3,data4,image,image11', ...data.map((d) => ['Test', d, '', 'Testland', '', '', ''].map(q).join(','))].join('\n');
+const ST = 'ST (Standard) | Contrast 0, Highlights 0, Shadows 0, Fade 0, Saturation 0, Sharpness 4, Sharpness Range 3, Clarity 1';
+
+describe('parseCsv', () => {
+  it('strips a BOM, unescapes doubled quotes and keeps newlines inside quotes', () => {
+    expect(parseCsv('﻿a,b\r\n"x ""q""\ny",2\r\n')).toEqual([{ a: 'x "q"\ny', b: '2' }]);
+  });
+
+  it('drops CR outside quotes but keeps it inside them', () => {
+    expect(parseCsv('a,b\r\n"l1\r\nl2",2\r\n')).toEqual([{ a: 'l1\r\nl2', b: '2' }]);
+  });
+
+  it('adds no row for a trailing newline, and none for a blank or one-column line', () => {
+    expect(parseCsv('a,b\n1,2\n\nstray\n')).toEqual([{ a: '1', b: '2' }]);
+  });
+
+  it('refuses an unterminated quote instead of swallowing the rest of the file', () => {
+    expect(() => parseCsv('a,b\n"open,1\n2,3\n')).toThrow(/unterminated/i);
+  });
+});
+
+describe('settings tokens', () => {
+  it('reports a parameter written with no number, rather than storing 0', () => {
+    // "Contrast 0 and no Contrast token are different claims" — and so is a
+    // Contrast token with no number. Number('') is 0.
+    const { recipes, skipped } = importSonyAsia(csvOf(`${ST.replace('Contrast 0', 'Contrast')}, WB AWB`));
+    expect(recipes).toHaveLength(0);
+    expect(skipped[0]?.why).toContain('contrast');
+    const fade = importSonyAsia(csvOf(`${ST.replace('Fade 0', 'Fade ')}, WB AWB`));
+    expect(fade.skipped[0]?.why).toContain('fade');
+  });
+
+  it('splits tokens on a comma with no space after it', () => {
+    // Why SCRAPE_CORRECTIONS needs no "Fade 0,Saturation" entry.
+    const { recipes } = importSonyAsia(csvOf(`${ST.replace('Fade 0, Saturation 0', 'Fade 2,Saturation 3')}, WB AWB`));
+    expect(recipes[0]?.settings).toMatchObject({ fade: 2, saturation: 3 });
+    expect(SCRAPE_CORRECTIONS.some((c) => c.from.includes('Fade 0,Saturation'))).toBe(false);
+  });
+});
+
+describe('White Balance names from constants.ts', () => {
+  it('reads every light-source preset and Auto mode by its own name', () => {
+    for (const preset of WB_PRESETS) {
+      const { recipes } = importSonyAsia(csvOf(`${ST}, WB ${preset}`));
+      expect(recipes[0]?.whiteBalance, preset).toEqual({ mode: 'preset', preset });
+    }
+    for (const auto of WB_AUTO_MODES) {
+      const { recipes } = importSonyAsia(csvOf(`${ST}, WB ${auto}`));
+      expect(recipes[0]?.whiteBalance, auto).toEqual({ mode: 'auto', auto });
+    }
   });
 });
 

@@ -19,7 +19,12 @@
 
 import { parseWhiteBalance } from '../camera/format';
 import { recipeSchema, type Recipe, type WhiteBalance } from '../camera/schema';
-import { CL_MONOCHROME_LOOKS, CREATIVE_LOOK_CODES } from '../camera/constants';
+import {
+  CL_MONOCHROME_LOOKS,
+  CREATIVE_LOOK_CODES,
+  WB_AUTO_MODES,
+  WB_PRESETS,
+} from '../camera/constants';
 
 // ---------------------------------------------------------------------------
 // CSV
@@ -64,6 +69,9 @@ export function parseCsv(text: string): ScrapeRow[] {
     else if (c === '\n') endRow();
     else if (c !== '\r') field += c;
   }
+  // An open quote at end of file has swallowed every row after it. Reported,
+  // like every other defect in the scrape, rather than imported short.
+  if (quoted) throw new Error('unterminated quoted field — the rest of the file would be read as one value');
   if (field !== '' || row.length) endRow();
 
   const [header, ...body] = rows;
@@ -107,11 +115,6 @@ export const SCRAPE_CORRECTIONS: Correction[] = [
     from: 'WB Colour Temp AWB',
     to: 'WB AWB',
     why: 'Contradictory: C.Temp./Filter and Auto are different menu items. AWB is the operative one.',
-  },
-  {
-    from: 'Fade 0,Saturation',
-    to: 'Fade 0, Saturation',
-    why: 'Missing space after a comma would swallow the Saturation token.',
   },
 ];
 
@@ -176,7 +179,12 @@ const CL_KEYS = {
  * The page writes unsigned parameters with a leading `+` ("Sharpness Range +3")
  * even though the camera does not. `Number()` reads both, and the stored value
  * is a plain number — `format.ts` decides how it is displayed.
+ *
+ * Only a numeric literal counts. `Number('')` is 0, so a bare "Contrast," was
+ * stored as Contrast 0 — a value the page never stated.
  */
+const NUMERIC = /^[+-]?\d+(?:\.\d+)?$/;
+
 function parseSettingsTokens(body: string): Record<string, number> {
   const out: Record<string, number> = {};
   // Longest key first, or "Sharpness" consumes "Sharpness Range".
@@ -187,8 +195,7 @@ function parseSettingsTokens(body: string): Record<string, number> {
     const key = keys.find((k) => t.startsWith(k));
     if (!key) continue;
     const raw = t.slice(key.length).trim();
-    const n = Number(raw);
-    if (Number.isFinite(n)) out[CL_KEYS[key as keyof typeof CL_KEYS]] = n;
+    if (NUMERIC.test(raw)) out[CL_KEYS[key as keyof typeof CL_KEYS]] = Number(raw);
   }
   return out;
 }
@@ -207,11 +214,29 @@ const SHIFT_SEP = '\u0000';
  * The page is inconsistent: "WB AWB", "AWB", "WB Colour Temp 5600K B4.0 M0.25",
  * "WB Cloudy A1.5, M0.5". Shift letters are space-separated here but
  * comma-separated in `parseWhiteBalance`, so the clause is normalised first.
+ *
+ * The names it looks for are `WB_AUTO_MODES` and `WB_PRESETS` themselves, so
+ * a preset added to `constants.ts` is found here too (rule 5) instead of
+ * skipping its row as stating "no White Balance". The loose `Fluor.` is the
+ * one scrape-only extra: a misspelt fluorescent preset is still found, then
+ * refused by `parseWhiteBalance` by name.
  */
+const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const WB_CLAUSE = new RegExp(
+  '(?:^|,)\\s*(?:WB\\s+)?((?:Colour Temp\\s+)?[^,]*?(?:' +
+    [
+      // Longest first: alternation takes the first match, not the best one.
+      ...[...WB_AUTO_MODES, ...WB_PRESETS].sort((a, b) => b.length - a.length).map(esc),
+      'Fluor\\.[^,]*',
+      '\\d{3,4}K',
+    ].join('|') +
+    ')[^,]*(?:,\\s*[GM]\\d+(?:\\.\\d+)?)?)\\s*$',
+  'i',
+);
+
 function extractWhiteBalance(body: string): { wb: WhiteBalance | null; rest: string } {
-  const m = /(?:^|,)\s*(?:WB\s+)?((?:Colour Temp\s+)?[^,]*?(?:AWB|\d{3,4}K|Daylight|Shade|Cloudy|Incandescent|Fluor\.[^,]*|Flash|Underwater Auto)[^,]*(?:,\s*[GM]\d+(?:\.\d+)?)?)\s*$/i.exec(
-    body,
-  );
+  const m = WB_CLAUSE.exec(body);
   if (!m) return { wb: null, rest: body };
 
   const clause = m[1]
