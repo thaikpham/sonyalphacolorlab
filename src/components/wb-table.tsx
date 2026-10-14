@@ -119,13 +119,16 @@ export function WbTable({ wb, locale = 'en' }: { wb: WhiteBalance; locale?: Loca
       {/* The three dial rows stripe as one run, exactly like a ParamBlock's —
           this table is not inside one, so it carries the rule itself. */}
       <div className={`flex flex-col ${ROW_STRIPES}`}>
+      {/* Only a Kelvin recipe sets a Temperature. An Auto or preset row is the
+          White Balance menu itself, and the Kelvin explanation would describe
+          a dial that recipe never touches (rule 1b). */}
       <ParamRow
         locale={locale}
-        label={WB_PARAM_LABELS.temperature}
+        label={wb.mode === 'kelvin' ? WB_PARAM_LABELS.temperature : WB_PARAM_LABELS.whiteBalance}
         value={temperature}
         valueStyle={{ color: kelvinColor, fontWeight: 700 }}
         effect={fx.temperature}
-        explanation={WB_EXPLANATIONS.temperature[locale]}
+        explanation={wb.mode === 'kelvin' ? WB_EXPLANATIONS.temperature[locale] : undefined}
       />
       {ab && (
         <ParamRow
