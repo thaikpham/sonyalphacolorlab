@@ -12,15 +12,23 @@ import type { RecipeView } from '../recipes/source';
  * "Tweak with AI" — adjusts an existing recipe from a natural-language request.
  *
  * Three layers keep the output shootable on a real camera:
- *   1. Structured outputs constrain the JSON shape to the same Zod schema the
- *      rest of the app uses, so enums (gamma, colour mode, Look) cannot be
- *      invented.
- *   2. The prompt states the numeric ranges, generated from `constants.ts` —
- *      necessary because the JSON Schema spec has no `minimum`/`maximum`, so
+ *   1. Structured outputs constrain the JSON *shape* to the same Zod schema the
+ *      rest of the app uses. Only the shape: the SDK's schema transform moves
+ *      `enum` and `const` into description text, so an invented gamma, colour
+ *      mode or Look can still arrive.
+ *   2. The prompt states the legal values, generated from `constants.ts` —
+ *      necessary because the JSON Schema subset has no `minimum`/`maximum`, so
  *      structured outputs strips those bounds before sending.
- *   3. The result is re-validated with Zod on return and retried once with the
+ *   3. The result is re-validated with Zod here and retried once with the
  *      specific failures fed back. Never trust the model's own claim that it
  *      stayed in range.
+ *
+ * `messages.create`, not `messages.parse`. In SDK 0.115 `parse` runs Zod itself
+ * and throws on a failure, so `parsed_output` was never null: an out-of-range
+ * value left the loop as an exception, the route answered 502 `unavailable`,
+ * and the retry below never ran. A refusal threw the same way, because its text
+ * is not JSON, before `stop_reason` was read. Parsing here reads `stop_reason`
+ * first and keeps the Zod issues to feed back.
  */
 
 const MODEL = 'claude-sonnet-5';
@@ -84,7 +92,7 @@ export async function tweakRecipe(
   // One retry, with the exact validation failures fed back. A second failure
   // means the request is asking for something the camera cannot do.
   for (let attempt = 1; attempt <= 2; attempt++) {
-    const response = await client.messages.parse({
+    const response = await client.messages.create({
       model: MODEL,
       max_tokens: 8000,
       system: SYSTEM,
@@ -95,33 +103,65 @@ export async function tweakRecipe(
     if (response.stop_reason === 'refusal') {
       return { ok: false, error: 'declined', attempts: attempt };
     }
+    /* Cut off mid-object. Retrying the same prompt into the same ceiling buys
+       nothing, and the half-written JSON is not a validation failure to feed
+       back. */
+    if (response.stop_reason === 'max_tokens') {
+      console.error('[tweak] answer truncated at max_tokens');
+      return { ok: false, error: 'invalidResult', attempts: attempt };
+    }
 
-    const parsed = response.parsed_output;
-    if (parsed) {
+    const result = validate(schema, response.content);
+    if (result.ok) {
       return {
         ok: true,
-        whiteBalance: parsed.whiteBalance,
-        settings: parsed.settings,
-        summary: parsed.summary,
+        whiteBalance: result.data.whiteBalance,
+        settings: result.data.settings,
+        summary: result.data.summary,
         attempts: attempt,
       };
     }
 
-    // `parsed_output` is null when the response did not satisfy the schema —
-    // including the numeric bounds Zod checks client-side.
-    lastError = 'the result contained values the camera cannot accept';
+    lastError = result.issues;
     prompt = `${buildPrompt(recipe, request, locale)}
 
-Your previous answer was rejected because ${lastError}. Re-read the legal ranges
-above and return values that fall inside them.`;
+Your previous answer was rejected:
+${lastError}
+Re-read the legal values above and return values that fall inside them.`;
   }
 
   /* Server-side only. This used to be interpolated into the response body, so
      a Zod message naming internal fields and legal ranges went to the browser. */
-  console.error('[tweak] no valid recipe after 2 attempts:', lastError);
+  console.error('[tweak] no valid recipe after 2 attempts:\n' + lastError);
   return {
     ok: false,
     error: 'invalidResult',
     attempts: 2,
   };
+}
+
+/**
+ * The first text block, parsed and checked against the recipe schema.
+ *
+ * The issues are `path: message` lines for the retry prompt and the log. They
+ * name internal fields and legal ranges, so they never go to the browser.
+ */
+function validate<T extends z.ZodTypeAny>(
+  schema: T,
+  content: Anthropic.ContentBlock[],
+): { ok: true; data: z.infer<T> } | { ok: false; issues: string } {
+  const text = content.find((b): b is Anthropic.TextBlock => b.type === 'text')?.text ?? '';
+  let json: unknown;
+  try {
+    json = JSON.parse(text);
+  } catch {
+    return { ok: false, issues: '- the answer was not valid JSON' };
+  }
+  const parsed = schema.safeParse(json);
+  if (parsed.success) return { ok: true, data: parsed.data };
+  const issues = parsed.error.issues
+    .slice(0, 5)
+    .map((i) => `- ${i.path.join('.') || '(root)'}: ${i.message}`)
+    .join('\n');
+  return { ok: false, issues };
 }
