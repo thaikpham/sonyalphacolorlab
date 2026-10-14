@@ -75,7 +75,7 @@ export default async function ColorLabPage({
   return (
     <>
       <SiteHeader tags={tags} />
-      <SiteStructuredData locale={locale} />
+      <SiteStructuredData locale={locale} description={t('metaDescription')} />
 
       <main className="mx-auto w-full max-w-[160rem] flex-1 inset-safe pt-8 pb-24 flex flex-col gap-6">
         {/* The page lede. The h1 used to be `sr-only` carrying an untranslated

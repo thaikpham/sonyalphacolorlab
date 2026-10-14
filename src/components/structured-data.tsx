@@ -33,7 +33,12 @@ function Ld({ data }: { data: unknown }) {
   );
 }
 
-export function SiteStructuredData({ locale }: { locale: string }) {
+/**
+ * `description` comes from the caller's `home.metaDescription`. It was an
+ * English literal declared `inLanguage: locale`, so /vi/colorlab told search
+ * engines its English sentence was Vietnamese.
+ */
+export function SiteStructuredData({ locale, description }: { locale: string; description: string }) {
   const home = locale === 'en' ? SITE : `${SITE}/${locale}`;
   return (
     <Ld
@@ -43,8 +48,7 @@ export function SiteStructuredData({ locale }: { locale: string }) {
         name: 'Alpha ColorLab',
         url: home,
         inLanguage: locale,
-        description:
-          'White Balance Shift recipes for Sony Alpha cameras, paired with Picture Profile or Creative Look.',
+        description,
         /* `/search` is the one page that answers `?q=` across everything. This
            used to name `/?q=`, which became the launcher when the catalogue
            moved to `/colorlab` — a SearchAction pointing at a page with no
@@ -84,10 +88,8 @@ export function RecipeStructuredData({
           keywords: recipe.tags.join(', '),
           genre: recipe.format === 'pp' ? 'Picture Profile' : 'Creative Look',
           isPartOf: { '@type': 'WebSite', name: 'Alpha ColorLab', url: home },
-          about: {
-            '@type': 'Thing',
-            name: 'Sony Alpha camera colour settings',
-          },
+          /* No `about`: its name was an English literal declared in the
+             page's language, and `genre` already says what the work is. */
         }}
       />
       <Ld
@@ -95,7 +97,9 @@ export function RecipeStructuredData({
           '@context': 'https://schema.org',
           '@type': 'BreadcrumbList',
           itemListElement: [
-            { '@type': 'ListItem', position: 1, name: 'Alpha ColorLab', item: home },
+            /* The catalogue, where the page's own back link goes. The root is
+               the four-app launcher now, not the parent of a recipe. */
+            { '@type': 'ListItem', position: 1, name: 'Alpha ColorLab', item: `${home}/colorlab` },
             { '@type': 'ListItem', position: 2, name: recipe.name, item: url },
           ],
         }}
