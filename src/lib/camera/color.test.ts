@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { accentCss, accentFor, accentHex, shiftPosition } from './color';
-import { WB_SHIFT_AXIS } from './constants';
+import { accentCss, accentFor, accentHex, getKelvinHexColor, shiftPosition } from './color';
+import { WB_KELVIN, WB_SHIFT_AXIS } from './constants';
+import { wbEffects } from './effects';
 import type { WhiteBalance } from './schema';
 
 const wb = (kelvin: number, shift?: WhiteBalance['shift']): WhiteBalance => ({
@@ -108,6 +109,22 @@ describe('OKLCH to sRGB hex', () => {
   it('stays in gamut for every real recipe', () => {
     for (const wb of [k(2500), k(9900), k(5500), k(9900, { gm: { axis: 'M', amount: 7 } })]) {
       expect(accentHex(accentFor(wb))).toMatch(/^#[0-9a-f]{6}$/);
+    }
+  });
+});
+
+describe('Kelvin value colour', () => {
+  it('draws a Kelvin neutral exactly where the Temperature row calls it neutral', () => {
+    // Two definitions of one cast drifted: 4000–5100K and 5900K sat in neutral
+    // ink beside a row reading "renders cooler" or "renders warmer".
+    for (let kelvin = WB_KELVIN.min; kelvin <= WB_KELVIN.max; kelvin += WB_KELVIN.step) {
+      const row = wbEffects({ mode: 'kelvin', kelvin }).temperature.en;
+      const neutralInk = getKelvinHexColor(kelvin) === 'var(--color-ink)';
+      expect(neutralInk, `${kelvin}K: ${row}`).toBe(row.startsWith('Close to neutral'));
+      // Orange for a row that renders warm, blue for one that renders cool.
+      if (!neutralInk) {
+        expect(getKelvinHexColor(kelvin), `${kelvin}K`).toBe(row.includes('warm') ? '#fb923c' : '#60a5fa');
+      }
     }
   });
 });

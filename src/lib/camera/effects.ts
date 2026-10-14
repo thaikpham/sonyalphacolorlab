@@ -23,7 +23,7 @@ import {
   type Range,
 } from './constants';
 import type { ClSettings, PpSettings, WhiteBalance } from './schema';
-import { MIRED_PER_SHIFT_STEP, wbBalance, type WbBalance } from './color';
+import { MIRED_PER_SHIFT_STEP, gradeWarmth, wbBalance, type Warmth, type WbBalance } from './color';
 
 export type EffectAxis = 'contrast' | 'color' | 'detail';
 export type Effect = { axis: EffectAxis; en: string; vi: string };
@@ -324,23 +324,6 @@ export function ppEffects(s: PpSettings): Record<string, Effect> {
  * Kelvin is judged in mireds, the scale colour temperature is actually additive
  * on — 2500K to 3000K is a far bigger visual step than 9000K to 9500K.
  */
-
-/** Where the amber–blue axis lands, graded. Input is mireds; positive is warm. */
-type Warmth = 'strong-warm' | 'warm' | 'neutral' | 'cool' | 'strong-cool';
-
-/**
- * The thresholds are asymmetric because the mired scale is. From 5500K neutral
- * the warm end of the Kelvin range only reaches +81 mired, while the cool end
- * runs to -218, so one symmetric cutoff would call almost every warm recipe
- * mild and almost every cool one extreme.
- */
-function gradeWarmth(mired: number): Warmth {
-  if (Math.abs(mired) < 12) return 'neutral';
-  if (mired >= 55) return 'strong-warm';
-  if (mired > 0) return 'warm';
-  if (mired <= -80) return 'strong-cool';
-  return 'cool';
-}
 
 const KELVIN_PHRASES: Record<Warmth, [en: string, vi: string]> = {
   'strong-warm': ['Set well above the light — renders strongly warm', 'Đặt cao hơn nhiều so với ánh sáng — ảnh ra rất ấm'],
