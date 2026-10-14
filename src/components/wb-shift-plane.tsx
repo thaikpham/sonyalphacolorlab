@@ -12,14 +12,7 @@ import type { RecipeView } from '@/lib/recipes/source';
  *
  * Not decoration: the position of every mark is the recipe's real shift value.
  */
-export async function WbShiftPlane({
-  recipes,
-  caption = true,
-}: {
-  recipes: RecipeView[];
-  /** Off when the plane shows a single recipe, where a tally says nothing. */
-  caption?: boolean;
-}) {
+export async function WbShiftPlane({ recipes }: { recipes: RecipeView[] }) {
   const t = await getTranslations('home');
   const size = 200;
   const half = size / 2;
@@ -66,12 +59,15 @@ export async function WbShiftPlane({
         <line x1={pad} y1={half} x2={size - pad} y2={half} stroke="oklch(100% 0 0 / 0.12)" strokeWidth="1" />
         <line x1={half} y1={pad} x2={half} y2={size - pad} stroke="oklch(100% 0 0 / 0.12)" strokeWidth="1" />
 
-        {/* Axis letters, in the camera's own orientation. */}
-        <g fill="oklch(54% 0.016 265)" fontSize="9" fontFamily="var(--font-sans)" letterSpacing="0.1em">
-          <text x={half} y={9} textAnchor="middle">G</text>
+        {/* Axis letters, in the camera's own orientation. Sized in viewBox
+            units: the plane is drawn at most 16rem over 200 units, so 10.5
+            renders at about 13.4px — the 13px floor, not the 11.5px that 9
+            gave. `ink-faint` is the last step of the ramp; there is no fourth. */}
+        <g fill="var(--color-ink-faint)" fontSize="10.5" fontFamily="var(--font-sans)">
+          <text x={half} y={10} textAnchor="middle">G</text>
           <text x={half} y={size - 2} textAnchor="middle">M</text>
-          <text x={3} y={half + 3}>B</text>
-          <text x={size - 8} y={half + 3}>A</text>
+          <text x={2} y={half + 4}>B</text>
+          <text x={size - 2} y={half + 4} textAnchor="end">A</text>
         </g>
 
         {marks.map((m) => (
@@ -80,16 +76,11 @@ export async function WbShiftPlane({
             cx={m.cx}
             cy={m.cy}
             r={m.neutral ? 1.6 : 2.6}
-            fill={m.neutral ? 'oklch(54% 0.016 265)' : m.fill}
+            fill={m.neutral ? 'var(--color-ink-faint)' : m.fill}
             opacity={m.neutral ? 0.5 : 0.85}
           />
         ))}
       </svg>
-      {caption && (
-        <figcaption className="label mt-3">
-          {t('planeCaption', { count: recipes.length, shifted })}
-        </figcaption>
-      )}
     </figure>
   );
 }

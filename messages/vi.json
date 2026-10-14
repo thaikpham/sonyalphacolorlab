@@ -1,6 +1,5 @@
 {
   "home": {
-    "planeCaption": "{count, plural, other {# công thức}} · {shifted} có WB Shift",
     "resultCount": "{count, plural, other {# công thức}}",
     "emptyTitle": "Chưa có công thức nào khớp bộ lọc này.",
     "emptyAction": "Xoá bộ lọc",

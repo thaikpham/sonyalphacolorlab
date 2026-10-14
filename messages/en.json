@@ -1,6 +1,5 @@
 {
   "home": {
-    "planeCaption": "{count, plural, one {# recipe} other {# recipes}} · {shifted} with WB Shift",
     "resultCount": "{count, plural, one {# recipe} other {# recipes}}",
     "emptyTitle": "No recipes match those filters yet.",
     "emptyAction": "Clear them",

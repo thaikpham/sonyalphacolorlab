@@ -199,7 +199,7 @@ export default async function RecipePage({
                 {/* The readout sits beside the plane rather than above it: the
                     plane is only 16rem wide and left a dead half-column here. */}
                 <div className="grid gap-4 sm:grid-cols-[16rem_1fr] sm:items-center sm:gap-6">
-                  <WbShiftPlane recipes={[recipe]} caption={false} />
+                  <WbShiftPlane recipes={[recipe]} />
                   <div>
                     <FormattedWb wb={recipe.whiteBalance} className="text-title-2 font-extrabold" />
                   </div>
