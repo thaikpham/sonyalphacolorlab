@@ -334,6 +334,18 @@ describe('white balance summary', () => {
   });
 });
 
+describe('HLG colour modes', () => {
+  /* Sony (TP0000909109): BT.2020 is the BT.2100 HDR gamut; 709 records HLG
+     in HDTV (ITU-R BT.709) colour. Both used to read "HDR colour space". */
+  it('tells BT.2020 and 709 apart', () => {
+    const wide = withPp({ colorMode: 'BT.2020' }).colorMode.en;
+    const hdtv = withPp({ colorMode: '709' }).colorMode.en;
+    expect(wide).toMatch(/BT\.2020|BT\.2100/);
+    expect(hdtv).toMatch(/BT\.709/);
+    expect(hdtv).not.toBe(wide);
+  });
+});
+
 describe('unsigned intensity params grade up from their minimum', () => {
   /* Fade, Sharpness and Clarity (0–9) and the PP Detail Limit, Crispening and
      Hi-Light Detail were graded around their midpoint, so the whole low half

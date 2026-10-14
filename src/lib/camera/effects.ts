@@ -211,8 +211,14 @@ function colorModeEffect(mode: string): Effect {
   if (mode === 'Pro' || mode === '709tone' || mode === 'ITU709 Matrix') {
     return { axis: 'color', en: 'Broadcast colour — accurate and neutral', vi: 'Màu chuẩn phát sóng — chính xác, trung tính' };
   }
-  if (mode === 'BT.2020' || mode === '709') {
-    return { axis: 'color', en: 'HDR colour space, paired with an HLG curve', vi: 'Không gian màu HDR, đi cùng đường HLG' };
+  /* Sony, TP0000909109: BT.2020 is the gamut of the HDR standard ITU-R
+     BT.2100; 709 records HLG in HDTV (ITU-R BT.709) colour. Both only with an
+     HLG gamma, but they are not the same gamut. */
+  if (mode === 'BT.2020') {
+    return { axis: 'color', en: 'Wide HDR gamut (BT.2020), paired with an HLG curve', vi: 'Gamut HDR rộng (BT.2020), đi cùng đường HLG' };
+  }
+  if (mode === '709') {
+    return { axis: 'color', en: 'HDTV (BT.709) colour, recorded with an HLG curve', vi: 'Màu chuẩn HDTV (BT.709), ghi cùng đường HLG' };
   }
   return { axis: 'color', en: 'Standard colour reproduction', vi: 'Tái tạo màu tiêu chuẩn' };
 }
