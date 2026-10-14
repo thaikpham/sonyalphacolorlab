@@ -48,6 +48,31 @@ describe('what the editor says', () => {
   });
 });
 
+describe('the error catalogue', () => {
+  it('holds only codes something on this screen can be answered with', () => {
+    /* `contentUnavailable` sat in both catalogues with nothing emitting it:
+       the recipe routes report a content failure as loadFailed or saveFailed.
+       A dead key reads as a handled case that is not handled. */
+    const emitters = [
+      'src/app/api/admin/recipes/route.ts',
+      'src/app/api/admin/recipes/[id]/route.ts',
+      'src/app/api/admin/recipes/[id]/images/route.ts',
+      'src/app/api/admin/recipes/[id]/images/[imageId]/route.ts',
+      'src/lib/recipes/admin-store.ts',
+      'src/lib/recipes/image-store.ts',
+      'src/lib/lab/image-process.ts',
+      'src/lib/auth/admin-gate.ts',
+      'src/lib/admin/content-freeze.ts',
+      PATH,
+      'src/components/colorlab/admin/image-panel.tsx',
+    ]
+      .map((f) => readFileSync(f, 'utf8'))
+      .join('\n');
+    const errors = (messages.en as unknown as { errors: Record<string, string> }).errors;
+    for (const key of Object.keys(errors)) expect(emitters, key).toContain(`'${key}'`);
+  });
+});
+
 describe('a recipe saved somewhere else since it was opened', () => {
   it('is opened from the admin read, which carries the version', () => {
     /* The list row could be minutes old; a fresh version beside a stale

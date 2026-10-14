@@ -661,7 +661,6 @@
       "notConfigured": "The recipe store is not configured on this deployment.",
       "controlUnavailable": "The sign-in service is not answering right now. Nothing was changed — try again shortly.",
       "contentAdminFrozen": "Saving is paused while the content database is being moved. Nothing was changed — try again shortly.",
-      "contentUnavailable": "The recipe database is not answering right now. Nothing was changed — try again shortly.",
       "loadFailed": "Could not load. Please try again.",
       "saveFailed": "Could not save. Nothing was changed.",
       "badRequest": "The editor sent something the server could not read.",

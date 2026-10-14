@@ -661,7 +661,6 @@
       "notConfigured": "Kho công thức chưa được cấu hình trên bản triển khai này.",
       "controlUnavailable": "Dịch vụ đăng nhập hiện không phản hồi. Chưa có gì thay đổi — hãy thử lại sau ít phút.",
       "contentAdminFrozen": "Việc lưu đang tạm dừng trong lúc chuyển cơ sở dữ liệu nội dung. Chưa có gì thay đổi — hãy thử lại sau ít phút.",
-      "contentUnavailable": "Cơ sở dữ liệu công thức hiện không phản hồi. Chưa có gì thay đổi — hãy thử lại sau ít phút.",
       "loadFailed": "Không tải được dữ liệu. Vui lòng thử lại.",
       "saveFailed": "Không lưu được. Chưa có gì thay đổi.",
       "badRequest": "Trình chỉnh sửa đã gửi dữ liệu mà máy chủ không đọc được.",
