@@ -12,7 +12,7 @@ import {
 
 /**
  * White Balance as a text readout, colour-coded by what the dial actually does:
- * - Kelvin: < 4000K (blue), 4100-5900K (neutral), >= 6000K (orange)
+ * - Kelvin: blue / neutral / orange by the Temperature row's own grade
  * - Shift A/B: A (amber), B (blue)
  * - Shift G/M: G (green), M (magenta)
  *

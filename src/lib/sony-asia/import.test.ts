@@ -1,7 +1,14 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { importSonyAsia, parseCsv, REJECTED, SCRAPE_CORRECTIONS } from './import';
-import { CL_MONOCHROME_LOOKS, CL_RANGES, CREATIVE_LOOK_CODES } from '../camera/constants';
+import { importSonyAsia, parseCsv, recipeKey, REJECTED, SCRAPE_CORRECTIONS } from './import';
+import { SONY_ASIA_IDS } from './ids';
+import {
+  CL_MONOCHROME_LOOKS,
+  CL_RANGES,
+  CREATIVE_LOOK_CODES,
+  WB_AUTO_MODES,
+  WB_PRESETS,
+} from '../camera/constants';
 import { recipeSchema } from '../camera/schema';
 
 /**
@@ -135,6 +142,130 @@ describe('White Balance from the scrape', () => {
       kelvin: 5000,
       shift: { ab: { axis: 'A', amount: 3 }, gm: { axis: 'G', amount: 1 } },
     });
+  });
+});
+
+/* Synthetic rows, so a parsing rule can be pinned without waiting for the
+   scrape to contain an instance of it. */
+const q = (s: string) => `"${s.replace(/"/g, '""')}"`;
+const csvOf = (...data: string[]) =>
+  ['name,data,data2,data3,data4,image,image11', ...data.map((d) => ['Test', d, '', 'Testland', '', '', ''].map(q).join(','))].join('\n');
+const ST = 'ST (Standard) | Contrast 0, Highlights 0, Shadows 0, Fade 0, Saturation 0, Sharpness 4, Sharpness Range 3, Clarity 1';
+
+describe('parseCsv', () => {
+  it('strips a BOM, unescapes doubled quotes and keeps newlines inside quotes', () => {
+    expect(parseCsv('﻿a,b\r\n"x ""q""\ny",2\r\n')).toEqual([{ a: 'x "q"\ny', b: '2' }]);
+  });
+
+  it('drops CR outside quotes but keeps it inside them', () => {
+    expect(parseCsv('a,b\r\n"l1\r\nl2",2\r\n')).toEqual([{ a: 'l1\r\nl2', b: '2' }]);
+  });
+
+  it('adds no row for a trailing newline, and none for a blank or one-column line', () => {
+    expect(parseCsv('a,b\n1,2\n\nstray\n')).toEqual([{ a: '1', b: '2' }]);
+  });
+
+  it('refuses an unterminated quote instead of swallowing the rest of the file', () => {
+    expect(() => parseCsv('a,b\n"open,1\n2,3\n')).toThrow(/unterminated/i);
+  });
+});
+
+describe('settings tokens', () => {
+  it('reports a parameter written with no number, rather than storing 0', () => {
+    // "Contrast 0 and no Contrast token are different claims" — and so is a
+    // Contrast token with no number. Number('') is 0.
+    const { recipes, skipped } = importSonyAsia(csvOf(`${ST.replace('Contrast 0', 'Contrast')}, WB AWB`));
+    expect(recipes).toHaveLength(0);
+    expect(skipped[0]?.why).toContain('contrast');
+    const fade = importSonyAsia(csvOf(`${ST.replace('Fade 0', 'Fade ')}, WB AWB`));
+    expect(fade.skipped[0]?.why).toContain('fade');
+  });
+
+  it('splits tokens on a comma with no space after it', () => {
+    // Why SCRAPE_CORRECTIONS needs no "Fade 0,Saturation" entry.
+    const { recipes } = importSonyAsia(csvOf(`${ST.replace('Fade 0, Saturation 0', 'Fade 2,Saturation 3')}, WB AWB`));
+    expect(recipes[0]?.settings).toMatchObject({ fade: 2, saturation: 3 });
+    expect(SCRAPE_CORRECTIONS.some((c) => c.from.includes('Fade 0,Saturation'))).toBe(false);
+  });
+});
+
+describe('White Balance names from constants.ts', () => {
+  it('reads every light-source preset and Auto mode by its own name', () => {
+    for (const preset of WB_PRESETS) {
+      const { recipes } = importSonyAsia(csvOf(`${ST}, WB ${preset}`));
+      expect(recipes[0]?.whiteBalance, preset).toEqual({ mode: 'preset', preset });
+    }
+    for (const auto of WB_AUTO_MODES) {
+      const { recipes } = importSonyAsia(csvOf(`${ST}, WB ${auto}`));
+      expect(recipes[0]?.whiteBalance, auto).toEqual({ mode: 'auto', auto });
+    }
+  });
+});
+
+/**
+ * Ids and slugs are public URLs, and `translations.vi.json` and the credits
+ * file are keyed by id. Numbering by row order meant un-skipping one row
+ * shifted every later id, and the Vietnamese prose then named the wrong
+ * photographer on every recipe after it.
+ */
+describe('stable ids', () => {
+  const keyOf = (r: (typeof result.recipes)[number]) =>
+    recipeKey(r.settings as Record<string, unknown>, r.whiteBalance, r.credit.photographer);
+
+  it('gives every imported recipe the id and slug it was first published under', () => {
+    expect(result.unpinned, 'add these to SONY_ASIA_IDS in ids.ts').toEqual([]);
+    for (const r of result.recipes) {
+      expect(SONY_ASIA_IDS[keyOf(r)], r.id).toEqual({ id: r.id, slug: r.slug });
+    }
+  });
+
+  it('still produces every pinned recipe, so none is renumbered by accident', () => {
+    // A pinned key that stops matching means a correction changed a recipe's
+    // settings: re-key the entry, never let the recipe take a new id.
+    const produced = new Set(result.recipes.map((r) => r.id));
+    for (const [key, pin] of Object.entries(SONY_ASIA_IDS)) {
+      expect(produced.has(pin.id), `${pin.id} (${key})`).toBe(true);
+    }
+  });
+
+  it('matches the ids and slugs the committed seed ships', () => {
+    const seed = JSON.parse(readFileSync('data/recipes.seed.json', 'utf8')) as { id: string; slug: string; format: string }[];
+    const shipped = seed.filter((r) => r.format === 'cl').map((r) => [r.id, r.slug]);
+    expect(result.recipes.map((r) => [r.id, r.slug])).toEqual(shipped);
+  });
+
+  it('keeps every id when a skipped row becomes importable', () => {
+    // Row 1 is Sandeeshwara Perera's FL "Default Settings", on the skip list.
+    const filled = csv.replace(
+      'FL (Film Look) | Default Settings',
+      'FL (Film Look) | Contrast +1, Highlights 0, Shadows 0, Fade +1, Saturation 0, Sharpness +3, Sharpness Range +3, Clarity +1, WB AWB',
+    );
+    expect(filled).not.toBe(csv);
+    const after = importSonyAsia(filled);
+    expect(after.recipes.length).toBe(result.recipes.length + 1);
+
+    for (const before of result.recipes) {
+      const same = after.recipes.find((r) => r.id === before.id);
+      expect(same?.slug, before.id).toBe(before.slug);
+      expect(same?.name, before.id).toBe(before.name);
+      expect(same?.credit.photographer, before.id).toBe(before.credit.photographer);
+      expect(same?.settings, before.id).toEqual(before.settings);
+      expect(after.descriptions[before.id], before.id).toBe(result.descriptions[before.id]);
+    }
+
+    // The newcomer takes the next free id and a slug no pinned recipe holds.
+    expect(after.unpinned).toHaveLength(1);
+    const added = after.recipes.find((r) => !result.recipes.some((b) => b.id === r.id))!;
+    expect(added.id).toBe('SCL-CL-038');
+    expect(added.slug).toBe('fl-sandeeshwara-perera-4');
+    expect(added.name).toBe('SCL-CL-038: Film Look · Sandeeshwara Perera 4');
+  });
+
+  it('never hands out a retired id or slug again', () => {
+    const retired = { ...SONY_ASIA_IDS, 'retired recipe': { id: 'SCL-CL-090', slug: 'st-test' } };
+    const { recipes } = importSonyAsia(csvOf(`${ST}, WB AWB`), retired);
+    expect(recipes[0]?.id).toBe('SCL-CL-091');
+    expect(recipes[0]?.slug).toBe('st-test-2');
   });
 });
 
