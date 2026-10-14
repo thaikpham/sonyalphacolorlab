@@ -5,8 +5,8 @@ import { useTranslations } from 'next-intl';
 import { useAuth } from '@/components/auth-context';
 import { OPEN_TWEAK_EVENT } from '@/lib/community/events';
 import { isTweakErrorCode } from '@/lib/ai/errors';
-import { formatWhiteBalance } from '@/lib/camera/format';
-import type { WhiteBalance } from '@/lib/camera/schema';
+import { TWEAK_REQUEST_MAX, TWEAK_REQUEST_MIN, tweakDiff } from '@/lib/ai/tweak-form';
+import type { ClSettings, PpSettings, WhiteBalance } from '@/lib/camera/schema';
 
 /**
  * "Tweak with AI".
@@ -18,26 +18,19 @@ import type { WhiteBalance } from '@/lib/camera/schema';
  * `src/lib/ai/tweak.ts`.
  */
 
-type Result = { whiteBalance: WhiteBalance; settings: Record<string, unknown>; summary: string };
+/* The route re-validates the model's answer against the recipe schema for this
+   format before it answers 200, so the shape here is the schema's. */
+type Result = { whiteBalance: WhiteBalance; settings: PpSettings | ClSettings; summary: string };
 
 type Props = {
   slug: string;
   locale: 'en' | 'vi';
+  format: 'pp' | 'cl';
   currentWb: WhiteBalance;
-  currentSettings: Record<string, unknown>;
+  currentSettings: PpSettings | ClSettings;
 };
 
-/** Flattens nested settings to `a.b` keys so the diff is one flat list. */
-function flatten(value: unknown, prefix = ''): Record<string, string> {
-  if (value === null || value === undefined) return {};
-  if (typeof value !== 'object') return { [prefix]: String(value) };
-  return Object.entries(value as Record<string, unknown>).reduce<Record<string, string>>(
-    (acc, [k, v]) => Object.assign(acc, flatten(v, prefix ? `${prefix}.${k}` : k)),
-    {},
-  );
-}
-
-export function TweakPanel({ slug, locale, currentWb, currentSettings }: Props) {
+export function TweakPanel({ slug, locale, format, currentWb, currentSettings }: Props) {
   const t = useTranslations('tweak');
   const { user, openLoginModal, accessToken } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
@@ -77,7 +70,7 @@ export function TweakPanel({ slug, locale, currentWb, currentSettings }: Props) 
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!request.trim() || busy) return;
+    if (request.trim().length < TWEAK_REQUEST_MIN || busy) return;
     /* The model is a paid call and the route answers signed-in readers only.
        Ask for sign-in here rather than sending a request that can only 401. */
     if (!user) {
@@ -113,21 +106,11 @@ export function TweakPanel({ slug, locale, currentWb, currentSettings }: Props) 
     }
   }
 
-  const before: Record<string, string> = {
-    ...flatten(currentSettings),
-    whiteBalance: formatWhiteBalance(currentWb),
-  };
-  const after: Record<string, string> | null = result
-    ? { ...flatten(result.settings), whiteBalance: formatWhiteBalance(result.whiteBalance) }
-    : null;
-
-  const rows = after
-    ? [...new Set([...Object.keys(before), ...Object.keys(after)])].map((key) => ({
-        key,
-        from: before[key] ?? '—',
-        to: after[key] ?? '—',
-        changed: before[key] !== after[key],
-      }))
+  /* Labelled and formatted the way the settings table beside it is — Sony's
+     names, signed dials with their `+`. It used to print schema paths such as
+     `detail.hiLightDetail` and `String(v)`, so +3 → +5 read "3 → 5". */
+  const rows = result
+    ? tweakDiff(format, { whiteBalance: currentWb, settings: currentSettings }, result)
     : [];
   const changedCount = rows.filter((r) => r.changed).length;
 
@@ -185,7 +168,7 @@ export function TweakPanel({ slug, locale, currentWb, currentSettings }: Props) 
             onChange={(e) => setRequest(e.target.value)}
             placeholder={t('placeholder')}
             rows={2}
-            maxLength={500}
+            maxLength={TWEAK_REQUEST_MAX}
             className="surface-sunken w-full resize-y p-4 text-body text-ink placeholder:text-ink-faint"
           />
 
@@ -209,7 +192,7 @@ export function TweakPanel({ slug, locale, currentWb, currentSettings }: Props) 
             {/* Submit Button (Far Right) */}
             <button
               type="submit"
-              disabled={busy || !request.trim()}
+              disabled={busy || request.trim().length < TWEAK_REQUEST_MIN}
               className="btn-accent ml-auto shrink-0 cursor-pointer disabled:cursor-not-allowed disabled:opacity-35"
             >
               {busy ? t('working') : t('submit')}
@@ -244,7 +227,7 @@ export function TweakPanel({ slug, locale, currentWb, currentSettings }: Props) 
                     r.changed ? 'row-tint' : ''
                   }`}
                 >
-                  <dt className="text-body-sm text-ink-muted">{r.key}</dt>
+                  <dt className="text-body-sm text-ink-muted">{r.label}</dt>
                   {/* A compare column, so the figures get `tabular-nums`
                       explicitly. Noto Sans has true tabular figures — there is
                       no second face to reach for. */}

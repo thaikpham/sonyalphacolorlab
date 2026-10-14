@@ -166,6 +166,7 @@ export default async function RecipePage({
             <TweakPanel
               slug={slug}
               locale={locale}
+              format={recipe.format}
               currentWb={recipe.whiteBalance}
               currentSettings={recipe.settings}
             />

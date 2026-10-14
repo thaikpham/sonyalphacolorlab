@@ -97,8 +97,13 @@ export const WB_PRESETS_STILL_ONLY = ['Flash'] as const;
 /** What the White Balance menu calls the Kelvin mode (WB_PRESETS' citation). */
 export const WB_KELVIN_MENU = 'C.Temp./Filter' as const;
 
-/** The three White Balance controls as the recipe tables name them. */
+/**
+ * The White Balance controls as the recipe tables name them. `whiteBalance` is
+ * the menu itself (TP1000640840): the head row of an Auto or preset recipe,
+ * which sets no Temperature, and the one-row summary in the AI diff.
+ */
 export const WB_PARAM_LABELS = {
+  whiteBalance: 'White Balance',
   temperature: 'Temperature',
   shiftAb: 'Shift A/B',
   shiftGm: 'Shift G/M',
