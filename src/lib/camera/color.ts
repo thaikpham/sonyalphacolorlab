@@ -20,6 +20,7 @@
  * correctness depends on it. Never use it to compute camera values.
  */
 
+import { WB_SHIFT_AXIS } from './constants';
 import type { Recipe, WhiteBalance } from './schema';
 
 /** OKLCH hue of each colour phase, from the saturated sRGB primaries. */
@@ -271,9 +272,10 @@ export function accentHex(a: Accent): string {
 export function shiftPosition(wb: WhiteBalance): { x: number; y: number } {
   const ab = wb.shift?.ab;
   const gm = wb.shift?.gm;
+  const full = WB_SHIFT_AXIS.max;
   return {
-    x: ab ? (ab.axis === 'A' ? ab.amount : -ab.amount) / 7 : 0,
-    y: gm ? (gm.axis === 'M' ? gm.amount : -gm.amount) / 7 : 0,
+    x: ab ? (ab.axis === 'A' ? ab.amount : -ab.amount) / full : 0,
+    y: gm ? (gm.axis === 'M' ? gm.amount : -gm.amount) / full : 0,
   };
 }
 

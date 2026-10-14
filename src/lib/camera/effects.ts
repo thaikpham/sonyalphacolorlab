@@ -18,6 +18,7 @@ import {
   PP_RANGES,
   WB_PRESETS,
   WB_PRESETS_STILL_ONLY,
+  WB_SHIFT_AXIS,
   type ClParam,
   type Range,
 } from './constants';
@@ -271,7 +272,7 @@ export function ppEffects(s: PpSettings): Record<string, Effect> {
   const knee: Effect =
     s.knee.mode === 'Auto'
       ? { axis: 'contrast', en: 'Highlights rolled off automatically', vi: 'Vùng sáng được nén tự động' }
-      : s.knee.slope >= 5
+      : s.knee.slope >= PP_RANGES.kneeManualSlope.max
         ? { axis: 'contrast', en: 'Knee effectively off — highlights run straight to clipping', vi: 'Knee gần như tắt — vùng sáng chạy thẳng tới cháy' }
         : s.knee.slope < 0
           ? { axis: 'contrast', en: 'Gentle roll-off — wider range, softer highlight gradation', vi: 'Nén thoải — dải rộng hơn, chuyển vùng sáng mềm' }
@@ -354,6 +355,18 @@ function kelvinEffect(mired: number): Effect {
   return { axis: 'color', en, vi };
 }
 
+/**
+ * How hard a shift pushes, as a share of the grid's full throw: strong past
+ * 55% (the cut `step()` uses), mild under a quarter. On today's 0–7 grid that
+ * is 4 and up, and 1.5 and down — widen `WB_SHIFT_AXIS` and the wording
+ * follows. One helper for the row and the summary's tint, so they agree.
+ */
+function shiftStrength(amount: number): 'mild' | 'medium' | 'strong' {
+  const ratio = amount / WB_SHIFT_AXIS.max;
+  if (ratio >= 0.55) return 'strong';
+  return ratio < 0.25 ? 'mild' : 'medium';
+}
+
 function shiftEffect(axisLetter: 'A' | 'B' | 'G' | 'M', amount: number): Effect {
   // A shift left at zero is set but not shifting. The admin form starts every
   // shift there, and "Slight blue coolness" for B0 described a cast that is
@@ -363,10 +376,8 @@ function shiftEffect(axisLetter: 'A' | 'B' | 'G' | 'M', amount: number): Effect 
       ? { axis: 'color', en: 'No amber–blue shift', vi: 'Không dịch trên trục hổ phách–xanh dương' }
       : { axis: 'color', en: 'No green–magenta tint', vi: 'Không ám trên trục xanh lá–cánh sen' };
   }
-  // Seven steps is the full throw, so past four reads as a firm push.
-  const strong = amount >= 4;
-  const mild = amount <= 1.5;
-  const grade = <T,>(s: T, m: T, w: T) => (strong ? s : mild ? w : m);
+  const strength = shiftStrength(amount);
+  const grade = <T,>(s: T, m: T, w: T) => (strength === 'strong' ? s : strength === 'mild' ? w : m);
 
   switch (axisLetter) {
     case 'A':
@@ -608,8 +619,7 @@ const TINT_PHRASES: Record<Tint, [en: string, vi: string]> = {
 
 function gradeTint(gm: { axis: 'G' | 'M'; amount: number } | undefined): Tint {
   if (!gm || gm.amount === 0) return 'none';
-  // Same four-step cutoff `shiftEffect` uses, so the row and the summary agree.
-  const strong = gm.amount >= 4;
+  const strong = shiftStrength(gm.amount) === 'strong';
   if (gm.axis === 'M') return strong ? 'strong-magenta' : 'magenta';
   return strong ? 'strong-green' : 'green';
 }

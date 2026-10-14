@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { accentCss, accentFor, accentHex, shiftPosition } from './color';
+import { WB_SHIFT_AXIS } from './constants';
 import type { WhiteBalance } from './schema';
 
 const wb = (kelvin: number, shift?: WhiteBalance['shift']): WhiteBalance => ({
@@ -117,8 +118,11 @@ describe('shift position', () => {
   });
 
   it('normalises the axes to -1..1 and ignores Kelvin', () => {
-    expect(shiftPosition(wb(3000, { ab: { axis: 'A', amount: 7 }, gm: { axis: 'G', amount: 7 } })))
+    // The full throw is read from constants.ts, so a widened grid still plots
+    // its corners on the plane's edge rather than past it.
+    const max = WB_SHIFT_AXIS.max;
+    expect(shiftPosition(wb(3000, { ab: { axis: 'A', amount: max }, gm: { axis: 'G', amount: max } })))
       .toEqual({ x: 1, y: -1 });
-    expect(shiftPosition(wb(9000, { ab: { axis: 'B', amount: 3.5 } })).x).toBe(-0.5);
+    expect(shiftPosition(wb(9000, { ab: { axis: 'B', amount: max / 2 } })).x).toBe(-0.5);
   });
 });
