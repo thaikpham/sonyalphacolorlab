@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { FIELD_SM, SELECT } from '@/components/admin-ui/controls';
 import type { Range } from '@/lib/camera/constants';
 
@@ -18,46 +19,78 @@ import type { Range } from '@/lib/camera/constants';
  * two that a whole-number spinner would quietly violate.
  */
 
+/**
+ * What a number box holds, or null when it holds no number yet.
+ *
+ * Parsed, not coerced: `Number('')` is 0, and an empty box or a lone `-` is a
+ * value being typed, not a value. Writing NaN into the draft would send `null`
+ * to a `not null` column.
+ */
+export function parseRangedInput(text: string): number | null {
+  if (text.trim() === '') return null;
+  const n = Number(text);
+  return Number.isFinite(n) ? n : null;
+}
+
+/** The object without one key — how an optional field is cleared. */
+export function omitKey<T extends object, K extends keyof T>(obj: T, key: K): Omit<T, K> {
+  const { [key]: _drop, ...rest } = obj;
+  return rest;
+}
+
 export function Ranged({
   label,
   range,
   value,
   onChange,
+  onClear,
   hint,
   signed = false,
 }: {
   label: string;
   range: Range;
-  value: number;
+  /** Undefined only for an optional field, with `onClear`. */
+  value: number | undefined;
   onChange: (n: number) => void;
+  /** The field is optional, and an emptied box removes it. */
+  onClear?: () => void;
   hint?: string;
   /** The camera displays this parameter with an explicit +/-. */
   signed?: boolean;
 }) {
+  /* The box as typed, while it is being edited. Controlled by the number
+     alone, a box that did not hold one yet — a lone `-`, or emptied to retype
+     — had the old value written back by React: "-7" typed over 0 came out
+     as 7, and a cleared box snapped back. */
+  const [text, setText] = useState<string | null>(null);
+  const shown = value !== undefined && Number.isFinite(value) ? String(value) : '';
   return (
     <label className="flex flex-col gap-1.5">
       <span className="label text-ink-muted">
         {label}
         <span className="ml-2 text-ink-faint tabular-nums">
-          {signed && value > 0 ? '+' : ''}
-          {value} · {range.min}…{range.max}
+          {value !== undefined ? `${signed && value > 0 ? '+' : ''}${value} · ` : ''}
+          {range.min}…{range.max}
           {range.step !== 1 ? ` /${range.step}` : ''}
         </span>
       </span>
       <input
         type="number"
         className={FIELD_SM}
-        value={Number.isFinite(value) ? value : ''}
+        value={text ?? shown}
         min={range.min}
         max={range.max}
         step={range.step}
-        /* Parsed, not coerced: an empty box is NaN, and writing NaN into the
-           draft would send `null` to a `not null` column. The old value stands
-           until the box holds a number again. */
+        /* The old value stands until the box holds a number again — except in
+           an optional field, where a box the editor emptied (not one holding a
+           half-typed `-`, which also reads as '') means "not stated". */
         onChange={(e) => {
-          const n = Number.parseFloat(e.target.value);
-          if (Number.isFinite(n)) onChange(n);
+          setText(e.target.value);
+          const n = parseRangedInput(e.target.value);
+          if (n !== null) onChange(n);
+          else if (onClear && e.target.value === '' && !e.target.validity.badInput) onClear();
         }}
+        onBlur={() => setText(null)}
       />
       {hint ? <span className="meta">{hint}</span> : null}
     </label>
@@ -69,13 +102,20 @@ export function EnumSelect<T extends string>({
   options,
   value,
   onChange,
+  onClear,
+  unsetLabel,
   labels,
   hint,
 }: {
   label: string;
   options: readonly T[];
-  value: T;
+  /** Undefined only for an optional field, with `onClear`. */
+  value: T | undefined;
   onChange: (v: T) => void;
+  /** The field is optional: an empty first option removes it. */
+  onClear?: () => void;
+  /** What the empty option reads. */
+  unsetLabel?: string;
   /** Display text per code, where the code is not the readable name. */
   labels?: Readonly<Record<string, string>>;
   hint?: string;
@@ -83,7 +123,15 @@ export function EnumSelect<T extends string>({
   return (
     <label className="flex flex-col gap-1.5">
       <span className="label text-ink-muted">{label}</span>
-      <select className={SELECT} value={value} onChange={(e) => onChange(e.target.value as T)}>
+      <select
+        className={SELECT}
+        value={value ?? ''}
+        onChange={(e) => {
+          if (e.target.value === '') onClear?.();
+          else onChange(e.target.value as T);
+        }}
+      >
+        {onClear ? <option value="">{unsetLabel}</option> : null}
         {options.map((o) => (
           <option key={o} value={o}>
             {labels?.[o] ?? o}

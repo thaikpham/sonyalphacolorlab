@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Group, EnumSelect, Ranged } from './fields';
+import { Group, EnumSelect, Ranged, omitKey } from './fields';
 import {
   CL_MONOCHROME_LOOKS,
   CL_PARAM_LABELS,
@@ -13,10 +13,12 @@ import {
   PP_COLOR_DEPTH_CHANNELS,
   PP_COLOR_MODE,
   PP_DETAIL_BW_BALANCE,
+  PP_DETAIL_LABELS,
   PP_DETAIL_MODE,
   PP_GAMMA,
   PP_KNEE_AUTO_SENSITIVITY,
   PP_KNEE_MODE,
+  PP_PARAM_LABELS,
   PP_RANGES,
 } from '@/lib/camera/constants';
 import type { ClSettings, PpSettings } from '@/lib/camera/schema';
@@ -30,7 +32,12 @@ import type { ClSettings, PpSettings } from '@/lib/camera/schema';
  * Look, and a shared form is where one grows a field belonging to the other.
  *
  * Every bound comes from `PP_RANGES` / `CL_RANGES`, every list from its
- * `constants.ts` tuple. Nothing here types a camera value.
+ * `constants.ts` tuple, and every parameter label `constants.ts` names from
+ * `PP_PARAM_LABELS` / `PP_DETAIL_LABELS` / `CL_PARAM_LABELS` — they are Sony's
+ * terms and never translated (Rule 3), and a copy in the catalogue had
+ * already drifted: Sony's Detail "Adjust" read "Detail Mode" here. Nothing
+ * here types a camera value. The Black Gamma and Knee sub-items have no label
+ * in `constants.ts` yet, so those still come from the catalogue.
  */
 
 const LOOK_LABELS = Object.fromEntries(
@@ -80,13 +87,13 @@ export function PpFields({
     <div className="flex flex-col gap-6">
       <Group title={t('ppTone')}>
         <Ranged
-          label={t('blackLevel')}
+          label={PP_PARAM_LABELS.blackLevel}
           range={PP_RANGES.blackLevel}
           value={value.blackLevel}
           onChange={(n) => set('blackLevel', n)}
           signed
         />
-        <EnumSelect label={t('gamma')} options={PP_GAMMA} value={value.gamma} onChange={(v) => set('gamma', v)} />
+        <EnumSelect label={PP_PARAM_LABELS.gamma} options={PP_GAMMA} value={value.gamma} onChange={(v) => set('gamma', v)} />
         <EnumSelect
           label={t('blackGammaRange')}
           options={PP_BLACK_GAMMA_RANGE}
@@ -107,23 +114,30 @@ export function PpFields({
           re-widens it to the union and every spread becomes unsound — the two
           branches share only `mode`. */}
       {value.knee.mode === 'Auto' ? (
-        <Group title={t('ppKnee')}>
+        <Group title={PP_PARAM_LABELS.knee}>
           <KneeMode value="Auto" onChange={onKnee} label={t('kneeMode')} />
+          {/* Both optional, and shown unset when the recipe does not state
+              them — as the public page shows plain "Auto". A default filled
+              in here read as a stated value, and choosing the one displayed
+              fired no change, so it could be neither stored nor cleared. */}
           <Ranged
             label={t('kneeMaxPoint')}
             range={PP_RANGES.kneeAutoMaxPoint}
-            value={value.knee.maxPoint ?? PP_RANGES.kneeAutoMaxPoint.min}
+            value={value.knee.maxPoint}
             onChange={(n) => set('knee', { ...auto, maxPoint: n })}
+            onClear={() => set('knee', omitKey(auto, 'maxPoint'))}
           />
           <EnumSelect
             label={t('kneeSensitivity')}
             options={PP_KNEE_AUTO_SENSITIVITY}
-            value={value.knee.sensitivity ?? 'Mid'}
+            value={value.knee.sensitivity}
             onChange={(v) => set('knee', { ...auto, sensitivity: v })}
+            onClear={() => set('knee', omitKey(auto, 'sensitivity'))}
+            unsetLabel={t('notSet')}
           />
         </Group>
       ) : (
-        <Group title={t('ppKnee')}>
+        <Group title={PP_PARAM_LABELS.knee}>
           <KneeMode value="Manual" onChange={onKnee} label={t('kneeMode')} />
           <Ranged
             label={t('kneePoint')}
@@ -143,13 +157,13 @@ export function PpFields({
 
       <Group title={t('ppColour')}>
         <EnumSelect
-          label={t('colorMode')}
+          label={PP_PARAM_LABELS.colorMode}
           options={PP_COLOR_MODE}
           value={value.colorMode}
           onChange={(v) => set('colorMode', v)}
         />
         <Ranged
-          label={t('ppSaturation')}
+          label={PP_PARAM_LABELS.saturation}
           range={PP_RANGES.saturation}
           value={value.saturation}
           onChange={(n) => set('saturation', n)}
@@ -157,7 +171,7 @@ export function PpFields({
           signed
         />
         <Ranged
-          label={t('colorPhase')}
+          label={PP_PARAM_LABELS.colorPhase}
           range={PP_RANGES.colorPhase}
           value={value.colorPhase}
           onChange={(n) => set('colorPhase', n)}
@@ -166,7 +180,7 @@ export function PpFields({
         {PP_COLOR_DEPTH_CHANNELS.map((c) => (
           <Ranged
             key={c}
-            label={t('colorDepth', { channel: c })}
+            label={`${PP_PARAM_LABELS.colorDepth} ${c}`}
             range={PP_RANGES.colorDepth}
             value={value.colorDepth[c]}
             onChange={(n) => set('colorDepth', { ...value.colorDepth, [c]: n })}
@@ -175,47 +189,47 @@ export function PpFields({
         ))}
       </Group>
 
-      <Group title={t('ppDetail')}>
+      <Group title={PP_PARAM_LABELS.detail}>
         <Ranged
-          label={t('detailLevel')}
+          label={PP_DETAIL_LABELS.level}
           range={PP_RANGES.detailLevel}
           value={value.detail.level}
           onChange={(n) => set('detail', { ...value.detail, level: n })}
           signed
         />
         <EnumSelect
-          label={t('detailMode')}
+          label={PP_DETAIL_LABELS.mode}
           options={PP_DETAIL_MODE}
           value={value.detail.mode}
           onChange={(v) => set('detail', { ...value.detail, mode: v })}
         />
         <Ranged
-          label={t('detailVhBalance')}
+          label={PP_DETAIL_LABELS.vhBalance}
           range={PP_RANGES.detailVhBalance}
           value={value.detail.vhBalance}
           onChange={(n) => set('detail', { ...value.detail, vhBalance: n })}
           signed
         />
         <EnumSelect
-          label={t('detailBwBalance')}
+          label={PP_DETAIL_LABELS.bwBalance}
           options={PP_DETAIL_BW_BALANCE}
           value={value.detail.bwBalance}
           onChange={(v) => set('detail', { ...value.detail, bwBalance: v })}
         />
         <Ranged
-          label={t('detailLimit')}
+          label={PP_DETAIL_LABELS.limit}
           range={PP_RANGES.detailLimit}
           value={value.detail.limit}
           onChange={(n) => set('detail', { ...value.detail, limit: n })}
         />
         <Ranged
-          label={t('detailCrispening')}
+          label={PP_DETAIL_LABELS.crispening}
           range={PP_RANGES.detailCrispening}
           value={value.detail.crispening}
           onChange={(n) => set('detail', { ...value.detail, crispening: n })}
         />
         <Ranged
-          label={t('detailHiLightDetail')}
+          label={PP_DETAIL_LABELS.hiLightDetail}
           range={PP_RANGES.detailHiLightDetail}
           value={value.detail.hiLightDetail}
           onChange={(n) => set('detail', { ...value.detail, hiLightDetail: n })}
