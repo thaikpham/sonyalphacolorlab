@@ -41,9 +41,9 @@ export type MetaDraft = {
 }
 
 export type RefOptions = {
-  recipes: { id: string; name: string; published: boolean }[]
-  products: { id: string; name: string; code: string; category: string }[]
-  pages: { id: string; title: string; kind: ArticleKind; status: string }[]
+  recipes: { id: string; name: string }[]
+  products: { id: string; name: string; code: string }[]
+  pages: { id: string; title: string; kind: ArticleKind }[]
 }
 
 const REF_KINDS: readonly ContentRefKind[] = ['recipe', 'product', 'article', 'knowledge']
