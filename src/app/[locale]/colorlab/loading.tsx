@@ -31,26 +31,36 @@ export default async function Loading() {
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto w-full max-w-[86rem] flex-1 inset-safe pb-24 animate-fade-in">
+      {/* The page's own container and grid, class for class. This used to be
+          a centred 86rem three-column block of 4/5 tiles standing in for a
+          full-bleed one-to-six-column grid — the jump it exists to prevent.
+          `colorlab-page.test.ts` pins the two together. */}
+      <main className="mx-auto w-full max-w-[160rem] flex-1 inset-safe pt-8 pb-24 flex flex-col gap-6 animate-fade-in">
         {/* The placeholder bars carry the same white-5% film a real panel is
             made of, at a tag radius. No pulse: `.animate-fade-in` is the only
-            animation left in the system. */}
-        <div className="py-12">
-          <div className="h-3 w-48 rounded-sm bg-glass" />
-          <div className="mt-6 h-12 w-2/3 max-w-xl rounded-sm bg-glass" />
-          <div className="mt-4 h-4 w-full max-w-lg rounded-sm bg-glass" />
+            animation left in the system. One bar at the h1's height: the hero
+            is a single heading. */}
+        <div className="hero-block">
+          <div className="h-11 w-2/3 max-w-xl rounded-sm bg-glass" />
         </div>
         <p role="status" className="sr-only">
           {t('status')}
         </p>
         {/* `.surface` rather than a hand-rolled radius: it is the class the real
             recipe card uses, so the skeleton lands at the same 26px corner and
-            elevation and nothing shifts when content arrives. It also retires a
-            radius token that no longer exists — that arbitrary value resolved to
-            nothing, so every card here was rendering with square corners. */}
-        <ul aria-hidden className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            elevation and nothing shifts when content arrives. The 210px photo
+            and the body's padding and gaps are `RecipeCard`'s. */}
+        <ul aria-hidden className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 3xl:grid-cols-5 4xl:grid-cols-6">
           {Array.from({ length: 6 }).map((_, i) => (
-            <li key={i} className="surface aspect-[4/5]" />
+            <li key={i} className="surface overflow-hidden">
+              <div className="h-[210px] w-full bg-glass" />
+              <div className="flex flex-col gap-[11px] px-5 pt-[19px] pb-[22px]">
+                <div className="h-4 w-24 rounded-sm bg-glass" />
+                <div className="h-6 w-3/4 rounded-sm bg-glass" />
+                <div className="h-7 w-1/2 rounded-sm bg-glass" />
+                <div className="h-10 w-full rounded-sm bg-glass" />
+              </div>
+            </li>
           ))}
         </ul>
       </main>
