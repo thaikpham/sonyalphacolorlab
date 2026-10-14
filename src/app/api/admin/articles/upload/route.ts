@@ -83,8 +83,12 @@ export async function POST(request: Request) {
   }
 
   const processed = await processLabImage(new Uint8Array(await file.arrayBuffer()))
+  /* 413 is for bytes only. The editor reads a 413 by status, without parsing
+     it — the platform's own is plain text — so an image too large in *pixels*
+     answered 413 was reported as "over 4 MB", whatever it weighed. */
   if (!processed.ok) {
-    const status = processed.error === 'unsupportedType' ? 415 : 413
+    const status =
+      processed.error === 'unsupportedType' ? 415 : processed.error === 'tooLarge' ? 413 : 422
     return NextResponse.json({ error: processed.error }, { status })
   }
 
