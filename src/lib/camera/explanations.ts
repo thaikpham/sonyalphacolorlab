@@ -196,12 +196,3 @@ export const WB_EXPLANATIONS = {
 } as const satisfies Record<string, Explanation>;
 
 export type Locale = 'en' | 'vi';
-
-/** Looks up an explanation, returning undefined rather than throwing. */
-export function explain(
-  table: Record<string, Explanation>,
-  key: string,
-  locale: Locale,
-): string | undefined {
-  return table[key]?.[locale];
-}

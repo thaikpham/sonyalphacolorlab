@@ -81,7 +81,6 @@ const MIRED_SCALE = 90;
  */
 const DEPTH_SCALE = 0.0551;
 
-export type Range = { readonly min: number; readonly max: number; readonly step: number };
 export type Accent = { l: number; c: number; h: number };
 
 type Vec = readonly [number, number];

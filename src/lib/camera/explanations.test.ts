@@ -4,7 +4,6 @@ import {
   COLOR_DEPTH_EXPLANATIONS,
   PP_DETAIL_EXPLANATIONS,
   PP_EXPLANATIONS,
-  explain,
 } from './explanations';
 import { CL_PARAM_ORDER, PP_COLOR_DEPTH_CHANNELS } from './constants';
 import { ppSettingsSchema } from './schema';
@@ -61,9 +60,5 @@ describe('parameter explanations', () => {
       expect(CL_EXPLANATIONS[p].en.toLowerCase(), p).toContain('never negative');
     }
     expect(CL_EXPLANATIONS.sharpnessRange.en).toContain('never negative');
-  });
-
-  it('returns undefined for an unknown key instead of throwing', () => {
-    expect(explain(PP_EXPLANATIONS, 'nonexistent', 'en')).toBeUndefined();
   });
 });

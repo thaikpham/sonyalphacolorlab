@@ -94,9 +94,6 @@ export const WB_PRESETS = [
 /** Sony documents Flash as "only when shooting still images". */
 export const WB_PRESETS_STILL_ONLY = ['Flash'] as const;
 
-/** What the White Balance menu calls the Kelvin mode (WB_PRESETS' citation). */
-export const WB_KELVIN_MENU = 'C.Temp./Filter' as const;
-
 /** The three White Balance controls as the recipe tables name them. */
 export const WB_PARAM_LABELS = {
   temperature: 'Temperature',
@@ -336,10 +333,5 @@ export const RECIPE_FORMATS = ['pp', 'cl'] as const;
 // ---------------------------------------------------------------------------
 
 export type RecipeFormat = (typeof RECIPE_FORMATS)[number];
-export type PpGamma = (typeof PP_GAMMA)[number];
-export type PpColorMode = (typeof PP_COLOR_MODE)[number];
-export type PpBlackGammaRange = (typeof PP_BLACK_GAMMA_RANGE)[number];
-export type PpDetailBwBalance = (typeof PP_DETAIL_BW_BALANCE)[number];
-export type PpColorDepthChannel = (typeof PP_COLOR_DEPTH_CHANNELS)[number];
 export type CreativeLookCode = (typeof CREATIVE_LOOKS)[number]['code'];
 export type ClParam = keyof typeof CL_RANGES;

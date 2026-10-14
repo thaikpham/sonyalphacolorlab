@@ -27,7 +27,6 @@ import { MIRED_PER_SHIFT_STEP, gradeWarmth, wbBalance, type Warmth, type WbBalan
 
 export type EffectAxis = 'contrast' | 'color' | 'detail';
 export type Effect = { axis: EffectAxis; en: string; vi: string };
-export type Locale = 'en' | 'vi';
 
 /** -2 strong down · -1 mild down · 0 neutral · +1 mild up · +2 strong up */
 type Step = -2 | -1 | 0 | 1 | 2;
