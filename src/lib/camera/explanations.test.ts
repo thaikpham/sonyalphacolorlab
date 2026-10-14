@@ -4,8 +4,17 @@ import {
   COLOR_DEPTH_EXPLANATIONS,
   PP_DETAIL_EXPLANATIONS,
   PP_EXPLANATIONS,
+  WB_OVERVIEW,
 } from './explanations';
-import { CL_PARAM_ORDER, PP_COLOR_DEPTH_CHANNELS } from './constants';
+import {
+  CL_PARAM_ORDER,
+  CL_RANGES,
+  PP_COLOR_DEPTH_CHANNELS,
+  PP_RANGES,
+  WB_KELVIN,
+  WB_SHIFT_AXIS,
+} from './constants';
+import { MIRED_PER_SHIFT_STEP } from './color';
 import { ppSettingsSchema } from './schema';
 
 /** The PP setting keys, read off the schema rather than hand-listed. */
@@ -48,11 +57,33 @@ describe('parameter explanations', () => {
   });
 
   it('warns about the two saturation ranges in both places', () => {
-    // The single most confusable pair in the whole app.
-    expect(PP_EXPLANATIONS.saturation.en).toContain('-32 to +32');
-    expect(CL_EXPLANATIONS.saturation.en).toContain('-9 to +9');
-    expect(PP_EXPLANATIONS.saturation.vi).toContain('-32');
-    expect(CL_EXPLANATIONS.saturation.vi).toContain('-9');
+    // The single most confusable pair in the whole app. Read from constants.ts,
+    // so a range change cannot leave the text stale and this test green.
+    const pp = PP_RANGES.saturation;
+    const cl = CL_RANGES.saturation;
+    expect(PP_EXPLANATIONS.saturation.en).toContain(`${pp.min} to +${pp.max}`);
+    expect(CL_EXPLANATIONS.saturation.en).toContain(`${cl.min} to +${cl.max}`);
+    expect(PP_EXPLANATIONS.saturation.vi).toContain(`${pp.min} đến +${pp.max}`);
+    expect(CL_EXPLANATIONS.saturation.vi).toContain(`${cl.min} đến +${cl.max}`);
+  });
+
+  it('names the end of the Kelvin range where the shift is the finer control', () => {
+    // The overview had this backwards: at 9900K a 100K step is about 1 mired,
+    // finer than any shift step, so the shift is finer only at the low end.
+    const kelvinStep = (from: number, to: number) => Math.abs(1e6 / from - 1e6 / to);
+    const atMin = kelvinStep(WB_KELVIN.min, WB_KELVIN.min + WB_KELVIN.step);
+    const atMax = kelvinStep(WB_KELVIN.max - WB_KELVIN.step, WB_KELVIN.max);
+    const shiftStep = WB_SHIFT_AXIS.step * MIRED_PER_SHIFT_STEP;
+    expect(atMin).toBeGreaterThan(shiftStep);
+    expect(atMax).toBeLessThan(shiftStep);
+
+    const en = WB_OVERVIEW.en.join(' ');
+    const vi = WB_OVERVIEW.vi.join(' ');
+    expect(en).toContain(`the shift is the finer control down at ${WB_KELVIN.min}K and the coarser one up at ${WB_KELVIN.max}K`);
+    expect(vi).toContain(`shift là nút tinh hơn ở vùng ${WB_KELVIN.min}K và thô hơn ở vùng ${WB_KELVIN.max}K`);
+    expect(en).toContain(`about ${Math.round(atMin)} mired down at ${WB_KELVIN.min}K`);
+    expect(en).toContain(`about ${Math.round(atMax)} mired up at ${WB_KELVIN.max}K`);
+    expect(en).not.toContain('finer control at the warm end');
   });
 
   it('flags the unsigned Creative Look parameters', () => {
