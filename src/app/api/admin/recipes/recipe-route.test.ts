@@ -157,11 +157,62 @@ describe('PATCH /api/admin/recipes/[id]', () => {
   });
 });
 
+describe('a save made against an old version', () => {
+  /* A tab that opened SCL-PP-010 while it was published, and saved a typo
+     fix after another tab had unpublished it, put it back on the site — and
+     both tabs said "Saved". The product route closed this hole first. */
+
+  it('needs the version it was opened at', async () => {
+    const res = await one.PATCH(json('PATCH', PP), params(ID));
+    expect(res.status).toBe(400);
+    expect(calls.update).not.toHaveBeenCalled();
+  });
+
+  it('is refused with 409 staleEdit before anything is written', async () => {
+    const res = await one.PATCH(json('PATCH', { ...PP, expectedUpdatedAt: 'older' }), params(ID));
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ error: 'staleEdit' });
+    expect(calls.update).not.toHaveBeenCalled();
+  });
+
+  it('names the version on the write itself, which closes the read-to-write window', async () => {
+    await one.PATCH(json('PATCH', { ...PP, expectedUpdatedAt: V1 }), params(ID));
+    const [written, expected] = calls.update.mock.calls[0] as [Record<string, unknown>, string];
+    expect(expected).toBe(V1);
+    expect(written).not.toHaveProperty('expectedUpdatedAt');
+  });
+
+  it('asks again when the write matched nothing: 409 if the row moved on, 404 if it went', async () => {
+    calls.update.mockResolvedValue(null);
+    calls.get.mockResolvedValueOnce(stored()).mockResolvedValueOnce(stored({ updatedAt: V2 }));
+    const moved = await one.PATCH(json('PATCH', { ...PP, expectedUpdatedAt: V1 }), params(ID));
+    expect(moved.status).toBe(409);
+    expect(await moved.json()).toEqual({ error: 'staleEdit' });
+
+    calls.get.mockResolvedValueOnce(stored()).mockResolvedValueOnce(null);
+    const gone = await one.PATCH(json('PATCH', { ...PP, expectedUpdatedAt: V1 }), params(ID));
+    expect(gone.status).toBe(404);
+  });
+
+  it('answers with the stored row and its new version, even when the re-read fails', async () => {
+    calls.get.mockResolvedValueOnce(stored()).mockResolvedValueOnce(stored({ updatedAt: V2 }));
+    const ok = await one.PATCH(json('PATCH', { ...PP, expectedUpdatedAt: V1 }), params(ID));
+    expect((await ok.json()).recipe.updatedAt).toBe(V2);
+
+    calls.get.mockResolvedValueOnce(stored()).mockRejectedValueOnce(new Error('timeout'));
+    const blind = await one.PATCH(json('PATCH', { ...PP, expectedUpdatedAt: V1 }), params(ID));
+    const body = await blind.json();
+    expect(body.ok).toBe(true);
+    expect(body.recipe.updatedAt).toBe(V2);
+    expect(body.recipe.recipe.id).toBe(ID);
+  });
+});
+
 describe('DELETE /api/admin/recipes/[id]', () => {
   it('unpublishes rather than deletes, and says so', async () => {
     const res = await one.DELETE(json('DELETE', ''), params(ID));
     expect(res.status).toBe(200);
-    expect(await res.json()).toMatchObject({ ok: true, unpublished: true });
+    expect(await res.json()).toMatchObject({ ok: true, unpublished: true, updatedAt: V2 });
     expect(calls.unpublish).toHaveBeenCalledWith(ID);
   });
 

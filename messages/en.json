@@ -670,6 +670,7 @@
       "formatRequired": "Pick Picture Profile or Creative Look first.",
       "invalidRecipe": "Some values are outside what the camera accepts. The list below names each one.",
       "idSpaceExhausted": "All 999 ids for this format are used. Nothing was created.",
+      "staleEdit": "This recipe was saved somewhere else since you opened it. Nothing was changed — reopen it to load the latest version, then edit again.",
       "uploadFailed": "The photograph could not be uploaded.",
       "noFile": "No file was attached.",
       "tooLarge": "That file is over 4 MB.",

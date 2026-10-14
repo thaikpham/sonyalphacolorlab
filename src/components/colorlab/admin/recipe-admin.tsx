@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useAdminSession } from '@/components/admin-ui/session';
 import { FIELD, FIELD_SM } from '@/components/admin-ui/controls';
@@ -85,6 +85,10 @@ export function RecipeAdmin() {
   const [editing, setEditing] = useState<Editing | null>(null);
   const draft = editing?.draft ?? null;
   const dirty = isDirty(editing);
+  /* The recipe the editor is on right now, for answers that arrive late — an
+     open, a save, an unpublish. State would be the closure's copy, which is
+     the recipe the request was made for, not the one on screen now. */
+  const onRecipe = useRef<string | null>(null);
   const [busy, setBusy] = useState<'' | 'saving' | 'creating' | 'unpublishing'>('');
   const [status, setStatus] = useState<{ kind: 'ok' | 'err'; msg: string } | null>(null);
   const [issues, setIssues] = useState<readonly string[]>([]);
@@ -155,11 +159,37 @@ export function RecipeAdmin() {
     );
   }, [records, query]);
 
+  /**
+   * Opens a recipe from the admin read, never from the list row.
+   *
+   * The list was read when the screen loaded and after the last write, so a
+   * row can be minutes old; and a save names the version it opened at. The
+   * draft and its version come from this one read so they describe the same
+   * row. Opening the recipe that is already open reads it again, which is how
+   * a `staleEdit` is recovered from.
+   */
+  const load = async (id: string) => {
+    onRecipe.current = id;
+    try {
+      const res = await fetch(`/api/admin/recipes/${id}`, { headers: authed() });
+      const data = (await res.json()) as { recipe?: RecipeRecord; error?: string };
+      if (onRecipe.current !== id) return;
+      if (!res.ok || !data.recipe) {
+        setStatus({ kind: 'err', msg: codeMessage(data.error ?? 'loadFailed', 'loadFailed') });
+        return;
+      }
+      setEditing(opened(data.recipe));
+    } catch {
+      if (onRecipe.current === id) setStatus({ kind: 'err', msg: codeMessage('loadFailed', 'loadFailed') });
+    }
+  };
+
   const open = (record: RecipeRecord) => {
     if (dirty && !window.confirm(t('discardConfirm'))) return;
-    setEditing(opened(record));
+    setEditing(null);
     setIssues([]);
     setStatus(null);
+    void load(record.recipe.id);
   };
 
   /* Only onto the recipe the edit was made on: a field's change built from
@@ -195,15 +225,10 @@ export function RecipeAdmin() {
         return;
       }
       setNewName('');
-      const rows = await fetchList();
-      if (rows) {
-        setRecords(rows);
-        const made = rows.find((r) => r.recipe.id === data.id);
-        if (made) {
-          setEditing(opened(made));
-          setIssues([]);
-        }
-      }
+      setEditing(null);
+      setIssues([]);
+      await reload();
+      await load(data.id);
       setStatus({ kind: 'ok', msg: t('created', { id: data.id }) });
     } catch {
       setStatus({ kind: 'err', msg: codeMessage('saveFailed') });
@@ -224,7 +249,9 @@ export function RecipeAdmin() {
       const res = await fetch(`/api/admin/recipes/${body.id}`, {
         method: 'PATCH',
         headers: authed(),
-        body: JSON.stringify(body),
+        /* The version it was opened at. A row saved elsewhere since answers
+           409 `staleEdit` rather than being reverted. */
+        body: JSON.stringify({ ...body, expectedUpdatedAt: sent.stored.updatedAt }),
       });
       const data = (await res.json()) as {
         ok?: boolean;
@@ -237,16 +264,15 @@ export function RecipeAdmin() {
            path and a bound — far more use than "could not save", and the form
            cannot always prevent them: a Look change and a saturation value can
            each be legal while the pair is not. */
+        if (onRecipe.current !== body.id) return;
         if (data.issues) setIssues(data.issues);
         setStatus({ kind: 'err', msg: codeMessage(data.error ?? 'saveFailed', 'saveFailed') });
         return;
       }
-      const fresh: RecipeRecord = data.recipe?.recipe
-        ? { ...sent.stored, ...data.recipe }
-        : { ...sent.stored, recipe: body };
-      setEditing((cur) => afterSave(cur, sent, fresh));
+      const fresh = data.recipe;
+      if (fresh) setEditing((cur) => afterSave(cur, sent, fresh));
       await reload();
-      setStatus({ kind: 'ok', msg: t('saved') });
+      if (onRecipe.current === body.id) setStatus({ kind: 'ok', msg: t('saved') });
     } catch {
       setStatus({ kind: 'err', msg: codeMessage('saveFailed') });
     } finally {
@@ -272,12 +298,11 @@ export function RecipeAdmin() {
         setStatus({ kind: 'err', msg: codeMessage(data.error ?? 'saveFailed', 'saveFailed') });
         return;
       }
-      setEditing((cur) =>
-        cur && cur.stored.recipe.id === id
-          ? opened({ ...cur.stored, recipe: { ...cur.stored.recipe, published: false } })
-          : cur,
-      );
+      /* Read again rather than patched locally: pairing the new version with
+         the fields as they were opened would let the next save pass the
+         precondition over anything saved elsewhere in between. */
       await reload();
+      if (onRecipe.current === id) await load(id);
       setStatus({ kind: 'ok', msg: t('unpublished') });
     } catch {
       setStatus({ kind: 'err', msg: codeMessage('saveFailed') });

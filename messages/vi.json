@@ -670,6 +670,7 @@
       "formatRequired": "Hãy chọn Picture Profile hoặc Creative Look trước.",
       "invalidRecipe": "Một số giá trị nằm ngoài dải máy ảnh cho phép. Danh sách bên dưới nêu rõ từng giá trị.",
       "idSpaceExhausted": "Đã dùng hết 999 mã cho định dạng này. Chưa có gì được tạo.",
+      "staleEdit": "Công thức này vừa được lưu ở nơi khác. Chưa có gì thay đổi — mở lại công thức để tải bản mới nhất rồi sửa tiếp.",
       "uploadFailed": "Không tải được ảnh lên.",
       "noFile": "Chưa đính kèm tệp nào.",
       "tooLarge": "Tệp này vượt quá 4 MB.",

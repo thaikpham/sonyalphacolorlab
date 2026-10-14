@@ -48,6 +48,34 @@ describe('what the editor says', () => {
   });
 });
 
+describe('a recipe saved somewhere else since it was opened', () => {
+  it('is opened from the admin read, which carries the version', () => {
+    /* The list row could be minutes old; a fresh version beside a stale
+       draft would pass the precondition and write the stale draft anyway. */
+    const load = handler('load');
+    expect(load).toMatch(/fetch\(`\/api\/admin\/recipes\/\$\{id\}`, \{ headers: authed\(\) \}\)/);
+    expect(load).toMatch(/setEditing\(opened\(data\.recipe\)\)/);
+    expect(handler('open')).toMatch(/void load\(record\.recipe\.id\)/);
+  });
+
+  it('names that version on every save', () => {
+    expect(handler('save')).toMatch(/expectedUpdatedAt: sent\.stored\.updatedAt/);
+  });
+
+  it('reloads from the row after Unpublish rather than pairing a new version with old fields', () => {
+    const unpublish = handler('unpublish');
+    expect(unpublish).toMatch(/await load\(id\)/);
+    expect(unpublish).not.toMatch(/updatedAt: data\.updatedAt/);
+  });
+
+  it('has a message for staleEdit that says how to recover', () => {
+    for (const side of ['en', 'vi'] as const) {
+      const errors = (messages[side] as unknown as { errors: Record<string, string> }).errors;
+      expect(errors.staleEdit, side).toBeTruthy();
+    }
+  });
+});
+
 describe('unsaved work is never dropped without asking', () => {
   it('asks before Create replaces an edited draft, and clears the old issues', () => {
     const create = handler('create');
