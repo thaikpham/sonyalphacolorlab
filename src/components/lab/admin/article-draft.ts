@@ -1,5 +1,5 @@
 import { parseMeta } from '@/lib/lab/meta'
-import { parseBlocks, validateForPublish } from '@/lib/lab/parse'
+import { parseBlock, parseBlocks, validateForPublish } from '@/lib/lab/parse'
 import type {
   Archetype,
   Article,
@@ -189,12 +189,45 @@ export function afterSave(current: Draft | null, sent: Draft, stored: StoredArti
       saved: sent.rev,
     }
   }
-  /* Same length means nothing was dropped, so the blocks are the same blocks
-     in the same order: keep their keys, and an upload still running finds its
-     slot when it answers. */
-  const keys =
-    stored.blocks.length === sent.blocks.length ? sent.blocks.map((b) => b.key) : undefined
-  return { ...asDraft(stored, keys), session: current.session }
+  return { ...asDraft(stored, carriedKeys(sent.blocks, stored.blocks)), session: current.session }
+}
+
+/**
+ * A block as the parser would store it, compared without key order: jsonb
+ * sorts an object's keys, so the stored copy need not list them as sent.
+ * Parsing both sides is safe because the parser is idempotent.
+ */
+const canonical = (block: Block) =>
+  JSON.stringify(parseBlock(block), (_k, v: unknown) =>
+    v && typeof v === 'object' && !Array.isArray(v)
+      ? Object.fromEntries(Object.entries(v).sort(([a], [b]) => a.localeCompare(b)))
+      : v,
+  )
+
+/**
+ * The key each stored block takes over from the block it was saved from, so
+ * an upload still running finds its slot when it answers.
+ *
+ * The parser only removes blocks and never reorders them, so each stored block
+ * is the next sent block that parses to it. Matching by position instead gave
+ * every block after a dropped one its neighbour's key — or, as first written,
+ * new keys for all of them, and an upload in flight was silently discarded.
+ */
+export function carriedKeys(sent: readonly DraftBlock[], stored: readonly Block[]): number[] {
+  const keys: number[] = []
+  let from = 0
+  for (const block of stored) {
+    const want = canonical(block)
+    let at = from
+    while (at < sent.length && canonical(sent[at].block) !== want) at += 1
+    if (at < sent.length) {
+      keys.push(sent[at].key)
+      from = at + 1
+    } else {
+      keys.push(next())
+    }
+  }
+  return keys
 }
 
 /**

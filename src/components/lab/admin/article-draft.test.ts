@@ -137,6 +137,30 @@ describe('a save answer lands on what is on screen now', () => {
     expect(after?.blocks.map((b) => b.block)).toEqual([{ t: 'p', text: 'kept' }])
   })
 
+  it('keeps each surviving block its key when one before it was dropped', () => {
+    /* The upload for the figure is still running when the save answers; the
+       empty paragraph above it is gone from the stored row. */
+    const sent = asDraft(
+      stored([{ t: 'p', text: '' }, { t: 'figure', caption: 'c', alt: '' }, { t: 'p', text: 'end' }]),
+    )
+    const figure = sent.blocks[1].key
+    const after = afterSave(
+      sent,
+      sent,
+      stored([{ t: 'figure', caption: 'c', alt: '' }, { t: 'p', text: 'end' }]),
+    )
+    expect(after?.blocks.map((b) => b.key)).toEqual([figure, sent.blocks[2].key])
+    const landed = withAsset(after, sent.session, figure, 'assetId', A)
+    expect(landed?.blocks[0].block).toMatchObject({ t: 'figure', assetId: A })
+  })
+
+  it('matches a stored block whatever order the database gave its keys', () => {
+    const sent = asDraft(stored([{ t: 'p', text: '' }, { t: 'figure', caption: 'c', alt: '' }]))
+    const reordered = { alt: '', caption: 'c', t: 'figure' } as Block
+    const after = afterSave(sent, sent, stored([reordered]))
+    expect(after?.blocks[0].key).toBe(sent.blocks[1].key)
+  })
+
   it('keeps block keys when nothing was dropped, so an upload in flight still lands', () => {
     const sent = asDraft(stored([{ t: 'figure', caption: 'c', alt: '' }]))
     const after = afterSave(sent, sent, stored([{ t: 'figure', caption: 'c', alt: '' }]))
