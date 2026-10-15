@@ -139,6 +139,35 @@ describe('the wiki search keeps the reader’s filters', () => {
   });
 });
 
+/** The text of every `<button>` in the markup, tags stripped. */
+const buttonTexts = (html: string) =>
+  [...html.matchAll(/<button\b[^>]*>([\s\S]*?)<\/button>/g)].map(([, inner]) =>
+    inner.replace(/<[^>]+>/g, '').trim(),
+  );
+
+describe('the filter console reads in the reader’s language', () => {
+  it('names the audio tabs through the catalogue, not the stored value', () => {
+    /* The key stays `Tai nghe` / `Loa` — it is the filter value the route and
+       the catalogue share. Only the label was raw, so /en read Vietnamese. */
+    const tabs = buttonTexts(render('/audio'));
+    expect(tabs).toContain(en.cameras.sub.headphones);
+    expect(tabs).toContain(en.cameras.sub.speakers);
+    expect(tabs).not.toContain('Tai nghe');
+    expect(tabs).not.toContain('Loa');
+  });
+
+  it('labels the ColorLab rows and reset chips from the catalogue', () => {
+    const html = render('/colorlab?format=cl', 'vi');
+    const text = html.replace(/<[^>]+>/g, '\n').split('\n').map((s) => s.trim());
+    for (const literal of ['Format', 'Tags', 'All']) {
+      expect(text, `"${literal}" renders untranslated on /vi`).not.toContain(literal);
+    }
+    expect(text).toContain(vi_.search.filterFormat);
+    expect(text).toContain(vi_.search.filterTags);
+    expect(text.filter((s) => s === vi_.search.filterAll)).toHaveLength(3);
+  });
+});
+
 describe('live search stays where the reader is', () => {
   it('filters in place only on a catalogue index', () => {
     /* On /recipe/<slug> the 250ms push went to /colorlab?q=…, and on

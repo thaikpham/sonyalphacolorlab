@@ -187,7 +187,10 @@
       "article": "Article",
       "knowledge": "Reference"
     },
-    "partial": "Some sources could not be searched right now."
+    "partial": "Some sources could not be searched right now.",
+    "filterFormat": "Format",
+    "filterTags": "Tags",
+    "filterAll": "All"
   },
   "cameras": {
     "actionLabel": "Details & compare",

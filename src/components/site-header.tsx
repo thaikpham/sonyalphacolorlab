@@ -1340,12 +1340,14 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                       {/* Every product on `/audio` is one category, so tabs
                           keyed on `cat` would be one live tab and three empty
                           ones. There they select `sub1` — Tai nghe or Loa —
-                          which is the split a reader of that page is after. */}
+                          which is the split a reader of that page is after.
+                          The key is the stored value; the label is mapped like
+                          every other sub-category, or /en reads Vietnamese. */}
                       {(isAudioWiki
                         ? [
                             { key: 'all', label: tCameras('catAll') },
-                            { key: 'Tai nghe', label: 'Tai nghe' },
-                            { key: 'Loa', label: 'Loa' },
+                            { key: 'Tai nghe', label: subCategoryLabel('Tai nghe', tCameras) },
+                            { key: 'Loa', label: subCategoryLabel('Loa', tCameras) },
                           ]
                         : [
                             { key: 'all', label: tCameras('catAll') },
@@ -1494,7 +1496,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
 
                   {/* Row 1: Format Filters */}
                   <div className="flex items-start gap-3">
-                    <span className="label w-14 shrink-0 leading-11">Format</span>
+                    <span className="label w-14 shrink-0 leading-11">{t('filterFormat')}</span>
 
                     <div className="filter-scroll flex flex-wrap items-center gap-2 min-w-0">
                       <button
@@ -1503,7 +1505,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                         aria-current={!currentFormat ? 'true' : undefined}
                         className={!currentFormat ? CHIP_SELECTED : CHIP_IDLE}
                       >
-                        All
+                        {t('filterAll')}
                       </button>
 
                       <button
@@ -1540,7 +1542,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                           aria-current={!currentLook ? 'true' : undefined}
                           className={!currentLook ? CHIP_SELECTED : CHIP_IDLE}
                         >
-                          All
+                          {t('filterAll')}
                         </button>
 
                         {CREATIVE_LOOKS.map((l) => (
@@ -1560,7 +1562,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
 
                   {/* Row 3: Tag Chips Bar */}
                   <div className="flex items-start gap-3">
-                    <span className="label w-14 shrink-0 leading-11">Tags</span>
+                    <span className="label w-14 shrink-0 leading-11">{t('filterTags')}</span>
 
                     <div className="filter-scroll flex flex-wrap items-center gap-2 min-w-0">
                       <button
@@ -1569,7 +1571,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                         aria-current={!currentTag ? 'true' : undefined}
                         className={!currentTag ? CHIP_SELECTED : CHIP_IDLE}
                       >
-                        All
+                        {t('filterAll')}
                       </button>
 
                       {tagList.map((item) => (

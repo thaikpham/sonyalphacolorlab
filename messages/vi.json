@@ -187,7 +187,10 @@
       "article": "Bài viết",
       "knowledge": "Kiến thức"
     },
-    "partial": "Một số nguồn chưa tìm được lúc này."
+    "partial": "Một số nguồn chưa tìm được lúc này.",
+    "filterFormat": "Kiểu",
+    "filterTags": "Thẻ",
+    "filterAll": "Tất cả"
   },
   "cameras": {
     "actionLabel": "Chi tiết & so sánh",
