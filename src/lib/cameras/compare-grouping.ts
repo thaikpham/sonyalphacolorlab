@@ -11,7 +11,6 @@ export type CompareTabId =
 export interface SpecSectionGroup {
   id: 'sensorOptics' | 'videoIso' | 'afStab' | 'physical';
   labelKey: string;
-  icon: string;
   specKeys: string[];
 }
 
@@ -19,7 +18,6 @@ export const SPEC_SECTION_GROUPS: SpecSectionGroup[] = [
   {
     id: 'sensorOptics',
     labelKey: 'sectionSensorOptics',
-    icon: '📷',
     specKeys: [
       'sensor',
       'effectivePixels',
@@ -34,13 +32,11 @@ export const SPEC_SECTION_GROUPS: SpecSectionGroup[] = [
   {
     id: 'videoIso',
     labelKey: 'sectionVideoIso',
-    icon: '🎥',
     specKeys: ['video', 'isoRange'],
   },
   {
     id: 'afStab',
     labelKey: 'sectionAfStab',
-    icon: '🎯',
     specKeys: [
       'autofocus',
       'stabilization',
@@ -52,7 +48,6 @@ export const SPEC_SECTION_GROUPS: SpecSectionGroup[] = [
   {
     id: 'physical',
     labelKey: 'sectionPhysical',
-    icon: '📐',
     specKeys: [
       'lcd',
       'mediaSlots',
@@ -65,37 +60,6 @@ export const SPEC_SECTION_GROUPS: SpecSectionGroup[] = [
     ],
   },
 ];
-
-export const SPEC_ICONS: Record<string, string> = {
-  sensor: '📷',
-  effectivePixels: '✨',
-  isoRange: '🔆',
-  autofocus: '🎯',
-  video: '🎥',
-  stabilization: '🖐️',
-  viewfinder: '👁️',
-  lcd: '🖥️',
-  mediaSlots: '💾',
-  battery: '🔋',
-  weight: '⚖️',
-  dimensions: '📐',
-  format: '🖼️',
-  focalLength: '🔭',
-  maxAperture: '⭕',
-  minAperture: '⭕',
-  construction: '🔬',
-  angleOfView: '📐',
-  minFocusDistance: '🎯',
-  maxMagnification: '🔍',
-  filterDiameter: '⭕',
-  apertureBlades: '⚙️',
-  compatibility: '🔌',
-  category: '📦',
-  subCategory1: '🏷️',
-  subCategory2: '📂',
-  priceFormatted: '💳',
-  sku: '🏷️',
-};
 
 /**
  * Retrieves a spec value string for a camera and key.

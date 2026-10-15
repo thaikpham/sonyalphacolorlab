@@ -137,11 +137,6 @@ export const SPEC_FIELD_META: Record<string, SpecFieldMeta> = {
     type: 'text',
     placeholder: 'ví dụ: Máy ảnh Sony ngàm E',
   },
-  specsSource: {
-    key: 'specsSource',
-    type: 'url',
-    placeholder: 'https://www.sony.com.vn/...',
-  },
 };
 
 export function getSpecMeta(key: string): SpecFieldMeta {
