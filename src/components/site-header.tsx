@@ -180,6 +180,11 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
      on an article page. The filter console stays ColorLab's and the Wiki's. */
   const isSearchPage = pathname === '/search';
   const isAll = isBlog || isSearchPage;
+  /* The grid the box filters in place. Everywhere else in ColorLab and the
+     Wiki — a recipe, a product, the compare page — there is nothing behind
+     the box to filter, and a live push would carry the reader off the page
+     mid-word; there the box waits for Enter. */
+  const isCatalogueIndex = pathname === '/colorlab' || pathname === wikiBase;
   const searchParams = useSearchParams();
   const { user, openLoginModal, logout } = useAuth();
 
@@ -317,14 +322,24 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
    * https://react.dev/learn/you-might-not-need-an-effect
    */
   const [syncedQ, setSyncedQ] = useState(currentQ);
+  /* The `q` this box's own debounced push sent, until the URL arrives at it.
+     That arrival is the grid catching up with the typist, not a navigation:
+     closing the dropdown there made the suggestions vanish after every pause,
+     and ArrowDown had nothing left to move through. State rather than a ref,
+     because it is read during render. */
+  const [livePushedQ, setLivePushedQ] = useState<string | null>(null);
   if (syncedQ !== currentQ) {
     setSyncedQ(currentQ);
-    setQuery(currentQ);
     if (hasActiveFilters) setIsSearchOpen(true);
-    /* A navigation answers the query — the reader is now looking at results,
-       so the suggestions for that same text are stale chrome over them. This
-       does not fetch: arriving on a URL is not someone typing. */
-    setIsPredictiveOpen(false);
+    if (currentQ === livePushedQ) {
+      setLivePushedQ(null);
+    } else {
+      setQuery(currentQ);
+      /* A navigation answers the query — the reader is now looking at results,
+         so the suggestions for that same text are stale chrome over them. This
+         does not fetch: arriving on a URL is not someone typing. */
+      setIsPredictiveOpen(false);
+    }
   }
 
   // Handle scroll auto-hide behavior
@@ -568,11 +583,15 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
     setQuery(value);
     queuePredictive(value);
     if (searchTimer.current) clearTimeout(searchTimer.current);
-    /* ColorLab and the Wiki filter the grid behind the box as you type. The
+    /* The ColorLab and Wiki grids filter behind the box as you type. The
        "all" mode has no grid behind it — navigating per keystroke would be a
-       trip to /search on every letter — so it waits for Enter. */
-    if (isAll) return;
-    searchTimer.current = setTimeout(() => updateFilters({ q: value }), 250);
+       trip to /search on every letter — and neither does a detail page, so
+       both wait for Enter. */
+    if (isAll || !isCatalogueIndex) return;
+    searchTimer.current = setTimeout(() => {
+      setLivePushedQ(value.trim());
+      updateFilters({ q: value });
+    }, 250);
   };
 
   useEffect(() => () => {
@@ -584,16 +603,20 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchTimer.current) clearTimeout(searchTimer.current);
+    /* Enter asks for the results, so the suggestions go — even when the live
+       push already put this same `q` in the URL and nothing will change. */
+    setLivePushedQ(null);
+    setIsPredictiveOpen(false);
     updateFilters({ q: query });
   };
 
   const handleClearQuery = () => {
     setQuery('');
     queuePredictive('');
-    /* Clearing the box filters the catalogue back to everything; in the
-       "all" mode there is no catalogue behind the box, and clearing it must
-       not navigate the reader off the article they are on. */
-    if (!isAll) updateFilters({ q: '' });
+    /* Clearing the box filters the grid back to everything. With no grid
+       behind the box — the "all" mode, a detail page — clearing it must not
+       navigate the reader off the page they are on. */
+    if (!isAll && isCatalogueIndex) updateFilters({ q: '' });
     inputRef.current?.focus();
   };
 

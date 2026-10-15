@@ -138,3 +138,45 @@ describe('the wiki search keeps the reader’s filters', () => {
     expect(hiddenInputs(html)).toEqual(['format=cl', 'look=FL', 'tag=portrait']);
   });
 });
+
+describe('live search stays where the reader is', () => {
+  it('filters in place only on a catalogue index', () => {
+    /* On /recipe/<slug> the 250ms push went to /colorlab?q=…, and on
+       /cameras/compare to /cameras?q=…: a pause after "moj" unmounted the page
+       the reader was on, and threw away a comparison. */
+    expect(source).toMatch(
+      /const isCatalogueIndex = pathname === '\/colorlab' \|\| pathname === wikiBase;/,
+    );
+    const queueSearch = slice('const queueSearch', 'useEffect(() => () =>');
+    expect(queueSearch).toMatch(
+      /if \(isAll \|\| !isCatalogueIndex\) return;\s*\n\s*searchTimer\.current = setTimeout/,
+    );
+  });
+
+  it('does not navigate when the box is cleared away from an index', () => {
+    const handleClearQuery = slice('const handleClearQuery', 'const handleResetAll');
+    expect(handleClearQuery).toMatch(/if \(!isAll && isCatalogueIndex\) updateFilters\(\{ q: '' \}\);/);
+  });
+
+  it('keeps the suggestions open when the URL catches up with its own push', () => {
+    /* The debounced push changes `q`, and the URL sync used to close the
+       dropdown on every change — so after each pause the suggestions vanished
+       and ArrowDown had nothing to move through. */
+    const queueSearch = slice('const queueSearch', 'useEffect(() => () =>');
+    expect(queueSearch).toMatch(/setLivePushedQ\(value\.trim\(\)\);\s*updateFilters\(\{ q: value \}\);/);
+
+    const sync = slice('if (syncedQ !== currentQ) {', '// Handle scroll auto-hide behavior');
+    const own = sync.indexOf('if (currentQ === livePushedQ)');
+    expect(own).toBeGreaterThan(-1);
+    const otherwise = sync.indexOf('} else {', own);
+    expect(otherwise).toBeGreaterThan(own);
+    expect(sync.indexOf('setIsPredictiveOpen(false)'), 'closes on its own push').toBeGreaterThan(otherwise);
+    expect(sync.indexOf('setQuery(currentQ)'), 'resets the box to its own push').toBeGreaterThan(otherwise);
+  });
+
+  it('closes the suggestions on an explicit submit', () => {
+    const handleSubmit = slice('const handleSubmit', 'const handleClearQuery');
+    expect(handleSubmit).toContain('setIsPredictiveOpen(false)');
+    expect(handleSubmit).toContain('setLivePushedQ(null)');
+  });
+});
