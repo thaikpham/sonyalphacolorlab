@@ -84,6 +84,48 @@ const CHIP_SELECTED =
 const WIKI_SELECT =
   'surface-sunken px-3 min-h-[var(--layout-touch-target)] text-body-sm font-semibold text-ink cursor-pointer';
 
+type WikiPatch = {
+  q?: string;
+  cat?: string;
+  sub1?: string;
+  sub2?: string;
+  sort?: string;
+  view?: string;
+};
+
+/**
+ * The wiki's query string after `patch`, every default left out.
+ *
+ * One builder for every way the wiki URL changes. The search box used to build
+ * its own from `q` alone, so typing "85" on
+ * `/cameras?cat=lens&sort=price-desc&view=table` landed on `/cameras?q=85`
+ * with the category, the sort and the table view all reset. The no-JS form's
+ * hidden inputs are read from here too, so the two paths cannot drift.
+ */
+export function wikiSearch(
+  current: { get(name: string): string | null } | null,
+  patch: WikiPatch,
+): string {
+  const pick = (key: keyof WikiPatch, fallback: string) =>
+    patch[key] !== undefined ? (patch[key] as string) : (current?.get(key) ?? fallback);
+
+  const next = new URLSearchParams();
+  const q = pick('q', '').trim();
+  const cat = pick('cat', 'all');
+  const sub1 = pick('sub1', 'all');
+  const sub2 = pick('sub2', 'all');
+  const sort = pick('sort', DEFAULT_WIKI_SORT);
+  const view = pick('view', 'grid');
+
+  if (q) next.set('q', q);
+  if (cat && cat !== 'all') next.set('cat', cat);
+  if (sub1 && sub1 !== 'all') next.set('sub1', sub1);
+  if (sub2 && sub2 !== 'all') next.set('sub2', sub2);
+  if (sort && sort !== DEFAULT_WIKI_SORT) next.set('sort', sort);
+  if (view && view !== 'grid') next.set('view', view);
+  return next.toString();
+}
+
 /** A square 44px icon button on the control rail — launcher, mobile search. */
 const ICON_BUTTON =
   'flex h-11 w-11 shrink-0 items-center justify-center rounded-sm cursor-pointer transition-colors';
@@ -391,6 +433,14 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
     return () => document.removeEventListener('pointerdown', handlePointerDown);
   }, [isEcosystemOpen, isProfileOpen]);
 
+  const updateWikiFilters = useCallback(
+    (patch: WikiPatch) => {
+      const qs = wikiSearch(searchParams, patch);
+      router.push(qs ? `${wikiBase}?${qs}` : wikiBase, { scroll: false });
+    },
+    [searchParams, wikiBase, router],
+  );
+
   const updateFilters = useCallback(
     (patch: { q?: string; format?: string; look?: string; tag?: string }) => {
       const newQ = patch.q !== undefined ? patch.q : currentQ;
@@ -403,58 +453,27 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
       }
 
       if (isWiki) {
-        const qs = new URLSearchParams(newQ.trim() ? { q: newQ.trim() } : {}).toString();
-        router.push(qs ? `${wikiBase}?${qs}` : wikiBase, { scroll: false });
-      } else {
-        const next: Record<string, string> = {};
-        const newFormat = patch.format !== undefined ? patch.format : currentFormat;
-        const newLook = patch.look !== undefined ? patch.look : currentLook;
-        const newTag = patch.tag !== undefined ? patch.tag : currentTag;
-
-        if (newQ.trim()) next.q = newQ.trim();
-        if (newFormat) next.format = newFormat;
-        if (newLook && newFormat === 'cl') next.look = newLook;
-        if (newTag) next.tag = newTag;
-
-        const qs = new URLSearchParams(next).toString();
-        /* `/colorlab`, not `/` — the root is the ecosystem launcher now, and it
-           renders no grid, so every recipe search and filter here would have
-           navigated out of the app and shown four tiles instead of results. */
-        router.push(qs ? `/colorlab?${qs}` : '/colorlab', { scroll: false });
+        updateWikiFilters({ q: newQ });
+        return;
       }
+
+      const next: Record<string, string> = {};
+      const newFormat = patch.format !== undefined ? patch.format : currentFormat;
+      const newLook = patch.look !== undefined ? patch.look : currentLook;
+      const newTag = patch.tag !== undefined ? patch.tag : currentTag;
+
+      if (newQ.trim()) next.q = newQ.trim();
+      if (newFormat) next.format = newFormat;
+      if (newLook && newFormat === 'cl') next.look = newLook;
+      if (newTag) next.tag = newTag;
+
+      const qs = new URLSearchParams(next).toString();
+      /* `/colorlab`, not `/` — the root is the ecosystem launcher now, and it
+         renders no grid, so every recipe search and filter here would have
+         navigated out of the app and shown four tiles instead of results. */
+      router.push(qs ? `/colorlab?${qs}` : '/colorlab', { scroll: false });
     },
-    [currentQ, currentFormat, currentLook, currentTag, isAll, isWiki, wikiBase, router],
-  );
-
-  const updateWikiFilters = useCallback(
-    (patch: {
-      q?: string;
-      cat?: string;
-      sub1?: string;
-      sub2?: string;
-      sort?: string;
-      view?: string;
-    }) => {
-      const next = new URLSearchParams();
-
-      const newQ = patch.q !== undefined ? patch.q : currentQ;
-      const newCat = patch.cat !== undefined ? patch.cat : wikiCat;
-      const newSub1 = patch.sub1 !== undefined ? patch.sub1 : wikiSub1;
-      const newSub2 = patch.sub2 !== undefined ? patch.sub2 : wikiSub2;
-      const newSort = patch.sort !== undefined ? patch.sort : wikiSort;
-      const newView = patch.view !== undefined ? patch.view : wikiView;
-
-      if (newQ.trim()) next.set('q', newQ.trim());
-      if (newCat && newCat !== 'all') next.set('cat', newCat);
-      if (newSub1 && newSub1 !== 'all') next.set('sub1', newSub1);
-      if (newSub2 && newSub2 !== 'all') next.set('sub2', newSub2);
-      if (newSort && newSort !== DEFAULT_WIKI_SORT) next.set('sort', newSort);
-      if (newView && newView !== 'grid') next.set('view', newView);
-
-      const qs = next.toString();
-      router.push(qs ? `${wikiBase}?${qs}` : wikiBase, { scroll: false });
-    },
-    [currentQ, wikiCat, wikiSub1, wikiSub2, wikiSort, wikiView, wikiBase, router],
+    [currentQ, currentFormat, currentLook, currentTag, isAll, isWiki, updateWikiFilters, router],
   );
 
   /**
@@ -892,6 +911,13 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                     }).map(([key, value]) =>
                       value ? <input key={key} type="hidden" name={key} value={value} /> : null,
                     )}
+                  {/* The wiki's, from the same builder its controls navigate
+                      with: everything not at its default except `q`, which
+                      the box itself submits. */}
+                  {isWiki &&
+                    [...new URLSearchParams(wikiSearch(searchParams, { q: '' }))].map(([key, value]) => (
+                      <input key={key} type="hidden" name={key} value={value} />
+                    ))}
                   <label htmlFor="header-search-input" className="sr-only">
                     {isAll ? t('allLabel') : t('label')}
                   </label>
