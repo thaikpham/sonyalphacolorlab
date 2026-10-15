@@ -13,8 +13,8 @@ import { isResizable } from '@/lib/images/catalogue-loader';
 import {
   type CompareTabId,
   getSpecValue,
-  isSpecDifferent,
   getActiveSpecSections,
+  valuesDiffer,
 } from '@/lib/cameras/compare-grouping';
 
 interface CameraCompareViewProps {
@@ -80,89 +80,47 @@ const CATEGORY_LABEL_KEY: Record<string, string> = {
 /** What the catalogue does not publish. Never a blank cell. */
 const EM_DASH = '—';
 
-export function CameraCompareView({ initialCameras, selectedIds }: CameraCompareViewProps) {
-  const t = useTranslations('cameras');
-  const locale = useLocale();
-  const router = useRouter();
+/** A translator scoped to the `cameras` namespace. */
+type CamerasT = (key: string) => string;
 
-  const [activeIds, setActiveIds] = useState<string[]>(selectedIds);
+/** A row as the grid draws it, with whether its cells disagree. */
+export interface CompareRow extends CompareRowDef {
+  differs: boolean;
+}
 
-  /* The catalogue is the prop, read directly. This view used to hold it in
-     state because two admin modals wrote to it; editing lives at /admin/wiki
-     now, which is the one editor that carries the admin session. */
-  const cameras = initialCameras;
+export interface CompareBlock {
+  id: string;
+  label: string;
+  rows: CompareRow[];
+}
 
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [searchAddQuery, setSearchAddQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<CompareTabId>('all');
-  const [onlyDiffs, setOnlyDiffs] = useState(false);
-
-  // Selected camera objects
-  const comparedCameras = useMemo(() => {
-    return cameras.filter((c) => activeIds.includes(c.id));
-  }, [cameras, activeIds]);
-
-  const canAddMore = comparedCameras.length < 6;
-
-  const totalCols = useMemo(() => {
-    return comparedCameras.length + (comparedCameras.length < 6 ? 2 : 1);
-  }, [comparedCameras.length]);
-
-  // Unselected cameras available to add
-  const availableToAdd = useMemo(() => {
-    const remaining = cameras.filter((c) => !activeIds.includes(c.id));
-    if (!searchAddQuery.trim()) return remaining;
-    const q = searchAddQuery.trim().toLowerCase();
-    return remaining.filter(
-      (c) =>
-        c.name.toLowerCase().includes(q) ||
-        c.sku.toLowerCase().includes(q) ||
-        c.subCategory1.toLowerCase().includes(q),
-    );
-  }, [cameras, activeIds, searchAddQuery]);
-
-  const removeCamera = (id: string) => {
-    const next = activeIds.filter((item) => item !== id);
-    setActiveIds(next);
-    if (next.length > 0) {
-      router.replace(`/cameras/compare?ids=${next.join(',')}`);
-    } else {
-      router.push(`/cameras`);
-    }
-  };
-
-  const addCamera = (id: string) => {
-    if (activeIds.length >= 6) return;
-    const next = [...activeIds, id];
-    setActiveIds(next);
-    setIsAddModalOpen(false);
-    setSearchAddQuery('');
-    router.replace(`/cameras/compare?ids=${next.join(',')}`);
-  };
-
-  const activeSpecSections = useMemo(() => {
-    return getActiveSpecSections(comparedCameras, activeTab);
-  }, [comparedCameras, activeTab]);
-
-  const tabs: { id: CompareTabId; label: string }[] = [
-    { id: 'all', label: t('tabAll') },
-    { id: 'highlights', label: t('tabHighlights') },
-    { id: 'sensorOptics', label: t('tabSensorOptics') },
-    { id: 'videoIso', label: t('tabVideoIso') },
-    { id: 'afStab', label: t('tabAfStab') },
-    { id: 'physical', label: t('tabPhysical') },
-  ];
-
-  /**
-   * The grid, as blocks of rows.
-   *
-   * Built as data rather than as six near-identical `<tr>` blocks so the
-   * alternating tint can count rows inside a block, and so one cell recipe —
-   * right-aligned, tabular, em dash where the catalogue publishes nothing —
-   * covers every row. Which blocks appear is exactly the previous behaviour:
-   * the tab decides, `getActiveSpecSections` filters the spec groups, and the
-   * difference toggle drops rows every product agrees on.
-   */
+/**
+ * The grid, as blocks of rows.
+ *
+ * Built as data rather than as six near-identical `<tr>` blocks so the
+ * alternating tint can count rows inside a block, and so one cell recipe —
+ * right-aligned, tabular, em dash where the catalogue publishes nothing —
+ * covers every row. Which blocks appear is exactly the previous behaviour:
+ * the tab decides, `getActiveSpecSections` filters the spec groups, and the
+ * difference toggle drops rows every product agrees on.
+ *
+ * Whether a row differs is read from the values its cells render, once per
+ * row, and that one answer drives both the filter and the badge — so a row the
+ * badge marks can never be one the filter hides.
+ */
+export function compareBlocks({
+  cameras,
+  activeTab,
+  onlyDiffs,
+  t,
+  locale,
+}: {
+  cameras: SonyCamera[];
+  activeTab: CompareTabId;
+  onlyDiffs: boolean;
+  t: CamerasT;
+  locale: string;
+}): CompareBlock[] {
   const blocks: { id: string; label: string; rows: CompareRowDef[] }[] = [];
 
   if (activeTab === 'all' || activeTab === 'sensorOptics') {
@@ -230,9 +188,9 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
     });
   }
 
-  for (const section of activeSpecSections) {
+  for (const section of getActiveSpecSections(cameras, activeTab)) {
     const rows: CompareRowDef[] = section.specKeys
-      .filter((specKey) => comparedCameras.some((c) => getSpecValue(c, specKey) !== null))
+      .filter((specKey) => cameras.some((c) => getSpecValue(c, specKey) !== null))
       .map((specKey) => {
         return {
           key: specKey,
@@ -247,15 +205,105 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
   }
 
   /* The difference filter, applied once over the whole grid rather than per
-     block, so a block whose every row agrees disappears with its head. */
-  const visibleBlocks = blocks
+     block, so a block whose every row agrees disappears with its head. A row
+     drawn as a node (the features list) has no one value to compare; it is
+     marked `always` and is never badged. */
+  return blocks
     .map((block) => ({
       ...block,
-      rows: block.rows.filter(
-        (row) => !onlyDiffs || row.always || isSpecDifferent(comparedCameras, row.key),
-      ),
+      rows: block.rows
+        .map((row) => ({
+          ...row,
+          differs: row.value ? valuesDiffer(cameras.map((cam) => row.value!(cam))) : false,
+        }))
+        .filter((row) => !onlyDiffs || row.always || row.differs),
     }))
     .filter((block) => block.rows.length > 0);
+}
+
+export function CameraCompareView({ initialCameras, selectedIds }: CameraCompareViewProps) {
+  const t = useTranslations('cameras');
+  const locale = useLocale();
+  const router = useRouter();
+
+  const [activeIds, setActiveIds] = useState<string[]>(selectedIds);
+
+  /* The catalogue is the prop, read directly. This view used to hold it in
+     state because two admin modals wrote to it; editing lives at /admin/wiki
+     now, which is the one editor that carries the admin session. */
+  const cameras = initialCameras;
+
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [searchAddQuery, setSearchAddQuery] = useState('');
+  const [activeTab, setActiveTab] = useState<CompareTabId>('all');
+  const [onlyDiffs, setOnlyDiffs] = useState(false);
+
+  // Selected camera objects
+  const comparedCameras = useMemo(() => {
+    return cameras.filter((c) => activeIds.includes(c.id));
+  }, [cameras, activeIds]);
+
+  const canAddMore = comparedCameras.length < 6;
+
+  const totalCols = useMemo(() => {
+    return comparedCameras.length + (comparedCameras.length < 6 ? 2 : 1);
+  }, [comparedCameras.length]);
+
+  // Unselected cameras available to add
+  const availableToAdd = useMemo(() => {
+    const remaining = cameras.filter((c) => !activeIds.includes(c.id));
+    if (!searchAddQuery.trim()) return remaining;
+    const q = searchAddQuery.trim().toLowerCase();
+    return remaining.filter(
+      (c) =>
+        c.name.toLowerCase().includes(q) ||
+        c.sku.toLowerCase().includes(q) ||
+        c.subCategory1.toLowerCase().includes(q),
+    );
+  }, [cameras, activeIds, searchAddQuery]);
+
+  const removeCamera = (id: string) => {
+    const next = activeIds.filter((item) => item !== id);
+    setActiveIds(next);
+    if (next.length > 0) {
+      router.replace(`/cameras/compare?ids=${next.join(',')}`);
+    } else {
+      router.push(`/cameras`);
+    }
+  };
+
+  const addCamera = (id: string) => {
+    if (activeIds.length >= 6) return;
+    const next = [...activeIds, id];
+    setActiveIds(next);
+    setIsAddModalOpen(false);
+    setSearchAddQuery('');
+    router.replace(`/cameras/compare?ids=${next.join(',')}`);
+  };
+
+  const hasAudio = comparedCameras.some((c) => c.category === 'audio');
+
+  const tabs: { id: CompareTabId; label: string }[] = [
+    { id: 'all', label: t('tabAll') },
+    { id: 'highlights', label: t('tabHighlights') },
+    { id: 'sensorOptics', label: t('tabSensorOptics') },
+    { id: 'videoIso', label: t('tabVideoIso') },
+    { id: 'afStab', label: t('tabAfStab') },
+    { id: 'physical', label: t('tabPhysical') },
+    ...(hasAudio ? [{ id: 'audio' as const, label: t('tabAudio') }] : []),
+  ];
+
+  /* Removing the last headset hides the audio tab; a grid left on it would
+     be empty with no tab lit to say why. */
+  const shownTab = tabs.some((tab) => tab.id === activeTab) ? activeTab : 'all';
+
+  const visibleBlocks = compareBlocks({
+    cameras: comparedCameras,
+    activeTab: shownTab,
+    onlyDiffs,
+    t,
+    locale,
+  });
 
   return (
     <div className="w-full flex flex-col gap-6 pb-16">
@@ -290,7 +338,7 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="surface-sunken p-1.5 flex items-center gap-1 overflow-x-auto scroll-silent">
           {tabs.map((tab) => {
-            const isActive = activeTab === tab.id;
+            const isActive = shownTab === tab.id;
             return (
               <button
                 key={tab.id}
@@ -440,7 +488,6 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                   </tr>
 
                   {block.rows.map((row, idx) => {
-                    const isDiff = isSpecDifferent(comparedCameras, row.key);
                     return (
                       <tr key={row.key} className={idx % 2 === 0 ? 'row-tint' : undefined}>
                         <th
@@ -449,7 +496,7 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                         >
                           <span className="flex flex-wrap items-center gap-2">
                             <span>{row.label}</span>
-                            {isDiff && <span className="chip">{t('diffBadge')}</span>}
+                            {row.differs && <span className="chip">{t('diffBadge')}</span>}
                           </span>
                         </th>
 

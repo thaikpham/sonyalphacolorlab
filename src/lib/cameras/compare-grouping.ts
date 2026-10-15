@@ -1,4 +1,4 @@
-import type { SonyCamera } from './types';
+import { SPEC_ROWS, type SonyCamera } from './types';
 
 export type CompareTabId =
   | 'all'
@@ -6,15 +6,17 @@ export type CompareTabId =
   | 'sensorOptics'
   | 'videoIso'
   | 'afStab'
-  | 'physical';
+  | 'physical'
+  | 'audio';
 
 export interface SpecSectionGroup {
-  id: 'sensorOptics' | 'videoIso' | 'afStab' | 'physical';
+  id: 'sensorOptics' | 'videoIso' | 'afStab' | 'physical' | 'audio';
   labelKey: string;
   specKeys: string[];
 }
 
-export const SPEC_SECTION_GROUPS: SpecSectionGroup[] = [
+/** The camera, lens and accessory groups, which predate the audio catalogue. */
+const IMAGING_GROUPS: SpecSectionGroup[] = [
   {
     id: 'sensorOptics',
     labelKey: 'sectionSensorOptics',
@@ -62,6 +64,26 @@ export const SPEC_SECTION_GROUPS: SpecSectionGroup[] = [
 ];
 
 /**
+ * Every headphone and speaker row the imaging groups do not already draw.
+ *
+ * Derived from `SPEC_ROWS` rather than listed, because a list is what lost
+ * them: the compare page loads audio on purpose, and a WH-1000XM6 against an
+ * XM5 compared Battery and Weight and nothing else, while sixteen rows sat in
+ * the schema. A field added to either kind now joins the grid by itself.
+ * `battery`, `weight` and `dimensions` stay in `physical`, so a body and a
+ * headset still meet on one row for each.
+ */
+const imagingKeys = new Set(IMAGING_GROUPS.flatMap((g) => g.specKeys));
+const AUDIO_SPEC_KEYS = [...new Set([...SPEC_ROWS.headphone, ...SPEC_ROWS.speaker])].filter(
+  (key) => !imagingKeys.has(key),
+);
+
+export const SPEC_SECTION_GROUPS: SpecSectionGroup[] = [
+  ...IMAGING_GROUPS,
+  { id: 'audio', labelKey: 'sectionAudio', specKeys: AUDIO_SPEC_KEYS },
+];
+
+/**
  * Retrieves a spec value string for a camera and key.
  */
 export function getSpecValue(camera: SonyCamera, key: string): string | null {
@@ -73,14 +95,17 @@ export function getSpecValue(camera: SonyCamera, key: string): string | null {
 }
 
 /**
- * Checks if a spec key has different values among the compared cameras.
+ * Whether one row's cells disagree, read from what each cell renders.
+ *
+ * Callers pass the rendered values, not spec keys. Keyed on `specs[key]`, the
+ * check saw `null` for the price, the SKU and the category rows of every
+ * product, so "Differences only" hid the price row of every compare and its
+ * badge never appeared. A missing value renders as an em dash, so a
+ * `null`, an empty string and a dash are one value here.
  */
-export function isSpecDifferent(cameras: SonyCamera[], key: string): boolean {
-  if (cameras.length <= 1) return false;
-
-  const values = cameras.map((c) => getSpecValue(c, key) ?? '—');
-  const first = values[0];
-  return values.some((v) => v !== first);
+export function valuesDiffer(values: readonly (string | null | undefined)[]): boolean {
+  const shown = values.map((v) => v || '—');
+  return shown.some((v) => v !== shown[0]);
 }
 
 /**
