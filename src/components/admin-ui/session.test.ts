@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 /**
@@ -25,17 +25,51 @@ import { describe, expect, it } from 'vitest';
 const SESSION = 'src/components/admin-ui/session.tsx';
 const SHELL = 'src/components/admin-ui/shell.tsx';
 
-/** Every client component that may render an admin screen. */
+/**
+ * Every client component that may render an admin screen — discovered, not
+ * listed. The hand-kept list held four files and missed both recipe screens,
+ * `recipe-admin.tsx` and `image-panel.tsx`, which call `useAdminSession()` and
+ * fetch `/api/admin/recipes`; `admin-gate.test.ts` discovers its routes for the
+ * same reason. A screen is admin when it reads the session module or calls an
+ * admin route.
+ */
+function clientFiles(dir: string): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+    const p = `${dir}/${e.name}`;
+    if (e.isDirectory()) return clientFiles(p);
+    if (!/\.tsx?$/.test(e.name) || /\.test\.tsx?$/.test(e.name)) return [];
+    return readFileSync(p, 'utf8').includes("'use client'") ? [p] : [];
+  });
+}
+
 const ADMIN_CLIENTS = [
-  'src/components/admin/admin-editor.tsx',
-  'src/components/lab/admin/article-admin.tsx',
-  /* Not an admin screen any more, and listed so it cannot become one again
-     behind the gate's back: it carried its own tokenless session probe and two
-     bearer-less PATCH modals, so every edit it offered could only fail.
-     /admin/wiki is the product editor. */
-  'src/components/camera-compare-view.tsx',
-  SHELL,
-];
+  ...new Set([
+    ...clientFiles('src/components').filter((p) => {
+      if (p === SESSION) return false;
+      const src = readFileSync(p, 'utf8');
+      return /from '(@\/components\/admin-ui|\.)\/session'/.test(src) || src.includes("'/api/admin");
+    }),
+    /* Not an admin screen any more, and listed so it cannot become one again
+       behind the gate's back: it carried its own tokenless session probe and
+       two bearer-less PATCH modals, so every edit it offered could only fail.
+       /admin/wiki is the product editor. */
+    'src/components/camera-compare-view.tsx',
+  ]),
+].sort();
+
+describe('the admin client inventory', () => {
+  it('finds every admin screen, the recipe editor and its photographs included', () => {
+    for (const p of [
+      'src/components/admin/admin-editor.tsx',
+      'src/components/lab/admin/article-admin.tsx',
+      'src/components/colorlab/admin/recipe-admin.tsx',
+      'src/components/colorlab/admin/image-panel.tsx',
+      SHELL,
+    ]) {
+      expect(ADMIN_CLIENTS).toContain(p);
+    }
+  });
+});
 
 describe(SESSION, () => {
   const source = readFileSync(SESSION, 'utf8');

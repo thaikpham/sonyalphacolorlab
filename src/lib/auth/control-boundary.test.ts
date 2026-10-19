@@ -33,6 +33,8 @@ type Result<T> = { data: T; error: unknown };
 
 const state = {
   online: true,
+  /** Every `.eq(column, value)` the allowlist read made. */
+  eqCalls: [] as [string, unknown][],
   getUser: async (): Promise<Result<{ user: typeof USER | null }>> => ({
     data: { user: USER },
     error: null,
@@ -61,8 +63,20 @@ vi.mock('@/lib/supabase/server', () => ({
       getUser: () => state.getUser(),
       admin: { mfa: { listFactors: () => state.factors() } },
     },
+    /* The row comes back only for the lower-cased address, as Postgres would
+       answer an exact `email = $1`. Ignoring the value let a regression to
+       `.eq('email', user.email)` resolve 'Editor@Example.com' here while
+       production answered 403. */
     from: () => ({
-      select: () => ({ eq: () => ({ maybeSingle: () => state.adminRow() }) }),
+      select: () => ({
+        eq: (column: string, value: unknown) => {
+          state.eqCalls.push([column, value]);
+          return {
+            maybeSingle: () =>
+              value === 'editor@example.com' ? state.adminRow() : Promise.resolve({ data: null, error: null }),
+          };
+        },
+      }),
     }),
   }),
   controlRead: () => {
@@ -79,6 +93,7 @@ const bearer = (token = 'jwt') =>
 
 beforeEach(() => {
   state.online = true;
+  state.eqCalls = [];
   state.getUser = async () => ({ data: { user: USER }, error: null });
   state.adminRow = async () => ({ data: { email: 'editor@example.com', role: 'di' }, error: null });
   state.factors = async () => ({ data: { factors: [] }, error: null });
@@ -211,6 +226,11 @@ describe('requireAdmin', () => {
       email: 'Editor@Example.com',
       role: 'di',
     });
+  });
+
+  it('looks the address up lower-cased, so a capitalised sign-in is the same admin', async () => {
+    await expect(requireAdmin(bearer())).resolves.toMatchObject({ role: 'di' });
+    expect(state.eqCalls).toEqual([['email', 'editor@example.com']]);
   });
 
   it('returns null for a valid user who is not on the list', async () => {
