@@ -1,5 +1,6 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { routeHandlers, type Handler } from './route-handlers';
 
 /**
  * The admin routes are the only paths in the app that let a request rewrite
@@ -103,27 +104,58 @@ describe.each(ADMIN_ROUTES)('%s', (path) => {
   });
 });
 
+/**
+ * What is wrong with one handler's ordering, or nothing.
+ *
+ * Per handler, not per file: the first handler's gate used to stand in for
+ * every handler below it, so a PATCH that read `request.json()` above its own
+ * `adminGate` passed because GET's gate sat higher in the file. Measured
+ * inside the handler, too — a module-level helper that opens a content client
+ * sits above every handler and would make this read false while being true of
+ * every actual request.
+ */
+function gateProblems({ verb, body }: Handler): string[] {
+  const gateAt = body.search(/adminGate\(\s*request\s*\)/);
+  if (gateAt === -1) return [`${verb} never calls adminGate(request)`];
+  const problems: string[] = [];
+  if (!/if\s*\(\s*!gate\.ok\s*\)\s*return/.test(body)) problems.push(`${verb} does not return on !gate.ok`);
+  if (!/status:\s*gate\.status/.test(body)) problems.push(`${verb} does not forward gate.status`);
+  for (const work of GUARDED_WORK) {
+    const at = body.search(work);
+    if (at !== -1 && at < gateAt) problems.push(`${verb} reaches ${work} before its gate`);
+  }
+  return problems;
+}
+
+describe('the per-handler gate check', () => {
+  it('flags a second handler that parses its body before its own gate', () => {
+    const fixture = [
+      'export async function GET(request: Request) {',
+      '  const gate = await adminGate(request);',
+      '  if (!gate.ok) return NextResponse.json({}, { status: gate.status });',
+      "  return NextResponse.json(await contentAdmin().from('x').select('id'));",
+      '}',
+      '',
+      'export async function PATCH(request: Request) {',
+      '  const body = await request.json();',
+      '  const gate = await adminGate(request);',
+      '  if (!gate.ok) return NextResponse.json({}, { status: gate.status });',
+      '  return NextResponse.json(body);',
+      '}',
+    ].join('\n');
+    const [get, patch] = routeHandlers(fixture);
+    expect(gateProblems(get)).toEqual([]);
+    expect(gateProblems(patch)).toEqual([`PATCH reaches ${/request\.json\(\)/} before its gate`]);
+  });
+});
+
 describe.each(WRITE_ROUTES)('%s', (path) => {
   const source = readFileSync(path, 'utf8');
+  const handlers = routeHandlers(source);
 
-  it('refuses a non-admin before doing any work', () => {
-    expect(source).toMatch(/if\s*\(\s*!gate\.ok\s*\)\s*return/);
-    expect(source).toMatch(/status:\s*gate\.status/);
-  });
-
-  it('authorises before parsing a body, spending a model call, or opening a client', () => {
-    /* Measured inside the handlers only. A module-level helper that opens a
-       content client sits above every handler in the file and would make this
-       read false while being true of every actual request. */
-    const first = source.search(/export async function (GET|POST|PATCH|DELETE)\(/);
-    const body = source.slice(first);
-    const gateAt = body.search(/adminGate\(\s*request\s*\)/);
-    expect(gateAt).toBeGreaterThan(-1);
-    for (const work of GUARDED_WORK) {
-      const at = body.search(work);
-      if (at === -1) continue;
-      expect(at).toBeGreaterThan(gateAt);
-    }
+  it('gates every handler before parsing a body, spending a model call, or opening a client', () => {
+    expect(handlers.length).toBeGreaterThan(0);
+    for (const handler of handlers) expect(gateProblems(handler)).toEqual([]);
   });
 
   it('never takes the editor identity from the body', () => {

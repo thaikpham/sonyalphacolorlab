@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { MUTATING_VERBS, routeHandlers, type Handler } from './route-handlers';
 
 /**
  * Where an administrator's save goes, and when the caches learn about it.
@@ -78,17 +79,79 @@ const code = (path: string) =>
     .replace(/(^|[^:])\/\/.*$/gm, '$1');
 
 /**
- * Just the bodies of the exported handlers.
+ * The handlers that write, each on its own slice.
  *
- * Ordering assertions have to be made inside a handler, not across the file: a
- * module-level helper that calls `contentAdmin()` sits above every handler in
- * the source and would make "the freeze comes first" look false while being
- * perfectly true of every request.
+ * Ordering assertions have to be made inside ONE handler. Across the file, a
+ * module-level helper that calls `contentAdmin()` makes "the freeze comes
+ * first" look false while it is true of every request — and the first handler
+ * answers for the rest: PATCH's freeze check stood in for DELETE's, so a
+ * cutover delete that skipped the freeze passed.
  */
-function handlerBodies(source: string): string {
-  const first = source.search(/export async function (GET|POST|PATCH|DELETE)\(/);
-  return first === -1 ? '' : source.slice(first);
+const writers = (source: string) => routeHandlers(source).filter((h) => MUTATING_VERBS.has(h.verb));
+
+/** What is wrong with one write handler's freeze, or nothing. */
+function freezeProblems({ verb, body }: Handler): string[] {
+  const freeze = body.indexOf('contentAdminWritesFrozen()');
+  if (freeze === -1) return [`${verb} never checks contentAdminWritesFrozen()`];
+  const problems: string[] = [];
+  const gate = body.indexOf('adminGate(request)');
+  /* An anonymous caller must not be able to probe whether a cutover is in
+     progress; they get the same 403 either way. */
+  if (gate === -1 || gate > freeze) problems.push(`${verb} checks the freeze before its gate`);
+  for (const work of [/request\.json\(\)/, /request\.formData\(\)/, /contentAdmin\(\)/]) {
+    const at = body.search(work);
+    if (at !== -1 && at < freeze) problems.push(`${verb} reaches ${work} before the freeze`);
+  }
+  return problems;
 }
+
+/**
+ * Whether every invalidation in one handler sits below a failure return of
+ * that same handler. Per handler, because GET opens every one of these files
+ * with its own `status: 502` for a failed read, and a file-wide look found it
+ * above every write's invalidation whether the write had a failure path or not.
+ */
+function invalidationProblems({ verb, body }: Handler, call: RegExp): string[] {
+  return [...body.matchAll(new RegExp(call.source, 'g'))]
+    .filter((m) => !/status: 502/.test(body.slice(0, m.index)))
+    .map(() => `${verb} invalidates above its own 502`);
+}
+
+describe('the per-handler write checks', () => {
+  const fixture = [
+    'export async function GET(request: Request) {',
+    '  const gate = await adminGate(request);',
+    '  if (!gate.ok) return NextResponse.json({}, { status: gate.status });',
+    "  if (loadFailed) return NextResponse.json({}, { status: 502 });",
+    '}',
+    '',
+    'export async function PATCH(request: Request) {',
+    '  const gate = await adminGate(request);',
+    '  if (!gate.ok) return NextResponse.json({}, { status: gate.status });',
+    '  if (contentAdminWritesFrozen()) return frozen();',
+    '  revalidateTag(CATALOGUE_TAG, IMMEDIATE);',
+    '  const body = await request.json();',
+    '}',
+    '',
+    'export async function DELETE(request: Request) {',
+    '  const gate = await adminGate(request);',
+    '  if (!gate.ok) return NextResponse.json({}, { status: gate.status });',
+    '  await contentAdmin().from("recipes").update({ published: false });',
+    '}',
+  ].join('\n');
+  const [patch, del] = writers(fixture);
+
+  it('flags a DELETE with no freeze although PATCH has one', () => {
+    expect(freezeProblems(patch)).toEqual([]);
+    expect(freezeProblems(del)).toEqual(['DELETE never checks contentAdminWritesFrozen()']);
+  });
+
+  it('flags a PATCH that invalidates although only GET has a 502', () => {
+    expect(invalidationProblems(patch, /revalidateTag\(CATALOGUE_TAG, IMMEDIATE\)/)).toEqual([
+      'PATCH invalidates above its own 502',
+    ]);
+  });
+});
 
 describe.each(MUTATING_ROUTES)('%s', (path) => {
   const source = read(path);
@@ -106,24 +169,10 @@ describe.each(MUTATING_ROUTES)('%s', (path) => {
     expect(source).not.toMatch(/Authorization|global:\s*\{\s*headers/);
   });
 
-  it('refuses while writes are frozen, before the body is read', () => {
-    const body = handlerBodies(source);
-    const freeze = body.indexOf('contentAdminWritesFrozen()');
-    expect(freeze).toBeGreaterThan(-1);
-    for (const work of [/request\.json\(\)/, /request\.formData\(\)/, /contentAdmin\(\)/]) {
-      const at = body.search(work);
-      if (at === -1) continue;
-      expect(at).toBeGreaterThan(freeze);
-    }
-  });
-
-  it('authorises before it checks the freeze, so the flag leaks nothing', () => {
-    /* An anonymous caller must not be able to probe whether a cutover is in
-       progress; they get the same 403 either way. */
-    const body = handlerBodies(source);
-    expect(body.indexOf('adminGate(request)')).toBeLessThan(
-      body.indexOf('contentAdminWritesFrozen()'),
-    );
+  it('refuses in every write handler while writes are frozen, after the gate and before the body', () => {
+    const handlers = writers(source);
+    expect(handlers.length).toBeGreaterThan(0);
+    for (const handler of handlers) expect(freezeProblems(handler)).toEqual([]);
   });
 });
 
@@ -160,14 +209,11 @@ describe.each(ARTICLE_ROUTES)('%s', (path) => {
   });
 
   it('invalidates only after the store call returned', () => {
-    const calls = [...source.matchAll(/revalidateTag\(LAB_TAG, IMMEDIATE\)/g)];
-    expect(calls.length).toBeGreaterThan(0);
-    for (const call of calls) {
-      const before = source.slice(0, call.index);
-      /* Each invalidation is preceded by a catch that returned 502, so it is
-         unreachable unless the write committed. */
-      expect(before).toMatch(/status: 502/);
-    }
+    /* Each invalidation is preceded, in its own handler, by a catch that
+       returned 502, so it is unreachable unless the write committed. */
+    const call = /revalidateTag\(LAB_TAG, IMMEDIATE\)/;
+    expect(source).toMatch(call);
+    for (const handler of writers(source)) expect(invalidationProblems(handler, call)).toEqual([]);
   });
 });
 
@@ -183,16 +229,15 @@ describe.each(RECIPE_ROUTES)('%s', (path) => {
   });
 
   it('invalidates only after the store call returned', () => {
-    /* Per call rather than `lastIndexOf('status: 502')`: these files hold
-       three handlers, so the last 502 in the file belongs to DELETE and sits
-       below PATCH's invalidation while being nothing to do with it. Asking
-       "is every invalidation preceded by a failure path that returned" is the
-       property actually wanted, and it survives a fourth handler. */
-    const calls = [...source.matchAll(/revalidateTag\(CATALOGUE_TAG, IMMEDIATE\)/g)];
-    expect(calls.length).toBeGreaterThan(0);
-    for (const call of calls) {
-      expect(source.slice(0, call.index)).toMatch(/status: 502/);
-    }
+    /* Per call and per handler rather than `lastIndexOf('status: 502')`:
+       these files hold three handlers, so the last 502 in the file belongs to
+       DELETE and sits below PATCH's invalidation while being nothing to do
+       with it — and the first 502 belongs to GET, above everything. Asking "is
+       every invalidation preceded by a failure path its own handler returned"
+       is the property actually wanted, and it survives a fourth handler. */
+    const call = /revalidateTag\(CATALOGUE_TAG, IMMEDIATE\)/;
+    expect(source).toMatch(call);
+    for (const handler of writers(source)) expect(invalidationProblems(handler, call)).toEqual([]);
   });
 });
 
