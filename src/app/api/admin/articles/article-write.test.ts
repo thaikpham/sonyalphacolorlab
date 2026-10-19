@@ -227,7 +227,8 @@ describe('PATCH — the publish gate', () => {
     expect(res.status).toBe(422)
     const data = await res.json()
     expect(data.error).toBe('specViolation')
-    expect(data.problems).toEqual(['placeholder'])
+    // The open markers, and the reading time a frame cannot know before its shoot.
+    expect(data.problems).toEqual(['emptyRead', 'placeholder'])
     expect(db.updates).toEqual([])
     expect(db.storage).toEqual([])
   })
