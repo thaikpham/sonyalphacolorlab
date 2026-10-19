@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import sharp from 'sharp';
 import { describe, expect, it } from 'vitest';
 
@@ -177,5 +180,26 @@ describe('processLabImage', () => {
 
   it('uses one quality for the whole project', () => {
     expect(WEBP_QUALITY).toBe(78);
+  });
+});
+
+describe('image-process packaging', () => {
+  // The upload routes import this at request time. A package listed only under
+  // devDependencies resolves today because next happens to declare sharp as an
+  // optional dependency; an install that omits dev packages, or a Next release
+  // that drops it, would fail every upload with module-not-found while lint,
+  // typecheck and this suite stayed green.
+  it('lists every package it imports under dependencies', () => {
+    const root = join(__dirname, '..', '..', '..');
+    const manifest = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')) as {
+      dependencies: Record<string, string>;
+    };
+    const source = readFileSync(join(__dirname, 'image-process.ts'), 'utf8');
+    const packages = [...source.matchAll(/^import\s[^'"]*?['"]([^'"./][^'"]*)['"]/gm)]
+      .map(([, spec]) => spec)
+      .filter((spec) => !spec.startsWith('@/') && !spec.startsWith('node:'));
+
+    expect(packages).toContain('sharp');
+    for (const name of packages) expect(manifest.dependencies, name).toHaveProperty([name]);
   });
 });
