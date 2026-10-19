@@ -243,4 +243,84 @@ describe('catalogue', () => {
       expect(src.includes(`'${ns}'`), `messages define "${ns}" but nothing reads it`).toBe(true);
     }
   });
+
+  /**
+   * Keys whose reader is being written on a parallel branch — the compare
+   * limit hint (audit3/wiki) and the error digest label (audit3/header) — so
+   * deleting them here would land those components on a raw key. Remove each
+   * entry once its reader is merged.
+   */
+  const AWAITING_READER = new Set(['cameras.maxCompareHint', 'error.ref']);
+
+  /**
+   * The same check one level down, for the namespaces the layout ships whole.
+   *
+   * A namespace that is read keeps every key in it alive as far as the check
+   * above can tell, and the layout sends `cameras`, `lab`, `nav`, `search` …
+   * entire — so thirty keys left over from deleted UI (a compare bar, a detail
+   * modal, two filter dropdowns, fourteen `ideal*` use-case badges) shipped to
+   * every visitor in both languages. The heroLanding cost, key by key.
+   *
+   * A key is read when its name, or its path below the namespace, appears
+   * quoted in a source file, or when an ancestor is the prefix of a template
+   * lookup (`t(\`specs.${key}\`)`), which reaches its children by data. Loose
+   * on purpose: it can only miss a dead key whose name is quoted for some other
+   * reason, never fail a live one.
+   */
+  it('ships no leaf key nothing reads', () => {
+    const src = [
+      readSources('src/app'),
+      readSources('src/components'),
+      readSources('src/lib'),
+      readSources('scripts'),
+    ].join('\n');
+    const quoted = (s: string) => src.includes(`'${s}'`) || src.includes(`"${s}"`) || src.includes(`\`${s}\``);
+    const templated = (prefix: string) =>
+      src.includes(`\`${prefix}.\${`) || src.includes(`'${prefix}.' +`) || quoted(prefix);
+
+    const shipped = [...layout.matchAll(PROVIDER_BLOCK)].flatMap((b) =>
+      [...b[1].matchAll(/^\s*(\w+):/gm)].map((m) => m[1]),
+    );
+    expect(shipped.length).toBeGreaterThan(0);
+
+    const dead: string[] = [];
+    for (const ns of shipped) {
+      for (const path of paths(en[ns], ns)) {
+        if (AWAITING_READER.has(path)) continue;
+        const segs = path.split('.').slice(1);
+        const leaf = segs[segs.length - 1];
+        const viaAncestor = segs.slice(0, -1).some((_, i) => templated(segs.slice(0, i + 1).join('.')));
+        if (!quoted(leaf) && !quoted(segs.join('.')) && !viaAncestor) dead.push(path);
+      }
+    }
+    expect(dead, 'shipped to every browser, read by nothing').toEqual([]);
+  });
+});
+
+describe('copy that states a fact', () => {
+  const both = (pick: (m: Record<string, Record<string, string>>) => string) =>
+    [en, vi].map((m) => pick(m as Record<string, Record<string, string>>));
+
+  it('gives the launcher description no count to go stale', () => {
+    /* It said "Four tools" for three apps, in every search result for `/`. */
+    for (const text of both((m) => m.launcher.subtitle)) {
+      expect(text).not.toMatch(/\d|\b(one|two|three|four|five|six) tools\b|\b(hai|ba|bốn|năm|sáu) công cụ\b/i);
+    }
+  });
+
+  it('says sign-in receives the email, rather than "only" a name and picture', () => {
+    /* A disclaimer shown before an OAuth grant must not understate what is
+       collected: the email is received, stored, and shown back to the reader. */
+    for (const text of both((m) => m.auth.privacy)) {
+      expect(text).toMatch(/email/i);
+      expect(text).not.toMatch(/\bonly\b|chỉ nhận/i);
+    }
+  });
+
+  it('does not call the read-only photo credit optional', () => {
+    /* It labels the signed-in account's name, which cannot be edited or left out. */
+    for (const text of both((m) => m.recipe.authorLabel)) {
+      expect(text).not.toMatch(/optional|không bắt buộc/i);
+    }
+  });
 });
