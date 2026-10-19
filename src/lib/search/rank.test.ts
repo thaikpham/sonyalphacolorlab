@@ -84,6 +84,29 @@ describe('rank', () => {
 })
 
 describe('scoreDoc', () => {
+  it('does not report a tag match when the words were spread over other fields', () => {
+    /* Every word found, no field holding them all: its own reason, because
+       the reasons are what the API explains a hit with. */
+    const s = scoreDoc(parseQuery('alpha beta gamma delta')!, prepare(doc({
+      id: 'x',
+      titleText: 'alpha one two three',
+      headings: ['beta four five six'],
+      body: 'gamma delta seven',
+    })))
+    expect(s?.reasons).toContain('spread')
+    expect(s?.reasons).not.toContain('tag')
+  })
+
+  it('treats a trailing space like no space', () => {
+    /* Every entry point trims the query before it gets here, so a "finished
+       word" signal would only ever fire for a hand-edited URL — and make
+       that one URL disagree with the dropdown. */
+    const docs = seedCorpus('en').filter((d) => d.kind === 'product')
+    expect(ids('a7 ', docs)).toEqual(ids('a7', docs))
+    const iso = [doc({ id: 'x', titleText: 'Isolation' })]
+    expect(ids('iso ', iso)).toEqual(ids('iso', iso))
+  })
+
   it('returns reasons, strongest first', () => {
     const q = parseQuery('mojave')!
     const s = scoreDoc(q, prepare(doc({ id: 'x', titleText: 'Mojave', body: 'mojave' })))

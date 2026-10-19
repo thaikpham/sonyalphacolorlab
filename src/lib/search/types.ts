@@ -40,6 +40,8 @@ export type ReasonCode =
   | 'tag'
   | 'heading'
   | 'body'
+  /** Every word found, but spread over fields none of which holds them all. */
+  | 'spread'
   | 'fuzzy'
 
 export type SearchHit = {

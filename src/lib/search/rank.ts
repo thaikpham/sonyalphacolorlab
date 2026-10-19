@@ -12,7 +12,9 @@
  * placement). A multi-word query must find at least half of its meaningful
  * words in one field to count there, and all of them to score that field's
  * full weight. The last word of a query may match a word it is the start of,
- * which is what makes the header's type-ahead useful mid-word.
+ * which is what makes the header's type-ahead useful mid-word. That holds with
+ * or without a trailing space: every entry point trims the query first, so a
+ * "finished word" signal could only fire for a hand-edited URL.
  */
 
 import { levenshteinDistance } from './fuzzy-search'
@@ -79,8 +81,6 @@ type Query = {
   readonly folded: string
   /** Meaningful words — stopwords dropped unless that would leave nothing. */
   readonly words: readonly string[]
-  /** Whether the last word may be a prefix (the reader may still be typing). */
-  readonly prefixLast: boolean
 }
 
 export function parseQuery(raw: string): Query | null {
@@ -90,7 +90,6 @@ export function parseQuery(raw: string): Query | null {
     squashed,
     folded: fold(raw),
     words: meaningfulWords(raw),
-    prefixLast: !/\s$/.test(raw),
   }
 }
 
@@ -102,7 +101,7 @@ function has(f: Field, word: string, prefix: boolean): boolean {
 
 /** Which of the query's words a field contains. */
 function found(q: Query, f: Field): boolean[] {
-  return q.words.map((w, i) => has(f, w, q.prefixLast && i === q.words.length - 1))
+  return q.words.map((w, i) => has(f, w, i === q.words.length - 1))
 }
 
 const fraction = (hits: readonly boolean[]) =>
@@ -123,7 +122,7 @@ export function scoreDoc(q: Query, p: PreparedDoc): Scored | null {
 
   if (p.exact.has(q.squashed)) tiers.push(['exact', W.exact])
   if (p.aliases.includes(q.squashed)) tiers.push(['alias', W.alias])
-  else if (q.squashed.length >= 2 && q.prefixLast && p.aliases.some((a) => a.startsWith(q.squashed))) {
+  else if (q.squashed.length >= 2 && p.aliases.some((a) => a.startsWith(q.squashed))) {
     tiers.push(['alias', W.aliasPrefix])
   }
 
@@ -152,9 +151,10 @@ export function scoreDoc(q: Query, p: PreparedDoc): Scored | null {
   /* Every word found, but no single field holding them all — "Shift A/B"
      in a glossary entry's title and "White Balance" in its tags, or "màu ấm
      ban đêm" across a recipe's tags and its description. Worth more than a
-     partial match in any one field, less than a full one. */
+     partial match in any one field, less than a full one. Its own reason:
+     reporting it as `tag` claimed a tag matched when none need have. */
   if (multi && union.every(Boolean) && !tiers.some(([, w]) => w >= W.spread)) {
-    tiers.push(['tag', W.spread])
+    tiers.push(['spread', W.spread])
   }
 
   /* A near miss on a single word, only when nothing matched outright. Bounded
