@@ -262,6 +262,10 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
   const [isPredictiveLoading, setIsPredictiveLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [isPredictiveOpen, setIsPredictiveOpen] = useState(false);
+  /* A source the last answer could not search, or an answer that never came.
+     Either way an empty list is not "no matches", and the dropdown must not
+     say it is. */
+  const [predictiveUnavailable, setPredictiveUnavailable] = useState(false);
   const predictiveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   /**
    * Monotonic id of the newest predictive request.
@@ -541,6 +545,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
       // before the box was cleared cannot repopulate an empty dropdown.
       predictiveSeq.current += 1;
       setPredictiveResults([]);
+      setPredictiveUnavailable(false);
       setIsPredictiveOpen(false);
       setIsPredictiveLoading(false);
       setSelectedIndex(-1);
@@ -560,9 +565,17 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
         ? `/api/search?q=${encodeURIComponent(q)}&scope=all&limit=6&locale=${locale}`
         : `/api/search/predictive?q=${encodeURIComponent(q)}&mode=${mode}&locale=${locale}`;
       fetch(url, { signal: controller.signal })
-        .then((res) => (res.ok ? res.json() : {}))
-        .then((data: { results?: PredictiveItem[]; hits?: SearchApiHit[] }) => {
+        /* A failed response is a failed search, not an empty one: it used to
+           become `{}` and read as "No instant matches." */
+        .then((res) => {
+          if (!res.ok) throw new Error(`search answered ${res.status}`);
+          return res.json();
+        })
+        .then((data: { results?: PredictiveItem[]; hits?: SearchApiHit[]; unavailable?: string[] }) => {
           if (seq !== predictiveSeq.current) return;
+          setPredictiveUnavailable(
+            Array.isArray(data.unavailable) && data.unavailable.length > 0,
+          );
           if (isAll) {
             const hits = Array.isArray(data.hits) ? data.hits : [];
             setPredictiveResults(
@@ -586,7 +599,9 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
            An abort is a newer query taking over, and changes nothing. */
         .catch((err: unknown) => {
           if (err instanceof DOMException && err.name === 'AbortError') return;
-          if (seq === predictiveSeq.current) setPredictiveResults([]);
+          if (seq !== predictiveSeq.current) return;
+          setPredictiveResults([]);
+          setPredictiveUnavailable(true);
         })
         .finally(() => {
           if (seq === predictiveSeq.current) setIsPredictiveLoading(false);
@@ -1050,6 +1065,9 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                                 {t('matchCount', { count: predictiveResults.length })}
                               </span>
                             </div>
+                            {/* An accuracy note, not microcopy: these matches
+                                leave out a source that failed. */}
+                            {predictiveUnavailable && <p className="meta px-3">{t('partial')}</p>}
 
                             {predictiveResults.map((item, idx) => (
                               <Link
@@ -1147,7 +1165,9 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                           /* No keyboard hint here: the copy rules removed
                              them site-wide. The way forward is a control. */
                           <div className="p-2 flex flex-col gap-1">
-                            <p className="px-3 py-2 text-center text-body-sm text-ink-muted">{t('noInstant')}</p>
+                            <p className="px-3 py-2 text-center text-body-sm text-ink-muted">
+                              {predictiveUnavailable ? t('partial') : t('noInstant')}
+                            </p>
                             <Link
                               href={{ pathname: '/search', query: { q: query.trim() } }}
                               onClick={() => {

@@ -289,3 +289,15 @@ describe('the account slot waits for the session', () => {
     expect(render('/colorlab')).toContain(`aria-label="${en.auth.signInGoogle}"`);
   });
 });
+
+describe('a search source outage is not “no matches”', () => {
+  it('keeps what the API reports unavailable, and treats a failed response as unavailable', () => {
+    const queuePredictive = slice('const queuePredictive', 'const queueSearch');
+    expect(queuePredictive).not.toContain('res.ok ? res.json() : {}');
+    expect(queuePredictive).toMatch(/setPredictiveUnavailable\(\s*Array\.isArray\(data\.unavailable\)/);
+  });
+
+  it('says so in the dropdown instead of noInstant', () => {
+    expect(source).toMatch(/predictiveUnavailable \? t\('partial'\) : t\('noInstant'\)/);
+  });
+});
