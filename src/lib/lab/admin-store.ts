@@ -273,12 +273,14 @@ export async function updateArticleRecord(
   expectedUpdatedAt: string,
 ): Promise<string> {
   if (isDevStore()) {
-    /* An update to an id the store does not hold is an upsert here rather than
-       an error. The dev store is seeded lazily from the compiled catalogue, so
-       the first edit to one of those three articles is genuinely its first
-       write to the file. */
+    /* Missing is missing, as in production. The seeded articles are found
+       here before the file exists — the store reads the seed when there is no
+       file — so an upsert only ever served an id the store does not hold: an
+       article deleted in another tab came back, and an id nobody created was
+       created. */
     const current = devGet(article.id)
-    if (current && current.updatedAt !== expectedUpdatedAt) {
+    if (!current) throw new ArticleMissingError(`lab_articles ${article.id} no longer exists`)
+    if (current.updatedAt !== expectedUpdatedAt) {
       throw new StaleEditError(`lab_articles ${article.id} was saved since it was opened`)
     }
     const record = devRecord(article, status, email)
