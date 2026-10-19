@@ -186,7 +186,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
      mid-word; there the box waits for Enter. */
   const isCatalogueIndex = pathname === '/colorlab' || pathname === wikiBase;
   const searchParams = useSearchParams();
-  const { user, openLoginModal, logout } = useAuth();
+  const { user, isReady, openLoginModal, logout } = useAuth();
 
   const currentQ = searchParams?.get('q') ?? '';
   const currentFormat = searchParams?.get('format') ?? '';
@@ -215,6 +215,8 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
   const ecosystemRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
   const portalRef = useRef<HTMLDivElement>(null);
+  /* The search form, so a press outside it can dismiss the suggestions. */
+  const searchFormRef = useRef<HTMLFormElement>(null);
   /**
    * The launcher tiles inside the portal. A REF, not a class name.
    *
@@ -277,6 +279,16 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
   const predictiveAbort = useRef<AbortController | null>(null);
 
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    /* Escape with the suggestions open dismisses the suggestions and nothing
+       else. The window listener below closes the whole search on Escape, so
+       the event stops here — otherwise one press closed both and the reader
+       could not drop the dropdown and keep typing. Before the early return,
+       because a loading or empty dropdown is still a dropdown. */
+    if (e.key === 'Escape' && isPredictiveOpen) {
+      e.stopPropagation();
+      setIsPredictiveOpen(false);
+      return;
+    }
     if (!isPredictiveOpen || predictiveResults.length === 0) return;
 
     if (e.key === 'ArrowDown') {
@@ -291,8 +303,6 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
       setIsSearchOpen(false);
       setIsPredictiveOpen(false);
       router.push(target.url);
-    } else if (e.key === 'Escape') {
-      setIsPredictiveOpen(false);
     }
   };
 
@@ -422,15 +432,19 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
   }, [isSearchOpen, isEcosystemOpen, isProfileOpen]);
 
   /**
-   * Close either dropdown on a click outside it.
+   * Close any dropdown on a click outside it.
    *
    * `ecosystemRef` was already attached to the wrapper but nothing read it, so
    * the launcher could only be dismissed with Escape — on a phone, where there
    * is no Escape key, it stayed open until something else was tapped.
    * `pointerdown` covers mouse, touch and pen in one listener.
+   *
+   * The suggestions too: in the "all" mode nothing navigates while typing, so
+   * after a click back into the article the panel stayed over the text until
+   * Escape. Only the dropdown goes — the box stays open, as it is meant to.
    */
   useEffect(() => {
-    if (!isEcosystemOpen && !isProfileOpen) return;
+    if (!isEcosystemOpen && !isProfileOpen && !isPredictiveOpen) return;
 
     const handlePointerDown = (e: PointerEvent) => {
       const target = e.target as Node;
@@ -442,11 +456,12 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
         setIsEcosystemOpen(false);
       }
       if (isProfileOpen && !profileRef.current?.contains(target)) setIsProfileOpen(false);
+      if (isPredictiveOpen && !searchFormRef.current?.contains(target)) setIsPredictiveOpen(false);
     };
 
     document.addEventListener('pointerdown', handlePointerDown);
     return () => document.removeEventListener('pointerdown', handlePointerDown);
-  }, [isEcosystemOpen, isProfileOpen]);
+  }, [isEcosystemOpen, isProfileOpen, isPredictiveOpen]);
 
   const updateWikiFilters = useCallback(
     (patch: WikiPatch) => {
@@ -623,8 +638,10 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
   const handleResetAll = () => {
     setQuery('');
     queuePredictive('');
-    // Clearing filters returns to the current app's own index, never the launcher.
-    router.push(isBlog ? '/blog' : isWiki ? wikiBase : '/colorlab', { scroll: false });
+    /* Clearing filters returns to the current app's own index, never the
+       launcher. Only the console calls this, and the console never renders in
+       the "all" mode — so there is no blog arm to take. */
+    router.push(isWiki ? wikiBase : '/colorlab', { scroll: false });
   };
 
   return (
@@ -762,9 +779,13 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                    The type is the link's text, so the mark's `alt` is empty
                    rather than a second reading of the name. `truncate` for the
                    same reason as the wiki wordmark: it is what gives width back
-                   on a phone. */
+                   on a phone.
+
+                   `/colorlab`, like the blog and wiki marks linking to their own
+                   index: `/` is the launcher, and from a recipe the wordmark
+                   used to leave the app for four tiles. */
                 <Link
-                  href="/"
+                  href="/colorlab"
                   className="flex min-h-[var(--layout-touch-target)] min-w-0 items-center gap-2 sm:gap-2.5"
                 >
                   <Image
@@ -900,10 +921,8 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                     )}
                   </span>
 
-                  <span className="hidden sm:inline-flex items-center gap-1 shrink-0 px-2 py-1 rounded-sm bg-white/[0.08] text-label font-semibold text-ink-faint shadow-[var(--elevation-spec)]">
-                    <kbd>⌘</kbd>
-                    <kbd>K</kbd>
-                  </span>
+                  {/* No ⌘K badge: keyboard hints are removed copy, and the glyph
+                      was the Mac one on every platform. The shortcut stays. */}
                 </button>
               ) : (
                 /* Expanded Search Input Form */
@@ -915,6 +934,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                    searching silently clears them. */
                 <form
                   role="search"
+                  ref={searchFormRef}
                   /* `/colorlab`, not `/` — the root is the launcher, which has no
                      grid, so a no-JS ColorLab search used to land there. */
                   action={(() => {
@@ -1173,7 +1193,14 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
               </button>
 
               {/* Google Auth / Profile Button */}
-              {user ? (
+              {!isReady ? (
+                /* The session is not known yet — during SSR and until
+                   getSession() resolves. Sign in here flashed at every
+                   signed-in reader on every full load before the avatar
+                   replaced it. A blank disc the avatar's size holds the rail
+                   still instead. */
+                <span aria-hidden className="h-10 w-10 shrink-0 rounded-full bg-white/[0.08]" />
+              ) : user ? (
                 /* A click-toggled disclosure, not a hover menu. `group-hover`
                    alone left Sign out unreachable for anyone without a hovering
                    pointer — every touch device, and the keyboard. */

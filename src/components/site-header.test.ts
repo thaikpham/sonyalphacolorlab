@@ -209,3 +209,83 @@ describe('live search stays where the reader is', () => {
     expect(handleSubmit).toContain('setLivePushedQ(null)');
   });
 });
+
+/** Every `href` in the markup, in document order. */
+const hrefs = (html: string) => [...html.matchAll(/<a\b[^>]*\bhref="([^"]*)"/g)].map(([, href]) => href);
+
+describe('the language switch keeps the reader where they are', () => {
+  it('carries the query string to the other locale', () => {
+    /* `usePathname` has no search string, so /search?q=a7c switched to an
+       empty /vi/search, and the compare page lost every id. */
+    expect(hrefs(render('/search?q=a7c'))).toContain('/vi/search?q=a7c');
+    expect(hrefs(render('/cameras?cat=lens&view=table'))).toContain('/vi/cameras?cat=lens&amp;view=table');
+    expect(hrefs(render('/colorlab?format=cl&look=FL', 'vi'))).toContain('/colorlab?format=cl&amp;look=FL');
+  });
+
+  it('links a bare path to its bare translation', () => {
+    expect(hrefs(render('/recipe/mojave-sun'))).toContain('/vi/recipe/mojave-sun');
+  });
+});
+
+describe('the bar’s own links stay in the app', () => {
+  it('sends the ColorLab wordmark to the recipe grid, not the launcher', () => {
+    /* The blog and wiki marks link to their own index; `/` is the launcher. */
+    expect(hrefs(render('/recipe/mojave-sun'))[0]).toBe('/colorlab');
+    expect(source).not.toContain('href="/"');
+  });
+
+  it('resets to the app it is in, without an arm the console can never reach', () => {
+    /* The console renders only when `!isAll`, and `isAll` includes the blog. */
+    const handleResetAll = slice('const handleResetAll', 'return (');
+    expect(handleResetAll).not.toContain('isBlog');
+    expect(handleResetAll).toContain("router.push(isWiki ? wikiBase : '/colorlab', { scroll: false })");
+  });
+
+  it('draws no keyboard hint on the search trigger', () => {
+    /* Keyboard hints are removed copy, and ⌘ was wrong on every non-Mac. The
+       shortcut itself stays. */
+    expect(render('/colorlab')).not.toContain('<kbd');
+    expect(source).toMatch(/\(e\.metaKey \|\| e\.ctrlKey\) && e\.key\.toLowerCase\(\) === 'k'/);
+  });
+});
+
+describe('the suggestions dismiss on their own', () => {
+  it('closes on a press outside the search form', () => {
+    /* In the "all" mode nothing navigates while typing, so the panel stayed
+       over the article until Escape. */
+    const effect = slice('const handlePointerDown', 'const updateWikiFilters');
+    expect(source).toMatch(/if \(!isEcosystemOpen && !isProfileOpen && !isPredictiveOpen\) return;/);
+    expect(effect).toMatch(
+      /if \(isPredictiveOpen && !searchFormRef\.current\?\.contains\(target\)\) setIsPredictiveOpen\(false\);/,
+    );
+    expect(effect).toContain('[isEcosystemOpen, isProfileOpen, isPredictiveOpen]');
+    expect(source).toContain('ref={searchFormRef}');
+  });
+
+  it('takes Escape for the dropdown alone while it is open', () => {
+    /* The window listener closes the whole search on Escape; the input's own
+       Escape has to stop there or one press closes both. */
+    const keyDown = slice('const handleInputKeyDown', 'const mounted');
+    const escape = keyDown.indexOf("if (e.key === 'Escape' && isPredictiveOpen)");
+    expect(escape).toBeGreaterThan(-1);
+    expect(escape, 'handled before the empty-results early return').toBeLessThan(
+      keyDown.indexOf('predictiveResults.length === 0) return'),
+    );
+    expect(keyDown.slice(escape)).toMatch(/^[^}]*e\.stopPropagation\(\);[^}]*setIsPredictiveOpen\(false\);\s*return;/);
+  });
+});
+
+describe('the account slot waits for the session', () => {
+  it('draws no Sign in button before the session is known', () => {
+    /* Every full load painted Sign in for a signed-in reader, then swapped it
+       for the avatar once getSession resolved. */
+    auth.isReady = false;
+    const html = render('/colorlab');
+    expect(html).not.toContain(`aria-label="${en.auth.signInGoogle}"`);
+    expect(html).toMatch(/<span aria-hidden="true" class="h-10 w-10 shrink-0[^"]*"><\/span>/);
+  });
+
+  it('draws it once the session is known to be empty', () => {
+    expect(render('/colorlab')).toContain(`aria-label="${en.auth.signInGoogle}"`);
+  });
+});
