@@ -74,7 +74,7 @@ export function identify(spec: TableSpec, row: Row): string {
 }
 
 async function main() {
-  const { args, target } = requireTarget(process.argv.slice(2));
+  const { args, target } = requireTarget(process.argv.slice(2), ['--label']);
   const label = args.label ?? 'initial';
   const db = adminClient(target);
 

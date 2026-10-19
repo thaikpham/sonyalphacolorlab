@@ -40,7 +40,12 @@ async function latestExport(label: string): Promise<string> {
 }
 
 async function main() {
-  const { args, source, destination } = requireTransfer(process.argv.slice(2));
+  const { args, source, destination } = requireTransfer(process.argv.slice(2), [
+    '--manifest',
+    '--apply',
+    '--dry-run',
+    '--rollback',
+  ]);
   const label = args.manifest ?? 'initial';
   const dir = await latestExport(label);
 

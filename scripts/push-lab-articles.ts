@@ -30,7 +30,10 @@ import { PILOT_DRAFTS } from '../src/lib/lab/pilot-drafts';
  * plan and writes nothing.
  */
 async function main() {
-  const { args, target } = requireTarget(process.argv.slice(2));
+  const { args, target } = requireTarget(process.argv.slice(2), [
+    '--with-pilot-drafts',
+    '--dry-run',
+  ]);
   if (target !== 'content') {
     throw new Error('This script seeds content tables. Pass --target content.');
   }
