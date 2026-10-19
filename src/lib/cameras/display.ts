@@ -71,3 +71,44 @@ export function priceLabel(
 ): string {
   return product.priceVnd > 0 ? product.priceFormatted : t('priceOnRequest');
 }
+
+/**
+ * A product's official page, or `null` when the stored `url` is not one.
+ *
+ * Six camera rows hold a newline-joined list of image assets in `url` — a
+ * scrape that kept the gallery where the link belonged — and the product page
+ * drew it as "View on Sony Vietnam", which opened a PNG with the rest of the
+ * list glued on. The row is the owner's to correct; the page only links what
+ * is one http(s) URL, with no whitespace, that is not itself an image.
+ */
+export function officialUrl(url: string | null | undefined): string | null {
+  const value = url?.trim();
+  if (!value || !/^https?:\/\/\S+$/.test(value)) return null;
+  let parsed: URL;
+  try {
+    parsed = new URL(value);
+  } catch {
+    return null;
+  }
+  /* `/image/` is Sony's asset path on both hosts (`sony.com.vn/image/…`,
+     `scene7.com/is/image/…`); an image extension is anybody's. */
+  if (/\/image\//.test(parsed.pathname) || /\.(png|jpe?g|webp|gif)$/i.test(parsed.pathname)) return null;
+  return value;
+}
+
+/**
+ * The route that renders a product. Audio lives under `/audio`, and
+ * `/cameras/<audio-id>` is a 404: the camera reader excludes the category.
+ */
+export function productPath(product: { id: string; category: string }): string {
+  return product.category === 'audio' ? `/audio/${product.id}` : `/cameras/${product.id}`;
+}
+
+/**
+ * Where leaving the compare page goes. One compare surface serves both
+ * catalogues, so a reader who compared only headphones goes back to `/audio`
+ * rather than being put in the camera catalogue.
+ */
+export function compareExitPath(products: readonly { category: string }[]): string {
+  return products.length > 0 && products.every((p) => p.category === 'audio') ? '/audio' : '/cameras';
+}

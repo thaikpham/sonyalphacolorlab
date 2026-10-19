@@ -8,7 +8,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import type { SonyCamera } from '@/lib/cameras/types';
 import { featureList } from '@/lib/cameras/features';
 import { translateSpecValue } from '@/lib/cameras/spec-values';
-import { priceLabel, subCategoryLabel } from '@/lib/cameras/display';
+import { officialUrl, priceLabel, subCategoryLabel } from '@/lib/cameras/display';
 import { isResizable } from '@/lib/images/catalogue-loader';
 import {
   type CompareTabId,
@@ -420,45 +420,48 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                   {t('sensorLabel')}
                 </th>
 
-                {comparedCameras.map((cam) => (
-                  <th
-                    key={cam.id}
-                    scope="col"
-                    className="px-4 py-3 align-bottom text-right bg-void/85 backdrop-blur-[30px]"
-                  >
-                    <div className="flex flex-col items-end gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => router.push(`/cameras/${cam.id}`)}
-                        className="text-title-3 font-semibold tracking-[-0.02em] text-ink hover:text-accent-400 transition-colors cursor-pointer text-right"
-                      >
-                        {cam.name}
-                      </button>
-
-                      <div className="flex items-center gap-2">
-                        {cam.url && (
-                          <a
-                            href={cam.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-meta font-semibold text-accent-400"
-                          >
-                            Sony ↗
-                          </a>
-                        )}
+                {comparedCameras.map((cam) => {
+                  const official = officialUrl(cam.url);
+                  return (
+                    <th
+                      key={cam.id}
+                      scope="col"
+                      className="px-4 py-3 align-bottom text-right bg-void/85 backdrop-blur-[30px]"
+                    >
+                      <div className="flex flex-col items-end gap-1.5">
                         <button
                           type="button"
-                          onClick={() => removeCamera(cam.id)}
-                          title={t('removeProduct')}
-                          aria-label={t('removeProduct')}
-                          className={ICON_BUTTON}
+                          onClick={() => router.push(`/cameras/${cam.id}`)}
+                          className="text-title-3 font-semibold tracking-[-0.02em] text-ink hover:text-accent-400 transition-colors cursor-pointer text-right"
                         >
-                          ✕
+                          {cam.name}
                         </button>
+
+                        <div className="flex items-center gap-2">
+                          {official && (
+                            <a
+                              href={official}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-meta font-semibold text-accent-400"
+                            >
+                              Sony ↗
+                            </a>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => removeCamera(cam.id)}
+                            title={t('removeProduct')}
+                            aria-label={t('removeProduct')}
+                            className={ICON_BUTTON}
+                          >
+                            ✕
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  </th>
-                ))}
+                    </th>
+                  );
+                })}
 
                 {/* Slot to Add More Products (Up to 6) */}
                 {canAddMore && (

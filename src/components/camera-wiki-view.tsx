@@ -15,7 +15,7 @@ import {
   type WikiSort,
 } from '@/lib/cameras/types';
 import { featureList, splitFeatures } from '@/lib/cameras/features';
-import { priceLabel, subCategoryLabel } from '@/lib/cameras/display';
+import { officialUrl, priceLabel, subCategoryLabel } from '@/lib/cameras/display';
 import { translateSpecValue } from '@/lib/cameras/spec-values';
 import { isResizable } from '@/lib/images/catalogue-loader';
 import { productDoc } from '@/lib/search/product-doc';
@@ -580,6 +580,7 @@ function CameraWikiViewInner({ initialCameras, basePath = '/cameras' }: CameraWi
                 <tbody>
                   {filteredCameras.map((cam, idx) => {
                     const isChecked = selectedForCompare.includes(cam.id);
+                    const official = officialUrl(cam.url);
                     return (
                       <tr
                         key={cam.id}
@@ -672,11 +673,12 @@ function CameraWikiViewInner({ initialCameras, basePath = '/cameras' }: CameraWi
                           </ul>
                         </td>
 
-                        {/* Sony Link — absent for the audio sheets, which publish none. */}
+                        {/* Sony Link — absent where the row publishes no single
+                            product page (`officialUrl`). */}
                         <td className="p-4 text-right whitespace-nowrap">
-                          {cam.url ? (
+                          {official ? (
                             <a
-                              href={cam.url}
+                              href={official}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-body-sm font-semibold text-accent-400 transition-colors"

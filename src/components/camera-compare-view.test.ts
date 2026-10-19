@@ -149,3 +149,16 @@ describe('an audio compare', () => {
     expect(render(pair)).not.toContain(`>${en.cameras.tabAudio}<`);
   });
 });
+
+describe('the column head', () => {
+  it('links a product page and drops an image list stored as the url', () => {
+    const page = 'https://www.sony.com.vn/interchangeable-lens-cameras/products/ilce-7m4';
+    const html = render([
+      { ...pair[0], url: page },
+      { ...pair[1], url: 'https://www.sony.com.vn/image/abc?fmt=png-alpha\nhttps://cdn.shopify.com/x.jpg' },
+    ]);
+    expect(html).toContain(`href="${page}"`);
+    expect(html).not.toContain('cdn.shopify.com');
+    expect(html.match(/Sony ↗/g)).toHaveLength(1);
+  });
+});
