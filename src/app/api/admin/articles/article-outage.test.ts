@@ -68,7 +68,7 @@ vi.mock('@/lib/auth/admin-gate', () => ({
 }))
 
 vi.mock('@/lib/lab/reference-check', () => ({ findUnknownReferences: async () => [] }))
-vi.mock('@/lib/lab/asset-store', () => ({ articlePreviews: async () => ({}) }))
+vi.mock('@/lib/lab/asset-store', () => ({ articlePreviews: async () => ({ previews: {}, failed: false }) }))
 
 /* The editorial rules are not what is under test, and a body that satisfies
    them runs to eight blocks. Waived so a publish reaches the asset step. */

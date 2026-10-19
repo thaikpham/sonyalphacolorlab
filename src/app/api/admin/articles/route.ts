@@ -67,6 +67,10 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ error: 'badRequest' }, { status: 400 })
   }
+  /* Valid JSON is not necessarily an object: `null` threw at the first field. */
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return NextResponse.json({ error: 'badRequest' }, { status: 400 })
+  }
 
   const title = typeof body.title === 'string' ? body.title.trim() : ''
   if (!title) return NextResponse.json({ error: 'titleRequired' }, { status: 400 })
