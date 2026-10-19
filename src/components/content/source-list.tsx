@@ -29,19 +29,16 @@ export function formatIsoDay(day: string, locale: string): string {
 export async function SourceList({
   sources,
   lang,
-  headingLevel = 2,
 }: {
   sources: readonly SourceRef[]
   lang?: string
-  headingLevel?: 2 | 3
 }) {
   if (sources.length === 0) return null
   const [t, locale] = await Promise.all([getTranslations('learn'), getLocale()])
-  const H = headingLevel === 2 ? 'h2' : 'h3'
 
   return (
     <section aria-label={t('sources')}>
-      <H className="label">{t('sources')}</H>
+      <h2 className="label">{t('sources')}</h2>
       <ol className="mt-2 flex flex-col gap-2">
         {sources.map((s) => {
           const facts = [s.publisher, s.section, s.scope].filter(Boolean).join(' · ')

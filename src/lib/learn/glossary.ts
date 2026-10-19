@@ -140,7 +140,11 @@ export function buildGlossary(locale: Locale): readonly GlossaryGroup[] {
   return [wb, pp, cl]
 }
 
-/** Every entry with its group, flat — what search indexes. */
+/**
+ * Every entry with its group, flat — the view the parity and anchor tests read.
+ * Search does not use it: `glossaryDocs` walks `buildGlossary` itself, because
+ * it also emits one document per group.
+ */
 export function glossaryEntries(locale: Locale): readonly (GlossaryEntry & { group: ConceptGroup })[] {
   return buildGlossary(locale).flatMap((g) => g.entries.map((e) => ({ ...e, group: g.group })))
 }

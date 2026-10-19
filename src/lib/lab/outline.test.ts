@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { ARTICLES } from './articles'
-import { PRECIS_MAX, buildOutline, buildSummary, truncateOnWord } from './outline'
+import { PRECIS_MAX, buildOutline, truncateOnWord } from './outline'
 import type { Block } from './types'
 
 /**
@@ -79,23 +79,11 @@ describe('buildOutline', () => {
   })
 })
 
-describe('buildSummary', () => {
-  it('uses the TL;DR when there is one', () => {
-    expect(buildSummary(ARTICLES[0])).toHaveLength(3)
-  })
-
-  it('falls back to the dek as one row, not a sentence chopped into three', () => {
-    const stub = { ...ARTICLES[0], blocks: ARTICLES[0].blocks.filter((b) => b.t !== 'tldr') }
-    expect(buildSummary(stub)).toEqual([stub.dek])
-  })
-})
-
 describe('every published article', () => {
   it.each(ARTICLES.map((a) => [a.id, a] as const))('%s renders a rail', (_id, article) => {
     // A published article with no headings has no contents list, which is a
     // layout the rail does not have a design for.
     expect(buildOutline(article.blocks).length).toBeGreaterThan(0)
-    expect(buildSummary(article).length).toBeGreaterThan(0)
   })
 
   it.each(ARTICLES.map((a) => [a.id, a] as const))(

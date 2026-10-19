@@ -34,7 +34,6 @@ export function CompareSlider({ block, articleId }: { block: CompareBlock; artic
 
   const before = assetUrl(articleId, block.beforeAssetId)
   const after = assetUrl(articleId, block.afterAssetId)
-  if (!before || !after) return null
 
   return (
     <figure className={BLOCK_GAP}>

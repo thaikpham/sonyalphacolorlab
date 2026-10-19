@@ -11,7 +11,7 @@ import {
   slugify,
 } from './parse'
 import { parseKind, parseMeta } from './meta'
-import type { Article, ArticleKind, ArticleRecord, ArticleStatus } from './types'
+import type { Article, ArticleRecord, ArticleStatus } from './types'
 
 /**
  * The admin's view of the article store: every row, drafts included.
@@ -97,27 +97,6 @@ export async function getArticleRecord(id: string): Promise<ArticleRecord | null
   return toRecord(data as Row)
 }
 
-/**
- * The row shape a write produces, from an untrusted body.
- *
- * Every field is re-derived rather than spread: the body is JSON an admin's
- * browser sent, and an admin is trusted to publish, not trusted to have sent
- * well-formed JSON. `blocks` goes through `parseBlocks`, which is the only
- * place a block's shape is checked before it reaches a renderer.
- */
-export type WritePayload = {
-  kind: ArticleKind
-  topic: string
-  level: string
-  archetype: string
-  read: string
-  title: string
-  dek: string
-  blocks: unknown
-  meta: unknown
-  status: ArticleStatus
-}
-
 export type NormalisedWrite = {
   article: Article
   status: ArticleStatus
@@ -129,6 +108,14 @@ export type NormalisedWrite = {
   droppedMeta: number
 }
 
+/**
+ * The row shape a write produces, from an untrusted body.
+ *
+ * Every field is re-derived rather than spread: the body is JSON an admin's
+ * browser sent, and an admin is trusted to publish, not trusted to have sent
+ * well-formed JSON. `blocks` goes through `parseBlocks`, which is the only
+ * place a block's shape is checked before it reaches a renderer.
+ */
 export function normaliseWrite(id: string, body: Record<string, unknown>): NormalisedWrite | null {
   const title = typeof body.title === 'string' ? body.title.trim().slice(0, 200) : ''
   if (!title) return null

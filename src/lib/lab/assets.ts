@@ -46,10 +46,6 @@ export const PUBLIC_BUCKET = 'lab';
  */
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 
-export function isAssetId(raw: unknown): raw is string {
-  return typeof raw === 'string' && UUID.test(raw.trim().toLowerCase());
-}
-
 /** Narrows an untrusted field to an asset id, or drops it. */
 export function parseAssetId(raw: unknown): string | undefined {
   if (typeof raw !== 'string') return undefined;

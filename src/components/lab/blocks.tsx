@@ -193,7 +193,6 @@ export function Callout({ block }: { block: CalloutBlock }) {
 export function ArticleFigure({ block, articleId }: { block: FigureBlock; articleId: string }) {
   if (!block.assetId) return null
   const src = assetUrl(articleId, block.assetId)
-  if (!src) return null
 
   return (
     <figure className={BLOCK_GAP}>

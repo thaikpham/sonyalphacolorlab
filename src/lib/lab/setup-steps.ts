@@ -245,9 +245,3 @@ export function recapRows(steps: readonly SetupStep[]): readonly RecapRow[] {
   }
   return rows
 }
-
-/**
- * Every step id, for the progress denominator and for pruning stale storage.
- * Ids do not depend on the copy, so the key itself stands in for a translator.
- */
-export const STEP_IDS: readonly string[] = setupSteps('old', (key) => key).map((s) => s.id)
