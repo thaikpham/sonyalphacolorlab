@@ -219,6 +219,29 @@ describe('client message scoping', () => {
     // 'home' is rendered server-side; sending it is dead weight.
     expect(layout).not.toContain('home: messages.home');
   });
+
+  /**
+   * `lab` at key granularity. It is ~10KB a locale and two client components
+   * read it: the article compare slider, one key, on any page; and the setup
+   * guide, most of the rest, on `/blog/setup` alone. Shipped whole from the
+   * layout, every recipe and camera page carried the setup tool's copy. The
+   * namespace checks above cannot see this — `lab` is read on the client, so
+   * sending it passes them either way.
+   */
+  it('ships the setup tool’s copy only on the setup page', () => {
+    expect(layout).not.toContain('lab: messages.lab');
+    const shipped = layout.match(/^\s*lab: \{([^}\n]*)\},$/m);
+    expect(shipped, 'the layout names the lab keys it sends').not.toBeNull();
+    const keys = [...shipped![1].matchAll(/(\w+):/g)].map((m) => m[1]);
+
+    const slider = readFileSync('src/components/lab/compare-slider.tsx', 'utf8');
+    const read = [...slider.matchAll(/\bt\('(\w+)'/g)].map((m) => m[1]);
+    expect(keys.sort()).toEqual([...new Set(read)].sort());
+
+    const setup = readFileSync('src/app/[locale]/blog/setup/page.tsx', 'utf8');
+    expect(setup).toMatch(/const clientMessages = \{\s*lab: messages\.lab,?\s*\}/);
+    expect(setup).toMatch(/<NextIntlClientProvider messages=\{clientMessages\}>\s*<SetupGuide \/>/);
+  });
 });
 
 describe('catalogue', () => {

@@ -1,7 +1,8 @@
 import { Suspense } from 'react'
 import { bilingualAlternates } from '@/i18n/alternates'
 import type { Metadata, Viewport } from 'next'
-import { getTranslations, setRequestLocale } from 'next-intl/server'
+import { NextIntlClientProvider } from 'next-intl'
+import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server'
 import { SetupGuide } from '@/components/lab/setup-guide'
 import { SiteHeader } from '@/components/site-header'
 import type { Locale } from '@/i18n/routing'
@@ -39,6 +40,13 @@ export default async function SetupPage({
 }) {
   const { locale } = await params
   setRequestLocale(locale)
+  /* The setup tool's copy, sent to its own subtree only. The layout ships just
+     the one `lab` key the article compare slider needs, so this whole
+     namespace no longer rides along on every recipe and camera page. */
+  const messages = await getMessages()
+  const clientMessages = {
+    lab: messages.lab,
+  }
   return (
     /* Two bars on one page, and they do not fight: the ecosystem header is
        `sticky top-0 z-40` and hides itself on scroll down, the tool's own bar
@@ -65,7 +73,9 @@ export default async function SetupPage({
             Verified by removing it and re-reading the prerendered
             `setup.html` under `.next/server/app`. */}
         <Suspense>
-          <SetupGuide />
+          <NextIntlClientProvider messages={clientMessages}>
+            <SetupGuide />
+          </NextIntlClientProvider>
         </Suspense>
       </main>
     </div>
