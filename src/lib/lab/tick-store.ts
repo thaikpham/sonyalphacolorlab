@@ -48,28 +48,36 @@ const EMPTY: TickSet = Object.freeze({})
  * Safari's private mode and a cross-origin iframe both throw on `setItem`, and
  * without this a toggle in those browsers does nothing visible at all: the
  * write is swallowed, the next read returns the old value, and the control
- * springs back under the reader's finger. Mirroring every write means the
+ * springs back under the reader's finger. Mirroring a failed write means the
  * choice holds for the visit and is merely forgotten on reload, which is the
  * degradation the reader can actually make sense of.
+ *
+ * The mirror holds only writes that did not land, and is read first. A full
+ * quota is the case that needs both halves: `getItem` keeps answering the old
+ * value while `setItem` throws, so a read that preferred storage ignored the
+ * mirror and the tick sprang back anyway. A write that does land clears its
+ * entry, so storage — and another tab's writes to it — is read again.
  */
 const memory = new Map<string, string>()
 
 function rawValue(key: string): string | null {
+  const mirrored = memory.get(key)
+  if (mirrored !== undefined) return mirrored
   try {
-    const stored = window.localStorage.getItem(key)
-    if (stored !== null) return stored
+    return window.localStorage.getItem(key)
   } catch {
-    /* Storage denied. Fall through to the mirror. */
+    /* Storage denied, and nothing written this visit. */
+    return null
   }
-  return memory.get(key) ?? null
 }
 
 function rawWrite(key: string, value: string): void {
-  memory.set(key, value)
   try {
     window.localStorage.setItem(key, value)
+    memory.delete(key)
   } catch {
-    /* Quota exceeded, or storage denied. The mirror above already has it. */
+    /* Quota exceeded, or storage denied. The mirror keeps it for the visit. */
+    memory.set(key, value)
   }
 }
 
