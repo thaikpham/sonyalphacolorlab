@@ -1,6 +1,14 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { CL_RANGES, HELP_GUIDE_SOURCES, PP_RANGES } from '@/lib/camera/constants'
+import {
+  CL_RANGES,
+  CREATIVE_LOOK_CODES,
+  HELP_GUIDE_SOURCES,
+  PP_COLOR_MODE,
+  PP_GAMMA,
+  PP_RANGES,
+  WB_SHIFT_AXIS,
+} from '@/lib/camera/constants'
 import { ARTICLES } from './articles'
 import { parseMeta } from './meta'
 import { PLACEHOLDER_MARK, RESERVED_IDS, parseBlocks, validateForPublish } from './parse'
@@ -105,6 +113,47 @@ describe('the reference pages', () => {
     expect(prose('picture-profile-va-creative-look')).toContain(
       `Sharpness Range ${CL_RANGES.sharpnessRange.min} đến ${CL_RANGES.sharpnessRange.max}`,
     )
+
+    /* Every other number the prose restates, each against its constant, so a
+       range widened in constants.ts (Rule 5) fails here instead of leaving a
+       reference page silently wrong. */
+    const ppcl = prose('picture-profile-va-creative-look')
+    expect(ppcl).toContain(
+      `Limit và Crispening ${range(PP_RANGES.detailLimit.min, PP_RANGES.detailLimit.max)}`,
+    )
+    expect(PP_RANGES.detailCrispening).toEqual(PP_RANGES.detailLimit)
+    expect(ppcl).toContain(
+      `Hi-Light Detail ${range(PP_RANGES.detailHiLightDetail.min, PP_RANGES.detailHiLightDetail.max)}`,
+    )
+    expect(ppcl).toContain(`Fade, Sharpness, Clarity ${range(CL_RANGES.fade.min, CL_RANGES.fade.max)}`)
+    expect(CL_RANGES.sharpness).toEqual(CL_RANGES.fade)
+    expect(CL_RANGES.clarity).toEqual(CL_RANGES.fade)
+    for (const code of CREATIVE_LOOK_CODES) expect(ppcl).toContain(code)
+
+    const wb = prose('white-balance-shift')
+    expect(wb).toContain(`tối đa ${WB_SHIFT_AXIS.max} mỗi phía`)
+    expect(wb).toContain(`bước ${String(WB_SHIFT_AXIS.step).replace('.', ',')}`)
+
+    const depth = `${prose('color-depth')}${JSON.stringify(knowledge.find((d) => d.id === 'color-depth')?.dek)}`
+    expect(depth).toContain(`Color Phase (${range(PP_RANGES.colorPhase.min, PP_RANGES.colorPhase.max)})`)
+    expect(depth).toContain(`Saturation (${range(PP_RANGES.saturation.min, PP_RANGES.saturation.max)})`)
+    // Every "−N đến +N" on the page is one of the three PP ranges it names.
+    const ppRanges = [PP_RANGES.colorDepth, PP_RANGES.colorPhase, PP_RANGES.saturation].map((r) =>
+      range(r.min, r.max),
+    )
+    const stated = [...depth.matchAll(/−\d+ đến \+\d+/g)].map((m) => m[0])
+    expect(stated.length).toBeGreaterThan(3)
+    for (const s of stated) expect(ppRanges).toContain(s)
+
+    /* The two lists name every value constants.ts holds. "Cine1 đến Cine4"
+       is read as the run it abbreviates. */
+    const expand = (s: string) =>
+      s.replace(/([A-Za-z]+)(\d) đến \1(\d)/g, (_m, stem: string, a: string, b: string) =>
+        Array.from({ length: Number(b) - Number(a) + 1 }, (_, i) => `${stem}${Number(a) + i}`).join(', '),
+      )
+    const gamma = expand(prose('gamma-va-color-mode'))
+    for (const g of PP_GAMMA) expect(gamma, g).toContain(g)
+    for (const mode of PP_COLOR_MODE) expect(gamma, mode).toContain(mode)
   })
 })
 
