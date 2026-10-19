@@ -9,9 +9,11 @@
  * catalogue holds is findable by every spelling below, and a body it does not
  * hold has no alias at all rather than a guessed one.
  *
- * All outputs are normalised (lower-case ASCII letters and digits only), the
- * same form `normalizeSearchTerm` produces for a query.
+ * All outputs are normalised by `normalizeSearchTerm` — the function a query
+ * goes through — so an alias and the query that types it cannot drift apart.
  */
+
+import { normalizeSearchTerm as squash } from '@/lib/search/fuzzy-search'
 
 const ROMAN: ReadonlyArray<readonly [RegExp, string]> = [
   [/\bvii\b/g, '7'],
@@ -21,15 +23,6 @@ const ROMAN: ReadonlyArray<readonly [RegExp, string]> = [
   [/\biii\b/g, '3'],
   [/\bii\b/g, '2'],
 ]
-
-const squash = (s: string) =>
-  s
-    /* Sony prints the Alpha line with a Greek α: `α7 IV` is `a7 IV`. */
-    .replace(/α/gi, 'a')
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, '')
 
 /**
  * The model code a SKU starts with: `ILCE-7CM2/SQAP2` → `ILCE-7CM2`,

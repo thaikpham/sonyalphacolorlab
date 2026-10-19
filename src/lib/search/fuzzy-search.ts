@@ -8,6 +8,11 @@
 
 export function removeAccents(str: string): string {
   return str
+    /* Sony prints the Alpha line with a Greek α: `α7 IV` is `a7 IV`. Mapped
+       here, on the query side too, so it is not only the catalogue's aliases
+       that know it — otherwise `α7` folds to `7` and finds one body. */
+    .replace(/α/g, 'a')
+    .replace(/Α/g, 'A')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/đ/g, 'd')
