@@ -14,7 +14,7 @@ import {
   type SonyCamera,
   type WikiSort,
 } from '@/lib/cameras/types';
-import { featureList, splitFeatures } from '@/lib/cameras/features';
+import { featureList } from '@/lib/cameras/features';
 import { priceLabel, subCategoryLabel } from '@/lib/cameras/display';
 import { translateSpecValue } from '@/lib/cameras/spec-values';
 import { isResizable } from '@/lib/images/catalogue-loader';
@@ -378,10 +378,7 @@ function CameraWikiViewInner({ initialCameras, basePath = '/cameras' }: CameraWi
        differently here. */
     const query = searchQuery.trim().slice(0, MAX_QUERY);
     if (query) {
-      const docs = result.map((c) => {
-        const { en, vi } = splitFeatures(c.features);
-        return prepare(productDoc({ ...c, featureText: [...en, ...vi] }));
-      });
+      const docs = result.map((c) => prepare(productDoc(c, locale === 'vi' ? 'vi' : 'en', t)));
       const matched = new Set(rank(query, docs).map((r) => r.doc.id));
       result = result.filter((c) => matched.has(c.id));
     }
@@ -391,7 +388,7 @@ function CameraWikiViewInner({ initialCameras, basePath = '/cameras' }: CameraWi
     result.sort(compareCameras(sortBy));
 
     return result;
-  }, [initialCameras, selectedCategory, selectedSub1, selectedSub2, searchQuery, sortBy]);
+  }, [initialCameras, selectedCategory, selectedSub1, selectedSub2, searchQuery, sortBy, locale, t]);
 
   const toggleCompare = (id: string) => {
     setSelectedForCompare((prev) => {

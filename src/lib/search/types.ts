@@ -53,6 +53,11 @@ export type SearchHit = {
   readonly snippet?: string
   /** The language the entity's own text is written in — not the UI locale. */
   readonly contentLanguage: string
+  /**
+   * The snippet's language. A recipe's name is English and its description
+   * the reader's, so one `lang` cannot cover the title and the snippet both.
+   */
+  readonly snippetLanguage: string
   readonly reasonCodes: readonly ReasonCode[]
   /** Display only. */
   readonly subtitle?: string
@@ -98,5 +103,4 @@ export const searchRequestSchema = z.object({
     .optional(),
 })
 
-export type SearchRequest = z.input<typeof searchRequestSchema>
 export type ParsedSearchRequest = z.output<typeof searchRequestSchema>

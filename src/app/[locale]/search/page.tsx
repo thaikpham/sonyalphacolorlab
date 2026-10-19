@@ -234,7 +234,7 @@ function HitList({
             ) : null}
             {hit.snippet ? (
               <span
-                lang={hit.contentLanguage}
+                lang={hit.snippetLanguage}
                 className="max-w-[80ch] text-body-sm text-ink-muted [text-wrap:pretty]"
               >
                 {hit.snippet}

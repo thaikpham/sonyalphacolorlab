@@ -1,8 +1,7 @@
 import 'server-only'
+import { getTranslations } from 'next-intl/server'
 import { getSonyAudio } from '@/lib/audio/data'
 import { getSonyCameras } from '@/lib/cameras/data'
-import { splitFeatures } from '@/lib/cameras/features'
-import type { SonyCamera } from '@/lib/cameras/types'
 import { getPublishedArticles, getPublishedKnowledge } from '@/lib/lab/data'
 import { listRecipes } from '@/lib/recipes/source'
 import {
@@ -39,20 +38,18 @@ import {
 
 type Adapter = (locale: 'en' | 'vi') => Promise<readonly SearchDoc[]>
 
-const productDocs = (list: readonly SonyCamera[]) =>
-  list.map((p) => {
-    const { en, vi } = splitFeatures(p.features)
-    return productDoc({ ...p, featureText: [...en, ...vi] })
-  })
-
 const ADAPTERS: Readonly<Record<SearchKind, Adapter>> = {
   recipe: async (locale) =>
     (await listRecipes(locale)).map((r) =>
-      recipeDoc({ ...r, look: r.format === 'cl' ? r.settings.look : undefined }),
+      recipeDoc({ ...r, look: r.format === 'cl' ? r.settings.look : undefined }, locale),
     ),
-  product: async () => {
-    const [cameras, audio] = await Promise.all([getSonyCameras(), getSonyAudio()])
-    return productDocs([...cameras, ...audio])
+  product: async (locale) => {
+    const [cameras, audio, t] = await Promise.all([
+      getSonyCameras(),
+      getSonyAudio(),
+      getTranslations({ locale, namespace: 'cameras' }),
+    ])
+    return [...cameras, ...audio].map((p) => productDoc(p, locale, t))
   },
   article: async () => (await getPublishedArticles()).map(articleDoc),
   /* Generated glossary entries need no read and cannot fail; the authored
@@ -72,6 +69,7 @@ function toHit(doc: SearchDoc, reasons: SearchHit['reasonCodes']): SearchHit {
     url: doc.url,
     snippet: snippetFor(doc),
     contentLanguage: doc.contentLanguage,
+    snippetLanguage: doc.snippetLanguage ?? doc.contentLanguage,
     reasonCodes: reasons,
     ...doc.display,
   }
