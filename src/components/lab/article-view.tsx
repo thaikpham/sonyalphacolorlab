@@ -147,7 +147,9 @@ export async function ArticleView({ article }: { article: Article }) {
           </Link>
         )}
 
-        <p className="label mb-3">
+        {/* Not `.label`: topic, level and read time run past the three words
+            its uppercase allows. */}
+        <p className="mb-3 text-label font-semibold text-ink-faint">
           <span className="text-accent-400">
             {knowledge && section ? tl(`sections.${section}`) : t(`topics.${article.topic}`)}
           </span>

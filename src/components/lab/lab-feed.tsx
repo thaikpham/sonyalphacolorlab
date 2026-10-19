@@ -63,6 +63,12 @@ const TOOL_FOR: Partial<Record<TopicId, '/blog/setup'>> = { setup: '/blog/setup'
 /** Stage numbers, printed as the outline rail prints section numbers. */
 const stageNumber = (i: number) => String(i + 1).padStart(2, '0')
 
+/* A line that strings several labels together — "Stage 01 · Beginner ›
+   Camera setup" — runs past the three words `.label`'s uppercase allows, and
+   Vietnamese diacritics need the ascender room. It recedes by weight and ink
+   step instead, at the label's size. */
+const CONTEXT_LINE = 'text-label font-semibold text-ink-faint'
+
 function ArticleRow({
   article,
   t,
@@ -74,19 +80,25 @@ function ArticleRow({
     <li>
       <hr className="seam" />
       <Link href={`/blog/${article.id}`} className="group block py-6">
-        <p className="label">
+        <p className={CONTEXT_LINE}>
           <span className="text-accent-400">{t(`topics.${article.topic}`)}</span>
-          <span className="text-ink-faint">
-            {' '}
-            · <span lang={ARTICLE_LANG}>{article.read}</span>
-          </span>
+          {/* Both guarded, as the article page guards them: a row saved
+              without either printed a dangling separator and an empty line. */}
+          {article.read ? (
+            <span className="text-ink-faint">
+              {' '}
+              · <span lang={ARTICLE_LANG}>{article.read}</span>
+            </span>
+          ) : null}
         </p>
         <h3 className="mt-2 text-title-3 font-semibold tracking-[-0.02em] leading-[1.3] text-ink transition-colors group-hover:text-accent-400 [text-wrap:pretty]">
           {article.title}
         </h3>
-        <p className="mt-2 max-w-[70ch] text-body text-ink-muted [text-wrap:pretty]">
-          {article.dek}
-        </p>
+        {article.dek ? (
+          <p className="mt-2 max-w-[70ch] text-body text-ink-muted [text-wrap:pretty]">
+            {article.dek}
+          </p>
+        ) : null}
       </Link>
     </li>
   )
@@ -189,7 +201,7 @@ export async function LabFeed({
         <div id="articles" className="flex min-h-[var(--layout-touch-target)] scroll-mt-4 flex-wrap items-center gap-x-3 gap-y-1">
           {stageIndex >= 0 ? (
             <>
-              <p className="label">
+              <p className={CONTEXT_LINE}>
                 <span className="text-accent-400">
                   {t('stageLabel', { n: stageNumber(stageIndex) })}
                 </span>
@@ -207,13 +219,13 @@ export async function LabFeed({
           ) : (
             /* A topic with no stage only arrives by an older shared link —
                the path always pairs them now — but it still names itself. */
-            <p className="label">
+            <p className={CONTEXT_LINE}>
               {filter.topic !== 'all' ? t(`topics.${filter.topic}`) : t('allTopics')} ·{' '}
               {t('articleCount', { count: visible.length })}
               {filter.topic !== 'all' ? (
                 <Link
                   href="/blog"
-                  className="ml-3 text-body-sm font-semibold normal-case tracking-normal text-ink-muted transition-colors hover:text-accent-400"
+                  className="ml-3 text-body-sm font-semibold text-ink-muted transition-colors hover:text-accent-400"
                 >
                   {t('clearFilter')}
                 </Link>
@@ -257,7 +269,9 @@ export async function LabFeed({
               </ul>
             </section>
           ))
-        ) : showPinned ? null : (
+        ) : (
+          /* Never reached while the pinned tool shows: it keeps the newbie
+             stage in `groups`. */
           <div className="mt-10 max-w-[52ch]">
             <hr className="seam" />
             <div className="py-14">
@@ -412,7 +426,7 @@ function StageSkills({
               <span
                 aria-hidden
                 className={
-                  'h-2 w-2 shrink-0 rounded-[3px] ' +
+                  'h-2 w-2 shrink-0 rounded-sm ' +
                   (n > 0 || tool ? 'bg-accent-500' : 'bg-sunken shadow-[var(--elevation-inset)]')
                 }
               />
