@@ -156,4 +156,13 @@ describe('spec value translation', () => {
   it('returns an unknown field unchanged rather than guessing', () => {
     expect(translateSpecValue('somethingNew', '5 trục', 'en')).toBe('5 trục');
   });
+
+  /* The rules are written in NFC. A value pasted decomposed — macOS and some
+     PDFs do it — looks identical and matched nothing, so /en showed it raw. */
+  it('translates Vietnamese typed in decomposed form', () => {
+    const nfd = (s: string) => s.normalize('NFD');
+    expect(nfd('759 điểm')).not.toBe('759 điểm');
+    expect(translateSpecValue('autofocus', nfd('759 điểm'), 'en')).toBe('759 points');
+    expect(translateSpecValue('battery', nfd('30 giờ + 40 giờ'), 'en')).toBe('30 h + 40 h');
+  });
 });

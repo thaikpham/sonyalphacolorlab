@@ -75,11 +75,13 @@ export const SPEC_FIELD_META: Record<string, SpecFieldMeta> = {
     type: 'text',
     placeholder: 'ví dụ: 530 ảnh (LCD)',
   },
+  /* `unit` is the chip beside the field, not part of the value — the editor
+     saves the string as typed — so the example shows the stored form. */
   weight: {
     key: 'weight',
     type: 'number',
     unit: 'g',
-    placeholder: 'ví dụ: 658',
+    placeholder: 'ví dụ: 658 g',
   },
   dimensions: {
     key: 'dimensions',
@@ -125,7 +127,7 @@ export const SPEC_FIELD_META: Record<string, SpecFieldMeta> = {
     key: 'filterDiameter',
     type: 'number',
     unit: 'mm',
-    placeholder: 'ví dụ: 82',
+    placeholder: 'ví dụ: 82 mm',
   },
   apertureBlades: {
     key: 'apertureBlades',
