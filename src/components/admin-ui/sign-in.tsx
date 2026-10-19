@@ -3,6 +3,7 @@
 import { useCallback, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { authBrowser } from '@/lib/supabase/browser';
+import { authFailureKey } from './auth-failure';
 import { FIELD } from './controls';
 
 /**
@@ -55,8 +56,9 @@ export function AdminSignIn({ onSignedIn }: { onSignedIn: () => void }) {
       if (err) {
         /* One message for a wrong address and a wrong password, deliberately.
            Telling them apart turns this form into an oracle for which of the
-           four published addresses still has a live account. */
-        fail('signInRefused');
+           four published addresses still has a live account. An outage is
+           returned here too, not thrown, so it is told apart by status. */
+        fail(authFailureKey(err, 'signInRefused'));
         return;
       }
 
