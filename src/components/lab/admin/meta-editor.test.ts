@@ -92,7 +92,7 @@ describe('the editor stops at what parseMeta keeps', () => {
       }),
     )
   /** Every `<button>` tag whose text is `label`, as its opening tag. */
-  const buttons = (html: string, label: string) =>
+  const buttons = (html: string, label: string): string[] =>
     [...html.matchAll(/<button([^>]*)>([^<]*)<\/button>/g)].filter((m) => m[2] === label).map((m) => m[1])
 
   it('disables every unticked concept once the cap is reached, and none before', () => {
@@ -110,17 +110,19 @@ describe('the editor stops at what parseMeta keeps', () => {
     expect(below.some((a) => a.includes('disabled=""'))).toBe(false)
   })
 
+  const blank: { [K in 'prerequisites' | 'related' | 'sources']: MetaDraft[K][number] } = {
+    prerequisites: '',
+    related: { kind: 'recipe', id: '' },
+    sources: { url: '', title: '', publisher: '', section: '', checkedAt: '', scope: '' },
+  }
+
   it.each([
-    ['prerequisites', 'addPrerequisite', META_LIMITS.prerequisites, () => ''],
-    ['related', 'addRelated', META_LIMITS.related, () => ({ kind: 'recipe' as const, id: '' })],
-    [
-      'sources',
-      'addSource',
-      META_LIMITS.sources,
-      () => ({ url: '', title: '', publisher: '', section: '', checkedAt: '', scope: '' }),
-    ],
-  ] as const)('stops adding %s at the cap', (field, label, cap, row) => {
-    const at = (n: number) => buttons(render({ ...emptyMetaDraft(), [field]: Array.from({ length: n }, row) }), label)
+    ['prerequisites', 'addPrerequisite', META_LIMITS.prerequisites],
+    ['related', 'addRelated', META_LIMITS.related],
+    ['sources', 'addSource', META_LIMITS.sources],
+  ] as const)('stops adding %s at the cap', (field, label, cap) => {
+    const at = (n: number): string[] =>
+      buttons(render({ ...emptyMetaDraft(), [field]: Array.from({ length: n }, () => blank[field]) }), label)
     expect(at(cap - 1)[0]).not.toContain('disabled=""')
     expect(at(cap)[0]).toContain('disabled=""')
   })
