@@ -74,6 +74,14 @@ const LOCAL_DEV_ADMIN: AdminUser = {
   role: 'super',
 };
 
+/* Keyed by the union, so a role added to `AdminRole` fails to compile here
+   until it is listed. */
+const ADMIN_ROLES: Record<AdminRole, true> = { super: true, di: true, pe: true };
+
+function isAdminRole(role: string): role is AdminRole {
+  return Object.hasOwn(ADMIN_ROLES, role);
+}
+
 export async function requireAdmin(request: Request): Promise<AdminUser | null> {
   if (!hasControlConfig()) {
     return process.env.NODE_ENV === 'development' ? LOCAL_DEV_ADMIN : null;
@@ -103,7 +111,9 @@ export async function requireAdmin(request: Request): Promise<AdminUser | null> 
     throw new ControlUnavailableError(`admin_emails: ${(error as Error).message}`);
   }
 
-  if (!data) return null;
+  /* A role this code does not know grants nothing. It used to fall back to
+     'super' — failing open, to the most privileged role there is. */
+  if (!data || !isAdminRole(data.role)) return null;
 
   /* The ratchet: a second factor is required as soon as one exists, and not
      before.
@@ -118,7 +128,7 @@ export async function requireAdmin(request: Request): Promise<AdminUser | null> 
     throw new MfaRequiredError('admin has an enrolled factor but the session is aal1');
   }
 
-  return { ...user, role: (data.role as AdminRole) || 'super' };
+  return { ...user, role: data.role };
 }
 
 /**

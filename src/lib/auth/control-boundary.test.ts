@@ -213,6 +213,13 @@ describe('requireAdmin', () => {
     });
   });
 
+  it.each(['', 'owner'])('returns null for a row whose role is %j, not a super admin', async (role) => {
+    /* The fallback used to be `|| 'super'`: an unreadable role failed open, to
+       the most privileged one there is. */
+    state.adminRow = async () => ({ data: { email: 'editor@example.com', role }, error: null });
+    await expect(requireAdmin(bearer())).resolves.toBeNull();
+  });
+
   it('returns null for a valid user who is not on the list', async () => {
     state.adminRow = async () => ({ data: null, error: null });
     await expect(requireAdmin(bearer())).resolves.toBeNull();
