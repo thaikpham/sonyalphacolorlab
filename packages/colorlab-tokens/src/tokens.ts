@@ -284,7 +284,11 @@ export const PAPER: ReadonlyArray<{
       comment:
         'Paper ground, a faint warm white. Films are ink at low alpha instead\n' +
         'of white: a white film over white is nothing. Ink measured on this\n' +
-        'ground: 16.5:1, 10.4:1, 5.6:1 — the same three steps, still AA.',
+        'ground: 16.5:1, 10.4:1, 5.6:1 — the same three steps, still AA.\n' +
+        '\n' +
+        'Signals keep their hue and drop to L 50%: the dark-ground values\n' +
+        'measure 2.2–3.7:1 here, and /admin sets its errors and statuses in\n' +
+        'them at 13–14px. Community loses a little chroma to stay in sRGB.',
       tokens: {
         void: 'oklch(98.2% 0.004 85)',
         glass: 'oklch(21% 0.014 265 / 0.04)',
@@ -301,6 +305,11 @@ export const PAPER: ReadonlyArray<{
         'accent-700': 'oklch(81.5% 0.080 268)',
         'accent-800': 'oklch(89.5% 0.045 268)',
         'accent-900': 'oklch(95.5% 0.020 268)',
+        community: 'oklch(50% 0.085 205)',
+        proposal: 'oklch(50% 0.165 292)',
+        ai: 'oklch(50% 0.140 320)',
+        danger: 'oklch(50% 0.165 15)',
+        heart: 'oklch(50% 0.165 292)',
       },
     },
   },
@@ -323,14 +332,20 @@ export const PAPER: ReadonlyArray<{
 ]
 
 /**
- * Values that are NOT tokens and must stay per-app:
+ * Values that are NOT tokens and must stay per-app. The only custom properties
+ * an app stylesheet may declare — `token-drift.test.ts` fails on any other:
  *
  *  - `--accent`  ColorLab overrides it per recipe from that recipe's White
  *                Balance. It must resolve to a step of the accent ramp's
  *                lightness or lighter, so it never falls under AA.
- *  - safe-area insets  read from `env()` at the point of use, not stored.
+ *  - `--accent-halo`  the bloom under a filled accent control, derived from
+ *                `--accent`, so it follows the recipe too.
+ *  - `--selected-hue`  `.surface-selected`'s tint, a parameter of that one
+ *                recipe (the admin queue sets it to `proposal`).
+ *
+ * Safe-area insets are read from `env()` at the point of use, not stored.
  */
-export const APP_SPECIFIC = ['--accent', '--accent-halo'] as const
+export const APP_SPECIFIC = ['--accent', '--accent-halo', '--selected-hue'] as const
 
 /**
  * The one sanctioned exception to everything above.

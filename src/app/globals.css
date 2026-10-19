@@ -272,30 +272,6 @@ body {
     border-radius: var(--radius-sm);
   }
 
-  /* The current selection — a list row, a filter chip, a segmented option, a nav
-     item, a queue card. An accent-tinted FILL and never a stroke: a ring round
-     the selected row is the single most common way this interface used to grow a
-     border back.
-
-     It is a class rather than a utility because the recipe is a two-stop
-     gradient over a `color-mix()` plus a hue-matched shadow, which spells out to
-     ~190 characters of arbitrary value at every call site, and there are more
-     than a dozen. `--selected-hue` lets the admin queue tint with `proposal`
-     while everything else uses the accent. */
-  .surface-selected {
-    --selected-hue: var(--color-accent-500);
-    background: linear-gradient(
-      180deg,
-      color-mix(in oklch, var(--selected-hue) 20%, transparent),
-      color-mix(in oklch, var(--selected-hue) 7%, transparent)
-    );
-    border-radius: var(--radius-sm);
-    box-shadow:
-      0 2px 6px oklch(0% 0 0 / 0.4),
-      0 14px 34px -16px color-mix(in oklch, var(--selected-hue) 55%, transparent),
-      var(--elevation-spec);
-  }
-
   /* The small chip: a tag on a recipe card, a spec chip on a camera row, a
      filter in a rail. 13px is the floor and this is at it, so it recedes by
      weight and ink step rather than by size. Its selected state is
@@ -323,9 +299,39 @@ body {
     transition: background 0.18s ease, color 0.18s ease;
   }
 
-  .chip-action:hover {
+  /* Not on the selected chip: hover is (0,2,0) and would repaint its tint
+     with the flat film. */
+  .chip-action:not(.surface-selected):hover {
     background: oklch(100% 0 0 / 0.13);
     color: var(--color-ink);
+  }
+
+  /* The current selection — a list row, a filter chip, a segmented option, a nav
+     item, a queue card. An accent-tinted FILL and never a stroke: a ring round
+     the selected row is the single most common way this interface used to grow a
+     border back.
+
+     It is a class rather than a utility because the recipe is a two-stop
+     gradient over a `color-mix()` plus a hue-matched shadow, which spells out to
+     ~190 characters of arbitrary value at every call site, and there are more
+     than a dozen. `--selected-hue` lets the admin queue tint with `proposal`
+     while everything else uses the accent.
+
+     Declared AFTER `.chip` and `.chip-action`: same layer, same specificity,
+     so the later rule wins, and a selected chip used to render as an
+     ordinary one — `.chip`'s flat film over the tint. */
+  .surface-selected {
+    --selected-hue: var(--color-accent-500);
+    background: linear-gradient(
+      180deg,
+      color-mix(in oklch, var(--selected-hue) 20%, transparent),
+      color-mix(in oklch, var(--selected-hue) 7%, transparent)
+    );
+    border-radius: var(--radius-sm);
+    box-shadow:
+      0 2px 6px oklch(0% 0 0 / 0.4),
+      0 14px 34px -16px color-mix(in oklch, var(--selected-hue) 55%, transparent),
+      var(--elevation-spec);
   }
 
   /* Where a divider genuinely helps — above a footer, under a panel header —
@@ -412,23 +418,12 @@ body {
    foldables and iPadOS wrong.
 --------------------------------------------------------------------------- */
 
+/* The overscroll lock and the coarse-pointer `.label` target are shared
+   primitives (primitives.css). A copy here loaded later and silently
+   overrode any change made there. */
 @media (display-mode: standalone), (display-mode: fullscreen) {
   .app-shell {
     padding-top: env(safe-area-inset-top);
-  }
-
-  html,
-  body {
-    overscroll-behavior-y: none;
-  }
-}
-
-@media (pointer: coarse) {
-  a.label,
-  button.label {
-    min-height: var(--layout-touch-target);
-    display: inline-flex;
-    align-items: center;
   }
 }
 
@@ -442,10 +437,6 @@ body {
   .hero-block h1 {
     font-size: var(--text-title-1);
     line-height: 1.12;
-  }
-
-  .hero-intro {
-    display: none;
   }
 }
 
@@ -468,25 +459,6 @@ body {
   .filter-scroll > * {
     flex: none;
   }
-}
-
-/* ---------------------------------------------------------------------------
-   Quality floor
---------------------------------------------------------------------------- */
-
-:focus {
-  outline: none;
-}
-
-/* The one intentional stroke in the system, and it is not decoration. */
-:focus-visible {
-  outline: 2px solid var(--color-accent-400);
-  outline-offset: 3px;
-}
-
-::selection {
-  background: color-mix(in oklch, var(--accent) 40%, transparent);
-  color: var(--color-ink);
 }
 
 /* ---------------------------------------------------------------------------
@@ -563,6 +535,15 @@ body {
       background: oklch(21% 0.014 265 / 0.035);
     }
 
+    .chip {
+      background: oklch(21% 0.014 265 / 0.055);
+    }
+
+    .chip-action:not(.surface-selected):hover {
+      background: oklch(21% 0.014 265 / 0.09);
+    }
+
+    /* After the paper `.chip`, for the same reason as in the dark room. */
     .surface-selected {
       background: linear-gradient(
         180deg,
@@ -572,14 +553,6 @@ body {
       box-shadow:
         0 1px 2px oklch(21% 0.02 265 / 0.08),
         0 10px 24px -16px color-mix(in oklch, var(--selected-hue) 45%, transparent);
-    }
-
-    .chip {
-      background: oklch(21% 0.014 265 / 0.055);
-    }
-
-    .chip-action:hover {
-      background: oklch(21% 0.014 265 / 0.09);
     }
 
     .seam {
@@ -831,16 +804,5 @@ body {
 
   .launcher-link:active {
     transform: scale(0.94);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
   }
 }
