@@ -96,6 +96,10 @@ describe('processLabImage', () => {
     const first = await sharp(result.image.variants[0].bytes).metadata();
     // Orientation 6 is a quarter turn: the wide source becomes tall.
     expect((first.height ?? 0) > (first.width ?? 0)).toBe(true);
+    /* And the dimensions recorded in `lab_assets` are the turned ones: the
+       stored 1200x600 would give the slot a landscape aspect for a portrait. */
+    expect(result.image.width).toBe(600);
+    expect(result.image.height).toBe(1200);
   });
 
   it('reports the total bytes of everything it will store', async () => {
@@ -143,20 +147,24 @@ describe('processLabImage', () => {
   });
 
   it('refuses an animated WebP, which is a video wearing a still format', async () => {
+    /* Two frames stacked in one raw buffer, split by `pageHeight`. A single
+       `create` frame encodes to a one-page WebP, and the assertion this used
+       to guard behind `if (pages > 1)` never ran. */
+    const frame = { width: 64, height: 32, channels: 3 as const };
+    const pixels = Buffer.alloc(frame.width * frame.height * 2 * frame.channels);
+    pixels.fill(0x40, 0, pixels.length / 2);
+    pixels.fill(0xc0, pixels.length / 2);
     const animated = new Uint8Array(
-      await sharp(
-        { create: { width: 64, height: 32, channels: 3, background: '#123456' }, animated: true },
-      )
+      await sharp(pixels, { raw: { ...frame, height: frame.height * 2, pageHeight: frame.height } })
         .webp({ loop: 0 })
         .toBuffer(),
     );
     const meta = await sharp(animated).metadata();
-    if ((meta.pages ?? 1) > 1) {
-      await expect(processLabImage(animated)).resolves.toEqual({
-        ok: false,
-        error: 'unsupportedType',
-      });
-    }
+    expect(meta.pages).toBe(2);
+    await expect(processLabImage(animated)).resolves.toEqual({
+      ok: false,
+      error: 'unsupportedType',
+    });
   });
 
   it('refuses corrupt bytes without leaking the decoder message', async () => {
