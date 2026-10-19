@@ -3,8 +3,9 @@ import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { SiteHeader } from '@/components/site-header'
 import { Link } from '@/i18n/navigation'
 import { routing, type Locale } from '@/i18n/routing'
-import { searchContent } from '@/lib/search/service'
+import { searchContent, searchGroups } from '@/lib/search/service'
 import {
+  emptyState,
   MAX_OFFSET,
   MAX_QUERY,
   SCOPE_KINDS,
@@ -71,17 +72,15 @@ export default async function SearchPage({
 
   const [t, ts] = await Promise.all([getTranslations('searchPage'), getTranslations('search')])
 
-  /* "All" asks for every match so it can show the head of each group; a scope
-     asks for one page. The service bounds both. */
+  /* "All" asks for the head of each group, taken from the whole ranking; a
+     scope asks for one page. */
   const result = q
-    ? await searchContent({
-        q,
-        locale,
-        scope,
-        limit: scope === 'all' ? 200 : PAGE_SIZE,
-        cursor: scope === 'all' ? undefined : cursor,
-      })
+    ? scope === 'all'
+      ? await searchGroups({ q, locale, scope }, PER_GROUP)
+      : await searchContent({ q, locale, scope, limit: PAGE_SIZE, cursor })
     : null
+  /* "All" never pages, so a stray `cursor` must not hide its empty state. */
+  const empty = result && (scope === 'all' || cursor === 0) ? emptyState(result) : null
 
   const total = result ? Object.values(result.counts).reduce((n, c) => n + (c ?? 0), 0) : 0
   const action = locale === routing.defaultLocale ? '/search' : `/${locale}/search`
@@ -152,8 +151,8 @@ export default async function SearchPage({
               </p>
             ) : null}
 
-            {result.hits.length === 0 && cursor === 0 ? (
-              <p className="mt-10 text-title-3 font-semibold text-ink">{t('noResults', { query: q })}</p>
+            {empty === 'unsearched' ? null : empty ? (
+              <p className="mt-10 text-title-3 font-semibold text-ink">{t(empty, { query: q })}</p>
             ) : scope === 'all' ? (
               <div className="mt-8 flex flex-col gap-10">
                 <p className="meta">{t('resultCount', { count: total })}</p>
@@ -169,7 +168,7 @@ export default async function SearchPage({
                         <span>{t(`groups.${kind}`)}</span>
                         <span className="meta font-normal tracking-normal">{count}</span>
                       </h2>
-                      <HitList hits={hits.slice(0, PER_GROUP)} kindLabel={(k) => ts(`kinds.${k}`)} />
+                      <HitList hits={hits} kindLabel={(k) => ts(`kinds.${k}`)} />
                       {count > PER_GROUP ? (
                         <Link
                           href={{ pathname: '/search', query: { q, scope: SCOPE_FOR[kind] } }}

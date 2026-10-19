@@ -82,6 +82,22 @@ export type SearchResponse = {
 }
 
 /**
+ * What an empty first page says, or `null` when there are hits to show.
+ *
+ * `unsearched` — every kind the scope names failed to read: the status line
+ * names them, and "no results" would claim a search that did not run.
+ * `noResultsSearched` — some failed and the rest had nothing, so the sentence
+ * is qualified. `noResults` only when every kind was searched.
+ */
+export function emptyState(
+  res: Pick<SearchResponse, 'scope' | 'hits' | 'unavailable'>,
+): 'noResults' | 'noResultsSearched' | 'unsearched' | null {
+  if (res.hits.length > 0) return null
+  if (SCOPE_KINDS[res.scope].every((k) => res.unavailable.includes(k))) return 'unsearched'
+  return res.unavailable.length > 0 ? 'noResultsSearched' : 'noResults'
+}
+
+/**
  * The request, validated. Strings from a URL are trimmed and bounded rather
  * than refused where a sensible reading exists — an over-long query is cut to
  * `MAX_QUERY`, the way the predictive route always has — and refused where

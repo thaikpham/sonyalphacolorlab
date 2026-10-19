@@ -5,7 +5,14 @@ import { EMPTY_META } from '@/lib/lab/meta'
 import type { Article } from '@/lib/lab/types'
 import type { RecipeView } from '@/lib/recipes/source'
 import { glossaryDocs, snippetFor } from './documents'
-import { searchRequestSchema } from './types'
+import {
+  emptyState,
+  MAX_OFFSET,
+  searchRequestSchema,
+  type SearchHit,
+  type SearchKind,
+  type SearchScope,
+} from './types'
 
 /**
  * The service's promises, exercised with the data layer replaced:
@@ -49,7 +56,7 @@ vi.mock('@/lib/cameras/data', () => ({
 }))
 vi.mock('@/lib/audio/data', () => ({ getSonyAudio: async () => [] }))
 
-const { searchContent } = await import('./service')
+const { searchContent, searchGroups } = await import('./service')
 
 const article = (id: string, title: string): Article => ({
   id,
@@ -232,6 +239,93 @@ describe('a glossary group hit', () => {
         if (subtitle) expect(snippetFor(doc)?.startsWith(subtitle) ?? false, `${locale} ${doc.id}`).toBe(false)
       }
     }
+  })
+})
+
+describe('searchGroups', () => {
+  it('heads every group from the whole ranking, however many hits rank above it', async () => {
+    /* "All" used to take the first 200 ranked hits and group those, so a
+       kind ranked below 200 product titles showed a count and no rows. */
+    state.cameras = Array.from({ length: MAX_OFFSET + 10 }, (_, i) =>
+      product({ id: `p${i}`, name: `Zorblat ${i}` }),
+    )
+    state.articles = [1, 2, 3].map((i) => ({
+      ...article(`k${i}`, `Page ${i}`),
+      kind: 'knowledge' as const,
+      blocks: [{ t: 'p' as const, text: 'Một đoạn về zorblat.' }],
+    }))
+    const res = await searchGroups({ q: 'zorblat', locale: 'en', scope: 'all' }, 6)
+    expect(res.counts).toMatchObject({ product: MAX_OFFSET + 10, knowledge: 3 })
+    expect(res.hits.filter((h) => h.kind === 'knowledge').map((h) => h.id).sort()).toEqual(['k1', 'k2', 'k3'])
+    expect(res.hits.filter((h) => h.kind === 'product')).toHaveLength(6)
+    expect(res.nextCursor).toBeNull()
+  })
+})
+
+describe('the cursor', () => {
+  it('pages as far as the schema accepts, and no further', async () => {
+    state.cameras = Array.from({ length: MAX_OFFSET + 40 }, (_, i) =>
+      product({ id: `p${i}`, name: `Zorblat ${i}` }),
+    )
+    let cursor: string | undefined
+    let last: string | undefined
+    for (;;) {
+      const res = await searchContent(
+        searchRequestSchema.parse({ q: 'zorblat', scope: 'products', limit: 20, cursor }),
+      )
+      if (!res.nextCursor) break
+      expect(searchRequestSchema.safeParse({ q: 'x', cursor: res.nextCursor }).success).toBe(true)
+      last = cursor = res.nextCursor
+    }
+    expect(last).toBe(String(MAX_OFFSET))
+  })
+
+  it('is bounded by the constant the schema uses, not a copy of it', () => {
+    const service = readFileSync('src/lib/search/service.ts', 'utf8')
+    expect(service).toMatch(/next <= MAX_OFFSET/)
+    expect(service).not.toMatch(/\b200\b/)
+  })
+})
+
+describe('emptyState', () => {
+  const res = (scope: SearchScope, unavailable: SearchKind[], hits = 0) => ({
+    scope,
+    unavailable,
+    hits: Array.from({ length: hits }, () => ({}) as SearchHit),
+  })
+
+  it('says nothing matched only when everything was searched', () => {
+    expect(emptyState(res('recipes', []))).toBe('noResults')
+    expect(emptyState(res('all', []))).toBe('noResults')
+  })
+
+  it('says nothing about matches when nothing could be searched', () => {
+    /* /search?q=mojave&scope=recipes with the recipe read down: the status
+       line names the failure, and "No results" would claim a search ran. */
+    expect(emptyState(res('recipes', ['recipe']))).toBe('unsearched')
+    expect(emptyState(res('all', ['recipe', 'product', 'article', 'knowledge']))).toBe('unsearched')
+  })
+
+  it('qualifies "no results" when only some kinds could be searched', () => {
+    expect(emptyState(res('all', ['product']))).toBe('noResultsSearched')
+  })
+
+  it('is not a state at all when there are hits', () => {
+    expect(emptyState(res('all', ['product'], 2))).toBeNull()
+  })
+})
+
+describe('the /search page', () => {
+  const page = readFileSync('src/app/[locale]/search/page.tsx', 'utf8')
+
+  it('groups "All" from per-kind heads, not from a capped slice', () => {
+    expect(page).toMatch(/searchGroups\(\{ q, locale, scope \}, PER_GROUP\)/)
+    expect(page).not.toMatch(/limit: scope === 'all'/)
+  })
+
+  it('says "no results" only through emptyState', () => {
+    expect(page).toMatch(/emptyState\(result\)/)
+    expect(page).not.toMatch(/result\.hits\.length === 0/)
   })
 })
 

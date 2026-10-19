@@ -14,6 +14,7 @@ import {
 } from './documents'
 import { prepare, rank } from './rank'
 import {
+  MAX_OFFSET,
   SCOPE_KINDS,
   type ParsedSearchRequest,
   type SearchHit,
@@ -75,7 +76,14 @@ function toHit(doc: SearchDoc, reasons: SearchHit['reasonCodes']): SearchHit {
   }
 }
 
-export async function searchContent(req: ParsedSearchRequest): Promise<SearchResponse> {
+type Ranked = {
+  readonly ranked: ReturnType<typeof rank>
+  readonly counts: Partial<Record<SearchKind, number>>
+  readonly unavailable: readonly SearchKind[]
+}
+
+/** Every adapter the scope names, settled, then one ranking over all of it. */
+async function rankScope(req: Pick<ParsedSearchRequest, 'q' | 'locale' | 'scope'>): Promise<Ranked> {
   const kinds = SCOPE_KINDS[req.scope]
   const settled = await Promise.allSettled(kinds.map((k) => ADAPTERS[k](req.locale)))
 
@@ -96,6 +104,12 @@ export async function searchContent(req: ParsedSearchRequest): Promise<SearchRes
   const counts: Partial<Record<SearchKind, number>> = {}
   for (const k of kinds) if (!unavailable.includes(k)) counts[k] = 0
   for (const r of ranked) counts[r.doc.kind] = (counts[r.doc.kind] ?? 0) + 1
+  return { ranked, counts, unavailable }
+}
+
+/** One page of the ranking, from an offset cursor. */
+export async function searchContent(req: ParsedSearchRequest): Promise<SearchResponse> {
+  const { ranked, counts, unavailable } = await rankScope(req)
 
   const offset = req.cursor ?? 0
   const page = ranked.slice(offset, offset + req.limit)
@@ -107,6 +121,33 @@ export async function searchContent(req: ParsedSearchRequest): Promise<SearchRes
     hits: page.map((r) => toHit(r.doc, r.reasons)),
     counts,
     unavailable,
-    nextCursor: next < ranked.length && next <= 200 ? String(next) : null,
+    nextCursor: next < ranked.length && next <= MAX_OFFSET ? String(next) : null,
+  }
+}
+
+/**
+ * The first `perKind` hits of each kind, in ranked order — what "All" on
+ * `/search` shows. Taken from the whole ranking, not from a capped page of it:
+ * the page could be all product titles, and a kind ranked below them would
+ * show its count with no rows under it.
+ */
+export async function searchGroups(
+  req: Pick<ParsedSearchRequest, 'q' | 'locale' | 'scope'>,
+  perKind: number,
+): Promise<SearchResponse> {
+  const { ranked, counts, unavailable } = await rankScope(req)
+  const taken: Partial<Record<SearchKind, number>> = {}
+  const heads = ranked.filter((r) => {
+    const n = taken[r.doc.kind] ?? 0
+    taken[r.doc.kind] = n + 1
+    return n < perKind
+  })
+  return {
+    query: req.q,
+    scope: req.scope,
+    hits: heads.map((r) => toHit(r.doc, r.reasons)),
+    counts,
+    unavailable,
+    nextCursor: null,
   }
 }
