@@ -110,9 +110,11 @@ describe('the reference pages', () => {
 
 describe('the experiment frames', () => {
   it.each(frames.map((d) => [d.id, d] as const))(
-    '%s is refused at publish for its open markers, and only for those',
+    '%s is refused at publish for what it still owes, and only for that',
     (_id, draft) => {
-      expect(validateForPublish(draft)).toEqual(['placeholder'])
+      /* The open markers, and the reading time, which cannot be known until
+         the shoot has been written up. */
+      expect(validateForPublish(draft)).toEqual(['emptyRead', 'placeholder'])
     },
   )
 

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { ARTICLES, TOPICS } from './articles'
 import { buildOutline } from './outline'
+import { EMOJI_RE } from './parse'
 import type { Article, Block } from './types'
 
 /**
@@ -122,7 +123,7 @@ describe.each(ARTICLES.map((a) => [a.id, a] as const))('%s', (_id, article) => {
   it('carries no emoji and no exclamation marks', () => {
     // §4: both read as marketing copy, and this is a reference product.
     const prose = JSON.stringify(article)
-    expect(prose).not.toMatch(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u)
+    expect(prose).not.toMatch(EMOJI_RE)
     expect(prose).not.toContain('!')
   })
 })
