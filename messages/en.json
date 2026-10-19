@@ -351,6 +351,7 @@
     "catalogueLede": "{count, plural, one {# product} other {# products}}",
     "openCompare": "Open comparison",
     "compareSelected": "Selected",
+    "compareProduct": "Compare {name}",
     "productNotFound": "Product not found",
     "productMetaTitle": "{name} ({sku}) · Specs",
     "productMetaDescription": "Official specs, pricing {price}, and key features for {fullName}.",

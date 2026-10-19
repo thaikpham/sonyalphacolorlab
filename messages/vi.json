@@ -351,6 +351,7 @@
     "catalogueLede": "{count, plural, other {# sản phẩm}}",
     "openCompare": "Mở bảng so sánh",
     "compareSelected": "Đã chọn",
+    "compareProduct": "So sánh {name}",
     "productNotFound": "Không tìm thấy sản phẩm",
     "productMetaTitle": "{name} ({sku}) · Thông số",
     "productMetaDescription": "Thông số kỹ thuật chính hãng, giá niêm yết {price} và tính năng nổi bật của {fullName}.",
