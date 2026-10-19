@@ -5,9 +5,7 @@ import { catalogueCache } from '@/lib/catalogue-cache';
 import { contentRead } from '@/lib/supabase/server';
 import { contentOrOfflineSeed } from '@/lib/supabase/content-source';
 import { PRODUCT_COLUMNS, productFromRow, type ProductRow } from './row';
-import { getSonyAudioById } from '@/lib/audio/data';
-import { compareCameras, type ProductCategory, type SonyCamera, type WikiSort } from './types';
-import { splitFeatures } from './features';
+import type { SonyCamera } from './types';
 
 let cachedSeedCameras: SonyCamera[] | null = null;
 
@@ -29,13 +27,11 @@ function getSeedCameras(): SonyCamera[] {
    rows to return five suggestions, once per keystroke. See `catalogue-cache`. */
 export const getSonyCameras = catalogueCache('getSonyCameras', _getSonyCameras);
 
-async function _getSonyCameras(options?: {
-  category?: ProductCategory;
-  subCategory1?: string;
-  subCategory2?: string;
-  search?: string;
-  sortBy?: WikiSort;
-}): Promise<SonyCamera[]> {
+/* No filter or sort options. Every caller reads the whole table and narrows
+   what comes back — the grid sorts with `compareCameras` on the client — and
+   the options it used to take were reached by tests alone. They were also a
+   hazard: a cached read's arguments are part of its cache key. */
+async function _getSonyCameras(): Promise<SonyCamera[]> {
   const seed = getSeedCameras();
 
   /* Configuration decides the source, and nothing else. The old shape — try
@@ -43,7 +39,7 @@ async function _getSonyCameras(options?: {
      republished the Git-time snapshot of the catalogue, prices included, with
      no error anywhere. `data.length > 0` made it worse: an administrator who
      deleted the last product in a category would see the seed come back. */
-  let cameras = await contentOrOfflineSeed<SonyCamera[]>(
+  return contentOrOfflineSeed<SonyCamera[]>(
     'wiki.cameras',
     async () => {
       const { data, error } = await contentRead()
@@ -67,60 +63,6 @@ async function _getSonyCameras(options?: {
     },
     () => seed,
   );
-
-  // Apply Main Category Filter
-  if (options?.category && options.category !== 'all') {
-    cameras = cameras.filter((c) => c.category === options.category);
-  }
-
-  // Apply Sub-category 1 Filter
-  if (options?.subCategory1 && options.subCategory1 !== 'all') {
-    cameras = cameras.filter((c) => c.subCategory1 === options.subCategory1);
-  }
-
-  // Apply Sub-category 2 Filter
-  if (options?.subCategory2 && options.subCategory2 !== 'all') {
-    cameras = cameras.filter((c) => c.subCategory2 === options.subCategory2);
-  }
-
-  // Apply Search Filter
-  if (options?.search && options.search.trim()) {
-    const query = options.search.trim().toLowerCase();
-    cameras = cameras.filter((c) => {
-      if (
-        c.name.toLowerCase().includes(query) ||
-        c.fullName.toLowerCase().includes(query) ||
-        c.sku.toLowerCase().includes(query) ||
-        c.subCategory1.toLowerCase().includes(query) ||
-        c.subCategory2.toLowerCase().includes(query)
-      ) {
-        return true;
-      }
-      /* Both locales, not just the active one: a Vietnamese query should still
-         reach a product whose bullets have only been written in English. */
-      const { en, vi } = splitFeatures(c.features);
-      return (
-        en.some((f) => f.toLowerCase().includes(query)) ||
-        vi.some((f) => f.toLowerCase().includes(query))
-      );
-    });
-  }
-
-  // Apply Sort
-  if (options?.sortBy) {
-    /* On a copy, always.
-     *
-     * Every branch above can leave `cameras` aliased to `cachedSeedCameras` —
-     * that is the whole point of the cache, and `filter` only breaks the alias
-     * when a filter is actually asked for. `sort` mutates in place, so a single
-     * request for `?sort=name` permanently reordered the module-level seed for
-     * every later request in that process, and the catalogue's base order
-     * silently became whatever the last sorter wanted. */
-    cameras = [...cameras];
-    cameras.sort(compareCameras(options.sortBy));
-  }
-
-  return cameras;
 }
 
 /* A point lookup over a whole-table read, so React `cache()` on top of the
@@ -130,10 +72,3 @@ export const getSonyCameraById = cache(async (id: string): Promise<SonyCamera | 
   const cameras = await getSonyCameras();
   return cameras.find((c) => c.id === id) || null;
 });
-
-export const getSonyProductById = cache(async (id: string): Promise<SonyCamera | null> => {
-  const camera = await getSonyCameraById(id);
-  if (camera) return camera;
-  return getSonyAudioById(id);
-});
-
