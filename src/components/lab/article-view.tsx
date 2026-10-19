@@ -1,6 +1,6 @@
 import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
-import { RelatedLinks } from '@/components/content/related-links'
+import { RelatedLinks, refsUnavailable } from '@/components/content/related-links'
 import { SourceList, formatIsoDay } from '@/components/content/source-list'
 import { resolvePrerequisites, resolveRefs } from '@/lib/content/relations'
 import { loadUniverse } from '@/lib/content/universe'
@@ -198,7 +198,7 @@ export async function ArticleView({ article }: { article: Article }) {
           <p className="meta">{t('firmwareDisclaimer')}</p>
           <RelatedLinks
             links={related}
-            unavailable={unavailable.length > 0 && article.meta.related.length > 0}
+            unavailable={refsUnavailable(article.meta.related, unavailable)}
             lang={ARTICLE_LANG}
           />
         </footer>
