@@ -153,9 +153,31 @@
     "sectionPp": "2. Picture Profile master settings"
   },
   "notFound": {
-    "title": "That recipe isn’t here.",
-    "body": "It may have been renamed, or the link may be incomplete. The full catalogue is one click away.",
-    "action": "Browse all recipes"
+    "recipe": {
+      "title": "That recipe isn’t here.",
+      "body": "It may have been renamed, or the link may be incomplete. The full catalogue is one click away.",
+      "action": "Browse all recipes"
+    },
+    "camera": {
+      "title": "That product isn’t here.",
+      "body": "It may have been renamed or retired, or the link may be incomplete.",
+      "action": "Browse Sony Wiki"
+    },
+    "audio": {
+      "title": "That product isn’t here.",
+      "body": "It may have been renamed or retired, or the link may be incomplete.",
+      "action": "Browse all audio"
+    },
+    "blog": {
+      "title": "That article isn’t here.",
+      "body": "It may have been unpublished, or the link may be incomplete.",
+      "action": "Browse all articles"
+    },
+    "learn": {
+      "title": "That page isn’t here.",
+      "body": "It may have been moved, or the link may be incomplete.",
+      "action": "Browse Learn"
+    }
   },
   "error": {
     "title": "Something broke.",
