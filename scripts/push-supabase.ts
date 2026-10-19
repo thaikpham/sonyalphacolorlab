@@ -21,7 +21,8 @@
  *   npm run push:supabase -- --target content               # add what is missing
  *   npm run push:supabase -- --target content --overwrite   # replace existing rows
  *
- * `--overwrite` replaces existing rows WHOLE with the seed's copy. Run
+ * `--overwrite` replaces existing rows WHOLE with the seed's copy — every
+ * column the seed carries, highlights and alt text included. Run
  * `pull:supabase` first, or the edits made in the admin are lost.
  *
  * Nothing is deleted either way — removing a recipe is a deliberate act, not a
@@ -34,6 +35,7 @@ import { requireTarget } from './supabase/args';
 import { recipeSchema } from '../src/lib/camera/schema';
 import { toRow } from '../src/lib/recipes/row';
 import type { SonyCamera } from '../src/lib/cameras/types';
+import { imageRow, productRow, type SeedImage } from './lib/seed-rows';
 
 type SeedRecipe = { legacyId: string } & Record<string, unknown>;
 type SeedTranslation = { recipeId: string; locale: string; description: string };
@@ -42,11 +44,7 @@ const recipes = JSON.parse(readFileSync('data/recipes.seed.json', 'utf8')) as Se
 const translations = JSON.parse(
   readFileSync('data/translations.seed.json', 'utf8'),
 ) as SeedTranslation[];
-const images = JSON.parse(readFileSync('data/images.seed.json', 'utf8')) as {
-  recipeId: string;
-  storagePath: string;
-  sort: number;
-}[];
+const images = JSON.parse(readFileSync('data/images.seed.json', 'utf8')) as SeedImage[];
 const cameras = JSON.parse(readFileSync('data/sony-cameras.seed.json', 'utf8')) as SonyCamera[];
 const audio = JSON.parse(readFileSync('data/sony-audio.seed.json', 'utf8')) as SonyCamera[];
 const allProducts = [...cameras, ...audio];
@@ -65,8 +63,10 @@ async function main() {
     return toRow(parsed.data, seed.legacyId);
   });
   console.log(`✓ ${rows.length} recipes validated`);
+  const productRows = allProducts.map(productRow);
+  console.log(`✓ ${productRows.length} products validated`);
 
-  const { target, args } = requireTarget(process.argv.slice(2));
+  const { target, args } = requireTarget(process.argv.slice(2), ['--overwrite']);
   if (target !== 'content') {
     throw new Error('This script seeds content tables. Pass --target content.');
   }
@@ -99,15 +99,12 @@ async function main() {
   if (translationError) throw new Error(`translations upsert: ${translationError.message}`);
   console.log(`✓ ${translationRows.length} translations ${verb}`);
 
-  // Images were uploaded separately by migrate-images.ts; this records which
-  // recipe each one belongs to. `(recipe_id, sort)` is unique, so re-running
-  // updates rather than duplicating.
+  // The photographs themselves are vendored into public/recipes by
+  // vendor:images and vendor:uploads; this records which recipe each one
+  // belongs to. `(recipe_id, sort)` is unique, so re-running updates rather
+  // than duplicating.
   if (images.length > 0) {
-    const imageRows = images.map((i) => ({
-      recipe_id: i.recipeId,
-      storage_path: i.storagePath,
-      sort: i.sort,
-    }));
+    const imageRows = images.map(imageRow);
     const { error: imageError } = await db
       .from('recipe_images')
       .upsert(imageRows, { onConflict: 'recipe_id,sort', ...write });
@@ -118,22 +115,6 @@ async function main() {
   // Keep the product catalogue in the same remote database as its admin editor.
   // Deleting a product must be an explicit administrative action, never an
   // incidental seed sync — and, without --overwrite, so must changing one.
-  const productRows = allProducts.map((p) => ({
-    id: p.id,
-    sku: p.sku,
-    name: p.name,
-    full_name: p.fullName,
-    category: p.category,
-    sub_category_1: p.subCategory1,
-    sub_category_2: p.subCategory2,
-    price_vnd: p.priceVnd,
-    price_formatted: p.priceFormatted,
-    url: p.url,
-    image_url: p.imageUrl,
-    gallery_urls: p.galleryUrls ?? [],
-    features: p.features,
-    specs: p.specs,
-  }));
   const { error: cameraError } = await db
     .from('sony_cameras')
     .upsert(productRows, { onConflict: 'id', ...write });
