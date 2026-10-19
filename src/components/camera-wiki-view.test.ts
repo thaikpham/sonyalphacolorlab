@@ -99,12 +99,14 @@ describe('the facet rail', () => {
 });
 
 describe('the card compare toggle', () => {
-  it('names the product it adds, and shows keyboard focus on its visible label', () => {
+  it('names the product it adds, and leaves the system focus stroke visible', () => {
     const html = render('');
-    expect(html).toContain(`aria-label="${en.cameras.compareProduct.replace('{name}', 'a7iv')}"`);
-    const label = html.match(/<label class="([^"]*)"><input type="checkbox"/)?.[1] ?? '';
-    expect(label).toContain('has-[:focus-visible]:outline-2');
-    expect(label).toContain('has-[:focus-visible]:outline-accent-400');
+    const name = en.cameras.compareProduct.replace('{name}', 'a7iv');
+    const input = html.match(new RegExp(`<input type="checkbox"[^>]*aria-label="${name}"[^>]*>`))?.[0] ?? '';
+    expect(input).toBeTruthy();
+    /* `opacity-0` hid the global `:focus-visible` outline with the input. */
+    expect(input).not.toContain('opacity-0');
+    expect(input).toContain('appearance-none');
   });
 });
 

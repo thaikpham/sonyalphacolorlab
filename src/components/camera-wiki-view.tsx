@@ -764,13 +764,14 @@ function CameraWikiViewInner({ initialCameras, basePath = '/cameras' }: CameraWi
                         {priceLabel(cam, t)}
                       </span>
 
-                      {/* The input is invisible, so the focus stroke the system
-                          draws on it is too: the label carries it instead, on
-                          `:focus-visible` only, the one place a stroke is
-                          allowed. The input names the product — a grid of
-                          identical "Compare" checkboxes says nothing. */}
+                      {/* The input covers the label and draws nothing itself:
+                          `appearance-none` on a transparent box, never
+                          `opacity-0`, which hid the system's `:focus-visible`
+                          stroke along with it and left a keyboard reader no
+                          way to see where focus was. It names the product — a
+                          grid of identical "Compare" checkboxes says nothing. */}
                       <label
-                        className={`relative flex items-center justify-center whitespace-nowrap px-3.5 min-h-10 rounded-sm text-body-sm font-semibold select-none cursor-pointer transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent-400 has-[:focus-visible]:outline-offset-[3px] has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50 ${
+                        className={`relative flex items-center justify-center whitespace-nowrap px-3.5 min-h-10 rounded-sm text-body-sm font-semibold select-none cursor-pointer transition-colors has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50 ${
                           isChecked ? ACCENT_FILL : 'text-ink-muted hover:bg-white/[0.08]'
                         }`}
                       >
@@ -780,7 +781,7 @@ function CameraWikiViewInner({ initialCameras, basePath = '/cameras' }: CameraWi
                           disabled={!isChecked && atCompareLimit}
                           onChange={() => toggleCompare(cam.id)}
                           aria-label={t('compareProduct', { name: cam.name })}
-                          className="absolute inset-0 w-full h-full m-0 appearance-none opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                          className="absolute inset-0 w-full h-full m-0 appearance-none bg-transparent rounded-sm cursor-pointer disabled:cursor-not-allowed"
                         />
                         <span>{isChecked ? t('compareSelected') : t('compare')}</span>
                       </label>
