@@ -1,7 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { clSettingsSchema, ppSettingsSchema, recipeSchema, whiteBalanceSchema } from './schema';
 import { formatClValue, formatWhiteBalance, parseWhiteBalance } from './format';
-import { CREATIVE_LOOK_CODES, PP_GAMMA } from './constants';
+import {
+  CL_MONOCHROME_LOOKS,
+  CL_RANGES,
+  CREATIVE_LOOK_CODES,
+  PP_GAMMA,
+  PP_RANGES,
+  WB_KELVIN,
+  WB_SHIFT_AXIS,
+  type Range,
+} from './constants';
 
 const wb = { mode: 'kelvin', kelvin: 7000, shift: { ab: { axis: 'B', amount: 3 }, gm: { axis: 'M', amount: 1.5 } } } as const;
 
@@ -29,16 +38,6 @@ describe('white balance', () => {
     expect(whiteBalanceSchema.safeParse({ mode: 'auto', auto: 'AWB (Priority White)' }).success).toBe(true);
   });
 
-  it('rejects Kelvin outside the camera range', () => {
-    expect(whiteBalanceSchema.safeParse({ mode: 'kelvin', kelvin: 12000 }).success).toBe(false);
-    expect(whiteBalanceSchema.safeParse({ mode: 'kelvin', kelvin: 1000 }).success).toBe(false);
-  });
-
-  it('rejects a shift beyond the 7-step axis', () => {
-    const bad = { mode: 'kelvin', kelvin: 5500, shift: { ab: { axis: 'A', amount: 9 } } };
-    expect(whiteBalanceSchema.safeParse(bad).success).toBe(false);
-  });
-
   it('round-trips every legacy string form in the original dataset', () => {
     const legacy = [
       '7000K, B3-M1.5', '3900K, A7', '5500K', 'AWB, A3',
@@ -63,13 +62,10 @@ describe('picture profile', () => {
   });
 
   // Values a language model plausibly invents but the camera cannot accept.
+  // Out-of-range numbers are generated from constants.ts below, per Range.
   it.each([
     ['a gamma curve that does not exist', { gamma: 'Cine9' }],
     ['a colour mode that does not exist', { colorMode: 'S-Gamut4' }],
-    ['Black Level past +15', { blackLevel: 30 }],
-    ['PP Saturation past +32', { saturation: 50 }],
-    ['Color Phase past +7', { colorPhase: 12 }],
-    ['Knee point below 75%', { knee: { mode: 'Manual', point: 50, slope: 0 } }],
     ['B/W Balance written with a space', { detail: { ...validPp.detail, bwBalance: 'Type 3' } }],
   ])('rejects %s', (_label, patch) => {
     expect(ppSettingsSchema.safeParse({ ...validPp, ...patch }).success).toBe(false);
@@ -92,27 +88,28 @@ describe('creative look', () => {
     expect(clSettingsSchema.safeParse(validCl).success).toBe(true);
   });
 
-  it('has all ten built-in Looks including NT', () => {
-    expect(CREATIVE_LOOK_CODES).toHaveLength(10);
+  it('accepts every built-in Look, each once, including NT', () => {
+    /* Not a count: adding a Look touches constants.ts only (rule 5), so a
+       typed-in length failed the day an eleventh arrived. */
+    expect(new Set(CREATIVE_LOOK_CODES).size).toBe(CREATIVE_LOOK_CODES.length);
     expect(CREATIVE_LOOK_CODES).toContain('NT');
+    const { saturation: _drop, ...noSat } = validCl;
+    for (const look of CREATIVE_LOOK_CODES) {
+      const mono = (CL_MONOCHROME_LOOKS as readonly string[]).includes(look);
+      expect(clSettingsSchema.safeParse(mono ? { ...noSat, look } : { ...validCl, look }).success, look).toBe(true);
+    }
   });
 
-  // The unsigned parameters are the most common source of bad data.
-  it.each([
-    ['negative Fade', { fade: -3 }],
-    ['negative Sharpness', { sharpness: -5 }],
-    ['negative Clarity', { clarity: -1 }],
-    ['Sharpness Range of 0', { sharpnessRange: 0 }],
-    ['Sharpness Range past 5', { sharpnessRange: 7 }],
-    ['Contrast past +9', { contrast: 20 }],
-    ['a Look that does not exist', { look: 'XX' }],
-  ])('rejects %s', (_label, patch) => {
-    expect(clSettingsSchema.safeParse({ ...validCl, ...patch }).success).toBe(false);
+  it('rejects a Look that does not exist', () => {
+    expect(clSettingsSchema.safeParse({ ...validCl, look: 'XX' }).success).toBe(false);
   });
 
   it('rejects PP Saturation range leaking into a Creative Look', () => {
-    // -32..+32 is legal for Picture Profile but NOT for a Creative Look.
-    expect(clSettingsSchema.safeParse({ ...validCl, saturation: 25 }).success).toBe(false);
+    // Legal for Picture Profile but NOT for a Creative Look.
+    const leak = PP_RANGES.saturation.max;
+    expect(leak).toBeGreaterThan(CL_RANGES.saturation.max);
+    expect(ppSettingsSchema.safeParse({ ...validPp, saturation: leak }).success).toBe(true);
+    expect(clSettingsSchema.safeParse({ ...validCl, saturation: leak }).success).toBe(false);
   });
 
   it('forbids Saturation on monochrome Looks', () => {
@@ -160,5 +157,78 @@ describe('recipe', () => {
     // PP and Creative Look are mutually exclusive on the camera.
     const both = { ...base, id: 'SCL-PP-001', format: 'pp', settings: { ...validPp, ...validCl } };
     expect(recipeSchema.safeParse(both).success).toBe(false);
+  });
+});
+
+/**
+ * Every Range in constants.ts, run through the real schema at its edges.
+ *
+ * The bounds are read, never typed (rules 1 and 5), so widening a range moves
+ * every case with it. Per range: both ends accepted, one step past either end
+ * refused, one step in accepted, and half a step in refused — the step refine
+ * in `ranged()` was otherwise never shown to reject an off-grid value, so 5550K
+ * or a 75.25% knee could have slipped through with this file green.
+ *
+ * Keyed by the range's own name, so a new entry in PP_RANGES or CL_RANGES is a
+ * type error here until it has a probe.
+ */
+type Probe = (v: number) => boolean;
+const pp = (patch: (v: number) => object): Probe => (v) =>
+  ppSettingsSchema.safeParse({ ...validPp, ...patch(v) }).success;
+const cl = (key: keyof typeof CL_RANGES): Probe => (v) =>
+  clSettingsSchema.safeParse({ ...validCl, [key]: v }).success;
+const detail = (key: keyof typeof validPp.detail) => pp((v) => ({ detail: { ...validPp.detail, [key]: v } }));
+
+const PP_PROBES: Record<keyof typeof PP_RANGES, Probe> = {
+  blackLevel: pp((v) => ({ blackLevel: v })),
+  blackGammaLevel: pp((v) => ({ blackGamma: { ...validPp.blackGamma, level: v } })),
+  kneeAutoMaxPoint: pp((v) => ({ knee: { mode: 'Auto', maxPoint: v } })),
+  kneeManualPoint: pp((v) => ({ knee: { ...validPp.knee, point: v } })),
+  kneeManualSlope: pp((v) => ({ knee: { ...validPp.knee, slope: v } })),
+  saturation: pp((v) => ({ saturation: v })),
+  colorPhase: pp((v) => ({ colorPhase: v })),
+  colorDepth: pp((v) => ({ colorDepth: { ...validPp.colorDepth, R: v } })),
+  detailLevel: detail('level'),
+  detailVhBalance: detail('vhBalance'),
+  detailLimit: detail('limit'),
+  detailCrispening: detail('crispening'),
+  detailHiLightDetail: detail('hiLightDetail'),
+};
+
+const CL_PROBES: Record<keyof typeof CL_RANGES, Probe> = Object.fromEntries(
+  Object.keys(CL_RANGES).map((k) => [k, cl(k as keyof typeof CL_RANGES)]),
+) as Record<keyof typeof CL_RANGES, Probe>;
+
+const RANGES: [string, Range, Probe][] = [
+  ...Object.entries(PP_RANGES).map(([k, r]): [string, Range, Probe] => [
+    `PP ${k}`, r, PP_PROBES[k as keyof typeof PP_RANGES],
+  ]),
+  ...Object.entries(CL_RANGES).map(([k, r]): [string, Range, Probe] => [
+    `CL ${k}`, r, CL_PROBES[k as keyof typeof CL_RANGES],
+  ]),
+  ['WB Kelvin', WB_KELVIN, (v) => whiteBalanceSchema.safeParse({ mode: 'kelvin', kelvin: v }).success],
+  [
+    'WB shift',
+    WB_SHIFT_AXIS,
+    (v) =>
+      whiteBalanceSchema.safeParse({ mode: 'kelvin', kelvin: WB_KELVIN.min, shift: { ab: { axis: 'A', amount: v } } })
+        .success,
+  ],
+];
+
+describe.each(RANGES)('%s', (_name, range, accepts) => {
+  it(`accepts both ends and the first step in`, () => {
+    expect(accepts(range.min), `${range.min}`).toBe(true);
+    expect(accepts(range.max), `${range.max}`).toBe(true);
+    expect(accepts(range.min + range.step), `${range.min + range.step}`).toBe(true);
+  });
+
+  it(`refuses one step past either end`, () => {
+    expect(accepts(range.min - range.step), `${range.min - range.step}`).toBe(false);
+    expect(accepts(range.max + range.step), `${range.max + range.step}`).toBe(false);
+  });
+
+  it(`refuses a value between two steps`, () => {
+    expect(accepts(range.min + range.step / 2), `${range.min + range.step / 2}`).toBe(false);
   });
 });
