@@ -20,6 +20,7 @@ import { referencedAssetIds } from '@/lib/lab/assets'
 import {
   deleteArticleAssets,
   reconcileArticleAssets,
+  retireUnreferencedAssets,
   type LifecycleResult,
 } from '@/lib/lab/asset-lifecycle'
 
@@ -221,12 +222,18 @@ export async function PATCH(request: Request, { params }: Ctx) {
      A failure is reported, but the article is already private — so the answer
      is 502 with the assets marked `cleanup_failed`, which every later save
      retries. Draft saves run the same removal, and never refuse over a
-     reference: the row is already written, and nothing is being published. */
-  if (write.status !== 'published') {
-    const synced = await settled(reconcileArticleAssets(id, write.article.blocks, 'draft'))
-    if (!synced.ok) {
-      return NextResponse.json({ error: synced.error, problems, ...stored }, { status: 502 })
-    }
+     reference: the row is already written, and nothing is being published.
+
+     A published save takes out only what its body dropped, and only now, for
+     the same reason: before the write, the live page was the old version and
+     still named those images. */
+  const synced = await settled(
+    write.status === 'published'
+      ? retireUnreferencedAssets(id, write.article.blocks)
+      : reconcileArticleAssets(id, write.article.blocks, 'draft'),
+  )
+  if (!synced.ok) {
+    return NextResponse.json({ error: synced.error, problems, ...stored }, { status: 502 })
   }
 
   return NextResponse.json({

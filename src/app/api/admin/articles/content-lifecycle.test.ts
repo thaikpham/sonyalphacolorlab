@@ -48,6 +48,20 @@ describe('PATCH', () => {
     expect(invalidate).toBeLessThan(retire);
   });
 
+  it('retires what a published body dropped only after the row is written', () => {
+    /* Before, the publish step removed a deleted figure's public copy and then
+       wrote the row. A failed write left the live page — still the old
+       version, still naming that figure — with a broken image. */
+    const flip = body.indexOf('updateArticleRecord(');
+    const invalidate = body.indexOf('revalidateTag(LAB_TAG, IMMEDIATE)');
+    const retire = body.indexOf('retireUnreferencedAssets(');
+    expect(retire).toBeGreaterThan(-1);
+    expect(flip).toBeLessThan(retire);
+    expect(invalidate).toBeLessThan(retire);
+    // A failure answers with the stored version, as the draft path does.
+    expect(body.slice(retire)).toMatch(/if \(!synced\.ok\)[\s\S]{0,160}\.\.\.stored \}, \{ status: 502 \}/);
+  });
+
   it('never invalidates on a failed save', () => {
     const failure = body.lastIndexOf("{ error: 'saveFailed' }");
     expect(failure).toBeLessThan(body.indexOf('revalidateTag(LAB_TAG, IMMEDIATE)'));
