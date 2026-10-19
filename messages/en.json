@@ -570,6 +570,7 @@
     "count": "{n, plural, one {# recipe} other {# recipes}}",
     "statusPublished": "Live",
     "statusDraft": "Draft",
+    "statusUnreadable": "Unreadable",
     "name": "Name",
     "tags": "Tags",
     "tagsPlaceholder": "warm, travel, golden-hour",

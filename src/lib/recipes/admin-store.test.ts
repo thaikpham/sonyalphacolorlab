@@ -1,8 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   getRecipeRecord,
+  insertRecipeRecord,
+  listRecipeRows,
   normaliseRecipe,
   slugifyRecipe,
+  uniqueRecipeSlug,
   unpublishRecipe,
   updateRecipeRecord,
 } from './admin-store';
@@ -26,6 +29,8 @@ const answer = {
     data: unknown;
     error: { message: string; status?: number } | null;
   },
+  /** What an insert answers. */
+  insert: { error: null } as { error: { message: string; code?: string } | null },
 };
 
 /** What the writes asked for, as PostgREST would receive it. */
@@ -48,6 +53,8 @@ vi.mock('@/lib/supabase/server', () => {
       log.filters.push(`${column}=${String(value)}`);
       return builder;
     },
+    order: () => builder,
+    insert: async () => answer.insert,
     maybeSingle: async () => {
       log.reads += 1;
       return answer.result;
@@ -207,6 +214,47 @@ describe('the writes', () => {
 
     reset();
     await expect(unpublishRecipe('SCL-PP-999')).resolves.toBeNull();
+  });
+});
+
+describe('creating', () => {
+  const recipe = (recipesSeed as unknown as Parameters<typeof insertRecipeRecord>[0][])[0];
+
+  it('answers taken when the unique key refused the id or slug, so the route allocates again', async () => {
+    answer.insert = { error: { message: 'duplicate key value', code: '23505' } };
+    await expect(insertRecipeRecord(recipe)).resolves.toBe('taken');
+  });
+
+  it('still throws on any other failure, and answers inserted on none', async () => {
+    answer.insert = { error: { message: 'restricted' } };
+    await expect(insertRecipeRecord(recipe)).rejects.toThrow(/restricted/);
+    answer.insert = { error: null };
+    await expect(insertRecipeRecord(recipe)).resolves.toBe('inserted');
+  });
+
+  it('throws when the slug check could not read, rather than calling the slug free', async () => {
+    /* `error` was discarded, so a failed read reported every slug as free. */
+    answer.result = { data: null, error: { message: 'restricted', status: 402 } };
+    await expect(uniqueRecipeSlug('Mojave Sun')).rejects.toThrow(/restricted/);
+    answer.result = { data: null, error: null };
+    await expect(uniqueRecipeSlug('Mojave Sun')).resolves.toBe('mojave-sun');
+  });
+});
+
+describe('listRecipeRows', () => {
+  it('returns a row that fails the schema as unreadable, so the editor can take it offline', async () => {
+    /* `toRecord` dropped it from the list, so the screen could never select
+       it, while the public grid threw on it. */
+    const good = (recipesSeed as unknown as Record<string, unknown>[])[0];
+    const { toRow } = await import('./row');
+    log.written = [
+      { ...toRow(good as never, null), updated_at: '2026-10-01T00:00:00Z' },
+      { id: 'SCL-PP-998', slug: 'broken', name: 'Broken', format: 'pp', settings: {}, published: true },
+    ];
+    const { records, unreadable } = await listRecipeRows();
+    expect(records.map((r) => r.recipe.id)).toEqual([good.id]);
+    expect(unreadable).toEqual([{ id: 'SCL-PP-998', published: true, error: expect.any(String) }]);
+    log.written = [];
   });
 });
 

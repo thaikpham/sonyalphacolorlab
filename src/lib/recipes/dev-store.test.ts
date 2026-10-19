@@ -89,6 +89,23 @@ describe('the recipe dev store', () => {
     const saved = JSON.parse(readFileSync(RECIPES, 'utf8')) as unknown[];
     expect(saved.length).toBe((recipesSeed as unknown[]).length);
   });
+
+  it('refuses to create over an id or a slug it already holds', () => {
+    /* Create went through the upsert, so a second create handed the same id
+       replaced the first recipe instead of losing the race. */
+    rmSync(RECIPES, { force: true });
+    const taken = firstRecipe();
+    const count = (recipesSeed as unknown[]).length;
+
+    expect(devStore.devInsertRecipe({ ...taken, recipe: { ...taken.recipe, name: 'Other' } })).toBe(false);
+    const sameSlug = { ...taken.recipe, id: 'SCL-PP-998' } as RecipeRecord['recipe'];
+    expect(devStore.devInsertRecipe({ ...taken, recipe: sameSlug })).toBe(false);
+    expect(devStore.devGetRecipe(taken.recipe.id)?.recipe.name).toBe(taken.recipe.name);
+
+    const fresh = { ...taken.recipe, id: 'SCL-PP-998', slug: 'brand-new' } as RecipeRecord['recipe'];
+    expect(devStore.devInsertRecipe({ ...taken, recipe: fresh })).toBe(true);
+    expect(devStore.devListRecipes()).toHaveLength(count + 1);
+  });
 });
 
 describe('the photograph dev store', () => {

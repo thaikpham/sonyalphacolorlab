@@ -31,7 +31,7 @@ const stored = (over: Partial<Rec> = {}): Rec => ({
 const calls = {
   get: vi.fn(async (_id: string): Promise<Rec | null> => stored()),
   update: vi.fn(async (..._args: unknown[]): Promise<string | null> => V2),
-  insert: vi.fn(async (..._args: unknown[]) => {}),
+  insert: vi.fn(async (..._args: unknown[]): Promise<'inserted' | 'taken'> => 'inserted'),
   unpublish: vi.fn(async (_id: string): Promise<string | null> => V2),
   nextId: vi.fn(async (_format: string) => 'SCL-PP-900'),
   slug: vi.fn(async (_name: string) => 'mojave-sun-2'),
@@ -65,6 +65,10 @@ vi.mock('@/lib/recipes/admin-store', async () => {
     nextRecipeId: (format: string) => calls.nextId(format),
     uniqueRecipeSlug: (name: string) => calls.slug(name),
     listRecipeRecords: async () => [],
+    listRecipeRows: async () => ({
+      records: [],
+      unreadable: [{ id: 'SCL-PP-998', published: true, error: 'settings: Required' }],
+    }),
   };
 });
 
@@ -83,6 +87,18 @@ beforeEach(() => {
   calls.get.mockImplementation(async () => stored());
   calls.update.mockImplementation(async () => V2);
   calls.unpublish.mockImplementation(async () => V2);
+  calls.insert.mockImplementation(async () => 'inserted');
+});
+
+describe('GET /api/admin/recipes', () => {
+  it('lists the rows the schema refuses beside the rest, so they can be unpublished', async () => {
+    const res = await list.GET(new Request('http://localhost/api'));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({
+      recipes: [],
+      unreadable: [{ id: 'SCL-PP-998', published: true, error: 'settings: Required' }],
+    });
+  });
 });
 
 describe('POST /api/admin/recipes', () => {
@@ -110,6 +126,27 @@ describe('POST /api/admin/recipes', () => {
     expect(res.status).toBe(409);
     expect(await res.json()).toEqual({ error: 'idSpaceExhausted' });
     expect(calls.insert).not.toHaveBeenCalled();
+  });
+
+  it('allocates again when a concurrent create took the id or slug first', async () => {
+    /* Two tabs creating at once read the same max+1. The second insert hit
+       23505 and the editor got "Could not save" with nothing to retry. */
+    calls.insert.mockResolvedValueOnce('taken');
+    calls.nextId.mockResolvedValueOnce('SCL-PP-900').mockResolvedValueOnce('SCL-PP-901');
+    const res = await list.POST(json('POST', PP));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ ok: true, id: 'SCL-PP-901', slug: 'mojave-sun-2' });
+    expect(calls.insert).toHaveBeenCalledTimes(2);
+    const [written] = calls.insert.mock.calls[1] as [Record<string, unknown>];
+    expect(written.id).toBe('SCL-PP-901');
+  });
+
+  it('stops allocating after a bounded number of collisions', async () => {
+    calls.insert.mockResolvedValue('taken');
+    const res = await list.POST(json('POST', PP));
+    expect(res.status).toBe(502);
+    expect(await res.json()).toEqual({ error: 'saveFailed' });
+    expect(calls.insert.mock.calls.length).toBeLessThanOrEqual(5);
   });
 
   it('answers 400 for a JSON body that is not an object', async () => {

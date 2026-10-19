@@ -570,6 +570,7 @@
     "count": "{n, plural, other {# công thức}}",
     "statusPublished": "Đã đăng",
     "statusDraft": "Bản nháp",
+    "statusUnreadable": "Không đọc được",
     "name": "Tên",
     "tags": "Thẻ",
     "tagsPlaceholder": "warm, travel, golden-hour",
