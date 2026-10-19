@@ -21,8 +21,25 @@ import { httpsImageUrlSchema, readJsonBody, recipeSlugSchema } from '@/lib/commu
 const postBody = z.object({
   slug: recipeSlugSchema,
   imageUrl: httpsImageUrlSchema,
-  authorSocial: z.string().url().max(2048).optional(),
+  /* `url()` accepts any WHATWG scheme — mailto:, ftp:, javascript: — and the
+     column's CHECK is `^https?://`, so a refusal belongs here as a 400 rather
+     than at Postgres as a 23514 answered 500 saveFailed. */
+  authorSocial: z
+    .string()
+    .url()
+    .max(2048)
+    .refine((u) => /^https?:\/\//i.test(u))
+    .optional(),
 });
+
+/* Failure is failure: an outage answered `ok: true` with empty lists, which
+   the gallery could not tell from a recipe nobody had photographed. Comments
+   and proposals already answer this. */
+const unavailable = () =>
+  NextResponse.json(
+    { ...communityErrorBody('controlUnavailable'), photos: [], credits: [] },
+    { status: COMMUNITY_ERRORS.controlUnavailable },
+  );
 
 /** GET /api/community-photos?slug=<slug> */
 export async function GET(req: Request) {
@@ -45,7 +62,7 @@ export async function GET(req: Request) {
 
     if (error) {
       console.error('[community-photos GET]', error.message);
-      return NextResponse.json({ ok: true, photos: [], credits: [], source: 'fallback' });
+      return unavailable();
     }
 
     const rows = (data ?? []) as {
@@ -66,7 +83,7 @@ export async function GET(req: Request) {
     });
   } catch (e) {
     console.error('[community-photos GET]', e);
-    return NextResponse.json({ ok: true, photos: [], credits: [], source: 'fallback' });
+    return unavailable();
   }
 }
 

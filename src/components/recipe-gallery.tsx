@@ -224,8 +224,10 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
   // Pull community photos & credits shared by other people from Supabase
   useEffect(() => {
     const controller = new AbortController();
+    /* An outage is a 503 whose body is an error, not a list. The catalogue's
+       own photographs still show; the community's simply do not arrive. */
     fetch(`/api/community-photos?slug=${encodeURIComponent(slug)}`, { signal: controller.signal })
-      .then((res) => res.json())
+      .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data?.ok && Array.isArray(data.photos)) {
           setRemotePhotos(data.photos.filter((p: unknown): p is string => typeof p === 'string'));

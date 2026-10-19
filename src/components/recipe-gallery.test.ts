@@ -81,6 +81,14 @@ describe('shared photos', () => {
     expect(source).not.toContain('handleDeleteUserPhoto');
     expect(source).not.toContain('deletePhoto');
   });
+
+  it('reads the list only from a response that succeeded', () => {
+    /* The route answers an outage 503 now, with a body that is an error. */
+    const read = source.slice(source.indexOf('fetch(`/api/community-photos?slug='));
+    expect(read).toMatch(
+      /^fetch\(`[^`]*`, \{ signal: controller\.signal \}\)\s*\.then\(\(res\) => \(res\.ok \? res\.json\(\) : null\)\)/,
+    );
+  });
 });
 
 /**
