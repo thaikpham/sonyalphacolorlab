@@ -3,14 +3,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
 import { contentAdmin } from '@/lib/supabase/server';
-import {
-  DEFAULT_RUNG,
-  DRAFT_BUCKET,
-  LAB_ASSET_WIDTHS,
-  PUBLIC_BUCKET,
-  assetVariantPath,
-  assetVariantPaths,
-} from './assets';
+import { DEFAULT_RUNG, DRAFT_BUCKET, assetVariantPath } from './assets';
 import { isDevStore } from './dev-store';
 import type { ProcessedLabImage } from './image-process';
 
@@ -212,36 +205,54 @@ export async function signedPreview(
  * from the ids. Without it this returned `{}` offline, and every image in a
  * locally-authored article showed "preview expired" the moment the editor
  * reopened it — while the files were on disk the whole time.
+ *
+ * It also lets a referenced `cleanup_failed` row through. That label is what a
+ * failed unpublish leaves, and the private copy it previews from is never
+ * touched by a retire; an unreferenced one may be an upload whose own cleanup
+ * failed, with no whole private copy to sign.
+ *
+ * A ledger that cannot be read is `failed`, not an empty map. The editor still
+ * opens — the text is fine — but it is told why the pictures are missing
+ * instead of showing every one of them as an expired link.
  */
+export type ArticlePreviews = { previews: Record<string, string>; failed: boolean };
+
 export async function articlePreviews(
   articleId: string,
   referenced: readonly string[] = [],
-): Promise<Record<string, string>> {
+): Promise<ArticlePreviews> {
   if (isDevStore()) {
     const entries = referenced.map(
       (id) => [id, `/lab/${assetVariantPath(articleId, id, DEFAULT_RUNG)}`] as const,
     );
-    return Object.fromEntries(entries);
+    return { previews: Object.fromEntries(entries), failed: false };
   }
 
   const { data, error } = await contentAdmin()
     .from('lab_assets')
     .select('id, state')
     .eq('article_id', articleId)
-    .in('state', ['draft', 'published']);
+    .in('state', ['draft', 'published', 'cleanup_failed']);
 
   if (error) {
     console.error('[content] asset list failed:', error.message);
-    return {};
+    return { previews: {}, failed: true };
   }
 
+  const wanted = new Set(referenced);
+  const rows = (data ?? []).filter(
+    (row) => row.state !== 'cleanup_failed' || wanted.has(row.id as string),
+  );
   const entries = await Promise.all(
-    (data ?? []).map(async (row) => {
+    rows.map(async (row) => {
       const url = await signedPreview(articleId, row.id as string);
       return url ? ([row.id as string, url] as const) : null;
     }),
   );
-  return Object.fromEntries(entries.filter((e): e is readonly [string, string] => e !== null));
+  return {
+    previews: Object.fromEntries(entries.filter((e): e is readonly [string, string] => e !== null)),
+    failed: false,
+  };
 }
 
 /**
@@ -276,6 +287,3 @@ async function uploadLocally(
     return { ok: false, error: 'uploadFailed' };
   }
 }
-
-/** Re-exported so the lifecycle module and the tests share one path vocabulary. */
-export { LAB_ASSET_WIDTHS, DRAFT_BUCKET, PUBLIC_BUCKET, assetVariantPaths };

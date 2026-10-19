@@ -77,6 +77,7 @@ export async function GET(request: Request, { params }: Ctx) {
      cover the draft ones — so every preview comes from the private copy, which
      is retained through publication precisely so this stays uniform. */
   const unknownRefs = (await findUnknownReferences(article.meta)) ?? []
+  const previews = await articlePreviews(id, referencedAssetIds(article.blocks))
 
   return NextResponse.json({
     article,
@@ -85,7 +86,8 @@ export async function GET(request: Request, { params }: Ctx) {
       ...(unknownRefs.length > 0 ? ['relatedUnknown'] : []),
     ],
     unknownRefs,
-    previews: await articlePreviews(id, referencedAssetIds(article.blocks)),
+    previews: previews.previews,
+    previewsFailed: previews.failed,
   })
 }
 

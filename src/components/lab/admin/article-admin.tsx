@@ -290,6 +290,7 @@ export function ArticleAdmin() {
         article?: ArticleRecord
         unknownRefs?: ContentRef[]
         previews?: Record<string, string>
+        previewsFailed?: boolean
         error?: string
       }
       if (opening.current !== id) return
@@ -300,6 +301,9 @@ export function ArticleAdmin() {
       setDraft(asDraft(data.article))
       setUnknownRefs(data.unknownRefs ?? [])
       setPreviews(data.previews ?? {})
+      /* The text opened; the image ledger did not answer. Said once, so the
+         missing pictures are not read as links that expired. */
+      if (data.previewsFailed) setStatus({ kind: 'err', msg: codeMessage('previewsFailed') })
     } catch {
       /* A network failure, or a platform error page that is not JSON. */
       if (opening.current === id) setStatus({ kind: 'err', msg: codeMessage('loadFailed') })

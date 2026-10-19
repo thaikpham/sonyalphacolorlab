@@ -980,6 +980,7 @@
       "dimensionsTooLarge": "Ảnh có kích thước quá lớn. Hãy thu nhỏ xuống dưới 12.000 px mỗi cạnh và tổng dưới 40 megapixel.",
       "foreignAsset": "Một ảnh thuộc về bài viết khác. Chưa đăng gì cả.",
       "assetSyncFailed": "Không cập nhật được ảnh. Bài viết chưa thay đổi như mong muốn — hãy mở lại để xem trạng thái hiện tại.",
+      "previewsFailed": "Không tải được ảnh xem trước. Ảnh vẫn còn nguyên — mở lại bài để thử lại.",
       "incompleteAsset": "Một ảnh chưa tải lên xong. Hãy tải ảnh đó lên lại rồi đăng.",
       "articleNotFound": "Bài viết này không còn tồn tại nên không gắn được ảnh vào.",
       "saveBeforeUpload": "Hãy lưu bài viết trước — ảnh cần được gắn với một bài.",

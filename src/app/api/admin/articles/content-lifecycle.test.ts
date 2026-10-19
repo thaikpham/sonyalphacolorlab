@@ -99,6 +99,11 @@ describe('GET', () => {
   it('hands back signed previews rather than public URLs', () => {
     expect(body).toMatch(/articlePreviews\(id, referencedAssetIds\(article\.blocks\)\)/);
   });
+
+  it('says when the previews could not be read, without refusing the article', () => {
+    /* A ledger outage is not a reason to keep the editor out of the text. */
+    expect(body).toMatch(/previewsFailed: previews\.failed/);
+  });
 });
 
 describe('the upload route', () => {
@@ -140,6 +145,10 @@ describe('the editor', () => {
     expect(source).toMatch(/setDraft\(\(d\) => afterSave\(d, sent, stored\)\)/);
     expect(source).toMatch(/data\.dropped\s*\?\s*t\('savedWithDropped'/);
     expect(source).toMatch(/t\('savedWithDroppedMeta'/);
+  });
+
+  it('tells the editor a preview outage, rather than showing every image as expired', () => {
+    expect(source).toMatch(/data\.previewsFailed[\s\S]{0,120}codeMessage\('previewsFailed'\)/);
   });
 
   it('never persists a signed preview into a block', () => {
