@@ -100,6 +100,26 @@ describe('alt text', () => {
     const panel = readFileSync('src/components/colorlab/admin/image-panel.tsx', 'utf8');
     expect(panel).toMatch(/maxLength=\{MAX_ALT_CHARS\}/);
   });
+
+  it('refuses a body with no alt rather than erasing the stored one', async () => {
+    /* `{}` and `{ alt: 5 }` read as '' and then null, which cleared the
+       description already saved. */
+    for (const body of [{}, { alt: 5 }, { text: 'Dunes' }]) {
+      const res = await one.PATCH(patch(body), params('SCL-PP-001', UUID));
+      expect(res.status, JSON.stringify(body)).toBe(400);
+      expect(await res.json()).toEqual({ error: 'badRequest' });
+    }
+    expect(calls.alt).not.toHaveBeenCalled();
+  });
+
+  it('still clears it on an explicit null or an empty string', async () => {
+    await one.PATCH(patch({ alt: null }), params('SCL-PP-001', UUID));
+    await one.PATCH(patch({ alt: '   ' }), params('SCL-PP-001', UUID));
+    expect(calls.alt.mock.calls).toEqual([
+      ['SCL-PP-001', UUID, null],
+      ['SCL-PP-001', UUID, null],
+    ]);
+  });
 });
 
 describe('a body that is not an object', () => {

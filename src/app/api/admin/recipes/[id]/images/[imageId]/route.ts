@@ -68,6 +68,11 @@ export async function PATCH(request: Request, { params }: Params) {
   if (!body || typeof body !== 'object' || Array.isArray(body)) {
     return NextResponse.json({ error: 'badRequest' }, { status: 400 });
   }
+  /* Only a string or an explicit null says what the alt should be. A body
+     without one (`{}`, `{ alt: 5 }`) read as '' and erased the stored text. */
+  if (typeof body.alt !== 'string' && body.alt !== null) {
+    return NextResponse.json({ error: 'badRequest' }, { status: 400 });
+  }
 
   /* Trimmed to nothing means "no alt text", which is a null column rather than
      an empty string — the renderer distinguishes a decorative image from one
