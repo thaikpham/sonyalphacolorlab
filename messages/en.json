@@ -345,7 +345,7 @@
     "camerasTitle": "Sony camera catalogue & spec wiki",
     "camerasSubtitle": "Explore and compare technical specs, official prices and features of 35+ Sony Alpha and Cinema Line cameras.",
     "footerCameraWiki": "Alpha ColorLab · Sony camera catalogue & spec wiki",
-    "compareLegend": "The better value is tinted with the accent colour; matching cells stay plain. An em dash marks a spec the catalogue does not publish.",
+    "compareEmptyTitle": "Nothing to compare yet",
     "removeProduct": "Remove from comparison",
     "closeDialog": "Close",
     "catalogueLede": "{count, plural, one {# product} other {# products}}",

@@ -1,21 +1,28 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useRouter } from '@/i18n/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import type { SonyCamera } from '@/lib/cameras/types';
-import { featureList } from '@/lib/cameras/features';
+import { featureList, splitFeatures } from '@/lib/cameras/features';
 import { translateSpecValue } from '@/lib/cameras/spec-values';
-import { officialUrl, priceLabel, subCategoryLabel } from '@/lib/cameras/display';
-import { isResizable } from '@/lib/images/catalogue-loader';
+import {
+  compareExitPath,
+  officialUrl,
+  priceLabel,
+  productPath,
+  subCategoryLabel,
+} from '@/lib/cameras/display';
 import {
   type CompareTabId,
   getSpecValue,
   getActiveSpecSections,
+  MAX_COMPARE,
   valuesDiffer,
 } from '@/lib/cameras/compare-grouping';
+import { productDoc } from '@/lib/search/product-doc';
+import { prepare, rank } from '@/lib/search/rank';
+import { ProductPhoto } from './product-photo';
 
 interface CameraCompareViewProps {
   initialCameras: SonyCamera[];
@@ -221,6 +228,29 @@ export function compareBlocks({
     .filter((block) => block.rows.length > 0);
 }
 
+/**
+ * What the add picker offers for a query: every product not already compared,
+ * narrowed by the same ranking the header, the Wiki grid and `/search` use
+ * (ADR 0003). A substring match over name and SKU was a second engine, and
+ * the catalogue names the a7 IV "7 IV", so "a7 iv" found nothing here while
+ * the grid one click back found it by its SKU-derived alias. Only membership
+ * is taken from the ranking; the list keeps catalogue order, as the grid does.
+ */
+export function addableProducts(
+  cameras: readonly SonyCamera[],
+  activeIds: readonly string[],
+  query: string,
+): SonyCamera[] {
+  const remaining = cameras.filter((c) => !activeIds.includes(c.id));
+  if (!query.trim()) return remaining;
+  const docs = remaining.map((c) => {
+    const { en, vi } = splitFeatures(c.features);
+    return prepare(productDoc({ ...c, featureText: [...en, ...vi] }));
+  });
+  const matched = new Set(rank(query, docs).map((r) => r.doc.id));
+  return remaining.filter((c) => matched.has(c.id));
+}
+
 export function CameraCompareView({ initialCameras, selectedIds }: CameraCompareViewProps) {
   const t = useTranslations('cameras');
   const locale = useLocale();
@@ -243,24 +273,17 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
     return cameras.filter((c) => activeIds.includes(c.id));
   }, [cameras, activeIds]);
 
-  const canAddMore = comparedCameras.length < 6;
+  const canAddMore = comparedCameras.length < MAX_COMPARE;
 
   const totalCols = useMemo(() => {
-    return comparedCameras.length + (comparedCameras.length < 6 ? 2 : 1);
+    return comparedCameras.length + (comparedCameras.length < MAX_COMPARE ? 2 : 1);
   }, [comparedCameras.length]);
 
   // Unselected cameras available to add
-  const availableToAdd = useMemo(() => {
-    const remaining = cameras.filter((c) => !activeIds.includes(c.id));
-    if (!searchAddQuery.trim()) return remaining;
-    const q = searchAddQuery.trim().toLowerCase();
-    return remaining.filter(
-      (c) =>
-        c.name.toLowerCase().includes(q) ||
-        c.sku.toLowerCase().includes(q) ||
-        c.subCategory1.toLowerCase().includes(q),
-    );
-  }, [cameras, activeIds, searchAddQuery]);
+  const availableToAdd = useMemo(
+    () => addableProducts(cameras, activeIds, searchAddQuery),
+    [cameras, activeIds, searchAddQuery],
+  );
 
   const removeCamera = (id: string) => {
     const next = activeIds.filter((item) => item !== id);
@@ -268,12 +291,15 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
     if (next.length > 0) {
       router.replace(`/cameras/compare?ids=${next.join(',')}`);
     } else {
-      router.push(`/cameras`);
+      router.push(compareExitPath(comparedCameras.filter((c) => c.id === id)));
     }
   };
 
+  /* Counted by the columns drawn. `activeIds` is the URL's list, and while the
+     page normalises it, a guard on the list rather than the grid is the one
+     that refused every pick when stale ids held the slots. */
   const addCamera = (id: string) => {
-    if (activeIds.length >= 6) return;
+    if (comparedCameras.length >= MAX_COMPARE) return;
     const next = [...activeIds, id];
     setActiveIds(next);
     setIsAddModalOpen(false);
@@ -305,32 +331,45 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
     locale,
   });
 
+  /* The locale-aware `Link` and an unprefixed path: a hand-built
+     `/${locale}/cameras` was `/en/cameras` on English, which the middleware
+     redirects on every click and prefetch. */
+  const backLink = (
+    <Link href={compareExitPath(comparedCameras)} className="btn-glass">
+      {t('backToCatalog')}
+    </Link>
+  );
+
+  /* No ids, or none the catalogue still has: say so, rather than an empty
+     title over a table of labels with no cells. */
+  if (comparedCameras.length === 0) {
+    return (
+      <div className="w-full flex flex-col gap-6 pb-16">
+        <div className="flex flex-wrap items-center gap-3">{backLink}</div>
+        <div className="surface p-12 text-center flex flex-col items-center justify-center gap-3">
+          <h1 className="text-title-3 font-semibold text-ink">{t('compareEmptyTitle')}</h1>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full flex flex-col gap-6 pb-16">
       {/* Page head — the label says how many, the title says which. */}
       <div className="flex flex-col gap-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <Link href={`/${locale}/cameras`} className="btn-glass">
-            {t('backToCatalog')}
-          </Link>
+          {backLink}
 
           <button type="button" onClick={() => window.print()} className="btn-glass cursor-pointer">
             {t('printCompare')}
           </button>
         </div>
 
-        <div className="flex flex-wrap items-end justify-between gap-5">
-          <div className="flex flex-col gap-2 min-w-0">
-            <span className="label">{t('compareSummary', { count: comparedCameras.length })}</span>
-            <h1 className="text-title-1 font-extrabold tracking-[-0.02em] text-ink">
-              {comparedCameras.map((c) => c.name).join(' · ')}
-            </h1>
-          </div>
-
-          {/* What the accent and the em dash mean, said once. */}
-          <p className="text-body-sm text-ink-muted max-w-[44ch] sm:text-right">
-            {t('compareLegend')}
-          </p>
+        <div className="flex flex-col gap-2 min-w-0">
+          <span className="label">{t('compareSummary', { count: comparedCameras.length })}</span>
+          <h1 className="text-title-1 font-extrabold tracking-[-0.02em] text-ink">
+            {comparedCameras.map((c) => c.name).join(' · ')}
+          </h1>
         </div>
       </div>
 
@@ -429,13 +468,14 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                       className="px-4 py-3 align-bottom text-right bg-void/85 backdrop-blur-[30px]"
                     >
                       <div className="flex flex-col items-end gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => router.push(`/cameras/${cam.id}`)}
-                          className="text-title-3 font-semibold tracking-[-0.02em] text-ink hover:text-accent-400 transition-colors cursor-pointer text-right"
+                        {/* A link, by category: audio resolves under `/audio`
+                            only, and `/cameras/<audio-id>` is a 404. */}
+                        <Link
+                          href={productPath(cam)}
+                          className="text-title-3 font-semibold tracking-[-0.02em] text-ink hover:text-accent-400 transition-colors text-right"
                         >
                           {cam.name}
-                        </button>
+                        </Link>
 
                         <div className="flex items-center gap-2">
                           {official && (
@@ -532,7 +572,11 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
         <div
           role="dialog"
           aria-modal="true"
+          aria-labelledby="compare-add-title"
           onClick={() => setIsAddModalOpen(false)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') setIsAddModalOpen(false);
+          }}
           className="fixed inset-0 z-50 bg-void/85 backdrop-blur-[30px] flex items-center justify-center p-4 inset-safe pb-safe animate-fade-in"
         >
           <div
@@ -540,7 +584,9 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
             className="surface-raised w-full max-w-2xl max-h-[80dvh] p-6 flex flex-col gap-4 cursor-default"
           >
             <div className="flex items-center justify-between gap-4">
-              <h2 className="text-title-3 font-semibold text-ink">{t('selectProductTitle')}</h2>
+              <h2 id="compare-add-title" className="text-title-3 font-semibold text-ink">
+                {t('selectProductTitle')}
+              </h2>
               <button
                 type="button"
                 onClick={() => setIsAddModalOpen(false)}
@@ -553,15 +599,23 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
 
             <div className="seam" />
 
+            {/* Focus lands here, so Escape reaches the dialog's handler and
+                the reader can type at once. Named by the dialog's own title —
+                a placeholder is not a name. */}
             <input
               type="text"
               value={searchAddQuery}
               onChange={(e) => setSearchAddQuery(e.target.value)}
+              aria-label={t('selectProductTitle')}
+              autoFocus
               placeholder={t('searchPlaceholder')}
               className="surface-sunken w-full px-4 py-3 text-body text-ink placeholder:text-ink-faint"
             />
 
             <div className="flex-1 flex flex-col gap-1 scroll-area">
+              {availableToAdd.length === 0 && (
+                <p className="p-3 text-body-sm text-ink-muted">{t('emptyTitle')}</p>
+              )}
               {availableToAdd.map((cam, idx) => (
                 <button
                   key={cam.id}
@@ -572,15 +626,9 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                   }`}
                 >
                   <span className="flex items-center gap-3 min-w-0">
+                    {/* Empty alt: the name beside it already labels the row. */}
                     <span className="w-10 h-10 rounded-sm bg-white p-1 flex items-center justify-center shrink-0">
-                      <Image
-                        src={cam.imageUrl}
-                        alt={cam.name}
-                        width={40}
-                        height={40}
-                        className="object-contain"
-                        unoptimized={!isResizable(cam.imageUrl)}
-                      />
+                      <ProductPhoto src={cam.imageUrl} alt="" size={40} className="object-contain max-h-full" />
                     </span>
                     <span className="flex flex-col min-w-0">
                       <span className="text-body-sm font-semibold text-ink truncate">

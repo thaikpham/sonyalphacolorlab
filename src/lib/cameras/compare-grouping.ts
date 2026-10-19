@@ -83,6 +83,31 @@ export const SPEC_SECTION_GROUPS: SpecSectionGroup[] = [
   { id: 'audio', labelKey: 'sectionAudio', specKeys: AUDIO_SPEC_KEYS },
 ];
 
+/** The most products one compare holds — the hard limit both pickers state. */
+export const MAX_COMPARE = 6;
+
+/**
+ * The compare page's products, from whatever `?ids=` a link carried.
+ *
+ * A repeated key arrives as an array (`?ids=a&ids=b`), and `.split` on it threw
+ * to the error boundary. Ids the catalogue no longer has are dropped *before*
+ * counting, so a stale link cannot hold slots that render no column — that is
+ * what left an Add button whose every pick was refused. Then repeats go, and
+ * the list stops at `MAX_COMPARE`, which a hand-written link could exceed.
+ */
+export function compareSelection(
+  ids: string | readonly string[] | undefined,
+  known: readonly string[],
+): string[] {
+  const raw = typeof ids === 'string' ? ids : (ids ?? []).join(',');
+  const catalogue = new Set(known);
+  const picked = raw
+    .split(',')
+    .map((id) => id.trim())
+    .filter((id) => id && catalogue.has(id));
+  return [...new Set(picked)].slice(0, MAX_COMPARE);
+}
+
 /**
  * Retrieves a spec value string for a camera and key.
  */

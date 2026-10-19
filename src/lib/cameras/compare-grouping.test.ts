@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getActiveSpecSections, SPEC_SECTION_GROUPS, valuesDiffer } from './compare-grouping';
+import { compareSelection, getActiveSpecSections, MAX_COMPARE, SPEC_SECTION_GROUPS, valuesDiffer } from './compare-grouping';
 import { SPEC_ROWS, type ProductSpecs, type SonyCamera } from './types';
 
 /**
@@ -58,6 +58,38 @@ describe('compare groups', () => {
 
   it('show nothing from the spec groups on the highlights tab', () => {
     expect(getActiveSpecSections([product('a', { kind: 'lens', focalLength: '85mm' })], 'highlights')).toEqual([]);
+  });
+});
+
+/**
+ * `?ids=` is whatever a shared link says. Next hands a repeated key over as an
+ * array, which `.split` threw on; nothing capped it at the six the pickers
+ * enforce; and ids since deleted from the catalogue held slots, so the Add
+ * button opened a picker whose every choice was refused.
+ */
+describe('compareSelection', () => {
+  const known = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+
+  it('accepts the repeated-key form as well as the comma list', () => {
+    expect(compareSelection(['a', 'b'], known)).toEqual(['a', 'b']);
+    expect(compareSelection(['a,b', 'c'], known)).toEqual(['a', 'b', 'c']);
+  });
+
+  it('drops blanks and repeats, keeping the order given', () => {
+    expect(compareSelection('b,a,,b, a', known)).toEqual(['b', 'a']);
+  });
+
+  it('drops ids the catalogue no longer has before counting', () => {
+    expect(compareSelection('zz,a,yy,xx,ww,vv,b', known)).toEqual(['a', 'b']);
+  });
+
+  it(`stops at ${MAX_COMPARE}`, () => {
+    expect(compareSelection(known.join(','), known)).toEqual(known.slice(0, MAX_COMPARE));
+  });
+
+  it('is empty for no ids at all', () => {
+    expect(compareSelection(undefined, known)).toEqual([]);
+    expect(compareSelection('', known)).toEqual([]);
   });
 });
 

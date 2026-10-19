@@ -345,7 +345,7 @@
     "camerasTitle": "Bảng tra cứu máy ảnh Sony",
     "camerasSubtitle": "Tra cứu và so sánh thông số kỹ thuật, giá niêm yết và tính năng của hơn 35 máy ảnh Sony Alpha và Cinema Line.",
     "footerCameraWiki": "Alpha ColorLab · Bảng tra cứu & so sánh máy ảnh Sony",
-    "compareLegend": "Giá trị tốt hơn được tô màu nhấn; các ô giống nhau giữ màu chữ thường. Dấu — nghĩa là danh mục không công bố thông số đó.",
+    "compareEmptyTitle": "Chưa có sản phẩm để so sánh",
     "removeProduct": "Gỡ khỏi bảng so sánh",
     "closeDialog": "Đóng",
     "catalogueLede": "{count, plural, other {# sản phẩm}}",

@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { createElement, type ComponentProps, type ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { createTranslator, NextIntlClientProvider, type AbstractIntlMessages } from 'next-intl';
@@ -25,7 +26,7 @@ vi.mock('@/i18n/navigation', () => ({
     createElement('a', { href, ...rest }, children),
 }));
 
-const { CameraCompareView, compareBlocks } = await import('./camera-compare-view');
+const { addableProducts, CameraCompareView, compareBlocks } = await import('./camera-compare-view');
 
 /* Widened to the abstract shape: the grid takes keys it builds at runtime
    (`specs.${key}`), which the literal catalogue type would reject. */
@@ -147,6 +148,99 @@ describe('an audio compare', () => {
 
   it('offers no audio tab to a camera-only compare', () => {
     expect(render(pair)).not.toContain(`>${en.cameras.tabAudio}<`);
+  });
+});
+
+describe('leaving the compare page', () => {
+  it('opens an audio product on its own route, where it resolves', () => {
+    /* `/cameras/<audio-id>` is a 404: the camera reader excludes audio. */
+    const html = render([headphone('xm6', '30mm'), pair[0]]);
+    expect(html).toContain('href="/audio/xm6"');
+    expect(html).toContain('href="/cameras/a7iv"');
+    expect(html).not.toContain('href="/cameras/xm6"');
+  });
+
+  it('goes back to the catalogue through the locale-aware link, with no prefix to redirect', () => {
+    expect(render(pair)).toMatch(/<a href="\/cameras"[^>]*>[^<]*Back to catalogue/);
+    expect(render(pair)).not.toContain('href="/en/cameras"');
+  });
+
+  it('goes back to the audio catalogue when only headphones are compared', () => {
+    expect(render([headphone('xm6', '30mm'), headphone('xm5', '30mm')])).toMatch(
+      /<a href="\/audio"[^>]*>[^<]*Back to catalogue/,
+    );
+  });
+});
+
+describe('the page head', () => {
+  it('makes no claim about accent tinting the grid never does', () => {
+    expect(en.cameras).not.toHaveProperty('compareLegend');
+    expect(render(pair)).not.toMatch(/better value/i);
+  });
+
+  it('says there is nothing to compare instead of drawing an empty grid', () => {
+    const html = render([], []);
+    expect(html).toContain(en.cameras.compareEmptyTitle);
+    expect(html).not.toContain('<table');
+    expect(html).toMatch(/<h1[^>]*>[^<]+<\/h1>/);
+  });
+});
+
+describe('the add picker', () => {
+  const seed = JSON.parse(readFileSync('data/sony-cameras.seed.json', 'utf8')) as SonyCamera[];
+
+  it('finds a body by the alias the header and the grid resolve', () => {
+    /* The catalogue names the a7 IV "7 IV"; a substring match never found it. */
+    const found = addableProducts(seed, [], 'a7 iv');
+    expect(found.map((c) => c.id)).toContain('sony-ilce-7m4-bq-ap2');
+  });
+
+  it('never offers a product already in the compare', () => {
+    const a7iv = seed.find((c) => c.id === 'sony-ilce-7m4-bq-ap2')!;
+    expect(addableProducts(seed, [a7iv.id], 'a7 iv').map((c) => c.id)).not.toContain(a7iv.id);
+    expect(addableProducts(seed, [a7iv.id], '')).toHaveLength(seed.length - 1);
+  });
+
+  it('finds nothing for nonsense', () => {
+    expect(addableProducts(seed, [], 'zzzqqq')).toEqual([]);
+  });
+});
+
+/* The picker opens on click, which this suite cannot do, so its wiring is
+   pinned in the source. */
+describe('the add picker wiring', () => {
+  const source = readFileSync('src/components/camera-compare-view.tsx', 'utf8');
+  const modal = source.slice(source.indexOf('{isAddModalOpen && ('));
+
+  it('is handed ids the page has already normalised', () => {
+    const page = readFileSync('src/app/[locale]/cameras/compare/page.tsx', 'utf8');
+    expect(page).toMatch(/const selectedIds = compareSelection\(\s*ids,/);
+    expect(page).not.toContain('ids.split');
+  });
+
+  it('refuses a pick by the columns drawn, not by the ids in the URL', () => {
+    const add = source.slice(source.indexOf('const addCamera'), source.indexOf('const hasAudio'));
+    expect(add).toContain('comparedCameras.length >= MAX_COMPARE');
+    expect(add).not.toContain('activeIds.length >= 6');
+  });
+
+  it('draws thumbnails that degrade to the no-photo mark', () => {
+    expect(modal).toContain('<ProductPhoto');
+    expect(modal).toContain('size={40}');
+    expect(modal).not.toContain('<Image');
+  });
+
+  it('is a named dialog that Escape closes, with a named search field', () => {
+    expect(modal).toMatch(/aria-labelledby="compare-add-title"/);
+    expect(modal).toMatch(/id="compare-add-title"/);
+    expect(modal).toMatch(/onKeyDown=\{\(e\) => \{\s*if \(e\.key === 'Escape'\) setIsAddModalOpen\(false\);/);
+    const input = modal.slice(modal.indexOf('<input'), modal.indexOf('/>', modal.indexOf('<input')));
+    expect(input).toContain("aria-label={t('selectProductTitle')}");
+    expect(input).toContain('autoFocus');
+  });
+
+  it('says when the search finds nothing', () => {
+    expect(modal).toMatch(/availableToAdd\.length === 0[\s\S]*t\('emptyTitle'\)/);
   });
 });
 
