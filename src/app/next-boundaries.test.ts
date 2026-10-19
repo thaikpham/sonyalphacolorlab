@@ -77,6 +77,22 @@ describe('loading boundaries', () => {
   });
 });
 
+describe('the global 404', () => {
+  /**
+   * The root layout renders no element — `<html>` lives in `[locale]/layout`
+   * — so a URL that matches no route at all (`/colorlab/typo`, which the proxy
+   * rewrites to `/en/colorlab/typo`) has no document to render Next's built-in
+   * 404 into. `global-not-found.tsx` is that document, and Next only resolves
+   * it behind an experimental flag that defaults to false: without the flag
+   * the file is inert, whatever `layout.tsx` says about it.
+   */
+  it('is switched on wherever the file exists', async () => {
+    expect(existsSync('src/app/global-not-found.tsx')).toBe(true);
+    const { default: config } = await import('../../next.config');
+    expect(config.experimental?.globalNotFound).toBe(true);
+  });
+});
+
 describe('search-param consumers', () => {
   /**
    * `useSearchParams()` bails its subtree out of server rendering, so it needs
