@@ -172,7 +172,7 @@ vi.mock('@/lib/auth/admin-gate', () => ({
   }),
 }));
 
-const { PATCH, GET, blankSpecs } = await import('./[id]/route');
+const { PATCH, GET } = await import('./[id]/route');
 const { POST } = await import('./route');
 const { ADMIN_PRODUCT_COLUMNS } = await import('@/lib/admin/product-row');
 
@@ -290,11 +290,24 @@ describe('PATCH /api/admin/products/[id]', () => {
     expect(specs.specsSource).toBe('https://www.sony.com.vn/x');
   });
 
-  it('still refuses a spec kind the category cannot have', async () => {
+  it('builds the block the placement names, whatever kind the body claims', async () => {
+    /* A camera cannot be turned into a speaker by a request: the kind comes
+       from the taxonomy. A row with no block used to answer 409 `noSpecBlock`
+       here instead of taking one. */
     db.row = storedRow({ specs: null });
-    const res = await patch({ specs: { kind: 'speaker', power: '100W' } });
-    expect(res.status).toBe(409);
-    expect((await res.json()).error).toBe('noSpecBlock');
+    const res = await patch({ specs: { kind: 'speaker', power: '100W', weight: '1 kg' } });
+    expect(res.status).toBe(200);
+    const specs = db.row?.specs as CameraSpecs;
+    expect(specs.kind).toBe('camera');
+    expect(specs).not.toHaveProperty('power');
+    expect(specs.weight).toBe('1 kg');
+  });
+
+  it('gives a blockless accessory row the keySpecs list its type requires', async () => {
+    db.row = storedRow({ category: 'accessory', sub_category_1: 'Power', sub_category_2: 'Battery', specs: null });
+    const res = await patch({ specs: { weight: '83 g' } });
+    expect(res.status).toBe(200);
+    expect(db.row?.specs).toMatchObject({ kind: 'accessory', keySpecs: [], weight: '83 g' });
   });
 
   it('keeps the stored kind even if the body names another', async () => {
@@ -340,17 +353,88 @@ describe('PATCH /api/admin/products/[id]', () => {
   });
 });
 
-describe('blankSpecs', () => {
-  it('accepts only kinds the category allows', () => {
-    expect(blankSpecs('audio', 'headphone')?.kind).toBe('headphone');
-    expect(blankSpecs('audio', 'speaker')?.kind).toBe('speaker');
-    expect(blankSpecs('audio', 'camera')).toBeNull();
-    expect(blankSpecs('lens', 'lens')?.kind).toBe('lens');
-    expect(blankSpecs('camera', undefined)).toBeNull();
+describe('PATCH — the fields that used to be read-only', () => {
+  /* The owner's report: "I edit the product and press Save, and nothing
+     updates." Category, sub-categories, SKU, price and URL were not in the
+     body the route accepted, so the editor had no way to send them. */
+
+  it('saves SKU, price, URL and placement as the columns they are', async () => {
+    const res = await patch({
+      sku: 'ILCE-7M4/BQ AP3',
+      priceVnd: 49_990_000,
+      priceFormatted: '1 ₫',
+      url: 'https://www.sony.com.vn/a7m4-new',
+      category: 'camera',
+      subCategory1: 'Full Frame',
+      subCategory2: 'Máy ảnh Alpha',
+    });
+    expect(res.status).toBe(200);
+    const write = db.calls.find((c) => c.op === 'update');
+    expect(Object.keys(write!.payload!).sort()).toEqual([
+      'price_formatted',
+      'price_vnd',
+      'sku',
+      'sub_category_1',
+      'sub_category_2',
+      'updated_at',
+      'updated_by',
+      'url',
+    ]);
+    /* Derived on the server, in the catalogue's own spelling — never the body's. */
+    expect(db.row?.price_formatted).toBe('49.990.000 đ');
+    const data = await res.json();
+    expect(data.product).toMatchObject({
+      sku: 'ILCE-7M4/BQ AP3',
+      priceVnd: 49_990_000,
+      priceFormatted: '49.990.000 đ',
+      subCategory1: 'Full Frame',
+      subCategory2: 'Máy ảnh Alpha',
+    });
   });
 
-  it('gives an accessory the keySpecs list its type requires', () => {
-    expect(blankSpecs('accessory', 'accessory')).toMatchObject({ keySpecs: [] });
+  it('re-shapes the spec block when a move changes its kind', async () => {
+    const res = await patch({ category: 'lens', subCategory1: 'Full Frame', subCategory2: 'GM' });
+    expect(res.status).toBe(200);
+    const specs = db.row?.specs as ProductSpecs & Record<string, unknown>;
+    expect(specs.kind).toBe('lens');
+    expect(specs.weight).toBe('659 g');
+    expect(specs).not.toHaveProperty('sensor');
+    expect(specs.specsMissing).toContain('focalLength');
+  });
+
+  it('answers 409 skuTaken when another product holds the SKU', async () => {
+    db.failWith = {
+      code: '23505',
+      message: 'duplicate key value violates unique constraint "sony_cameras_nonempty_sku_key"',
+    };
+    const res = await patch({ sku: 'ILCE-7CM2' });
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ error: 'skuTaken' });
+  });
+
+  it('refuses a placement outside the taxonomy, writing nothing', async () => {
+    const res = await patch({ subCategory1: 'Mirrorless APS-C' });
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: 'invalidPlacement' });
+    expect(db.calls.some((c) => c.op === 'update')).toBe(false);
+  });
+
+  it('refuses a move into a category the role does not cover, writing nothing', async () => {
+    db.role = 'di';
+    const res = await patch({ category: 'audio', subCategory1: 'Tai nghe', subCategory2: 'Nhét tai' });
+    expect(res.status).toBe(403);
+    expect(await res.json()).toEqual({ error: 'notAllowedForCategory' });
+    expect(db.calls.some((c) => c.op === 'update')).toBe(false);
+  });
+
+  it('accepts the legacy values a row already stores while another field changes', async () => {
+    /* The fixture row is filed under "Mirrorless Full-Frame" with a ₫ price —
+       spellings from before the taxonomy. Resending them unchanged is not a
+       move, so the name still saves and the price text is left alone. */
+    const res = await patch({ name: 'α7 IV', subCategory1: 'Mirrorless Full-Frame', subCategory2: 'Alpha 7 Series' });
+    expect(res.status).toBe(200);
+    expect(db.row?.name).toBe('α7 IV');
+    expect(db.row?.price_formatted).toBe('52.990.000 ₫');
   });
 });
 
@@ -361,7 +445,8 @@ describe('POST /api/admin/products', () => {
       sku: 'SEL-TEST',
       name: 'FE Test',
       category: 'lens',
-      subCategory1: 'FE-mount (Full-Frame)',
+      subCategory1: 'Full Frame',
+      subCategory2: 'GM',
       galleryUrls: ['https://static.bhphoto.com/images/fb/1.jpg'],
       features: { en: ['One'], vi: ['Một'] },
     });
@@ -374,7 +459,7 @@ describe('POST /api/admin/products', () => {
 
   it('writes an accessory spec block with keySpecs', async () => {
     db.row = null;
-    await create({ sku: 'ECM-TEST', name: 'Mic', category: 'accessory', subCategory1: 'Audio' });
+    await create({ sku: 'ECM-TEST', name: 'Mic', category: 'accessory', subCategory1: 'Audio', subCategory2: 'Microphone' });
     /* Read through a widened type: `db.row = null` above narrows it for TS,
        but the route reassigned it. */
     const stored = db.row as Row | null;
@@ -382,10 +467,50 @@ describe('POST /api/admin/products', () => {
   });
 
   it('names a duplicate instead of "could not save"', async () => {
-    db.failWith = { code: '23505', message: 'duplicate key value violates unique constraint' };
-    const res = await create({ sku: 'ILCE-7M4/BQ AP2', name: 'A7 IV', category: 'camera', subCategory1: 'x' });
+    db.failWith = { code: '23505', message: 'duplicate key value violates unique constraint "sony_cameras_pkey"' };
+    const res = await create({ sku: 'ILCE-7M4/BQ AP2', name: 'A7 IV', category: 'camera', subCategory1: 'Full Frame' });
     expect(res.status).toBe(409);
     expect((await res.json()).error).toBe('duplicateProduct');
+  });
+
+  it('names a taken SKU', async () => {
+    db.failWith = {
+      code: '23505',
+      message: 'duplicate key value violates unique constraint "sony_cameras_nonempty_sku_key"',
+    };
+    const res = await create({ sku: 'ILCE-7M4', name: 'A7 IV', category: 'camera', subCategory1: 'Full Frame' });
+    expect(res.status).toBe(409);
+    expect((await res.json()).error).toBe('skuTaken');
+  });
+
+  it("writes the price the way every catalogue row does, never the body's spelling", async () => {
+    db.row = null;
+    await create({
+      sku: 'SEL-P',
+      name: 'FE P',
+      category: 'lens',
+      subCategory1: 'Full Frame',
+      priceVnd: 12_490_000,
+      priceFormatted: '12.490.000 ₫',
+    });
+    const stored = db.row as Row | null;
+    expect(stored?.price_formatted).toBe('12.490.000 đ');
+    expect(stored?.price_vnd).toBe(12_490_000);
+  });
+
+  it('files a speaker as a speaker by the taxonomy, not by finding "loa" in the label', async () => {
+    db.row = null;
+    const res = await create({ name: 'SRS-X', category: 'audio', subCategory1: 'Loa', subCategory2: 'Di động' });
+    expect(res.status).toBe(200);
+    expect((db.row as Row | null)?.specs).toMatchObject({ kind: 'speaker' });
+  });
+
+  it('refuses a sub-category the catalogue never filters by, writing nothing', async () => {
+    db.row = null;
+    const res = await create({ sku: 'SEL-Q', name: 'FE Q', category: 'lens', subCategory1: 'FE-mount (Full-Frame)' });
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: 'invalidPlacement' });
+    expect(db.calls.some((c) => c.op === 'insert')).toBe(false);
   });
 });
 
@@ -569,7 +694,7 @@ describe('GET /api/admin/products/[id]', () => {
 describe('POST version', () => {
   it('hands back the new row\'s version, so its first save has one to name', async () => {
     db.row = null;
-    const res = await create({ sku: 'SEL-V', name: 'FE V', category: 'lens', subCategory1: 'FE-mount (Full-Frame)' });
+    const res = await create({ sku: 'SEL-V', name: 'FE V', category: 'lens', subCategory1: 'Full Frame' });
     const data = await res.json();
     expect(res.status).toBe(200);
     expect(typeof data.updatedAt).toBe('string');

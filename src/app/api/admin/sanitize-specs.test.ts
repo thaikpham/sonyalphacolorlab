@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { sanitizeSpecs } from './products/[id]/route';
+/* Both product routes write spec blocks through `productPatch()` /
+   `productCreate()`, and both of those go through this one function. */
+import { sanitizeSpecs } from '@/lib/cameras/product-write';
 import { SPEC_ROWS, type CameraSpecs, type ProductSpecs } from '@/lib/cameras/types';
 
 /**

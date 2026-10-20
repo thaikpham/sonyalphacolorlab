@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { canManageCategory, PRODUCT_CATEGORIES } from '@/lib/admin/category-roles';
+import { canManageCategory } from '@/lib/admin/category-roles';
 import { adminGate } from '@/lib/auth/admin-gate';
 import { CONTENT_ADMIN_FROZEN, contentAdminWritesFrozen } from '@/lib/admin/content-freeze';
 import { revalidateTag } from 'next/cache';
@@ -7,78 +7,21 @@ import { CATALOGUE_TAG, IMMEDIATE } from '@/lib/catalogue-cache';
 import { contentAdmin, hasContentConfig } from '@/lib/supabase/server';
 import { contentProjectRef } from '@/lib/supabase/config';
 import { productFromRow } from '@/lib/cameras/row';
+import { productCreate, writeErrorFor } from '@/lib/cameras/product-write';
 import { ADMIN_PRODUCT_COLUMNS, type AdminProductRow } from '@/lib/admin/product-row';
-import { SPEC_ROWS, type ProductSpecs, type SonyCamera } from '@/lib/cameras/types';
-import { slugify } from '@/lib/lab/parse';
 
 /**
- * Creates a new camera/lens/accessory product in Supabase.
+ * Creates a new camera/lens/accessory/audio product in Supabase.
  *
  * Gated by `adminGate(request)`. The editor is a trusted person, but the request
- * body is untrusted and validated server-side.
+ * body is untrusted: `productCreate()` decides what may be stored, with the same
+ * rules as an update. The placement must be one the catalogue filters by — the
+ * public chips match `subCategory1` character for character, so a product filed
+ * under free text sat beside its chip and never appeared under it. The spec kind
+ * comes from the taxonomy, not from finding "loa" inside the label. And the
+ * price text is derived, never read from the body: this route used to write
+ * `₫` where every other row says `đ`.
  */
-
-type CreateBody = {
-  sku?: unknown;
-  name?: unknown;
-  fullName?: unknown;
-  category?: unknown;
-  subCategory1?: unknown;
-  subCategory2?: unknown;
-  priceVnd?: unknown;
-  priceFormatted?: unknown;
-  url?: unknown;
-  imageUrl?: unknown;
-  galleryUrls?: unknown;
-  features?: { en?: unknown; vi?: unknown } | null;
-  specs?: Record<string, unknown> | null;
-};
-
-/* A string field, trimmed. Absent is `''`; present but not a string is
-   `undefined` — that used to throw at `.trim()` and surface as a 500. */
-const text = (x: unknown): string | undefined =>
-  x === undefined || x === null ? '' : typeof x === 'string' ? x.trim() : undefined;
-
-const asLines = (x: unknown): string[] =>
-  Array.isArray(x)
-    ? x.filter((l): l is string => typeof l === 'string').map((l) => l.trim()).filter(Boolean).slice(0, 40)
-    : [];
-
-function buildInitialSpecs(
-  kind: ProductSpecs['kind'],
-  inputSpecs: Record<string, unknown> = {},
-): ProductSpecs {
-  const fields = SPEC_ROWS[kind];
-  const out: Record<string, unknown> = { kind };
-  const missing: string[] = [];
-
-  for (const field of fields) {
-    const raw = inputSpecs[field];
-    if (raw === null || raw === undefined || (typeof raw === 'string' && raw.trim() === '')) {
-      out[field] = null;
-      missing.push(field);
-    } else if (typeof raw === 'string') {
-      out[field] = raw.replace(/\b(Xấp xỉ|Khoảng)\s+/gi, '').trim().slice(0, 300);
-    } else {
-      out[field] = null;
-      missing.push(field);
-    }
-  }
-
-  if (typeof inputSpecs.specsSource === 'string' && /^https?:\/\//.test(inputSpecs.specsSource)) {
-    out.specsSource = inputSpecs.specsSource.trim().slice(0, 500);
-  } else {
-    out.specsSource = 'https://www.sony.com.vn';
-  }
-
-  /* `keySpecs` is the accessory's own list and is required by its type. A
-     block written without it rendered `undefined.map` on the product page. */
-  if (kind === 'accessory') out.keySpecs = [];
-
-  out.specsMissing = missing.sort();
-  return out as unknown as ProductSpecs;
-}
-
 export async function POST(request: Request) {
   const gate = await adminGate(request);
   if (!gate.ok) return NextResponse.json({ error: gate.error }, { status: gate.status });
@@ -89,9 +32,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'notConfigured' }, { status: 503 });
   }
 
-  let body: CreateBody;
+  let body: unknown;
   try {
-    body = (await request.json()) as CreateBody;
+    body = await request.json();
   } catch {
     return NextResponse.json({ error: 'badRequest' }, { status: 400 });
   }
@@ -100,71 +43,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'badRequest' }, { status: 400 });
   }
 
-  const sku = text(body.sku);
-  const name = text(body.name);
-  const category = PRODUCT_CATEGORIES.find((c) => c === body.category);
-  if (category && !canManageCategory(gate.admin.role, category)) {
-    return NextResponse.json({ error: 'notAllowedForCategory' }, { status: 403 });
-  }
-  const subCategory1 = text(body.subCategory1);
-  /* A field that is there but is not a string is a malformed request, not an
-     empty one — `{"sku": 1}` must not become a product with no SKU. */
-  if (sku === undefined || name === undefined || subCategory1 === undefined) {
-    return NextResponse.json({ error: 'badRequest' }, { status: 400 });
-  }
-  const fullName = text(body.fullName) || name;
-  const subCategory2 = text(body.subCategory2) || '';
-  const priceVnd = typeof body.priceVnd === 'number' && Number.isFinite(body.priceVnd) ? body.priceVnd : 0;
-  const priceFormatted = text(body.priceFormatted) || (priceVnd > 0 ? `${priceVnd.toLocaleString('vi-VN')} ₫` : 'Liên hệ');
-  const url = text(body.url) || 'https://www.sony.com.vn';
-  const imageUrl = text(body.imageUrl) || '/logo.png';
-  const galleryUrls = Array.isArray(body.galleryUrls)
-    ? body.galleryUrls.filter((u): u is string => typeof u === 'string' && u.trim().length > 0).map((u) => u.trim())
-    : [imageUrl].filter((u) => u && u !== '/logo.png');
+  const role = gate.admin.role;
+  const made = productCreate(body, (category) => canManageCategory(role, category));
+  if (!made.ok) return NextResponse.json({ error: made.error }, { status: made.status });
+  const newProduct = made.product;
 
-  if (!name || !category || !subCategory1) {
-    return NextResponse.json({ error: 'badRequest' }, { status: 400 });
-  }
-
-  if (category !== 'audio' && !sku) {
-    return NextResponse.json({ error: 'badRequest' }, { status: 400 });
-  }
-
-  /* Diacritics folded, not dropped: an audio item without a SKU takes its id
-     from the name, and the id is a public `/cameras/<id>` URL. Stripping every
-     non-ASCII letter turned "Tai nghe chống ồn" into `tai-nghe-ch-ng-n`, and
-     two names differing only in accents collided as a duplicate. */
-  const slugBase = slugify(sku || name);
-  const id = `sony-${slugBase || Date.now()}`;
-
-  const kind: ProductSpecs['kind'] =
-    category === 'audio'
-      ? subCategory1.toLowerCase().includes('loa') || subCategory1.toLowerCase().includes('speaker')
-        ? 'speaker'
-        : 'headphone'
-      : category;
-  const specs = buildInitialSpecs(kind, body.specs && typeof body.specs === 'object' ? body.specs : {});
-  const features = {
-    en: asLines(body.features?.en),
-    vi: asLines(body.features?.vi),
-  };
-
-  const newProduct: SonyCamera = {
-    id,
-    sku,
-    name,
-    fullName,
-    category,
-    subCategory1,
-    subCategory2,
-    priceVnd,
-    priceFormatted,
-    url,
-    imageUrl,
-    galleryUrls,
-    features,
-    specs,
-  };
 
   const cameraRow = {
     id: newProduct.id,
@@ -197,14 +80,12 @@ export async function POST(request: Request) {
       .select(ADMIN_PRODUCT_COLUMNS)
       .single();
     if (error) {
-      /* 23505 is a unique violation: the id derived from this SKU or name, or
-         the SKU itself, is already taken. That is the editor's to fix, and
-         "could not save" gave them nothing to fix it with. */
-      if (error.code === '23505') {
-        return NextResponse.json({ error: 'duplicateProduct' }, { status: 409 });
-      }
-      console.error('[admin/products] create failed:', JSON.stringify(error));
-      return NextResponse.json({ error: 'saveFailed' }, { status: 502 });
+      /* 23505 is a unique violation: the SKU (`skuTaken`) or the id derived
+         from it (`duplicateProduct`) is already taken. That is the editor's to
+         fix, and "could not save" gave them nothing to fix it with. */
+      const refused = writeErrorFor(error);
+      if (refused.error === 'saveFailed') console.error('[admin/products] create failed:', JSON.stringify(error));
+      return NextResponse.json({ error: refused.error }, { status: refused.status });
     }
     saved = data as AdminProductRow;
   } catch (err) {
