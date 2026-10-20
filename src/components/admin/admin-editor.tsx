@@ -351,7 +351,7 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
         /* Only what changed, and the version it changed — see `changes()`.
            A row saved elsewhere since this one was opened answers 409
            `staleEdit` rather than being reverted. */
-        body: JSON.stringify(saveBody(sent)),
+        body: JSON.stringify(saveBody(sent, product)),
       });
       const data = (await res.json()) as {
         ok?: boolean;
@@ -985,7 +985,9 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
                 </div>
               </div>
 
-              {draft.category === 'camera' && (
+              {/* Only while the product is, and stays, a camera — a move out
+                  of the category takes the highlights editor with it. */}
+              {selected.category === 'camera' && draft.category === 'camera' && (
                 <div className="surface p-5 flex flex-col gap-4">
                   <div className="flex items-center justify-between gap-3 flex-wrap">
                     <h2 className="label text-proposal">{t('highlightsHeading')}</h2>

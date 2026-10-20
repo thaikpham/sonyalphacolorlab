@@ -84,7 +84,7 @@ const edit = (d: Draft, patch: Partial<Draft>): Draft => ({ ...d, ...patch });
 describe('changes', () => {
   it('sends nothing for an untouched draft', () => {
     const p = product();
-    expect(changes(asDraft(p, V1))).toEqual({});
+    expect(changes(asDraft(p, V1), p)).toEqual({});
     expect(isDirty(asDraft(p, V1), p)).toBe(false);
   });
 
@@ -94,7 +94,7 @@ describe('changes', () => {
        bullet. */
     const p = product();
     const d = asDraft(p, V1);
-    const body = saveBody(edit(d, { specs: { ...d.specs, weight: '658 g' } }));
+    const body = saveBody(edit(d, { specs: { ...d.specs, weight: '658 g' } }), p);
     expect(Object.keys(body).sort()).toEqual(['expectedUpdatedAt', 'specs']);
     expect(body.expectedUpdatedAt).toBe(V1);
     expect((body as Record<string, unknown>).specs).toMatchObject({
@@ -107,7 +107,7 @@ describe('changes', () => {
   it('sends the features block and nothing else for a new bullet', () => {
     const p = product();
     const d = asDraft(p, V1);
-    expect(changes(edit(d, { vi: `${d.vi}\nMới` }))).toEqual({
+    expect(changes(edit(d, { vi: `${d.vi}\nMới` }), p)).toEqual({
       features: { en: ['33MP sensor'], vi: ['Cảm biến 33MP', 'Mới'] },
     });
   });
@@ -115,18 +115,18 @@ describe('changes', () => {
   it('ignores whitespace-only edits', () => {
     const p = product();
     const d = asDraft(p, V1);
-    expect(changes(edit(d, { name: ' A7 IV  ', en: '33MP sensor\n\n', sku: ' ILCE-7M4 ', url: `${p.url} ` }))).toEqual({});
+    expect(changes(edit(d, { name: ' A7 IV  ', en: '33MP sensor\n\n', sku: ' ILCE-7M4 ', url: `${p.url} ` }), p)).toEqual({});
   });
 
   it('never sends an emptied name, which the route would ignore anyway', () => {
     const p = product();
-    expect(changes(edit(asDraft(p, V1), { name: '  ' }))).toEqual({});
+    expect(changes(edit(asDraft(p, V1), { name: '  ' }), p)).toEqual({});
   });
 
   it('falls the primary image back to the first gallery photo', () => {
     const p = product();
     const d = edit(asDraft(p, V1), { imageUrl: '', galleryUrls: 'https://static.bhphoto.com/b.jpg' });
-    expect(changes(d)).toEqual({
+    expect(changes(d, p)).toEqual({
       galleryUrls: ['https://static.bhphoto.com/b.jpg'],
       imageUrl: 'https://static.bhphoto.com/b.jpg',
     });
@@ -136,10 +136,10 @@ describe('changes', () => {
     const lens = product({ category: 'lens', subCategory1: 'Full Frame', subCategory2: 'GM', specs: undefined });
     const d = asDraft(lens, V1);
     const touched = edit(d, { hl: { ...d.hl, en: { ...d.hl.en, points: 'A :: b' } } });
-    expect(changes(touched)).toEqual({});
+    expect(changes(touched, lens)).toEqual({});
     const cam = product();
     const c = asDraft(cam, V1);
-    expect(Object.keys(changes(edit(c, { hl: { ...c.hl, en: { ...c.hl.en, points: 'A :: b' } } })))).toEqual([
+    expect(Object.keys(changes(edit(c, { hl: { ...c.hl, en: { ...c.hl.en, points: 'A :: b' } } }), cam))).toEqual([
       'highlights',
     ]);
   });
@@ -147,7 +147,7 @@ describe('changes', () => {
   it('names a never-edited row\'s version as null, not absent', () => {
     const p = product();
     const d = asDraft(p, null);
-    expect(saveBody(edit(d, { name: 'α7 IV' }))).toEqual({ name: 'α7 IV', expectedUpdatedAt: null });
+    expect(saveBody(edit(d, { name: 'α7 IV' }), p)).toEqual({ name: 'α7 IV', expectedUpdatedAt: null });
   });
 });
 
@@ -157,26 +157,39 @@ describe('changes — the fields that were read-only', () => {
     const d = asDraft(p, V1);
     expect(d).toMatchObject({ sku: 'ILCE-7M4', priceVnd: '52990000', url: 'https://www.sony.com.vn/a7m4' });
     expect(
-      changes(edit(d, { sku: ' ILCE-7M4/B ', priceVnd: '49990000', url: ' https://www.sony.com.vn/a7m4-b ' })),
+      changes(edit(d, { sku: ' ILCE-7M4/B ', priceVnd: '49990000', url: ' https://www.sony.com.vn/a7m4-b ' }), p),
     ).toEqual({ sku: 'ILCE-7M4/B', priceVnd: 49_990_000, url: 'https://www.sony.com.vn/a7m4-b' });
   });
 
   it('never sends the formatted price — the server derives it', () => {
     const d = asDraft(product(), V1);
-    expect(changes(edit(d, { priceVnd: '1' }))).toEqual({ priceVnd: 1 });
+    expect(changes(edit(d, { priceVnd: '1' }), product())).toEqual({ priceVnd: 1 });
   });
 
   it('reads an empty price as "no published figure", which is 0', () => {
     const d = asDraft(product(), V1);
-    expect(changes(edit(d, { priceVnd: '' }))).toEqual({ priceVnd: 0 });
+    expect(changes(edit(d, { priceVnd: '' }), product())).toEqual({ priceVnd: 0 });
     const unpriced = asDraft(product({ priceVnd: 0, priceFormatted: 'Liên hệ' }), V1);
     expect(unpriced.priceVnd).toBe('');
-    expect(changes(unpriced)).toEqual({});
+    expect(changes(unpriced, product())).toEqual({});
   });
 
   it('sends a sub-category change, and nothing about the spec block when the kind holds', () => {
     const d = asDraft(product(), V1);
-    expect(changes(withPlacement(d, choosePlacement(d, { subCategory1: 'APS-C' })))).toEqual({ subCategory1: 'APS-C' });
+    expect(changes(withPlacement(d, choosePlacement(d, { subCategory1: 'APS-C' })), product())).toEqual({
+      subCategory1: 'APS-C',
+    });
+  });
+
+  it('drops touched highlights when the camera is moved out of the category', () => {
+    /* The route refuses highlights on anything but a camera; sending them
+       with the move would fail the whole save. */
+    const p = product();
+    const d = asDraft(p, V1);
+    const touched = edit(d, { hl: { ...d.hl, en: { ...d.hl.en, points: 'A :: b' } } });
+    expect(changes(withPlacement(touched, choosePlacement(touched, { category: 'lens' })), p)).not.toHaveProperty(
+      'highlights',
+    );
   });
 });
 
@@ -186,12 +199,12 @@ describe('the spec block follows the placement', () => {
     expect(d.specKind).toBe('accessory');
     expect(d.specs).toEqual({ compatibility: '', weight: '', dimensions: '' });
     /* Untouched, it stays blockless: nothing is sent. */
-    expect(changes(d)).toEqual({});
+    expect(changes(d, blockless())).toEqual({});
   });
 
   it('sends that block, with its kind, once a value is typed', () => {
     const d = asDraft(blockless(), V1);
-    expect(changes(edit(d, { specs: { ...d.specs, weight: '83 g' } }))).toEqual({
+    expect(changes(edit(d, { specs: { ...d.specs, weight: '83 g' } }), blockless())).toEqual({
       specs: { compatibility: '', weight: '83 g', dimensions: '', kind: 'accessory', specsSource: '' },
     });
   });
@@ -215,7 +228,7 @@ describe('the spec block follows the placement', () => {
     expect(moved.specs.weight).toBe('659 g');
     expect(moved.specs.focalLength).toBe('');
     expect(moved.specs).not.toHaveProperty('sensor');
-    const body = changes(moved);
+    const body = changes(moved, product());
     expect(body).toMatchObject({ category: 'lens', subCategory2: '' });
     expect(body).not.toHaveProperty('subCategory1');
     expect(body.specs).toMatchObject({ kind: 'lens', weight: '659 g', focalLength: '' });
@@ -242,7 +255,7 @@ describe('the spec block follows the placement', () => {
     const there = withPlacement(d, choosePlacement(d, { category: 'lens' }));
     const back = withPlacement(there, { category: 'camera', subCategory1: 'Full Frame', subCategory2: 'Máy ảnh Alpha' });
     expect(back.specs).toEqual(d.specs);
-    expect(changes(back)).toEqual({});
+    expect(changes(back, product())).toEqual({});
   });
 });
 
@@ -394,7 +407,7 @@ describe('afterSave', () => {
     expect(next?.fullName).toBe('Sony α7 IV body');
     expect(next?.version).toBe(V2);
     /* Against the new baseline only the newer edit is outstanding. */
-    expect(changes(next!)).toEqual({ fullName: 'Sony α7 IV body' });
+    expect(changes(next!, stored)).toEqual({ fullName: 'Sony α7 IV body' });
   });
 
   it('leaves a draft of another product alone', () => {

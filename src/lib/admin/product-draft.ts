@@ -212,7 +212,7 @@ export function localesEmptied(d: Draft): ('en' | 'vi')[] {
  * catalogue's spelling. A placement goes field by field; the route checks the
  * three together against the taxonomy.
  */
-export function changes(d: Draft): Record<string, unknown> {
+export function changes(d: Draft, product: SonyCamera): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   const b = d.base;
 
@@ -261,18 +261,22 @@ export function changes(d: Draft): Record<string, unknown> {
     }
   }
 
-  if (d.category === 'camera' && !same(d.hl, b.hl)) out.highlights = draftToHighlights(d.hl);
+  /* Highlights belong to a camera that stays one: the route refuses them on a
+     product this save files anywhere else. */
+  if (d.category === 'camera' && product.category === 'camera' && !same(d.hl, b.hl)) {
+    out.highlights = draftToHighlights(d.hl);
+  }
 
   return out;
 }
 
 /** Whether a save would change anything. */
 export const isDirty = (d: Draft | null, product: SonyCamera | null): boolean =>
-  !!d && !!product && d.id === product.id && Object.keys(changes(d)).length > 0;
+  !!d && !!product && d.id === product.id && Object.keys(changes(d, product)).length > 0;
 
 /** The PATCH body: the changes, and the version they were made against. */
-export const saveBody = (d: Draft) => ({
-  ...changes(d),
+export const saveBody = (d: Draft, product: SonyCamera) => ({
+  ...changes(d, product),
   expectedUpdatedAt: d.version,
 });
 
