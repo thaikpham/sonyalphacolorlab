@@ -14,6 +14,8 @@ import { publishedRecipeFormat } from '@/lib/recipes/existence';
 import { clSettingsSchema, ppSettingsSchema, whiteBalanceSchema } from '@/lib/camera/schema';
 import { MAX_PHOTOS_PER_RECIPE, clientKey } from '@/lib/community/gallery';
 import { httpsImageUrlSchema, readJsonBody, recipeSlugSchema } from '@/lib/community/request';
+/* One list for the read and the insert's return, so the two cannot drift. */
+import { PROPOSAL_COLUMNS } from '@/lib/community/columns';
 
 /**
  * PostgREST rejects with a plain object, not an Error, so `String(err)` gave
@@ -30,12 +32,6 @@ function logFallback(where: string, err: unknown) {
         : String(err);
   console.error(`[${where}] Supabase failed:`, detail);
 }
-
-/* Explicit columns, never `*`: author_email must not ride along into a
-   response the whole internet can fetch. One list for the read and the
-   insert's return, so the two cannot drift. */
-const PROPOSAL_COLUMNS =
-  'id, recipe_slug, title, author_name, author_avatar, sample_image_url, settings, white_balance, vote_count, created_at';
 
 /** Proposals are ranked by votes; nobody reads past the first hundred. */
 const PROPOSAL_LIST_LIMIT = 100;

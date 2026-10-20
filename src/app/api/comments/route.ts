@@ -4,6 +4,7 @@ import { requireUser, UNAUTHENTICATED } from '@/lib/auth/require-user';
 import { checkRateLimit } from '@/lib/ai/rate-limit';
 import { COMMUNITY_ERRORS, communityErrorBody, outageErrorCode } from '@/lib/community/errors';
 import { readJsonBody } from '@/lib/community/request';
+import { COMMENT_COLUMNS } from '@/lib/community/columns';
 import { hasContentConfig } from '@/lib/supabase/server';
 import { publishedRecipeExists } from '@/lib/recipes/existence';
 
@@ -78,7 +79,7 @@ export async function GET(request: Request) {
          comment can be attributed, but it must never come back out — this
          endpoint is public and unauthenticated. */
       .from('recipe_comments')
-      .select('id, recipe_slug, author_name, author_avatar, content, created_at')
+      .select(COMMENT_COLUMNS)
       .eq('recipe_slug', slug)
       .order('created_at', { ascending: false })
       .limit(COMMENT_LIST_LIMIT);
@@ -161,7 +162,7 @@ export async function POST(request: Request) {
       })
       // Narrow here too: whatever this returns is what the response is built
       // from, so not fetching the email is what keeps it from being sent.
-      .select('id, recipe_slug, author_name, author_avatar, content, created_at')
+      .select(COMMENT_COLUMNS)
       .single();
 
     if (error) throw error;

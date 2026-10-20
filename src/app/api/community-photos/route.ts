@@ -7,6 +7,7 @@ import { COMMUNITY_ERRORS, communityErrorBody, outageErrorCode } from '@/lib/com
 import { requireUser, UNAUTHENTICATED, type AuthedUser } from '@/lib/auth/require-user';
 import { MAX_PHOTOS_PER_RECIPE, clientKey } from '@/lib/community/gallery';
 import { httpsImageUrlSchema, readJsonBody, recipeSlugSchema } from '@/lib/community/request';
+import { PHOTO_COLUMNS } from '@/lib/community/columns';
 
 /**
  * Community photo URLs & Author credits.
@@ -55,7 +56,7 @@ export async function GET(req: Request) {
   try {
     const { data, error } = await controlRead()
       .from('community_photos')
-      .select('image_url, author_name, author_social')
+      .select(PHOTO_COLUMNS)
       .eq('recipe_slug', parsed.data)
       .order('created_at', { ascending: false })
       .limit(MAX_PHOTOS_PER_RECIPE);
