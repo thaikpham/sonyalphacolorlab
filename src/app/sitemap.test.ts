@@ -44,6 +44,16 @@ describe('sitemap', () => {
     expect(urls.filter((u) => u.includes('white-balance-shift') || u.includes('thu-nghiem'))).toEqual([]);
   });
 
+  /* The launcher's page declares `/vi` canonical (bilingualAlternates). `/vi/`
+     redirects, so listing it advertised a URL the page itself disowns. */
+  it('lists the Vietnamese launcher at its canonical URL', () => {
+    expect(urls).toContain('/vi');
+    expect(urls).not.toContain('/vi/');
+    const launcher = entries.find((e) => e.url.endsWith('/vi'));
+    const languages = Object.values(launcher?.alternates?.languages ?? {});
+    expect(languages.map((u) => String(u).replace(/^https?:\/\/[^/]+/, ''))).toEqual(['/', '/vi']);
+  });
+
   it('has no duplicate URL', () => {
     expect(new Set(urls).size).toBe(urls.length);
   });
