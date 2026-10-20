@@ -153,9 +153,31 @@
     "sectionPp": "2. Thiết lập chính Picture Profile"
   },
   "notFound": {
-    "title": "Không tìm thấy công thức này.",
-    "body": "Có thể công thức đã được đổi tên, hoặc liên kết không đầy đủ. Bạn có thể xem toàn bộ danh mục chỉ với một cú nhấp.",
-    "action": "Xem tất cả công thức"
+    "recipe": {
+      "title": "Không tìm thấy công thức này.",
+      "body": "Có thể công thức đã được đổi tên, hoặc liên kết không đầy đủ. Bạn có thể xem toàn bộ danh mục chỉ với một cú nhấp.",
+      "action": "Xem tất cả công thức"
+    },
+    "camera": {
+      "title": "Không tìm thấy sản phẩm này.",
+      "body": "Có thể sản phẩm đã được đổi tên hoặc ngừng kinh doanh, hoặc liên kết không đầy đủ.",
+      "action": "Xem Sony Wiki"
+    },
+    "audio": {
+      "title": "Không tìm thấy sản phẩm này.",
+      "body": "Có thể sản phẩm đã được đổi tên hoặc ngừng kinh doanh, hoặc liên kết không đầy đủ.",
+      "action": "Xem tất cả sản phẩm âm thanh"
+    },
+    "blog": {
+      "title": "Không tìm thấy bài viết này.",
+      "body": "Có thể bài viết đã bị gỡ xuống, hoặc liên kết không đầy đủ.",
+      "action": "Xem tất cả bài viết"
+    },
+    "learn": {
+      "title": "Không tìm thấy trang này.",
+      "body": "Có thể trang đã được chuyển đi, hoặc liên kết không đầy đủ.",
+      "action": "Xem mục Kiến thức"
+    }
   },
   "error": {
     "title": "Đã có lỗi xảy ra.",
@@ -187,7 +209,10 @@
       "article": "Bài viết",
       "knowledge": "Kiến thức"
     },
-    "partial": "Một số nguồn chưa tìm được lúc này."
+    "partial": "Một số nguồn chưa tìm được lúc này.",
+    "filterFormat": "Kiểu",
+    "filterTags": "Thẻ",
+    "filterAll": "Tất cả"
   },
   "cameras": {
     "actionLabel": "Chi tiết & so sánh",

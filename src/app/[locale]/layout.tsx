@@ -58,7 +58,10 @@ export default async function LocaleLayout({
     cameras: messages.cameras,
     community: messages.community,
     error: messages.error,
-    lab: messages.lab,
+    /* One key, for the article compare slider. The rest of `lab` is the setup
+       tool's copy (~10KB a locale), which `/blog/setup` sends to its own
+       subtree; shipped whole from here, every page carried it. */
+    lab: { compareControl: (messages.lab as Record<string, string>).compareControl },
     language: messages.language,
     nav: messages.nav,
     recipe: messages.recipe,

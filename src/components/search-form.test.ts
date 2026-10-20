@@ -59,7 +59,7 @@ describe('the header search modes (ADR 0003)', () => {
   });
 
   it('does not navigate per keystroke where there is no grid behind the box', () => {
-    expect(source).toMatch(/if \(isAll\) return;\s*\n\s*searchTimer\.current = setTimeout/);
+    expect(source).toMatch(/if \(isAll \|\| !isCatalogueIndex\) return;\s*\n\s*searchTimer\.current = setTimeout/);
   });
 
   it('keeps every visible string in the message catalogues', () => {
