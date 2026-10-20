@@ -57,7 +57,7 @@ export default async function AudioProductPage({
   const t = await getTranslations('cameras');
 
   return (
-    <div className="min-h-screen flex flex-col bg-void text-ink">
+    <div className="min-h-screen-dynamic flex flex-col bg-void text-ink">
       <SiteHeader />
 
       {/* A reading layout, like the camera product route — not the browse grid. */}

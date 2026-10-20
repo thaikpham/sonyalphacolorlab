@@ -5,6 +5,7 @@ import { getSonyAudio } from '@/lib/audio/data';
 import { CameraCompareView } from '@/components/camera-compare-view';
 import { SiteHeader } from '@/components/site-header';
 import type { SonyCamera } from '@/lib/cameras/types';
+import { compareSelection } from '@/lib/cameras/compare-grouping';
 
 /**
  * `highlights` is bilingual sales-talk copy the compare grid never reads —
@@ -37,7 +38,8 @@ export default async function CameraComparePage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ ids?: string }>;
+  /* A repeated `?ids=` arrives as an array; see `compareSelection`. */
+  searchParams: Promise<{ ids?: string | string[] }>;
 }) {
   const { locale } = await params;
   const { ids } = await searchParams;
@@ -49,7 +51,10 @@ export default async function CameraComparePage({
      dropped every audio id silently, leaving a compare page with fewer columns
      than the reader ticked. */
   const initialCameras = [...(await getSonyCameras()), ...(await getSonyAudio())].map(stripHighlights);
-  const selectedIds = ids ? ids.split(',').filter(Boolean) : [];
+  const selectedIds = compareSelection(
+    ids,
+    initialCameras.map((c) => c.id),
+  );
 
   return (
     <>

@@ -71,7 +71,7 @@ describe('wiki default sort', () => {
 
 describe('price ordering', () => {
   it('really does run cheapest to dearest', async () => {
-    const cameras = await getSonyCameras({ sortBy: 'price-asc' });
+    const cameras = [...(await getSonyCameras())].sort(compareCameras('price-asc'));
     const prices = cameras.filter((c) => c.priceVnd > 0).map((c) => c.priceVnd);
     expect(prices.length).toBeGreaterThan(0);
     for (let i = 1; i < prices.length; i++) {
@@ -88,7 +88,7 @@ describe('price ordering', () => {
    * bargain of the range. A missing price is not a price.
    */
   it.each(['price-asc', 'price-desc'] as const)('puts unpriced rows last for %s', async (sortBy) => {
-    const cameras = await getSonyCameras({ sortBy });
+    const cameras = [...(await getSonyCameras())].sort(compareCameras(sortBy));
     const unpricedAt = cameras
       .map((c, i) => (c.priceVnd > 0 ? -1 : i))
       .filter((i) => i >= 0);

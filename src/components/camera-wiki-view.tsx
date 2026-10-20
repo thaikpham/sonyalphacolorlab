@@ -1,23 +1,22 @@
 'use client';
 
 import { Suspense, useMemo, useState } from 'react';
-import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { useRouter } from '@/i18n/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
 import { WikiDivisionSwitch } from './wiki-division-switch';
+import { ProductPhoto } from './product-photo';
 import {
   compareCameras,
   DEFAULT_WIKI_SORT,
   type CameraCard,
   type ProductCategory,
-  type SonyCamera,
   type WikiSort,
 } from '@/lib/cameras/types';
 import { featureList, splitFeatures } from '@/lib/cameras/features';
-import { priceLabel, subCategoryLabel } from '@/lib/cameras/display';
+import { officialUrl, priceLabel, subCategoryLabel } from '@/lib/cameras/display';
+import { MAX_COMPARE } from '@/lib/cameras/compare-grouping';
 import { translateSpecValue } from '@/lib/cameras/spec-values';
-import { isResizable } from '@/lib/images/catalogue-loader';
 import { productDoc } from '@/lib/search/product-doc';
 import { prepare, rank } from '@/lib/search/rank';
 
@@ -86,83 +85,6 @@ const SUBGROUP_TINT: Record<string, string> = {
   Vlog: 'text-community',
 };
 
-/** Stands in for product photography the source does not publish. */
-function NoPhoto({ label }: { label?: string }) {
-  return (
-    <span className="flex flex-col items-center justify-center gap-1 text-void/40">
-      <span className="text-title-2 leading-none" aria-hidden>
-        ◫
-      </span>
-      {label && <span className="text-label font-semibold">{label}</span>}
-    </span>
-  );
-}
-
-/**
- * A catalogue photograph that degrades to the no-photo mark when the file does
- * not load.
- *
- * A missing `imageUrl` was already handled; a PRESENT but dead one was not, and
- * that is the case the catalogue actually has. 18 of its 94 products fail to
- * load today: 17 point at `www.sony.com.vn`, which answers 403 to anything that
- * is not its own page — a browser user-agent and a matching referer do not help
- * — and one B&H id has been withdrawn (it 404s at its original path too, so the
- * size rewrite is not what broke it). Those 18 rendered a broken-image box on a
- * white plate, which reads as a bug in the page rather than a gap in the source.
- *
- * `onError` is the only signal available: whether a remote image decoded is not
- * knowable at render time, and the failures are per-URL rather than per-host, so
- * there is nothing to branch on up front.
- */
-function ProductPhoto({
-  src,
-  alt,
-  sizes,
-  className,
-  label,
-  size,
-}: {
-  src: string | null | undefined;
-  alt: string;
-  /** Required unless `size` is given — `fill` needs it to pick a variant. */
-  sizes?: string;
-  className: string;
-  label?: string;
-  /** Fixed square instead of `fill`, for the table view's 56px thumbnail. */
-  size?: number;
-}) {
-  const [failed, setFailed] = useState(false);
-
-  if (!src || failed) return <NoPhoto label={label} />;
-
-  if (size) {
-    return (
-      <Image
-        src={src}
-        alt={alt}
-        width={size}
-        height={size}
-        className={className}
-        /* One published file and no choice to make; see `isResizable`. */
-        unoptimized={!isResizable(src)}
-        onError={() => setFailed(true)}
-      />
-    );
-  }
-
-  return (
-    <Image
-      src={src}
-      alt={alt}
-      fill
-      sizes={sizes}
-      className={className}
-      unoptimized={!isResizable(src)}
-      onError={() => setFailed(true)}
-    />
-  );
-}
-
 interface CameraWikiViewProps {
   /* Cards, not full products: the spec blocks would be a third of this page's
      payload and nothing here renders them. See `CameraCard`. */
@@ -225,7 +147,14 @@ function CameraWikiViewInner({ initialCameras, basePath = '/cameras' }: CameraWi
   /* A product opens its own page. It used to open a modal and fake the URL with
      pushState, which left the address bar pointing at a page that had never
      rendered — reload or share the link and you got the bare catalogue. */
-  const openProduct = (cam: SonyCamera) => router.push(`${basePath}/${cam.id}`);
+  const productHref = (cam: CameraCard) => `${basePath}/${cam.id}`;
+  const openProduct = (cam: CameraCard) => router.push(productHref(cam));
+
+  /* Search and facets only. `sort` and `view` are how the reader is looking,
+     not what they are looking for — `hasActiveWikiFilters` already leaves them
+     out, and a bare `router.push(basePath)` put a reader in table view sorted
+     by name back in the default grid. */
+  const clearFilters = () => updateWikiParam({ cat: 'all', sub1: 'all', sub2: 'all', q: '' });
 
   /**
    * The facet rail's three groups — the catalogue's own axes.
@@ -265,7 +194,10 @@ function CameraWikiViewInner({ initialCameras, basePath = '/cameras' }: CameraWi
     const sorted = (counts: Map<string, number>) =>
       Array.from(counts.entries())
         .map(([value, count]) => ({ value, label: subCategoryLabel(value, t), count }))
-        .sort((a, b) => a.label.localeCompare(b.label));
+        /* The page locale, never the runtime's: on /vi "Âm thanh" and "APS-C"
+           share a group, and root collation and Vietnamese order them
+           differently, so the chips moved with the reader's browser. */
+        .sort((a, b) => a.label.localeCompare(b.label, locale));
 
     return [
       {
@@ -297,7 +229,7 @@ function CameraWikiViewInner({ initialCameras, basePath = '/cameras' }: CameraWi
         options: [{ value: 'all', label: t('sub2All'), count: inSub1.length }, ...sorted(bySub2)],
       },
     ].filter((group) => group.options.length > 1);
-  }, [initialCameras, selectedCategory, selectedSub1, selectedSub2, t]);
+  }, [initialCameras, selectedCategory, selectedSub1, selectedSub2, t, locale]);
 
   /**
    * The facet groups flattened into one horizontal rail.
@@ -394,11 +326,22 @@ function CameraWikiViewInner({ initialCameras, basePath = '/cameras' }: CameraWi
       if (prev.includes(id)) {
         return prev.filter((item) => item !== id);
       }
-      if (prev.length >= 6) {
+      if (prev.length >= MAX_COMPARE) {
         return prev;
       }
       return [...prev, id];
     });
+  };
+
+  /* At the limit an unpicked toggle is disabled and the limit is said, rather
+     than a seventh click that silently does nothing. */
+  const atCompareLimit = selectedForCompare.length >= MAX_COMPARE;
+
+  /* The sheet's ✕. Removing its last product closes it: left open it read
+     "(0)" over an empty grid with a "Compare 0" button that did nothing. */
+  const removeFromSheet = (id: string) => {
+    if (selectedForCompare.length <= 1) setIsConfirmModalOpen(false);
+    toggleCompare(id);
   };
 
   const comparedCameraObjects = useMemo(() => {
@@ -419,8 +362,8 @@ function CameraWikiViewInner({ initialCameras, basePath = '/cameras' }: CameraWi
      three axes the rail draws, read back as one label above the title. */
   const trail = [
     selectedCategory === 'all' ? t('catAll') : t(CATEGORY_LABEL_KEY[selectedCategory] ?? 'catAll'),
-    ...(selectedSub1 !== 'all' ? [selectedSub1] : []),
-    ...(selectedSub2 !== 'all' ? [selectedSub2] : []),
+    ...(selectedSub1 !== 'all' ? [subCategoryLabel(selectedSub1, t)] : []),
+    ...(selectedSub2 !== 'all' ? [subCategoryLabel(selectedSub2, t)] : []),
   ];
 
   const pageTitle = basePath === '/audio' ? t('audioTitle') : t('title');
@@ -452,6 +395,9 @@ function CameraWikiViewInner({ initialCameras, basePath = '/cameras' }: CameraWi
                 <span className="text-body-sm text-ink-muted">
                   {t('compareSummary', { count: selectedForCompare.length })}
                 </span>
+                {atCompareLimit && (
+                  <span className="text-body-sm text-ink-faint">{t('maxCompareHint')}</span>
+                )}
                 <button
                   type="button"
                   onClick={() => setIsConfirmModalOpen(true)}
@@ -464,7 +410,7 @@ function CameraWikiViewInner({ initialCameras, basePath = '/cameras' }: CameraWi
             {hasActiveWikiFilters && (
               <button
                 type="button"
-                onClick={() => router.push(basePath, { scroll: false })}
+                onClick={clearFilters}
                 className="text-body-sm font-semibold text-accent-400 cursor-pointer"
               >
                 {t('emptyAction')}
@@ -513,7 +459,7 @@ function CameraWikiViewInner({ initialCameras, basePath = '/cameras' }: CameraWi
             <h2 className="text-title-3 font-semibold text-ink">{t('emptyTitle')}</h2>
             <button
               type="button"
-              onClick={() => router.push(basePath, { scroll: false })}
+              onClick={clearFilters}
               className="btn-glass cursor-pointer"
             >
               {t('emptyAction')}
@@ -580,6 +526,7 @@ function CameraWikiViewInner({ initialCameras, basePath = '/cameras' }: CameraWi
                 <tbody>
                   {filteredCameras.map((cam, idx) => {
                     const isChecked = selectedForCompare.includes(cam.id);
+                    const official = officialUrl(cam.url);
                     return (
                       <tr
                         key={cam.id}
@@ -592,22 +539,25 @@ function CameraWikiViewInner({ initialCameras, basePath = '/cameras' }: CameraWi
                         }
                       >
                         {/* Checkbox for Compare */}
-                        <td className="p-4 text-center">
-                          <input
-                            type="checkbox"
-                            checked={isChecked}
-                            onChange={() => toggleCompare(cam.id)}
-                            aria-label={cam.name}
-                            className="w-4 h-4 rounded-sm bg-sunken accent-[var(--color-accent-500)] cursor-pointer"
-                          />
+                        {/* The label is the 44px target; the 16px box inside it
+                            is only the mark. */}
+                        <td className="p-1 text-center">
+                          <label className="inline-flex items-center justify-center min-h-[var(--layout-touch-target)] min-w-[var(--layout-touch-target)] cursor-pointer has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50">
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              disabled={!isChecked && atCompareLimit}
+                              onChange={() => toggleCompare(cam.id)}
+                              aria-label={cam.name}
+                              className="w-4 h-4 rounded-sm bg-sunken accent-[var(--color-accent-500)] cursor-pointer disabled:cursor-not-allowed"
+                            />
+                          </label>
                         </td>
 
-                        {/* Photo & Name (click opens the product page) */}
+                        {/* Photo & Name — a link, so the table has a way into a
+                            product page that a keyboard can reach. */}
                         <td className="p-4">
-                          <div
-                            onClick={() => openProduct(cam)}
-                            className="flex items-center gap-3 cursor-pointer group"
-                          >
+                          <Link href={productHref(cam)} className="flex items-center gap-3 group">
                             <div className="relative w-14 h-14 shrink-0 rounded-md overflow-hidden bg-white p-1 flex items-center justify-center">
                               <ProductPhoto
                                 src={cam.imageUrl}
@@ -622,7 +572,7 @@ function CameraWikiViewInner({ initialCameras, basePath = '/cameras' }: CameraWi
                               </span>
                               <span className="meta line-clamp-1">{cam.fullName}</span>
                             </div>
-                          </div>
+                          </Link>
                         </td>
 
                         {/* SKU Code */}
@@ -672,11 +622,12 @@ function CameraWikiViewInner({ initialCameras, basePath = '/cameras' }: CameraWi
                           </ul>
                         </td>
 
-                        {/* Sony Link — absent for the audio sheets, which publish none. */}
+                        {/* Sony Link — absent where the row publishes no single
+                            product page (`officialUrl`). */}
                         <td className="p-4 text-right whitespace-nowrap">
-                          {cam.url ? (
+                          {official ? (
                             <a
-                              href={cam.url}
+                              href={official}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-body-sm font-semibold text-accent-400 transition-colors"
@@ -813,16 +764,24 @@ function CameraWikiViewInner({ initialCameras, basePath = '/cameras' }: CameraWi
                         {priceLabel(cam, t)}
                       </span>
 
+                      {/* The input covers the label and draws nothing itself:
+                          `appearance-none` on a transparent box, never
+                          `opacity-0`, which hid the system's `:focus-visible`
+                          stroke along with it and left a keyboard reader no
+                          way to see where focus was. It names the product — a
+                          grid of identical "Compare" checkboxes says nothing. */}
                       <label
-                        className={`relative flex items-center justify-center whitespace-nowrap px-3.5 min-h-10 rounded-sm text-body-sm font-semibold select-none cursor-pointer transition-colors ${
+                        className={`relative flex items-center justify-center whitespace-nowrap px-3.5 min-h-10 rounded-sm text-body-sm font-semibold select-none cursor-pointer transition-colors has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50 ${
                           isChecked ? ACCENT_FILL : 'text-ink-muted hover:bg-white/[0.08]'
                         }`}
                       >
                         <input
                           type="checkbox"
                           checked={isChecked}
+                          disabled={!isChecked && atCompareLimit}
                           onChange={() => toggleCompare(cam.id)}
-                          className="absolute inset-0 w-full h-full m-0 appearance-none opacity-0 cursor-pointer"
+                          aria-label={t('compareProduct', { name: cam.name })}
+                          className="absolute inset-0 w-full h-full m-0 appearance-none bg-transparent rounded-sm cursor-pointer disabled:cursor-not-allowed"
                         />
                         <span>{isChecked ? t('compareSelected') : t('compare')}</span>
                       </label>
@@ -868,7 +827,11 @@ function CameraWikiViewInner({ initialCameras, basePath = '/cameras' }: CameraWi
         <div
           role="dialog"
           aria-modal="true"
+          aria-labelledby="compare-confirm-title"
           onClick={() => setIsConfirmModalOpen(false)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') setIsConfirmModalOpen(false);
+          }}
           className="fixed inset-0 z-50 bg-void/85 backdrop-blur-[30px] flex flex-col items-center justify-center p-4 sm:p-6 select-none animate-fade-in"
         >
           <div
@@ -878,12 +841,15 @@ function CameraWikiViewInner({ initialCameras, basePath = '/cameras' }: CameraWi
             <div className="surface-raised w-full h-full p-6 flex flex-col gap-6">
               {/* Modal Header */}
               <div className="flex items-center justify-between gap-4">
-                <h2 className="text-title-3 font-semibold text-ink">
+                <h2 id="compare-confirm-title" className="text-title-3 font-semibold text-ink">
                   {t('compareConfirmTitle')} ({comparedCameraObjects.length})
                 </h2>
+                {/* Focus lands here, so Escape reaches the sheet's handler. */}
                 <button
                   type="button"
                   onClick={() => setIsConfirmModalOpen(false)}
+                  aria-label={t('closeDialog')}
+                  autoFocus
                   className="w-11 min-h-[var(--layout-touch-target)] rounded-md bg-white/[0.08] hover:bg-white/[0.13] text-ink-muted shadow-[var(--elevation-spec)] flex items-center justify-center transition-colors cursor-pointer"
                 >
                   ✕
@@ -899,16 +865,21 @@ function CameraWikiViewInner({ initialCameras, basePath = '/cameras' }: CameraWi
                     {/* Remove Button */}
                     <button
                       type="button"
-                      onClick={() => toggleCompare(cam.id)}
-                      className="absolute top-2 right-2 w-6 h-6 rounded-sm bg-white/[0.08] hover:bg-white/[0.13] text-ink-muted flex items-center justify-center text-label transition-colors cursor-pointer z-10"
+                      onClick={() => removeFromSheet(cam.id)}
+                      aria-label={t('removeProduct')}
+                      className="absolute top-1 right-1 w-11 min-h-[var(--layout-touch-target)] rounded-sm bg-white/[0.08] hover:bg-white/[0.13] text-ink-muted flex items-center justify-center text-label transition-colors cursor-pointer z-10"
                     >
-                      ✕
+                      <span aria-hidden>✕</span>
                     </button>
 
-                    {/* Photo on Clean WHITE Background */}
-                    <div
-                      onClick={() => openProduct(cam)}
-                      className="relative w-full aspect-[4/3] rounded-md bg-white p-2 flex items-center justify-center overflow-hidden cursor-pointer"
+                    {/* Photo on clean white. A second link to the same page as
+                        the name below, so it is out of the tab order and the
+                        accessibility tree: one product, one stop. */}
+                    <Link
+                      href={productHref(cam)}
+                      tabIndex={-1}
+                      aria-hidden
+                      className="relative w-full aspect-[4/3] rounded-md bg-white p-2 flex items-center justify-center overflow-hidden"
                     >
                       <ProductPhoto
                         src={cam.imageUrl}
@@ -916,15 +887,14 @@ function CameraWikiViewInner({ initialCameras, basePath = '/cameras' }: CameraWi
                         sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 16vw"
                         className="object-contain p-1"
                       />
-                    </div>
+                    </Link>
 
                     {/* Name & SKU */}
                     <div className="flex flex-col gap-0.5">
-                      <h3
-                        onClick={() => openProduct(cam)}
-                        className="font-semibold text-body-sm text-ink line-clamp-2 leading-snug cursor-pointer"
-                      >
-                        {cam.name}
+                      <h3 className="font-semibold text-body-sm text-ink line-clamp-2 leading-snug">
+                        <Link href={productHref(cam)} className="hover:text-accent-400 transition-colors">
+                          {cam.name}
+                        </Link>
                       </h3>
                       <span className="meta truncate">{cam.sku}</span>
                       <span className="text-body-sm font-semibold text-accent-400 tabular-nums mt-0.5">

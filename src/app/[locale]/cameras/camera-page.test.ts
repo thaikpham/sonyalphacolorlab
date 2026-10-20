@@ -63,3 +63,24 @@ describe('the camera page', () => {
     expect(vi.cameras.specs.fullSpecsHeading).toBe('Thông số kỹ thuật đầy đủ');
   });
 });
+
+const audioPage = readFileSync('src/app/[locale]/audio/[id]/page.tsx', 'utf8');
+
+describe('the official link', () => {
+  it('is drawn only for a url that officialUrl accepts', () => {
+    /* `href={product.url}` drew six image lists as "View on Sony Vietnam". */
+    expect(page).not.toContain('href={product.url}');
+    expect(page).toMatch(/const official = officialUrl\(product\.url\)/);
+    expect(page).toMatch(/\{official && \(\s*<a\s+href=\{official\}/);
+  });
+});
+
+describe('the product pages', () => {
+  it.each([
+    ['camera', page],
+    ['audio', audioPage],
+  ])('the %s page sizes to the dynamic viewport, never 100vh', (_kind, source) => {
+    expect(source).not.toMatch(/\bmin-h-screen\b(?!-dynamic)/);
+    expect(source).toContain('min-h-screen-dynamic');
+  });
+});
