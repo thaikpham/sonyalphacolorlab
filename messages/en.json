@@ -1127,6 +1127,7 @@
     },
     "resultCount": "{count, plural, one {# result} other {# results}}",
     "noResults": "No results for “{query}”.",
+    "noResultsSearched": "No results for “{query}” in what could be searched.",
     "unavailable": "{kinds} could not be searched right now, so the results below leave them out.",
     "moreInGroup": "All {count} in {group}",
     "next": "More results"

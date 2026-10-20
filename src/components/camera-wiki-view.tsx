@@ -13,12 +13,13 @@ import {
   type ProductCategory,
   type WikiSort,
 } from '@/lib/cameras/types';
-import { featureList, splitFeatures } from '@/lib/cameras/features';
+import { featureList } from '@/lib/cameras/features';
 import { officialUrl, priceLabel, subCategoryLabel } from '@/lib/cameras/display';
 import { MAX_COMPARE } from '@/lib/cameras/compare-grouping';
 import { translateSpecValue } from '@/lib/cameras/spec-values';
 import { productDoc } from '@/lib/search/product-doc';
 import { prepare, rank } from '@/lib/search/rank';
+import { MAX_QUERY } from '@/lib/search/types';
 
 /**
  * Category chip label, per category.
@@ -304,13 +305,13 @@ function CameraWikiViewInner({ initialCameras, basePath = '/cameras' }: CameraWi
     /* The same ranking the header and `/search` use (ADR 0003) — one engine,
        so a query cannot find a product in the dropdown and lose it in the
        grid. Only membership matters here: the grid is re-sorted by the
-       reader's chosen order below. */
-    if (searchQuery.trim()) {
-      const docs = result.map((c) => {
-        const { en, vi } = splitFeatures(c.features);
-        return prepare(productDoc({ ...c, featureText: [...en, ...vi] }));
-      });
-      const matched = new Set(rank(searchQuery, docs).map((r) => r.doc.id));
+       reader's chosen order below. The query is trimmed and bounded the way
+       the predictive route bounds it, so a hand-edited `?q=` cannot rank
+       differently here. */
+    const query = searchQuery.trim().slice(0, MAX_QUERY);
+    if (query) {
+      const docs = result.map((c) => prepare(productDoc(c, locale === 'vi' ? 'vi' : 'en', t)));
+      const matched = new Set(rank(query, docs).map((r) => r.doc.id));
       result = result.filter((c) => matched.has(c.id));
     }
 
@@ -319,7 +320,7 @@ function CameraWikiViewInner({ initialCameras, basePath = '/cameras' }: CameraWi
     result.sort(compareCameras(sortBy));
 
     return result;
-  }, [initialCameras, selectedCategory, selectedSub1, selectedSub2, searchQuery, sortBy]);
+  }, [initialCameras, selectedCategory, selectedSub1, selectedSub2, searchQuery, sortBy, locale, t]);
 
   const toggleCompare = (id: string) => {
     setSelectedForCompare((prev) => {

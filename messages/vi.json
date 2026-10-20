@@ -1127,6 +1127,7 @@
     },
     "resultCount": "{count, plural, other {# kết quả}}",
     "noResults": "Không có kết quả cho “{query}”.",
+    "noResultsSearched": "Không có kết quả cho “{query}” trong phần đã tìm được.",
     "unavailable": "Chưa tìm được trong {kinds} lúc này, nên kết quả dưới đây chưa gồm phần đó.",
     "moreInGroup": "Xem cả {count} trong {group}",
     "next": "Thêm kết quả"
