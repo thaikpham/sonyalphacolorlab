@@ -3,20 +3,29 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useAdminSession } from '@/components/admin-ui/session';
-import { AREA, FIELD, FIELD_SM, TAG, TAG_NEUTRAL } from '@/components/admin-ui/controls';
+import { AREA, FIELD, FIELD_SM, SELECT, TAG, TAG_NEUTRAL } from '@/components/admin-ui/controls';
 import { needsTranslation } from '@/lib/cameras/features';
 import { SPEC_ROWS, type SonyCamera } from '@/lib/cameras/types';
 import { getSpecMeta } from '@/lib/cameras/spec-meta';
+import { subCategoryLabel } from '@/lib/cameras/display';
+import { formatPriceVnd, subCategory1Choices, subCategory2Choices } from '@/lib/cameras/taxonomy';
 import { CORE_SPEC_KEYS, type HighlightsDraft } from '@/lib/cameras/highlights';
 import { categoriesFor, type ProductCategoryId } from '@/lib/admin/category-roles';
 import {
   afterSave,
   asDraft,
+  choosePlacement,
+  highlightsDropped,
   isDirty,
   lines,
+  localesEmptied,
+  placementDrops,
+  priceDigits,
   saveBody,
   withPackaging,
+  withPlacement,
   type Draft,
+  type Placement,
 } from '@/lib/admin/product-draft';
 
 type Props = {
@@ -24,12 +33,20 @@ type Props = {
   initialTab?: 'di' | 'pe';
 };
 
-const SUB1_OPTIONS: Record<ProductCategoryId, string[]> = {
-  camera: ['Mirrorless Full-Frame', 'Mirrorless APS-C', 'Cinema Line', 'Compact', 'PTZ Camera'],
-  lens: ['FE-mount (Full-Frame)', 'E-mount (APS-C)', 'Cinema Lens', 'Teleconverter'],
-  accessory: ['Audio', 'Power', 'Grip & Mount', 'Adaptor'],
-  audio: ['Tai nghe', 'Loa Bluetooth', 'Loa Karaoke', 'Tai nghe Inzone'],
-};
+/**
+ * A question the editor is waiting on, asked in the save bar rather than with
+ * `window.confirm`: a move that would drop filled spec values or a camera's
+ * highlights, or a save that would empty a locale's feature list. Tied to the
+ * draft it was asked about, so switching product cannot answer it for another
+ * one.
+ */
+type Ask =
+  | { id: string; kind: 'save'; langs: ('en' | 'vi')[] }
+  | { id: string; kind: 'placement'; next: Placement; drops: number; highlights: boolean };
+
+/** The options a select offers, with the stored value kept when it is a legacy one. */
+const withStored = (choices: readonly string[], stored: string) =>
+  choices.includes(stored) ? [...choices] : [stored, ...choices];
 
 /** The catalogue's category enum, read back through the message catalogue. */
 const CATEGORY_KEY: Record<SonyCamera['category'], 'catCamera' | 'catLens' | 'catAccessory' | 'catAudio'> = {
@@ -53,6 +70,10 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
   const t = useTranslations('admin');
   const tSpec = useTranslations('cameras.specs');
   const tCore = useTranslations('cameras.coreSpecs');
+  /* The catalogue's reader-facing sub-category labels — the stored values
+     mix the two languages, and stay the values sent. */
+  const tCam = useTranslations('cameras');
+  const subLabel = (value: string) => subCategoryLabel(value, tCam);
   /* One probe for the whole department, run by `<AdminShell>` above. This
      component renders only once the gate has opened, so it may assume an admin
      from its first line — the "checking", "not an admin" and "cannot verify"
@@ -72,6 +93,8 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
      The message tells the operator to reopen the product; this is what lets
      clicking the product that is already open actually reload it. */
   const [stale, setStale] = useState(false);
+  const [ask, setAsk] = useState<Ask | null>(null);
+  const askCancel = useRef<HTMLButtonElement>(null);
   const [busy, setBusy] = useState<'' | 'saving' | 'translating' | 'creating'>('');
   /* `ok` is a save or a create; `note` is the machine-translation caveat,
      which must stay visible while its output is unsaved — that is when it
@@ -94,8 +117,7 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
   const [newSku, setNewSku] = useState('');
   const [newName, setNewName] = useState('');
   const [newFullName, setNewFullName] = useState('');
-  const [newPriceVnd, setNewPriceVnd] = useState<number>(0);
-  const [newPriceFormatted, setNewPriceFormatted] = useState('');
+  const [newPriceVnd, setNewPriceVnd] = useState('');
   const [newUrl, setNewUrl] = useState('');
   const [newImageUrl, setNewImageUrl] = useState('');
   const [newGalleryUrls, setNewGalleryUrls] = useState('');
@@ -123,7 +145,18 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
       : allowedCats.includes(fallbackCat)
         ? fallbackCat
         : allowedCats[0];
-  const newSub1 = pickedSub1 && SUB1_OPTIONS[newCat].includes(pickedSub1) ? pickedSub1 : SUB1_OPTIONS[newCat][0];
+  /* The placement comes from the catalogue's taxonomy, the same lists the
+     routes validate against: free text here filed products under values no
+     public chip filters by. */
+  const newSub1Choices = subCategory1Choices(newCat);
+  const newSub1 = pickedSub1 && newSub1Choices.includes(pickedSub1) ? pickedSub1 : (newSub1Choices[0] ?? '');
+  const newSub2Choices = subCategory2Choices(newCat, newSub1);
+  const newSub2Valid = newSub2Choices.includes(newSub2) ? newSub2 : '';
+
+  /* What the open product may be refiled as: the role's categories within
+     the open division, so a save can never move it out of the list it is in.
+     A PE admin has one — audio — and sees it as text, not as a select. */
+  const divisionCats = allowedCats.filter((c) => (activeTab === 'pe' ? c === 'audio' : c !== 'audio'));
 
   const selected = useMemo(
     () => products.find((p) => p.id === selectedId) ?? null,
@@ -133,6 +166,12 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
   /* Whether a save would change anything — the same diff the save sends, so
      the warning and the button can never disagree about it. */
   const dirty = isDirty(draft, selected);
+
+  /* The question on screen, only while its draft is the one open. */
+  const pending = ask && draft && ask.id === draft.id ? ask : null;
+  useEffect(() => {
+    if (pending) askCancel.current?.focus();
+  }, [pending]);
 
   /* The one guard against losing work on a reload or a closed tab. Nothing
      autosaves. Switching product or division asks in `confirmDiscard()`. */
@@ -211,6 +250,7 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
     if (!confirmDiscard()) return;
     setSelectedId(p.id);
     setDraft(null);
+    setAsk(null);
     setCopiedMd(false);
     setStale(false);
     void open(p);
@@ -221,6 +261,7 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
     setPickedTab(tab);
     setSelectedId(null);
     setDraft(null);
+    setAsk(null);
     setStatus(null);
     onProduct.current = null;
   };
@@ -233,6 +274,34 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
   const setField = (patch: Partial<Draft>) => setDraft((d) => (d ? { ...d, ...patch } : d));
   const setSpec = (field: string, value: string) =>
     setDraft((d) => (d ? { ...d, specs: { ...d.specs, [field]: value } } : d));
+
+  /** Refiles the draft. A move that changes the spec kind and would drop
+      filled values asks first, naming how many — and so does one that takes a
+      camera out of the category, which the route clears the highlights of. */
+  const place = (change: Partial<Placement>) => {
+    if (!draft || !selected || draft.id !== selected.id) return;
+    const next = choosePlacement(draft, change);
+    const drops = placementDrops(draft, selected, next).length;
+    const highlights = highlightsDropped(draft, selected, next);
+    if (drops > 0 || highlights) {
+      setAsk({ id: draft.id, kind: 'placement', next, drops, highlights });
+      return;
+    }
+    const id = draft.id;
+    setDraft((d) => (d && d.id === id ? withPlacement(d, next) : d));
+  };
+
+  /* A yes waits while a request is out: "Save anyway" during a translation
+     ran two requests at once, and the first to finish re-enabled Save while
+     the PATCH was still in flight. */
+  const answer = (go: boolean) => {
+    const q = pending;
+    if (go && busy !== '') return;
+    setAsk(null);
+    if (!go || !q) return;
+    if (q.kind === 'save') void save(true);
+    else setDraft((d) => (d && d.id === q.id ? withPlacement(d, q.next) : d));
+  };
 
   const translate = async (target: 'en' | 'vi') => {
     if (!draft) return;
@@ -266,8 +335,19 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
     }
   };
 
-  const save = async () => {
+  /** `confirmed` once the operator has agreed to empty a feature list. */
+  const save = async (confirmed = false) => {
+    /* One request at a time. A second PATCH would name the version the first
+       one is replacing, and answer 409 staleEdit for a save that landed. */
+    if (busy !== '') return;
     if (!draft || !selected || draft.id !== selected.id) return;
+    /* A save once emptied a locale's whole feature list and nothing asked. */
+    const emptied = localesEmptied(draft);
+    if (!confirmed && emptied.length > 0) {
+      setAsk({ id: draft.id, kind: 'save', langs: emptied });
+      return;
+    }
+    setAsk(null);
     /* What was sent, kept to tell an untouched draft from one edited while
        the request was out — see `afterSave()`. */
     const sent = draft;
@@ -328,8 +408,12 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
   const handleCreateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreateError('');
-    if ((newCat !== 'audio' && !newSku.trim()) || !newName.trim()) {
-      setCreateError(err('badRequest'));
+    if (!newName.trim()) {
+      setCreateError(err('nameRequired'));
+      return;
+    }
+    if (newCat !== 'audio' && !newSku.trim()) {
+      setCreateError(err('skuRequired'));
       return;
     }
 
@@ -346,10 +430,10 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
           name: newName.trim(),
           fullName: newFullName.trim() || newName.trim(),
           category: newCat,
-          subCategory1: newSub1.trim(),
-          subCategory2: newSub2.trim(),
-          priceVnd: Number(newPriceVnd) || 0,
-          priceFormatted: newPriceFormatted.trim(),
+          subCategory1: newSub1,
+          subCategory2: newSub2Valid,
+          /* A number; the route writes the catalogue's own price text. */
+          priceVnd: Number(newPriceVnd || '0'),
           url: newUrl.trim(),
           imageUrl: primaryImg,
           galleryUrls: galleryList,
@@ -376,14 +460,15 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
           onProduct.current = created.id;
           setSelectedId(created.id);
           setDraft(asDraft(created, data.updatedAt ?? null));
+          setAsk(null);
           setCopiedMd(false);
           setStatus({ kind: 'ok', msg: t('createdSuccess') });
         }
         setNewSku('');
         setNewName('');
         setNewFullName('');
-        setNewPriceVnd(0);
-        setNewPriceFormatted('');
+        setNewPriceVnd('');
+        setNewSub2('');
         setNewUrl('');
         setNewImageUrl('');
         setNewGalleryUrls('');
@@ -399,8 +484,8 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
 
   // Markdown table generator for current product specs
   const generatedMarkdownTable = useMemo(() => {
-    if (!selected || !selected.specs || !draft) return '';
-    const fields = SPEC_ROWS[selected.specs.kind];
+    if (!selected || !draft || !draft.specKind) return '';
+    const fields = SPEC_ROWS[draft.specKind];
     let md = `### ${selected.fullName} (${selected.sku})\n\n`;
     md += `| ${t('colField')} | ${t('colValue')} |\n`;
     md += `| --- | --- |\n`;
@@ -606,23 +691,180 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
                   </button>
                   <button
                     type="button"
-                    onClick={save}
-                    disabled={busy !== '' || !dirty}
+                    onClick={() => void save()}
+                    disabled={busy !== '' || !dirty || !!pending}
                     className="btn-accent disabled:opacity-40 cursor-pointer"
                   >
                     {busy === 'saving' ? t('saving') : t('save')}
                   </button>
                 </div>
+
+                {/* The editor's own confirm, on the bar that is always in
+                    view — never a browser dialog. */}
+                {pending && (
+                  <div
+                    role="alertdialog"
+                    aria-labelledby="ask-title"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape') answer(false);
+                    }}
+                    className="basis-full flex items-center justify-between gap-4 flex-wrap"
+                  >
+                    <p id="ask-title" className="text-body-sm font-semibold text-ink">
+                      {pending.kind === 'save'
+                        ? t('featuresEmptiedTitle', { which: pending.langs.length > 1 ? 'both' : pending.langs[0] })
+                        : [
+                            pending.drops > 0 ? t('specKindChangeTitle', { count: pending.drops }) : '',
+                            pending.highlights ? t('highlightsDropTitle') : '',
+                          ]
+                            .filter(Boolean)
+                            .join(' ')}
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <button ref={askCancel} type="button" onClick={() => answer(false)} className="btn-glass cursor-pointer">
+                        {t('cancel')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => answer(true)}
+                        disabled={busy !== ''}
+                        className="btn-accent disabled:opacity-40 cursor-pointer"
+                      >
+                        {pending.kind === 'save' ? t('featuresEmptiedBtn') : t('specKindChangeBtn')}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Product Basic Info & Gallery Images Section */}
               <div className="surface p-5 flex flex-col gap-4">
-                <div className="flex items-center justify-between gap-3 flex-wrap">
-                  <div className="flex items-center gap-2">
-                    <h2 className="label text-proposal">{t('basicInfoHeading')}</h2>
-                    {selected.sku && <span className={TAG_NEUTRAL}>{t('skuChip', { sku: selected.sku })}</span>}
+                <h2 className="label text-proposal">{t('basicInfoHeading')}</h2>
+
+                <div className="seam" />
+
+                {/* Where the product is filed, and what it is sold as. The
+                    choices are the catalogue's taxonomy — the values the
+                    public filters match — with a legacy stored value kept as
+                    an option so an untouched row still saves as it is. */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                  <div className="flex flex-col gap-2">
+                    {divisionCats.length > 1 ? (
+                      <>
+                        <label htmlFor="prod-category" className="label">
+                          {t('categoryLabel')}
+                        </label>
+                        <select
+                          id="prod-category"
+                          value={draft.category}
+                          onChange={(e) => place({ category: e.target.value as ProductCategoryId })}
+                          className={SELECT}
+                        >
+                          {withStored(divisionCats, draft.category).map((c) => (
+                            <option key={c} value={c}>
+                              {t(CATEGORY_KEY[c as ProductCategoryId])}
+                            </option>
+                          ))}
+                        </select>
+                      </>
+                    ) : (
+                      <>
+                        <span className="label">{t('categoryLabel')}</span>
+                        <span className="min-h-[var(--layout-touch-target)] flex items-center text-body text-ink">
+                          {t(CATEGORY_KEY[draft.category])}
+                        </span>
+                      </>
+                    )}
                   </div>
-                  <span className="meta">{t('basicInfoHint')}</span>
+
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="prod-sub1" className="label">
+                      {t('subCategory1Label')}
+                    </label>
+                    <select
+                      id="prod-sub1"
+                      value={draft.subCategory1}
+                      onChange={(e) => place({ subCategory1: e.target.value })}
+                      className={SELECT}
+                    >
+                      {withStored(subCategory1Choices(draft.category), draft.subCategory1).map((v) => (
+                        <option key={v} value={v}>
+                          {subLabel(v)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="prod-sub2" className="label">
+                      {t('subCategory2Label')}
+                    </label>
+                    <select
+                      id="prod-sub2"
+                      value={draft.subCategory2}
+                      onChange={(e) => place({ subCategory2: e.target.value })}
+                      className={SELECT}
+                    >
+                      {withStored(['', ...subCategory2Choices(draft.category, draft.subCategory1)], draft.subCategory2).map(
+                        (v) => (
+                          <option key={v || 'none'} value={v}>
+                            {v ? subLabel(v) : t('subCategoryNone')}
+                          </option>
+                        ),
+                      )}
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="prod-sku" className="label">
+                      {t('skuLabel')}
+                    </label>
+                    <input
+                      id="prod-sku"
+                      type="text"
+                      value={draft.sku}
+                      onChange={(e) => setField({ sku: e.target.value })}
+                      className={FIELD}
+                      placeholder={t('placeholderSku')}
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="prod-price" className="label">
+                      {t('priceVndLabel')}
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        id="prod-price"
+                        type="text"
+                        inputMode="numeric"
+                        value={draft.priceVnd}
+                        onChange={(e) => setField({ priceVnd: priceDigits(e.target.value) })}
+                        className={`${FIELD} tabular-nums`}
+                        placeholder={t('placeholderPriceVnd')}
+                      />
+                      {/* What the catalogue will store and show — derived by
+                          the route, never typed. */}
+                      <output htmlFor="prod-price" className="shrink-0 text-body-sm text-ink-muted tabular-nums">
+                        {formatPriceVnd(Number(draft.priceVnd || '0'))}
+                      </output>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="prod-url" className="label">
+                      {t('urlLabel')}
+                    </label>
+                    <input
+                      id="prod-url"
+                      type="url"
+                      inputMode="url"
+                      value={draft.url}
+                      onChange={(e) => setField({ url: e.target.value })}
+                      className={FIELD}
+                      placeholder={t('placeholderStoreUrl')}
+                    />
+                  </div>
                 </div>
 
                 <div className="seam" />
@@ -723,7 +965,7 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
                         "Tai nghe Inzone" is three words and carries
                         diacritics, and only `.label` may be uppercase. */}
                     <span className={TAG_NEUTRAL}>
-                      {t(CATEGORY_KEY[selected.category])} · {selected.subCategory1}
+                      {t(CATEGORY_KEY[draft.category])} · {subLabel(draft.subCategory1)}
                     </span>
                   </div>
                   <span className="meta">{t('featuresHint')}</span>
@@ -764,7 +1006,9 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
                 </div>
               </div>
 
-              {selected.category === 'camera' && (
+              {/* Only while the product is, and stays, a camera — a move out
+                  of the category takes the highlights editor with it. */}
+              {selected.category === 'camera' && draft.category === 'camera' && (
                 <div className="surface p-5 flex flex-col gap-4">
                   <div className="flex items-center justify-between gap-3 flex-wrap">
                     <h2 className="label text-proposal">{t('highlightsHeading')}</h2>
@@ -830,8 +1074,11 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
 
                 <div className="seam" />
 
-                {!selected.specs ? (
-                  <p className="text-body-sm text-danger">{t('noSpecBlock')}</p>
+                {/* The sheet is the draft's kind — the stored block's, or for a
+                    product with none, the one its placement names — so the
+                    five accessories that shipped without a block can take one. */}
+                {!draft.specKind ? (
+                  <p className="text-body-sm text-ink-muted">{t('noSpecBlock')}</p>
                 ) : specViewMode === 'sheet' ? (
                   /* GOOGLE SHEET SPREADSHEET TABLE GRID */
                   <div className="flex flex-col gap-3">
@@ -849,7 +1096,7 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
                           </tr>
                         </thead>
                         <tbody>
-                          {SPEC_ROWS[selected.specs.kind].map((field, idx) => {
+                          {SPEC_ROWS[draft.specKind].map((field, idx) => {
                             const meta = getSpecMeta(field);
                             const val = draft.specs[field] ?? '';
                             const label = tSpec.has(field) ? tSpec(field) : field;
@@ -1041,7 +1288,7 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
                   <select
                     value={newCat}
                     onChange={(e) => handleCategoryChange(e.target.value as ProductCategoryId)}
-                    className={FIELD}
+                    className={SELECT}
                   >
                     {allowedCats.map((c) => (
                       <option key={c} value={c}>
@@ -1056,11 +1303,11 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
                   <select
                     value={newSub1}
                     onChange={(e) => setPickedSub1(e.target.value)}
-                    className={FIELD}
+                    className={SELECT}
                   >
-                    {SUB1_OPTIONS[newCat].map((opt) => (
+                    {newSub1Choices.map((opt) => (
                       <option key={opt} value={opt}>
-                        {opt}
+                        {subLabel(opt)}
                       </option>
                     ))}
                   </select>
@@ -1068,13 +1315,13 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
 
                 <div className="flex flex-col gap-2">
                   <label className="label">{t('subCategory2Label')}</label>
-                  <input
-                    type="text"
-                    value={newSub2}
-                    onChange={(e) => setNewSub2(e.target.value)}
-                    placeholder={t('placeholderSub2')}
-                    className={FIELD}
-                  />
+                  <select value={newSub2Valid} onChange={(e) => setNewSub2(e.target.value)} className={SELECT}>
+                    {['', ...newSub2Choices].map((opt) => (
+                      <option key={opt || 'none'} value={opt}>
+                        {opt ? subLabel(opt) : t('subCategoryNone')}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
@@ -1117,25 +1364,21 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <label className="label">{t('priceVndLabel')}</label>
-                  <input
-                    type="number"
-                    value={newPriceVnd || ''}
-                    onChange={(e) => setNewPriceVnd(Number(e.target.value))}
-                    placeholder={t('placeholderPriceVnd')}
-                    className={`${FIELD} tabular-nums`}
-                  />
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <label className="label">{t('priceFormattedLabel')}</label>
-                  <input
-                    type="text"
-                    value={newPriceFormatted}
-                    onChange={(e) => setNewPriceFormatted(e.target.value)}
-                    placeholder={t('placeholderPriceFormatted')}
-                    className={`${FIELD} tabular-nums`}
-                  />
+                  <label htmlFor="new-price" className="label">{t('priceVndLabel')}</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      id="new-price"
+                      type="text"
+                      inputMode="numeric"
+                      value={newPriceVnd}
+                      onChange={(e) => setNewPriceVnd(priceDigits(e.target.value))}
+                      placeholder={t('placeholderPriceVnd')}
+                      className={`${FIELD} tabular-nums`}
+                    />
+                    <output htmlFor="new-price" className="shrink-0 text-body-sm text-ink-muted tabular-nums">
+                      {formatPriceVnd(Number(newPriceVnd || '0'))}
+                    </output>
+                  </div>
                 </div>
 
                 <div className="flex flex-col gap-2">

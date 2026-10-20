@@ -180,17 +180,26 @@ describe('the product write route', () => {
     expect(source).not.toMatch(/body\.id\b/);
   });
 
+  /* What a body may change is decided in `product-write.ts`, which both
+     product routes call — so the spec rules are read from there. */
+  const rules = readFileSync('src/lib/cameras/product-write.ts', 'utf8');
+
+  it('hands every body to the shared write rules', () => {
+    expect(source).toMatch(/productPatch\(body, product,/);
+  });
+
   /* `specsMissing` describes which values are absent. Accepting it from the
      client lets a stale editor mark a filled row as unpublished — the row then
      renders "not published" over a real value, which is the exact failure the
      null-versus-placeholder rule exists to prevent. */
   it('derives specsMissing instead of trusting the payload', () => {
-    expect(source).toMatch(/out\.specsMissing\s*=/);
-    expect(source).not.toMatch(/input\.specsMissing/);
+    expect(rules).toMatch(/out\.specsMissing\s*=/);
+    expect(rules).not.toMatch(/input\.specsMissing/);
+    expect(source).not.toMatch(/specsMissing/);
   });
 
   it('strips the prose qualifiers the spec suite rejects', () => {
-    expect(source).toMatch(/Xấp xỉ/);
+    expect(rules).toMatch(/Xấp xỉ/);
   });
 });
 
