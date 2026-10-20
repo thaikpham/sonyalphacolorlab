@@ -11,7 +11,14 @@ import type { CameraSpecs, ProductSpecs } from '@/lib/cameras/types';
  * - the save wrote the gallery, and nothing ever read the column back;
  * - the editor kept its pre-save `features` and `specs`, so reopening the
  *   product showed the old ones and a second save wrote them back;
- * - a row whose database copy had no spec block refused the whole save.
+ * - a row whose database copy had no spec block refused the whole save;
+ * - category, sub-categories, SKU, price and URL were not in the body the route
+ *   accepted, so editing them saved nothing — and a placement change could
+ *   leave a spec block of the wrong kind behind.
+ *
+ * The rules themselves are `productPatch()` / `productCreate()`, executed in
+ * `src/lib/cameras/product-write.test.ts`; this file pins that both routes go
+ * through them and turn their answers into the right writes and status codes.
  *
  * The content client is a recording fake. It holds one `sony_cameras` row and
  * answers the calls the route makes the way PostgREST would — including the
@@ -590,6 +597,30 @@ describe('category roles', () => {
     db.role = 'di';
     db.row = storedRow({ category: 'audio', specs: null });
     expect((await patch({ name: 'x' })).status).toBe(403);
+  });
+
+  it('lets a PE admin refile a headphone as a speaker, re-shaping its block', async () => {
+    db.role = 'pe';
+    db.row = storedRow({
+      category: 'audio',
+      sku: '',
+      sub_category_1: 'Tai nghe',
+      sub_category_2: 'Choàng đầu',
+      specs: {
+        kind: 'headphone',
+        specsSource: 'https://www.sony.com.vn/wh',
+        specsMissing: [],
+        battery: '30 giờ',
+        designType: 'Choàng đầu',
+      },
+    });
+    const res = await patch({ subCategory1: 'Loa', subCategory2: 'Di động' });
+    expect(res.status).toBe(200);
+    expect(db.row?.sub_category_1).toBe('Loa');
+    const specs = db.row?.specs as ProductSpecs & Record<string, unknown>;
+    expect(specs.kind).toBe('speaker');
+    expect(specs.battery).toBe('30 giờ');
+    expect(specs).not.toHaveProperty('designType');
   });
 });
 
