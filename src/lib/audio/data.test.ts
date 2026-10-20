@@ -57,11 +57,19 @@ describe('sony audio catalogue', () => {
     }
   });
 
-  it('has URLs and images populated from B&H Photo Video', () => {
+  it('links and photographs a product only with an asset of its own', () => {
+    /* This test used to demand every url and image be filled — and they were,
+       from B&H ids that turned out to be a headphone amplifier, cine filters,
+       a camera body, a Pelican case and an Apple cable (checked 2026-10-20).
+       Five pairs also shared one asset. A blank shows the no-photo mark, which
+       is honest; a wrong photo is not. */
     for (const p of products) {
       expect(p.sku).toBe('');
-      expect(p.url).not.toBe('');
-      expect(p.imageUrl).not.toBe('');
+      for (const v of [p.url, p.imageUrl]) expect(v === '' || /^https:\/\/\S+$/.test(v), p.id).toBe(true);
+    }
+    for (const field of ['url', 'imageUrl'] as const) {
+      const filled = products.map((p) => p[field]).filter(Boolean);
+      expect(new Set(filled).size, field).toBe(filled.length);
     }
   });
 
