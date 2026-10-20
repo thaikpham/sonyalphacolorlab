@@ -1,4 +1,5 @@
-import { readFileSync, existsSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
@@ -27,8 +28,32 @@ describe('fonts', () => {
     expect(css).toContain("font-family: 'Noto Sans'");
   });
 
+  /* Noto Sans is a variable font: css2 hands back the same file for every
+     weight. Named per weight, it was committed four times over and fetched
+     once per weight a page used. One file per subset, one face spanning the
+     weights, so each subset is a single request. */
+  const weightRanges = [...css.matchAll(/font-weight: (\d+)(?: (\d+))?;/g)].map(
+    ([, from, to]) => [Number(from), Number(to ?? from)] as const,
+  );
+
   it.each([400, 500, 600, 800])('ships weight %i', (weight) => {
-    expect(css).toMatch(new RegExp('font-weight: ' + weight + ';'));
+    expect(weightRanges.some(([from, to]) => from <= weight && weight <= to)).toBe(true);
+  });
+
+  it('references one file per subset', () => {
+    const urls = new Set([...css.matchAll(/url\('([^']+)'\)/g)].map(([, url]) => url));
+    expect([...urls].sort()).toEqual(['./NotoSans-latin.woff2', './NotoSans-vietnamese.woff2']);
+  });
+
+  it('commits no font file twice under two names', () => {
+    const files = existsSync(FONT_DIR)
+      ? readdirSync(FONT_DIR).filter((name) => name.endsWith('.woff2'))
+      : [];
+    const hashes = files.map((name) =>
+      createHash('sha256').update(readFileSync(join(FONT_DIR, name))).digest('hex'),
+    );
+    expect(files.length).toBeGreaterThan(0);
+    expect(new Set(hashes).size).toBe(files.length);
   });
 
   it('covers Vietnamese', () => {
