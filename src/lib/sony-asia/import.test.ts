@@ -6,6 +6,7 @@ import {
   CL_MONOCHROME_LOOKS,
   CL_RANGES,
   CREATIVE_LOOK_CODES,
+  CREATIVE_LOOKS,
   WB_AUTO_MODES,
   WB_PRESETS,
 } from '../camera/constants';
@@ -258,7 +259,7 @@ describe('stable ids', () => {
     const added = after.recipes.find((r) => !result.recipes.some((b) => b.id === r.id))!;
     expect(added.id).toBe('SCL-CL-038');
     expect(added.slug).toBe('fl-sandeeshwara-perera-4');
-    expect(added.name).toBe('SCL-CL-038: Film Look · Sandeeshwara Perera 4');
+    expect(added.name).toBe('SCL-CL-038: Film · Sandeeshwara Perera 4');
   });
 
   it('never hands out a retired id or slug again', () => {
@@ -305,5 +306,21 @@ describe('corrections and refusals', () => {
   it('documents why every correction and refusal exists', () => {
     for (const c of SCRAPE_CORRECTIONS) expect(c.why.length).toBeGreaterThan(20);
     for (const r of REJECTED) expect(r.why.length).toBeGreaterThan(20);
+  });
+});
+
+describe('Look names come from constants.ts', () => {
+  /* Sony spells them "Vivid 2" and "Film" (TP1000640837). The scrape said
+     "Vivid2" and "Film Look", and a correction even rewrote the right
+     spelling to the wrong one, so 19 recipes disagreed with the glossary,
+     the header filter and the admin select. */
+  it('names and tags every recipe with the CREATIVE_LOOKS label', () => {
+    for (const r of result.recipes) {
+      if (r.format !== 'cl') continue;
+      const label = CREATIVE_LOOKS.find((l) => l.code === r.settings.look)!.label;
+      expect(r.name, r.id).toContain(`: ${label} · `);
+      expect(r.tags, r.id).toContain(label.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
+    }
+    expect(result.recipes.some((r) => /Vivid2|Film Look/.test(r.name))).toBe(false);
   });
 });

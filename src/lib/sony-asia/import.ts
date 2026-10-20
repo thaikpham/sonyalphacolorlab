@@ -23,6 +23,7 @@ import {
   CL_MONOCHROME_LOOKS,
   CL_PARAM_ORDER,
   CREATIVE_LOOK_CODES,
+  CREATIVE_LOOKS,
   WB_AUTO_MODES,
   WB_PRESETS,
 } from '../camera/constants';
@@ -105,13 +106,8 @@ export const SCRAPE_CORRECTIONS: Correction[] = [
   },
   {
     from: 'VV2 \\(Vivid 2 Preset\\)',
-    to: 'VV2 (Vivid2)',
+    to: 'VV2 (Vivid 2)',
     why: '"Preset" is page furniture, not part of the Look name.',
-  },
-  {
-    from: 'VV2 \\(Vivid 2\\)',
-    to: 'VV2 (Vivid2)',
-    why: 'Sony spells the Look "Vivid2"; the space is a typo on some entries.',
   },
   {
     from: 'WB Colour Temp AWB',
@@ -360,11 +356,14 @@ export function importSonyAsia(
       continue;
     }
     const look = lookMatch[1];
-    const lookLabel = lookMatch[2].trim();
     if (!(CREATIVE_LOOK_CODES as readonly string[]).includes(look)) {
       skipped.push({ data, why: `"${look}" is not one of the ten built-in Creative Looks` });
       continue;
     }
+    /* The name is Sony's, from constants.ts — never the scrape's spelling,
+       which said "Vivid2" and "Film Look" where the help guide says "Vivid 2"
+       and "Film" (TP1000640837). Only the code is read from the row. */
+    const lookLabel = CREATIVE_LOOKS.find((l) => l.code === look)!.label;
 
     const settingsBody = settingsParts.join('|').trim();
 
