@@ -66,6 +66,81 @@ describe('unsaved edits', () => {
   });
 });
 
+/** One handler of the component, from its `const` to the next one. */
+function handler(name: string): string {
+  const start = code.indexOf(`\n  const ${name} = `);
+  expect(start, `handler ${name}`).toBeGreaterThan(-1);
+  const end = code.indexOf('\n  const ', start + 1);
+  return code.slice(start, end === -1 ? undefined : end);
+}
+
+/** The position of `needle` in `hay`, failing — not -1 — when it is absent. */
+function at(hay: string, needle: string): number {
+  const i = hay.indexOf(needle);
+  expect(i, `missing: ${needle}`).toBeGreaterThan(-1);
+  return i;
+}
+
+describe('the editor asks before it loses anything', () => {
+  /* `localesEmptied`, `placementDrops` and `highlightsDropped` are executed in
+     product-draft.test.ts. These pin that the component calls them, at the
+     point where asking can still prevent the loss. */
+
+  it('asks before a save that empties a feature list, and before the PATCH goes', () => {
+    /* RC4: a save emptied sony-np-fz100's English bullets and nothing asked. */
+    const save = handler('save');
+    expect(at(save, 'localesEmptied(draft)')).toBeLessThan(at(save, "kind: 'save'"));
+    expect(at(save, "kind: 'save'")).toBeLessThan(at(save, "method: 'PATCH'"));
+  });
+
+  it('asks before a move that drops filled specs or a camera’s highlights, and before it moves', () => {
+    const place = handler('place');
+    expect(at(place, 'placementDrops(')).toBeLessThan(at(place, 'withPlacement('));
+    expect(at(place, 'highlightsDropped(')).toBeLessThan(at(place, 'withPlacement('));
+    expect(at(place, "kind: 'placement'")).toBeLessThan(at(place, 'withPlacement('));
+    expect(code).toMatch(/t\('highlightsDropTitle'\)/);
+  });
+
+  it('asks in the page, never with a browser dialog', () => {
+    expect(code).toMatch(/role="alertdialog"/);
+    const confirms = [...code.matchAll(/window\.confirm\(/g)].length;
+    const discards = [...code.matchAll(/window\.confirm\(t\('discardConfirm'\)\)/g)].length;
+    expect(confirms).toBe(discards);
+  });
+});
+
+describe('one save at a time', () => {
+  /* "Save anyway" ran save() while a translation was out; the translation's
+     `finally` re-enabled Save mid-PATCH, and a second click sent the same
+     version — answered 409 staleEdit for a save that had landed. */
+  it('starts no save while another request is out', () => {
+    const save = handler('save');
+    expect(at(save, "if (busy !== '') return;")).toBeLessThan(at(save, 'fetch('));
+  });
+
+  it('cannot confirm while busy', () => {
+    const answer = handler('answer');
+    expect(at(answer, "busy !== ''")).toBeLessThan(at(answer, 'save(true)'));
+    const i = at(code, 'answer(true)');
+    const button = code.slice(code.lastIndexOf('<button', i), code.indexOf('</button>', i));
+    expect(button).toContain("disabled={busy !== ''}");
+  });
+});
+
+describe('the fields that used to be read-only are editable', () => {
+  it('has SKU, a numeric price and the Sony Store URL', () => {
+    expect(code).toMatch(/id="prod-sku"/);
+    expect(code).toMatch(/id="prod-price"[\s\S]{0,80}inputMode="numeric"/);
+    expect(code).toMatch(/id="prod-url"/);
+  });
+
+  it('refiles through place(), so every placement change is checked before it lands', () => {
+    expect(code).toMatch(/onChange=\{\(e\) => place\(\{ category:/);
+    expect(code).toMatch(/onChange=\{\(e\) => place\(\{ subCategory1:/);
+    expect(code).toMatch(/onChange=\{\(e\) => place\(\{ subCategory2:/);
+  });
+});
+
 describe('the create form', () => {
   it('offers only the categories the role may create', () => {
     /* A PE admin's first create defaulted to camera and always answered 403. */

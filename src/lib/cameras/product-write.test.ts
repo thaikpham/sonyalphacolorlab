@@ -293,7 +293,7 @@ describe('productPatch — authorisation', () => {
 describe('productPatch — highlights', () => {
   const side = {
     points: [1, 2, 3, 4].map((i) => ({ title: `T${i}`, body: `B${i}.` })),
-    keySpecs: [{ key: 'sensor', value: '33MP' }],
+    keySpecs: [{ key: 'sensor' as const, value: '33MP' }],
   };
 
   it('stores valid highlights, and clears them with null', () => {
@@ -317,6 +317,99 @@ describe('productPatch — highlights', () => {
         anyone,
       ),
     ).toMatchObject({ ok: false, error: 'invalidHighlights' });
+  });
+
+  it('clears them when the camera moves out of the category', () => {
+    /* The public page renders highlights whatever the category, and the
+       editor offers them only on a camera — left behind, a camera refiled as a
+       lens showed its sales points and camera core specs in place of its
+       feature list, with no way to remove them short of moving it back. */
+    const camera = { ...fx3(), highlights: { en: side, vi: side } };
+    const update = expectPatch(
+      productPatch({ category: 'lens', subCategory1: 'Full Frame', subCategory2: 'GM' }, camera, anyone),
+    );
+    expect(update).toHaveProperty('highlights', null);
+    expect(
+      expectPatch(productPatch({ category: 'accessory', subCategory1: 'Power', subCategory2: 'Battery' }, fx3(), anyone)),
+    ).toHaveProperty('highlights', null);
+  });
+
+  it('keeps them on a move within cameras', () => {
+    const camera = { ...fx3(), highlights: { en: side, vi: side } };
+    expect(expectPatch(productPatch({ subCategory2: 'Máy ảnh Alpha' }, camera, anyone))).not.toHaveProperty('highlights');
+  });
+});
+
+/** A create body every rule accepts. */
+const newCamera = {
+  sku: 'ILCE-7M5',
+  name: 'Alpha 7 V',
+  category: 'camera',
+  subCategory1: 'Full Frame',
+  subCategory2: 'Máy ảnh Alpha',
+  priceVnd: 64_990_000,
+  url: 'https://www.sony.com.vn/a7v',
+};
+
+describe('productPatch — photographs and feature lines', () => {
+  it('accepts an http(s) link or a path on this site, for the primary image and every gallery entry', () => {
+    const update = expectPatch(
+      productPatch(
+        { imageUrl: '/logo.png', galleryUrls: ['https://a.test/1.png', 'http://b.test/2.jpg', '/images/3.webp'] },
+        fx3(),
+        anyone,
+      ),
+    );
+    expect(update.image_url).toBe('/logo.png');
+    expect(update.gallery_urls).toEqual(['https://a.test/1.png', 'http://b.test/2.jpg', '/images/3.webp']);
+  });
+
+  it('refuses another scheme, a protocol-relative link, a list in one field and an endless one', () => {
+    /* Served in every catalogue read. No renderer turns these into a link
+       today; nothing should depend on that staying true. */
+    const bad = [
+      'javascript:alert(1)',
+      'data:text/html,' + 'x'.repeat(50),
+      '//evil.test/x.png',
+      '/\\evil.test/x.png',
+      'https://a.test/1.png\nhttps://a.test/2.png',
+      'https://a.test/' + 'x'.repeat(URL_MAX),
+    ];
+    for (const u of bad) {
+      expect(productPatch({ imageUrl: u }, fx3(), anyone), u).toMatchObject({ ok: false, error: 'invalidImageUrl', status: 400 });
+      expect(productPatch({ galleryUrls: ['https://a.test/ok.png', u] }, fx3(), anyone), u).toMatchObject({
+        ok: false,
+        error: 'invalidImageUrl',
+      });
+      expect(productCreate({ ...newCamera, imageUrl: u }, anyone), u).toMatchObject({ ok: false, error: 'invalidImageUrl' });
+      expect(productCreate({ ...newCamera, galleryUrls: [u] }, anyone), u).toMatchObject({ ok: false, error: 'invalidImageUrl' });
+    }
+  });
+
+  it('accepts what a row already stores as stored', () => {
+    const legacy = { ...fx3(), imageUrl: 'ftp://old.test/a.png', galleryUrls: ['ftp://old.test/a.png'] };
+    const update = expectPatch(
+      productPatch({ imageUrl: 'ftp://old.test/a.png', galleryUrls: ['ftp://old.test/a.png', 'https://a.test/new.png'] }, legacy, anyone),
+    );
+    expect(update.gallery_urls).toEqual(['ftp://old.test/a.png', 'https://a.test/new.png']);
+  });
+
+  it('caps a feature line rather than storing an endless one', () => {
+    const update = expectPatch(productPatch({ features: { en: ['x'.repeat(100_000)], vi: ['y'] } }, fx3(), anyone));
+    const features = update.features as { en: string[]; vi: string[] };
+    expect(features.en[0].length).toBeLessThanOrEqual(500);
+    expect(features.vi).toEqual(['y']);
+  });
+
+  it('caps every seeded feature line above its longest, so the cap never trims real copy', () => {
+    const longest = Math.max(
+      ...catalogue.flatMap((p) => {
+        const f = p.features as unknown as { en?: string[]; vi?: string[] } | string[];
+        const all = Array.isArray(f) ? f : [...(f?.en ?? []), ...(f?.vi ?? [])];
+        return all.filter((l): l is string => typeof l === 'string').map((l) => l.length);
+      }),
+    );
+    expect(longest).toBeLessThan(500);
   });
 });
 

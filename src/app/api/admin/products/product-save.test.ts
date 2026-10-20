@@ -358,6 +358,17 @@ describe('PATCH /api/admin/products/[id]', () => {
     expect(await res.json()).toEqual({ error: 'invalidHighlights' });
     expect(db.calls.some((c) => c.op === 'update')).toBe(false);
   });
+
+  it('clears a camera’s highlights when a move takes it out of cameras', async () => {
+    /* The product page renders highlights for any category, so a refiled lens
+       kept the camera's sales points — and the editor, which offers them only
+       on a camera, could no longer remove them. */
+    db.row = storedRow({ highlights: { en: hlSide, vi: hlSide } });
+    const res = await patch({ category: 'lens', subCategory1: 'Full Frame', subCategory2: 'GM' });
+    expect(res.status).toBe(200);
+    expect(db.row?.highlights).toBeNull();
+    expect((await res.json()).product.highlights).toBeNull();
+  });
 });
 
 describe('PATCH — the fields that used to be read-only', () => {

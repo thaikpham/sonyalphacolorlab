@@ -188,6 +188,20 @@ export function placementDrops(d: Draft, product: SonyCamera, next: Placement): 
 }
 
 /**
+ * Whether a move to `next` takes the product's highlights with it.
+ *
+ * Highlights belong to a camera: the route clears them in the save that files
+ * a camera anywhere else, and the editor stops offering them. So the move that
+ * first leaves the category loses what is stored and anything typed into them
+ * since — which the editor names before it moves, even when no spec value
+ * would go. A move made after that, or within cameras, loses nothing more.
+ */
+export function highlightsDropped(d: Draft, product: SonyCamera, next: Placement): boolean {
+  if (product.category !== 'camera' || d.category !== 'camera' || next.category === 'camera') return false;
+  return product.highlights != null || !same(d.hl, d.base.hl);
+}
+
+/**
  * The locales a save would take from some feature lines to none.
  *
  * A save emptied `sony-np-fz100`'s English list — three lines in the seed, `[]`
@@ -262,7 +276,8 @@ export function changes(d: Draft, product: SonyCamera): Record<string, unknown> 
   }
 
   /* Highlights belong to a camera that stays one: the route refuses them on a
-     product this save files anywhere else. */
+     product this save files anywhere else, and clears the stored ones itself
+     when a camera leaves the category — see `highlightsDropped()`. */
   if (d.category === 'camera' && product.category === 'camera' && !same(d.hl, b.hl)) {
     out.highlights = draftToHighlights(d.hl);
   }

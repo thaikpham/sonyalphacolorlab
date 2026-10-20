@@ -5,6 +5,7 @@ import {
   asDraft,
   changes,
   choosePlacement,
+  highlightsDropped,
   isDirty,
   localesEmptied,
   placementDrops,
@@ -307,6 +308,48 @@ describe('placementDrops', () => {
     const p = blockless({ specs: acc });
     const d = asDraft(p, V1);
     expect(placementDrops(d, p, choosePlacement(d, { category: 'lens' }))).toEqual(['keySpecs']);
+  });
+});
+
+/**
+ * A camera that leaves the category loses its highlights: the route clears
+ * them, and the editor stops offering them. The editor asks first — even when
+ * no spec value would go.
+ */
+describe('highlightsDropped', () => {
+  const side = {
+    points: [1, 2, 3, 4].map((i) => ({ title: `T${i}`, body: `B${i}.` })),
+    keySpecs: [{ key: 'sensor' as const, value: '33MP' }],
+  };
+  const withHighlights = () => product({ highlights: { en: side, vi: side } });
+
+  it('is true when a camera with stored highlights moves out of cameras', () => {
+    const p = withHighlights();
+    const d = asDraft(p, V1);
+    expect(highlightsDropped(d, p, choosePlacement(d, { category: 'lens' }))).toBe(true);
+    expect(highlightsDropped(d, p, choosePlacement(d, { category: 'accessory' }))).toBe(true);
+  });
+
+  it('is true for highlights typed since the camera was opened, with none stored', () => {
+    const p = product();
+    const d = asDraft(p, V1);
+    const touched = edit(d, { hl: { ...d.hl, en: { ...d.hl.en, points: 'A :: b' } } });
+    expect(highlightsDropped(touched, p, choosePlacement(touched, { category: 'lens' }))).toBe(true);
+    expect(highlightsDropped(d, p, choosePlacement(d, { category: 'lens' }))).toBe(false);
+  });
+
+  it('is false on a move within cameras, and once the draft has already left', () => {
+    const p = withHighlights();
+    const d = asDraft(p, V1);
+    expect(highlightsDropped(d, p, choosePlacement(d, { subCategory1: 'APS-C' }))).toBe(false);
+    const moved = withPlacement(d, choosePlacement(d, { category: 'lens' }));
+    expect(highlightsDropped(moved, p, choosePlacement(moved, { category: 'accessory' }))).toBe(false);
+  });
+
+  it('is false for a product that was never a camera', () => {
+    const p = blockless();
+    const d = asDraft(p, V1);
+    expect(highlightsDropped(d, p, choosePlacement(d, { category: 'lens' }))).toBe(false);
   });
 });
 

@@ -461,7 +461,8 @@
       "invalidPrice": "The price must be a whole number of đồng, from 0 to 100.000.000.000. Nothing was changed.",
       "invalidUrl": "The Sony Store URL must be one link starting with http:// or https://, up to 500 characters. Nothing was changed.",
       "invalidPlacement": "That subcategory does not belong to this category. Nothing was changed.",
-      "skuTaken": "Another product already uses that SKU. Nothing was changed."
+      "skuTaken": "Another product already uses that SKU. Nothing was changed.",
+      "invalidImageUrl": "A photo URL must be one link starting with http:// or https://, or a path on this site starting with /, up to 500 characters. Nothing was changed."
     },
     "basicInfoHeading": "Product name & gallery",
     "primaryImageLabel": "Primary image URL",
@@ -497,7 +498,8 @@
     "specKindChangeTitle": "{count, plural, one {This move drops # filled spec.} other {This move drops # filled specs.}}",
     "specKindChangeBtn": "Move anyway",
     "featuresEmptiedTitle": "{which, select, en {The English feature list will be empty.} vi {The Vietnamese feature list will be empty.} other {Both feature lists will be empty.}}",
-    "featuresEmptiedBtn": "Save anyway"
+    "featuresEmptiedBtn": "Save anyway",
+    "highlightsDropTitle": "Moving it out of cameras removes its highlights."
   },
   "adminUi": {
     "wordmark": "Alpha Admin",

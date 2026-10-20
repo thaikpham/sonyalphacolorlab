@@ -15,6 +15,7 @@ import {
   afterSave,
   asDraft,
   choosePlacement,
+  highlightsDropped,
   isDirty,
   lines,
   localesEmptied,
@@ -34,13 +35,14 @@ type Props = {
 
 /**
  * A question the editor is waiting on, asked in the save bar rather than with
- * `window.confirm`: a move that would drop filled spec values, or a save that
- * would empty a locale's feature list. Tied to the draft it was asked about, so
- * switching product cannot answer it for another one.
+ * `window.confirm`: a move that would drop filled spec values or a camera's
+ * highlights, or a save that would empty a locale's feature list. Tied to the
+ * draft it was asked about, so switching product cannot answer it for another
+ * one.
  */
 type Ask =
   | { id: string; kind: 'save'; langs: ('en' | 'vi')[] }
-  | { id: string; kind: 'placement'; next: Placement; drops: number };
+  | { id: string; kind: 'placement'; next: Placement; drops: number; highlights: boolean };
 
 /** The options a select offers, with the stored value kept when it is a legacy one. */
 const withStored = (choices: readonly string[], stored: string) =>
@@ -274,21 +276,27 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
     setDraft((d) => (d ? { ...d, specs: { ...d.specs, [field]: value } } : d));
 
   /** Refiles the draft. A move that changes the spec kind and would drop
-      filled values asks first, naming how many. */
+      filled values asks first, naming how many — and so does one that takes a
+      camera out of the category, which the route clears the highlights of. */
   const place = (change: Partial<Placement>) => {
     if (!draft || !selected || draft.id !== selected.id) return;
     const next = choosePlacement(draft, change);
     const drops = placementDrops(draft, selected, next).length;
-    if (drops > 0) {
-      setAsk({ id: draft.id, kind: 'placement', next, drops });
+    const highlights = highlightsDropped(draft, selected, next);
+    if (drops > 0 || highlights) {
+      setAsk({ id: draft.id, kind: 'placement', next, drops, highlights });
       return;
     }
     const id = draft.id;
     setDraft((d) => (d && d.id === id ? withPlacement(d, next) : d));
   };
 
+  /* A yes waits while a request is out: "Save anyway" during a translation
+     ran two requests at once, and the first to finish re-enabled Save while
+     the PATCH was still in flight. */
   const answer = (go: boolean) => {
     const q = pending;
+    if (go && busy !== '') return;
     setAsk(null);
     if (!go || !q) return;
     if (q.kind === 'save') void save(true);
@@ -329,6 +337,9 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
 
   /** `confirmed` once the operator has agreed to empty a feature list. */
   const save = async (confirmed = false) => {
+    /* One request at a time. A second PATCH would name the version the first
+       one is replacing, and answer 409 staleEdit for a save that landed. */
+    if (busy !== '') return;
     if (!draft || !selected || draft.id !== selected.id) return;
     /* A save once emptied a locale's whole feature list and nothing asked. */
     const emptied = localesEmptied(draft);
@@ -702,13 +713,23 @@ export function AdminEditor({ products: initialProducts, initialTab }: Props) {
                     <p id="ask-title" className="text-body-sm font-semibold text-ink">
                       {pending.kind === 'save'
                         ? t('featuresEmptiedTitle', { which: pending.langs.length > 1 ? 'both' : pending.langs[0] })
-                        : t('specKindChangeTitle', { count: pending.drops })}
+                        : [
+                            pending.drops > 0 ? t('specKindChangeTitle', { count: pending.drops }) : '',
+                            pending.highlights ? t('highlightsDropTitle') : '',
+                          ]
+                            .filter(Boolean)
+                            .join(' ')}
                     </p>
                     <div className="flex items-center gap-3">
                       <button ref={askCancel} type="button" onClick={() => answer(false)} className="btn-glass cursor-pointer">
                         {t('cancel')}
                       </button>
-                      <button type="button" onClick={() => answer(true)} className="btn-accent cursor-pointer">
+                      <button
+                        type="button"
+                        onClick={() => answer(true)}
+                        disabled={busy !== ''}
+                        className="btn-accent disabled:opacity-40 cursor-pointer"
+                      >
                         {pending.kind === 'save' ? t('featuresEmptiedBtn') : t('specKindChangeBtn')}
                       </button>
                     </div>

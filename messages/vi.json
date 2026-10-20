@@ -461,7 +461,8 @@
       "invalidPrice": "Giá phải là số đồng nguyên, từ 0 đến 100.000.000.000. Chưa có gì thay đổi.",
       "invalidUrl": "URL Sony Store phải là một liên kết bắt đầu bằng http:// hoặc https://, tối đa 500 ký tự. Chưa có gì thay đổi.",
       "invalidPlacement": "Phân nhóm này không thuộc danh mục đã chọn. Chưa có gì thay đổi.",
-      "skuTaken": "Đã có sản phẩm khác dùng mã SKU này. Chưa có gì thay đổi."
+      "skuTaken": "Đã có sản phẩm khác dùng mã SKU này. Chưa có gì thay đổi.",
+      "invalidImageUrl": "URL ảnh phải là một liên kết bắt đầu bằng http:// hoặc https://, hoặc một đường dẫn trên trang này bắt đầu bằng /, tối đa 500 ký tự. Chưa có gì thay đổi."
     },
     "basicInfoHeading": "Tên sản phẩm & Bộ sưu tập ảnh",
     "primaryImageLabel": "URL ảnh đại diện",
@@ -497,7 +498,8 @@
     "specKindChangeTitle": "{count, plural, other {Chuyển nhóm này sẽ bỏ # thông số đã điền.}}",
     "specKindChangeBtn": "Vẫn chuyển",
     "featuresEmptiedTitle": "{which, select, en {Danh sách tính năng tiếng Anh sẽ trống.} vi {Danh sách tính năng tiếng Việt sẽ trống.} other {Cả hai danh sách tính năng sẽ trống.}}",
-    "featuresEmptiedBtn": "Vẫn lưu"
+    "featuresEmptiedBtn": "Vẫn lưu",
+    "highlightsDropTitle": "Chuyển khỏi nhóm máy ảnh sẽ xoá phần điểm nổi bật."
   },
   "adminUi": {
     "wordmark": "Alpha Admin",

@@ -36,6 +36,8 @@ const NAME_MAX = 200;
 const FULL_NAME_MAX = 300;
 const GALLERY_MAX = 100;
 const FEATURE_LINES_MAX = 40;
+/** Over five times the longest seeded line (93) — a cap on a paste, never on copy. */
+const FEATURE_LINE_MAX = 500;
 
 /** What a spec block cites when the product has no https page of its own. */
 const DEFAULT_SPEC_SOURCE = 'https://www.sony.com.vn';
@@ -48,6 +50,7 @@ export const PRODUCT_WRITE_ERRORS = [
   'invalidSku',
   'invalidPrice',
   'invalidUrl',
+  'invalidImageUrl',
   'invalidPlacement',
   'notAllowedForCategory',
   'invalidHighlights',
@@ -74,7 +77,7 @@ const asLines = (x: unknown): string[] =>
   Array.isArray(x)
     ? x
         .filter((l): l is string => typeof l === 'string')
-        .map((l) => l.trim())
+        .map((l) => l.trim().slice(0, FEATURE_LINE_MAX))
         .filter(Boolean)
         .slice(0, FEATURE_LINES_MAX)
     : [];
@@ -156,6 +159,37 @@ function cleanUrl(url: string): string | Fail {
   return url;
 }
 
+/**
+ * One photograph: an http(s) link, or a path on this site (`/logo.png` is the
+ * create form's default). Not `//host` and not `/\host`, which a browser
+ * resolves to another origin; nothing with whitespace inside, for the same
+ * newline-joined lists `cleanUrl()` refuses. Every catalogue read serves these
+ * columns, and no renderer turning one into a link is what keeps a
+ * `javascript:` value harmless today — not something to depend on.
+ */
+function cleanImage(u: string): string | Fail {
+  if (u.length > URL_MAX || /[\s\\]/.test(u)) return fail('invalidImageUrl');
+  if (/^\/[^/]/.test(u)) return u;
+  if (!/^https?:\/\/\S+$/i.test(u)) return fail('invalidImageUrl');
+  try {
+    new URL(u);
+  } catch {
+    return fail('invalidImageUrl');
+  }
+  return u;
+}
+
+/** The gallery as sent, each new entry held to `cleanImage()`; one already stored is accepted as stored. */
+function cleanGallery(x: unknown[], stored: readonly string[] = []): string[] | Fail {
+  const urls = asUrls(x);
+  for (const u of urls) {
+    if (stored.includes(u)) continue;
+    const clean = cleanImage(u);
+    if (failed(clean)) return clean;
+  }
+  return urls;
+}
+
 const specSourceFor = (url: string) => (/^https:\/\/\S+$/.test(url) ? url : DEFAULT_SPEC_SOURCE);
 
 /**
@@ -218,8 +252,16 @@ export function productPatch(
   const fullName = text(body, 'fullName');
   if (fullName) update.full_name = fullName.slice(0, FULL_NAME_MAX);
   const imageUrl = text(body, 'imageUrl');
-  if (imageUrl) update.image_url = imageUrl.slice(0, URL_MAX);
-  if (Array.isArray(body.galleryUrls)) update.gallery_urls = asUrls(body.galleryUrls);
+  if (imageUrl) {
+    const clean = imageUrl === current.imageUrl.trim() ? imageUrl : cleanImage(imageUrl);
+    if (failed(clean)) return clean;
+    update.image_url = clean;
+  }
+  if (Array.isArray(body.galleryUrls)) {
+    const gallery = cleanGallery(body.galleryUrls, current.galleryUrls ?? []);
+    if (failed(gallery)) return gallery;
+    update.gallery_urls = gallery;
+  }
   if (isBody(body.features)) {
     update.features = { en: asLines(body.features.en), vi: asLines(body.features.vi) };
   }
@@ -284,7 +326,13 @@ export function productPatch(
 
   /* `null` clears the column; anything else must pass `highlightsSchema`, and
      the product must be a camera once this save lands — the sales-talk block
-     has no meaning on a lens or an accessory. */
+     has no meaning on a lens or an accessory.
+
+     A camera that moves out of the category loses them in the same write. The
+     product page renders highlights whatever the category, so a camera refiled
+     as a lens kept its sales points and camera core specs in place of its
+     feature list — and the editor, which offers them only on a camera, could
+     not remove them. The editor asks before a move that would do this. */
   if (body.highlights !== undefined) {
     if (body.highlights === null) update.highlights = null;
     else {
@@ -292,6 +340,8 @@ export function productPatch(
       if (!parsed.success || category !== 'camera') return fail('invalidHighlights');
       update.highlights = parsed.data;
     }
+  } else if (current.category === 'camera' && category !== 'camera') {
+    update.highlights = null;
   }
 
   return { ok: true, update };
@@ -339,10 +389,12 @@ export function productCreate(body: unknown, canManage: (category: Category) => 
 
   const fullName = text(body, 'fullName');
   const image = text(body, 'imageUrl');
-  const imageUrl = image ? image.slice(0, URL_MAX) : '/logo.png';
+  const imageUrl = image ? cleanImage(image) : '/logo.png';
+  if (failed(imageUrl)) return imageUrl;
   const galleryUrls = Array.isArray(body.galleryUrls)
-    ? asUrls(body.galleryUrls)
+    ? cleanGallery(body.galleryUrls)
     : [imageUrl].filter((u) => u !== '/logo.png');
+  if (failed(galleryUrls)) return galleryUrls;
   const features = isBody(body.features)
     ? { en: asLines(body.features.en), vi: asLines(body.features.vi) }
     : { en: [], vi: [] };
