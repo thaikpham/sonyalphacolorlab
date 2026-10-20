@@ -109,7 +109,7 @@ vi.mock('@/lib/auth/admin-gate', () => ({
 }))
 
 vi.mock('@/lib/lab/reference-check', () => ({ findUnknownReferences: async () => [] }))
-vi.mock('@/lib/lab/asset-store', () => ({ articlePreviews: async () => ({}) }))
+vi.mock('@/lib/lab/asset-store', () => ({ articlePreviews: async () => ({ previews: {}, failed: false }) }))
 
 const { PATCH } = await import('./[id]/route')
 const { POST } = await import('./route')
@@ -227,7 +227,8 @@ describe('PATCH — the publish gate', () => {
     expect(res.status).toBe(422)
     const data = await res.json()
     expect(data.error).toBe('specViolation')
-    expect(data.problems).toEqual(['placeholder'])
+    // The open markers, and the reading time a frame cannot know before its shoot.
+    expect(data.problems).toEqual(['emptyRead', 'placeholder'])
     expect(db.updates).toEqual([])
     expect(db.storage).toEqual([])
   })
@@ -249,6 +250,15 @@ describe('POST', () => {
     const res = await post({ ...draftBody, title: ' ' })
     expect(res.status).toBe(400)
     expect(await res.json()).toEqual({ error: 'titleRequired' })
+    expect(db.inserts).toEqual([])
+  })
+
+  it.each([null, 42, ['a']])('answers badRequest for a JSON body that is not an object (%s)', async (body) => {
+    /* Valid JSON that is not an object threw at the first field read — a bare
+       500 with no body. PATCH already guarded it. */
+    const res = await post(body)
+    expect(res.status).toBe(400)
+    expect(await res.json()).toEqual({ error: 'badRequest' })
     expect(db.inserts).toEqual([])
   })
 

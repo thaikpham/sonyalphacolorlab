@@ -43,8 +43,10 @@ export function TldrCard({ block, label }: { block: TldrBlock; label: string }) 
     <aside className={`${BLOCK_GAP} rounded-lg bg-accent-900 px-6 py-[22px] shadow-[var(--elevation-spec)]`}>
       <p className="label text-accent-300">{label}</p>
       <ul className="mt-2">
-        {block.items.map((item) => (
-          <li key={item} className="flex gap-2.5 py-1">
+        {/* Keys by position here and in the table: the parser keeps repeated
+            text, and these lists never reorder. */}
+        {block.items.map((item, i) => (
+          <li key={i} className="flex gap-2.5 py-1">
             <span aria-hidden className="text-accent-300">
               —
             </span>
@@ -137,7 +139,7 @@ export function ComparisonTable({ block }: { block: TableBlock }) {
             <tr className="bg-sunken">
               {block.head.map((h, i) => (
                 <th
-                  key={h}
+                  key={i}
                   scope="col"
                   className={`label px-4 py-3 ${i === 0 ? 'w-[38%]' : 'w-[31%]'}`}
                 >
@@ -151,7 +153,7 @@ export function ComparisonTable({ block }: { block: TableBlock }) {
               /* Alternate rows tint instead of ruling. A hairline grid on a
                  dark ground reads as noise — `.row-tint` is the system's
                  answer and the reason there is no divider token for a table. */
-              <tr key={row[0]} className={r % 2 === 1 ? 'row-tint' : undefined}>
+              <tr key={r} className={r % 2 === 1 ? 'row-tint' : undefined}>
                 <th scope="row" className="px-4 py-3 text-body-sm font-semibold text-ink">
                   {row[0]}
                 </th>
@@ -166,11 +168,14 @@ export function ComparisonTable({ block }: { block: TableBlock }) {
   )
 }
 
-/** An exception or a boundary condition. Its label is the condition itself. */
+/**
+ * An exception or a boundary condition. Its label is the condition itself —
+ * a sentence, so not `.label`, whose uppercase is capped at three words.
+ */
 export function Callout({ block }: { block: CalloutBlock }) {
   return (
     <aside className={`${BLOCK_GAP} surface-raised px-[22px] py-5`}>
-      <p className="label text-accent-400">{block.label}</p>
+      <p className="text-body-sm font-semibold text-accent-400">{block.label}</p>
       <p className="mt-1.5 text-body text-ink [text-wrap:pretty]">{block.text}</p>
     </aside>
   )
@@ -193,7 +198,6 @@ export function Callout({ block }: { block: CalloutBlock }) {
 export function ArticleFigure({ block, articleId }: { block: FigureBlock; articleId: string }) {
   if (!block.assetId) return null
   const src = assetUrl(articleId, block.assetId)
-  if (!src) return null
 
   return (
     <figure className={BLOCK_GAP}>

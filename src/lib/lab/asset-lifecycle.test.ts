@@ -1,7 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { referencedAssetIds } from './assets';
-import { deleteArticleAssets, reconcileArticleAssets, resolveReferencedAssets } from './asset-lifecycle';
+import {
+  deleteArticleAssets,
+  reconcileArticleAssets,
+  resolveReferencedAssets,
+  retireUnreferencedAssets,
+} from './asset-lifecycle';
 
 /**
  * The public bucket must hold exactly what the public site shows.
@@ -24,8 +29,13 @@ const FOREIGN = 'c7d41e90-2a35-4b68-8f1d-5e0937ab46c2';
 
 type Call = { op: string; bucket: string; paths: string[] };
 
+/** A row with no `article_id` belongs to `ARTICLE`, which is most of them. */
+type AssetRow = { id: string; state: string; article_id?: string };
+
 const db = {
-  assets: [] as { id: string; state: string }[],
+  assets: [] as AssetRow[],
+  /** Every `select().eq()` filter, as `[column, value]`. */
+  selects: [] as [string, string][],
   updates: [] as { ids: string[]; state: string }[],
   deleted: [] as string[],
   copyFails: false,
@@ -53,9 +63,17 @@ vi.mock('@/lib/supabase/server', () => ({
   contentAdmin: () => ({
     from: () => ({
       /* Shaped like the real builder: `select().eq()` is the terminal await,
-         `update().in()` and `delete().eq()` are their own chains. */
+         `update().in()` and `delete().eq()` are their own chains. The filter is
+         applied, not ignored: ownership comes from it, and a fake that returned
+         every row whatever it was asked would pass a query on the wrong column. */
       select: () => ({
-        eq: async () => ({ data: db.assets, error: null }),
+        eq: async (col: string, value: string) => {
+          db.selects.push([col, value]);
+          const rows = db.assets.filter(
+            (row) => (col === 'article_id' ? (row.article_id ?? ARTICLE) : row[col as keyof AssetRow]) === value,
+          );
+          return { data: rows, error: null };
+        },
       }),
       update: (patch: { state: string }) => ({
         in: async (_col: string, ids: string[]) => {
@@ -95,6 +113,7 @@ beforeEach(() => {
     { id: B, state: 'draft' },
   ];
   db.updates = [];
+  db.selects = [];
   db.deleted = [];
   db.copyFails = false;
   db.removeFails = null;
@@ -154,6 +173,15 @@ describe('resolveReferencedAssets', () => {
       error: 'foreignAsset',
     });
   });
+
+  it('reads ownership by this article id, so another article’s asset is foreign', async () => {
+    db.assets.push({ id: FOREIGN, state: 'draft', article_id: 'another-article' });
+    await expect(resolveReferencedAssets(ARTICLE, [figure(FOREIGN)])).resolves.toEqual({
+      ok: false,
+      error: 'foreignAsset',
+    });
+    expect(db.selects).toEqual([['article_id', ARTICLE]]);
+  });
 });
 
 describe('publishing', () => {
@@ -170,7 +198,21 @@ describe('publishing', () => {
     expect(db.updates).toContainEqual({ ids: [A], state: 'published' });
   });
 
-  it('retires an asset the body no longer references', async () => {
+  it('copies but removes nothing, because the live page still names the old images', async () => {
+    /* Publishing runs before the row is written, and that write can still
+       fail. Retiring B here left the live v1 page — which still shows B —
+       with a broken image whenever it did. */
+    db.assets = [
+      { id: A, state: 'published' },
+      { id: B, state: 'published' },
+    ];
+    await expect(reconcileArticleAssets(ARTICLE, [figure(A)], 'published')).resolves.toEqual({
+      ok: true,
+    });
+    expect(calls.some((c) => c.op === 'remove')).toBe(false);
+  });
+
+  it('retires an asset the body no longer references, once the row is written', async () => {
     /* Deleting a figure from a published article is the ordinary way an image
        becomes unreferenced. Leaving it public serves a picture the editor
        removed. */
@@ -179,6 +221,7 @@ describe('publishing', () => {
       { id: B, state: 'published' },
     ];
     await reconcileArticleAssets(ARTICLE, [figure(A)], 'published');
+    await expect(retireUnreferencedAssets(ARTICLE, [figure(A)])).resolves.toEqual({ ok: true });
     const removed = calls.filter((c) => c.op === 'remove' && c.bucket === 'lab');
     expect(removed.flatMap((c) => c.paths)).toEqual([
       `${ARTICLE}/${B}/320.webp`,
@@ -195,12 +238,26 @@ describe('publishing', () => {
     await expect(reconcileArticleAssets(ARTICLE, [figure(A)], 'published')).resolves.toEqual({
       ok: true,
     });
+    await expect(retireUnreferencedAssets(ARTICLE, [figure(A)])).resolves.toEqual({ ok: true });
     const removed = calls.filter((c) => c.op === 'remove' && c.bucket === 'lab');
     expect(removed.flatMap((c) => c.paths)).toEqual([
       `${ARTICLE}/${B}/320.webp`,
       `${ARTICLE}/${B}/640.webp`,
       `${ARTICLE}/${B}/1024.webp`,
     ]);
+  });
+
+  it('reports a retire that fails, marking the stranded copy cleanup_failed', async () => {
+    db.assets = [
+      { id: A, state: 'published' },
+      { id: B, state: 'published' },
+    ];
+    db.removeFails = 'lab';
+    await expect(retireUnreferencedAssets(ARTICLE, [figure(A)])).resolves.toEqual({
+      ok: false,
+      error: 'assetSyncFailed',
+    });
+    expect(db.updates).toContainEqual({ ids: [B], state: 'cleanup_failed' });
   });
 
   it('still refuses to publish a referenced cleanup_failed asset', async () => {

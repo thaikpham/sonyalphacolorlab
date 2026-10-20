@@ -69,6 +69,7 @@ export const ARTICLE_ID_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 /** `sony_cameras.id` — lower-case, digits and dashes, as the seed writes them. */
 const PRODUCT_ID_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/
+const IPV4_RE = /^\d+(?:\.\d+){3}$/
 
 const isObject = (v: unknown): v is Record<string, unknown> =>
   typeof v === 'object' && v !== null && !Array.isArray(v)
@@ -111,7 +112,13 @@ export function parseSourceUrl(v: unknown): string | null {
   if (url.protocol !== 'https:') return null
   if (url.username || url.password) return null
   if (!url.hostname.includes('.')) return null
-  return url.toString()
+  // An address literal has a dot too, and no published page lives at one.
+  if (IPV4_RE.test(url.hostname) || url.hostname.startsWith('[')) return null
+  /* The bound is checked again on the stored form. `toString()`
+     percent-encodes each diacritic into nine characters, so a paste that fit
+     was stored over the limit and refused by every later read. */
+  const out = url.toString()
+  return out.length <= META_LIMITS.url ? out : null
 }
 
 export function parseRef(raw: unknown): ContentRef | null {

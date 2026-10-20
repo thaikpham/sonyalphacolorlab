@@ -4,7 +4,7 @@ import { useId } from 'react'
 import { useTranslations } from 'next-intl'
 import { FIELD_SM, SELECT } from '@/components/admin-ui/controls'
 import { CONCEPTS, CONCEPT_GROUP_LABELS, type ConceptGroup } from '@/lib/content/concepts'
-import { KNOWLEDGE_SECTIONS, REF_KINDS } from '@/lib/lab/meta'
+import { KNOWLEDGE_SECTIONS, META_LIMITS, REF_KINDS } from '@/lib/lab/meta'
 import type { ArticleKind, ArticleMeta, ContentRef, ContentRefKind } from '@/lib/lab/types'
 
 /**
@@ -149,6 +149,10 @@ export function MetaEditor({
     })
 
   const groups: ConceptGroup[] = ['wb', 'pp', 'cl']
+  /* `parseMeta` keeps the first N of each list and counts the rest as
+     dropped, so the controls stop at the same N. Past it, an addition saved,
+     was reported as a refused field, and vanished on the reload. */
+  const conceptsFull = meta.concepts.length >= META_LIMITS.concepts
 
   return (
     <div className="surface flex flex-col gap-5 px-5 py-5">
@@ -296,7 +300,8 @@ export function MetaEditor({
           <button
             type="button"
             onClick={() => set({ related: [...meta.related, { kind: 'recipe', id: '' }] })}
-            className="chip chip-action"
+            disabled={meta.related.length >= META_LIMITS.related}
+            className="chip chip-action disabled:cursor-not-allowed disabled:opacity-50"
           >
             {t('addRelated')}
           </button>
@@ -333,7 +338,8 @@ export function MetaEditor({
           <button
             type="button"
             onClick={() => set({ prerequisites: [...meta.prerequisites, ''] })}
-            className="chip chip-action"
+            disabled={meta.prerequisites.length >= META_LIMITS.prerequisites}
+            className="chip chip-action disabled:cursor-not-allowed disabled:opacity-50"
           >
             {t('addPrerequisite')}
           </button>
@@ -355,10 +361,11 @@ export function MetaEditor({
                       type="button"
                       aria-pressed={on}
                       onClick={() => toggleConcept(c.key)}
+                      disabled={!on && conceptsFull}
                       /* The system's selected state: an accent-tinted fill and
                          ink text — on the admin's paper ground the ramp is
                          mirrored, so `text-ink` is what reads (CLAUDE.md rule 3). */
-                      className={on ? 'chip chip-action surface-selected text-ink' : 'chip chip-action'}
+                      className={on ? 'chip chip-action surface-selected text-ink' : 'chip chip-action disabled:cursor-not-allowed disabled:opacity-50'}
                     >
                       {c.key === c.group ? CONCEPT_GROUP_LABELS[g] : c.label}
                     </button>
@@ -405,7 +412,8 @@ export function MetaEditor({
           <button
             type="button"
             onClick={() => set({ sources: [...meta.sources, blankSource()] })}
-            className="chip chip-action"
+            disabled={meta.sources.length >= META_LIMITS.sources}
+            className="chip chip-action disabled:cursor-not-allowed disabled:opacity-50"
           >
             {t('addSource')}
           </button>

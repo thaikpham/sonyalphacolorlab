@@ -52,7 +52,9 @@ export type SetupStep = {
   readonly tip?: {
     readonly title: string
     readonly body: string
-    readonly settings: readonly { readonly label: string; readonly path: string }[]
+    /* Full settings, value included: the recap prints each row's value, and
+       the two rows here end on different ones. */
+    readonly settings: readonly Setting[]
   }
 }
 
@@ -172,8 +174,8 @@ export function setupSteps(v: MenuVersion, t: SetupCopy): readonly SetupStep[] {
         title: c('focusArea.tipTitle'),
         body: c('focusArea.tipBody'),
         settings: [
-          { label: c('focusArea.tipAssign'), path: p.customKey },
-          { label: c('focusArea.tipHalfPress'), path: p.afShutter },
+          { label: c('focusArea.tipAssign'), value: 'AF ON', path: p.customKey },
+          { label: c('focusArea.tipHalfPress'), value: 'Off', path: p.afShutter },
         ],
       },
     },
@@ -240,14 +242,8 @@ export function recapRows(steps: readonly SetupStep[]): readonly RecapRow[] {
       rows.push({ n: step.n, label: s.label, value: s.value, path: s.path })
     }
     for (const t of step.tip?.settings ?? []) {
-      rows.push({ n: step.n, label: t.label, value: 'AF-ON', path: t.path })
+      rows.push({ n: step.n, label: t.label, value: t.value, path: t.path })
     }
   }
   return rows
 }
-
-/**
- * Every step id, for the progress denominator and for pruning stale storage.
- * Ids do not depend on the copy, so the key itself stands in for a translator.
- */
-export const STEP_IDS: readonly string[] = setupSteps('old', (key) => key).map((s) => s.id)

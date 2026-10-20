@@ -1,7 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import type { RecipeFormat } from '@/lib/camera/constants'
-import { conceptsForRecipe } from '@/lib/content/concepts'
+import { CONCEPT_GROUP_LABELS, conceptsForRecipe } from '@/lib/content/concepts'
 import {
   entriesReferencing,
   knowledgeExplaining,
@@ -67,12 +67,12 @@ export async function RecipeLearnMore({
       <ul className="flex flex-wrap gap-2">
         <li>
           <Link href={`/learn/glossary#${format}`} className="chip chip-action">
-            {t('glossaryTitle')} · {format === 'pp' ? 'Picture Profile' : 'Creative Look'}
+            {t('glossaryTitle')} · {CONCEPT_GROUP_LABELS[format]}
           </Link>
         </li>
         <li>
           <Link href="/learn/glossary#wb" className="chip chip-action">
-            {t('glossaryTitle')} · White Balance
+            {t('glossaryTitle')} · {CONCEPT_GROUP_LABELS.wb}
           </Link>
         </li>
       </ul>

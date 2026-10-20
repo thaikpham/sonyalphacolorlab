@@ -26,7 +26,9 @@ import { isDevStore } from './dev-store';
  *
  * - **Publishing** copies bytes first, then flips the article. A failed copy
  *   means a private article with some public objects — invisible, and cleaned
- *   up by the next publish.
+ *   up by the next publish. What the new body no longer references comes out
+ *   only after the row is written: until then the live page is the previous
+ *   version, which still shows it.
  * - **Unpublishing** flips the article and invalidates the cache first, then
  *   removes bytes. A failed removal means a private article whose objects are
  *   briefly still fetchable by URL, which is bad; doing it the other way round
@@ -196,23 +198,38 @@ export async function reconcileArticleAssets(
   }
 
   /* Publishing does check, before anything is copied: see
-     `resolveReferencedAssets`. */
+     `resolveReferencedAssets`. It copies and removes nothing: the row write
+     that follows can still fail, and the live page it would replace still
+     names every image the old body had. `retireUnreferencedAssets` runs once
+     the row is written. */
   const resolved = await resolveReferencedAssets(articleId, blocks);
   if (!resolved.ok) return resolved;
-
-  const owned = await ownedAssets(articleId);
-  const referenced = new Set(resolved.ids);
-
-  /* Anything that may be public and the body no longer references has to come
-     back out. Deleting a figure from a published article is the ordinary way
-     an image becomes unreferenced, and leaving it public would mean a picture
-     the editor removed is still served. */
-  const strandedPublic = owned.filter((row) => mayBePublic(row) && !referenced.has(row.id));
 
   if (!(await publishAssets(articleId, resolved.ids))) {
     return { ok: false, error: 'assetSyncFailed' };
   }
-  if (!(await retireAssets(articleId, strandedPublic, referenced))) {
+  return { ok: true };
+}
+
+/**
+ * After a published save is written: take out what the body no longer names.
+ *
+ * Deleting a figure from a published article is the ordinary way an image
+ * becomes unreferenced, and leaving it public would mean a picture the editor
+ * removed is still served. Run before the row write, a failed write left the
+ * live page — the previous version, still naming that picture — with a
+ * broken image.
+ */
+export async function retireUnreferencedAssets(
+  articleId: string,
+  blocks: readonly unknown[],
+): Promise<LifecycleResult> {
+  if (isDevStore()) return { ok: true };
+
+  const owned = await ownedAssets(articleId);
+  const referenced = new Set(referencedAssetIds(blocks));
+  const stranded = owned.filter((row) => mayBePublic(row) && !referenced.has(row.id));
+  if (!(await retireAssets(articleId, stranded, referenced))) {
     return { ok: false, error: 'assetSyncFailed' };
   }
   return { ok: true };

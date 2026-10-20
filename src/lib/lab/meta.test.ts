@@ -139,7 +139,43 @@ describe('parseSourceUrl', () => {
   it('normalises a valid https URL', () => {
     expect(parseSourceUrl(' https://Example.com/a b ')).toBe('https://example.com/a%20b')
   })
-  it.each(['ftp://example.com', 'https://localhost/x', '/relative', 'https://'])('refuses %s', (u) => {
+  it.each([
+    'ftp://example.com',
+    'https://localhost/x',
+    '/relative',
+    'https://',
+    // An address literal has a dot and is still not a page anyone publishes.
+    'https://127.0.0.1/x',
+    'https://192.168.1.1/admin',
+    'https://[::1]/x',
+  ])('refuses %s', (u) => {
     expect(parseSourceUrl(u)).toBeNull()
+  })
+
+  it('accepts on save only what it will accept again on every read', () => {
+    /* The stored form is `url.toString()`, which percent-encodes each
+       diacritic into nine characters. Measured on the raw paste, a link that
+       fit the limit was stored over it and refused by every later read, so
+       the page's source vanished after it had passed the publish gate. */
+    const long = 'https://vi.wikipedia.org/wiki/' + 'ệ'.repeat(60)
+    expect(long.length).toBeLessThanOrEqual(META_LIMITS.url)
+    expect(parseSourceUrl(long)).toBeNull()
+
+    const fits = 'https://vi.wikipedia.org/wiki/' + 'ệ'.repeat(20)
+    const stored = parseSourceUrl(fits)
+    expect(stored).not.toBeNull()
+    expect(parseSourceUrl(stored)).toBe(stored)
+  })
+})
+
+describe('prerequisites', () => {
+  it('trims, refuses what is not an article id, de-duplicates and bounds', () => {
+    const extra = Array.from({ length: 7 }, (_, i) => `page-${i + 1}`)
+    const { meta, dropped } = parseMeta({
+      prerequisites: [' iso-auto-min-ss ', 'Bad Id', 'iso-auto-min-ss', 42, ...extra],
+    })
+    expect(meta.prerequisites).toEqual(['iso-auto-min-ss', ...extra.slice(0, META_LIMITS.prerequisites - 1)])
+    // 'Bad Id', the duplicate, 42, and the two past the bound.
+    expect(dropped).toBe(5)
   })
 })

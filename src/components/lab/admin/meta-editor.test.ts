@@ -1,9 +1,14 @@
-import { describe, expect, it } from 'vitest'
+import { createElement } from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
+import { describe, expect, it, vi } from 'vitest'
+import { CONCEPTS } from '@/lib/content/concepts'
 import { ARTICLES } from '@/lib/lab/articles'
 import { META_LIMITS, parseMeta } from '@/lib/lab/meta'
 import { PILOT_DRAFTS } from '@/lib/lab/pilot-drafts'
 import type { ArticleMeta } from '@/lib/lab/types'
-import { emptyMetaDraft, toMetaDraft, toMetaPayload } from './meta-editor'
+import { MetaEditor, emptyMetaDraft, toMetaDraft, toMetaPayload, type MetaDraft } from './meta-editor'
+
+vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }))
 
 /**
  * The editor's metadata round trip, against the one validator.
@@ -68,5 +73,57 @@ describe('toMetaDraft → toMetaPayload → parseMeta', () => {
       prerequisites: Array.from({ length: META_LIMITS.prerequisites }, (_, i) => `page-${i}`),
     }
     expect(parseMeta(toMetaPayload(draft, 'article')).dropped).toBe(0)
+  })
+})
+
+describe('the editor stops at what parseMeta keeps', () => {
+  /* Past a cap the server keeps the first N and counts the rest as dropped:
+     the seventeenth concept saved, was reported as an invalid link or
+     source, and was unticked on the reload. The control refuses it instead. */
+  const render = (meta: MetaDraft) =>
+    renderToStaticMarkup(
+      createElement(MetaEditor, {
+        kind: 'knowledge',
+        meta,
+        onChange: () => {},
+        refs: null,
+        refsFailed: false,
+        unknownRefs: [],
+      }),
+    )
+  /** Every `<button>` tag whose text is `label`, as its opening tag. */
+  const buttons = (html: string, label: string): string[] =>
+    [...html.matchAll(/<button([^>]*)>([^<]*)<\/button>/g)].filter((m) => m[2] === label).map((m) => m[1])
+
+  it('disables every unticked concept once the cap is reached, and none before', () => {
+    const keys = CONCEPTS.map((c) => c.key)
+    expect(keys.length).toBeGreaterThan(META_LIMITS.concepts)
+    const tagsOf = (concepts: string[]) =>
+      [...render({ ...emptyMetaDraft(), concepts }).matchAll(/<button([^>]*aria-pressed[^>]*)>/g)].map((m) => m[1])
+
+    const full = tagsOf(keys.slice(0, META_LIMITS.concepts))
+    expect(full.filter((a) => a.includes('aria-pressed="false"')).every((a) => a.includes('disabled=""'))).toBe(true)
+    // A ticked one can still be unticked.
+    expect(full.filter((a) => a.includes('aria-pressed="true"')).some((a) => a.includes('disabled=""'))).toBe(false)
+
+    const below = tagsOf(keys.slice(0, META_LIMITS.concepts - 1))
+    expect(below.some((a) => a.includes('disabled=""'))).toBe(false)
+  })
+
+  const blank: { [K in 'prerequisites' | 'related' | 'sources']: MetaDraft[K][number] } = {
+    prerequisites: '',
+    related: { kind: 'recipe', id: '' },
+    sources: { url: '', title: '', publisher: '', section: '', checkedAt: '', scope: '' },
+  }
+
+  it.each([
+    ['prerequisites', 'addPrerequisite', META_LIMITS.prerequisites],
+    ['related', 'addRelated', META_LIMITS.related],
+    ['sources', 'addSource', META_LIMITS.sources],
+  ] as const)('stops adding %s at the cap', (field, label, cap) => {
+    const at = (n: number): string[] =>
+      buttons(render({ ...emptyMetaDraft(), [field]: Array.from({ length: n }, () => blank[field]) }), label)
+    expect(at(cap - 1)[0]).not.toContain('disabled=""')
+    expect(at(cap)[0]).toContain('disabled=""')
   })
 })

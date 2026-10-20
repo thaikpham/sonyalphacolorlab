@@ -10,8 +10,7 @@ import { BLOCK_GAP } from './blocks'
  *
  * State comes from the shared external store rather than from this
  * component's own `useState`, which settles two things at once. An article can
- * carry more than one checklist and they all write the same
- * `alpha-lab-checks-v1` map, so a component-local copy is how the second
+ * carry more than one checklist and they all write the same `CHECKS_KEY` map, so a component-local copy is how the second
  * list's first tick erases the first list's ticks. And the store's server
  * snapshot is empty, so the server's markup and the first client render agree
  * — a checklist read during render would fail hydration and take the whole
@@ -20,23 +19,28 @@ import { BLOCK_GAP } from './blocks'
 export function Checklist({
   block,
   articleId,
-  blockIndex,
+  ordinal,
 }: {
   block: ChecklistBlock
   articleId: string
-  blockIndex: number
+  /** This checklist's place among the article's checklists — see `checklistOrdinals`. */
+  ordinal: number
 }) {
   const ticked = useTicks(CHECKS_KEY)
-  const keyFor = (itemIndex: number) => `${articleId}-${blockIndex}-${itemIndex}`
+  const keyFor = (itemIndex: number) => `${articleId}-${ordinal}-${itemIndex}`
 
   return (
     <section className={`${BLOCK_GAP} surface px-5 pt-2 pb-4`}>
-      <p className="label py-3.5 pb-1.5">{block.label}</p>
+      {/* Not `.label`: an authored label is a sentence, and uppercase is
+          capped at three words. */}
+      <p className="py-3.5 pb-1.5 text-body-sm font-semibold text-ink-muted">{block.label}</p>
       <ul>
         {block.items.map((item, i) => {
           const on = Boolean(ticked[keyFor(i)])
           return (
-            <li key={item}>
+            /* By position: two identical items are legitimate, and the list
+               never reorders under a reader. */
+            <li key={i}>
               {i > 0 ? <hr className="seam" /> : null}
               <button
                 type="button"
@@ -47,7 +51,7 @@ export function Checklist({
                 <span
                   aria-hidden
                   className={
-                    'grid h-[22px] w-[22px] shrink-0 place-items-center rounded-[7px] ' +
+                    'grid h-[22px] w-[22px] shrink-0 place-items-center rounded-sm ' +
                     (on
                       ? 'bg-accent-500 text-white'
                       : 'bg-sunken shadow-[var(--elevation-inset),var(--elevation-spec)]')

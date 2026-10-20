@@ -11,7 +11,7 @@ import {
   slugify,
 } from './parse'
 import { parseKind, parseMeta } from './meta'
-import type { Article, ArticleKind, ArticleRecord, ArticleStatus } from './types'
+import type { Article, ArticleRecord, ArticleStatus } from './types'
 
 /**
  * The admin's view of the article store: every row, drafts included.
@@ -97,27 +97,6 @@ export async function getArticleRecord(id: string): Promise<ArticleRecord | null
   return toRecord(data as Row)
 }
 
-/**
- * The row shape a write produces, from an untrusted body.
- *
- * Every field is re-derived rather than spread: the body is JSON an admin's
- * browser sent, and an admin is trusted to publish, not trusted to have sent
- * well-formed JSON. `blocks` goes through `parseBlocks`, which is the only
- * place a block's shape is checked before it reaches a renderer.
- */
-export type WritePayload = {
-  kind: ArticleKind
-  topic: string
-  level: string
-  archetype: string
-  read: string
-  title: string
-  dek: string
-  blocks: unknown
-  meta: unknown
-  status: ArticleStatus
-}
-
 export type NormalisedWrite = {
   article: Article
   status: ArticleStatus
@@ -129,6 +108,14 @@ export type NormalisedWrite = {
   droppedMeta: number
 }
 
+/**
+ * The row shape a write produces, from an untrusted body.
+ *
+ * Every field is re-derived rather than spread: the body is JSON an admin's
+ * browser sent, and an admin is trusted to publish, not trusted to have sent
+ * well-formed JSON. `blocks` goes through `parseBlocks`, which is the only
+ * place a block's shape is checked before it reaches a renderer.
+ */
 export function normaliseWrite(id: string, body: Record<string, unknown>): NormalisedWrite | null {
   const title = typeof body.title === 'string' ? body.title.trim().slice(0, 200) : ''
   if (!title) return null
@@ -286,12 +273,14 @@ export async function updateArticleRecord(
   expectedUpdatedAt: string,
 ): Promise<string> {
   if (isDevStore()) {
-    /* An update to an id the store does not hold is an upsert here rather than
-       an error. The dev store is seeded lazily from the compiled catalogue, so
-       the first edit to one of those three articles is genuinely its first
-       write to the file. */
+    /* Missing is missing, as in production. The seeded articles are found
+       here before the file exists — the store reads the seed when there is no
+       file — so an upsert only ever served an id the store does not hold: an
+       article deleted in another tab came back, and an id nobody created was
+       created. */
     const current = devGet(article.id)
-    if (current && current.updatedAt !== expectedUpdatedAt) {
+    if (!current) throw new ArticleMissingError(`lab_articles ${article.id} no longer exists`)
+    if (current.updatedAt !== expectedUpdatedAt) {
       throw new StaleEditError(`lab_articles ${article.id} was saved since it was opened`)
     }
     const record = devRecord(article, status, email)

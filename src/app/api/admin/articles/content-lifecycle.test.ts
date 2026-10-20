@@ -48,6 +48,20 @@ describe('PATCH', () => {
     expect(invalidate).toBeLessThan(retire);
   });
 
+  it('retires what a published body dropped only after the row is written', () => {
+    /* Before, the publish step removed a deleted figure's public copy and then
+       wrote the row. A failed write left the live page — still the old
+       version, still naming that figure — with a broken image. */
+    const flip = body.indexOf('updateArticleRecord(');
+    const invalidate = body.indexOf('revalidateTag(LAB_TAG, IMMEDIATE)');
+    const retire = body.indexOf('retireUnreferencedAssets(');
+    expect(retire).toBeGreaterThan(-1);
+    expect(flip).toBeLessThan(retire);
+    expect(invalidate).toBeLessThan(retire);
+    // A failure answers with the stored version, as the draft path does.
+    expect(body.slice(retire)).toMatch(/if \(!synced\.ok\)[\s\S]{0,160}\.\.\.stored \}, \{ status: 502 \}/);
+  });
+
   it('never invalidates on a failed save', () => {
     const failure = body.lastIndexOf("{ error: 'saveFailed' }");
     expect(failure).toBeLessThan(body.indexOf('revalidateTag(LAB_TAG, IMMEDIATE)'));
@@ -84,6 +98,11 @@ describe('GET', () => {
 
   it('hands back signed previews rather than public URLs', () => {
     expect(body).toMatch(/articlePreviews\(id, referencedAssetIds\(article\.blocks\)\)/);
+  });
+
+  it('says when the previews could not be read, without refusing the article', () => {
+    /* A ledger outage is not a reason to keep the editor out of the text. */
+    expect(body).toMatch(/previewsFailed: previews\.failed/);
   });
 });
 
@@ -126,6 +145,10 @@ describe('the editor', () => {
     expect(source).toMatch(/setDraft\(\(d\) => afterSave\(d, sent, stored\)\)/);
     expect(source).toMatch(/data\.dropped\s*\?\s*t\('savedWithDropped'/);
     expect(source).toMatch(/t\('savedWithDroppedMeta'/);
+  });
+
+  it('tells the editor a preview outage, rather than showing every image as expired', () => {
+    expect(source).toMatch(/data\.previewsFailed[\s\S]{0,120}codeMessage\('previewsFailed'\)/);
   });
 
   it('never persists a signed preview into a block', () => {
