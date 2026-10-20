@@ -65,9 +65,14 @@ export const recipeSlugSchema = z
   .max(120)
   .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'Invalid slug');
 
-/** https only, bounded like `community_photos.image_url`. */
+/**
+ * https only, bounded like `community_photos.image_url` — both ends: the
+ * CHECK is `length between 12 and 2048`, and `https://a.b` (11) passed here
+ * to fail there as a 500.
+ */
 export const httpsImageUrlSchema = z
   .string()
   .url()
+  .min(12)
   .max(2048)
   .refine((u) => u.startsWith('https://'), { message: 'Image URL must use https://' });

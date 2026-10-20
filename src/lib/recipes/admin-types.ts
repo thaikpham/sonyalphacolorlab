@@ -13,3 +13,13 @@ export type RecipeRecord = {
   legacyId: string | null;
   updatedAt: string;
 };
+
+/**
+ * A row `fromRow` refuses: not a recipe, so it has no form — only enough to
+ * name it and take it off the site.
+ */
+export type UnreadableRecipe = {
+  id: string;
+  published: boolean;
+  error: string;
+};

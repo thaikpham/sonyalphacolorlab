@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { requireUser, type AuthedUser } from '@/lib/auth/require-user';
+import { requireUser, UNAUTHENTICATED, type AuthedUser } from '@/lib/auth/require-user';
 import { publishedRecipeExists, publishedRecipeFormat } from '@/lib/recipes/existence';
 import { ControlUnavailableError } from '@/lib/supabase/errors';
 import { PP_RANGES } from '@/lib/camera/constants';
@@ -406,7 +406,80 @@ describe.each([
   });
 });
 
+describe.each([
+  ['comments', () => comments.POST],
+  ['proposals', () => proposals.POST],
+  ['vote', () => vote.POST],
+  ['photos', () => photos.POST],
+] as const)('%s POST without a session', (_name, handler) => {
+  it('answers 401 and touches no table', async () => {
+    /* Every beforeEach signs the reader in, so the 401 was only ever
+       grep-checked: `status: 401` anywhere in the file. */
+    vi.mocked(requireUser).mockResolvedValue(null);
+    const res = await handler()(post('/api/x', { recipeSlug: PP.slug, slug: PP.slug, content: 'x' }));
+    expect(res.status).toBe(401);
+    expect(await res.json()).toEqual(UNAUTHENTICATED);
+    expect(db.calls).toHaveLength(0);
+  });
+});
+
+describe('POST /api/comments', () => {
+  it('signs the comment with the session, whatever the body claims', async () => {
+    const res = await comments.POST(
+      post('/api/comments', {
+        recipeSlug: PP.slug,
+        content: 'Lovely in shade.',
+        authorEmail: 'someone@else.example',
+        authorName: 'Someone Else',
+      }),
+    );
+    expect(res.status).toBe(200);
+    const [insert] = callsTo('recipe_comments', 'insert');
+    expect(insert.payload).toMatchObject({ author_email: USER.email, author_name: USER.name });
+  });
+});
+
+describe('GET /api/community-photos', () => {
+  it('answers a control read failure with 503, not "ok, no photos"', async () => {
+    /* Comments and proposals already said so; this one answered 200 with
+       empty lists, so an outage read as a recipe nobody had photographed. */
+    db.answer = () => ({ data: null, error: { message: 'boom' } });
+    const res = await photos.GET(get(`/api/community-photos?slug=${PP.slug}`));
+    expect(res.status).toBe(503);
+    expect(await res.json()).toEqual({ ok: false, error: 'controlUnavailable', photos: [], credits: [] });
+  });
+
+  it('answers a thrown read the same way', async () => {
+    db.answer = () => {
+      throw new Error('socket hang up');
+    };
+    const res = await photos.GET(get(`/api/community-photos?slug=${PP.slug}`));
+    expect(res.status).toBe(503);
+    expect((await res.json()).error).toBe('controlUnavailable');
+  });
+});
+
 describe('POST /api/community-photos', () => {
+  it('refuses at the schema what the community_photos CHECKs refuse', async () => {
+    /* zod's url() accepts any scheme and the image URL had no lower bound,
+       so both reached Postgres as 23514 and came back 500 saveFailed. */
+    const social = await photos.POST(
+      post('/api/community-photos', { slug: PP.slug, imageUrl: SAMPLE, authorSocial: 'mailto:a@b.co' }),
+    );
+    expect(social.status).toBe(400);
+    expect((await social.json()).error).toBe('missingFields');
+
+    const short = await photos.POST(post('/api/community-photos', { slug: PP.slug, imageUrl: 'https://a.b' }));
+    expect(short.status).toBe(400);
+    expect((await short.json()).error).toBe('invalidImageUrl');
+
+    const http = await photos.POST(
+      post('/api/community-photos', { slug: PP.slug, imageUrl: SAMPLE, authorSocial: 'HTTP://example.com/me' }),
+    );
+    expect(http.status).toBe(200);
+    expect(callsTo('community_photos', 'insert')).toHaveLength(1);
+  });
+
   it('answers 503 when the session cannot be checked', async () => {
     vi.mocked(requireUser).mockRejectedValue(new ControlUnavailableError());
     const res = await photos.POST(

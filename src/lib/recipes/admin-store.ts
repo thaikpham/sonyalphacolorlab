@@ -2,9 +2,10 @@ import 'server-only';
 import { contentAdmin } from '@/lib/supabase/server';
 import { recipeSchema, type Recipe } from '../camera/schema';
 import { fromRow, RECIPE_COLUMNS, toRow, type RecipeRow } from './row';
-import type { RecipeRecord } from './admin-types';
+import type { RecipeRecord, UnreadableRecipe } from './admin-types';
 import {
   devGetRecipe,
+  devInsertRecipe,
   devListRecipes,
   devRecipeIds,
   devUpsertRecipe,
@@ -36,7 +37,7 @@ const ADMIN_COLUMNS = `${RECIPE_COLUMNS}, updated_at`;
 type Row = RecipeRow & { updated_at?: string };
 
 /**
- * A row becomes a record, or it is dropped.
+ * A row becomes a record, or the reason it cannot.
  *
  * `fromRow` throws on a row that fails the schema, and on this screen that is
  * the wrong response: one malformed row would make the whole list unreachable,
@@ -44,7 +45,7 @@ type Row = RecipeRow & { updated_at?: string };
  * throws — `source.ts` is unchanged — because there a bad row is a bug that
  * should be loud rather than a row to be repaired.
  */
-function toRecord(row: Row): RecipeRecord | null {
+function toRecord(row: Row): RecipeRecord | { unreadable: string } {
   try {
     return {
       recipe: fromRow(row),
@@ -52,13 +53,25 @@ function toRecord(row: Row): RecipeRecord | null {
       updatedAt: typeof row.updated_at === 'string' ? row.updated_at : '',
     };
   } catch (err) {
-    console.error('[admin/recipes] skipping unreadable row:', row.id, err);
-    return null;
+    console.error('[admin/recipes] unreadable row:', row.id, err);
+    return { unreadable: err instanceof Error ? err.message : String(err) };
   }
 }
 
-export async function listRecipeRecords(): Promise<RecipeRecord[]> {
-  if (isRecipeDevStore()) return devListRecipes();
+/**
+ * Every row, with the ones `fromRow` refuses kept apart rather than dropped.
+ *
+ * Dropped, such a row — a script's write, the SQL editor, a range narrowed in
+ * `constants.ts` — never appeared on the editor's list while it broke the
+ * public grid, and only a hand-made DELETE could reach it. The editor lists
+ * them with one action, Unpublish, which `unpublishRecipe` can do without
+ * parsing the row.
+ */
+export async function listRecipeRows(): Promise<{
+  records: RecipeRecord[];
+  unreadable: UnreadableRecipe[];
+}> {
+  if (isRecipeDevStore()) return { records: devListRecipes(), unreadable: [] };
 
   const { data, error } = await contentAdmin()
     .from('recipes')
@@ -66,7 +79,22 @@ export async function listRecipeRecords(): Promise<RecipeRecord[]> {
     .order('id', { ascending: true });
 
   if (error || !Array.isArray(data)) throw new Error(error?.message ?? 'listFailed');
-  return (data as unknown as Row[]).map(toRecord).filter((r): r is RecipeRecord => r !== null);
+  const records: RecipeRecord[] = [];
+  const unreadable: UnreadableRecipe[] = [];
+  for (const row of data as unknown as Row[]) {
+    const out = toRecord(row);
+    if ('unreadable' in out) {
+      unreadable.push({ id: String(row.id), published: row.published === true, error: out.unreadable });
+    } else {
+      records.push(out);
+    }
+  }
+  return { records, unreadable };
+}
+
+/** The readable rows only, for callers that resolve references by id. */
+export async function listRecipeRecords(): Promise<RecipeRecord[]> {
+  return (await listRecipeRows()).records;
 }
 
 export async function getRecipeRecord(id: string): Promise<RecipeRecord | null> {
@@ -83,7 +111,8 @@ export async function getRecipeRecord(id: string): Promise<RecipeRecord | null> 
      editor mid-outage that the recipe they were saving had been deleted. */
   if (error) throw new Error(error.message);
   if (!data) return null;
-  return toRecord(data as unknown as Row);
+  const out = toRecord(data as unknown as Row);
+  return 'unreadable' in out ? null : out;
 }
 
 // ---------------------------------------------------------------------------
@@ -158,11 +187,14 @@ export async function uniqueRecipeSlug(name: string, ownId?: string): Promise<st
       const owner = devListRecipes().find((r) => r.recipe.slug === slug);
       return Boolean(owner) && owner?.recipe.id !== ownId;
     }
-    const { data } = await contentAdmin()
+    const { data, error } = await contentAdmin()
       .from('recipes')
       .select('id')
       .eq('slug', slug)
       .maybeSingle();
+    /* A read that failed has not said the slug is free. Discarding `error`
+       did, and the insert then failed on the unique key instead. */
+    if (error) throw new Error(error.message);
     return Boolean(data) && (data as { id: string } | null)?.id !== ownId;
   };
 
@@ -202,13 +234,19 @@ function record(recipe: Recipe, legacyId: string | null): RecipeRecord {
   return { recipe, legacyId, updatedAt: new Date().toISOString() };
 }
 
-export async function insertRecipeRecord(recipe: Recipe): Promise<void> {
+/**
+ * Inserts a new row, or answers `taken` when its id or slug already belongs to
+ * another — the unique key deciding a race the allocator's two reads cannot.
+ * The route allocates again on `taken`; anything else is a failure and throws.
+ */
+export async function insertRecipeRecord(recipe: Recipe): Promise<'inserted' | 'taken'> {
   if (isRecipeDevStore()) {
-    devUpsertRecipe(record(recipe, null));
-    return;
+    return devInsertRecipe(record(recipe, null)) ? 'inserted' : 'taken';
   }
   const { error } = await contentAdmin().from('recipes').insert(toRow(recipe, null));
+  if (error?.code === '23505') return 'taken';
   if (error) throw new Error(error.message);
+  return 'inserted';
 }
 
 /** The version an update `.select()` answers with, or null for no row. */

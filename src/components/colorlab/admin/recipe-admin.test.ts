@@ -88,9 +88,19 @@ describe('a recipe saved somewhere else since it was opened', () => {
   });
 
   it('reloads from the row after Unpublish rather than pairing a new version with old fields', () => {
-    const unpublish = handler('unpublish');
-    expect(unpublish).toMatch(/await load\(id\)/);
-    expect(unpublish).not.toMatch(/updatedAt: data\.updatedAt/);
+    expect(handler('unpublish')).toMatch(/await takeOffline\(editing\.stored\.recipe\.id\)/);
+    const offline = handler('takeOffline');
+    expect(offline).toMatch(/await load\(id\)/);
+    expect(offline).not.toMatch(/updatedAt: data\.updatedAt/);
+  });
+
+  it('lists the rows the schema refuses, with Unpublish as their only action', () => {
+    /* Dropped from the list, such a row broke the public grid and nothing on
+       this screen could reach it. It has no form to open — only its id. */
+    expect(code).toMatch(/unreadable: data\.unreadable \?\? \[\]/);
+    const row = code.slice(code.indexOf('{unreadable.map('), code.indexOf('{unreadable.map(') + 1200);
+    expect(row).toMatch(/onClick=\{\(\) => void takeOffline\(u\.id\)\}/);
+    expect(row).not.toMatch(/open\(|load\(/);
   });
 
   it('has a message for staleEdit that says how to recover', () => {

@@ -58,8 +58,8 @@ export const PP_EXPLANATIONS = {
     vi: "Điều chỉnh riêng độ đậm và độ sáng cho 6 kênh màu (R đỏ, G lục, B lam, C lục lam, M cánh sen, Y vàng). Giá trị dương (+) làm kênh màu đậm và sâu hơn; giá trị âm (−) làm kênh màu sáng và nhạt đi. Đây là công cụ chủ chốt tạo nên cá tính của từng công thức màu.",
   },
   detail: {
-    en: "Master control for in-camera edge sharpening. Lower values (−7 to −3) give a soft, organic, film-like texture; higher values (+1 to +7) give a crisp, very sharp digital look.",
-    vi: "Bộ điều khiển trung tâm xử lý độ sắc nét đường viền. Giá trị thấp (-7 đến -3) tạo cảm giác mềm mại, mượt mà như phim nhựa; giá trị cao (+1 đến +7) cho hình ảnh kỹ thuật số vô cùng sắc nét, chi tiết.",
+    en: `Master control for in-camera edge sharpening. Lower values (towards ${bound(PP_RANGES.detailLevel, PP_RANGES.detailLevel.min)}) give a soft, organic, film-like texture; higher values (towards ${bound(PP_RANGES.detailLevel, PP_RANGES.detailLevel.max)}) give a crisp, very sharp digital look.`,
+    vi: `Bộ điều khiển trung tâm xử lý độ sắc nét đường viền. Giá trị thấp (về phía ${bound(PP_RANGES.detailLevel, PP_RANGES.detailLevel.min)}) tạo cảm giác mềm mại, mượt mà như phim nhựa; giá trị cao (về phía ${bound(PP_RANGES.detailLevel, PP_RANGES.detailLevel.max)}) cho hình ảnh kỹ thuật số vô cùng sắc nét, chi tiết.`,
   },
 } as const satisfies Record<string, Explanation>;
 

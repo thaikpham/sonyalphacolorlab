@@ -7,7 +7,7 @@ import { CATALOGUE_TAG, IMMEDIATE } from '@/lib/catalogue-cache';
 import { isRecipeDevStore } from '@/lib/recipes/dev-store';
 import {
   insertRecipeRecord,
-  listRecipeRecords,
+  listRecipeRows,
   nextRecipeId,
   normaliseRecipe,
   uniqueRecipeSlug,
@@ -45,12 +45,18 @@ export async function GET(request: Request) {
   }
 
   try {
-    return NextResponse.json({ recipes: await listRecipeRecords() });
+    /* `unreadable` is the rows `fromRow` refuses, by id, so the editor can
+       list them and take them offline — dropped, nothing could. */
+    const { records, unreadable } = await listRecipeRows();
+    return NextResponse.json({ recipes: records, unreadable });
   } catch (err) {
     console.error('[admin/recipes] list failed:', err);
     return NextResponse.json({ error: 'loadFailed' }, { status: 502 });
   }
 }
+
+/** How many times a create re-allocates after losing its id or slug to another. */
+const CREATE_ATTEMPTS = 5;
 
 export async function POST(request: Request) {
   const gate = await adminGate(request);
@@ -79,41 +85,54 @@ export async function POST(request: Request) {
   const name = typeof body.name === 'string' ? body.name.trim().slice(0, 200) : '';
   if (!name) return NextResponse.json({ error: 'nameRequired' }, { status: 400 });
 
-  let id: string;
-  let slug: string;
-  try {
-    id = await nextRecipeId(format);
-    slug = await uniqueRecipeSlug(name);
-  } catch (err) {
-    if (err instanceof Error && err.message === 'idSpaceExhausted') {
-      /* 999 per format is the table's CHECK constraint, not an arbitrary cap.
-         Saying so beats failing later with a message about a regex. */
-      return NextResponse.json({ error: 'idSpaceExhausted' }, { status: 409 });
+  /* Allocation is max+1 and a slug lookup, read before the insert, so two
+     creates from two tabs can be handed the same id or slug. The unique key
+     is what decides, and losing to it means "allocate again", not "could not
+     save". Bounded: each loss costs one more read, and a loop with no ceiling
+     against a database is a way to hang a request. */
+  for (let attempt = 0; attempt < CREATE_ATTEMPTS; attempt += 1) {
+    let id: string;
+    let slug: string;
+    try {
+      id = await nextRecipeId(format);
+      slug = await uniqueRecipeSlug(name);
+    } catch (err) {
+      if (err instanceof Error && err.message === 'idSpaceExhausted') {
+        /* 999 per format is the table's CHECK constraint, not an arbitrary
+           cap. Saying so beats failing later with a message about a regex. */
+        return NextResponse.json({ error: 'idSpaceExhausted' }, { status: 409 });
+      }
+      console.error('[admin/recipes] allocation failed:', err);
+      return NextResponse.json({ error: 'saveFailed' }, { status: 502 });
     }
-    console.error('[admin/recipes] allocation failed:', err);
-    return NextResponse.json({ error: 'saveFailed' }, { status: 502 });
+
+    /* A new recipe is always created as a draft, whatever the body asked for.
+       Publishing is a second, deliberate action taken against a form the
+       editor can see — and the slug is fixed at creation, because the control
+       plane's community rows reference it as a plain string across a project
+       boundary no foreign key spans. */
+    /* `name` is the trimmed, capped value checked above. Spreading `body`
+       alone validated that and stored the raw one — a 5,000-character name in
+       full. */
+    const write = normaliseRecipe(id, { ...body, name, slug, published: false });
+    if (!write.ok) {
+      return NextResponse.json({ error: 'invalidRecipe', issues: write.issues }, { status: 400 });
+    }
+
+    let inserted: 'inserted' | 'taken';
+    try {
+      inserted = await insertRecipeRecord(write.recipe);
+    } catch (err) {
+      console.error('[admin/recipes] insert failed:', err);
+      return NextResponse.json({ error: 'saveFailed' }, { status: 502 });
+    }
+    if (inserted === 'taken') continue;
+
+    revalidateTag(CATALOGUE_TAG, IMMEDIATE);
+
+    return NextResponse.json({ ok: true, id, slug });
   }
 
-  /* A new recipe is always created as a draft, whatever the body asked for.
-     Publishing is a second, deliberate action taken against a form the editor
-     can see — and the slug is fixed at creation, because the control plane's
-     community rows reference it as a plain string across a project boundary
-     no foreign key spans. */
-  /* `name` is the trimmed, capped value checked above. Spreading `body` alone
-     validated that and stored the raw one — a 5,000-character name in full. */
-  const write = normaliseRecipe(id, { ...body, name, slug, published: false });
-  if (!write.ok) {
-    return NextResponse.json({ error: 'invalidRecipe', issues: write.issues }, { status: 400 });
-  }
-
-  try {
-    await insertRecipeRecord(write.recipe);
-  } catch (err) {
-    console.error('[admin/recipes] insert failed:', err);
-    return NextResponse.json({ error: 'saveFailed' }, { status: 502 });
-  }
-
-  revalidateTag(CATALOGUE_TAG, IMMEDIATE);
-
-  return NextResponse.json({ ok: true, id, slug });
+  console.error('[admin/recipes] allocation kept colliding; nothing was written');
+  return NextResponse.json({ error: 'saveFailed' }, { status: 502 });
 }

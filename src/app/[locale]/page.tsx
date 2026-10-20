@@ -18,9 +18,9 @@ export async function generateMetadata({
  * The launcher — the landing page for the whole ecosystem.
  *
  * Deliberately without the site header and footer. Every other route carries
- * that chrome because it is a place inside one app; this is the doorway to four
- * of them, and a header advertising one of the four would be picking a winner
- * before the reader has chosen. The tiles are the only navigation.
+ * that chrome because it is a place inside one app; this is the doorway to all
+ * of them (`ECOSYSTEM_APPS`), and a header advertising one would be picking a
+ * winner before the reader has chosen. The tiles are the only navigation.
  *
  * A Server Component with no client boundary of its own, and `LauncherGrid` no
  * longer holds any state either: every tile is a link straight into its app.

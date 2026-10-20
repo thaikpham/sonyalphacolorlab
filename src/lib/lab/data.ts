@@ -61,7 +61,7 @@ const LAB_TTL_SECONDS = 3600
  * `sony_cameras` and the community tables: never `*`, and no address in a
  * public select list.
  */
-const PUBLIC_COLUMNS = 'id, kind, topic, level, archetype, read, title, dek, blocks, meta, updated_at'
+export const PUBLIC_COLUMNS = 'id, kind, topic, level, archetype, read, title, dek, blocks, meta, updated_at'
 
 /**
  * One public row to an `Article`, or nothing.

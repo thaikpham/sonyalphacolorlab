@@ -1,93 +1,134 @@
-import { readFileSync } from 'node:fs';
-import { describe, expect, it } from 'vitest';
+import { readdirSync, readFileSync } from 'node:fs';
+import { PGlite } from '@electric-sql/pglite';
+import { beforeAll, describe, expect, it } from 'vitest';
 import {
   CREATIVE_LOOK_CODES,
   RECIPE_FORMATS,
   WB_AUTO_MODES,
+  WB_AXIS_AB,
+  WB_AXIS_GM,
   WB_KELVIN,
   WB_PRESETS,
   WB_SHIFT_AXIS,
 } from './constants';
+import { RECIPE_ID_RE } from './schema';
 
 /**
- * The SQL migration restates a handful of bounds that also live in
- * constants.ts. These assertions fail if the two drift apart — the SQL is
- * defence in depth, and defence that disagrees with the app is worse than none.
+ * The SQL restates a handful of bounds that also live in constants.ts. These
+ * assertions fail if the two drift apart — the SQL is defence in depth, and
+ * defence that disagrees with the app is worse than none.
+ *
+ * Read from the database each root BUILDS, not from the text of one file. This
+ * used to regex `0001_init.sql`, `0005` and `0006` of the control root, which
+ * had two faults. It never looked at the content root, which is where recipes
+ * are actually written and which restates every one of these independently;
+ * and it could only go green again after a range change by editing applied
+ * history. Executed, a later migration that alters an enum or a CHECK is what
+ * gets compared, in whichever root it lands.
+ *
+ * The stub is the minimum the roots need to run — the two Supabase roles they
+ * grant to and the `storage` tables they insert buckets into. The full stub,
+ * with Supabase's default ACL, lives in `migration-roots.test.ts`, which is
+ * about privileges; this file is only about values.
  */
-const sql = readFileSync('supabase/migrations/0001_init.sql', 'utf8');
 
-/** Pulls the value list out of `create type <name> as enum (...)`. */
-function sqlEnum(name: string): string[] {
-  const m = new RegExp(`create type ${name} as enum \\(([^)]*)\\)`, 'i').exec(sql);
-  if (!m) throw new Error(`enum ${name} not found in migration`);
-  return [...m[1].matchAll(/'([^']*)'/g)].map((x) => x[1]);
+const ROOTS = ['supabase/migrations', 'supabase/content/migrations'] as const;
+
+async function build(root: string): Promise<PGlite> {
+  const db = new PGlite();
+  await db.exec(`
+    create role anon nologin;
+    create role authenticated nologin;
+    create schema storage;
+    create table storage.buckets (id text primary key, name text not null, public boolean not null default false);
+    create table storage.objects (
+      id uuid primary key default gen_random_uuid(),
+      bucket_id text references storage.buckets (id),
+      name text
+    );
+  `);
+  for (const file of readdirSync(root).filter((f) => f.endsWith('.sql')).sort()) {
+    await db.exec(readFileSync(`${root}/${file}`, 'utf8'));
+  }
+  return db;
 }
 
-describe('SQL / constants drift', () => {
-  it('recipe_format enum matches RECIPE_FORMATS', () => {
-    expect(sqlEnum('recipe_format')).toEqual([...RECIPE_FORMATS]);
-  });
+describe.each(ROOTS)('SQL / constants drift in %s', (root) => {
+  let db: PGlite;
+  beforeAll(async () => {
+    db = await build(root);
+  }, 60_000);
 
-  it('creative_look enum matches the ten built-in Looks', () => {
-    expect(sqlEnum('creative_look')).toEqual([...CREATIVE_LOOK_CODES]);
-  });
-
-  it('wb_auto check matches WB_AUTO_MODES', () => {
-    // Lazy up to the closing `))` — the values themselves contain parentheses,
-    // e.g. 'AWB (Priority White)'.
-    const m = /wb_auto\s+text\s+check \(wb_auto in \((.*?)\)\)/.exec(sql);
-    expect(m, 'wb_auto check constraint not found').not.toBeNull();
-    const values = [...m![1].matchAll(/'([^']*)'/g)].map((x) => x[1]);
-    expect(values).toEqual([...WB_AUTO_MODES]);
-  });
-
-  it('wb_kelvin bounds match WB_KELVIN', () => {
-    const m = /wb_kelvin between (\d+) and (\d+)/.exec(sql);
-    expect(m, 'wb_kelvin bounds not found').not.toBeNull();
-    expect([Number(m![1]), Number(m![2])]).toEqual([WB_KELVIN.min, WB_KELVIN.max]);
-  });
-
-  it('wb shift bounds match WB_SHIFT_AXIS on both axes', () => {
-    const bounds = [...sql.matchAll(/wb_shift_(?:ab|gm)_amount between (\d+) and (\d+)/g)];
-    expect(bounds).toHaveLength(2);
-    for (const b of bounds) {
-      expect([Number(b[1]), Number(b[2])]).toEqual([WB_SHIFT_AXIS.min, WB_SHIFT_AXIS.max]);
-    }
-  });
-
-  it('wb shift step constraint matches WB_SHIFT_AXIS.step', () => {
-    // The SQL multiplies by 1/step to test grid alignment.
-    const factor = 1 / WB_SHIFT_AXIS.step;
-    const checks = [...sql.matchAll(/wb_shift_(?:ab|gm)_amount \* (\d+)\) = floor/g)];
-    expect(checks).toHaveLength(2);
-    for (const c of checks) expect(Number(c[1])).toBe(factor);
-  });
-
-  it('id check constraint matches the app-side id pattern', () => {
-    const m = /id ~ '\^SCL-\(PP\|CL\)-\[0-9\]\{3\}\$'/.exec(sql);
-    expect(m, 'recipes.id regex constraint not found or changed').not.toBeNull();
-  });
-
-  // The preset list arrived after 0001, so it lives in its own migration.
-  it('wb_preset check matches WB_PRESETS', () => {
-    const presetSql = readFileSync(
-      'supabase/migrations/0006_wb_light_source_presets.sql',
-      'utf8',
+  async function enumLabels(name: string): Promise<string[]> {
+    const { rows } = await db.query<{ label: string }>(
+      `select e.enumlabel as label from pg_enum e join pg_type t on t.oid = e.enumtypid
+        where t.typname = $1 order by e.enumsortorder`,
+      [name],
     );
-    const m = /wb_preset in \(([\s\S]*?)\)\)/.exec(presetSql);
-    expect(m, 'wb_preset check constraint not found').not.toBeNull();
-    const values = [...m![1].matchAll(/'([^']*)'/g)].map((x) => x[1]);
-    expect(values).toEqual([...WB_PRESETS]);
+    return rows.map((r) => r.label);
+  }
+
+  /** `pg_get_constraintdef` of one CHECK on `recipes`, as Postgres normalised it. */
+  async function check(name: string): Promise<string> {
+    const { rows } = await db.query<{ def: string }>(
+      `select pg_get_constraintdef(oid) as def from pg_constraint
+        where conrelid = 'public.recipes'::regclass and contype = 'c' and conname = $1`,
+      [name],
+    );
+    expect(rows, `check ${name} not found`).toHaveLength(1);
+    return rows[0].def;
+  }
+
+  /** The literals of an `= ANY (ARRAY['a'::text, …])` check, in order. */
+  const listed = (def: string) => [...def.matchAll(/'((?:[^']|'')*)'::(?:text|bpchar)/g)].map((m) => m[1]);
+
+  /** The two bounds of a `(x >= lo) AND (x <= hi)` check. */
+  const between = (def: string) => {
+    const m = />= \(?(\d+(?:\.\d+)?)\)?(?:::numeric)?\) AND \(\w+ <= \(?(\d+(?:\.\d+)?)\)?/.exec(def);
+    expect(m, def).not.toBeNull();
+    return [Number(m![1]), Number(m![2])];
+  };
+
+  it('recipe_format enum matches RECIPE_FORMATS', async () => {
+    expect(await enumLabels('recipe_format')).toEqual([...RECIPE_FORMATS]);
   });
 
-  it('wb_mode enum covers every mode the schema can produce', () => {
-    // 0001 declares two, 0005 adds the third. Miss one and rows the app
-    // considers valid are rejected by the database at insert time.
-    const declared = [
-      ...sqlEnum('wb_mode'),
-      ...[...readFileSync('supabase/migrations/0005_wb_preset_enum_value.sql', 'utf8')
-        .matchAll(/add value if not exists '([^']*)'/g)].map((x) => x[1]),
-    ];
-    expect(declared.sort()).toEqual(['auto', 'kelvin', 'preset']);
+  it('creative_look enum matches CREATIVE_LOOK_CODES', async () => {
+    expect(await enumLabels('creative_look')).toEqual([...CREATIVE_LOOK_CODES]);
+  });
+
+  it('wb_mode enum covers exactly the modes the schema can produce', async () => {
+    /* Miss one and rows the app considers valid are rejected at insert time. */
+    expect((await enumLabels('wb_mode')).sort()).toEqual(['auto', 'kelvin', 'preset']);
+  });
+
+  it('wb_auto check matches WB_AUTO_MODES', async () => {
+    expect(listed(await check('recipes_wb_auto_check'))).toEqual([...WB_AUTO_MODES]);
+  });
+
+  it('wb_preset check matches WB_PRESETS', async () => {
+    expect(listed(await check('recipes_wb_preset_check'))).toEqual([...WB_PRESETS]);
+  });
+
+  it('wb_kelvin bounds match WB_KELVIN', async () => {
+    expect(between(await check('recipes_wb_kelvin_check'))).toEqual([WB_KELVIN.min, WB_KELVIN.max]);
+  });
+
+  it.each([
+    ['ab', WB_AXIS_AB],
+    ['gm', WB_AXIS_GM],
+  ] as const)('the %s shift matches WB_SHIFT_AXIS and its axis letters', async (axis, letters) => {
+    expect(between(await check(`recipes_wb_shift_${axis}_amount_check`))).toEqual([
+      WB_SHIFT_AXIS.min,
+      WB_SHIFT_AXIS.max,
+    ]);
+    /* The SQL multiplies by 1/step to test grid alignment. */
+    const step = /\* \((\d+)\)::numeric\) = floor/.exec(await check(`recipes_wb_shift_${axis}_step`));
+    expect(Number(step?.[1])).toBe(1 / WB_SHIFT_AXIS.step);
+    expect(listed(await check(`recipes_wb_shift_${axis}_axis_check`))).toEqual([...letters]);
+  });
+
+  it('id check matches the app-side id pattern', async () => {
+    expect(await check('recipes_id_check')).toContain(`'${RECIPE_ID_RE.source.replace('\\d', '[0-9]')}'`);
   });
 });

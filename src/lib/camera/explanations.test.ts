@@ -92,4 +92,18 @@ describe('parameter explanations', () => {
     }
     expect(CL_EXPLANATIONS.sharpnessRange.en).toContain('never negative');
   });
+
+  it('names no Detail number that is not a bound of PP_RANGES.detailLevel', () => {
+    /* The bands used to be typed in ('−7 to −3', '+1 to +7'), so a widened
+       Detail range left the prose stale. Only the bounds, read from
+       constants.ts, may appear. */
+    const { min, max } = PP_RANGES.detailLevel;
+    for (const text of [PP_EXPLANATIONS.detail.en, PP_EXPLANATIONS.detail.vi]) {
+      const numbers = [...text.matchAll(/[−+-]?\d+/g)].map((m) => Number(m[0].replace('−', '-')));
+      expect(numbers.length).toBeGreaterThan(0);
+      for (const n of numbers) expect([min, max], text).toContain(n);
+      expect(text).toContain(`${min}`);
+      expect(text).toContain(`+${max}`);
+    }
+  });
 });

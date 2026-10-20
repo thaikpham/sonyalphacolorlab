@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { AdminSessionProvider, useAdminSession, type AdminRole } from './session';
 import { AdminSignIn } from './sign-in';
+import { authFailureKey } from './auth-failure';
 import { authBrowser } from '@/lib/supabase/browser';
 import { useAuth } from '@/components/auth-context';
 
@@ -216,7 +217,7 @@ function StepUp({ onDone }: { onDone: () => void }) {
         code: code.replace(/\s+/g, ''),
       });
       if (err) {
-        setError('codeRefused');
+        setError(authFailureKey(err, 'codeRefused'));
         return;
       }
       onDone();

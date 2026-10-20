@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { authBrowser } from '@/lib/supabase/browser';
+import { authFailureKey } from './auth-failure';
 import { FIELD } from './controls';
 
 /**
@@ -131,7 +132,7 @@ export function SecurityPanel() {
         code: code.replace(/\s+/g, ''),
       });
       if (error) {
-        setNote({ kind: 'err', key: 'codeRefused' });
+        setNote({ kind: 'err', key: authFailureKey(error, 'codeRefused') });
         return;
       }
       setEnrolling(null);

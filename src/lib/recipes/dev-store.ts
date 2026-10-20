@@ -128,6 +128,21 @@ export function devRecipeIds(): string[] {
   return readAll().map((r) => r.recipe.id);
 }
 
+/**
+ * Adds a recipe only if neither its id nor its slug is held — the dev copy of
+ * the table's two unique keys. Creating went through the upsert, so a second
+ * create allocated the same id overwrote the first one.
+ */
+export function devInsertRecipe(record: RecipeRecord): boolean {
+  const all = readForWrite();
+  if (all.some((r) => r.recipe.id === record.recipe.id || r.recipe.slug === record.recipe.slug)) {
+    return false;
+  }
+  all.push(record);
+  writeAll(all);
+  return true;
+}
+
 export function devUpsertRecipe(record: RecipeRecord): void {
   const all = readForWrite();
   const i = all.findIndex((r) => r.recipe.id === record.recipe.id);

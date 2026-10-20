@@ -6,6 +6,7 @@ import { useAdminSession } from '@/components/admin-ui/session';
 import { FIELD, FIELD_SM } from '@/components/admin-ui/controls';
 import { CREATIVE_LOOK_CODES, PP_RANGES, CL_RANGES, WB_KELVIN } from '@/lib/camera/constants';
 import type { ClSettings, PpSettings, Recipe } from '@/lib/camera/schema';
+import type { UnreadableRecipe } from '@/lib/recipes/admin-types';
 import { PpFields, ClFields } from './settings-fields';
 import { WhiteBalanceFields } from './wb-fields';
 import { ImagePanel } from './image-panel';
@@ -80,6 +81,9 @@ export function RecipeAdmin() {
   const { authed } = useAdminSession();
 
   const [records, setRecords] = useState<RecipeRecord[]>([]);
+  /* Rows the schema refuses. They have no form — only an id and Unpublish,
+     which is what takes one off the public grid it would otherwise break. */
+  const [unreadable, setUnreadable] = useState<UnreadableRecipe[]>([]);
   /* The open recipe as stored, the form over it, and the Tags box as typed —
      one value, so an answer that arrives late is applied to all three at once
      (`afterSave`). */
@@ -109,36 +113,43 @@ export function RecipeAdmin() {
     [t],
   );
 
-  const fetchList = useCallback(async (): Promise<RecipeRecord[] | null> => {
+  type Listed = { recipes: RecipeRecord[]; unreadable: UnreadableRecipe[] };
+
+  const fetchList = useCallback(async (): Promise<Listed | null> => {
     try {
       const res = await fetch('/api/admin/recipes', { headers: authed() });
-      const data = (await res.json()) as { recipes?: RecipeRecord[]; error?: string };
+      const data = (await res.json()) as Partial<Listed> & { error?: string };
       if (!res.ok || !data.recipes) {
         setStatus({ kind: 'err', msg: codeMessage(data.error ?? 'loadFailed', 'loadFailed') });
         return null;
       }
-      return data.recipes;
+      return { recipes: data.recipes, unreadable: data.unreadable ?? [] };
     } catch {
       setStatus({ kind: 'err', msg: codeMessage('loadFailed') });
       return null;
     }
   }, [authed, codeMessage]);
 
+  const apply = useCallback((listed: Listed) => {
+    setRecords(listed.recipes);
+    setUnreadable(listed.unreadable);
+  }, []);
+
   const reload = useCallback(async () => {
-    const rows = await fetchList();
-    if (rows) setRecords(rows);
-  }, [fetchList]);
+    const listed = await fetchList();
+    if (listed) apply(listed);
+  }, [fetchList, apply]);
 
   useEffect(() => {
     let live = true;
     (async () => {
-      const rows = await fetchList();
-      if (live && rows) setRecords(rows);
+      const listed = await fetchList();
+      if (live && listed) apply(listed);
     })();
     return () => {
       live = false;
     };
-  }, [fetchList]);
+  }, [fetchList, apply]);
 
   /* The one guard against losing work. Nothing autosaves. */
   useEffect(() => {
@@ -286,8 +297,13 @@ export function RecipeAdmin() {
     /* The route unpublishes the stored row, so unsaved edits do not survive
        it — and resetting `dirty` afterwards used to show them as "Saved". */
     if (isDirty(editing) && !window.confirm(t('discardConfirm'))) return;
+    await takeOffline(editing.stored.recipe.id);
+  };
+
+  /* By id alone, so a row the schema refuses can be taken off the site too:
+     the route's DELETE never parses the row. */
+  const takeOffline = async (id: string) => {
     if (!window.confirm(t('unpublishConfirm'))) return;
-    const id = editing.stored.recipe.id;
     setBusy('unpublishing');
     try {
       const res = await fetch(`/api/admin/recipes/${id}`, {
@@ -386,6 +402,34 @@ export function RecipeAdmin() {
             </li>
           ))}
         </ul>
+
+        {unreadable.length ? (
+          <ul className="flex flex-col gap-1">
+            {unreadable.map((u) => (
+              <li key={u.id} className="flex items-center gap-2 px-3 py-2 rounded-sm row-tint">
+                <span className="flex min-w-0 grow flex-col">
+                  <span className="flex items-center gap-2">
+                    <span className="label text-accent-400 tabular-nums">{u.id}</span>
+                    <span className="label text-danger">{t('statusUnreadable')}</span>
+                  </span>
+                  <span className="meta truncate" title={u.error}>
+                    {u.error}
+                  </span>
+                </span>
+                {u.published ? (
+                  <button
+                    type="button"
+                    onClick={() => void takeOffline(u.id)}
+                    disabled={busy !== ''}
+                    className="btn-glass shrink-0 cursor-pointer disabled:opacity-50"
+                  >
+                    {t('unpublish')}
+                  </button>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        ) : null}
       </aside>
 
       <section className="flex grow basis-[32rem] flex-col gap-6">
