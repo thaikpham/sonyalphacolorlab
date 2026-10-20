@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react';
 import { Link, useRouter } from '@/i18n/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import type { SonyCamera } from '@/lib/cameras/types';
-import { featureList, splitFeatures } from '@/lib/cameras/features';
+import { featureList } from '@/lib/cameras/features';
 import { translateSpecValue } from '@/lib/cameras/spec-values';
 import {
   compareExitPath,
@@ -240,13 +240,12 @@ export function addableProducts(
   cameras: readonly SonyCamera[],
   activeIds: readonly string[],
   query: string,
+  locale: 'en' | 'vi' = 'en',
+  t: (key: string) => string = (key) => key,
 ): SonyCamera[] {
   const remaining = cameras.filter((c) => !activeIds.includes(c.id));
   if (!query.trim()) return remaining;
-  const docs = remaining.map((c) => {
-    const { en, vi } = splitFeatures(c.features);
-    return prepare(productDoc({ ...c, featureText: [...en, ...vi] }));
-  });
+  const docs = remaining.map((c) => prepare(productDoc(c, locale, t)));
   const matched = new Set(rank(query, docs).map((r) => r.doc.id));
   return remaining.filter((c) => matched.has(c.id));
 }
@@ -281,8 +280,8 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
 
   // Unselected cameras available to add
   const availableToAdd = useMemo(
-    () => addableProducts(cameras, activeIds, searchAddQuery),
-    [cameras, activeIds, searchAddQuery],
+    () => addableProducts(cameras, activeIds, searchAddQuery, locale === 'vi' ? 'vi' : 'en', t),
+    [cameras, activeIds, searchAddQuery, locale, t],
   );
 
   const removeCamera = (id: string) => {

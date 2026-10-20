@@ -76,13 +76,6 @@ const nextConfig: NextConfig = {
     // instead of being re-derived every 60s.
     minimumCacheTTL: 31_536_000,
   },
-  experimental: {
-    /* `src/app/global-not-found.tsx` is inert without this — Next resolves it
-       only behind the flag, which defaults to false. It is needed because the
-       root layout renders no `<html>` (see its header), so a URL matching no
-       route had no document for the built-in 404 to render into. */
-    globalNotFound: true,
-  },
   // Query-param redirects from sonycolorlab.app — see `src/lib/recipes/redirects.ts`.
   async redirects() {
     return legacyRedirects();
