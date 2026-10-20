@@ -111,3 +111,19 @@ describe('search-param consumers', () => {
     expect(src).toMatch(/fallback=/);
   });
 });
+
+/**
+ * `global-not-found.tsx` is the only complete document for a URL that matches
+ * no route: the root layout renders no element, so without it an unmatched
+ * path gets Next's bare 404 with no `<html lang>`, no stylesheet and no dark
+ * ground. Next 16 reads the file only when `experimental.globalNotFound` is on
+ * (`build/entries.js`, `isGlobalNotFoundEnabled`); the default is off, and the
+ * file is then silently ignored.
+ */
+describe('global not-found', () => {
+  it('is switched on wherever the file exists', () => {
+    if (!existsSync(`${APP}/global-not-found.tsx`)) return;
+    const config = readFileSync('next.config.ts', 'utf8');
+    expect(config).toMatch(/experimental:\s*\{[^}]*\bglobalNotFound:\s*true/);
+  });
+});

@@ -48,7 +48,7 @@ async function latestExport(label: string): Promise<string> {
 }
 
 async function main() {
-  const { args, target } = requireTarget(process.argv.slice(2));
+  const { args, target } = requireTarget(process.argv.slice(2), ['--manifest', '--rollback']);
   const label = args.manifest ?? 'initial';
   const dir = await latestExport(label);
 

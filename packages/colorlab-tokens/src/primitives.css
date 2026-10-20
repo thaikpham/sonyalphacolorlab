@@ -100,6 +100,19 @@
    Quality floor
 --------------------------------------------------------------------------- */
 
+/* One family, including for code. Tailwind's preflight gives `code`, `kbd`,
+   `samp` and `pre` its default monospace stack, with a literal `monospace`
+   fallback behind the variable — so the ⌘K hint, the admin's JSON preview and
+   a TOTP secret all rendered in a second typeface. Unlayered, so it beats
+   preflight's layered rule. Machine values align with tabular figures, which
+   these inherit from `body`. */
+code,
+kbd,
+samp,
+pre {
+  font-family: inherit;
+}
+
 :focus {
   outline: none;
 }

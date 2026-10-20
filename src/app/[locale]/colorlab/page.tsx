@@ -82,11 +82,11 @@ export default async function ColorLabPage({
             literal, because nothing on the page named it; the document title
             already says "Alpha ColorLab", so the heading is now the visible
             one and there is still exactly one h1 above the sr-only h2. */}
-        {/* `.hero-block` / `.hero-intro`: on a phone turned sideways (or a
-            split-screen pane) the padding collapses, the title steps down to
-            `title-1` and the lede is hidden, because this block otherwise costs
-            a full screen of scrolling before the first recipe. The rule is in
-            globals.css; this is the block it was written for. */}
+        {/* `.hero-block`: on a phone turned sideways (or a split-screen
+            pane) the padding collapses and the title steps down to `title-1`,
+            because this block otherwise costs a full screen of scrolling
+            before the first recipe. The rule is in globals.css; this is the
+            block it was written for. */}
         {/* No eyebrow: the "Picture Profile & Creative Look" line that sat
             over the h1 is the copy CLAUDE.md removed, and was uppercase over
             four words. */}

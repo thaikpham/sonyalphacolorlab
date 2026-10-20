@@ -49,12 +49,6 @@ export function adminClient(target: Target): SupabaseClient {
   return createClient(need(vars.url), need(vars.secret), { auth: { persistSession: false } });
 }
 
-/** Anon client, for proving what a browser can and cannot see. */
-export function readClient(target: Target): SupabaseClient {
-  const vars = VARS[target];
-  return createClient(need(vars.url), need(vars.anon), { auth: { persistSession: false } });
-}
-
 /** The public origin, for printing which project a command is about to touch. */
 export function originOf(target: Target): string {
   return need(VARS[target].url).replace(/\/+$/, '');

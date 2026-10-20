@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next';
+import { bilingualAlternates } from '@/i18n/alternates';
 import { routing } from '@/i18n/routing';
 import { listSlugs } from '@/lib/recipes/source';
 import { getSonyAudio } from '@/lib/audio/data';
@@ -8,9 +9,13 @@ import { getPublishedArticles, getPublishedKnowledge } from '@/lib/lab/data';
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
-/** Path for a locale under the `as-needed` prefix scheme. */
-const path = (locale: string, rest: string) =>
-  locale === routing.defaultLocale ? rest : `/${locale}${rest}`;
+/**
+ * Path for a locale under the `as-needed` prefix scheme — the page's own
+ * canonical, so the sitemap cannot disagree with it. A hand-rolled join here
+ * listed the Vietnamese launcher as `/vi/`, which redirects to the `/vi` the
+ * page declares.
+ */
+const path = (locale: string, rest: string) => bilingualAlternates(locale, rest).canonical;
 
 /**
  * Every indexable page, and nothing else.

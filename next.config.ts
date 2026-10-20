@@ -65,6 +65,13 @@ const contentStorageHost = process.env.NEXT_PUBLIC_CONTENT_SUPABASE_URL
 const productImageHosts = ['static.bhphoto.com', 'www.sony.com.vn', 'sony.scene7.com'];
 
 const nextConfig: NextConfig = {
+  experimental: {
+    /* `src/app/global-not-found.tsx` is the only complete document for a URL
+       that matches no route — the root layout renders no element. Next reads
+       that file only with this flag; without it an unmatched path got Next's
+       bare 404 with no <html lang>, no stylesheet and no dark ground. */
+    globalNotFound: true,
+  },
   images: {
     /* Vercel's optimizer is out of the path: its quota ran out and every
        `/_next/image` request answered 402, breaking all 94 wiki photos at once
@@ -108,19 +115,6 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return legacyRedirects();
-  },
-  async headers() {
-    return [
-      {
-        source: '/fonts/noto-sans/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
-      },
-    ];
   },
 };
 

@@ -26,12 +26,36 @@ describe('parseArgs', () => {
     expect(args).toMatchObject({ source: 'control', destination: 'content' });
   });
 
-  it.each(['--expect-empty', '--expect-baseline', '--dry-run', '--apply', '--rollback', '--overwrite', '--with-pilot-drafts'])(
-    'reads %s',
+  /* Each switch must land on its own key and nowhere else. "Some value came
+     out true" passed with `--dry-run` and `--apply` swapped — and a swap makes
+     the preview the one that writes. */
+  it.each([
+    ['--dry-run', 'dryRun'],
+    ['--apply', 'apply'],
+    ['--rollback', 'rollback'],
+    ['--allow-removals', 'allowRemovals'],
+    ['--overwrite', 'overwrite'],
+    ['--with-pilot-drafts', 'withPilotDrafts'],
+  ] as const)('reads %s into %s and nothing else', (flag, key) => {
+    expect(parseArgs([flag])).toEqual({ ...parseArgs([]), [key]: true });
+  });
+
+  /* Accepted and then read by nothing: `content:verify --expect-empty` ran the
+     ordinary manifest comparison and reported it as the emptiness check. */
+  it.each(['--expect-empty', '--expect-baseline', '--since-manifest'])(
+    'does not accept %s, which no script implements',
     (flag) => {
-      expect(Object.values(parseArgs([flag])).some((v) => v === true)).toBe(true);
+      expect(() => parseArgs([flag])).toThrow(`Unknown argument: ${flag}`);
     },
   );
+
+  it('rejects a value flag stated twice with different values', () => {
+    /* An edited copy of a command: last-wins would run it against control. */
+    expect(() => parseArgs(['--target', 'content', '--manifest', 'initial', '--target', 'control'])).toThrow(
+      ArgumentError,
+    );
+    expect(parseArgs(['--target', 'content', '--target', 'content']).target).toBe('content');
+  });
 
   it.each(['initial', 'final-delta', 'rollback'])('accepts the %s label', (label) => {
     expect(parseArgs(['--label', label]).label).toBe(label);
@@ -39,8 +63,6 @@ describe('parseArgs', () => {
 
   it('defaults every switch to off, so nothing happens by accident', () => {
     expect(parseArgs([])).toEqual({
-      expectEmpty: false,
-      expectBaseline: false,
       dryRun: false,
       apply: false,
       rollback: false,
@@ -100,11 +122,34 @@ describe('requireTarget', () => {
   it('passes an explicit one through', () => {
     expect(requireTarget(['--target', 'control']).target).toBe('control');
   });
+
+  /* The vocabulary is shared, so a script has to say which part of it it
+     implements. `push:supabase --overwrite --dry-run` used to pass the check
+     and run the full overwrite: push-supabase never reads `dryRun`. */
+  it('refuses a known flag the script does not implement', () => {
+    expect(() => requireTarget(['--target', 'content', '--dry-run'], ['--overwrite'])).toThrow(
+      /--dry-run/,
+    );
+    expect(() => requireTarget(['--target', 'content', '--manifest', 'initial'])).toThrow(
+      ArgumentError,
+    );
+  });
+
+  it('passes the flags the script does implement', () => {
+    const { args } = requireTarget(['--target', 'content', '--overwrite'], ['--overwrite']);
+    expect(args.overwrite).toBe(true);
+  });
 });
 
 describe('requireTransfer', () => {
   it('needs both ends named', () => {
     expect(() => requireTransfer(['--source', 'control'])).toThrow(ArgumentError);
+  });
+
+  it('refuses a known flag the script does not implement', () => {
+    expect(() =>
+      requireTransfer(['--source', 'control', '--destination', 'content', '--overwrite'], ['--apply']),
+    ).toThrow(/--overwrite/);
   });
 
   it('passes a complete transfer through', () => {

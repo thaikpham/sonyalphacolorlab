@@ -138,7 +138,11 @@
 
   /* Paper ground, a faint warm white. Films are ink at low alpha instead
      of white: a white film over white is nothing. Ink measured on this
-     ground: 16.5:1, 10.4:1, 5.6:1 — the same three steps, still AA. */
+     ground: 16.5:1, 10.4:1, 5.6:1 — the same three steps, still AA.
+     
+     Signals keep their hue and drop to L 50%: the dark-ground values
+     measure 2.2–3.7:1 here, and /admin sets its errors and statuses in
+     them at 13–14px. Community loses a little chroma to stay in sRGB. */
   --color-void: oklch(98.2% 0.004 85);
   --color-glass: oklch(21% 0.014 265 / 0.04);
   --color-glass-raised: oklch(21% 0.014 265 / 0.07);
@@ -154,6 +158,11 @@
   --color-accent-700: oklch(81.5% 0.080 268);
   --color-accent-800: oklch(89.5% 0.045 268);
   --color-accent-900: oklch(95.5% 0.020 268);
+  --color-community: oklch(50% 0.085 205);
+  --color-proposal: oklch(50% 0.165 292);
+  --color-ai: oklch(50% 0.140 320);
+  --color-danger: oklch(50% 0.165 15);
+  --color-heart: oklch(50% 0.165 292);
 
   /* Shadows in ink rather than black, and far softer: on paper a shadow
      is a lift, not a hole. The specular line becomes a white one, which

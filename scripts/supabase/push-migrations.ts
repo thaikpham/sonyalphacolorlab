@@ -59,7 +59,7 @@ const PASSWORDS: Record<Target, string> = {
 };
 
 async function main() {
-  const { args, target } = requireTarget(process.argv.slice(2));
+  const { args, target } = requireTarget(process.argv.slice(2), ['--apply', '--dry-run']);
   const root = ROOTS[target];
   const ref = projectRef(target);
 

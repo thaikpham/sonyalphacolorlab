@@ -10,9 +10,11 @@
  *
  *   npm run pull:supabase -- --target content         # write the files
  *   npm run pull:supabase -- --target content --dry   # print what would change, touch nothing
+ *                                                       (--dry-run is the same)
  *
  * Every column the admin editor writes comes back — names, image, gallery,
- * features and specs. It used to bring only features and specs, so a renamed
+ * features, specs and highlights, and a cleared highlights column clears the seed
+ * too. It used to bring only features and specs, so a renamed
  * product or a corrected gallery stayed in the database alone, and the next
  * `push:supabase --overwrite` put the seed's old copy back over it.
  *
@@ -20,32 +22,18 @@
  * automatic: overwriting a tracked data file is a thing you should ask for.
  */
 import { adminClient } from './lib/db';
-import { requireTarget } from './supabase/args';
+import { mergePulled, readPullArgs, type Row } from './lib/catalogue-pull';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const SEED_CAMERAS = join(process.cwd(), 'data', 'sony-cameras.seed.json');
 const SEED_AUDIO = join(process.cwd(), 'data', 'sony-audio.seed.json');
 
-/* `sony_cameras` lives in the content project. There is no generic "the
-   project" left to default to, and pulling the catalogue out of the wrong one
-   would overwrite the seed files with whatever that project happened to hold. */
-const dry = process.argv.includes('--dry');
-
-type Row = Record<string, unknown>;
-
-const PULLED = [
-  ['name', 'name'],
-  ['full_name', 'fullName'],
-  ['image_url', 'imageUrl'],
-  ['gallery_urls', 'galleryUrls'],
-  ['features', 'features'],
-  ['specs', 'specs'],
-  ['highlights', 'highlights'],
-] as const;
-
 async function main() {
-  const { target } = requireTarget(process.argv.slice(2).filter((a) => a !== '--dry'));
+  /* `sony_cameras` lives in the content project. There is no generic "the
+     project" left to default to, and pulling the catalogue out of the wrong one
+     would overwrite the seed files with whatever that project happened to hold. */
+  const { target, dry } = readPullArgs(process.argv.slice(2));
   if (target !== 'content') {
     throw new Error('The catalogue lives in the content project. Pass --target content.');
   }
@@ -68,45 +56,9 @@ async function main() {
   const cameraSeed = JSON.parse(readFileSync(SEED_CAMERAS, 'utf8')) as Row[];
   const audioSeed = JSON.parse(readFileSync(SEED_AUDIO, 'utf8')) as Row[];
 
-  type SeedEntry = { seed: 'cameras' | 'audio'; row: Row };
-  const entries: [string, SeedEntry][] = [
-    ...cameraSeed.map((p): [string, SeedEntry] => [p.id as string, { seed: 'cameras', row: p }]),
-    ...audioSeed.map((p): [string, SeedEntry] => [p.id as string, { seed: 'audio', row: p }]),
-  ];
-  const byId = new Map<string, SeedEntry>(entries);
-
-  let cameraChanged = 0;
-  let audioChanged = 0;
-  const edits: string[] = [];
-
-  for (const row of data as Row[]) {
-    const entry = byId.get(row.id as string);
-    if (!entry) {
-      edits.push(`  ? ${row.id} — in Supabase, not in any seed. Add it by hand.`);
-      continue;
-    }
-
-    const local = entry.row;
-    let rowUpdated = false;
-
-    /* Database column → seed key, for every column `/admin/wiki` can edit. A
-       null column is "never written", not "cleared", and leaves the seed alone
-       — the same reading `productFromRow` gives it. */
-    for (const [column, key] of PULLED) {
-      const next = row[column];
-      if (next === null || next === undefined) continue;
-      if (JSON.stringify(next) === JSON.stringify(local[key])) continue;
-      local[key] = next;
-      rowUpdated = true;
-      const who = row.updated_by ? ` (by ${row.updated_by})` : '';
-      edits.push(`  ~ ${row.id}.${key}${who}`);
-    }
-
-    if (rowUpdated) {
-      if (entry.seed === 'cameras') cameraChanged++;
-      else audioChanged++;
-    }
-  }
+  const { changed, edits } = mergePulled(data as Row[], [...cameraSeed, ...audioSeed]);
+  const cameraChanged = cameraSeed.filter((p) => changed.has(p)).length;
+  const audioChanged = audioSeed.filter((p) => changed.has(p)).length;
 
   for (const line of edits) console.log(line);
 
@@ -116,7 +68,7 @@ async function main() {
     return;
   }
   if (dry) {
-    console.log(`\n${totalChanged} field(s) would change. Re-run without --dry to write.`);
+    console.log(`\n${totalChanged} product(s) would change. Re-run without --dry to write.`);
     return;
   }
 

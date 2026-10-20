@@ -248,25 +248,34 @@ describe('the content root', () => {
     `);
     await expect(
       content.exec(`delete from lab_articles where id = 'restrict-probe'`),
-    ).rejects.toThrow();
+    ).rejects.toThrow(/lab_assets_article_id_fkey/);
   });
 
+  /* Each case names the check it targets and seeds its own article. A bare
+     `toThrow()` leaning on the previous test's row passed on the foreign key
+     whenever this ran alone — refusing for the wrong reason. Postgres tests
+     CHECK constraints in name order, so the bomb trips `height` first. */
   it.each([
-    ['a non-WebP asset', `'image/png', 640, 480, 10, 'draft'`],
-    ['an animated asset', `'image/webp', 640, 480, 10, 'draft', true`],
-    ['a zero-width asset', `'image/webp', 0, 480, 10, 'draft'`],
-    ['a decompression bomb', `'image/webp', 40000, 40000, 10, 'draft'`],
-    ['an unknown lifecycle state', `'image/webp', 640, 480, 10, 'limbo'`],
-  ])('refuses %s', async (_label, values) => {
+    ['a non-WebP asset', `'image/png', 640, 480, 10, 'draft'`, 'lab_assets_mime_type_check'],
+    ['an animated asset', `'image/webp', 640, 480, 10, 'draft', true`, 'lab_assets_animated_check'],
+    ['a zero-width asset', `'image/webp', 0, 480, 10, 'draft'`, 'lab_assets_width_check'],
+    ['a decompression bomb', `'image/webp', 40000, 40000, 10, 'draft'`, 'lab_assets_height_check'],
+    ['an unknown lifecycle state', `'image/webp', 640, 480, 10, 'limbo'`, 'lab_assets_state_check'],
+  ])('refuses %s', async (_label, values, constraint) => {
     const columns = values.split(',').length === 6
       ? 'mime_type, width, height, byte_size, state, animated'
       : 'mime_type, width, height, byte_size, state';
+    await content.exec(`
+      insert into lab_articles (id, topic, level, archetype, title)
+      values ('asset-check-probe', 'setup', 'mid', 'explainer', 'Asset check probe')
+      on conflict (id) do nothing;
+    `);
     await expect(
       content.exec(`
         insert into lab_assets (article_id, storage_path, ${columns}, updated_by)
-        values ('restrict-probe', 'probe-${Math.random()}.webp', ${values}, 'editor@example.com');
+        values ('asset-check-probe', 'probe-${Math.random()}.webp', ${values}, 'editor@example.com');
       `),
-    ).rejects.toThrow();
+    ).rejects.toThrow(constraint);
   });
 });
 
@@ -460,13 +469,13 @@ describe('what a browser may read', () => {
   });
 
   it.each([
-    ['an unknown kind', `kind = 'wiki'`],
-    ['metadata that is not an object', `meta = '[]'::jsonb`],
-  ])('refuses %s', async (_label, assignment) => {
+    ['an unknown kind', `kind = 'wiki'`, 'lab_articles_kind_check'],
+    ['metadata that is not an object', `meta = '[]'::jsonb`, 'lab_articles_meta_is_object'],
+  ])('refuses %s', async (_label, assignment, constraint) => {
     for (const [, db] of ROOTS()) {
       await expect(
         db.exec(`update lab_articles set ${assignment} where id = 'kind-default-probe'`),
-      ).rejects.toThrow();
+      ).rejects.toThrow(constraint);
     }
   });
 
@@ -503,6 +512,26 @@ describe('what a browser may read', () => {
     expect(granted).not.toContain('DELETE');
   });
 
+  /* 0004 revoked SELECT on the community tables and nothing else, and 0001
+     revoked nothing on the recipe tables, so under Supabase's default ACL the
+     browser roles kept INSERT, UPDATE, DELETE and TRUNCATE there and writes
+     rested on "no write policy" alone. One `for all using (true)` policy would
+     have opened them — on a table holding commenters' addresses. */
+  it.each([
+    'recipe_comments',
+    'recipe_proposals',
+    'recipes',
+    'recipe_translations',
+    'recipe_images',
+  ])('no browser role may write %s on the control project', async (table) => {
+    for (const role of ['anon', 'authenticated']) {
+      const granted = await tablePrivileges(control, table, role);
+      for (const privilege of ['INSERT', 'UPDATE', 'DELETE', 'TRUNCATE', 'REFERENCES', 'TRIGGER']) {
+        expect(granted, `${role} ${privilege} ${table}`).not.toContain(privilege);
+      }
+    }
+  });
+
   it.each(['anon', 'authenticated'])('%s cannot read lab_assets at all', async (role) => {
     expect(await selectableColumns(content, 'lab_assets', role)).toEqual([]);
   });
@@ -518,7 +547,9 @@ describe('what a browser may read', () => {
         values ('hl-probe', 'HL-1', 'Probe', 'Probe', 'camera', 1, '1 ₫', '', '')
         on conflict (id) do nothing;
       `);
-      await expect(db.exec(`update sony_cameras set highlights = '[]'::jsonb where id = 'hl-probe'`), name).rejects.toThrow();
+      await expect(db.exec(`update sony_cameras set highlights = '[]'::jsonb where id = 'hl-probe'`), name).rejects.toThrow(
+        /sony_cameras_highlights_is_object/,
+      );
       await db.exec(`update sony_cameras set highlights = '{"en":{},"vi":{}}'::jsonb where id = 'hl-probe'`);
       await db.exec(`update sony_cameras set highlights = null where id = 'hl-probe'`);
     }

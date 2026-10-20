@@ -213,6 +213,43 @@ describe('migrations', () => {
     );
   });
 
+  it.each(['anon', 'authenticated'])('%s can read every column the proposals route selects', async (role) => {
+    /* `PROPOSAL_COLUMNS` names sample_image_url, which only 0019 adds. A column
+       the grant does not cover is "permission denied" for the whole query, so
+       every GET /api/proposals would answer 503. This pins the dependency; it
+       cannot pin the order — 0019 must be applied before the route ships. */
+    const route = readFileSync('src/app/api/proposals/route.ts', 'utf8');
+    const columns = route.match(/const PROPOSAL_COLUMNS =\s*'([^']+)'/)?.[1];
+    expect(columns).toContain('sample_image_url');
+    await db.exec(`set role ${role}`);
+    try {
+      await expect(db.query(`select ${columns} from recipe_proposals limit 0`)).resolves.toBeDefined();
+    } finally {
+      await db.exec('reset role');
+    }
+  });
+
+  /* An operator adding an editor copies 0009's `insert (email, note)`. With a
+     default of 'super' that row could edit everything — the least-privileged
+     path granting the most privilege. With no default it is refused. */
+  it('refuses an admin row that does not state its role', async () => {
+    await expect(
+      db.query(`insert into admin_emails (email, note) values ('role-probe@example.com', 'DI')`),
+    ).rejects.toThrow(/null value in column "role"/);
+    await expect(
+      db.query(`insert into admin_emails (email, role) values ('role-probe@example.com', 'di')`),
+    ).resolves.toBeDefined();
+  });
+
+  /* requireAdmin matches the lowercased address from the JWT. A mixed-case row
+     never matches: that administrator is refused on every request, with no
+     error anywhere. */
+  it('refuses an admin address that is not lowercase', async () => {
+    await expect(
+      db.query(`insert into admin_emails (email, role) values ('Mixed@Example.com', 'di')`),
+    ).rejects.toThrow(/admin_emails_email_lowercase/);
+  });
+
   it('denies the anon role the votes table entirely', async () => {
     const readable = await db.query<{ column_name: string }>(
       `select column_name from information_schema.column_privileges
@@ -302,12 +339,15 @@ describe('migrations', () => {
   });
 
   it('rejects an image row pointing at an external URL', async () => {
+    /* Its own parent row, and the check named: a bare `toThrow()` also passed
+       on the foreign key, or on `(recipe_id, sort)` if an earlier case held 0. */
+    await insert({ ...base(), id: 'SCL-PP-950', slug: 'image-check-probe' });
     await expect(
       db.query(
         `insert into recipe_images (recipe_id, storage_path)
-         values ('SCL-PP-001', 'https://lh3.googleusercontent.com/pw/abc')`,
+         values ('SCL-PP-950', 'https://lh3.googleusercontent.com/pw/abc')`,
       ),
-    ).rejects.toThrow();
+    ).rejects.toThrow(/recipe_images_storage_path_check/);
   });
 
   it('cascades translations and images when a recipe is deleted', async () => {

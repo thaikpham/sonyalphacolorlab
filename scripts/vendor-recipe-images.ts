@@ -23,9 +23,15 @@
  * uploaded to Storage — sampled against it before the quota ran out, sizes
  * matched to within re-encoding metadata.
  *
- * Idempotent: re-running overwrites the same paths and rewrites
+ * Idempotent: re-running rebuilds the same paths and rewrites
  * `data/images.seed.json` complete. Dead source URLs are reported and skipped,
- * never written as a broken row.
+ * never written as a broken row. Photographs editors uploaded through
+ * `vendor:uploads` are in neither source library; they are carried over, files
+ * and manifest entries both, rather than deleted by the rebuild.
+ *
+ * Nothing in `public/recipes` changes until the run has passed its guard. The
+ * photographs are built into a scratch directory and swapped in at the end, so
+ * a refused run leaves the site exactly as it was.
  *
  * The Creative Look photographs are Sony's, credited to the named photographers
  * in `data/sony-asia-credits.json`. That credit is what the recipe descriptions
@@ -34,18 +40,34 @@
  * Run: npm run vendor:images
  */
 
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  renameSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { get as httpsGet } from 'node:https';
 import { dirname, join } from 'node:path';
 import sharp from 'sharp';
 import { toRecipeId } from '../src/lib/legacy/migrate';
+import { RECIPE_IMAGE_WIDTHS, recipeImagePath } from '../src/lib/recipes/images';
+import { planVendoredSeed, variantPaths, type ManifestEntry } from './lib/recipe-image-manifest';
 
 const OUT_DIR = join('public', 'recipes');
 
+/* Beside `public/`, not inside it — a run that dies halfway must not leave a
+   directory the CDN would serve — and on the same filesystem, so the swap at
+   the end is a rename rather than a copy. */
+const scratch = mkdtempSync('.vendor-recipes-');
+
 /**
- * The rungs, and they are the loader's too — `catalogue-loader.ts` swaps the
- * suffix rather than calling an optimizer, so this list and `LOCAL_WIDTHS`
- * there must agree. Chosen from what the layouts actually render:
+ * The rungs are `RECIPE_IMAGE_WIDTHS`, the loader's and the admin's too —
+ * `catalogue-loader.ts` swaps the suffix rather than calling an optimizer, so
+ * one list serves all three. Chosen from what the layouts actually render:
  *
  *   320   lightbox filmstrip (48px) and its prev/next previews (128-176px)
  *   640   the grid card and the collage's non-hero tiles
@@ -57,7 +79,7 @@ const OUT_DIR = join('public', 'recipes');
  * 1.4MB. `AGENTS.md` already spends repo weight on reader bytes for the fonts;
  * this is the same trade.
  */
-const WIDTHS = [320, 640, 1024] as const;
+const WIDTHS = RECIPE_IMAGE_WIDTHS;
 const QUALITY = 72;
 
 /**
@@ -164,8 +186,11 @@ function sonyAsiaImageMap(): Record<string, string[]> {
 
 const isPlaceholder = (url: string) => url.includes('placehold.co');
 
-type Row = { recipeId: string; storagePath: string; sort: number };
+type Row = ManifestEntry;
 type Job = { recipeId: string; sort: number; url: string };
+
+/** The manifest path a job writes — the LARGEST rung, see `vendor()`. */
+const pathOf = (job: Job) => recipeImagePath(job.recipeId, job.sort, WIDTHS[WIDTHS.length - 1]);
 
 const skipped: string[] = [];
 
@@ -178,10 +203,9 @@ async function vendor(job: Job): Promise<Row | null> {
   }
 
   const bytes = res.body;
-  const stem = `${job.recipeId}/${String(job.sort).padStart(2, '0')}`;
 
   for (const width of WIDTHS) {
-    const out = join(OUT_DIR, `${stem}-${width}.webp`);
+    const out = join(scratch, recipeImagePath(job.recipeId, job.sort, width));
     mkdirSync(dirname(out), { recursive: true });
     try {
       /* `withoutEnlargement` so a source narrower than a rung is stored at its
@@ -202,7 +226,7 @@ async function vendor(job: Job): Promise<Row | null> {
   /* The seed carries the LARGEST rung. It is what a caller gets if nothing
      rewrites the path — a plain `<img src>`, an OG card, a crawler — and being
      too large there is a cost, while being too small is a visible defect. */
-  return { recipeId: job.recipeId, storagePath: `${stem}-${WIDTHS[WIDTHS.length - 1]}.webp`, sort: job.sort };
+  return { recipeId: job.recipeId, storagePath: pathOf(job), sort: job.sort };
 }
 
 async function main() {
@@ -226,11 +250,6 @@ async function main() {
     real.forEach((url, sort) => jobs.push({ recipeId, sort, url }));
   }
 
-  /* Rebuilt from scratch, so a photograph dropped from a source library does
-     not linger in `public/` forever as an orphan nothing references. */
-  rmSync(OUT_DIR, { recursive: true, force: true });
-  mkdirSync(OUT_DIR, { recursive: true });
-
   console.log(`Vendoring ${jobs.length} photographs at ${WIDTHS.join('/')}w …`);
 
   const rows: Row[] = [];
@@ -246,12 +265,6 @@ async function main() {
      index — so the seed would point at paths that do not exist the moment one
      URL 404s. A hole is harmless: `imagesFor()` orders by this value and takes
      the lowest as the grid thumbnail, and neither cares that it counts 0,1,3. */
-  const seed = rows
-    .slice()
-    .sort((a, b) => a.recipeId.localeCompare(b.recipeId) || a.sort - b.sort);
-
-  const recipes = new Set(seed.map((r) => r.recipeId)).size;
-
   if (skipped.length) {
     console.log(`\n${skipped.length} skipped:`);
     for (const s of skipped) console.log(`  - ${s}`);
@@ -263,27 +276,49 @@ async function main() {
      and renders, just with a tenth of the catalogue quietly unphotographed.
      Nothing downstream could have caught that: a missing image is a dangerously
      valid state here, because most recipes legitimately have none. So the guard
-     belongs at the only point that knows what there was before. */
+     belongs at the only point that knows what there was before — and it counts
+     photographs, not recipes, or a recipe that kept one could lose the rest. */
   const previous = JSON.parse(readFileSync('data/images.seed.json', 'utf8')) as Row[];
-  const before = new Set(previous.map((r) => r.recipeId));
-  const after = new Set(seed.map((r) => r.recipeId));
-  const lost = [...before].filter((id) => !after.has(id));
+  const { seed, kept, lost } = planVendoredSeed(previous, new Set(jobs.map(pathOf)), rows);
 
   if (lost.length && !process.argv.includes('--allow-shrink')) {
     console.error(
-      `\n✗ Refusing to write: ${lost.length} recipe(s) that had photographs now have none —\n` +
+      `\n✗ Refusing to write: ${lost.length} photograph(s) the seed has did not arrive —\n` +
         `  ${lost.join(', ')}\n` +
-        `  The seed on disk is unchanged. Re-run; the sources throttle rather than 404, so\n` +
-        `  a second pass usually collects them. Pass --allow-shrink if the loss is intended.`,
+        `  public/recipes and the seed are unchanged. Re-run; the sources throttle rather\n` +
+        `  than 404, so a second pass usually collects them. Pass --allow-shrink if the\n` +
+        `  loss is intended.`,
     );
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
+  /* Uploads are carried into the new tree before it replaces the old one. */
+  for (const entry of kept) {
+    for (const path of variantPaths(entry.storagePath)) {
+      const from = join(OUT_DIR, path);
+      if (!existsSync(from)) throw new Error(`${entry.storagePath} is in the seed but ${from} is missing`);
+      mkdirSync(dirname(join(scratch, path)), { recursive: true });
+      cpSync(from, join(scratch, path));
+    }
+  }
+
+  /* Rebuilt whole and swapped in, so a photograph no source or upload names
+     does not linger in `public/` as an orphan nothing references. */
+  rmSync(OUT_DIR, { recursive: true, force: true });
+  renameSync(scratch, OUT_DIR);
+
+  const recipes = new Set(seed.map((r) => r.recipeId)).size;
   writeFileSync('data/images.seed.json', JSON.stringify(seed, null, 2) + '\n');
-  console.log(`✓ ${seed.length} photographs × ${WIDTHS.length} rungs, covering ${recipes} recipes`);
+  console.log(
+    `✓ ${seed.length} photographs × ${WIDTHS.length} rungs, covering ${recipes} recipes` +
+      (kept.length ? ` (${kept.length} uploaded, carried over)` : ''),
+  );
 }
 
-main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exitCode = 1;
+  })
+  .finally(() => rmSync(scratch, { recursive: true, force: true }));
