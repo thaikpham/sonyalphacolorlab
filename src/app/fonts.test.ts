@@ -70,6 +70,17 @@ describe('fonts', () => {
     expect(css).not.toMatch(/url\(['"]?https?:/);
   });
 
+  /* globals.css @imports the face CSS, so the bundler rewrites its url()s to
+     hashed /_next/static/media files, which are already immutable. Nothing
+     requests /fonts/noto-sans/ itself, and a cache header there reads as if
+     it covered the fonts while covering nothing. */
+  it('is served from the bundle, not from /fonts/', () => {
+    const globals = readFileSync(join(process.cwd(), 'src', 'app', 'globals.css'), 'utf8');
+    expect(globals).toContain('@import "../../public/fonts/noto-sans/noto-sans.css"');
+    const config = readFileSync(join(process.cwd(), 'next.config.ts'), 'utf8');
+    expect(config).not.toContain('/fonts/');
+  });
+
   /**
    * Read off the `--font-*` namespace, not off the source text.
    *
