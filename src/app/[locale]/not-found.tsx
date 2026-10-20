@@ -1,9 +1,20 @@
 import { getTranslations } from 'next-intl/server';
 import { SiteHeader } from '@/components/site-header';
-import { Link } from '@/i18n/navigation';
+import { NotFoundBody, type NotFoundCopy } from '@/components/not-found-body';
+import { NOT_FOUND_APPS } from '@/components/not-found-apps';
 
 export default async function NotFound() {
   const t = await getTranslations('notFound');
+  /* Every app's copy, because this one boundary answers every `notFound()`
+     under the locale and only the client knows which path was asked for. It
+     said "That recipe isn't here" and linked to /colorlab for a missing
+     camera, article or reference page too. */
+  const copy = Object.fromEntries(
+    NOT_FOUND_APPS.map((app) => [
+      app,
+      { title: t(`${app}.title`), body: t(`${app}.body`), action: t(`${app}.action`) },
+    ]),
+  ) as NotFoundCopy;
   return (
     <>
       <SiteHeader />
@@ -19,14 +30,7 @@ export default async function NotFound() {
         >
           ?
         </div>
-        <h1 className="mt-6 text-title-1 font-extrabold tracking-[-0.02em]">{t('title')}</h1>
-        <p className="mt-3 max-w-md text-body text-ink-muted">{t('body')}</p>
-        {/* The copy promises the catalogue ("Browse all recipes"), so it has to
-            land there. `/` is the ecosystem launcher and would answer a missing
-            recipe with four app tiles. */}
-        <Link href="/colorlab" className="btn-glass mt-8 inline-flex items-center">
-          {t('action')}
-        </Link>
+        <NotFoundBody copy={copy} />
       </main>
     </>
   );

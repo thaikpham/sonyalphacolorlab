@@ -2880,14 +2880,14 @@
   {
     "id": "SCL-CL-001",
     "slug": "fl-raoul-rutnam",
-    "name": "SCL-CL-001: Film Look · Raoul Rutnam",
+    "name": "SCL-CL-001: Film · Raoul Rutnam",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB"
     },
     "tags": [
       "creative-look",
-      "film-look",
+      "film",
       "sri-lanka"
     ],
     "published": true,
@@ -2907,7 +2907,7 @@
   {
     "id": "SCL-CL-002",
     "slug": "fl-arantha-sirimanne",
-    "name": "SCL-CL-002: Film Look · Arantha Sirimanne",
+    "name": "SCL-CL-002: Film · Arantha Sirimanne",
     "whiteBalance": {
       "mode": "preset",
       "preset": "Cloudy",
@@ -2924,7 +2924,7 @@
     },
     "tags": [
       "creative-look",
-      "film-look",
+      "film",
       "sri-lanka"
     ],
     "published": true,
@@ -2944,14 +2944,14 @@
   {
     "id": "SCL-CL-003",
     "slug": "vv2-ravi-ranasinghe",
-    "name": "SCL-CL-003: Vivid2 · Ravi Ranasinghe",
+    "name": "SCL-CL-003: Vivid 2 · Ravi Ranasinghe",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB"
     },
     "tags": [
       "creative-look",
-      "vivid2",
+      "vivid-2",
       "sri-lanka"
     ],
     "published": true,
@@ -2971,14 +2971,14 @@
   {
     "id": "SCL-CL-004",
     "slug": "vv2-sony-asia",
-    "name": "SCL-CL-004: Vivid2 · Sony Asia",
+    "name": "SCL-CL-004: Vivid 2 · Sony Asia",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5600
     },
     "tags": [
       "creative-look",
-      "vivid2",
+      "vivid-2",
       "asia-pacific"
     ],
     "published": true,
@@ -2998,7 +2998,7 @@
   {
     "id": "SCL-CL-005",
     "slug": "vv2-jonpoon-jpg",
-    "name": "SCL-CL-005: Vivid2 · Jonpoon.jpg",
+    "name": "SCL-CL-005: Vivid 2 · Jonpoon.jpg",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB",
@@ -3015,7 +3015,7 @@
     },
     "tags": [
       "creative-look",
-      "vivid2",
+      "vivid-2",
       "singapore"
     ],
     "published": true,
@@ -3035,14 +3035,14 @@
   {
     "id": "SCL-CL-006",
     "slug": "vv2-jonpoon-jpg-2",
-    "name": "SCL-CL-006: Vivid2 · Jonpoon.jpg 2",
+    "name": "SCL-CL-006: Vivid 2 · Jonpoon.jpg 2",
     "whiteBalance": {
       "mode": "preset",
       "preset": "Daylight"
     },
     "tags": [
       "creative-look",
-      "vivid2",
+      "vivid-2",
       "singapore"
     ],
     "published": true,
@@ -3628,7 +3628,7 @@
   {
     "id": "SCL-CL-025",
     "slug": "fl-sandeeshwara-perera",
-    "name": "SCL-CL-025: Film Look · Sandeeshwara Perera",
+    "name": "SCL-CL-025: Film · Sandeeshwara Perera",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5200,
@@ -3645,7 +3645,7 @@
     },
     "tags": [
       "creative-look",
-      "film-look",
+      "film",
       "sri-lanka"
     ],
     "published": true,
@@ -3665,7 +3665,7 @@
   {
     "id": "SCL-CL-026",
     "slug": "fl-sandeeshwara-perera-2",
-    "name": "SCL-CL-026: Film Look · Sandeeshwara Perera 2",
+    "name": "SCL-CL-026: Film · Sandeeshwara Perera 2",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5900,
@@ -3682,7 +3682,7 @@
     },
     "tags": [
       "creative-look",
-      "film-look",
+      "film",
       "sri-lanka"
     ],
     "published": true,
@@ -3702,7 +3702,7 @@
   {
     "id": "SCL-CL-027",
     "slug": "fl-sandeeshwara-perera-3",
-    "name": "SCL-CL-027: Film Look · Sandeeshwara Perera 3",
+    "name": "SCL-CL-027: Film · Sandeeshwara Perera 3",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5200,
@@ -3719,7 +3719,7 @@
     },
     "tags": [
       "creative-look",
-      "film-look",
+      "film",
       "sri-lanka"
     ],
     "published": true,
@@ -3739,7 +3739,7 @@
   {
     "id": "SCL-CL-028",
     "slug": "fl-lahiru-rumesh",
-    "name": "SCL-CL-028: Film Look · Lahiru Rumesh",
+    "name": "SCL-CL-028: Film · Lahiru Rumesh",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 7600,
@@ -3756,7 +3756,7 @@
     },
     "tags": [
       "creative-look",
-      "film-look",
+      "film",
       "sri-lanka"
     ],
     "published": true,
@@ -3776,14 +3776,14 @@
   {
     "id": "SCL-CL-029",
     "slug": "fl-isuru-mudalige",
-    "name": "SCL-CL-029: Film Look · Isuru Mudalige",
+    "name": "SCL-CL-029: Film · Isuru Mudalige",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB"
     },
     "tags": [
       "creative-look",
-      "film-look",
+      "film",
       "sri-lanka"
     ],
     "published": true,
@@ -3803,14 +3803,14 @@
   {
     "id": "SCL-CL-030",
     "slug": "fl-sony-asia",
-    "name": "SCL-CL-030: Film Look · Sony Asia",
+    "name": "SCL-CL-030: Film · Sony Asia",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5600
     },
     "tags": [
       "creative-look",
-      "film-look",
+      "film",
       "asia-pacific"
     ],
     "published": true,
@@ -3830,7 +3830,7 @@
   {
     "id": "SCL-CL-031",
     "slug": "fl-sony-asia-2",
-    "name": "SCL-CL-031: Film Look · Sony Asia 2",
+    "name": "SCL-CL-031: Film · Sony Asia 2",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5600,
@@ -3847,7 +3847,7 @@
     },
     "tags": [
       "creative-look",
-      "film-look",
+      "film",
       "asia-pacific"
     ],
     "published": true,
@@ -3867,7 +3867,7 @@
   {
     "id": "SCL-CL-032",
     "slug": "fl-jonpoon-jpg",
-    "name": "SCL-CL-032: Film Look · Jonpoon.jpg",
+    "name": "SCL-CL-032: Film · Jonpoon.jpg",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 4700,
@@ -3884,7 +3884,7 @@
     },
     "tags": [
       "creative-look",
-      "film-look",
+      "film",
       "singapore"
     ],
     "published": true,
@@ -3904,14 +3904,14 @@
   {
     "id": "SCL-CL-033",
     "slug": "fl-mardy-suong",
-    "name": "SCL-CL-033: Film Look · Mardy Suong",
+    "name": "SCL-CL-033: Film · Mardy Suong",
     "whiteBalance": {
       "mode": "preset",
       "preset": "Daylight"
     },
     "tags": [
       "creative-look",
-      "film-look",
+      "film",
       "cambodia"
     ],
     "published": true,
@@ -3931,14 +3931,14 @@
   {
     "id": "SCL-CL-034",
     "slug": "fl-mardy-suong-2",
-    "name": "SCL-CL-034: Film Look · Mardy Suong 2",
+    "name": "SCL-CL-034: Film · Mardy Suong 2",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB"
     },
     "tags": [
       "creative-look",
-      "film-look",
+      "film",
       "cambodia"
     ],
     "published": true,
@@ -3958,14 +3958,14 @@
   {
     "id": "SCL-CL-035",
     "slug": "fl-khong",
-    "name": "SCL-CL-035: Film Look · Khong ខុង",
+    "name": "SCL-CL-035: Film · Khong ខុង",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB"
     },
     "tags": [
       "creative-look",
-      "film-look",
+      "film",
       "cambodia"
     ],
     "published": true,
@@ -3985,7 +3985,7 @@
   {
     "id": "SCL-CL-036",
     "slug": "fl-hea-kimhong",
-    "name": "SCL-CL-036: Film Look · Hea Kimhong ហ៊ាន គីមហុង",
+    "name": "SCL-CL-036: Film · Hea Kimhong ហ៊ាន គីមហុង",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5000,
@@ -4002,7 +4002,7 @@
     },
     "tags": [
       "creative-look",
-      "film-look",
+      "film",
       "cambodia"
     ],
     "published": true,
@@ -4022,14 +4022,14 @@
   {
     "id": "SCL-CL-037",
     "slug": "fl-filmreel",
-    "name": "SCL-CL-037: Film Look · Filmreel",
+    "name": "SCL-CL-037: Film · Filmreel",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 6500
     },
     "tags": [
       "creative-look",
-      "film-look",
+      "film",
       "cambodia"
     ],
     "published": true,

@@ -1,13 +1,13 @@
 import 'server-only';
 import { contentAdmin } from '@/lib/supabase/server';
 import { recipeSchema, type Recipe } from '../camera/schema';
-import { fromRow, toRow, type RecipeRow } from './row';
-import type { RecipeRecord } from './admin-types';
+import { fromRow, RECIPE_COLUMNS, toRow, type RecipeRow } from './row';
+import type { RecipeRecord, UnreadableRecipe } from './admin-types';
 import {
   devGetRecipe,
+  devInsertRecipe,
   devListRecipes,
   devRecipeIds,
-  devRecipeSlugs,
   devUpsertRecipe,
   isRecipeDevStore,
 } from './dev-store';
@@ -32,15 +32,12 @@ import {
 /* Every column `fromRow` needs, named rather than `*`: a `select('*')` here
    would start shipping any column added later to a screen that does not know
    about it, and silently widen what a write round-trips. */
-const ADMIN_COLUMNS =
-  'id, legacy_id, slug, name, format, wb_mode, wb_kelvin, wb_auto, wb_preset, ' +
-  'wb_shift_ab_axis, wb_shift_ab_amount, wb_shift_gm_axis, wb_shift_gm_amount, ' +
-  'look, settings, tags, published, updated_at';
+const ADMIN_COLUMNS = `${RECIPE_COLUMNS}, updated_at`;
 
 type Row = RecipeRow & { updated_at?: string };
 
 /**
- * A row becomes a record, or it is dropped.
+ * A row becomes a record, or the reason it cannot.
  *
  * `fromRow` throws on a row that fails the schema, and on this screen that is
  * the wrong response: one malformed row would make the whole list unreachable,
@@ -48,7 +45,7 @@ type Row = RecipeRow & { updated_at?: string };
  * throws — `source.ts` is unchanged — because there a bad row is a bug that
  * should be loud rather than a row to be repaired.
  */
-function toRecord(row: Row): RecipeRecord | null {
+function toRecord(row: Row): RecipeRecord | { unreadable: string } {
   try {
     return {
       recipe: fromRow(row),
@@ -56,13 +53,25 @@ function toRecord(row: Row): RecipeRecord | null {
       updatedAt: typeof row.updated_at === 'string' ? row.updated_at : '',
     };
   } catch (err) {
-    console.error('[admin/recipes] skipping unreadable row:', row.id, err);
-    return null;
+    console.error('[admin/recipes] unreadable row:', row.id, err);
+    return { unreadable: err instanceof Error ? err.message : String(err) };
   }
 }
 
-export async function listRecipeRecords(): Promise<RecipeRecord[]> {
-  if (isRecipeDevStore()) return devListRecipes();
+/**
+ * Every row, with the ones `fromRow` refuses kept apart rather than dropped.
+ *
+ * Dropped, such a row — a script's write, the SQL editor, a range narrowed in
+ * `constants.ts` — never appeared on the editor's list while it broke the
+ * public grid, and only a hand-made DELETE could reach it. The editor lists
+ * them with one action, Unpublish, which `unpublishRecipe` can do without
+ * parsing the row.
+ */
+export async function listRecipeRows(): Promise<{
+  records: RecipeRecord[];
+  unreadable: UnreadableRecipe[];
+}> {
+  if (isRecipeDevStore()) return { records: devListRecipes(), unreadable: [] };
 
   const { data, error } = await contentAdmin()
     .from('recipes')
@@ -70,7 +79,22 @@ export async function listRecipeRecords(): Promise<RecipeRecord[]> {
     .order('id', { ascending: true });
 
   if (error || !Array.isArray(data)) throw new Error(error?.message ?? 'listFailed');
-  return (data as unknown as Row[]).map(toRecord).filter((r): r is RecipeRecord => r !== null);
+  const records: RecipeRecord[] = [];
+  const unreadable: UnreadableRecipe[] = [];
+  for (const row of data as unknown as Row[]) {
+    const out = toRecord(row);
+    if ('unreadable' in out) {
+      unreadable.push({ id: String(row.id), published: row.published === true, error: out.unreadable });
+    } else {
+      records.push(out);
+    }
+  }
+  return { records, unreadable };
+}
+
+/** The readable rows only, for callers that resolve references by id. */
+export async function listRecipeRecords(): Promise<RecipeRecord[]> {
+  return (await listRecipeRows()).records;
 }
 
 export async function getRecipeRecord(id: string): Promise<RecipeRecord | null> {
@@ -82,8 +106,13 @@ export async function getRecipeRecord(id: string): Promise<RecipeRecord | null> 
     .eq('id', id)
     .maybeSingle();
 
-  if (error || !data) return null;
-  return toRecord(data as unknown as Row);
+  /* A failed read throws, and only an answered one may say "no such recipe".
+     Every caller turns null into a 404, so returning it on error told an
+     editor mid-outage that the recipe they were saving had been deleted. */
+  if (error) throw new Error(error.message);
+  if (!data) return null;
+  const out = toRecord(data as unknown as Row);
+  return 'unreadable' in out ? null : out;
 }
 
 // ---------------------------------------------------------------------------
@@ -158,11 +187,14 @@ export async function uniqueRecipeSlug(name: string, ownId?: string): Promise<st
       const owner = devListRecipes().find((r) => r.recipe.slug === slug);
       return Boolean(owner) && owner?.recipe.id !== ownId;
     }
-    const { data } = await contentAdmin()
+    const { data, error } = await contentAdmin()
       .from('recipes')
       .select('id')
       .eq('slug', slug)
       .maybeSingle();
+    /* A read that failed has not said the slug is free. Discarding `error`
+       did, and the insert then failed on the unique key instead. */
+    if (error) throw new Error(error.message);
     return Boolean(data) && (data as { id: string } | null)?.id !== ownId;
   };
 
@@ -171,13 +203,6 @@ export async function uniqueRecipeSlug(name: string, ownId?: string): Promise<st
     if (!(await taken(candidate))) return candidate;
   }
   return `${base}-${Date.now().toString(36)}`;
-}
-
-export async function recipeSlugs(): Promise<string[]> {
-  if (isRecipeDevStore()) return devRecipeSlugs();
-  const { data, error } = await contentAdmin().from('recipes').select('slug');
-  if (error || !Array.isArray(data)) throw new Error(error?.message ?? 'listFailed');
-  return (data as { slug: string }[]).map((r) => r.slug);
 }
 
 // ---------------------------------------------------------------------------
@@ -209,30 +234,55 @@ function record(recipe: Recipe, legacyId: string | null): RecipeRecord {
   return { recipe, legacyId, updatedAt: new Date().toISOString() };
 }
 
-export async function insertRecipeRecord(recipe: Recipe): Promise<void> {
+/**
+ * Inserts a new row, or answers `taken` when its id or slug already belongs to
+ * another — the unique key deciding a race the allocator's two reads cannot.
+ * The route allocates again on `taken`; anything else is a failure and throws.
+ */
+export async function insertRecipeRecord(recipe: Recipe): Promise<'inserted' | 'taken'> {
   if (isRecipeDevStore()) {
-    devUpsertRecipe(record(recipe, null));
-    return;
+    return devInsertRecipe(record(recipe, null)) ? 'inserted' : 'taken';
   }
   const { error } = await contentAdmin().from('recipes').insert(toRow(recipe, null));
+  if (error?.code === '23505') return 'taken';
   if (error) throw new Error(error.message);
+  return 'inserted';
+}
+
+/** The version an update `.select()` answers with, or null for no row. */
+function versionOf(data: unknown): string | null {
+  const row = Array.isArray(data) ? (data[0] as { updated_at?: unknown } | undefined) : undefined;
+  if (!row) return null;
+  return typeof row.updated_at === 'string' ? row.updated_at : '';
 }
 
 /**
- * Updates everything except the slug and the legacy id.
+ * Updates everything except the slug and the legacy id — and only over the
+ * version the editor opened.
  *
  * The slug is immutable after creation and the content baseline says why: the
  * control plane's `recipe_comments`, `recipe_proposals`, `proposal_votes` and
  * `community_photos` all reference `recipe_slug` as a plain string, across a
  * project and an organisation boundary that no foreign key spans. Renaming one
  * orphans every comment on it, silently, with nothing to join back on.
+ *
+ * `expectedUpdatedAt` is the precondition the product route has. The editor
+ * sends its whole draft, `published` included, so without it a tab opened
+ * before another tab unpublished a recipe put it back on the site with its
+ * next typo fix, and both tabs said "Saved". Answers the row's new version, or
+ * null when nothing matched — the row went, or moved on; the caller asks
+ * which.
  */
-export async function updateRecipeRecord(recipe: Recipe): Promise<boolean> {
+export async function updateRecipeRecord(
+  recipe: Recipe,
+  expectedUpdatedAt: string,
+): Promise<string | null> {
   if (isRecipeDevStore()) {
     const existing = devGetRecipe(recipe.id);
-    if (!existing) return false;
-    devUpsertRecipe(record({ ...recipe, slug: existing.recipe.slug }, existing.legacyId));
-    return true;
+    if (!existing || existing.updatedAt !== expectedUpdatedAt) return null;
+    const next = record({ ...recipe, slug: existing.recipe.slug }, existing.legacyId);
+    devUpsertRecipe(next);
+    return next.updatedAt;
   }
 
   const row = toRow(recipe, null);
@@ -242,18 +292,21 @@ export async function updateRecipeRecord(recipe: Recipe): Promise<boolean> {
      in this database can enforce. */
   const { slug: _slug, legacy_id: _legacyId, ...patch } = row;
 
-  /* `.select('id')` is what makes a missing row an error. An
+  /* `.select()` is what makes a missing row an error. An
      `update ... where id = ?` that matches nothing is a *success* in
      PostgREST: no error, zero rows. Without this an editor saving a recipe
-     somebody else had deleted would be told "Saved". */
+     somebody else had deleted would be told "Saved". `updated_at` is set here
+     as the product route sets it; `recipes_touch` sets it again in the
+     database, and the value that comes back is that one. */
   const { data, error } = await contentAdmin()
     .from('recipes')
     .update({ ...patch, updated_at: new Date().toISOString() })
     .eq('id', recipe.id)
-    .select('id');
+    .eq('updated_at', expectedUpdatedAt)
+    .select('id, updated_at');
 
   if (error) throw new Error(error.message);
-  return Array.isArray(data) && data.length > 0;
+  return versionOf(data);
 }
 
 /**
@@ -272,9 +325,29 @@ export async function updateRecipeRecord(recipe: Recipe): Promise<boolean> {
  * for real, because neither has a referent on the other plane. The asymmetry
  * between the three admin screens is deliberate, and the editor says
  * "unpublish" rather than "delete" so it is not a surprise.
+ *
+ * One column, by id, without reading the row first. It went through
+ * `getRecipeRecord`, which drops a row `fromRow` cannot parse — so a row that
+ * fails the schema (a script's write, or a range narrowed in `constants.ts`)
+ * answered 404 here while still breaking the public grid, and nothing could
+ * take it offline. No version precondition: taking a recipe off the site is
+ * right whatever was saved since. Answers the new version, or null for no row.
  */
-export async function unpublishRecipe(id: string): Promise<boolean> {
-  const existing = await getRecipeRecord(id);
-  if (!existing) return false;
-  return updateRecipeRecord({ ...existing.recipe, published: false });
+export async function unpublishRecipe(id: string): Promise<string | null> {
+  if (isRecipeDevStore()) {
+    const existing = devGetRecipe(id);
+    if (!existing) return null;
+    const next = record({ ...existing.recipe, published: false }, existing.legacyId);
+    devUpsertRecipe(next);
+    return next.updatedAt;
+  }
+
+  const { data, error } = await contentAdmin()
+    .from('recipes')
+    .update({ published: false, updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .select('id, updated_at');
+
+  if (error) throw new Error(error.message);
+  return versionOf(data);
 }

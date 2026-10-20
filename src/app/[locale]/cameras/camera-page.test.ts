@@ -6,12 +6,15 @@ import { CORE_SPEC_KEYS } from '@/lib/cameras/highlights';
 
 const page = readFileSync('src/app/[locale]/cameras/[id]/page.tsx', 'utf8');
 const editor = readFileSync('src/components/admin/admin-editor.tsx', 'utf8');
+/* What a save sends lives beside the editor, in a module the suite can run;
+   `src/lib/admin/product-draft.test.ts` executes it. */
+const draft = readFileSync('src/lib/admin/product-draft.ts', 'utf8');
 
 describe('the highlights editor', () => {
   it('edits highlights for cameras only and sends them with the save', () => {
     expect(editor).toContain("selected.category === 'camera'");
-    expect(editor).toContain('draftToHighlights(draft.hl)');
-    expect(editor).toContain('highlightsToDraft(parseHighlights(p.highlights))');
+    expect(draft).toContain('draftToHighlights(d.hl)');
+    expect(draft).toContain('highlightsToDraft(parseHighlights(p.highlights))');
   });
 
   it('sends highlights only when the editor actually changed them', () => {
@@ -19,9 +22,8 @@ describe('the highlights editor', () => {
        `highlights` every time, and a stored value that fails the schema
        round-trips to an empty draft and then to `null` — silently erasing it
        on a save that never meant to touch it. */
-    expect(editor).toContain('initialHl: HighlightsDraft');
-    expect(editor).toContain('JSON.stringify(draft.hl) !== JSON.stringify(draft.initialHl)');
-    expect(editor).toContain("selected.category === 'camera' && highlightsChanged");
+    expect(draft).toContain('base: DraftFields');
+    expect(draft).toContain("product.category === 'camera' && !same(d.hl, b.hl)");
   });
 });
 
@@ -59,5 +61,26 @@ describe('the camera page', () => {
       expect(vi.cameras.coreSpecs[key], key).toBeTruthy();
     }
     expect(vi.cameras.specs.fullSpecsHeading).toBe('Thông số kỹ thuật đầy đủ');
+  });
+});
+
+const audioPage = readFileSync('src/app/[locale]/audio/[id]/page.tsx', 'utf8');
+
+describe('the official link', () => {
+  it('is drawn only for a url that officialUrl accepts', () => {
+    /* `href={product.url}` drew six image lists as "View on Sony Vietnam". */
+    expect(page).not.toContain('href={product.url}');
+    expect(page).toMatch(/const official = officialUrl\(product\.url\)/);
+    expect(page).toMatch(/\{official && \(\s*<a\s+href=\{official\}/);
+  });
+});
+
+describe('the product pages', () => {
+  it.each([
+    ['camera', page],
+    ['audio', audioPage],
+  ])('the %s page sizes to the dynamic viewport, never 100vh', (_kind, source) => {
+    expect(source).not.toMatch(/\bmin-h-screen\b(?!-dynamic)/);
+    expect(source).toContain('min-h-screen-dynamic');
   });
 });

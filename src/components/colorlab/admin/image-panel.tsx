@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useAdminSession } from '@/components/admin-ui/session';
 import { FIELD_SM } from '@/components/admin-ui/controls';
-import { MAX_UPLOAD_BYTES } from '@/lib/recipes/upload-limits';
+import { MAX_ALT_CHARS, MAX_UPLOAD_BYTES } from '@/lib/recipes/upload-limits';
 
 /**
  * A recipe's photographs.
@@ -38,7 +38,9 @@ type AdminImage = {
   width: number | null;
   height: number | null;
   live: boolean;
-  previewUrl: string;
+  /** Null when the row's object could not be signed — the row stays listed
+      so it can still be deleted. */
+  previewUrl: string | null;
 };
 
 export function ImagePanel({ recipeId }: { recipeId: string }) {
@@ -108,6 +110,12 @@ export function ImagePanel({ recipeId }: { recipeId: string }) {
         headers: bearer(),
         body: form,
       });
+      /* The platform's own 413 is plain text, so it is read by status: parsing
+         it as JSON would report "upload failed" for a file that is too large. */
+      if (res.status === 413) {
+        setNote({ kind: 'err', msg: codeMessage('tooLarge') });
+        return;
+      }
       const data = (await res.json()) as { ok?: boolean; error?: string; pendingVendor?: boolean };
       if (!res.ok) {
         setNote({ kind: 'err', msg: codeMessage(data.error ?? 'uploadFailed', 'uploadFailed') });
@@ -199,7 +207,7 @@ export function ImagePanel({ recipeId }: { recipeId: string }) {
   return (
     <section className="flex flex-col gap-4">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h3 className="text-body-sm font-extrabold tracking-[-0.01em] text-ink">{t('photos')}</h3>
+        <h3 className="text-body-sm font-extrabold text-ink">{t('photos')}</h3>
         <span className="meta">{t('photosHint')}</span>
       </div>
 
@@ -224,7 +232,7 @@ export function ImagePanel({ recipeId }: { recipeId: string }) {
            stands between them and the site. */
         <p className="surface-sunken rounded-sm p-3 text-body-sm text-ink">
           {t('pendingBanner', { n: pending })}
-          <code className="ml-2 text-accent-400">npm run vendor:uploads -- --target content</code>
+          <code className="ml-2 font-sans text-accent-400">npm run vendor:uploads -- --target content</code>
         </p>
       ) : null}
 
@@ -240,12 +248,18 @@ export function ImagePanel({ recipeId }: { recipeId: string }) {
         <ul className="flex flex-col gap-3">
           {images.map((img, i) => (
             <li key={img.id} className="surface-raised flex flex-wrap gap-4 rounded-md p-3">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={img.previewUrl}
-                alt={img.alt ?? ''}
-                className="h-24 w-32 shrink-0 rounded-sm bg-sunken object-cover"
-              />
+              {img.previewUrl ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={img.previewUrl}
+                  alt={img.alt ?? ''}
+                  className="h-24 w-32 shrink-0 rounded-sm bg-sunken object-cover"
+                />
+              ) : (
+                <p className="meta flex h-24 w-32 shrink-0 items-center rounded-sm bg-sunken p-3 text-danger">
+                  {t('previewMissing')}
+                </p>
+              )}
 
               <div className="flex min-w-[14rem] grow flex-col gap-2">
                 <div className="flex items-center gap-2">
@@ -263,6 +277,7 @@ export function ImagePanel({ recipeId }: { recipeId: string }) {
                 <input
                   className={FIELD_SM}
                   defaultValue={img.alt ?? ''}
+                  maxLength={MAX_ALT_CHARS}
                   placeholder={t('altPlaceholder')}
                   /* Saved on blur rather than per keystroke: alt text is a
                      sentence, and one request per character is a request per

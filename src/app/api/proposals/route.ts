@@ -1,10 +1,21 @@
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import { hasControlConfig, controlAdmin, controlRead } from '@/lib/supabase/server';
 import { requireUser, UNAUTHENTICATED } from '@/lib/auth/require-user';
 import { checkRateLimit } from '@/lib/ai/rate-limit';
-import { COMMUNITY_ERRORS, communityErrorBody, outageErrorCode } from '@/lib/community/errors';
+import {
+  COMMUNITY_ERRORS,
+  communityErrorBody,
+  outageErrorCode,
+  type CommunityErrorCode,
+} from '@/lib/community/errors';
 import { hasContentConfig } from '@/lib/supabase/server';
-import { publishedRecipeExists } from '@/lib/recipes/existence';
+import { publishedRecipeFormat } from '@/lib/recipes/existence';
+import { clSettingsSchema, ppSettingsSchema, whiteBalanceSchema } from '@/lib/camera/schema';
+import { MAX_PHOTOS_PER_RECIPE, clientKey } from '@/lib/community/gallery';
+import { httpsImageUrlSchema, readJsonBody, recipeSlugSchema } from '@/lib/community/request';
+/* One list for the read and the insert's return, so the two cannot drift. */
+import { PROPOSAL_COLUMNS } from '@/lib/community/columns';
 
 /**
  * PostgREST rejects with a plain object, not an Error, so `String(err)` gave
@@ -19,9 +30,47 @@ function logFallback(where: string, err: unknown) {
       : typeof err === 'object' && err
         ? JSON.stringify(err)
         : String(err);
-  console.error(`[${where}] Supabase unavailable, serving in-process memory:`, detail);
+  console.error(`[${where}] Supabase failed:`, detail);
 }
 
+/** Proposals are ranked by votes; nobody reads past the first hundred. */
+const PROPOSAL_LIST_LIMIT = 100;
+
+/**
+ * The proposal payload, checked before anything is written.
+ *
+ * `settings` and `whiteBalance` used to go straight into jsonb after a
+ * truthiness check — `{ saturation: 99 }` was stored and rendered as a pill on
+ * the recipe page, and so was a 4 MB blob. White balance has one schema for
+ * both formats; settings are checked below, once the recipe's own format is
+ * known, because a Picture Profile proposal on a Creative Look recipe is
+ * Rule 2 broken in a column nothing else validates.
+ */
+const proposalBody = z.object({
+  recipeSlug: recipeSlugSchema,
+  title: z.string().trim().min(1).max(150),
+  sampleImageUrl: httpsImageUrlSchema,
+  settings: z.record(z.string(), z.unknown()),
+  whiteBalance: whiteBalanceSchema,
+});
+
+/** Which code names the first thing wrong with the body. */
+function bodyErrorCode(
+  issue: z.ZodError['issues'][number] | undefined,
+  body: Record<string, unknown>,
+): CommunityErrorCode {
+  switch (issue?.path[0]) {
+    case 'sampleImageUrl': {
+      const sample = body.sampleImageUrl;
+      return typeof sample === 'string' && sample.trim() ? 'invalidImageUrl' : 'sampleUrlRequired';
+    }
+    case 'settings':
+    case 'whiteBalance':
+      return 'invalidSettings';
+    default:
+      return 'missingFields';
+  }
+}
 
 export type ProposalItem = {
   id: string;
@@ -29,7 +78,7 @@ export type ProposalItem = {
   title: string;
   authorName: string;
   authorAvatar: string | null;
-  sampleImageUrl?: string | null;
+  sampleImageUrl: string | null;
   settings: Record<string, unknown>;
   whiteBalance: Record<string, unknown>;
   voteCount: number;
@@ -38,7 +87,8 @@ export type ProposalItem = {
   createdAt: string;
 };
 
-// In-memory proposals fallback when running offline
+/* Examples for a deployment with no control project at all. Never a fallback
+   for a configured project that failed — see the GET's catch. */
 const memoryProposals: ProposalItem[] = [
   {
     id: 'seed-prop-1',
@@ -90,16 +140,22 @@ export async function GET(request: Request) {
   /* Whose vote state to resolve. Taken from the session, not a `?viewer=`
      query param: an address in a URL is copied into every access log and
      referrer, and anyone could have passed someone else's to learn how they
-     voted. Anonymous readers simply get hasVoted: false. */
+     voted. Anonymous readers simply get hasVoted: false.
+
+     `voteStateUnknown` is set whenever a signed-in reader's votes could not be
+     read. The vote route toggles, so a heart shown hollow for a proposal the
+     reader did vote for turns their next click into an un-vote; the client
+     disables the hearts rather than offer that click. */
   let viewer: string | null = null;
+  let voteStateUnknown = false;
   try {
     viewer = (await requireUser(request))?.email ?? null;
   } catch {
     /* A control outage while resolving the viewer is not fatal to a public
-       read. Everything below degrades to the seeded list anyway, and the worst
-       a null viewer costs a signed-in reader is their own heart showing hollow
-       for the duration. */
+       read — the list itself may still load. But who the reader is, and so
+       what they voted for, is now unknown, and is reported as such. */
     viewer = null;
+    voteStateUnknown = true;
   }
 
   if (!slug) {
@@ -108,19 +164,16 @@ export async function GET(request: Request) {
 
   if (!hasControlConfig()) {
     const filtered = memoryProposals.filter((p) => p.recipeSlug === slug);
-    return NextResponse.json({ proposals: filtered, source: 'memory' });
+    return NextResponse.json({ proposals: filtered, voteStateUnknown: false, source: 'memory' });
   }
 
   try {
-    /* Explicit columns, never `*`: author_email must not ride along into a
-       response the whole internet can fetch. */
     const { data: proposalRows, error } = await controlRead()
       .from('recipe_proposals')
-      .select(
-        'id, recipe_slug, title, author_name, author_avatar, settings, white_balance, vote_count, created_at',
-      )
+      .select(PROPOSAL_COLUMNS)
       .eq('recipe_slug', slug)
-      .order('vote_count', { ascending: false });
+      .order('vote_count', { ascending: false })
+      .limit(PROPOSAL_LIST_LIMIT);
 
     if (error) throw error;
 
@@ -135,13 +188,21 @@ export async function GET(request: Request) {
     if (viewer && proposalIds.length > 0) {
       // Service role, not the anon key: proposal_votes is nothing but email
       // addresses, so the public roles are not granted select on it at all.
-      const { data: voteRows } = await controlAdmin()
+      const { data: voteRows, error: voteError } = await controlAdmin()
         .from('proposal_votes')
         .select('proposal_id')
         .eq('user_email', viewer)
         .in('proposal_id', proposalIds);
 
-      voteRows?.forEach((v) => votedByViewer.add(v.proposal_id));
+      /* The error used to be discarded: a failed read gave hasVoted: false
+         everywhere, which is the exact bug the vote route's own comment
+         describes, one request earlier. */
+      if (voteError) {
+        logFallback('proposals/votes', voteError);
+        voteStateUnknown = true;
+      } else {
+        voteRows?.forEach((v) => votedByViewer.add(v.proposal_id));
+      }
     }
 
     const proposals: ProposalItem[] = (proposalRows || []).map((row) => ({
@@ -150,6 +211,7 @@ export async function GET(request: Request) {
       title: row.title,
       authorName: row.author_name,
       authorAvatar: row.author_avatar,
+      sampleImageUrl: row.sample_image_url ?? null,
       settings: row.settings,
       whiteBalance: row.white_balance,
       voteCount: row.vote_count,
@@ -157,11 +219,16 @@ export async function GET(request: Request) {
       createdAt: row.created_at,
     }));
 
-    return NextResponse.json({ proposals, source: 'supabase' });
+    return NextResponse.json({ proposals, voteStateUnknown, source: 'supabase' });
   } catch (err) {
-    const filtered = memoryProposals.filter((p) => p.recipeSlug === slug);
+    /* Configuration decides the source; failure is failure. This used to serve
+       the offline examples with 12 and 8 votes as daylight-cinema's real
+       proposals, and hearting one sent `seed-prop-1` at a uuid column. */
     logFallback('proposals', err);
-    return NextResponse.json({ proposals: filtered, source: 'fallback', degraded: true });
+    return NextResponse.json(
+      { ...communityErrorBody('controlUnavailable'), proposals: [] },
+      { status: COMMUNITY_ERRORS.controlUnavailable },
+    );
   }
 }
 
@@ -179,37 +246,37 @@ export async function POST(request: Request) {
       );
     }
 
-    const body = await request.json();
-    const { recipeSlug, title, sampleImageUrl, settings, whiteBalance } = body;
-
-    if (!recipeSlug || !title || !sampleImageUrl || !settings || !whiteBalance) {
-      return NextResponse.json(communityErrorBody('sampleUrlRequired'), { status: 400 });
+    const read = await readJsonBody(request);
+    if (!read.ok) {
+      return NextResponse.json(communityErrorBody(read.error), { status: COMMUNITY_ERRORS[read.error] });
     }
+    const parsed = proposalBody.safeParse(read.body);
+    if (!parsed.success) {
+      const code = bodyErrorCode(parsed.error.issues[0], read.body);
+      return NextResponse.json(communityErrorBody(code), { status: COMMUNITY_ERRORS[code] });
+    }
+    const { recipeSlug, title, sampleImageUrl, whiteBalance } = parsed.data;
 
     /* Confirm the recipe against the content project before writing anything
        to the control one. A proposal is worse than a stray comment when it
-       orphans: it also seeds `community_photos` further down this handler. */
-    if (hasContentConfig() && !(await publishedRecipeExists(recipeSlug))) {
+       orphans: it also seeds `community_photos` further down this handler.
+       The probe also says which format the recipe is, which decides the
+       settings schema. */
+    const format = hasContentConfig() ? await publishedRecipeFormat(recipeSlug) : undefined;
+    if (format === null) {
       return NextResponse.json(communityErrorBody('recipeNotFound'), { status: 404 });
     }
-
-    const newProposal: ProposalItem = {
-      id: `prop-${Date.now()}`,
-      recipeSlug,
-      title: title.slice(0, 150),
-      authorName: user.name,
-      authorAvatar: user.avatarUrl,
-      sampleImageUrl: sampleImageUrl || null,
-      settings,
-      whiteBalance,
-      voteCount: 0,
-      hasVoted: false,
-      createdAt: new Date().toISOString(),
-    };
-
-    if (!hasControlConfig()) {
-      memoryProposals.unshift(newProposal);
-      return NextResponse.json({ proposal: newProposal, source: 'memory' });
+    /* With no content project there is no format to ask for, so either
+       camera schema will do — each is still strict, so no hybrid passes. */
+    const settingsSchema =
+      format === 'pp'
+        ? ppSettingsSchema
+        : format === 'cl'
+          ? clSettingsSchema
+          : z.union([ppSettingsSchema, clSettingsSchema]);
+    const settings = settingsSchema.safeParse(parsed.data.settings);
+    if (!settings.success) {
+      return NextResponse.json(communityErrorBody('invalidSettings'), { status: 400 });
     }
 
     const db = controlAdmin();
@@ -217,19 +284,18 @@ export async function POST(request: Request) {
       .from('recipe_proposals')
       .insert({
         recipe_slug: recipeSlug,
-        title: title.slice(0, 150),
+        title,
         author_name: user.name,
         author_email: user.email,
         author_avatar: user.avatarUrl,
-        settings,
+        sample_image_url: sampleImageUrl,
+        settings: settings.data,
         white_balance: whiteBalance,
         vote_count: 0,
       })
       // Narrow here too: whatever this returns is what the response is built
       // from, so not fetching the email is what keeps it from being sent.
-      .select(
-        'id, recipe_slug, title, author_name, author_avatar, settings, white_balance, vote_count, created_at',
-      )
+      .select(PROPOSAL_COLUMNS)
       .single();
 
     if (error) throw error;
@@ -238,20 +304,28 @@ export async function POST(request: Request) {
      *
      * Deliberately not fatal to the proposal: the proposal row is already
      * committed above, and failing the request now would tell the author their
-     * submission did not go through when it did.
+     * submission did not go through when it did. supabase-js reports a
+     * constraint violation in `error`, it does not throw, so every result is
+     * checked by hand.
      *
-     * The `try`/`catch` this replaced caught nothing. supabase-js reports a
-     * constraint violation in `error`, it does not throw — so the duplicate the
-     * comment claimed to ignore was never reaching the handler, and neither was
-     * an RLS refusal or an outage. Every failure here was silent. Now the
-     * duplicate is ignored by name and everything else is logged. */
-    if (sampleImageUrl && typeof sampleImageUrl === 'string' && sampleImageUrl.startsWith('https://')) {
+     * Held to the same rules as `POST /api/community-photos`: the per-recipe
+     * cap, the session's name as the credit (the old `name (title)` reached 253
+     * characters against a CHECK of 100, so the insert failed and only the log
+     * knew), and an origin marker rather than the author's address in
+     * `submitted_by`. */
+    const { count, error: countError } = await db
+      .from('community_photos')
+      .select('id', { count: 'exact', head: true })
+      .eq('recipe_slug', recipeSlug);
+    if (countError) {
+      logFallback('proposals/gallery', countError);
+    } else if ((count ?? 0) < MAX_PHOTOS_PER_RECIPE) {
       const { error: photoError } = await db.from('community_photos').insert({
         recipe_slug: recipeSlug,
         image_url: sampleImageUrl,
-        author_name: `${user.name} (${title.slice(0, 150)})`,
+        author_name: user.name,
         author_social: null,
-        submitted_by: user.email,
+        submitted_by: clientKey(request),
       });
       // 23505 is unique_violation: this photo is already in the gallery.
       if (photoError && photoError.code !== '23505') {
@@ -265,11 +339,11 @@ export async function POST(request: Request) {
       title: data.title,
       authorName: data.author_name,
       authorAvatar: data.author_avatar,
-      sampleImageUrl: sampleImageUrl || null,
+      sampleImageUrl: data.sample_image_url ?? null,
       settings: data.settings,
       whiteBalance: data.white_balance,
       voteCount: data.vote_count,
-    hasVoted: false,
+      hasVoted: false,
       createdAt: data.created_at,
     };
 

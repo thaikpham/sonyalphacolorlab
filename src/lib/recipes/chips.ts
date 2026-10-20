@@ -1,3 +1,4 @@
+import { CL_PARAM_LABELS } from '@/lib/camera/constants';
 import { signed } from '@/lib/camera/format';
 import type { RecipeView } from '@/lib/recipes/source';
 
@@ -34,7 +35,7 @@ export function recipeChips(recipe: RecipeView): readonly RecipeChip[] {
       ]
     : [
         { slot: 'look', value: recipe.settings.look },
-        { slot: 'contrast', value: `Contrast ${signed(recipe.settings.contrast)}` },
+        { slot: 'contrast', value: `${CL_PARAM_LABELS.contrast} ${signed(recipe.settings.contrast)}` },
         { slot: 'wb', value: `WB ${recipe.wbLabel}` },
       ];
 }

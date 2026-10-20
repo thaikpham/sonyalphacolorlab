@@ -35,19 +35,16 @@ export async function GET(request: Request) {
       listArticleRecords(),
     ])
 
+    /* Only what the picker reads. `kind` is the one field past a name: it is
+       how the picker splits pages between the article and knowledge lists. */
     return NextResponse.json({
-      recipes: recipes.map(({ recipe }) => ({
-        id: recipe.id,
-        name: recipe.name,
-        published: recipe.published,
-      })),
+      recipes: recipes.map(({ recipe }) => ({ id: recipe.id, name: recipe.name })),
       products: [...cameras, ...audio].map((p) => ({
         id: p.id,
         name: p.name,
         code: modelCode(p.sku),
-        category: p.category,
       })),
-      pages: pages.map((p) => ({ id: p.id, title: p.title, kind: p.kind, status: p.status })),
+      pages: pages.map((p) => ({ id: p.id, title: p.title, kind: p.kind })),
     })
   } catch (err) {
     console.error('[admin/content-refs] load failed:', err instanceof Error ? err.message : err)

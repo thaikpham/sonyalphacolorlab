@@ -6,6 +6,10 @@
  *
  * Downloads the four weights this ecosystem uses, latin + vietnamese subsets
  * only, into public/fonts/noto-sans/ and writes noto-sans.css beside them.
+ * Noto Sans is a variable font, so css2 answers every weight with the same
+ * file: one file per subset, and one face whose weight range spans them all.
+ * Naming files per weight saved that file four times, and a page fetched it
+ * once for every weight it used.
  * The output is committed: nothing here loads from a CDN at runtime and
  * nothing uses next/font.
  *
@@ -34,13 +38,6 @@ const UA =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 ' +
   '(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 
-const WEIGHT_NAMES = {
-  400: 'Regular',
-  500: 'Medium',
-  600: 'SemiBold',
-  800: 'ExtraBold',
-};
-
 async function main() {
   const url =
     'https://fonts.googleapis.com/css2?family=' +
@@ -62,8 +59,9 @@ async function main() {
 
   await mkdir(OUT_DIR, { recursive: true });
 
-  const faces = [];
-  const seen = new Set();
+  /* subset → { src, range, weights } — one entry per subset, whatever the
+     number of weights asked for. */
+  const bySubset = new Map();
 
   for (const [, subset, block] of blocks) {
     if (!SUBSETS.includes(subset)) continue;
@@ -73,28 +71,48 @@ async function main() {
     const range = block.match(/unicode-range:\s*([^;]+);/)?.[1]?.trim();
     if (!weight || !src || !WEIGHTS.includes(weight)) continue;
 
-    const file = 'NotoSans-' + WEIGHT_NAMES[weight] + '-' + subset + '.woff2';
-    if (!seen.has(file)) {
-      const bytes = await fetch(src, { headers: { 'User-Agent': UA } }).then((r) => {
-        if (!r.ok) throw new Error('Font file returned ' + r.status + ' for ' + src);
-        return r.arrayBuffer();
-      });
-      await writeFile(join(OUT_DIR, file), Buffer.from(bytes));
-      seen.add(file);
-      console.log('  ' + file + '  ' + Math.round(bytes.byteLength / 1024) + 'KB');
+    const entry = bySubset.get(subset);
+    if (!entry) {
+      bySubset.set(subset, { src, range, weights: [weight] });
+      continue;
     }
+    /* A static instance per weight would need a face per weight. Refuse it
+       rather than declare a range one file cannot draw. */
+    if (entry.src !== src || entry.range !== range) {
+      throw new Error(
+        subset + ' has a different file per weight — the face is no longer variable; ' +
+          'name files by weight again.',
+      );
+    }
+    entry.weights.push(weight);
+  }
+
+  const faces = [];
+  for (const subset of SUBSETS) {
+    const entry = bySubset.get(subset);
+    if (!entry) continue;
+    const missing = WEIGHTS.filter((weight) => !entry.weights.includes(weight));
+    if (missing.length > 0) throw new Error(subset + ' is missing weights ' + missing.join(', '));
+
+    const file = 'NotoSans-' + subset + '.woff2';
+    const bytes = await fetch(entry.src, { headers: { 'User-Agent': UA } }).then((r) => {
+      if (!r.ok) throw new Error('Font file returned ' + r.status + ' for ' + entry.src);
+      return r.arrayBuffer();
+    });
+    await writeFile(join(OUT_DIR, file), Buffer.from(bytes));
+    console.log('  ' + file + '  ' + Math.round(bytes.byteLength / 1024) + 'KB');
 
     faces.push(
       [
         '@font-face {',
         "  font-family: '" + FAMILY + "';",
         '  font-style: normal;',
-        '  font-weight: ' + weight + ';',
+        '  font-weight: ' + Math.min(...WEIGHTS) + ' ' + Math.max(...WEIGHTS) + ';',
         /* swap, not optional: a 13px floor means the fallback metrics are
            close enough that a swap is less disruptive than invisible text. */
         '  font-display: swap;',
         "  src: url('./" + file + "') format('woff2');",
-        '  unicode-range: ' + range + ';',
+        '  unicode-range: ' + entry.range + ';',
         '}',
       ].join('\n'),
     );

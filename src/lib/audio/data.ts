@@ -4,7 +4,7 @@ import { cache } from 'react';
 import { catalogueCache } from '@/lib/catalogue-cache';
 import { contentRead } from '@/lib/supabase/server';
 import { contentOrOfflineSeed } from '@/lib/supabase/content-source';
-import { compareCameras, type SonyCamera, type WikiSort } from '@/lib/cameras/types';
+import type { SonyCamera } from '@/lib/cameras/types';
 import { PRODUCT_COLUMNS, productFromRow, type ProductRow } from '@/lib/cameras/row';
 
 /**
@@ -46,13 +46,13 @@ function getSeedAudio(): SonyCamera[] {
    the admin list all reach the same table on every render. */
 export const getSonyAudio = catalogueCache('getSonyAudio', _getSonyAudio);
 
-async function _getSonyAudio(options?: { sortBy?: WikiSort }): Promise<SonyCamera[]> {
+async function _getSonyAudio(): Promise<SonyCamera[]> {
   const seed = getSeedAudio();
 
   /* Same rule as the camera catalogue: configuration picks the source, a
      failure throws. Serving the snapshot on error would put deleted audio
      products and stale prices back on the site with nothing to show for it. */
-  const products = await contentOrOfflineSeed<SonyCamera[]>(
+  return contentOrOfflineSeed<SonyCamera[]>(
     'wiki.audio',
     async () => {
       const { data, error } = await contentRead()
@@ -68,10 +68,6 @@ async function _getSonyAudio(options?: { sortBy?: WikiSort }): Promise<SonyCamer
     },
     () => seed,
   );
-
-  if (!options?.sortBy) return products;
-  // On a copy: `sort` mutates, and the array above is the module-level cache.
-  return [...products].sort(compareCameras(options.sortBy));
 }
 
 export const getSonyAudioById = cache(async (id: string): Promise<SonyCamera | null> => {

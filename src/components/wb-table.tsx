@@ -12,7 +12,7 @@ import {
 
 /**
  * White Balance as a text readout, colour-coded by what the dial actually does:
- * - Kelvin: < 4000K (blue), 4100-5900K (neutral), >= 6000K (orange)
+ * - Kelvin: blue / neutral / orange by the Temperature row's own grade
  * - Shift A/B: A (amber), B (blue)
  * - Shift G/M: G (green), M (magenta)
  *
@@ -32,7 +32,7 @@ export function FormattedWb({ wb, className = '' }: { wb: WhiteBalance; classNam
   const gm = wb.shift?.gm;
 
   return (
-    <span className={`inline-flex items-center gap-1 font-bold tabular-nums ${className}`}>
+    <span className={`inline-flex flex-wrap items-center gap-1 font-bold tabular-nums ${className}`}>
       <span style={{ color: kelvinColor }}>{kelvinStr}</span>
       {wb.shift && <span className="font-normal text-ink-faint">, </span>}
       {ab && (
@@ -119,13 +119,16 @@ export function WbTable({ wb, locale = 'en' }: { wb: WhiteBalance; locale?: Loca
       {/* The three dial rows stripe as one run, exactly like a ParamBlock's —
           this table is not inside one, so it carries the rule itself. */}
       <div className={`flex flex-col ${ROW_STRIPES}`}>
+      {/* Only a Kelvin recipe sets a Temperature. An Auto or preset row is the
+          White Balance menu itself, and the Kelvin explanation would describe
+          a dial that recipe never touches (rule 1b). */}
       <ParamRow
         locale={locale}
-        label={WB_PARAM_LABELS.temperature}
+        label={wb.mode === 'kelvin' ? WB_PARAM_LABELS.temperature : WB_PARAM_LABELS.whiteBalance}
         value={temperature}
         valueStyle={{ color: kelvinColor, fontWeight: 700 }}
         effect={fx.temperature}
-        explanation={WB_EXPLANATIONS.temperature[locale]}
+        explanation={wb.mode === 'kelvin' ? WB_EXPLANATIONS.temperature[locale] : undefined}
       />
       {ab && (
         <ParamRow

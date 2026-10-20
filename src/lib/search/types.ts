@@ -40,6 +40,8 @@ export type ReasonCode =
   | 'tag'
   | 'heading'
   | 'body'
+  /** Every word found, but spread over fields none of which holds them all. */
+  | 'spread'
   | 'fuzzy'
 
 export type SearchHit = {
@@ -51,6 +53,11 @@ export type SearchHit = {
   readonly snippet?: string
   /** The language the entity's own text is written in — not the UI locale. */
   readonly contentLanguage: string
+  /**
+   * The snippet's language. A recipe's name is English and its description
+   * the reader's, so one `lang` cannot cover the title and the snippet both.
+   */
+  readonly snippetLanguage: string
   readonly reasonCodes: readonly ReasonCode[]
   /** Display only. */
   readonly subtitle?: string
@@ -75,6 +82,22 @@ export type SearchResponse = {
 }
 
 /**
+ * What an empty first page says, or `null` when there are hits to show.
+ *
+ * `unsearched` — every kind the scope names failed to read: the status line
+ * names them, and "no results" would claim a search that did not run.
+ * `noResultsSearched` — some failed and the rest had nothing, so the sentence
+ * is qualified. `noResults` only when every kind was searched.
+ */
+export function emptyState(
+  res: Pick<SearchResponse, 'scope' | 'hits' | 'unavailable'>,
+): 'noResults' | 'noResultsSearched' | 'unsearched' | null {
+  if (res.hits.length > 0) return null
+  if (SCOPE_KINDS[res.scope].every((k) => res.unavailable.includes(k))) return 'unsearched'
+  return res.unavailable.length > 0 ? 'noResultsSearched' : 'noResults'
+}
+
+/**
  * The request, validated. Strings from a URL are trimmed and bounded rather
  * than refused where a sensible reading exists — an over-long query is cut to
  * `MAX_QUERY`, the way the predictive route always has — and refused where
@@ -96,5 +119,4 @@ export const searchRequestSchema = z.object({
     .optional(),
 })
 
-export type SearchRequest = z.input<typeof searchRequestSchema>
 export type ParsedSearchRequest = z.output<typeof searchRequestSchema>

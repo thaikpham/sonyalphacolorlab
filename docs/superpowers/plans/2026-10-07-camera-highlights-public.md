@@ -951,7 +951,7 @@ table — never an empty section. Highlights are content: every number in them
 must come from that camera's own sources.
 ```
 
-- [ ] **Step 2: Spec numbering** — in the spec's "Migrations" list, the rollback-compat file is `0018_sony_camera_highlights_rollback_compat.sql` (this plan) and the sales staff table becomes `0019_sales_staff.sql` (next plan). Edit both lines.
+- [ ] **Step 2: Spec numbering** — in the spec's "Migrations" list, the rollback-compat file is `0018_sony_camera_highlights_rollback_compat.sql` (this plan) and the sales staff table becomes `0020_sales_staff.sql` (next plan). Edit both lines.
 
 - [ ] **Step 3: Full gate**
 

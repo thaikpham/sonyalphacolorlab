@@ -41,7 +41,17 @@ export const KNOWLEDGE_SECTIONS: readonly KnowledgeSection[] = [
   'workflows',
 ] as const
 
-const REF_KINDS: readonly ContentRefKind[] = ['recipe', 'product', 'article', 'knowledge']
+/* A `Record` so a kind added to `ContentRefKind` and not here fails to compile
+   — a plain array accepted the gap. */
+const REF_KIND_KEYS: Record<ContentRefKind, true> = {
+  recipe: true,
+  product: true,
+  article: true,
+  knowledge: true,
+}
+
+/** Every link kind, in the order the editor offers them — the one list. */
+export const REF_KINDS = Object.keys(REF_KIND_KEYS) as readonly ContentRefKind[]
 
 export const EMPTY_META: ArticleMeta = {
   related: [],
@@ -59,6 +69,7 @@ export const ARTICLE_ID_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 /** `sony_cameras.id` — lower-case, digits and dashes, as the seed writes them. */
 const PRODUCT_ID_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/
+const IPV4_RE = /^\d+(?:\.\d+){3}$/
 
 const isObject = (v: unknown): v is Record<string, unknown> =>
   typeof v === 'object' && v !== null && !Array.isArray(v)
@@ -101,7 +112,13 @@ export function parseSourceUrl(v: unknown): string | null {
   if (url.protocol !== 'https:') return null
   if (url.username || url.password) return null
   if (!url.hostname.includes('.')) return null
-  return url.toString()
+  // An address literal has a dot too, and no published page lives at one.
+  if (IPV4_RE.test(url.hostname) || url.hostname.startsWith('[')) return null
+  /* The bound is checked again on the stored form. `toString()`
+     percent-encodes each diacritic into nine characters, so a paste that fit
+     was stored over the limit and refused by every later read. */
+  const out = url.toString()
+  return out.length <= META_LIMITS.url ? out : null
 }
 
 export function parseRef(raw: unknown): ContentRef | null {

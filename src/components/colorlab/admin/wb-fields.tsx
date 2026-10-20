@@ -89,7 +89,7 @@ export function WhiteBalanceFields({
       </Group>
 
       <Group title={t('wbShift')}>
-        <label className="flex items-center gap-2 self-end pb-2">
+        <label className="flex min-h-[var(--layout-touch-target)] items-center gap-2 self-end">
           <input
             type="checkbox"
             checked={Boolean(shift?.ab)}
@@ -119,7 +119,7 @@ export function WhiteBalanceFields({
           </>
         ) : null}
 
-        <label className="flex items-center gap-2 self-end pb-2">
+        <label className="flex min-h-[var(--layout-touch-target)] items-center gap-2 self-end">
           <input
             type="checkbox"
             checked={Boolean(shift?.gm)}

@@ -13,7 +13,7 @@
  * client boundary.
  */
 
-import type { Article, Block } from './types'
+import type { Block } from './types'
 
 /** The handoff's number. Long enough for a clause, short enough for the rail. */
 export const PRECIS_MAX = 92
@@ -108,17 +108,4 @@ export function buildOutline(blocks: readonly Block[]): readonly OutlineEntry[] 
 /** The id an `h` at block index `i` carries. One definition, two call sites. */
 export function headingId(blockIndex: number): string {
   return `h-${blockIndex}`
-}
-
-/**
- * The three lines of the summary card: the article's TL;DR, or its dek when
- * the article has none.
- *
- * The dek is one sentence and the card renders three rows, so the fallback is
- * a single row rather than the dek chopped into thirds — a split sentence
- * reads as a bug, a short card reads as a short article.
- */
-export function buildSummary(article: Article): readonly string[] {
-  const tldr = article.blocks.find((b) => b.t === 'tldr')
-  return tldr ? [...tldr.items] : [article.dek]
 }

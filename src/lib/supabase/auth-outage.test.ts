@@ -111,4 +111,16 @@ describe('isAuthOutage', () => {
     // A cached 200 from before the restriction would defeat the whole check.
     expect(init.cache).toBe('no-store');
   });
+
+  it('probes the same path when the configured URL ends in a slash', async () => {
+    /* Config accepts a trailing slash, and `${url}/auth/v1/settings` then
+       asked for `//auth/v1/settings` — a path the gateway need not route, and
+       a non-OK answer there refuses every sign-in as an outage. */
+    process.env[URL_KEY] = 'https://project.supabase.co/';
+    const spy = stubFetch(async () => new Response(null, { status: 200 }));
+
+    await isAuthOutage();
+
+    expect(spy.mock.calls[0][0]).toBe('https://project.supabase.co/auth/v1/settings');
+  });
 });

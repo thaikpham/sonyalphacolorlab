@@ -18,14 +18,32 @@ import type { CameraSpecs, ProductSpecs } from '@/lib/cameras/types';
  * case that matters most, an update that matched nothing returning no error.
  */
 
-type Call = { op: 'select' | 'update' | 'insert'; payload?: Record<string, unknown>; columns?: string };
+type Call = {
+  op: 'select' | 'update' | 'insert';
+  payload?: Record<string, unknown>;
+  columns?: string;
+  /** Every filter the call carried, in order, as `column op value`. */
+  filters?: string[];
+};
+
+/** A row's version as PostgREST serialises a timestamptz. */
+const V1 = '2026-10-01T09:00:00.123456+00:00';
+const V2 = '2026-10-02T10:30:00.654321+00:00';
+
+type Row = ProductRow & { updated_at?: string | null };
 
 const db = {
-  row: null as ProductRow | null,
+  row: null as Row | null,
+  /** The verified admin's role, as `admin_emails` would answer it. */
+  role: 'super' as 'super' | 'di' | 'pe',
   calls: [] as Call[],
   failWith: null as { code: string; message: string } | null,
+  /** `failWith` applies to reads too, not only writes. */
+  failReads: false,
   /** Deleted between the route's read and its write. */
   vanishOnWrite: false,
+  /** Saved by somebody else between the route's read and its write. */
+  bumpOnWrite: null as string | null,
 };
 
 function cameraSpecs(over: Partial<CameraSpecs> = {}): CameraSpecs {
@@ -49,7 +67,7 @@ function cameraSpecs(over: Partial<CameraSpecs> = {}): CameraSpecs {
   };
 }
 
-function storedRow(over: Partial<ProductRow> = {}): ProductRow {
+function storedRow(over: Partial<Row> = {}): Row {
   return {
     id: 'sony-ilce-7m4-bq-ap2',
     sku: 'ILCE-7M4/BQ AP2',
@@ -65,11 +83,13 @@ function storedRow(over: Partial<ProductRow> = {}): ProductRow {
     gallery_urls: ['https://static.bhphoto.com/images/fb/1667800.jpg'],
     features: { en: ['33MP sensor'], vi: ['Cảm biến 33MP'] },
     specs: cameraSpecs(),
+    highlights: null,
+    updated_at: V1,
     ...over,
   };
 }
 
-const pick = (row: ProductRow, columns: string) =>
+const pick = (row: Row, columns: string) =>
   Object.fromEntries(
     columns.split(',').map((c) => c.trim()).map((c) => [c, (row as Record<string, unknown>)[c]]),
   ) as ProductRow;
@@ -79,18 +99,21 @@ vi.mock('@/lib/supabase/server', () => ({
     from: (table: string) => {
       expect(table).toBe('sony_cameras');
       let pending: Call | null = null;
-      let filterId: string | null = null;
+      const filters: { column: string; value: string | null }[] = [];
+      const matches = (row: Row | null) =>
+        row !== null &&
+        filters.every((f) => (f.column === 'id' ? row.id === f.value : (row.updated_at ?? null) === f.value));
       const builder = {
         select(columns: string) {
           if (pending) pending.columns = columns;
           else {
-            pending = { op: 'select', columns };
+            pending = { op: 'select', columns, filters: [] };
             db.calls.push(pending);
           }
           return builder;
         },
         update(payload: Record<string, unknown>) {
-          pending = { op: 'update', payload };
+          pending = { op: 'update', payload, filters: [] };
           db.calls.push(pending);
           return builder;
         },
@@ -100,23 +123,39 @@ vi.mock('@/lib/supabase/server', () => ({
           return builder;
         },
         eq(column: string, value: string) {
-          expect(column).toBe('id');
-          filterId = value;
+          expect(['id', 'updated_at']).toContain(column);
+          /* PostgREST's `eq.null` compares with `=`, which is never true for
+             NULL — a never-edited row must be matched with `.is()`. */
+          expect(value, `.eq('${column}', null) matches nothing`).not.toBeNull();
+          filters.push({ column, value });
+          pending?.filters?.push(`${column} eq ${value}`);
+          return builder;
+        },
+        is(column: string, value: null) {
+          expect(column).toBe('updated_at');
+          expect(value).toBeNull();
+          filters.push({ column, value });
+          pending?.filters?.push(`${column} is null`);
           return builder;
         },
         async maybeSingle() {
-          if (db.failWith && pending?.op !== 'select') return { data: null, error: db.failWith };
-          const match = db.row && (filterId === null || db.row.id === filterId) ? db.row : null;
-          if (pending?.op === 'update' && db.vanishOnWrite) return { data: null, error: null };
+          if (db.failWith && (pending?.op !== 'select' || db.failReads)) {
+            return { data: null, error: db.failWith };
+          }
+          if (pending?.op === 'update') {
+            if (db.vanishOnWrite) db.row = null;
+            if (db.bumpOnWrite && db.row) db.row = { ...db.row, updated_at: db.bumpOnWrite };
+          }
+          const match = matches(db.row) ? db.row : null;
           if (pending?.op === 'update' && match) {
-            db.row = { ...match, ...(pending.payload as Partial<ProductRow>) };
+            db.row = { ...match, ...(pending.payload as Partial<Row>) };
           }
           const current = pending?.op === 'update' ? (match ? db.row : null) : match;
           return { data: current ? pick(current, pending?.columns ?? PRODUCT_COLUMNS) : null, error: null };
         },
         async single() {
           if (db.failWith) return { data: null, error: db.failWith };
-          db.row = { ...(pending?.payload as unknown as ProductRow) };
+          db.row = { ...(pending?.payload as unknown as Row) };
           return { data: pick(db.row, pending?.columns ?? PRODUCT_COLUMNS), error: null };
         },
       };
@@ -129,27 +168,46 @@ vi.mock('@/lib/supabase/server', () => ({
 vi.mock('@/lib/auth/admin-gate', () => ({
   adminGate: async () => ({
     ok: true,
-    admin: { id: 'u1', email: 'editor@example.com', name: 'Editor', avatarUrl: null, assuranceLevel: 'aal2', role: 'super' },
+    admin: { id: 'u1', email: 'editor@example.com', name: 'Editor', avatarUrl: null, assuranceLevel: 'aal2', role: db.role },
   }),
 }));
 
-const { PATCH, blankSpecs } = await import('./[id]/route');
+const { PATCH, GET, blankSpecs } = await import('./[id]/route');
 const { POST } = await import('./route');
+const { ADMIN_PRODUCT_COLUMNS } = await import('@/lib/admin/product-row');
 
+/**
+ * A save from an editor that opened the row as it is now. `expectedUpdatedAt`
+ * defaults to the stored version, so the tests that are not about concurrency
+ * read as an ordinary save; the ones that are pass their own.
+ */
 const patch = (body: unknown, id = 'sony-ilce-7m4-bq-ap2') =>
   PATCH(
     new Request(`http://local/api/admin/products/${id}`, {
       method: 'PATCH',
-      body: JSON.stringify(body),
+      body: JSON.stringify(
+        body && typeof body === 'object' && !Array.isArray(body)
+          ? { expectedUpdatedAt: db.row?.updated_at ?? null, ...body }
+          : body,
+      ),
     }),
     { params: Promise.resolve({ id }) },
   );
 
+const get = (id = 'sony-ilce-7m4-bq-ap2') =>
+  GET(new Request(`http://local/api/admin/products/${id}`), { params: Promise.resolve({ id }) });
+
+const create = (body: unknown) =>
+  POST(new Request('http://local/api/admin/products', { method: 'POST', body: JSON.stringify(body) }));
+
 beforeEach(() => {
   db.row = storedRow();
+  db.role = 'super';
   db.calls = [];
   db.failWith = null;
+  db.failReads = false;
   db.vanishOnWrite = false;
+  db.bumpOnWrite = null;
   vi.stubEnv('NEXT_PUBLIC_AUTH_SUPABASE_URL', 'https://nqeedlgzaewccqztqvik.supabase.co');
   vi.stubEnv('NEXT_PUBLIC_AUTH_SUPABASE_ANON_KEY', 'a');
   vi.stubEnv('AUTH_SUPABASE_SECRET_KEY', 'b');
@@ -186,7 +244,7 @@ describe('PATCH /api/admin/products/[id]', () => {
     const write = db.calls.find((c) => c.op === 'update');
     expect(write?.payload).toBeDefined();
     expect(Object.keys(write!.payload!).sort()).toEqual(['name', 'updated_at', 'updated_by']);
-    expect(write?.columns).toBe(PRODUCT_COLUMNS);
+    expect(write?.columns).toBe(ADMIN_PRODUCT_COLUMNS);
   });
 
   it('takes updated_by from the verified admin, not the body', async () => {
@@ -297,9 +355,6 @@ describe('blankSpecs', () => {
 });
 
 describe('POST /api/admin/products', () => {
-  const create = (body: unknown) =>
-    POST(new Request('http://local/api/admin/products', { method: 'POST', body: JSON.stringify(body) }));
-
   it('returns the row the database stored', async () => {
     db.row = null;
     const res = await create({
@@ -322,7 +377,7 @@ describe('POST /api/admin/products', () => {
     await create({ sku: 'ECM-TEST', name: 'Mic', category: 'accessory', subCategory1: 'Audio' });
     /* Read through a widened type: `db.row = null` above narrows it for TS,
        but the route reassigned it. */
-    const stored = db.row as ProductRow | null;
+    const stored = db.row as Row | null;
     expect(stored?.specs).toMatchObject({ kind: 'accessory', keySpecs: [] });
   });
 
@@ -331,5 +386,193 @@ describe('POST /api/admin/products', () => {
     const res = await create({ sku: 'ILCE-7M4/BQ AP2', name: 'A7 IV', category: 'camera', subCategory1: 'x' });
     expect(res.status).toBe(409);
     expect((await res.json()).error).toBe('duplicateProduct');
+  });
+});
+
+describe('malformed bodies', () => {
+  /* Valid JSON that is not an object, or fields that are not strings, used to
+     throw a TypeError inside the handler — an uncaught 500 the editor could only
+     report as a generic failure. Nothing was written either way; this is about
+     the answer naming the cause. */
+  it('answers a null body with 400 on POST and PATCH', async () => {
+    db.row = null;
+    expect((await create(null)).status).toBe(400);
+    db.row = storedRow();
+    const res = await patch(null);
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: 'badRequest' });
+    expect(db.calls.some((c) => c.op === 'update')).toBe(false);
+  });
+
+  it('answers non-string create fields with 400, not a crash', async () => {
+    db.row = null;
+    const res = await create({ sku: 1, name: 'x', category: 'lens', subCategory1: 'y' });
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: 'badRequest' });
+    expect(db.calls.some((c) => c.op === 'insert')).toBe(false);
+  });
+});
+
+describe('product ids', () => {
+  it('folds Vietnamese diacritics instead of dropping the letters', async () => {
+    /* Audio items may have no SKU, so the name becomes the public
+       /cameras/<id> URL. `[^a-z0-9]` alone turned "chống ồn" into "ch-ng-n". */
+    db.row = null;
+    const res = await create({ sku: '', name: 'Tai nghe chống ồn', category: 'audio', subCategory1: 'Tai nghe' });
+    expect(res.status).toBe(200);
+    expect((await res.json()).product.id).toBe('sony-tai-nghe-chong-on');
+  });
+});
+
+describe('category roles', () => {
+  /* `canManageCategory()` behind the routes, executed as each role. The row's
+     category is what is checked on PATCH — never the body's — and the
+     source-order assertion in content-write-boundaries.test.ts cannot tell an
+     inverted check from a correct one. */
+  it('refuses a PE admin a camera row, before any write', async () => {
+    db.role = 'pe';
+    const res = await patch({ name: 'x' });
+    expect(res.status).toBe(403);
+    expect(await res.json()).toEqual({ error: 'notAllowedForCategory' });
+    expect(db.calls.some((c) => c.op === 'update')).toBe(false);
+  });
+
+  it('refuses a PE admin a lens create', async () => {
+    db.role = 'pe';
+    db.row = null;
+    const res = await create({ sku: 'SEL-X', name: 'FE X', category: 'lens', subCategory1: 'FE-mount (Full-Frame)' });
+    expect(res.status).toBe(403);
+    expect(db.calls.some((c) => c.op === 'insert')).toBe(false);
+  });
+
+  it('refuses a DI admin an audio create', async () => {
+    db.role = 'di';
+    db.row = null;
+    const res = await create({ sku: '', name: 'WH-X', category: 'audio', subCategory1: 'Tai nghe' });
+    expect(res.status).toBe(403);
+    expect(await res.json()).toEqual({ error: 'notAllowedForCategory' });
+  });
+
+  it('lets a DI admin save a lens', async () => {
+    db.role = 'di';
+    db.row = storedRow({ category: 'lens', specs: null });
+    const res = await patch({ name: 'FE 50mm' });
+    expect(res.status).toBe(200);
+    expect(db.row?.name).toBe('FE 50mm');
+  });
+
+  it('refuses a DI admin an audio row', async () => {
+    db.role = 'di';
+    db.row = storedRow({ category: 'audio', specs: null });
+    expect((await patch({ name: 'x' })).status).toBe(403);
+  });
+});
+
+describe('optimistic concurrency', () => {
+  /* The editor used to resend every column on each save, and nothing checked
+     what it had been looking at. Two admins on one product — or one admin with
+     two tabs — and the second save silently reverted the first, both screens
+     saying "Đã lưu". `updated_at` is the version: the save names the one it
+     was opened against, and a row that has moved on since refuses it. */
+
+  it('keeps the version out of the columns public readers share', () => {
+    /* `updated_at` is provenance and is not granted to anon. */
+    expect(PRODUCT_COLUMNS).not.toMatch(/updated_at|updated_by/);
+    expect(ADMIN_PRODUCT_COLUMNS).toMatch(/\bupdated_at\b/);
+    expect(ADMIN_PRODUCT_COLUMNS).not.toMatch(/updated_by/);
+  });
+
+  it('refuses a stale version with 409 staleEdit, writing nothing', async () => {
+    db.row = storedRow({ updated_at: V2 });
+    const res = await patch({ name: 'stale', expectedUpdatedAt: V1 });
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ error: 'staleEdit' });
+    expect(db.calls.some((c) => c.op === 'update')).toBe(false);
+    expect(db.row?.name).toBe('A7 IV');
+  });
+
+  it('refuses when another save lands between the read and the write', async () => {
+    db.bumpOnWrite = V2;
+    const res = await patch({ name: 'late', expectedUpdatedAt: V1 });
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ error: 'staleEdit' });
+    expect(db.row?.name).toBe('A7 IV');
+    const write = db.calls.find((c) => c.op === 'update');
+    expect(write?.filters).toEqual(['id eq sony-ilce-7m4-bq-ap2', `updated_at eq ${V1}`]);
+  });
+
+  it('is still a 404 when the row was deleted rather than changed', async () => {
+    db.vanishOnWrite = true;
+    const res = await patch({ name: 'gone', expectedUpdatedAt: V1 });
+    expect(res.status).toBe(404);
+  });
+
+  it('matches a never-edited row with IS NULL', async () => {
+    db.row = storedRow({ updated_at: null });
+    const res = await patch({ name: 'first edit', expectedUpdatedAt: null });
+    expect(res.status).toBe(200);
+    const write = db.calls.find((c) => c.op === 'update');
+    expect(write?.filters).toEqual(['id eq sony-ilce-7m4-bq-ap2', 'updated_at is null']);
+  });
+
+  it('sets the new version itself and hands it back', async () => {
+    const res = await patch({ name: 'α7 IV', expectedUpdatedAt: V1, updated_at: '1999-01-01' });
+    const data = await res.json();
+    expect(res.status).toBe(200);
+    expect(db.row?.updated_at).not.toBe(V1);
+    expect(db.row?.updated_at).not.toBe('1999-01-01');
+    expect(data.updatedAt).toBe(db.row?.updated_at);
+  });
+
+  it('refuses a save that names no version at all', async () => {
+    /* Optional would mean any caller that forgets it gets the old
+       last-writer-wins behaviour back, silently. */
+    const res = await PATCH(
+      new Request('http://local/api/admin/products/sony-ilce-7m4-bq-ap2', {
+        method: 'PATCH',
+        body: JSON.stringify({ name: 'x' }),
+      }),
+      { params: Promise.resolve({ id: 'sony-ilce-7m4-bq-ap2' }) },
+    );
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: 'badRequest' });
+    expect(db.calls.some((c) => c.op === 'update')).toBe(false);
+  });
+});
+
+describe('GET /api/admin/products/[id]', () => {
+  it('hands the editor the stored row and its version', async () => {
+    const res = await get();
+    const data = await res.json();
+    expect(res.status).toBe(200);
+    expect(data.ok).toBe(true);
+    expect(data.product.name).toBe('A7 IV');
+    expect(data.updatedAt).toBe(V1);
+    expect(db.calls[0]).toMatchObject({ op: 'select', columns: ADMIN_PRODUCT_COLUMNS });
+  });
+
+  it('answers 404 for a row that is not there', async () => {
+    db.row = null;
+    expect((await get()).status).toBe(404);
+  });
+
+  it('answers contentUnavailable rather than a seed copy when the read fails', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    db.failWith = { code: 'PGRST000', message: 'down' };
+    db.failReads = true;
+    const res = await get();
+    expect(res.status).toBe(503);
+    expect(await res.json()).toEqual({ error: 'contentUnavailable' });
+  });
+});
+
+describe('POST version', () => {
+  it('hands back the new row\'s version, so its first save has one to name', async () => {
+    db.row = null;
+    const res = await create({ sku: 'SEL-V', name: 'FE V', category: 'lens', subCategory1: 'FE-mount (Full-Frame)' });
+    const data = await res.json();
+    expect(res.status).toBe(200);
+    expect(typeof data.updatedAt).toBe('string');
+    expect(data.updatedAt).toBe((db.row as Row | null)?.updated_at);
   });
 });

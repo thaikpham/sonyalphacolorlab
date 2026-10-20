@@ -9,8 +9,21 @@
  * reason a browser that denies storage is a problem for exactly one file.
  */
 
-/** Blog checklists, keyed `<articleId>-<blockIndex>-<itemIndex>`. */
-export const CHECKS_KEY = 'alpha-lab-checks-v1'
+import type { Block } from './types'
+
+/**
+ * Blog checklists, keyed `<articleId>-<ordinal>-<itemIndex>`, where the
+ * ordinal counts checklists only (`checklistOrdinals`). v1 keyed on the block
+ * index, so inserting a figure above a checklist moved or wiped a reader's
+ * ticks; the key changed with the scheme so the two are never mixed.
+ */
+export const CHECKS_KEY = 'alpha-lab-checks-v2'
+
+/** Each block's place among the article's checklists, or -1 for any other block. */
+export function checklistOrdinals(blocks: readonly Block[]): readonly number[] {
+  let n = 0
+  return blocks.map((b) => (b.t === 'checklist' ? n++ : -1))
+}
 
 /** Setup-guide progress, keyed by the version-independent step id. */
 export const SETUP_KEY = 'alpha-setup-done-v1'

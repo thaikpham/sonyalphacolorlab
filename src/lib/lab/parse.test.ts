@@ -1,5 +1,7 @@
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import {
+  EMOJI_RE,
   parseBlock,
   parseBlocks,
   parseEmbedUrl,
@@ -10,6 +12,7 @@ import {
   validateKnowledgeShape,
 } from './parse'
 import { EMPTY_META } from './meta'
+import { buildOutline } from './outline'
 import type { Article, Block } from './types'
 
 /**
@@ -55,8 +58,23 @@ describe('parseEmbedUrl', () => {
     expect(parsed).toEqual({ provider: 'youtube', id: 'dQw4w9WgXcQ' })
   })
 
+  it.each([
+    'https://vimeo.com/channels/staffpicks/76979871',
+    'https://vimeo.com/showcase/1234567/video/76979871',
+  ])('reads the video id out of a channel or showcase link: %s', (input) => {
+    /* What Vimeo's share sheet hands over on those pages. Read by position,
+       not as "the last run of digits", so an unlisted hash is never taken
+       for an id. */
+    expect(parseEmbedUrl(input)).toEqual({ provider: 'vimeo', id: '76979871' })
+  })
+
   it('drops the hash of an unlisted Vimeo link rather than storing it', () => {
     expect(parseEmbedUrl('https://vimeo.com/76979871/abc123def4')).toEqual({
+      provider: 'vimeo',
+      id: '76979871',
+    })
+    // A hash that happens to be all digits is still the hash.
+    expect(parseEmbedUrl('https://vimeo.com/76979871/1234567890')).toEqual({
       provider: 'vimeo',
       id: '76979871',
     })
@@ -229,6 +247,16 @@ describe('parseBlocks', () => {
     expect(dropped).toBe(2)
   })
 
+  it('counts the blocks past the cap as dropped, so the editor is told', () => {
+    /* Sliced off silently, a 70-block draft saved as "Saved" and lost six
+       blocks on the reload that followed. */
+    const { blocks, dropped } = parseBlocks(
+      Array.from({ length: 70 }, (_, i) => ({ t: 'p', text: `p${i}` })),
+    )
+    expect(blocks).toHaveLength(64)
+    expect(dropped).toBe(6)
+  })
+
   it('treats a non-array column as an empty body', () => {
     expect(parseBlocks(null)).toEqual({ blocks: [], dropped: 0 })
     expect(parseBlocks({ 0: { t: 'p', text: 'x' } })).toEqual({ blocks: [], dropped: 0 })
@@ -266,7 +294,8 @@ describe('validateArticleShape', () => {
 
   /* A minimal article that satisfies every countable rule: TL;DR, context
      paragraph, then alternating headings and paragraphs, closing on a
-     checklist. Each test below breaks exactly one thing about it. */
+     checklist. Each section has a paragraph for the rail. Each test below
+     breaks exactly one thing about it. */
   const valid: Article = {
     id: 'x',
     kind: 'article',
@@ -285,7 +314,8 @@ describe('validateArticleShape', () => {
       block('h', 4),
       block('p', 5),
       block('h', 6),
-      block('checklist', 7),
+      block('p', 7),
+      block('checklist', 8),
     ],
   }
 
@@ -325,7 +355,8 @@ describe('validateArticleShape', () => {
       { t: 'menu', old: 'MENU → C', new: 'MENU → D' },
       block('p', 5),
       block('h', 6),
-      block('checklist', 7),
+      block('p', 7),
+      block('checklist', 8),
     ]
     expect(validateArticleShape({ ...valid, blocks: menus })).toEqual([])
   })
@@ -348,6 +379,154 @@ describe('validateArticleShape', () => {
     })
     expect(problems).toContain('exclamation')
     expect(problems).toContain('emoji')
+  })
+
+  it.each(['Chụp đêm ⭐', 'Dek 🇻🇳', 'Hẹn giờ ⏱', 'Chờ ⌛', 'Lên ⬆', 'Nhóm 🅰'])(
+    'counts %s as emoji',
+    (title) => {
+      expect(validateArticleShape({ ...valid, title })).toContain('emoji')
+    },
+  )
+
+  it('leaves the marks Sony names and menu paths carry alone', () => {
+    // ™ and ® follow product names; → is the menu separator.
+    expect(EMOJI_RE.test('S-Cinetone™ · Sony® · MENU → Focus')).toBe(false)
+  })
+
+  /* One case per publish code, each breaking exactly one rule of `valid`. A
+     rule nothing exercises can be deleted with the suite still green. */
+  const swap = (i: number, b: Block): Block[] => valid.blocks.map((x, j) => (j === i ? b : x))
+  it.each([
+    ['a menu path without the arrow', swap(3, { t: 'menu', old: 'MENU > A', new: 'MENU → B' }), 'menuSeparator'],
+    ['a menu path that does not start at MENU', swap(3, { t: 'menu', old: 'Setup → A', new: 'MENU → B' }), 'menuSeparator'],
+    [
+      'a two-row table',
+      swap(3, { t: 'table', head: ['a', 'b', 'c'], rows: [['1', '2', '3'], ['4', '5', '6']], caption: 'c' }),
+      'tableRows',
+    ],
+    ['a two-item checklist', swap(8, { t: 'checklist', label: 'Check', items: ['a', 'b'] }), 'checklistItems'],
+    ['a callout labelled "note"', swap(3, { t: 'callout', label: 'Lưu ý', text: 't' }), 'calloutLabel'],
+    ['no context paragraph after the TL;DR', swap(1, { t: 'callout', label: 'Khi đọc', text: 't' }), 'tldrNeedsContext'],
+    ['a heading straight after the TL;DR', swap(1, { t: 'h', text: 'Early' }), 'headingTooEarly'],
+  ] as const)('refuses %s', (_label, blocks, code) => {
+    expect(validateArticleShape({ ...valid, blocks })).toContain(code)
+  })
+
+  it('refuses an article over sixteen blocks', () => {
+    const blocks = [
+      ...valid.blocks.slice(0, 7),
+      ...Array.from({ length: 9 }, (_, i) => block(i % 2 ? 'h' : 'p', 10 + i)),
+      block('checklist', 99),
+    ]
+    expect(blocks.length).toBe(17)
+    expect(validateArticleShape({ ...valid, blocks })).toContain('tooManyBlocks')
+  })
+
+  it('refuses a dek over 220 characters', () => {
+    expect(validateArticleShape({ ...valid, dek: 'x'.repeat(221) })).toContain('dekTooLong')
+  })
+
+  it('refuses a blank dek or read time, which the feed row would print as nothing', () => {
+    const problems = validateArticleShape({ ...valid, dek: '', read: '' })
+    expect(problems).toContain('emptyDek')
+    expect(problems).toContain('emptyRead')
+  })
+
+  it('says an article has no heading, rather than that its heading is early', () => {
+    const blocks = valid.blocks.map((b, i) =>
+      b.t === 'h' ? ({ t: 'callout', label: `Khi ${i}`, text: 't' } as Block) : b,
+    )
+    const problems = validateArticleShape({ ...valid, blocks })
+    expect(problems).toContain('needsHeading')
+    expect(problems).not.toContain('headingTooEarly')
+  })
+
+  it('refuses a section the rail would show with no summary line', () => {
+    /* `article-spec.test.ts` asserts this over the catalogue; an editor's
+       article obeys the same rule. A heading followed only by a menu pair has
+       nothing the rail can quote. */
+    const blocks: Block[] = [
+      valid.blocks[0],
+      valid.blocks[1],
+      { t: 'h', text: 'Menu only' },
+      { t: 'menu', old: 'MENU → A', new: 'MENU → B' },
+      block('h', 4),
+      block('p', 5),
+      block('h', 6),
+      block('checklist', 7),
+    ]
+    expect(buildOutline(blocks)[0].precis).toBe('')
+    expect(validateArticleShape({ ...valid, blocks })).toContain('sectionNeedsSummary')
+  })
+})
+
+describe('what the publish gate checks in meta', () => {
+  const today = '2026-10-19'
+  const base: Article = {
+    id: 'white-balance-shift',
+    kind: 'knowledge',
+    topic: 'color',
+    level: 'newbie',
+    archetype: 'explainer',
+    read: '6 phút đọc',
+    title: 'White Balance Shift',
+    dek: 'Hai trục, một kết quả.',
+    blocks: [
+      { t: 'p', text: 'Mở đầu.' },
+      { t: 'h', text: 'Hai trục làm gì' },
+      { t: 'p', text: 'Thân bài.' },
+    ],
+    meta: {
+      ...EMPTY_META,
+      section: 'sony-color',
+      sources: [{ url: 'https://example.com/a', title: 'A', checkedAt: today }],
+    },
+  }
+
+  it('accepts a source checked today', () => {
+    expect(validateKnowledgeShape(base, today)).toEqual([])
+  })
+
+  it('refuses a checked or reviewed date that has not happened yet', () => {
+    /* A typo of 2062 for 2026 passed every check and printed "checked 5 Oct
+       2062" — the one date that is the page's claim to being current. */
+    const checked = {
+      ...base,
+      meta: { ...base.meta, sources: [{ url: 'https://example.com/a', title: 'A', checkedAt: '2062-10-05' }] },
+    }
+    expect(validateKnowledgeShape(checked, today)).toContain('dateInFuture')
+    const reviewed = { ...base, meta: { ...base.meta, reviewedAt: '2026-10-20' } }
+    expect(validateKnowledgeShape(reviewed, today)).toContain('dateInFuture')
+  })
+
+  it('refuses a page that names itself as a prerequisite or a related link', () => {
+    const prereq = { ...base, meta: { ...base.meta, prerequisites: [base.id] } }
+    expect(validateKnowledgeShape(prereq, today)).toContain('selfReference')
+    const related = {
+      ...base,
+      meta: { ...base.meta, related: [{ kind: 'knowledge', id: base.id } as const] },
+    }
+    expect(validateKnowledgeShape(related, today)).toContain('selfReference')
+    // A recipe that happens to share the string is another thing entirely.
+    const recipe = { ...base, meta: { ...base.meta, related: [{ kind: 'recipe', id: base.id } as const] } }
+    expect(validateKnowledgeShape(recipe, today)).not.toContain('selfReference')
+  })
+})
+
+describe('every publish code', () => {
+  it('has a message in both locales', () => {
+    /* The editor looks each code up under `labAdmin.errors` and falls back to
+       printing the bare code, so a missing key fails as English camelCase on
+       screen and nowhere else. */
+    const source = readFileSync('src/lib/lab/parse.ts', 'utf8')
+    const codes = [...source.matchAll(/problems\.push\('(\w+)'\)/g)].map((m) => m[1])
+    expect(codes.length).toBeGreaterThan(20)
+    for (const locale of ['en', 'vi']) {
+      const messages = JSON.parse(readFileSync(`messages/${locale}.json`, 'utf8')) as {
+        labAdmin: { errors: Record<string, string> }
+      }
+      for (const code of codes) expect(messages.labAdmin.errors[code], `${locale} ${code}`).toBeTruthy()
+    }
   })
 })
 
@@ -397,6 +576,11 @@ describe('validateKnowledgeShape — the reference page contract', () => {
     ],
     ['no heading', { blocks: [{ t: 'p', text: 'a' }, { t: 'p', text: 'b' }, { t: 'p', text: 'c' }] }, 'knowledgeNeedsHeading'],
     ['too little body', { blocks: [{ t: 'h', text: 'a' }] }, 'knowledgeTooShort'],
+    [
+      'too much body',
+      { blocks: [{ t: 'h', text: 'a' }, ...Array.from({ length: 32 }, (_, i) => ({ t: 'p', text: `p${i}` }))] },
+      'knowledgeTooLong',
+    ],
     ['an exclamation mark', { title: 'Hay quá!' }, 'exclamation'],
   ] as const)('refuses %s', (_label, patch, code) => {
     expect(validateKnowledgeShape({ ...page, ...(patch as Partial<Article>) })).toContain(code)

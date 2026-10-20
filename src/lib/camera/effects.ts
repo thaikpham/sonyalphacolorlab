@@ -16,15 +16,17 @@
 import {
   CL_RANGES,
   PP_RANGES,
+  WB_PRESETS,
+  WB_PRESETS_STILL_ONLY,
+  WB_SHIFT_AXIS,
   type ClParam,
   type Range,
 } from './constants';
 import type { ClSettings, PpSettings, WhiteBalance } from './schema';
-import { MIRED_PER_SHIFT_STEP, wbBalance, type WbBalance } from './color';
+import { MIRED_PER_SHIFT_STEP, gradeWarmth, wbBalance, type Warmth, type WbBalance } from './color';
 
 export type EffectAxis = 'contrast' | 'color' | 'detail';
 export type Effect = { axis: EffectAxis; en: string; vi: string };
-export type Locale = 'en' | 'vi';
 
 /** -2 strong down · -1 mild down · 0 neutral · +1 mild up · +2 strong up */
 type Step = -2 | -1 | 0 | 1 | 2;
@@ -44,11 +46,34 @@ function step(value: number, range: Range): Step {
   return value > pivot ? (strong ? 2 : 1) : strong ? -2 : -1;
 }
 
+/**
+ * Where an intensity sits above its minimum: 0 only AT the minimum, then
+ * mild, then strong past 55% of the range.
+ *
+ * Fade, Sharpness, Clarity and the PP Detail Limit / Crispening / Hi-Light
+ * Detail have no "less than neutral" — their minimum is "none" and every step
+ * up adds some. Grading them around the midpoint (`step()`) sent the whole low
+ * half of each range to the minimum's wording: Fade 3 read "No fade".
+ */
+function stepFromMin(value: number, range: Range): Step {
+  if (value <= range.min) return 0;
+  const span = range.max - range.min;
+  if (span === 0) return 0;
+  return (value - range.min) / span >= 0.55 ? 2 : 1;
+}
+
 type Phrases = Partial<Record<Step, [en: string, vi: string]>>;
 
 function pick(axis: EffectAxis, phrases: Phrases, s: Step): Effect {
   const [en, vi] = phrases[s] ?? phrases[0] ?? ['', ''];
   return { axis, en, vi };
+}
+
+/** A table with no negative steps describes an intensity that rises from its
+    minimum; every other table is graded around its centre. */
+function grade(axis: EffectAxis, phrases: Phrases, value: number, range: Range): Effect {
+  const centred = phrases[-1] !== undefined || phrases[-2] !== undefined;
+  return pick(axis, phrases, centred ? step(value, range) : stepFromMin(value, range));
 }
 
 // ---------------------------------------------------------------------------
@@ -186,8 +211,14 @@ function colorModeEffect(mode: string): Effect {
   if (mode === 'Pro' || mode === '709tone' || mode === 'ITU709 Matrix') {
     return { axis: 'color', en: 'Broadcast colour — accurate and neutral', vi: 'Màu chuẩn phát sóng — chính xác, trung tính' };
   }
-  if (mode === 'BT.2020' || mode === '709') {
-    return { axis: 'color', en: 'HDR colour space, paired with an HLG curve', vi: 'Không gian màu HDR, đi cùng đường HLG' };
+  /* Sony, TP0000909109: BT.2020 is the gamut of the HDR standard ITU-R
+     BT.2100; 709 records HLG in HDTV (ITU-R BT.709) colour. Both only with an
+     HLG gamma, but they are not the same gamut. */
+  if (mode === 'BT.2020') {
+    return { axis: 'color', en: 'Wide HDR gamut (BT.2020), paired with an HLG curve', vi: 'Gamut HDR rộng (BT.2020), đi cùng đường HLG' };
+  }
+  if (mode === '709') {
+    return { axis: 'color', en: 'HDTV (BT.709) colour, recorded with an HLG curve', vi: 'Màu chuẩn HDTV (BT.709), ghi cùng đường HLG' };
   }
   return { axis: 'color', en: 'Standard colour reproduction', vi: 'Tái tạo màu tiêu chuẩn' };
 }
@@ -246,7 +277,7 @@ export function ppEffects(s: PpSettings): Record<string, Effect> {
   const knee: Effect =
     s.knee.mode === 'Auto'
       ? { axis: 'contrast', en: 'Highlights rolled off automatically', vi: 'Vùng sáng được nén tự động' }
-      : s.knee.slope >= 5
+      : s.knee.slope >= PP_RANGES.kneeManualSlope.max
         ? { axis: 'contrast', en: 'Knee effectively off — highlights run straight to clipping', vi: 'Knee gần như tắt — vùng sáng chạy thẳng tới cháy' }
         : s.knee.slope < 0
           ? { axis: 'contrast', en: 'Gentle roll-off — wider range, softer highlight gradation', vi: 'Nén thoải — dải rộng hơn, chuyển vùng sáng mềm' }
@@ -267,9 +298,9 @@ export function ppEffects(s: PpSettings): Record<string, Effect> {
         : { axis: 'detail', en: 'Detail sub-settings dialled in by hand', vi: 'Các thông số chi tiết phụ được chỉnh tay' },
     vhBalance: pick('detail', vhBalance, step(s.detail.vhBalance, PP_RANGES.detailVhBalance)),
     bwBalance: bwBalanceEffect(s.detail.bwBalance),
-    detailLimit: pick('detail', detailLimit, step(s.detail.limit, PP_RANGES.detailLimit)),
-    crispening: pick('detail', crispening, step(s.detail.crispening, PP_RANGES.detailCrispening)),
-    hiLightDetail: pick('detail', hiLightDetail, step(s.detail.hiLightDetail, PP_RANGES.detailHiLightDetail)),
+    detailLimit: grade('detail', detailLimit, s.detail.limit, PP_RANGES.detailLimit),
+    crispening: grade('detail', crispening, s.detail.crispening, PP_RANGES.detailCrispening),
+    hiLightDetail: grade('detail', hiLightDetail, s.detail.hiLightDetail, PP_RANGES.detailHiLightDetail),
   };
 
   for (const [channel, names] of Object.entries(CHANNEL_NAMES)) {
@@ -299,23 +330,6 @@ export function ppEffects(s: PpSettings): Record<string, Effect> {
  * on — 2500K to 3000K is a far bigger visual step than 9000K to 9500K.
  */
 
-/** Where the amber–blue axis lands, graded. Input is mireds; positive is warm. */
-type Warmth = 'strong-warm' | 'warm' | 'neutral' | 'cool' | 'strong-cool';
-
-/**
- * The thresholds are asymmetric because the mired scale is. From 5500K neutral
- * the warm end of the Kelvin range only reaches +81 mired, while the cool end
- * runs to -218, so one symmetric cutoff would call almost every warm recipe
- * mild and almost every cool one extreme.
- */
-function gradeWarmth(mired: number): Warmth {
-  if (Math.abs(mired) < 12) return 'neutral';
-  if (mired >= 55) return 'strong-warm';
-  if (mired > 0) return 'warm';
-  if (mired <= -80) return 'strong-cool';
-  return 'cool';
-}
-
 const KELVIN_PHRASES: Record<Warmth, [en: string, vi: string]> = {
   'strong-warm': ['Set well above the light — renders strongly warm', 'Đặt cao hơn nhiều so với ánh sáng — ảnh ra rất ấm'],
   warm: ['Set above neutral — renders warmer', 'Đặt trên mức trung tính — ảnh ấm hơn'],
@@ -329,11 +343,29 @@ function kelvinEffect(mired: number): Effect {
   return { axis: 'color', en, vi };
 }
 
+/**
+ * How hard a shift pushes, as a share of the grid's full throw: strong past
+ * 55% (the cut `step()` uses), mild under a quarter. On today's 0–7 grid that
+ * is 4 and up, and 1.5 and down — widen `WB_SHIFT_AXIS` and the wording
+ * follows. One helper for the row and the summary's tint, so they agree.
+ */
+function shiftStrength(amount: number): 'mild' | 'medium' | 'strong' {
+  const ratio = amount / WB_SHIFT_AXIS.max;
+  if (ratio >= 0.55) return 'strong';
+  return ratio < 0.25 ? 'mild' : 'medium';
+}
+
 function shiftEffect(axisLetter: 'A' | 'B' | 'G' | 'M', amount: number): Effect {
-  // Seven steps is the full throw, so past four reads as a firm push.
-  const strong = amount >= 4;
-  const mild = amount <= 1.5;
-  const grade = <T,>(s: T, m: T, w: T) => (strong ? s : mild ? w : m);
+  // A shift left at zero is set but not shifting. The admin form starts every
+  // shift there, and "Slight blue coolness" for B0 described a cast that is
+  // not in the frame.
+  if (amount === 0) {
+    return axisLetter === 'A' || axisLetter === 'B'
+      ? { axis: 'color', en: 'No amber–blue shift', vi: 'Không dịch trên trục hổ phách–xanh dương' }
+      : { axis: 'color', en: 'No green–magenta tint', vi: 'Không ám trên trục xanh lá–cánh sen' };
+  }
+  const strength = shiftStrength(amount);
+  const grade = <T,>(s: T, m: T, w: T) => (strength === 'strong' ? s : strength === 'mild' ? w : m);
 
   switch (axisLetter) {
     case 'A':
@@ -372,7 +404,7 @@ function shiftEffect(axisLetter: 'A' | 'B' | 'G' | 'M', amount: number): Effect 
  * writing "Cloudy ≈ 6000K" here would be exactly the invented camera value
  * rule 1 exists to stop. Direction is safe to state; a number is not.
  */
-const PRESET_PHRASES: Record<string, [en: string, vi: string]> = {
+const PRESET_PHRASES: Record<(typeof WB_PRESETS)[number], [en: string, vi: string]> = {
   Daylight: [
     'Balanced for direct sun — the baseline outdoor setting',
     'Cân bằng cho nắng trực tiếp — mức nền khi chụp ngoài trời',
@@ -405,10 +437,7 @@ const PRESET_PHRASES: Record<string, [en: string, vi: string]> = {
     'Balanced for daylight fluorescent tubes, including the green cast they carry',
     'Cân bằng cho đèn huỳnh quang ánh sáng ban ngày (Daylight), kể cả sắc xanh lá mà loại đèn này mang theo',
   ],
-  Flash: [
-    'Balanced for the flash tube. Sony documents this one as still images only',
-    'Cân bằng cho đèn flash. Sony ghi rõ chế độ này chỉ dùng khi chụp ảnh tĩnh',
-  ],
+  Flash: ['Balanced for the flash tube', 'Cân bằng cho đèn flash'],
   'Underwater Auto': [
     'Auto balance tuned for underwater, where the scene skews blue-green',
     'Cân bằng tự động cho môi trường dưới nước, nơi cảnh ngả xanh lam–lục',
@@ -421,11 +450,16 @@ export function wbEffects(wb: WhiteBalance): Record<string, Effect> {
   if (wb.mode === 'kelvin') {
     effects.temperature = kelvinEffect(wbBalance(wb).kelvin);
   } else if (wb.mode === 'preset') {
-    const [en, vi] = PRESET_PHRASES[wb.preset] ?? [
-      'Balanced for the selected light source',
-      'Cân bằng theo nguồn sáng đã chọn',
-    ];
-    effects.temperature = { axis: 'color', en, vi };
+    const [en, vi] = PRESET_PHRASES[wb.preset];
+    // Read from the sourced list, so a second still-only preset says so too.
+    const stillOnly = (WB_PRESETS_STILL_ONLY as readonly string[]).includes(wb.preset);
+    effects.temperature = stillOnly
+      ? {
+          axis: 'color',
+          en: `${en}. Sony documents this one as still images only`,
+          vi: `${vi}. Sony ghi rõ chế độ này chỉ dùng khi chụp ảnh tĩnh`,
+        }
+      : { axis: 'color', en, vi };
   } else {
     effects.temperature = {
       axis: 'color',
@@ -484,7 +518,19 @@ export type WbSummary = {
 function gradeNet(balance: WbBalance): Warmth | 'balanced' {
   const band = balance.shift !== 0 ? MIRED_PER_SHIFT_STEP : 12;
   if (Math.abs(balance.warmth) >= band) return gradeWarmth(balance.warmth);
-  return balance.shift !== 0 && balance.kelvin !== 0 ? 'balanced' : 'neutral';
+  // "Cancel" needs two controls that both do something and pull opposite
+  // ways. Two that push the same way stack, and a Kelvin the Temperature row
+  // calls neutral is not a base for anything to cancel.
+  return opposedPair(balance) ? 'balanced' : 'neutral';
+}
+
+/** Kelvin off neutral by the Temperature row's own grade, and a shift against it. */
+function opposedPair(balance: WbBalance): boolean {
+  return (
+    balance.shift !== 0 &&
+    gradeWarmth(balance.kelvin) !== 'neutral' &&
+    Math.sign(balance.kelvin) !== Math.sign(balance.shift)
+  );
 }
 
 const NET_PHRASES: Record<Warmth | 'balanced', [en: string, vi: string]> = {
@@ -511,6 +557,23 @@ const NET_PHRASES: Record<Warmth | 'balanced', [en: string, vi: string]> = {
   'strong-cool': [
     'reads strongly cool — icy whites, cooled skin, blues pushed forward',
     'ra rất lạnh — vùng trắng lạnh buốt, da nguội đi, sắc xanh nổi lên',
+  ],
+};
+
+/**
+ * The neutral readings above say the white balance contributes no colour at
+ * all. With a G/M tint on top that is false — the tint IS the white balance —
+ * so a tinted recipe gets a reading confined to the amber–blue axis, and the
+ * tint sentence that follows says the rest.
+ */
+const NET_PHRASES_TINTED: Record<'neutral' | 'balanced', [en: string, vi: string]> = {
+  neutral: [
+    'reads close to neutral on the amber–blue axis — the white balance adds no warmth or coolness',
+    'gần trung tính trên trục hổ phách–xanh dương — cân bằng trắng không thêm ấm hay lạnh',
+  ],
+  balanced: [
+    'lands close to neutral on the amber–blue axis — the Kelvin setting and the A/B shift very nearly cancel each other, so the white balance adds no warmth or coolness',
+    'rơi vào khoảng gần trung tính trên trục hổ phách–xanh dương — mức Kelvin và WB Shift A/B gần như triệt tiêu nhau, nên cân bằng trắng không thêm ấm hay lạnh',
   ],
 };
 
@@ -544,22 +607,39 @@ const TINT_PHRASES: Record<Tint, [en: string, vi: string]> = {
 
 function gradeTint(gm: { axis: 'G' | 'M'; amount: number } | undefined): Tint {
   if (!gm || gm.amount === 0) return 'none';
-  // Same four-step cutoff `shiftEffect` uses, so the row and the summary agree.
-  const strong = gm.amount >= 4;
+  const strong = shiftStrength(gm.amount) === 'strong';
   if (gm.axis === 'M') return strong ? 'strong-magenta' : 'magenta';
   return strong ? 'strong-green' : 'green';
 }
 
+/**
+ * What the A/B shift does to the Kelvin base it opposes. Chosen from the same
+ * `gradeNet()` the net sentence uses, so the two never disagree about where
+ * the pair lands — and inside the band, where the net names no side, neither
+ * does this.
+ */
+const PULL_PHRASES: Record<'partial' | 'cancel' | 'past', [en: string, vi: string]> = {
+  partial: ['pulls part of it back', 'kéo bớt lại một phần'],
+  cancel: ['pulls it back to about neutral', 'kéo về gần như trung tính'],
+  past: ['pulls past it to the other side', 'kéo vượt qua sang phía ngược lại'],
+};
+
 export function wbSummary(wb: WhiteBalance): WbSummary {
   const balance = wbBalance(wb);
-  const [netEn, netVi] = NET_PHRASES[gradeNet(balance)];
-  const [tintEn, tintVi] = TINT_PHRASES[gradeTint(wb.shift?.gm)];
+  const netGrade = gradeNet(balance);
+  const tint = gradeTint(wb.shift?.gm);
+  const [netEn, netVi] =
+    tint !== 'none' && (netGrade === 'neutral' || netGrade === 'balanced')
+      ? NET_PHRASES_TINTED[netGrade]
+      : NET_PHRASES[netGrade];
+  const [tintEn, tintVi] = TINT_PHRASES[tint];
 
   // A preset names the light the camera is balancing *for*, so "whites stay
   // white" is not the story — how the frame reads depends on how far the real
   // light sits from that named source, which the recipe cannot know. With no
-  // A/B shift pulling against it, the shift is the only part we can describe.
-  if (wb.mode === 'preset' && !wb.shift?.ab) {
+  // A/B shift pulling against it (a zero shift is none), the shift is the only
+  // part we can describe.
+  if (wb.mode === 'preset' && !wb.shift?.ab?.amount) {
     return {
       net: {
         axis: 'color',
@@ -578,15 +658,16 @@ export function wbSummary(wb: WhiteBalance): WbSummary {
   const ab = wb.shift?.ab;
   // No Kelvin, no A/B shift, or either sitting on neutral — nothing pulls
   // against anything, and inventing a tension to explain would just be noise.
-  if (wb.mode !== 'kelvin' || !ab || ab.amount === 0 || balance.kelvin === 0) {
+  // "Neutral" for the Kelvin is the Temperature row's own grade, so the row
+  // cannot read "Close to neutral daylight" beside a "warm base" here.
+  if (wb.mode !== 'kelvin' || !ab || ab.amount === 0 || gradeWarmth(balance.kelvin) === 'neutral') {
     return { net };
   }
 
   const k = `${wb.kelvin}K`;
   const s = `${ab.axis}${ab.amount}`;
-  const opposed = Math.sign(balance.kelvin) !== Math.sign(balance.shift);
 
-  if (!opposed) {
+  if (!opposedPair(balance)) {
     return {
       net,
       interplay: {
@@ -598,19 +679,26 @@ export function wbSummary(wb: WhiteBalance): WbSummary {
   }
 
   const warmBase = balance.kelvin > 0;
+  // Past it when the shift outweighs the base: Kyoto Jade's 3700K A7 lands
+  // warm, and "pulls part of it back" contradicted the net sentence above.
+  const pull =
+    netGrade === 'balanced'
+      ? 'cancel'
+      : Math.abs(balance.shift) > Math.abs(balance.kelvin)
+        ? 'past'
+        : 'partial';
+  const [pullEn, pullVi] = PULL_PHRASES[pull];
   return {
     net,
     interplay: {
       axis: 'color',
       en:
         `Not a contradiction: Temperature and Shift A/B are the same amber–blue axis in different units. ` +
-        `${k} sets a ${warmBase ? 'warm' : 'cool'} base and ${s} pulls part of it back, landing on a balance ` +
-        `the Kelvin dial cannot reach alone — its 100K steps are coarse down at 2500K and very fine up at 9900K. ` +
+        `${k} sets a ${warmBase ? 'warm' : 'cool'} base and ${s} ${pullEn}. ` +
         `Read the pair, never either number by itself.`,
       vi:
         `Không hề mâu thuẫn: Temperature và Shift A/B là cùng một trục hổ phách–xanh dương, chỉ khác đơn vị. ` +
-        `${k} đặt nền ${warmBase ? 'ấm' : 'lạnh'}, còn ${s} kéo bớt lại, đưa kết quả tới điểm mà riêng nút Kelvin ` +
-        `không chạm được — bước 100K của nó rất thô ở vùng 2500K và rất mịn ở vùng 9900K. ` +
+        `${k} đặt nền ${warmBase ? 'ấm' : 'lạnh'}, còn ${s} ${pullVi}. ` +
         `Hãy đọc cả cặp, đừng đọc riêng một con số.`,
     },
   };
@@ -716,7 +804,7 @@ export function clEffects(s: ClSettings): Record<string, Effect> {
   for (const [param, def] of Object.entries(CL_PHRASES) as [ClParam, (typeof CL_PHRASES)[ClParam]][]) {
     const value = s[param];
     if (value === undefined) continue; // Saturation on BW/SE
-    effects[param] = pick(def.axis, def.phrases, step(value, CL_RANGES[param]));
+    effects[param] = grade(def.axis, def.phrases, value, CL_RANGES[param]);
   }
 
   return effects;

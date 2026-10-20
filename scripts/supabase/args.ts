@@ -27,9 +27,6 @@ export type ParsedArgs = {
   destination?: Target;
   label?: Label;
   manifest?: Label;
-  sinceManifest?: Label;
-  expectEmpty: boolean;
-  expectBaseline: boolean;
   dryRun: boolean;
   apply: boolean;
   rollback: boolean;
@@ -72,12 +69,9 @@ const VALUE_FLAGS = new Map<string, keyof ParsedArgs>([
   ['--destination', 'destination'],
   ['--label', 'label'],
   ['--manifest', 'manifest'],
-  ['--since-manifest', 'sinceManifest'],
 ]);
 
 const BOOLEAN_FLAGS = new Map<string, keyof ParsedArgs>([
-  ['--expect-empty', 'expectEmpty'],
-  ['--expect-baseline', 'expectBaseline'],
   ['--dry-run', 'dryRun'],
   ['--apply', 'apply'],
   ['--rollback', 'rollback'],
@@ -102,8 +96,6 @@ function readLabel(flag: string, raw: string | undefined): Label {
 
 export function parseArgs(argv: readonly string[]): ParsedArgs {
   const parsed: ParsedArgs = {
-    expectEmpty: false,
-    expectBaseline: false,
     dryRun: false,
     apply: false,
     rollback: false,
@@ -126,11 +118,17 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
 
     const value = argv[i + 1];
     i += 1;
-    if (valueKey === 'label' || valueKey === 'manifest' || valueKey === 'sinceManifest') {
-      parsed[valueKey] = readLabel(flag, value);
-    } else if (valueKey === 'target' || valueKey === 'source' || valueKey === 'destination') {
-      parsed[valueKey] = readTarget(flag, value);
+    const read =
+      valueKey === 'label' || valueKey === 'manifest'
+        ? readLabel(flag, value)
+        : readTarget(flag, value);
+    /* A command copied and edited can end up naming two projects. Last-wins
+       would quietly run it against whichever came second — a guess, which is
+       exactly what this module exists to refuse. */
+    if (parsed[valueKey] !== undefined && parsed[valueKey] !== read) {
+      throw new ArgumentError(`${flag} is given twice, as ${String(parsed[valueKey])} and ${read}.`);
     }
+    (parsed[valueKey] as string) = read;
   }
 
   /* `--dry-run --apply` is not a contradiction the script can resolve by
@@ -157,9 +155,35 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
   return parsed;
 }
 
-/** For a script whose whole job is one project. */
-export function requireTarget(argv: readonly string[]): { args: ParsedArgs; target: Target } {
+/**
+ * Refuses a flag the vocabulary knows but this script does not implement.
+ *
+ * The vocabulary is shared by every script, so "known" is not "honoured":
+ * `push:supabase --overwrite --dry-run` passed the parse and ran the full
+ * overwrite, because nothing in push-supabase reads `dryRun`. Each script
+ * names the flags it acts on, and anything else stops it.
+ */
+function refuseUnimplemented(
+  argv: readonly string[],
+  required: readonly string[],
+  allow: readonly string[],
+): void {
+  for (let i = 0; i < argv.length; i += 1) {
+    const flag = argv[i];
+    if (VALUE_FLAGS.has(flag)) i += 1;
+    if (!required.includes(flag) && !allow.includes(flag)) {
+      throw new ArgumentError(`${flag} is not supported by this script.`);
+    }
+  }
+}
+
+/** For a script whose whole job is one project. `allow` lists every other flag it implements. */
+export function requireTarget(
+  argv: readonly string[],
+  allow: readonly string[] = [],
+): { args: ParsedArgs; target: Target } {
   const args = parseArgs(argv);
+  refuseUnimplemented(argv, ['--target'], allow);
   if (!args.target) {
     throw new ArgumentError('--target control|content is required. There is no default.');
   }
@@ -169,8 +193,10 @@ export function requireTarget(argv: readonly string[]): { args: ParsedArgs; targ
 /** For a script that moves rows from one project to another. */
 export function requireTransfer(
   argv: readonly string[],
+  allow: readonly string[] = [],
 ): { args: ParsedArgs; source: Target; destination: Target } {
   const args = parseArgs(argv);
+  refuseUnimplemented(argv, ['--source', '--destination'], allow);
   if (!args.source || !args.destination) {
     throw new ArgumentError('--source and --destination are both required.');
   }

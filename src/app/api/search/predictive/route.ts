@@ -40,12 +40,18 @@ export async function GET(request: Request) {
   const mode = searchParams.get('mode') === 'wiki' ? 'wiki' : 'colorlab';
   const locale = searchParams.get('locale') === 'vi' ? 'vi' : 'en';
 
-  const answer = (results: unknown[]) =>
-    NextResponse.json({ query, mode, results }, { headers: { 'Cache-Control': CACHE_CONTROL } });
+  /* `unavailable` rides along as `/api/search` sends it. Without it a source
+     that failed reached the header as an empty list, and the dropdown said
+     "No instant matches." about a catalogue it never searched. */
+  const answer = (results: unknown[], unavailable: readonly string[] = []) =>
+    NextResponse.json(
+      { query, mode, results, unavailable },
+      { headers: { 'Cache-Control': CACHE_CONTROL } },
+    );
 
   if (!query) return answer([]);
 
-  const { hits } = await searchContent({
+  const { hits, unavailable } = await searchContent({
     q: query,
     locale,
     scope: mode === 'wiki' ? 'products' : 'recipes',
@@ -63,5 +69,6 @@ export async function GET(request: Request) {
       imageUrl: hit.imageUrl,
       accentHex: hit.accentHex,
     })),
+    unavailable,
   );
 }

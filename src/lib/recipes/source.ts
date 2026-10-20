@@ -20,15 +20,18 @@ import { cache } from 'react';
 import { catalogueCache } from '../catalogue-cache';
 import recipesSeed from '../../../data/recipes.seed.json';
 import translationsSeed from '../../../data/translations.seed.json';
-import imagesSeed from '../../../data/images.seed.json';
 import { accentFor, type Accent } from '../camera/color';
+import { CREATIVE_LOOK_CODES } from '../camera/constants';
 import { formatWhiteBalance } from '../camera/format';
-import type { Recipe } from '../camera/schema';
+import { RECIPE_TAG_RE, type Recipe } from '../camera/schema';
+import { removeAccents } from '../search/fuzzy-search';
 import { contentRead } from '../supabase/server';
 import { contentOrOfflineSeed } from '../supabase/content-source';
-import { fromRow, type RecipeRow } from './row';
+import { fromRow, RECIPE_COLUMNS, type RecipeRow } from './row';
 import { devListRecipes, isRecipeDevStore } from './dev-store';
-import { devListImages, DEV_IMAGE_URL_PREFIX } from './image-dev-store';
+import { devImageUrl, devListImages } from './image-dev-store';
+import { publicRecipeImageUrl } from './images';
+import { VENDORED_IMAGES } from './vendored-images';
 
 export type Locale = 'en' | 'vi';
 
@@ -45,7 +48,7 @@ export type RecipeView = Recipe & {
 };
 
 /**
- * Seed path -> public URL.
+ * Recipe id -> ordered image paths, served as `publicRecipeImageUrl` URLs.
  *
  * These are vendored into `public/recipes/` by `npm run vendor:images`, not
  * fetched from Supabase Storage. Storage served every photograph at its stored
@@ -55,23 +58,16 @@ export type RecipeView = Recipe & {
  * Serving them from `public/` puts them on the same static CDN as the fonts:
  * no egress quota and no optimizer in the path, because the sizes already exist
  * on disk and `catalogue-loader.ts` picks between them by rewriting the suffix.
+ * It also means a photograph no longer vanishes without credentials, which is
+ * what `AGENTS.md` promised all along — the app "builds, runs and tests
+ * offline".
  *
- * It also means this no longer returns null without credentials, which is what
- * `AGENTS.md` promised all along — the app "builds, runs and tests offline",
- * except that every photograph used to vanish when it did.
+ * Read from the manifest rather than the database: the association is the
+ * storage path itself, so it cannot drift from the recipe even if the table is
+ * out of sync. Most recipes have no photograph and render the derived colour
+ * field.
  */
-const publicImageUrl = (path: string): string => `/recipes/${path}`;
-
-/**
- * Recipe id -> ordered image paths.
- *
- * Read from the seed rather than the database: the association is the storage
- * path itself (`<recipeId>/<n>.jpg`), so it cannot drift from the recipe even
- * if the table is out of sync. Only 11 of 47 recipes have photographs — the
- * rest still render the derived colour field.
- */
-const seedImages = (imagesSeed as { recipeId: string; storagePath: string; sort: number }[])
-  .slice()
+const seedImages = VENDORED_IMAGES.slice()
   .sort((a, b) => a.sort - b.sort)
   .reduce<Record<string, string[]>>((acc, r) => {
     (acc[r.recipeId] ||= []).push(r.storagePath);
@@ -83,10 +79,12 @@ const seedImages = (imagesSeed as { recipeId: string; storagePath: string; sort:
  *
  * - **Online and offline-elsewhere** — `data/images.seed.json`, which is what
  *   the deploy serves out of `public/recipes`.
- * - **Offline, development** — what `/admin/colorlab` just uploaded, out of the
- *   gitignored `public/recipes-dev`. Without this the image panel works on a
- *   laptop and the site beside it shows nothing, which is the same half-feature
- *   the recipe list had before `seedRecipes()` learned the same trick.
+ * - **Offline, development** — the dev photograph store, which starts as a copy
+ *   of the manifest and then follows what `/admin/colorlab` uploads (into the
+ *   gitignored `public/recipes-dev`) and deletes. Without this the image panel
+ *   works on a laptop and the site beside it shows nothing, which is the same
+ *   half-feature the recipe list had before `seedRecipes()` learned the same
+ *   trick.
  *
  * Note the ordering difference between the two branches, and that it is not a
  * difference in behaviour: the dev store keeps `sort` on each row, and
@@ -94,9 +92,9 @@ const seedImages = (imagesSeed as { recipeId: string; storagePath: string; sort:
  */
 const imagesFor = (recipeId: string): string[] => {
   if (isRecipeDevStore()) {
-    return devListImages(recipeId).map((i) => `${DEV_IMAGE_URL_PREFIX}${i.storagePath}`);
+    return devListImages(recipeId).map((i) => devImageUrl(i.storagePath));
   }
-  return (seedImages[recipeId] ?? []).map(publicImageUrl);
+  return (seedImages[recipeId] ?? []).map(publicRecipeImageUrl);
 };
 
 export type RecipeFilters = { format?: 'pp' | 'cl'; look?: string; tag?: string; q?: string };
@@ -158,12 +156,13 @@ function toView(
  *
  * Deliberately not over descriptions: those are prose and every recipe mentions
  * colour words, so including them makes almost any query match almost anything.
- * Diacritics are stripped so "mojave" finds a Vietnamese reader's query too.
+ * Diacritics are stripped so "mojave" finds a Vietnamese reader's query too —
+ * with the search engine's own fold, which also maps `đ`: NFD leaves it whole,
+ * so "da lat" could not find "Đà Lạt".
  */
-const norm = (s: string) =>
-  s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const norm = (s: string) => removeAccents(s).toLowerCase();
 
-const matchesQuery = (r: Recipe, q: string) => {
+export const matchesQuery = (r: Recipe, q: string) => {
   const needle = norm(q.trim());
   if (!needle) return true;
   const haystack = norm([r.name, r.id, ...r.tags].join(' '));
@@ -176,6 +175,27 @@ const matches = (r: Recipe, f: RecipeFilters) =>
   (!f.look || (r.format === 'cl' && r.settings.look === f.look)) &&
   (!f.tag || r.tags.includes(f.tag)) &&
   (!f.q || matchesQuery(r, f.q));
+
+/**
+ * Filters as they arrive from a query string: untrusted, and possibly arrays.
+ *
+ * `?q=a&q=b` is a string[] and `q.trim` threw. A `look` outside the enum or a
+ * `tag` that is not a tag is not "no match" to Postgres but 22P02 or a
+ * malformed array literal — which the reader reported as a content outage and
+ * rendered as the error page. Neither can match a recipe, so `null` says the
+ * answer is empty without asking.
+ */
+function cleanFilters(raw: RecipeFilters): RecipeFilters | null {
+  const one = (v: unknown): string | undefined => {
+    const x = Array.isArray(v) ? v[0] : v;
+    return typeof x === 'string' && x !== '' ? x : undefined;
+  };
+  const [format, look, tag, q] = [one(raw.format), one(raw.look), one(raw.tag), one(raw.q)];
+  if (format !== undefined && format !== 'pp' && format !== 'cl') return null;
+  if (look !== undefined && !(CREATIVE_LOOK_CODES as readonly string[]).includes(look)) return null;
+  if (tag !== undefined && !RECIPE_TAG_RE.test(tag)) return null;
+  return { format, look, tag, q };
+}
 
 // ---------------------------------------------------------------------------
 // Reads
@@ -209,8 +229,11 @@ export const listRecipes = catalogueCache('listRecipes', _listRecipes);
 
 async function _listRecipes(
   locale: Locale = 'en',
-  filters: RecipeFilters = {},
+  rawFilters: RecipeFilters = {},
 ): Promise<RecipeView[]> {
+  const filters = cleanFilters(rawFilters);
+  if (!filters) return [];
+
   const seed = () =>
     photosFirst(
       seedRecipes()
@@ -220,7 +243,7 @@ async function _listRecipes(
 
   return contentOrOfflineSeed('recipes.list', async () => {
   const db = contentRead();
-  let query = db.from('recipes').select('*').eq('published', true);
+  let query = db.from('recipes').select(RECIPE_COLUMNS).eq('published', true);
   if (filters.format) query = query.eq('format', filters.format);
   if (filters.look) query = query.eq('look', filters.look);
   if (filters.tag) query = query.contains('tags', [filters.tag]);
@@ -228,7 +251,7 @@ async function _listRecipes(
   const { data, error } = await query.order('id');
   if (error) throw new Error(`listRecipes: ${error.message}`);
 
-  let rows = (data ?? []) as RecipeRow[];
+  let rows = (data ?? []) as unknown as RecipeRow[];
   // Text matching happens here rather than in SQL: the catalogue is small enough
   // that a full-text index would be more moving parts than it earns, and this
   // keeps the seed and Supabase paths behaving identically.
@@ -280,14 +303,14 @@ async function _getRecipe(slug: string, locale: Locale = 'en'): Promise<RecipeVi
   return contentOrOfflineSeed('recipes.get', async () => {
   const { data, error } = await contentRead()
     .from('recipes')
-    .select('*')
+    .select(RECIPE_COLUMNS)
     .eq('slug', slug)
     .eq('published', true)
     .maybeSingle();
   if (error) throw new Error(`getRecipe: ${error.message}`);
   if (!data) return null;
 
-  const row = data as RecipeRow;
+  const row = data as unknown as RecipeRow;
   const lookup = await loadTranslations([row.id]);
   return toView(fromRow(row), row.legacy_id, pickDescription(lookup, row.id, locale));
   }, seed);

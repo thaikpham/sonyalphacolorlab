@@ -1,7 +1,8 @@
 import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import type { LinkTarget } from '@/lib/content/relations'
-import type { ContentRefKind } from '@/lib/lab/types'
+import type { LoadedUniverse } from '@/lib/content/universe'
+import type { ContentRef, ContentRefKind } from '@/lib/lab/types'
 
 /**
  * A related-content list, grouped by kind.
@@ -18,6 +19,28 @@ import type { ContentRefKind } from '@/lib/lab/types'
  */
 
 const ORDER: readonly ContentRefKind[] = ['knowledge', 'article', 'recipe', 'product']
+
+/* Which source of the universe each kind of link resolves from. A `Record`,
+   so a kind added to `ContentRefKind` and not here fails to compile. */
+const SOURCE_OF: Record<ContentRefKind, LoadedUniverse['unavailable'][number]> = {
+  recipe: 'recipes',
+  product: 'products',
+  article: 'pages',
+  knowledge: 'pages',
+}
+
+/**
+ * Whether any of these links reads from a source that failed to load — the
+ * only case "some related links could not be loaded" is true. Any failure
+ * at all used to set it, so the audio catalogue going down put the notice
+ * under an article whose links were all recipes.
+ */
+export function refsUnavailable(
+  refs: readonly ContentRef[],
+  unavailable: LoadedUniverse['unavailable'],
+): boolean {
+  return refs.some((r) => unavailable.includes(SOURCE_OF[r.kind]))
+}
 
 export async function RelatedLinks({
   links,

@@ -24,25 +24,17 @@ const ppRows = ok.map((r) => ({ ...r.recipe, legacyId: r.legacyId }));
 // their own file so a seed row still parses as a plain Recipe.
 const clRows = sony.recipes.map(({ images: _images, credit: _credit, ...recipe }) => recipe);
 const rows = [...ppRows, ...clRows];
-writeFileSync('data/recipes.seed.json', JSON.stringify(rows, null, 2) + '\n');
 
 /**
  * Photographer credit and the original photo URLs.
  *
  * The URLs are Sony's CDN and are deliberately NOT written into
- * images.seed.json, which holds Supabase Storage paths. Hotlinking someone
- * else's CDN is what broke the images on the old site; these are recorded so
- * `migrate-images` can pull them across, and so every recipe can name the
- * photographer it came from.
+ * images.seed.json, which holds paths under `public/recipes`. Hotlinking
+ * someone else's CDN is what broke the images on the old site; these are
+ * recorded so `vendor:images` can pull them across, and so every recipe can
+ * name the photographer it came from.
  */
-writeFileSync(
-  'data/sony-asia-credits.json',
-  JSON.stringify(
-    sony.recipes.map((r) => ({ recipeId: r.id, ...r.credit, imageUrls: r.images })),
-    null,
-    2,
-  ) + '\n',
-);
+const credits = sony.recipes.map((r) => ({ recipeId: r.id, ...r.credit, imageUrls: r.images }));
 
 // Descriptions are the only translated field, so they live apart from the
 // recipe row — mirroring the recipe_translations table.
@@ -71,6 +63,13 @@ const vi = rows
   .filter((t) => t.description.length > 0);
 
 const missingVi = rows.length - vi.length;
+
+/* Written together, after every check above has passed. A throw used to land
+   between files — recipes.seed.json already holding a recipe whose
+   translation never got written — and doctor and push:supabase then read a
+   recipe with no English text. */
+writeFileSync('data/recipes.seed.json', JSON.stringify(rows, null, 2) + '\n');
+writeFileSync('data/sony-asia-credits.json', JSON.stringify(credits, null, 2) + '\n');
 writeFileSync(
   'data/translations.seed.json',
   JSON.stringify([...translations, ...vi], null, 2) + '\n',

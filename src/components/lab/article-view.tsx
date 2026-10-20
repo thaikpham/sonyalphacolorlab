@@ -1,11 +1,12 @@
 import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
-import { RelatedLinks } from '@/components/content/related-links'
+import { RelatedLinks, refsUnavailable } from '@/components/content/related-links'
 import { SourceList, formatIsoDay } from '@/components/content/source-list'
 import { resolvePrerequisites, resolveRefs } from '@/lib/content/relations'
 import { loadUniverse } from '@/lib/content/universe'
 import { buildOutline } from '@/lib/lab/outline'
 import { ARTICLE_LANG } from '@/lib/lab/articles'
+import { checklistOrdinals } from '@/lib/lab/storage'
 import type { Article, Block } from '@/lib/lab/types'
 import type { Locale } from '@/lib/recipes/source'
 import {
@@ -39,7 +40,13 @@ import { CompareSlider } from './compare-slider'
 
 type BlockLabels = { readonly menu: MenuPairLabels; readonly tldr: string }
 
-function renderBlock(block: Block, i: number, articleId: string, labels: BlockLabels) {
+function renderBlock(
+  block: Block,
+  i: number,
+  articleId: string,
+  labels: BlockLabels,
+  checklistOrdinal: number,
+) {
   const menuLabels = labels.menu
   switch (block.t) {
     case 'tldr':
@@ -57,11 +64,18 @@ function renderBlock(block: Block, i: number, articleId: string, labels: BlockLa
     case 'compare':
       return <CompareSlider key={i} block={block} articleId={articleId} />
     case 'checklist':
-      return <Checklist key={i} block={block} articleId={articleId} blockIndex={i} />
+      return <Checklist key={i} block={block} articleId={articleId} ordinal={checklistOrdinal} />
     case 'figure':
       return <ArticleFigure key={i} block={block} articleId={articleId} />
     case 'embed':
       return <ArticleEmbed key={i} block={block} />
+    default: {
+      /* A block type added to the union without a case here fails to
+         compile, rather than rendering nothing in every article that holds
+         one. */
+      const unreachable: never = block
+      return unreachable
+    }
   }
 }
 
@@ -73,6 +87,7 @@ export async function ArticleView({ article }: { article: Article }) {
   ])
   const labels = { menu: { old: t('menuOld'), new: t('menuNew') }, tldr: t('summary') }
   const outline = buildOutline(article.blocks)
+  const ordinals = checklistOrdinals(article.blocks)
   const { universe, unavailable } = await loadUniverse(locale as Locale)
   const prerequisites = resolvePrerequisites(article.meta.prerequisites, universe)
   const related = resolveRefs(article.meta.related, universe)
@@ -132,7 +147,9 @@ export async function ArticleView({ article }: { article: Article }) {
           </Link>
         )}
 
-        <p className="label mb-3">
+        {/* Not `.label`: topic, level and read time run past the three words
+            its uppercase allows. */}
+        <p className="mb-3 text-label font-semibold text-ink-faint">
           <span className="text-accent-400">
             {knowledge && section ? tl(`sections.${section}`) : t(`topics.${article.topic}`)}
           </span>
@@ -163,7 +180,7 @@ export async function ArticleView({ article }: { article: Article }) {
           </p>
           <hr className="seam mt-8 mb-8" />
 
-          {article.blocks.map((block, i) => renderBlock(block, i, article.id, labels))}
+          {article.blocks.map((block, i) => renderBlock(block, i, article.id, labels, ordinals[i]))}
         </div>
 
         <footer className="mt-3 flex flex-col gap-6 pt-5">
@@ -183,7 +200,7 @@ export async function ArticleView({ article }: { article: Article }) {
           <p className="meta">{t('firmwareDisclaimer')}</p>
           <RelatedLinks
             links={related}
-            unavailable={unavailable.length > 0 && article.meta.related.length > 0}
+            unavailable={refsUnavailable(article.meta.related, unavailable)}
             lang={ARTICLE_LANG}
           />
         </footer>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Link, usePathname } from '@/i18n/navigation';
 import { routing } from '@/i18n/routing';
@@ -11,6 +11,12 @@ import { routing } from '@/i18n/routing';
  * `usePathname` from the i18n navigation helpers returns the path without the
  * locale prefix, so re-linking it under another locale keeps the reader where
  * they are — switching language on a recipe page must not bounce them home.
+ * It also has no search string, so the query rides along separately: without
+ * it `/search?q=a7c` switched to an empty `/vi/search`, the compare page lost
+ * every id and the grids every filter. The hash is left out on purpose — it
+ * does not exist during SSR, and reading it would mismatch on hydration.
+ * `useSearchParams` is safe here because the toggle renders only inside
+ * `SiteHeader`'s Suspense boundary.
  *
  * A segmented control whose segments are flags — the US flag for English, the
  * Vietnamese flag for Tiếng Việt. The flags are the one deliberate exception to
@@ -67,9 +73,11 @@ const SEGMENT =
 
 export function LanguageToggle() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const params = useParams();
   const t = useTranslations('language');
   const active = (params.locale as string) ?? routing.defaultLocale;
+  const query = Object.fromEntries(searchParams ?? []);
 
   return (
     <div className="surface-sunken flex shrink-0 items-stretch overflow-hidden">
@@ -93,7 +101,7 @@ export function LanguageToggle() {
         ) : (
           <Link
             key={locale}
-            href={pathname}
+            href={{ pathname, query }}
             locale={locale}
             hrefLang={locale}
             aria-label={t('switchTo', { language: t(locale) })}

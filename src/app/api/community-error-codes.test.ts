@@ -88,7 +88,8 @@ describe('the client that renders these bodies', () => {
     // `setErrorMsg(data?.error ?? …)` is the exact line that shipped untranslated
     // prose to the screen. It must not come back.
     expect(source).not.toMatch(/setErrorMsg\(\s*data\??\.?\.?error/);
-    expect(source).toContain('isCommunityErrorCode(');
+    // `communityErrorOf` is the shared reader; it narrows with isCommunityErrorCode.
+    expect(source).toContain('communityErrorOf(');
     expect(source).toContain('errors.${code}');
   });
 

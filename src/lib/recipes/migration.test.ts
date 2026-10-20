@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { PGlite } from '@electric-sql/pglite';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { toRow } from './row';
+import { PROPOSAL_COLUMNS } from '../community/columns';
 import type { Recipe } from '../camera/schema';
 
 /**
@@ -55,8 +56,15 @@ beforeAll(async () => {
         create role authenticated nologin;
       end if;
     end $$;
+    alter default privileges in schema public grant all on tables to anon, authenticated;
   `);
-  /* Same reasoning one level up: Supabase ships a `storage` schema, and a bare
+  /* The default ACL above is Supabase's too: every table created in `public`
+     starts with ALL granted to anon and authenticated. Without it a table that
+     no migration revokes looks private here and is readable in production —
+     which is how `community_photos.submitted_by` passed every check in this
+     file while serving proposal authors' addresses to the anon key.
+
+     Same reasoning one level up: Supabase ships a `storage` schema, and a bare
      Postgres does not. 0013 creates the `lab` bucket and the policy that makes
      article photography publicly readable, so without these two stubs that
      migration would abort and every later one with it — the whole file would
@@ -136,6 +144,110 @@ describe('migrations', () => {
     const cols = readable.rows.map((r) => r.column_name);
     expect(cols).toContain('content');
     expect(cols).not.toContain('author_email');
+  });
+
+  it.each(['anon', 'authenticated'])(
+    '%s cannot read who submitted a community photo',
+    async (role) => {
+      /* `submitted_by` once held a proposal author's Google address, and 0002
+         granted nothing narrower than the Supabase default — so
+         `?select=submitted_by` on the anon key returned it. Asserted by running
+         the query as the role, not by reading the catalog, so a table-level
+         grant cannot hide behind a column list that looks right. */
+      await db.exec(`set role ${role}`);
+      try {
+        await expect(db.query('select submitted_by from community_photos')).rejects.toThrow(
+          /permission denied/,
+        );
+      } finally {
+        await db.exec('reset role');
+      }
+    },
+  );
+
+  it('still serves the public gallery read to anon', async () => {
+    /* The exact shape `GET /api/community-photos` sends: three columns out,
+       filtered on the slug, newest first. Narrowing the grant must not take the
+       gallery down with it. */
+    await db.query(
+      `insert into community_photos (recipe_slug, image_url, author_name, submitted_by)
+       values ('grant-probe', 'https://cdn.example.com/a.jpg', 'Reader', '203.0.113.7')`,
+    );
+    await db.exec('set role anon');
+    try {
+      const q = await db.query<{ image_url: string; author_name: string }>(
+        `select image_url, author_name, author_social from community_photos
+          where recipe_slug = $1 order by created_at desc limit 40`,
+        ['grant-probe'],
+      );
+      expect(q.rows).toEqual([
+        { image_url: 'https://cdn.example.com/a.jpg', author_name: 'Reader', author_social: null },
+      ]);
+    } finally {
+      await db.exec('reset role');
+    }
+  });
+
+  it('keeps a proposal sample photo, https only, readable by anon', async () => {
+    const readable = await db.query<{ column_name: string }>(
+      `select column_name from information_schema.column_privileges
+        where grantee = 'anon' and table_name = 'recipe_proposals'
+          and privilege_type = 'SELECT'`,
+    );
+    const cols = readable.rows.map((r) => r.column_name);
+    expect(cols).toContain('sample_image_url');
+    expect(cols).not.toContain('author_email');
+
+    const proposal = (sample: string | null) =>
+      db.query(
+        `insert into recipe_proposals
+           (recipe_slug, title, author_name, author_email, settings, white_balance, sample_image_url)
+         values ('grant-probe', 't', 'Reader', 'reader@example.com', '{}', '{}', $1)`,
+        [sample],
+      );
+    await expect(proposal('https://cdn.example.com/s.jpg')).resolves.toBeDefined();
+    await expect(proposal('http://cdn.example.com/s.jpg')).rejects.toThrow(
+      /recipe_proposals_sample_image_url_check/,
+    );
+    await expect(proposal(`https://${'a'.repeat(2048)}`)).rejects.toThrow(
+      /recipe_proposals_sample_image_url_check/,
+    );
+  });
+
+  it.each(['anon', 'authenticated'])('%s can read every column the proposals route selects', async (role) => {
+    /* `PROPOSAL_COLUMNS` names sample_image_url, which only 0019 adds. A column
+       the grant does not cover is "permission denied" for the whole query, so
+       every GET /api/proposals would answer 503. This pins the dependency; it
+       cannot pin the order — 0019 must be applied before the route ships. */
+    const columns = PROPOSAL_COLUMNS;
+    expect(columns).toContain('sample_image_url');
+    await db.exec(`set role ${role}`);
+    try {
+      await expect(db.query(`select ${columns} from recipe_proposals limit 0`)).resolves.toBeDefined();
+    } finally {
+      await db.exec('reset role');
+    }
+  });
+
+  /* An operator adding an editor copies 0009's `insert (email, note)`. With a
+     default of 'super' that row could edit everything — the least-privileged
+     path granting the most privilege. With no default it is refused. */
+  it('refuses an admin row that does not state its role', async () => {
+    await expect(
+      db.query(`insert into admin_emails (email, note) values ('role-probe@example.com', 'DI')`),
+    ).rejects.toThrow(/null value in column "role"/);
+    await expect(
+      db.query(`insert into admin_emails (email, role) values ('role-probe@example.com', 'di')`),
+    ).resolves.toBeDefined();
+  });
+
+  /* requireAdmin matches the lowercased address from the JWT. A mixed-case row
+     never matches: that administrator is refused on every request, with no
+     error anywhere. */
+  it('refuses an admin address that is not lowercase', async () => {
+    await expect(
+      db.query(`insert into admin_emails (email, role) values ('Mixed@Example.com', 'di')`),
+    ).rejects.toThrow(/admin_emails_email_lowercase/);
   });
 
   it('denies the anon role the votes table entirely', async () => {
@@ -227,12 +339,15 @@ describe('migrations', () => {
   });
 
   it('rejects an image row pointing at an external URL', async () => {
+    /* Its own parent row, and the check named: a bare `toThrow()` also passed
+       on the foreign key, or on `(recipe_id, sort)` if an earlier case held 0. */
+    await insert({ ...base(), id: 'SCL-PP-950', slug: 'image-check-probe' });
     await expect(
       db.query(
         `insert into recipe_images (recipe_id, storage_path)
-         values ('SCL-PP-001', 'https://lh3.googleusercontent.com/pw/abc')`,
+         values ('SCL-PP-950', 'https://lh3.googleusercontent.com/pw/abc')`,
       ),
-    ).rejects.toThrow();
+    ).rejects.toThrow(/recipe_images_storage_path_check/);
   });
 
   it('cascades translations and images when a recipe is deleted', async () => {

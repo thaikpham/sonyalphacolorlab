@@ -1,10 +1,11 @@
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
+import { ADMIN_LOCALE } from '@/lib/admin/locale';
 
 /** The department's front door. One card per app. */
 
 export default async function AdminHome() {
-  const t = await getTranslations({ locale: 'vi', namespace: 'adminUi' });
+  const t = await getTranslations({ locale: ADMIN_LOCALE, namespace: 'adminUi' });
 
   const cards = [
     { href: '/admin/colorlab', title: t('sectionColorlab'), body: t('sectionColorlabBody') },

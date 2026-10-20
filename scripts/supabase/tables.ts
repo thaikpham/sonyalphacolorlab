@@ -1,5 +1,3 @@
-import type { Target } from './args';
-
 /**
  * What lives where, as data rather than as a comment.
  *
@@ -113,9 +111,3 @@ export const FORBIDDEN_IN_CONTENT: readonly string[] = [
  * is a way to lose the administrator list at the worst possible moment.
  */
 export const ROLLBACK_ALLOWLIST: readonly string[] = CONTENT_TABLES.map((t) => t.name);
-
-export function tablesFor(target: Target): readonly TableSpec[] {
-  /* The same list either way: a rollback writes the content tables back into
-     the control project, which is why they were not dropped at cutover. */
-  return target === 'content' ? CONTENT_TABLES : CONTENT_TABLES;
-}

@@ -84,6 +84,48 @@ const CHIP_SELECTED =
 const WIKI_SELECT =
   'surface-sunken px-3 min-h-[var(--layout-touch-target)] text-body-sm font-semibold text-ink cursor-pointer';
 
+type WikiPatch = {
+  q?: string;
+  cat?: string;
+  sub1?: string;
+  sub2?: string;
+  sort?: string;
+  view?: string;
+};
+
+/**
+ * The wiki's query string after `patch`, every default left out.
+ *
+ * One builder for every way the wiki URL changes. The search box used to build
+ * its own from `q` alone, so typing "85" on
+ * `/cameras?cat=lens&sort=price-desc&view=table` landed on `/cameras?q=85`
+ * with the category, the sort and the table view all reset. The no-JS form's
+ * hidden inputs are read from here too, so the two paths cannot drift.
+ */
+export function wikiSearch(
+  current: { get(name: string): string | null } | null,
+  patch: WikiPatch,
+): string {
+  const pick = (key: keyof WikiPatch, fallback: string) =>
+    patch[key] !== undefined ? (patch[key] as string) : (current?.get(key) ?? fallback);
+
+  const next = new URLSearchParams();
+  const q = pick('q', '').trim();
+  const cat = pick('cat', 'all');
+  const sub1 = pick('sub1', 'all');
+  const sub2 = pick('sub2', 'all');
+  const sort = pick('sort', DEFAULT_WIKI_SORT);
+  const view = pick('view', 'grid');
+
+  if (q) next.set('q', q);
+  if (cat && cat !== 'all') next.set('cat', cat);
+  if (sub1 && sub1 !== 'all') next.set('sub1', sub1);
+  if (sub2 && sub2 !== 'all') next.set('sub2', sub2);
+  if (sort && sort !== DEFAULT_WIKI_SORT) next.set('sort', sort);
+  if (view && view !== 'grid') next.set('view', view);
+  return next.toString();
+}
+
 /** A square 44px icon button on the control rail — launcher, mobile search. */
 const ICON_BUTTON =
   'flex h-11 w-11 shrink-0 items-center justify-center rounded-sm cursor-pointer transition-colors';
@@ -138,8 +180,13 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
      on an article page. The filter console stays ColorLab's and the Wiki's. */
   const isSearchPage = pathname === '/search';
   const isAll = isBlog || isSearchPage;
+  /* The grid the box filters in place. Everywhere else in ColorLab and the
+     Wiki — a recipe, a product, the compare page — there is nothing behind
+     the box to filter, and a live push would carry the reader off the page
+     mid-word; there the box waits for Enter. */
+  const isCatalogueIndex = pathname === '/colorlab' || pathname === wikiBase;
   const searchParams = useSearchParams();
-  const { user, openLoginModal, logout } = useAuth();
+  const { user, isReady, openLoginModal, logout } = useAuth();
 
   const currentQ = searchParams?.get('q') ?? '';
   const currentFormat = searchParams?.get('format') ?? '';
@@ -168,6 +215,8 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
   const ecosystemRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
   const portalRef = useRef<HTMLDivElement>(null);
+  /* The search form, so a press outside it can dismiss the suggestions. */
+  const searchFormRef = useRef<HTMLFormElement>(null);
   /**
    * The launcher tiles inside the portal. A REF, not a class name.
    *
@@ -213,6 +262,10 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
   const [isPredictiveLoading, setIsPredictiveLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [isPredictiveOpen, setIsPredictiveOpen] = useState(false);
+  /* A source the last answer could not search, or an answer that never came.
+     Either way an empty list is not "no matches", and the dropdown must not
+     say it is. */
+  const [predictiveUnavailable, setPredictiveUnavailable] = useState(false);
   const predictiveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   /**
    * Monotonic id of the newest predictive request.
@@ -230,6 +283,16 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
   const predictiveAbort = useRef<AbortController | null>(null);
 
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    /* Escape with the suggestions open dismisses the suggestions and nothing
+       else. The window listener below closes the whole search on Escape, so
+       the event stops here — otherwise one press closed both and the reader
+       could not drop the dropdown and keep typing. Before the early return,
+       because a loading or empty dropdown is still a dropdown. */
+    if (e.key === 'Escape' && isPredictiveOpen) {
+      e.stopPropagation();
+      setIsPredictiveOpen(false);
+      return;
+    }
     if (!isPredictiveOpen || predictiveResults.length === 0) return;
 
     if (e.key === 'ArrowDown') {
@@ -244,8 +307,6 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
       setIsSearchOpen(false);
       setIsPredictiveOpen(false);
       router.push(target.url);
-    } else if (e.key === 'Escape') {
-      setIsPredictiveOpen(false);
     }
   };
 
@@ -275,14 +336,24 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
    * https://react.dev/learn/you-might-not-need-an-effect
    */
   const [syncedQ, setSyncedQ] = useState(currentQ);
+  /* The `q` this box's own debounced push sent, until the URL arrives at it.
+     That arrival is the grid catching up with the typist, not a navigation:
+     closing the dropdown there made the suggestions vanish after every pause,
+     and ArrowDown had nothing left to move through. State rather than a ref,
+     because it is read during render. */
+  const [livePushedQ, setLivePushedQ] = useState<string | null>(null);
   if (syncedQ !== currentQ) {
     setSyncedQ(currentQ);
-    setQuery(currentQ);
     if (hasActiveFilters) setIsSearchOpen(true);
-    /* A navigation answers the query — the reader is now looking at results,
-       so the suggestions for that same text are stale chrome over them. This
-       does not fetch: arriving on a URL is not someone typing. */
-    setIsPredictiveOpen(false);
+    if (currentQ === livePushedQ) {
+      setLivePushedQ(null);
+    } else {
+      setQuery(currentQ);
+      /* A navigation answers the query — the reader is now looking at results,
+         so the suggestions for that same text are stale chrome over them. This
+         does not fetch: arriving on a URL is not someone typing. */
+      setIsPredictiveOpen(false);
+    }
   }
 
   // Handle scroll auto-hide behavior
@@ -365,15 +436,19 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
   }, [isSearchOpen, isEcosystemOpen, isProfileOpen]);
 
   /**
-   * Close either dropdown on a click outside it.
+   * Close any dropdown on a click outside it.
    *
    * `ecosystemRef` was already attached to the wrapper but nothing read it, so
    * the launcher could only be dismissed with Escape — on a phone, where there
    * is no Escape key, it stayed open until something else was tapped.
    * `pointerdown` covers mouse, touch and pen in one listener.
+   *
+   * The suggestions too: in the "all" mode nothing navigates while typing, so
+   * after a click back into the article the panel stayed over the text until
+   * Escape. Only the dropdown goes — the box stays open, as it is meant to.
    */
   useEffect(() => {
-    if (!isEcosystemOpen && !isProfileOpen) return;
+    if (!isEcosystemOpen && !isProfileOpen && !isPredictiveOpen) return;
 
     const handlePointerDown = (e: PointerEvent) => {
       const target = e.target as Node;
@@ -385,11 +460,20 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
         setIsEcosystemOpen(false);
       }
       if (isProfileOpen && !profileRef.current?.contains(target)) setIsProfileOpen(false);
+      if (isPredictiveOpen && !searchFormRef.current?.contains(target)) setIsPredictiveOpen(false);
     };
 
     document.addEventListener('pointerdown', handlePointerDown);
     return () => document.removeEventListener('pointerdown', handlePointerDown);
-  }, [isEcosystemOpen, isProfileOpen]);
+  }, [isEcosystemOpen, isProfileOpen, isPredictiveOpen]);
+
+  const updateWikiFilters = useCallback(
+    (patch: WikiPatch) => {
+      const qs = wikiSearch(searchParams, patch);
+      router.push(qs ? `${wikiBase}?${qs}` : wikiBase, { scroll: false });
+    },
+    [searchParams, wikiBase, router],
+  );
 
   const updateFilters = useCallback(
     (patch: { q?: string; format?: string; look?: string; tag?: string }) => {
@@ -403,58 +487,27 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
       }
 
       if (isWiki) {
-        const qs = new URLSearchParams(newQ.trim() ? { q: newQ.trim() } : {}).toString();
-        router.push(qs ? `${wikiBase}?${qs}` : wikiBase, { scroll: false });
-      } else {
-        const next: Record<string, string> = {};
-        const newFormat = patch.format !== undefined ? patch.format : currentFormat;
-        const newLook = patch.look !== undefined ? patch.look : currentLook;
-        const newTag = patch.tag !== undefined ? patch.tag : currentTag;
-
-        if (newQ.trim()) next.q = newQ.trim();
-        if (newFormat) next.format = newFormat;
-        if (newLook && newFormat === 'cl') next.look = newLook;
-        if (newTag) next.tag = newTag;
-
-        const qs = new URLSearchParams(next).toString();
-        /* `/colorlab`, not `/` — the root is the ecosystem launcher now, and it
-           renders no grid, so every recipe search and filter here would have
-           navigated out of the app and shown four tiles instead of results. */
-        router.push(qs ? `/colorlab?${qs}` : '/colorlab', { scroll: false });
+        updateWikiFilters({ q: newQ });
+        return;
       }
+
+      const next: Record<string, string> = {};
+      const newFormat = patch.format !== undefined ? patch.format : currentFormat;
+      const newLook = patch.look !== undefined ? patch.look : currentLook;
+      const newTag = patch.tag !== undefined ? patch.tag : currentTag;
+
+      if (newQ.trim()) next.q = newQ.trim();
+      if (newFormat) next.format = newFormat;
+      if (newLook && newFormat === 'cl') next.look = newLook;
+      if (newTag) next.tag = newTag;
+
+      const qs = new URLSearchParams(next).toString();
+      /* `/colorlab`, not `/` — the root is the ecosystem launcher now, and it
+         renders no grid, so every recipe search and filter here would have
+         navigated out of the app and shown four tiles instead of results. */
+      router.push(qs ? `/colorlab?${qs}` : '/colorlab', { scroll: false });
     },
-    [currentQ, currentFormat, currentLook, currentTag, isAll, isWiki, wikiBase, router],
-  );
-
-  const updateWikiFilters = useCallback(
-    (patch: {
-      q?: string;
-      cat?: string;
-      sub1?: string;
-      sub2?: string;
-      sort?: string;
-      view?: string;
-    }) => {
-      const next = new URLSearchParams();
-
-      const newQ = patch.q !== undefined ? patch.q : currentQ;
-      const newCat = patch.cat !== undefined ? patch.cat : wikiCat;
-      const newSub1 = patch.sub1 !== undefined ? patch.sub1 : wikiSub1;
-      const newSub2 = patch.sub2 !== undefined ? patch.sub2 : wikiSub2;
-      const newSort = patch.sort !== undefined ? patch.sort : wikiSort;
-      const newView = patch.view !== undefined ? patch.view : wikiView;
-
-      if (newQ.trim()) next.set('q', newQ.trim());
-      if (newCat && newCat !== 'all') next.set('cat', newCat);
-      if (newSub1 && newSub1 !== 'all') next.set('sub1', newSub1);
-      if (newSub2 && newSub2 !== 'all') next.set('sub2', newSub2);
-      if (newSort && newSort !== DEFAULT_WIKI_SORT) next.set('sort', newSort);
-      if (newView && newView !== 'grid') next.set('view', newView);
-
-      const qs = next.toString();
-      router.push(qs ? `${wikiBase}?${qs}` : wikiBase, { scroll: false });
-    },
-    [currentQ, wikiCat, wikiSub1, wikiSub2, wikiSort, wikiView, wikiBase, router],
+    [currentQ, currentFormat, currentLook, currentTag, isAll, isWiki, updateWikiFilters, router],
   );
 
   /**
@@ -492,6 +545,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
       // before the box was cleared cannot repopulate an empty dropdown.
       predictiveSeq.current += 1;
       setPredictiveResults([]);
+      setPredictiveUnavailable(false);
       setIsPredictiveOpen(false);
       setIsPredictiveLoading(false);
       setSelectedIndex(-1);
@@ -511,9 +565,17 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
         ? `/api/search?q=${encodeURIComponent(q)}&scope=all&limit=6&locale=${locale}`
         : `/api/search/predictive?q=${encodeURIComponent(q)}&mode=${mode}&locale=${locale}`;
       fetch(url, { signal: controller.signal })
-        .then((res) => (res.ok ? res.json() : {}))
-        .then((data: { results?: PredictiveItem[]; hits?: SearchApiHit[] }) => {
+        /* A failed response is a failed search, not an empty one: it used to
+           become `{}` and read as "No instant matches." */
+        .then((res) => {
+          if (!res.ok) throw new Error(`search answered ${res.status}`);
+          return res.json();
+        })
+        .then((data: { results?: PredictiveItem[]; hits?: SearchApiHit[]; unavailable?: string[] }) => {
           if (seq !== predictiveSeq.current) return;
+          setPredictiveUnavailable(
+            Array.isArray(data.unavailable) && data.unavailable.length > 0,
+          );
           if (isAll) {
             const hits = Array.isArray(data.hits) ? data.hits : [];
             setPredictiveResults(
@@ -537,7 +599,9 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
            An abort is a newer query taking over, and changes nothing. */
         .catch((err: unknown) => {
           if (err instanceof DOMException && err.name === 'AbortError') return;
-          if (seq === predictiveSeq.current) setPredictiveResults([]);
+          if (seq !== predictiveSeq.current) return;
+          setPredictiveResults([]);
+          setPredictiveUnavailable(true);
         })
         .finally(() => {
           if (seq === predictiveSeq.current) setIsPredictiveLoading(false);
@@ -549,11 +613,15 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
     setQuery(value);
     queuePredictive(value);
     if (searchTimer.current) clearTimeout(searchTimer.current);
-    /* ColorLab and the Wiki filter the grid behind the box as you type. The
+    /* The ColorLab and Wiki grids filter behind the box as you type. The
        "all" mode has no grid behind it — navigating per keystroke would be a
-       trip to /search on every letter — so it waits for Enter. */
-    if (isAll) return;
-    searchTimer.current = setTimeout(() => updateFilters({ q: value }), 250);
+       trip to /search on every letter — and neither does a detail page, so
+       both wait for Enter. */
+    if (isAll || !isCatalogueIndex) return;
+    searchTimer.current = setTimeout(() => {
+      setLivePushedQ(value.trim());
+      updateFilters({ q: value });
+    }, 250);
   };
 
   useEffect(() => () => {
@@ -565,24 +633,30 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchTimer.current) clearTimeout(searchTimer.current);
+    /* Enter asks for the results, so the suggestions go — even when the live
+       push already put this same `q` in the URL and nothing will change. */
+    setLivePushedQ(null);
+    setIsPredictiveOpen(false);
     updateFilters({ q: query });
   };
 
   const handleClearQuery = () => {
     setQuery('');
     queuePredictive('');
-    /* Clearing the box filters the catalogue back to everything; in the
-       "all" mode there is no catalogue behind the box, and clearing it must
-       not navigate the reader off the article they are on. */
-    if (!isAll) updateFilters({ q: '' });
+    /* Clearing the box filters the grid back to everything. With no grid
+       behind the box — the "all" mode, a detail page — clearing it must not
+       navigate the reader off the page they are on. */
+    if (!isAll && isCatalogueIndex) updateFilters({ q: '' });
     inputRef.current?.focus();
   };
 
   const handleResetAll = () => {
     setQuery('');
     queuePredictive('');
-    // Clearing filters returns to the current app's own index, never the launcher.
-    router.push(isBlog ? '/blog' : isWiki ? wikiBase : '/colorlab', { scroll: false });
+    /* Clearing filters returns to the current app's own index, never the
+       launcher. Only the console calls this, and the console never renders in
+       the "all" mode — so there is no blog arm to take. */
+    router.push(isWiki ? wikiBase : '/colorlab', { scroll: false });
   };
 
   return (
@@ -720,9 +794,13 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                    The type is the link's text, so the mark's `alt` is empty
                    rather than a second reading of the name. `truncate` for the
                    same reason as the wiki wordmark: it is what gives width back
-                   on a phone. */
+                   on a phone.
+
+                   `/colorlab`, like the blog and wiki marks linking to their own
+                   index: `/` is the launcher, and from a recipe the wordmark
+                   used to leave the app for four tiles. */
                 <Link
-                  href="/"
+                  href="/colorlab"
                   className="flex min-h-[var(--layout-touch-target)] min-w-0 items-center gap-2 sm:gap-2.5"
                 >
                   <Image
@@ -858,10 +936,8 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                     )}
                   </span>
 
-                  <span className="hidden sm:inline-flex items-center gap-1 shrink-0 px-2 py-1 rounded-sm bg-white/[0.08] text-label font-semibold text-ink-faint shadow-[var(--elevation-spec)]">
-                    <kbd>⌘</kbd>
-                    <kbd>K</kbd>
-                  </span>
+                  {/* No ⌘K badge: keyboard hints are removed copy, and the glyph
+                      was the Mac one on every platform. The shortcut stays. */}
                 </button>
               ) : (
                 /* Expanded Search Input Form */
@@ -873,6 +949,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                    searching silently clears them. */
                 <form
                   role="search"
+                  ref={searchFormRef}
                   /* `/colorlab`, not `/` — the root is the launcher, which has no
                      grid, so a no-JS ColorLab search used to land there. */
                   action={(() => {
@@ -892,6 +969,13 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                     }).map(([key, value]) =>
                       value ? <input key={key} type="hidden" name={key} value={value} /> : null,
                     )}
+                  {/* The wiki's, from the same builder its controls navigate
+                      with: everything not at its default except `q`, which
+                      the box itself submits. */}
+                  {isWiki &&
+                    [...new URLSearchParams(wikiSearch(searchParams, { q: '' }))].map(([key, value]) => (
+                      <input key={key} type="hidden" name={key} value={value} />
+                    ))}
                   <label htmlFor="header-search-input" className="sr-only">
                     {isAll ? t('allLabel') : t('label')}
                   </label>
@@ -981,6 +1065,9 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                                 {t('matchCount', { count: predictiveResults.length })}
                               </span>
                             </div>
+                            {/* An accuracy note, not microcopy: these matches
+                                leave out a source that failed. */}
+                            {predictiveUnavailable && <p className="meta px-3">{t('partial')}</p>}
 
                             {predictiveResults.map((item, idx) => (
                               <Link
@@ -1078,7 +1165,9 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                           /* No keyboard hint here: the copy rules removed
                              them site-wide. The way forward is a control. */
                           <div className="p-2 flex flex-col gap-1">
-                            <p className="px-3 py-2 text-center text-body-sm text-ink-muted">{t('noInstant')}</p>
+                            <p className="px-3 py-2 text-center text-body-sm text-ink-muted">
+                              {predictiveUnavailable ? t('partial') : t('noInstant')}
+                            </p>
                             <Link
                               href={{ pathname: '/search', query: { q: query.trim() } }}
                               onClick={() => {
@@ -1124,7 +1213,14 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
               </button>
 
               {/* Google Auth / Profile Button */}
-              {user ? (
+              {!isReady ? (
+                /* The session is not known yet — during SSR and until
+                   getSession() resolves. Sign in here flashed at every
+                   signed-in reader on every full load before the avatar
+                   replaced it. A blank disc the avatar's size holds the rail
+                   still instead. */
+                <span aria-hidden className="h-10 w-10 shrink-0 rounded-full bg-white/[0.08]" />
+              ) : user ? (
                 /* A click-toggled disclosure, not a hover menu. `group-hover`
                    alone left Sign out unreachable for anyone without a hovering
                    pointer — every touch device, and the keyboard. */
@@ -1141,21 +1237,25 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                        and it is the first line of the menu this opens. */
                     className="h-10 w-10 shrink-0 overflow-hidden rounded-full cursor-pointer bg-[linear-gradient(160deg,var(--color-accent-400),var(--color-accent-600))] shadow-[0_6px_16px_-6px_color-mix(in_oklch,var(--color-accent-500)_60%,transparent),var(--elevation-spec)]"
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element -- user avatar */}
-                    <img
-                      src={user.avatarUrl}
-                      alt=""
-                      referrerPolicy="no-referrer"
-                      /* A dead avatar URL uncovers the accent disc underneath.
-                         It used to swap in a generated one from an external
-                         avatar service, which put a third-party request and a
-                         colour from outside the ramp on the critical path for
-                         a 40px circle. */
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                      className="h-full w-full object-cover"
-                    />
+                    {/* No photo at all is the same as a dead one: the accent
+                        disc. `avatarUrl` is '' for an account without one. */}
+                    {user.avatarUrl && (
+                      /* eslint-disable-next-line @next/next/no-img-element -- user avatar */
+                      <img
+                        src={user.avatarUrl}
+                        alt=""
+                        referrerPolicy="no-referrer"
+                        /* A dead avatar URL uncovers the accent disc underneath.
+                           It used to swap in a generated one from an external
+                           avatar service, which put a third-party request and a
+                           colour from outside the ramp on the critical path for
+                           a 40px circle. */
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                        className="h-full w-full object-cover"
+                      />
+                    )}
                   </button>
 
                   {isProfileOpen && (
@@ -1287,12 +1387,14 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                       {/* Every product on `/audio` is one category, so tabs
                           keyed on `cat` would be one live tab and three empty
                           ones. There they select `sub1` — Tai nghe or Loa —
-                          which is the split a reader of that page is after. */}
+                          which is the split a reader of that page is after.
+                          The key is the stored value; the label is mapped like
+                          every other sub-category, or /en reads Vietnamese. */}
                       {(isAudioWiki
                         ? [
                             { key: 'all', label: tCameras('catAll') },
-                            { key: 'Tai nghe', label: 'Tai nghe' },
-                            { key: 'Loa', label: 'Loa' },
+                            { key: 'Tai nghe', label: subCategoryLabel('Tai nghe', tCameras) },
+                            { key: 'Loa', label: subCategoryLabel('Loa', tCameras) },
                           ]
                         : [
                             { key: 'all', label: tCameras('catAll') },
@@ -1441,7 +1543,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
 
                   {/* Row 1: Format Filters */}
                   <div className="flex items-start gap-3">
-                    <span className="label w-14 shrink-0 leading-11">Format</span>
+                    <span className="label w-14 shrink-0 leading-11">{t('filterFormat')}</span>
 
                     <div className="filter-scroll flex flex-wrap items-center gap-2 min-w-0">
                       <button
@@ -1450,7 +1552,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                         aria-current={!currentFormat ? 'true' : undefined}
                         className={!currentFormat ? CHIP_SELECTED : CHIP_IDLE}
                       >
-                        All
+                        {t('filterAll')}
                       </button>
 
                       <button
@@ -1487,7 +1589,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                           aria-current={!currentLook ? 'true' : undefined}
                           className={!currentLook ? CHIP_SELECTED : CHIP_IDLE}
                         >
-                          All
+                          {t('filterAll')}
                         </button>
 
                         {CREATIVE_LOOKS.map((l) => (
@@ -1507,7 +1609,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
 
                   {/* Row 3: Tag Chips Bar */}
                   <div className="flex items-start gap-3">
-                    <span className="label w-14 shrink-0 leading-11">Tags</span>
+                    <span className="label w-14 shrink-0 leading-11">{t('filterTags')}</span>
 
                     <div className="filter-scroll flex flex-wrap items-center gap-2 min-w-0">
                       <button
@@ -1516,7 +1618,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                         aria-current={!currentTag ? 'true' : undefined}
                         className={!currentTag ? CHIP_SELECTED : CHIP_IDLE}
                       >
-                        All
+                        {t('filterAll')}
                       </button>
 
                       {tagList.map((item) => (

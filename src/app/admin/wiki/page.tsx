@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
+import { ADMIN_LOCALE } from '@/lib/admin/locale';
 import { getSonyCameras } from '@/lib/cameras/data';
 import { getSonyAudio } from '@/lib/audio/data';
 import { AdminEditor } from '@/components/admin/admin-editor';
@@ -16,9 +18,10 @@ import { AdminEditor } from '@/components/admin/admin-editor';
  * anyone; the gate is on the write routes, where it belongs.
  */
 
-export const metadata: Metadata = {
-  title: 'Sản phẩm',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations({ locale: ADMIN_LOCALE, namespace: 'adminUi' });
+  return { title: t('metaProducts') };
+}
 
 export default async function AdminWikiPage({
   searchParams,

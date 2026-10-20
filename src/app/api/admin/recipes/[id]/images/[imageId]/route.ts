@@ -7,6 +7,7 @@ import { hasContentConfig } from '@/lib/supabase/server';
 import { RECIPE_ID_RE } from '@/lib/camera/schema';
 import { isRecipeDevStore } from '@/lib/recipes/dev-store';
 import { deleteRecipeImage, setRecipeImageAlt } from '@/lib/recipes/image-store';
+import { MAX_ALT_CHARS } from '@/lib/recipes/upload-limits';
 
 /**
  * One photograph: its alt text, or its removal.
@@ -26,6 +27,16 @@ function revalidateOffline() {
   if (isRecipeDevStore()) revalidateTag(CATALOGUE_TAG, IMMEDIATE);
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * An id that can name a row. `recipe_images.id` is a uuid, and anything else
+ * made Postgres raise 22P02, which reached the editor as a 502 "could not
+ * save" for what is a 404. The dev store mints `dev-<recipe>-<slot>` instead.
+ */
+const isImageId = (imageId: string) =>
+  isRecipeDevStore() ? imageId.length > 0 : UUID_RE.test(imageId);
+
 /*
  * Written out per handler rather than behind a helper, for the reason its
  * sibling states: `admin-gate.test.ts` asserts the literal shape per route
@@ -43,7 +54,7 @@ export async function PATCH(request: Request, { params }: Params) {
     return NextResponse.json({ error: 'notConfigured' }, { status: 503 });
   }
   const { id, imageId } = await params;
-  if (!RECIPE_ID_RE.test(id) || !imageId) {
+  if (!RECIPE_ID_RE.test(id) || !isImageId(imageId)) {
     return NextResponse.json({ error: 'notFound' }, { status: 404 });
   }
 
@@ -53,16 +64,25 @@ export async function PATCH(request: Request, { params }: Params) {
   } catch {
     return NextResponse.json({ error: 'badRequest' }, { status: 400 });
   }
+  /* Valid JSON is not necessarily an object: `null` threw at `body.alt`. */
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return NextResponse.json({ error: 'badRequest' }, { status: 400 });
+  }
+  /* Only a string or an explicit null says what the alt should be. A body
+     without one (`{}`, `{ alt: 5 }`) read as '' and erased the stored text. */
+  if (typeof body.alt !== 'string' && body.alt !== null) {
+    return NextResponse.json({ error: 'badRequest' }, { status: 400 });
+  }
 
   /* Trimmed to nothing means "no alt text", which is a null column rather than
      an empty string — the renderer distinguishes a decorative image from one
      whose description somebody forgot. */
-  const raw = typeof body.alt === 'string' ? body.alt.trim().slice(0, 300) : '';
+  const raw = typeof body.alt === 'string' ? body.alt.trim().slice(0, MAX_ALT_CHARS) : '';
   const alt = raw === '' ? null : raw;
 
   let done: boolean;
   try {
-    done = await setRecipeImageAlt(imageId, alt);
+    done = await setRecipeImageAlt(id, imageId, alt);
   } catch (err) {
     console.error('[admin/recipes/images] alt failed:', err);
     return NextResponse.json({ error: 'saveFailed' }, { status: 502 });
@@ -84,13 +104,13 @@ export async function DELETE(request: Request, { params }: Params) {
     return NextResponse.json({ error: 'notConfigured' }, { status: 503 });
   }
   const { id, imageId } = await params;
-  if (!RECIPE_ID_RE.test(id) || !imageId) {
+  if (!RECIPE_ID_RE.test(id) || !isImageId(imageId)) {
     return NextResponse.json({ error: 'notFound' }, { status: 404 });
   }
 
   let done: boolean;
   try {
-    done = await deleteRecipeImage(imageId);
+    done = await deleteRecipeImage(id, imageId);
   } catch (err) {
     console.error('[admin/recipes/images] delete failed:', err);
     return NextResponse.json({ error: 'saveFailed' }, { status: 502 });

@@ -13,7 +13,6 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { formatWhiteBalance } from '@/lib/camera/format'
 import type { Recipe } from '@/lib/camera/schema'
-import { splitFeatures } from '@/lib/cameras/features'
 import type { SonyCamera } from '@/lib/cameras/types'
 import { ARTICLES } from '@/lib/lab/articles'
 import type { Article } from '@/lib/lab/types'
@@ -28,6 +27,12 @@ import {
 const json = <T>(file: string): T =>
   JSON.parse(readFileSync(join(process.cwd(), 'data', file), 'utf8')) as T
 
+/** The `cameras` catalogue as a translator — what `getTranslations` gives the service. */
+function camerasT(locale: 'en' | 'vi'): (key: string) => string {
+  const messages = JSON.parse(readFileSync(join(process.cwd(), 'messages', `${locale}.json`), 'utf8'))
+  return (key) => key.split('.').reduce((node, k) => node?.[k], messages.cameras) ?? `cameras.${key}`
+}
+
 export function seedCorpus(
   locale: 'en' | 'vi',
   extraPages: readonly Article[] = [],
@@ -41,6 +46,7 @@ export function seedCorpus(
     translations.find((t) => t.recipeId === id && t.locale === 'en')?.description ??
     ''
 
+  const t = camerasT(locale)
   const products = [
     ...json<SonyCamera[]>('sony-cameras.seed.json'),
     ...json<SonyCamera[]>('sony-audio.seed.json'),
@@ -55,12 +61,9 @@ export function seedCorpus(
           look: r.format === 'cl' ? r.settings.look : undefined,
           wbLabel: formatWhiteBalance(r.whiteBalance),
           description: describe(r.id),
-        }),
+        }, locale),
       ),
-    ...products.map((p) => {
-      const { en, vi } = splitFeatures(p.features)
-      return productDoc({ ...p, featureText: [...en, ...vi] })
-    }),
+    ...products.map((p) => productDoc(p, locale, t)),
     ...[...ARTICLES, ...extraPages].map(articleDoc),
     ...glossaryDocs(locale),
   ]

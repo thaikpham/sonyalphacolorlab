@@ -20,6 +20,7 @@
  * correctness depends on it. Never use it to compute camera values.
  */
 
+import { WB_SHIFT_AXIS } from './constants';
 import type { Recipe, WhiteBalance } from './schema';
 
 /** OKLCH hue of each colour phase, from the saturated sRGB primaries. */
@@ -80,7 +81,6 @@ const MIRED_SCALE = 90;
  */
 const DEPTH_SCALE = 0.0551;
 
-export type Range = { readonly min: number; readonly max: number; readonly step: number };
 export type Accent = { l: number; c: number; h: number };
 
 type Vec = readonly [number, number];
@@ -141,6 +141,27 @@ export function wbBalance(wb: WhiteBalance): WbBalance {
   const tint = gm ? (gm.axis === 'M' ? gm.amount : -gm.amount) * MIRED_PER_SHIFT_STEP : 0;
 
   return { kelvin, shift, warmth: kelvin + shift, tint };
+}
+
+/** Where the amber–blue axis lands, graded. Input is mireds; positive is warm. */
+export type Warmth = 'strong-warm' | 'warm' | 'neutral' | 'cool' | 'strong-cool';
+
+/**
+ * The thresholds are asymmetric because the mired scale is. From 5500K neutral
+ * the warm end of the Kelvin range only reaches +81 mired, while the cool end
+ * runs to -218, so one symmetric cutoff would call almost every warm recipe
+ * mild and almost every cool one extreme.
+ *
+ * Here rather than in `effects.ts` because it is the one definition of a
+ * Kelvin's cast: the Temperature row's wording and the colour its value is
+ * drawn in (`getKelvinHexColor`) both read it, so they cannot drift apart.
+ */
+export function gradeWarmth(mired: number): Warmth {
+  if (Math.abs(mired) < 12) return 'neutral';
+  if (mired >= 55) return 'strong-warm';
+  if (mired > 0) return 'warm';
+  if (mired <= -80) return 'strong-cool';
+  return 'cool';
 }
 
 function whiteBalanceVector(wb: WhiteBalance): Vec {
@@ -271,16 +292,19 @@ export function accentHex(a: Accent): string {
 export function shiftPosition(wb: WhiteBalance): { x: number; y: number } {
   const ab = wb.shift?.ab;
   const gm = wb.shift?.gm;
+  const full = WB_SHIFT_AXIS.max;
   return {
-    x: ab ? (ab.axis === 'A' ? ab.amount : -ab.amount) / 7 : 0,
-    y: gm ? (gm.axis === 'M' ? gm.amount : -gm.amount) / 7 : 0,
+    x: ab ? (ab.axis === 'A' ? ab.amount : -ab.amount) / full : 0,
+    y: gm ? (gm.axis === 'M' ? gm.amount : -gm.amount) / full : 0,
   };
 }
 
 /**
  * What the dials actually look like, as colour.
  *
- * - White Balance Kelvin: < 4000K (blue), 4100K-5900K (neutral), >= 6000K (orange)
+ * - White Balance Kelvin: blue where the Temperature row says it renders
+ *   cooler, orange where warmer, ink where it is close to neutral — one grade,
+ *   `gradeWarmth()`, so the colour and the words beside it cannot disagree
  * - WB Shift: B (blue), G (green), M (magenta), A (amber)
  * - Color Depth: R, G, B, C, M, Y
  *
@@ -300,8 +324,9 @@ export function shiftPosition(wb: WhiteBalance): { x: number; y: number } {
  */
 
 export function getKelvinHexColor(kelvin: number): string {
-  if (kelvin < 4000) return '#60a5fa'; // Blue
-  if (kelvin >= 6000) return '#fb923c'; // Orange
+  const cast = gradeWarmth(wbBalance({ mode: 'kelvin', kelvin }).kelvin);
+  if (cast === 'cool' || cast === 'strong-cool') return '#60a5fa'; // Blue
+  if (cast === 'warm' || cast === 'strong-warm') return '#fb923c'; // Orange
   return 'var(--color-ink)'; // Neutral — the interface's own ink, not a literal
 }
 

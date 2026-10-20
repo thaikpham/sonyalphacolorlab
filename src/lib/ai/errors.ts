@@ -21,7 +21,11 @@
  */
 
 export const TWEAK_ERRORS = {
-  /** Per-client request ceiling. Always paired with a `Retry-After` header. */
+  /** No verified session. The model is a paid call, so it answers readers only. */
+  unauthenticated: 401,
+  /** The control project could not verify the session. Nothing was spent. */
+  controlUnavailable: 503,
+  /** Per-reader request ceiling. Always paired with a `Retry-After` header. */
   rateLimited: 429,
   /** The fleet-wide daily ceiling, checked before any parsing. */
   budgetExhausted: 429,
@@ -29,6 +33,8 @@ export const TWEAK_ERRORS = {
   invalidRequest: 400,
   /** No recipe with that slug. */
   recipeNotFound: 404,
+  /** The content project could not be read, so there is no recipe to adjust. */
+  contentUnavailable: 503,
   /** No `ANTHROPIC_API_KEY` on this deploy. */
   notConfigured: 422,
   /** The model refused the request. */

@@ -22,7 +22,9 @@
  * the manifest — a half-finished import, the wrong project, a migration not yet
  * applied — writing it out would silently drop photographs from the live site
  * and the commit would look like a routine manifest update. So a shrink is
- * refused unless `--allow-removals` says it was intended.
+ * refused unless `--allow-removals` says it was intended — and then the removed
+ * photographs' files are deleted from `public/recipes` too, because a file left
+ * there is still served by direct URL.
  *
  * Run: npm run vendor:uploads -- --target content
  *      npm run vendor:uploads -- --target content --dry-run
@@ -31,14 +33,17 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { adminClient } from './supabase/clients';
-import { parseArgs, requireTarget } from './supabase/args';
+import { requireTarget } from './supabase/args';
+import { RECIPE_UPLOAD_BUCKET } from '../src/lib/recipes/images';
+import {
+  diffManifest,
+  removeVariants,
+  variantPaths,
+  type ManifestEntry,
+} from './lib/recipe-image-manifest';
 
-const BUCKET = 'recipe-uploads';
-const WIDTHS = [320, 640, 1024] as const;
 const PUBLIC_ROOT = join(process.cwd(), 'public', 'recipes');
 const MANIFEST = join(process.cwd(), 'data', 'images.seed.json');
-
-type ManifestEntry = { recipeId: string; storagePath: string; sort: number; alt?: string };
 
 type ImageRow = {
   recipe_id: string;
@@ -47,12 +52,8 @@ type ImageRow = {
   alt: string | null;
 };
 
-const stem = (path: string) => path.replace(/-(\d+)\.webp$/, '');
-
 async function main() {
-  const argv = process.argv.slice(2);
-  const args = parseArgs(argv);
-  const target = requireTarget(argv).target;
+  const { args, target } = requireTarget(process.argv.slice(2), ['--allow-removals', '--dry-run']);
   if (target !== 'content') {
     throw new Error('Recipe photographs live on the content project. Pass --target content.');
   }
@@ -69,7 +70,6 @@ async function main() {
   const rows = (data ?? []) as ImageRow[];
 
   const current = JSON.parse(await readFile(MANIFEST, 'utf8')) as ManifestEntry[];
-  const currentPaths = new Set(current.map((e) => e.storagePath));
 
   const next: ManifestEntry[] = rows.map((r) => ({
     recipeId: r.recipe_id,
@@ -78,9 +78,7 @@ async function main() {
     ...(r.alt ? { alt: r.alt } : {}),
   }));
 
-  const added = next.filter((e) => !currentPaths.has(e.storagePath));
-  const nextPaths = new Set(next.map((e) => e.storagePath));
-  const removed = current.filter((e) => !nextPaths.has(e.storagePath));
+  const { added, removed } = diffManifest(current, next);
 
   console.log(
     `recipe_images: ${rows.length} rows | manifest: ${current.length} entries | ` +
@@ -97,6 +95,7 @@ async function main() {
   }
 
   if (args.dryRun) {
+    for (const r of removed) console.log(`  would delete ${variantPaths(r.storagePath).join(', ')}`);
     console.log('--dry-run: nothing written.');
     return;
   }
@@ -106,24 +105,31 @@ async function main() {
      which is what makes that safe to assume and what lets the CDN cache it
      forever. */
   let bytes = 0;
+  let files = 0;
   for (const entry of added) {
-    for (const width of WIDTHS) {
-      const path = `${stem(entry.storagePath)}-${width}.webp`;
-      const { data: blob, error: dlError } = await db.storage.from(BUCKET).download(path);
+    for (const path of variantPaths(entry.storagePath)) {
+      const { data: blob, error: dlError } = await db.storage
+        .from(RECIPE_UPLOAD_BUCKET)
+        .download(path);
       if (dlError || !blob) throw new Error(`download ${path}: ${dlError?.message ?? 'empty'}`);
       const buf = Buffer.from(await blob.arrayBuffer());
       const target = join(PUBLIC_ROOT, path);
       await mkdir(dirname(target), { recursive: true });
       await writeFile(target, buf);
       bytes += buf.byteLength;
+      files += 1;
     }
     console.log(`  + ${entry.storagePath}`);
   }
 
   await writeFile(MANIFEST, `${JSON.stringify(next, null, 2)}\n`, 'utf8');
 
+  /* After the manifest, so a failed delete leaves files nothing links to
+     rather than a manifest naming files that are gone. */
+  for (const path of removeVariants(PUBLIC_ROOT, removed)) console.log(`  - ${path}`);
+
   console.log(
-    `Wrote ${added.length * WIDTHS.length} file(s), ${(bytes / 1024 / 1024).toFixed(1)} MB, ` +
+    `Wrote ${files} file(s), ${(bytes / 1024 / 1024).toFixed(1)} MB, ` +
       `and rewrote the manifest with ${next.length} entries.`,
   );
   console.log('Commit public/recipes and data/images.seed.json, then deploy.');

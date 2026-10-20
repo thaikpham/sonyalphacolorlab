@@ -4,7 +4,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 import { routing } from '@/i18n/routing';
 import { getSonyCameraById, getSonyCameras } from '@/lib/cameras/data';
-import { PRODUCT_KIND_LABEL_KEY, priceLabel, subCategoryLabel } from '@/lib/cameras/display';
+import { officialUrl, PRODUCT_KIND_LABEL_KEY, priceLabel, subCategoryLabel } from '@/lib/cameras/display';
 import { SiteHeader } from '@/components/site-header';
 import { ProductSpecTable } from '@/components/product-spec-table';
 import { ProductArticles } from '@/components/content/reverse-links';
@@ -74,6 +74,9 @@ export default async function ProductDetailPage({
      page without passing through the row mapper. */
   const highlights = highlightsFor(parseHighlights(product.highlights, product.id), locale);
 
+  /* No button rather than a broken one: six rows store an image list here. */
+  const official = officialUrl(product.url);
+
   /* Product kind is not a signal. `community`, `proposal`, `ai` and `danger`
      name what a piece of content *is*, so borrowing one of them for "lens"
      would make the only classification colours in the ecosystem mean two
@@ -94,7 +97,7 @@ export default async function ProductDetailPage({
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-void text-ink">
+    <div className="min-h-screen-dynamic flex flex-col bg-void text-ink">
       <SiteHeader />
 
       {/* A product page is a reading layout, not the browse grid. At the
@@ -193,14 +196,16 @@ export default async function ProductDetailPage({
                   </span>
                 </div>
 
-                <a
-                  href={product.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-accent ml-auto inline-flex items-center cursor-pointer"
-                >
-                  {t('officialUrl')}
-                </a>
+                {official && (
+                  <a
+                    href={official}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-accent ml-auto inline-flex items-center cursor-pointer"
+                  >
+                    {t('officialUrl')}
+                  </a>
+                )}
               </div>
             </div>
           </div>

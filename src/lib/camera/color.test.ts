@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { accentCss, accentFor, accentHex, shiftPosition } from './color';
+import { accentCss, accentFor, accentHex, getKelvinHexColor, shiftPosition } from './color';
+import { WB_KELVIN, WB_SHIFT_AXIS } from './constants';
+import { wbEffects } from './effects';
 import type { WhiteBalance } from './schema';
 
 const wb = (kelvin: number, shift?: WhiteBalance['shift']): WhiteBalance => ({
@@ -111,14 +113,33 @@ describe('OKLCH to sRGB hex', () => {
   });
 });
 
+describe('Kelvin value colour', () => {
+  it('draws a Kelvin neutral exactly where the Temperature row calls it neutral', () => {
+    // Two definitions of one cast drifted: 4000–5100K and 5900K sat in neutral
+    // ink beside a row reading "renders cooler" or "renders warmer".
+    for (let kelvin = WB_KELVIN.min; kelvin <= WB_KELVIN.max; kelvin += WB_KELVIN.step) {
+      const row = wbEffects({ mode: 'kelvin', kelvin }).temperature.en;
+      const neutralInk = getKelvinHexColor(kelvin) === 'var(--color-ink)';
+      expect(neutralInk, `${kelvin}K: ${row}`).toBe(row.startsWith('Close to neutral'));
+      // Orange for a row that renders warm, blue for one that renders cool.
+      if (!neutralInk) {
+        expect(getKelvinHexColor(kelvin), `${kelvin}K`).toBe(row.includes('warm') ? '#fb923c' : '#60a5fa');
+      }
+    }
+  });
+});
+
 describe('shift position', () => {
   it('places a neutral recipe at the origin', () => {
     expect(shiftPosition(wb(7000))).toEqual({ x: 0, y: 0 });
   });
 
   it('normalises the axes to -1..1 and ignores Kelvin', () => {
-    expect(shiftPosition(wb(3000, { ab: { axis: 'A', amount: 7 }, gm: { axis: 'G', amount: 7 } })))
+    // The full throw is read from constants.ts, so a widened grid still plots
+    // its corners on the plane's edge rather than past it.
+    const max = WB_SHIFT_AXIS.max;
+    expect(shiftPosition(wb(3000, { ab: { axis: 'A', amount: max }, gm: { axis: 'G', amount: max } })))
       .toEqual({ x: 1, y: -1 });
-    expect(shiftPosition(wb(9000, { ab: { axis: 'B', amount: 3.5 } })).x).toBe(-0.5);
+    expect(shiftPosition(wb(9000, { ab: { axis: 'B', amount: max / 2 } })).x).toBe(-0.5);
   });
 });

@@ -1,5 +1,10 @@
 import { readFileSync } from 'node:fs';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+/* The service is a stand-in so the route can be called without a catalogue.
+   The source assertions below read files, which this does not affect. */
+const searchContent = vi.fn();
+vi.mock('@/lib/search/service', () => ({ searchContent: (...args: unknown[]) => searchContent(...args) }));
 
 /**
  * The one response that could outlive a cache invalidation.
@@ -46,5 +51,23 @@ describe('the unified search response', () => {
   it('validates the request before reading anything', () => {
     expect(route.indexOf('safeParse(')).toBeGreaterThan(-1);
     expect(route.indexOf('safeParse(')).toBeLessThan(route.indexOf('searchContent('));
+  });
+});
+
+describe('the predictive response during a source outage', () => {
+  it('passes on what the service could not search', async () => {
+    /* The route used to return `hits` alone, so a content-plane outage reached
+       the header as an empty list and read "No instant matches." — the empty
+       group that service.ts says must never stand in for a failure. */
+    searchContent.mockResolvedValueOnce({ hits: [], unavailable: ['product'] });
+    const { GET } = await import('./route');
+    const res = await GET(new Request('http://x/api/search/predictive?q=a7&mode=wiki'));
+    expect(await res.json()).toMatchObject({ results: [], unavailable: ['product'] });
+  });
+
+  it('reports nothing unavailable when nothing was searched', async () => {
+    const { GET } = await import('./route');
+    const res = await GET(new Request('http://x/api/search/predictive?q='));
+    expect(await res.json()).toMatchObject({ results: [], unavailable: [] });
   });
 });

@@ -1,21 +1,28 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useRouter } from '@/i18n/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import type { SonyCamera } from '@/lib/cameras/types';
-import { featureList, splitFeatures } from '@/lib/cameras/features';
+import { featureList } from '@/lib/cameras/features';
 import { translateSpecValue } from '@/lib/cameras/spec-values';
-import { priceLabel, subCategoryLabel } from '@/lib/cameras/display';
-import { isResizable } from '@/lib/images/catalogue-loader';
+import {
+  compareExitPath,
+  officialUrl,
+  priceLabel,
+  productPath,
+  subCategoryLabel,
+} from '@/lib/cameras/display';
 import {
   type CompareTabId,
   getSpecValue,
-  isSpecDifferent,
   getActiveSpecSections,
+  MAX_COMPARE,
+  valuesDiffer,
 } from '@/lib/cameras/compare-grouping';
+import { productDoc } from '@/lib/search/product-doc';
+import { prepare, rank } from '@/lib/search/rank';
+import { ProductPhoto } from './product-photo';
 
 interface CameraCompareViewProps {
   initialCameras: SonyCamera[];
@@ -27,7 +34,7 @@ interface CameraCompareViewProps {
  *
  * `value` is the ordinary case: one string per product, or `null` where the
  * catalogue publishes no figure — which renders as an em dash and never as an
- * empty cell. `node` is for the two rows whose cell is more than one string.
+ * empty cell. `node` is for the one row whose cell is more than one string.
  */
 interface CompareRowDef {
   key: string;
@@ -80,278 +87,47 @@ const CATEGORY_LABEL_KEY: Record<string, string> = {
 /** What the catalogue does not publish. Never a blank cell. */
 const EM_DASH = '—';
 
-export function CameraCompareView({ initialCameras, selectedIds }: CameraCompareViewProps) {
-  const t = useTranslations('cameras');
-  const locale = useLocale();
-  const router = useRouter();
+/** A translator scoped to the `cameras` namespace. */
+type CamerasT = (key: string) => string;
 
-  const [activeIds, setActiveIds] = useState<string[]>(selectedIds);
+/** A row as the grid draws it, with whether its cells disagree. */
+export interface CompareRow extends CompareRowDef {
+  differs: boolean;
+}
 
-  /**
-   * The catalogue this view renders.
-   *
-   * Held in state because the two admin editors below write to it. They used to
-   * assign straight into the camera object — `camera.specs = data.specs` — and
-   * then force a repaint with `setActiveIds([...prev])`. That worked only by
-   * side effect: the new array identity invalidated the memo underneath, which
-   * re-read the object that had just been mutated behind React's back.
-   *
-   * It is also a prop, so the write landed in the Server Component's payload:
-   * the same array backs the RSC cache, and an edit that failed to persist
-   * still looked saved until a hard reload. Replacing one row immutably keeps
-   * every other row's identity stable, so nothing else re-renders either.
-   */
-  const [cameras, setCameras] = useState<SonyCamera[]>(initialCameras);
-  const [syncedCameras, setSyncedCameras] = useState<SonyCamera[]>(initialCameras);
-  if (syncedCameras !== initialCameras) {
-    // A navigation delivered a fresh catalogue; adopt it and drop local edits,
-    // which are already persisted server-side by the time they are visible.
-    setSyncedCameras(initialCameras);
-    setCameras(initialCameras);
-  }
+export interface CompareBlock {
+  id: string;
+  label: string;
+  rows: CompareRow[];
+}
 
-  /** Replaces one product, leaving every other row's identity untouched. */
-  const patchCamera = (id: string, patch: Partial<SonyCamera>) =>
-    setCameras((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
-
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [searchAddQuery, setSearchAddQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<CompareTabId>('all');
-  const [onlyDiffs, setOnlyDiffs] = useState(false);
-
-  // Admin Spec Editor State
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [adminRole, setAdminRole] = useState<'super' | 'di' | 'pe'>('super');
-  const [isAdminEditMode, setIsAdminEditMode] = useState(false);
-  /**
-   * Both conditions, everywhere an edit affordance is drawn.
-   *
-   * Deriving rather than gating on the toggle alone means the session check is
-   * the single source of truth: if it has not answered yet, or comes back
-   * negative, no pencil renders even when the toggle was somehow left on.
-   */
-  const canEditSpecs = isAdmin && isAdminEditMode;
-
-  const canEditCamera = (cam: SonyCamera) => {
-    if (!canEditSpecs) return false;
-    if (adminRole === 'super') return true;
-    if (adminRole === 'di') return cam.category !== 'audio';
-    if (adminRole === 'pe') return cam.category === 'audio';
-    return false;
-  };
-
-  const [editingCell, setEditingCell] = useState<{
-    camera: SonyCamera;
-    specKey: string;
-    label: string;
-    currentVal: string;
-  } | null>(null);
-  const [editInputValue, setEditInputValue] = useState('');
-  const [isSavingSpec, setIsSavingSpec] = useState(false);
-  const [saveFeedback, setSaveFeedback] = useState<string | null>(null);
-
-  // Admin Key Features Editor State
-  const [editingFeaturesCamera, setEditingFeaturesCamera] = useState<SonyCamera | null>(null);
-  const [featuresViText, setFeaturesViText] = useState('');
-  const [featuresEnText, setFeaturesEnText] = useState('');
-  const [isSavingFeatures, setIsSavingFeatures] = useState(false);
-  const [featuresSaveFeedback, setFeaturesSaveFeedback] = useState<string | null>(null);
-
-  // Check Admin Session on mount
-  React.useEffect(() => {
-    async function checkAdminSession() {
-      try {
-        const res = await fetch('/api/admin/session');
-        const data = await res.json();
-        if (data.isAdmin) {
-          setIsAdmin(true);
-          setAdminRole(data.role ?? 'super');
-        }
-      } catch {
-        // Not admin or offline
-      }
-    }
-    checkAdminSession();
-  }, []);
-
-  const openEditModal = (camera: SonyCamera, specKey: string, label: string) => {
-    const rawVal = getSpecValue(camera, specKey) ?? '';
-    setEditingCell({ camera, specKey, label, currentVal: rawVal });
-    setEditInputValue(rawVal);
-    setSaveFeedback(null);
-  };
-
-  const openFeaturesEditModal = (camera: SonyCamera) => {
-    setEditingFeaturesCamera(camera);
-    const { en, vi } = splitFeatures(camera.features);
-    setFeaturesViText(vi.join('\n'));
-    setFeaturesEnText(en.join('\n'));
-    setFeaturesSaveFeedback(null);
-  };
-
-  const handleSaveFeatures = async () => {
-    if (!editingFeaturesCamera) return;
-    setIsSavingFeatures(true);
-    setFeaturesSaveFeedback(null);
-
-    const viArray = featuresViText.split('\n').map((s) => s.trim()).filter(Boolean);
-    const enArray = featuresEnText.split('\n').map((s) => s.trim()).filter(Boolean);
-
-    try {
-      const res = await fetch(`/api/admin/products/${editingFeaturesCamera.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          features: {
-            vi: viArray,
-            en: enArray,
-          },
-        }),
-      });
-
-      const data = await res.json();
-      if (res.ok && data.ok) {
-        patchCamera(editingFeaturesCamera.id, { features: data.features });
-        setFeaturesSaveFeedback('✓ Đã lưu điểm nổi bật vào Supabase!');
-        setTimeout(() => {
-          setEditingFeaturesCamera(null);
-          setFeaturesSaveFeedback(null);
-        }, 1200);
-      } else {
-        setFeaturesSaveFeedback(
-          data.error === 'notAdmin'
-            ? '❌ Thất bại: Tài khoản không có quyền Admin.'
-            : '❌ Lỗi lưu dữ liệu Supabase.',
-        );
-      }
-    } catch {
-      setFeaturesSaveFeedback('❌ Lỗi kết nối server.');
-    } finally {
-      setIsSavingFeatures(false);
-    }
-  };
-
-  const handleSaveSpec = async () => {
-    if (!editingCell) return;
-    const { camera, specKey } = editingCell;
-    setIsSavingSpec(true);
-    setSaveFeedback(null);
-
-    const valToSave = editInputValue.trim() === '' ? null : editInputValue.trim();
-    const currentSpecs = (camera.specs as unknown as Record<string, unknown>) || {};
-    const updatedSpecs = {
-      ...currentSpecs,
-      [specKey]: valToSave,
-    };
-
-    try {
-      const res = await fetch(`/api/admin/products/${camera.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ specs: updatedSpecs }),
-      });
-
-      const data = await res.json();
-      if (res.ok && data.ok) {
-        // Reflect the saved value immediately, without a refetch.
-        patchCamera(camera.id, { specs: data.specs });
-        setSaveFeedback('✓ Đã lưu thành công vào Supabase!');
-        setTimeout(() => {
-          setEditingCell(null);
-          setSaveFeedback(null);
-        }, 1200);
-      } else {
-        setSaveFeedback(
-          data.error === 'notAdmin'
-            ? '❌ Thất bại: Tài khoản không có quyền Admin.'
-            : '❌ Lỗi lưu dữ liệu Supabase.',
-        );
-      }
-    } catch {
-      setSaveFeedback('❌ Lỗi kết nối server.');
-    } finally {
-      setIsSavingSpec(false);
-    }
-  };
-
-  // Selected camera objects
-  const comparedCameras = useMemo(() => {
-    return cameras.filter((c) => activeIds.includes(c.id));
-  }, [cameras, activeIds]);
-
-  const canAddMore = comparedCameras.length < 6;
-
-  const totalCols = useMemo(() => {
-    return comparedCameras.length + (comparedCameras.length < 6 ? 2 : 1);
-  }, [comparedCameras.length]);
-
-  // Unselected cameras available to add
-  const availableToAdd = useMemo(() => {
-    const remaining = cameras.filter((c) => !activeIds.includes(c.id));
-    if (!searchAddQuery.trim()) return remaining;
-    const q = searchAddQuery.trim().toLowerCase();
-    return remaining.filter(
-      (c) =>
-        c.name.toLowerCase().includes(q) ||
-        c.sku.toLowerCase().includes(q) ||
-        c.subCategory1.toLowerCase().includes(q),
-    );
-  }, [cameras, activeIds, searchAddQuery]);
-
-  const removeCamera = (id: string) => {
-    const next = activeIds.filter((item) => item !== id);
-    setActiveIds(next);
-    if (next.length > 0) {
-      router.replace(`/cameras/compare?ids=${next.join(',')}`);
-    } else {
-      router.push(`/cameras`);
-    }
-  };
-
-  const addCamera = (id: string) => {
-    if (activeIds.length >= 6) return;
-    const next = [...activeIds, id];
-    setActiveIds(next);
-    setIsAddModalOpen(false);
-    setSearchAddQuery('');
-    router.replace(`/cameras/compare?ids=${next.join(',')}`);
-  };
-
-  const activeSpecSections = useMemo(() => {
-    return getActiveSpecSections(comparedCameras, activeTab);
-  }, [comparedCameras, activeTab]);
-
-  const tabs: { id: CompareTabId; label: string }[] = [
-    { id: 'all', label: t('tabAll') },
-    { id: 'highlights', label: t('tabHighlights') },
-    { id: 'sensorOptics', label: t('tabSensorOptics') },
-    { id: 'videoIso', label: t('tabVideoIso') },
-    { id: 'afStab', label: t('tabAfStab') },
-    { id: 'physical', label: t('tabPhysical') },
-  ];
-
-  /** One admin affordance, used by every spec cell the current role may edit. */
-  const specEditButton = (cam: SonyCamera, specKey: string, label: string, filled: boolean) => (
-    <button
-      type="button"
-      onClick={() => openEditModal(cam, specKey, label)}
-      title="Chỉnh sửa thông số này"
-      className="chip chip-action"
-    >
-      {filled ? 'Sửa' : 'Điền thông số'}
-    </button>
-  );
-
-  /**
-   * The grid, as blocks of rows.
-   *
-   * Built as data rather than as six near-identical `<tr>` blocks so the
-   * alternating tint can count rows inside a block, and so one cell recipe —
-   * right-aligned, tabular, em dash where the catalogue publishes nothing —
-   * covers every row. Which blocks appear is exactly the previous behaviour:
-   * the tab decides, `getActiveSpecSections` filters the spec groups, and the
-   * difference toggle drops rows every product agrees on.
-   */
+/**
+ * The grid, as blocks of rows.
+ *
+ * Built as data rather than as six near-identical `<tr>` blocks so the
+ * alternating tint can count rows inside a block, and so one cell recipe —
+ * right-aligned, tabular, em dash where the catalogue publishes nothing —
+ * covers every row. Which blocks appear is exactly the previous behaviour:
+ * the tab decides, `getActiveSpecSections` filters the spec groups, and the
+ * difference toggle drops rows every product agrees on.
+ *
+ * Whether a row differs is read from the values its cells render, once per
+ * row, and that one answer drives both the filter and the badge — so a row the
+ * badge marks can never be one the filter hides.
+ */
+export function compareBlocks({
+  cameras,
+  activeTab,
+  onlyDiffs,
+  t,
+  locale,
+}: {
+  cameras: SonyCamera[];
+  activeTab: CompareTabId;
+  onlyDiffs: boolean;
+  t: CamerasT;
+  locale: string;
+}): CompareBlock[] {
   const blocks: { id: string; label: string; rows: CompareRowDef[] }[] = [];
 
   if (activeTab === 'all' || activeTab === 'sensorOptics') {
@@ -402,15 +178,6 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
             const feats = featureList(cam.features, locale);
             return (
               <div className="flex flex-col items-end gap-1.5">
-                {canEditCamera(cam) && (
-                  <button
-                    type="button"
-                    onClick={() => openFeaturesEditModal(cam)}
-                    className="chip chip-action"
-                  >
-                    Sửa điểm nổi bật (Features)
-                  </button>
-                )}
                 {feats.length > 0 ? (
                   feats.map((feat, idx) => (
                     <span key={idx} className="block leading-relaxed">
@@ -428,25 +195,16 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
     });
   }
 
-  for (const section of activeSpecSections) {
+  for (const section of getActiveSpecSections(cameras, activeTab)) {
     const rows: CompareRowDef[] = section.specKeys
-      .filter((specKey) => comparedCameras.some((c) => getSpecValue(c, specKey) !== null))
+      .filter((specKey) => cameras.some((c) => getSpecValue(c, specKey) !== null))
       .map((specKey) => {
-        const label = t(`specs.${specKey}`);
         return {
           key: specKey,
-          label,
-          node: (cam) => {
+          label: t(`specs.${specKey}`),
+          value: (cam) => {
             const rawVal = getSpecValue(cam, specKey);
-            const formattedVal = rawVal ? translateSpecValue(specKey, rawVal, locale) : null;
-            return (
-              <div className="flex flex-col items-end gap-1.5">
-                <span className={formattedVal ? undefined : 'text-ink-faint'}>
-                  {formattedVal ?? EM_DASH}
-                </span>
-                {canEditCamera(cam) && specEditButton(cam, specKey, label, Boolean(formattedVal))}
-              </div>
-            );
+            return rawVal ? translateSpecValue(specKey, rawVal, locale) : null;
           },
         };
       });
@@ -454,42 +212,163 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
   }
 
   /* The difference filter, applied once over the whole grid rather than per
-     block, so a block whose every row agrees disappears with its head. */
-  const visibleBlocks = blocks
+     block, so a block whose every row agrees disappears with its head. A row
+     drawn as a node (the features list) has no one value to compare; it is
+     marked `always` and is never badged. */
+  return blocks
     .map((block) => ({
       ...block,
-      rows: block.rows.filter(
-        (row) => !onlyDiffs || row.always || isSpecDifferent(comparedCameras, row.key),
-      ),
+      rows: block.rows
+        .map((row) => ({
+          ...row,
+          differs: row.value ? valuesDiffer(cameras.map((cam) => row.value!(cam))) : false,
+        }))
+        .filter((row) => !onlyDiffs || row.always || row.differs),
     }))
     .filter((block) => block.rows.length > 0);
+}
+
+/**
+ * What the add picker offers for a query: every product not already compared,
+ * narrowed by the same ranking the header, the Wiki grid and `/search` use
+ * (ADR 0003). A substring match over name and SKU was a second engine, and
+ * the catalogue names the a7 IV "7 IV", so "a7 iv" found nothing here while
+ * the grid one click back found it by its SKU-derived alias. Only membership
+ * is taken from the ranking; the list keeps catalogue order, as the grid does.
+ */
+export function addableProducts(
+  cameras: readonly SonyCamera[],
+  activeIds: readonly string[],
+  query: string,
+  locale: 'en' | 'vi' = 'en',
+  t: (key: string) => string = (key) => key,
+): SonyCamera[] {
+  const remaining = cameras.filter((c) => !activeIds.includes(c.id));
+  if (!query.trim()) return remaining;
+  const docs = remaining.map((c) => prepare(productDoc(c, locale, t)));
+  const matched = new Set(rank(query, docs).map((r) => r.doc.id));
+  return remaining.filter((c) => matched.has(c.id));
+}
+
+export function CameraCompareView({ initialCameras, selectedIds }: CameraCompareViewProps) {
+  const t = useTranslations('cameras');
+  const locale = useLocale();
+  const router = useRouter();
+
+  const [activeIds, setActiveIds] = useState<string[]>(selectedIds);
+
+  /* The catalogue is the prop, read directly. This view used to hold it in
+     state because two admin modals wrote to it; editing lives at /admin/wiki
+     now, which is the one editor that carries the admin session. */
+  const cameras = initialCameras;
+
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [searchAddQuery, setSearchAddQuery] = useState('');
+  const [activeTab, setActiveTab] = useState<CompareTabId>('all');
+  const [onlyDiffs, setOnlyDiffs] = useState(false);
+
+  // Selected camera objects
+  const comparedCameras = useMemo(() => {
+    return cameras.filter((c) => activeIds.includes(c.id));
+  }, [cameras, activeIds]);
+
+  const canAddMore = comparedCameras.length < MAX_COMPARE;
+
+  const totalCols = useMemo(() => {
+    return comparedCameras.length + (comparedCameras.length < MAX_COMPARE ? 2 : 1);
+  }, [comparedCameras.length]);
+
+  // Unselected cameras available to add
+  const availableToAdd = useMemo(
+    () => addableProducts(cameras, activeIds, searchAddQuery, locale === 'vi' ? 'vi' : 'en', t),
+    [cameras, activeIds, searchAddQuery, locale, t],
+  );
+
+  const removeCamera = (id: string) => {
+    const next = activeIds.filter((item) => item !== id);
+    setActiveIds(next);
+    if (next.length > 0) {
+      router.replace(`/cameras/compare?ids=${next.join(',')}`);
+    } else {
+      router.push(compareExitPath(comparedCameras.filter((c) => c.id === id)));
+    }
+  };
+
+  /* Counted by the columns drawn. `activeIds` is the URL's list, and while the
+     page normalises it, a guard on the list rather than the grid is the one
+     that refused every pick when stale ids held the slots. */
+  const addCamera = (id: string) => {
+    if (comparedCameras.length >= MAX_COMPARE) return;
+    const next = [...activeIds, id];
+    setActiveIds(next);
+    setIsAddModalOpen(false);
+    setSearchAddQuery('');
+    router.replace(`/cameras/compare?ids=${next.join(',')}`);
+  };
+
+  const hasAudio = comparedCameras.some((c) => c.category === 'audio');
+
+  const tabs: { id: CompareTabId; label: string }[] = [
+    { id: 'all', label: t('tabAll') },
+    { id: 'highlights', label: t('tabHighlights') },
+    { id: 'sensorOptics', label: t('tabSensorOptics') },
+    { id: 'videoIso', label: t('tabVideoIso') },
+    { id: 'afStab', label: t('tabAfStab') },
+    { id: 'physical', label: t('tabPhysical') },
+    ...(hasAudio ? [{ id: 'audio' as const, label: t('tabAudio') }] : []),
+  ];
+
+  /* Removing the last headset hides the audio tab; a grid left on it would
+     be empty with no tab lit to say why. */
+  const shownTab = tabs.some((tab) => tab.id === activeTab) ? activeTab : 'all';
+
+  const visibleBlocks = compareBlocks({
+    cameras: comparedCameras,
+    activeTab: shownTab,
+    onlyDiffs,
+    t,
+    locale,
+  });
+
+  /* The locale-aware `Link` and an unprefixed path: a hand-built
+     `/${locale}/cameras` was `/en/cameras` on English, which the middleware
+     redirects on every click and prefetch. */
+  const backLink = (
+    <Link href={compareExitPath(comparedCameras)} className="btn-glass">
+      {t('backToCatalog')}
+    </Link>
+  );
+
+  /* No ids, or none the catalogue still has: say so, rather than an empty
+     title over a table of labels with no cells. */
+  if (comparedCameras.length === 0) {
+    return (
+      <div className="w-full flex flex-col gap-6 pb-16">
+        <div className="flex flex-wrap items-center gap-3">{backLink}</div>
+        <div className="surface p-12 text-center flex flex-col items-center justify-center gap-3">
+          <h1 className="text-title-3 font-semibold text-ink">{t('compareEmptyTitle')}</h1>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full flex flex-col gap-6 pb-16">
       {/* Page head — the label says how many, the title says which. */}
       <div className="flex flex-col gap-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <Link href={`/${locale}/cameras`} className="btn-glass">
-            {t('backToCatalog')}
-          </Link>
+          {backLink}
 
           <button type="button" onClick={() => window.print()} className="btn-glass cursor-pointer">
             {t('printCompare')}
           </button>
         </div>
 
-        <div className="flex flex-wrap items-end justify-between gap-5">
-          <div className="flex flex-col gap-2 min-w-0">
-            <span className="label">{t('compareSummary', { count: comparedCameras.length })}</span>
-            <h1 className="text-title-1 font-extrabold tracking-[-0.02em] text-ink">
-              {comparedCameras.map((c) => c.name).join(' · ')}
-            </h1>
-          </div>
-
-          {/* What the accent and the em dash mean, said once. */}
-          <p className="text-body-sm text-ink-muted max-w-[44ch] sm:text-right">
-            {t('compareLegend')}
-          </p>
+        <div className="flex flex-col gap-2 min-w-0">
+          <span className="label">{t('compareSummary', { count: comparedCameras.length })}</span>
+          <h1 className="text-title-1 font-extrabold tracking-[-0.02em] text-ink">
+            {comparedCameras.map((c) => c.name).join(' · ')}
+          </h1>
         </div>
       </div>
 
@@ -497,7 +376,7 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="surface-sunken p-1.5 flex items-center gap-1 overflow-x-auto scroll-silent">
           {tabs.map((tab) => {
-            const isActive = activeTab === tab.id;
+            const isActive = shownTab === tab.id;
             return (
               <button
                 key={tab.id}
@@ -523,32 +402,6 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
           >
             {onlyDiffs ? t('highlightDiffs') : t('showAllSpecs')}
           </button>
-
-          {/* Admin Mode Toggle Button — only for a verified admin session.
-              `isAdmin` was fetched and then never read, so every visitor was
-              offered this toggle and could open the edit modals. The PATCH
-              route rejects them (`notAdmin`), so nothing leaked; what they got
-              was admin chrome that answered every save with an error. */}
-          {isAdmin && (
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                aria-pressed={isAdminEditMode}
-                onClick={() => setIsAdminEditMode((prev) => !prev)}
-                title="Bật/Tắt chế độ chỉnh sửa thông số Admin trực tiếp"
-                className={isAdminEditMode ? CHIP_SELECTED : 'chip chip-action'}
-              >
-                {isAdminEditMode ? 'Tắt sửa Admin' : 'Chỉnh sửa (Admin)'}
-              </button>
-              <span className="chip">
-                {adminRole === 'super'
-                  ? 'Super Dev'
-                  : adminRole === 'di'
-                    ? 'DI Admin'
-                    : 'PE Admin'}
-              </span>
-            </div>
-          )}
         </div>
       </div>
 
@@ -605,45 +458,49 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                   {t('sensorLabel')}
                 </th>
 
-                {comparedCameras.map((cam) => (
-                  <th
-                    key={cam.id}
-                    scope="col"
-                    className="px-4 py-3 align-bottom text-right bg-void/85 backdrop-blur-[30px]"
-                  >
-                    <div className="flex flex-col items-end gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => router.push(`/cameras/${cam.id}`)}
-                        className="text-title-3 font-semibold tracking-[-0.02em] text-ink hover:text-accent-400 transition-colors cursor-pointer text-right"
-                      >
-                        {cam.name}
-                      </button>
-
-                      <div className="flex items-center gap-2">
-                        {cam.url && (
-                          <a
-                            href={cam.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-meta font-semibold text-accent-400"
-                          >
-                            Sony ↗
-                          </a>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => removeCamera(cam.id)}
-                          title={t('removeProduct')}
-                          aria-label={t('removeProduct')}
-                          className={ICON_BUTTON}
+                {comparedCameras.map((cam) => {
+                  const official = officialUrl(cam.url);
+                  return (
+                    <th
+                      key={cam.id}
+                      scope="col"
+                      className="px-4 py-3 align-bottom text-right bg-void/85 backdrop-blur-[30px]"
+                    >
+                      <div className="flex flex-col items-end gap-1.5">
+                        {/* A link, by category: audio resolves under `/audio`
+                            only, and `/cameras/<audio-id>` is a 404. */}
+                        <Link
+                          href={productPath(cam)}
+                          className="text-title-3 font-semibold tracking-[-0.02em] text-ink hover:text-accent-400 transition-colors text-right"
                         >
-                          ✕
-                        </button>
+                          {cam.name}
+                        </Link>
+
+                        <div className="flex items-center gap-2">
+                          {official && (
+                            <a
+                              href={official}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-meta font-semibold text-accent-400"
+                            >
+                              Sony ↗
+                            </a>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => removeCamera(cam.id)}
+                            title={t('removeProduct')}
+                            aria-label={t('removeProduct')}
+                            className={ICON_BUTTON}
+                          >
+                            ✕
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  </th>
-                ))}
+                    </th>
+                  );
+                })}
 
                 {/* Slot to Add More Products (Up to 6) */}
                 {canAddMore && (
@@ -673,7 +530,6 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                   </tr>
 
                   {block.rows.map((row, idx) => {
-                    const isDiff = isSpecDifferent(comparedCameras, row.key);
                     return (
                       <tr key={row.key} className={idx % 2 === 0 ? 'row-tint' : undefined}>
                         <th
@@ -682,7 +538,7 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                         >
                           <span className="flex flex-wrap items-center gap-2">
                             <span>{row.label}</span>
-                            {isDiff && <span className="chip">{t('diffBadge')}</span>}
+                            {row.differs && <span className="chip">{t('diffBadge')}</span>}
                           </span>
                         </th>
 
@@ -715,7 +571,11 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
         <div
           role="dialog"
           aria-modal="true"
+          aria-labelledby="compare-add-title"
           onClick={() => setIsAddModalOpen(false)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') setIsAddModalOpen(false);
+          }}
           className="fixed inset-0 z-50 bg-void/85 backdrop-blur-[30px] flex items-center justify-center p-4 inset-safe pb-safe animate-fade-in"
         >
           <div
@@ -723,7 +583,9 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
             className="surface-raised w-full max-w-2xl max-h-[80dvh] p-6 flex flex-col gap-4 cursor-default"
           >
             <div className="flex items-center justify-between gap-4">
-              <h2 className="text-title-3 font-semibold text-ink">{t('selectProductTitle')}</h2>
+              <h2 id="compare-add-title" className="text-title-3 font-semibold text-ink">
+                {t('selectProductTitle')}
+              </h2>
               <button
                 type="button"
                 onClick={() => setIsAddModalOpen(false)}
@@ -736,15 +598,23 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
 
             <div className="seam" />
 
+            {/* Focus lands here, so Escape reaches the dialog's handler and
+                the reader can type at once. Named by the dialog's own title —
+                a placeholder is not a name. */}
             <input
               type="text"
               value={searchAddQuery}
               onChange={(e) => setSearchAddQuery(e.target.value)}
+              aria-label={t('selectProductTitle')}
+              autoFocus
               placeholder={t('searchPlaceholder')}
               className="surface-sunken w-full px-4 py-3 text-body text-ink placeholder:text-ink-faint"
             />
 
             <div className="flex-1 flex flex-col gap-1 scroll-area">
+              {availableToAdd.length === 0 && (
+                <p className="p-3 text-body-sm text-ink-muted">{t('emptyTitle')}</p>
+              )}
               {availableToAdd.map((cam, idx) => (
                 <button
                   key={cam.id}
@@ -755,15 +625,9 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                   }`}
                 >
                   <span className="flex items-center gap-3 min-w-0">
+                    {/* Empty alt: the name beside it already labels the row. */}
                     <span className="w-10 h-10 rounded-sm bg-white p-1 flex items-center justify-center shrink-0">
-                      <Image
-                        src={cam.imageUrl}
-                        alt={cam.name}
-                        width={40}
-                        height={40}
-                        className="object-contain"
-                        unoptimized={!isResizable(cam.imageUrl)}
-                      />
+                      <ProductPhoto src={cam.imageUrl} alt="" size={40} className="object-contain max-h-full" />
                     </span>
                     <span className="flex flex-col min-w-0">
                       <span className="text-body-sm font-semibold text-ink truncate">
@@ -777,199 +641,6 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
                   </span>
                 </button>
               ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Admin Spec Edit Modal */}
-      {editingCell && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          onClick={() => setEditingCell(null)}
-          className="fixed inset-0 z-50 bg-void/85 backdrop-blur-[30px] flex flex-col items-center justify-center p-4 inset-safe pb-safe animate-fade-in"
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="surface-raised w-full max-w-lg p-6 flex flex-col gap-5 cursor-default"
-          >
-            {/* Modal Header */}
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex flex-col gap-1">
-                <h2 className="text-title-3 font-semibold text-ink">
-                  Sửa / Điền thông số sản phẩm (Admin)
-                </h2>
-                <span className="meta">
-                  {editingCell.camera.name} ({editingCell.camera.sku})
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setEditingCell(null)}
-                aria-label={t('closeDialog')}
-                className={ICON_BUTTON}
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="seam" />
-
-            {/* Spec Field Label */}
-            <div className="flex flex-col gap-2">
-              <label className="text-body-sm text-ink-muted flex items-center gap-1.5 flex-wrap">
-                <span>Mục cần cập nhật:</span>
-                <span className="font-semibold text-ink">{editingCell.label}</span>
-                <span className="meta">({editingCell.specKey})</span>
-              </label>
-              <textarea
-                rows={3}
-                value={editInputValue}
-                onChange={(e) => setEditInputValue(e.target.value)}
-                placeholder="Nhập giá trị thông số kỹ thuật (ví dụ: Full-Frame Exmor R CMOS BSI)..."
-                className="surface-sunken w-full p-3 text-body text-ink placeholder:text-ink-faint leading-relaxed"
-              />
-            </div>
-
-            {/* Status Feedback */}
-            {saveFeedback && (
-              <p
-                className={`text-body-sm font-semibold ${
-                  saveFeedback.startsWith('✓') ? 'text-community' : 'text-danger'
-                }`}
-              >
-                {saveFeedback}
-              </p>
-            )}
-
-            <div className="seam" />
-
-            {/* Modal Action Buttons */}
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              <button
-                type="button"
-                onClick={() => setEditInputValue('')}
-                className="text-body-sm font-semibold text-ink-muted hover:text-ink transition-colors cursor-pointer"
-              >
-                Xóa trống (Set NULL)
-              </button>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setEditingCell(null)}
-                  className="btn-glass cursor-pointer"
-                >
-                  Hủy
-                </button>
-                <button
-                  type="button"
-                  disabled={isSavingSpec}
-                  onClick={handleSaveSpec}
-                  className="btn-accent disabled:opacity-50 cursor-pointer"
-                >
-                  {isSavingSpec ? 'Đang lưu...' : 'Lưu vào Supabase'}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Admin Features Edit Modal */}
-      {editingFeaturesCamera && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          onClick={() => setEditingFeaturesCamera(null)}
-          className="fixed inset-0 z-50 bg-void/85 backdrop-blur-[30px] flex flex-col items-center justify-center p-4 inset-safe pb-safe animate-fade-in"
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="surface-raised w-full max-w-xl p-6 flex flex-col gap-5 cursor-default"
-          >
-            {/* Modal Header */}
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex flex-col gap-1">
-                <h2 className="text-title-3 font-semibold text-ink">
-                  Sửa điểm nổi bật sản phẩm (Key Features)
-                </h2>
-                <span className="meta">
-                  {editingFeaturesCamera.name} ({editingFeaturesCamera.sku})
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setEditingFeaturesCamera(null)}
-                aria-label={t('closeDialog')}
-                className={ICON_BUTTON}
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="seam" />
-
-            {/* Vietnamese Features Input */}
-            <div className="flex flex-col gap-2">
-              <label className="text-body-sm text-ink-muted flex items-center justify-between gap-3">
-                <span>Điểm nổi bật (Tiếng Việt) - Mỗi dòng 1 ý:</span>
-                <span className="label">vi</span>
-              </label>
-              <textarea
-                rows={4}
-                value={featuresViText}
-                onChange={(e) => setFeaturesViText(e.target.value)}
-                placeholder="Nhập các điểm mạnh (mỗi dòng một ý)...&#10;Khẩu độ thay đổi từ f/5.6 đến f/8&#10;Thiết kế chống bụi và chống ẩm"
-                className="surface-sunken w-full p-3 text-body text-ink placeholder:text-ink-faint leading-relaxed"
-              />
-            </div>
-
-            {/* English Features Input */}
-            <div className="flex flex-col gap-2">
-              <label className="text-body-sm text-ink-muted flex items-center justify-between gap-3">
-                <span>Key Features (English) - One per line:</span>
-                <span className="label">en</span>
-              </label>
-              <textarea
-                rows={3}
-                value={featuresEnText}
-                onChange={(e) => setFeaturesEnText(e.target.value)}
-                placeholder="Enter key features (one per line)..."
-                className="surface-sunken w-full p-3 text-body text-ink placeholder:text-ink-faint leading-relaxed"
-              />
-            </div>
-
-            {/* Status Feedback */}
-            {featuresSaveFeedback && (
-              <p
-                className={`text-body-sm font-semibold ${
-                  featuresSaveFeedback.startsWith('✓') ? 'text-community' : 'text-danger'
-                }`}
-              >
-                {featuresSaveFeedback}
-              </p>
-            )}
-
-            <div className="seam" />
-
-            {/* Modal Action Buttons */}
-            <div className="flex items-center justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setEditingFeaturesCamera(null)}
-                className="btn-glass cursor-pointer"
-              >
-                Hủy
-              </button>
-              <button
-                type="button"
-                disabled={isSavingFeatures}
-                onClick={handleSaveFeatures}
-                className="btn-accent disabled:opacity-50 cursor-pointer"
-              >
-                {isSavingFeatures ? 'Đang lưu...' : 'Lưu điểm nổi bật'}
-              </button>
             </div>
           </div>
         </div>

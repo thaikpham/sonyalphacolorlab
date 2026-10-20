@@ -113,7 +113,8 @@ no grants to anon or authenticated, read only by `controlAdmin()`.
   nullable column to the dormant rollback copy, so export/import/verify keep
   one column list. Sales talk is not mirrored: it is internal and an admin can
   re-enter it after a rollback.
-- Control: `0019_sales_staff.sql`, applied by the merge to `main`.
+- Control: `0020_sales_staff.sql`, applied by the merge to `main`. (`0019` is
+  `0019_community_photo_grant_and_proposal_sample.sql`.)
 
 ## Reading the sales talk
 

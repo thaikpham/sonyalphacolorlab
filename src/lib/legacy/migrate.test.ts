@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import legacyRecipes from './recipes.legacy.js';
-import { LEGACY_CORRECTIONS, migrateAll, toRecipeId, toSlug } from './migrate';
+import { LEGACY_CORRECTIONS, migrateAll, migrateRecipe, toRecipeId, toSlug } from './migrate';
 
 const { ok, failed } = migrateAll(legacyRecipes as Record<string, unknown>[]);
 
@@ -36,6 +36,35 @@ describe('legacy migration', () => {
   it('applies only the corrections that are documented', () => {
     const corrected = ok.filter((r) => r.corrections > 0).map((r) => r.legacyId);
     expect(corrected).toEqual(Object.keys(LEGACY_CORRECTIONS));
+  });
+
+  it('refuses a correction whose source value is no longer the one it documents', () => {
+    // scl-044's fix is marked NEEDS CONFIRMATION. If the author confirms "+2"
+    // and the legacy file is edited, forcing -2 over it would be silent.
+    const source = legacyRecipes.find((r) => r.id === 'scl-044') as Record<string, unknown>;
+    const edited = structuredClone(source) as { detailSettings: Record<string, unknown> };
+    edited.detailSettings.vhBalance = '+2';
+    const result = migrateRecipe(edited);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toContain('detailSettings.vhBalance');
+  });
+
+  it('refuses a correction whose path is missing', () => {
+    const source = legacyRecipes.find((r) => r.id === 'scl-044') as Record<string, unknown>;
+    const { detailSettings: _drop, ...noDetail } = structuredClone(source);
+    const result = migrateRecipe(noDetail);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toContain('detailSettings.vhBalance');
+  });
+
+  it('reads an empty field as missing, not as zero', () => {
+    const source = legacyRecipes.find((r) => r.id === 'scl-001') as { settings: Record<string, unknown> };
+    for (const blank of ['', '  ']) {
+      const edited = structuredClone(source);
+      edited.settings.Saturation = blank;
+      const result = migrateRecipe(edited);
+      expect(result.ok, JSON.stringify(blank)).toBe(false);
+    }
   });
 
   it('every correction states a reason', () => {

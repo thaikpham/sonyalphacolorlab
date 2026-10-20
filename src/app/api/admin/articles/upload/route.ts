@@ -5,6 +5,8 @@ import { hasContentConfig } from '@/lib/supabase/server'
 import { isDevStore } from '@/lib/lab/dev-store'
 import { processLabImage } from '@/lib/lab/image-process'
 import { uploadDraftAsset } from '@/lib/lab/asset-store'
+import { ARTICLE_ID_RE } from '@/lib/lab/meta'
+import { MAX_UPLOAD_BYTES, declaresOversizedBody } from '@/lib/recipes/upload-limits'
 
 /**
  * Article media: one still, attached to one draft article.
@@ -37,9 +39,6 @@ import { uploadDraftAsset } from '@/lib/lab/asset-store'
  * carries no public URL — there is not one yet — and no editor email.
  */
 
-/** The declared ceiling, so an obvious overrun is refused before buffering. */
-const MAX_DECLARED_BYTES = 8 * 1024 * 1024
-
 export async function POST(request: Request) {
   const gate = await adminGate(request)
   if (!gate.ok) return NextResponse.json({ error: gate.error }, { status: gate.status })
@@ -48,6 +47,11 @@ export async function POST(request: Request) {
   }
   if (!hasContentConfig() && !isDevStore()) {
     return NextResponse.json({ error: 'notConfigured' }, { status: 503 })
+  }
+  /* The declared length, so an obvious overrun is refused before buffering —
+     `formData()` reads the whole body before any field is available. */
+  if (declaresOversizedBody(request)) {
+    return NextResponse.json({ error: 'tooLarge' }, { status: 413 })
   }
 
   let file: File | null = null
@@ -66,14 +70,25 @@ export async function POST(request: Request) {
      the article has been saved once, so reaching this is a client bug or a
      direct call — either way there is no owner to record. */
   if (!articleId) return NextResponse.json({ error: 'saveBeforeUpload' }, { status: 400 })
+  /* The id becomes a path segment — a Storage key online, a directory under
+     `public/lab` in development, where every request is the local admin and
+     `../` would write outside it. An id `slugify()` could not have produced
+     names no article. */
+  if (!ARTICLE_ID_RE.test(articleId) || articleId.length > 80) {
+    return NextResponse.json({ error: 'articleNotFound' }, { status: 404 })
+  }
   if (!file) return NextResponse.json({ error: 'noFile' }, { status: 400 })
-  if (file.size > MAX_DECLARED_BYTES) {
+  if (file.size > MAX_UPLOAD_BYTES) {
     return NextResponse.json({ error: 'tooLarge' }, { status: 413 })
   }
 
   const processed = await processLabImage(new Uint8Array(await file.arrayBuffer()))
+  /* 413 is for bytes only. The editor reads a 413 by status, without parsing
+     it — the platform's own is plain text — so an image too large in *pixels*
+     answered 413 was reported as "over 4 MB", whatever it weighed. */
   if (!processed.ok) {
-    const status = processed.error === 'unsupportedType' ? 415 : 413
+    const status =
+      processed.error === 'unsupportedType' ? 415 : processed.error === 'tooLarge' ? 413 : 422
     return NextResponse.json({ error: processed.error }, { status })
   }
 

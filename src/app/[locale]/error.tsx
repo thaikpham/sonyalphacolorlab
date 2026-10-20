@@ -38,7 +38,11 @@ export default function Error({
       <button type="button" onClick={reset} className="btn-glass mt-8 cursor-pointer">
         {t('action')}
       </button>
-      {error.digest && <p className="meta mt-6">ref {error.digest}</p>}
+      {error.digest && (
+        <p className="meta mt-6">
+          {t('ref')} {error.digest}
+        </p>
+      )}
     </main>
   );
 }

@@ -8,7 +8,6 @@ import {
   PUBLIC_BUCKET,
   assetVariantPath,
   assetVariantPaths,
-  isAssetId,
   parseAssetId,
   referencedAssetIds,
 } from './assets';
@@ -30,10 +29,11 @@ import {
 const ASSET = '3f2b9c41-6d5e-4a7b-9c10-2e8f4a6b1d33';
 const ARTICLE = 'body-ev-vs-flash-ev';
 
-describe('isAssetId', () => {
+describe('parseAssetId', () => {
   it('accepts the canonical form', () => {
-    expect(isAssetId(ASSET)).toBe(true);
-    expect(isAssetId(crypto.randomUUID())).toBe(true);
+    expect(parseAssetId(ASSET)).toBe(ASSET);
+    const fresh = crypto.randomUUID();
+    expect(parseAssetId(fresh)).toBe(fresh);
   });
 
   it.each([
@@ -45,7 +45,6 @@ describe('isAssetId', () => {
     ['a number', 42],
     ['nothing', undefined],
   ])('refuses %s', (_label, value) => {
-    expect(isAssetId(value)).toBe(false);
     expect(parseAssetId(value)).toBeUndefined();
   });
 

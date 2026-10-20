@@ -6,7 +6,7 @@ import { RecipeCard } from '@/components/recipe-card';
 import { SiteHeader } from '@/components/site-header';
 import { Link } from '@/i18n/navigation';
 import type { Locale } from '@/i18n/routing';
-import { listRecipes, listTags } from '@/lib/recipes/source';
+import { listRecipes, listTags, matchesQuery } from '@/lib/recipes/source';
 
 export async function generateMetadata({
   params,
@@ -38,20 +38,32 @@ export default async function ColorLabPage({
   searchParams,
 }: {
   params: Promise<{ locale: Locale }>;
-  searchParams: Promise<{ format?: string; look?: string; tag?: string; q?: string }>;
+  searchParams: Promise<Record<'format' | 'look' | 'tag' | 'q', string | string[] | undefined>>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const sp = await searchParams;
+  /* A repeated parameter (`?q=a&q=b`) arrives as an array; the first wins. */
+  const sp = Object.fromEntries(
+    Object.entries(await searchParams).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]),
+  ) as { format?: string; look?: string; tag?: string; q?: string };
   const format = sp.format === 'pp' || sp.format === 'cl' ? sp.format : undefined;
 
-  const [t, tSearch, recipes, tags] = await Promise.all([
+  const [t, tSearch, filtered, tags] = await Promise.all([
     getTranslations('home'),
     getTranslations('search'),
-    listRecipes(locale, { format, look: sp.look, tag: sp.tag, q: sp.q }),
+    listRecipes(locale, { format, look: sp.look, tag: sp.tag }),
     listTags(),
   ]);
+
+  /* The text match runs here, not inside `listRecipes`. That read is
+     `unstable_cache` keyed by its arguments, and the header pushes `?q=` after
+     every typing pause, so "mojave" was up to six misses — each a recipes
+     select plus a translations read on the content project — and any `?q=`
+     from anyone added an entry. `listRecipes` matched in JS anyway, with this
+     same function, so the result is unchanged. */
+  const q = sp.q?.trim() ?? '';
+  const recipes = q ? filtered.filter((r) => matchesQuery(r, q)) : filtered;
 
   /* The catalogue total is read by one string in the empty state, so it is
      fetched only when that string renders. It used to sit in the `Promise.all`
@@ -63,32 +75,31 @@ export default async function ColorLabPage({
   return (
     <>
       <SiteHeader tags={tags} />
-      <SiteStructuredData locale={locale} />
+      <SiteStructuredData locale={locale} description={t('metaDescription')} />
 
       <main className="mx-auto w-full max-w-[160rem] flex-1 inset-safe pt-8 pb-24 flex flex-col gap-6">
         {/* The page lede. The h1 used to be `sr-only` carrying an untranslated
             literal, because nothing on the page named it; the document title
             already says "Alpha ColorLab", so the heading is now the visible
             one and there is still exactly one h1 above the sr-only h2. */}
-        {/* `.hero-block` / `.hero-intro`: on a phone turned sideways (or a
-            split-screen pane) the padding collapses, the title steps down to
-            `title-1` and the lede is hidden, because this block otherwise costs
-            a full screen of scrolling before the first recipe. The rule is in
-            globals.css; this is the block it was written for. */}
+        {/* `.hero-block`: on a phone turned sideways (or a split-screen
+            pane) the padding collapses and the title steps down to `title-1`,
+            because this block otherwise costs a full screen of scrolling
+            before the first recipe. The rule is in globals.css; this is the
+            block it was written for. */}
+        {/* No eyebrow: the "Picture Profile & Creative Look" line that sat
+            over the h1 is the copy CLAUDE.md removed, and was uppercase over
+            four words. */}
         <div className="hero-block flex flex-col gap-3">
-          {/* Sony menu names. Technical terms are never translated and stay
-              out of the catalogues (rule 3) — the same literal pair that
-              `structured-data.tsx` writes. */}
-          <p className="text-label font-semibold uppercase tracking-[0.08em] text-community">
-            Picture Profile &amp; Creative Look
-          </p>
           <h1 className="text-display font-extrabold tracking-[-0.02em] leading-[1.08] text-ink text-pretty">
             {t('title')}
           </h1>
         </div>
 
         {recipes.length === 0 ? (
-          <p className="py-20 text-center text-ink-muted">
+          /* `break-words`: the query is echoed below, and a pasted URL is one
+             unbreakable token that pushed a phone-width page sideways. */
+          <p className="py-20 text-center text-ink-muted break-words">
             {t('emptyTitle')}{' '}
             {/* Clears every filter, which means this page with no query — not
                 `/`, which is now the launcher and would drop the reader out of
@@ -99,14 +110,14 @@ export default async function ColorLabPage({
             {t('emptyTail', { total })}
             {/* A query no recipe answers may still be answered elsewhere on
                 the site — "ISO Auto" is an article, "a7cii" a camera. */}
-            {sp.q?.trim() ? (
+            {q ? (
               <>
                 {' '}
                 <Link
-                  href={{ pathname: '/search', query: { q: sp.q.trim() } }}
+                  href={{ pathname: '/search', query: { q } }}
                   className="text-accent-400 underline underline-offset-4"
                 >
-                  {tSearch('searchEverything', { query: sp.q.trim() })}
+                  {tSearch('searchEverything', { query: q })}
                 </Link>
               </>
             ) : null}

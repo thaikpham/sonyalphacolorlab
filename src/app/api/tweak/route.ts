@@ -2,8 +2,11 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { checkDailyBudget, checkRateLimit } from '@/lib/ai/rate-limit';
 import { tweakRecipe } from '@/lib/ai/tweak';
+import { TWEAK_REQUEST_MAX, TWEAK_REQUEST_MIN } from '@/lib/ai/tweak-form';
 import { getRecipe } from '@/lib/recipes/source';
 import { tweakErrorBody } from '@/lib/ai/errors';
+import { ContentUnavailableError, ControlUnavailableError } from '@/lib/supabase/errors';
+import { requireUser } from '@/lib/auth/require-user';
 
 /**
  * POST /api/tweak — adjust a recipe from a natural-language request.
@@ -15,19 +18,27 @@ import { tweakErrorBody } from '@/lib/ai/errors';
 
 const body = z.object({
   slug: z.string().min(1).max(120),
-  request: z.string().min(3).max(500),
+  request: z.string().min(TWEAK_REQUEST_MIN).max(TWEAK_REQUEST_MAX),
   locale: z.enum(['en', 'vi']).default('en'),
 });
 
 export async function POST(req: Request) {
-  // Best-effort client identity. Behind Vercel this is the real client IP;
-  // locally it falls back to a single shared bucket.
-  const ip =
-    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-    req.headers.get('x-real-ip') ??
-    'local';
+  /* A paid call, so a verified reader and nobody else — and before the budget,
+     so an anonymous flood spends none of it. The limit used to key on
+     `x-forwarded-for`, which the caller sets: a script on rotating addresses
+     got a fresh bucket per request. A verified address is one bucket however
+     many addresses it arrives from. */
+  let user: Awaited<ReturnType<typeof requireUser>>;
+  try {
+    user = await requireUser(req);
+  } catch (e) {
+    if (!(e instanceof ControlUnavailableError)) throw e;
+    console.error('[tweak]', e.message);
+    return NextResponse.json(tweakErrorBody('controlUnavailable'), { status: 503 });
+  }
+  if (!user) return NextResponse.json(tweakErrorBody('unauthenticated'), { status: 401 });
 
-  const limit = checkRateLimit(ip);
+  const limit = checkRateLimit(`tweak:${user.email}`);
   if (!limit.allowed) {
     return NextResponse.json(
       tweakErrorBody('rateLimited'),
@@ -52,7 +63,17 @@ export async function POST(req: Request) {
     return NextResponse.json(tweakErrorBody('invalidRequest'), { status: 400 });
   }
 
-  const recipe = await getRecipe(input.slug, input.locale);
+  /* An unreachable content project throws rather than answering "no such
+     recipe" — see `contentOrOfflineSeed`. Left uncaught it was a bare 500, and
+     the panel's `res.json()` failed on the empty body. */
+  let recipe: Awaited<ReturnType<typeof getRecipe>>;
+  try {
+    recipe = await getRecipe(input.slug, input.locale);
+  } catch (e) {
+    if (!(e instanceof ContentUnavailableError)) throw e;
+    console.error('[tweak]', e.message);
+    return NextResponse.json(tweakErrorBody('contentUnavailable'), { status: 503 });
+  }
   if (!recipe) return NextResponse.json(tweakErrorBody('recipeNotFound'), { status: 404 });
 
   try {

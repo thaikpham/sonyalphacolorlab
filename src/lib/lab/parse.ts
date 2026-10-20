@@ -40,18 +40,26 @@ import type {
 } from './types'
 import { LEVELS, TOPICS } from './articles'
 import { parseAssetId } from './assets'
+import { buildOutline } from './outline'
 
 const TOPIC_IDS = new Set<string>(TOPICS.map((t) => t.id))
 const LEVEL_IDS = new Set<string>(LEVELS.map((l) => l.id))
-const ARCHETYPES = new Set<string>([
-  'setup-guide',
-  'versus',
-  'technique',
-  'explainer',
-  'fix',
-  'gear',
-  'recipe',
-])
+/* A `Record` so that an archetype added to the `Archetype` union and not here
+   fails to compile. The `Set<string>` this replaces accepted the gap, and every
+   save of the new archetype would have answered 400. */
+const ARCHETYPE_KEYS: Record<Archetype, true> = {
+  'setup-guide': true,
+  versus: true,
+  technique: true,
+  explainer: true,
+  fix: true,
+  gear: true,
+  recipe: true,
+}
+
+/** Every archetype, in the order the editor offers them — the one list. */
+export const ARCHETYPES = Object.keys(ARCHETYPE_KEYS) as readonly Archetype[]
+const ARCHETYPE_IDS: ReadonlySet<string> = new Set(ARCHETYPES)
 
 /** Long enough for the longest authored paragraph, short enough that a paste
     of an entire web page cannot become a single block. */
@@ -150,8 +158,18 @@ export function parseEmbedUrl(raw: string): ParsedEmbed | null {
   if (host === 'vimeo.com' || host === 'player.vimeo.com') {
     /* `player.vimeo.com/video/<id>`, `vimeo.com/<id>`, and the unlisted form
        `vimeo.com/<id>/<hash>` — the hash is dropped, so an unlisted video
-       simply will not play rather than having its private key stored. */
-    const id = (segments[0] === 'video' ? segments[1] : segments[0]) ?? ''
+       simply will not play rather than having its private key stored. Plus
+       the two forms the share sheet gives on a channel or a showcase page.
+       Each is read by position: "the last run of digits" would take an
+       all-digit unlisted hash for the id. */
+    const id =
+      (segments[0] === 'video'
+        ? segments[1]
+        : segments[0] === 'channels'
+          ? segments[2]
+          : segments[0] === 'showcase' && segments[2] === 'video'
+            ? segments[3]
+            : segments[0]) ?? ''
     return VIMEO_ID.test(id) ? { provider: 'vimeo', id } : null
   }
 
@@ -288,16 +306,20 @@ export type ParsedBlocks = {
   readonly dropped: number
 }
 
+const BLOCKS_MAX = 64
+
 export function parseBlocks(raw: unknown): ParsedBlocks {
   if (!Array.isArray(raw)) return { blocks: [], dropped: 0 }
 
   const blocks: Block[] = []
-  let dropped = 0
   /* Capped well above the spec's 16 rather than at it, because this runs on
      drafts too and an editor mid-restructure may legitimately hold more than a
      finished article allows. The cap is here to bound the work, not to enforce
-     editorial length — `validateArticleShape` does that. */
-  for (const item of raw.slice(0, 64)) {
+     editorial length — `validateArticleShape` does that. What it cuts counts
+     as dropped like anything else refused, or the editor is told "Saved" and
+     loses the tail on the reload. */
+  let dropped = Math.max(0, raw.length - BLOCKS_MAX)
+  for (const item of raw.slice(0, BLOCKS_MAX)) {
     const block = parseBlock(item)
     if (block) blocks.push(block)
     else dropped += 1
@@ -314,7 +336,7 @@ export function parseLevel(raw: unknown): LevelId | null {
 }
 
 export function parseArchetype(raw: unknown): Archetype | null {
-  return typeof raw === 'string' && ARCHETYPES.has(raw) ? (raw as Archetype) : null
+  return typeof raw === 'string' && ARCHETYPE_IDS.has(raw) ? (raw as Archetype) : null
 }
 
 export function parseStatus(raw: unknown): ArticleStatus {
@@ -369,6 +391,19 @@ export const RESERVED_IDS: ReadonlySet<string> = new Set([
 export const PLACEHOLDER_MARK = '[CẦN BỔ SUNG'
 
 /**
+ * What §4 counts as an emoji. The pictograph planes plus the four BMP blocks
+ * emoji keyboards draw from — Miscellaneous Technical (⏱ ⌛), Miscellaneous
+ * Symbols and Dingbats (☀ ✨), and Miscellaneous Symbols and Arrows (⭐ ⬆).
+ * U+1F000 starts early enough to take flags' regional indicators and 🅰.
+ * ™, ® and the menu separator → sit outside every range, as they must.
+ * `article-spec.test.ts` imports this, so the two layers cannot drift.
+ */
+export const EMOJI_RE = /[\u{1F000}-\u{1FAFF}\u{2300}-\u{23FF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}]/u
+
+/** Today in UTC, as the `YYYY-MM-DD` the meta dates are written in. */
+const utcToday = (): string => new Date().toISOString().slice(0, 10)
+
+/**
  * The rules every published page obeys whatever its kind: the menu pair's
  * separator, the table and checklist bounds, labels that carry a condition,
  * and §4's ban on emoji and exclamation marks — both read as marketing copy,
@@ -378,10 +413,13 @@ export const PLACEHOLDER_MARK = '[CẦN BỔ SUNG'
  * prose: a source title is quoted from someone else's page, and a URL may
  * legitimately carry a `!`.
  */
-function houseRules(article: Article): string[] {
+function houseRules(article: Article, today: string): string[] {
   const problems: string[] = []
+  /* Both paths start at MENU: a reader follows them from the button, and a
+     path that starts mid-tree sends them looking for the first step. */
+  const menuPath = (path: string) => path.startsWith('MENU') && path.includes(' → ')
   for (const b of article.blocks) {
-    if (b.t === 'menu' && (!b.old.includes(' → ') || !b.new.includes(' → '))) {
+    if (b.t === 'menu' && (!menuPath(b.old) || !menuPath(b.new))) {
       problems.push('menuSeparator')
       break
     }
@@ -417,12 +455,30 @@ function houseRules(article: Article): string[] {
   }
 
   const prose = JSON.stringify([article.title, article.dek, article.read, article.blocks])
-  if (/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(prose)) problems.push('emoji')
+  if (EMOJI_RE.test(prose)) problems.push('emoji')
   if (prose.includes('!')) problems.push('exclamation')
   /* The marker the pilot drafts use for what only a real shoot or a real
      source can fill in. A page still carrying one is a frame, not an article,
      and must not reach a reader by an accidental publish. */
   if (prose.includes(PLACEHOLDER_MARK)) problems.push('placeholder')
+
+  /* A checked or reviewed date is the page's claim to being current, and a
+     typo of 2062 for 2026 satisfied every other check. ISO days compare as
+     strings. */
+  const { sources, reviewedAt } = article.meta
+  if ((reviewedAt && reviewedAt > today) || sources.some((src) => src.checkedAt && src.checkedAt > today)) {
+    problems.push('dateInFuture')
+  }
+
+  /* The id namespace is shared by both kinds, so a page and a link of either
+     page kind with its id are the same page: "Read first: this page". */
+  const self = article.id
+  if (
+    article.meta.prerequisites.includes(self) ||
+    article.meta.related.some((r) => (r.kind === 'article' || r.kind === 'knowledge') && r.id === self)
+  ) {
+    problems.push('selfReference')
+  }
 
   return problems
 }
@@ -440,17 +496,29 @@ function houseRules(article: Article): string[] {
  * `lab.admin.errors.*`, which is what keeps the message out of the API and
  * translatable — the same rule the community routes follow.
  */
-export function validateArticleShape(article: Article): readonly string[] {
+export function validateArticleShape(article: Article, today: string = utcToday()): readonly string[] {
   const problems: string[] = []
   const types = article.blocks.map((b) => b.t)
 
   if (article.blocks.length < 8) problems.push('tooFewBlocks')
   if (article.blocks.length > 16) problems.push('tooManyBlocks')
   if (article.dek.length > 220) problems.push('dekTooLong')
+  /* The feed row prints both unguarded beside the topic; blank, they leave a
+     dangling separator and an empty line under the title. */
+  if (!article.dek.trim()) problems.push('emptyDek')
+  if (!article.read.trim()) problems.push('emptyRead')
 
   if (types[0] !== 'tldr') problems.push('mustOpenWithTldr')
   if (types[1] !== 'p') problems.push('tldrNeedsContext')
-  if (types.indexOf('h') <= 1) problems.push('headingTooEarly')
+  const firstHeading = types.indexOf('h')
+  if (firstHeading === -1) problems.push('needsHeading')
+  else if (firstHeading <= 1) problems.push('headingTooEarly')
+  /* Each section's first paragraph is its line in the rail, with a callout or
+     a caption as the fallback. A section with none renders an empty row that
+     reads as a rendering failure. */
+  if (buildOutline(article.blocks).some((entry) => entry.precis === '')) {
+    problems.push('sectionNeedsSummary')
+  }
 
   const last = types.at(-1)
   if (last !== 'checklist' && last !== 'figure') problems.push('mustCloseWithChecklistOrFigure')
@@ -463,7 +531,7 @@ export function validateArticleShape(article: Article): readonly string[] {
     }
   }
 
-  problems.push(...houseRules(article))
+  problems.push(...houseRules(article, today))
   return problems
 }
 
@@ -482,7 +550,7 @@ const KNOWLEDGE_MAX_BLOCKS = 32
  * was checked — a technical claim nobody can trace is exactly what the hub
  * exists to replace.
  */
-export function validateKnowledgeShape(article: Article): readonly string[] {
+export function validateKnowledgeShape(article: Article, today: string = utcToday()): readonly string[] {
   const problems: string[] = []
   const types = article.blocks.map((b) => b.t)
 
@@ -494,7 +562,7 @@ export function validateKnowledgeShape(article: Article): readonly string[] {
   if (article.meta.sources.length === 0) problems.push('knowledgeNeedsSource')
   if (article.meta.sources.some((src) => !src.checkedAt)) problems.push('sourceNeedsDate')
 
-  problems.push(...houseRules(article))
+  problems.push(...houseRules(article, today))
   return problems
 }
 

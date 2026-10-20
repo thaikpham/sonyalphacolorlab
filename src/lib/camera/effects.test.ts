@@ -1,7 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { AXIS_LABELS, clEffects, ppEffects, wbEffects, wbSummary, type Effect } from './effects';
-import { CL_PARAM_ORDER, PP_COLOR_DEPTH_CHANNELS, PP_RANGES } from './constants';
+import {
+  CL_PARAM_ORDER,
+  PP_COLOR_DEPTH_CHANNELS,
+  PP_RANGES,
+  WB_PRESETS,
+  WB_PRESETS_STILL_ONLY,
+} from './constants';
 import type { Recipe } from './schema';
 
 /**
@@ -164,6 +170,28 @@ describe('white balance effects', () => {
     expect(e.temperature.en.toLowerCase()).toContain('camera decides');
   });
 
+  it('reads a zero shift as no shift', () => {
+    // The admin form starts a shift at WB_SHIFT_AXIS.min, which is 0.
+    const e = wb(5500, { ab: { axis: 'B', amount: 0 }, gm: { axis: 'G', amount: 0 } });
+    expect(e.shiftAb.en).not.toContain('Slight');
+    expect(e.shiftGm.en).not.toContain('Slight');
+    expect(e.shiftAb.en).toContain('No');
+    const preset = wbSummary({ mode: 'preset', preset: 'Cloudy', shift: { ab: { axis: 'B', amount: 0 } } });
+    expect(preset.net.en).toContain('balances for Cloudy');
+  });
+
+  it('describes every light-source preset by name, in both places', () => {
+    for (const preset of WB_PRESETS) {
+      const e = wbEffects({ mode: 'preset', preset });
+      expect(e.temperature.en, preset).not.toBe('Balanced for the selected light source');
+      expect(bothLocalesFilled(e.temperature), preset).toBe(true);
+      // Still-only is a sourced fact in constants.ts, not retyped per phrase.
+      const stillOnly = (WB_PRESETS_STILL_ONLY as readonly string[]).includes(preset);
+      expect(e.temperature.en.includes('still images only'), preset).toBe(stillOnly);
+      expect(wbSummary({ mode: 'preset', preset }).net.en, preset).toContain(preset);
+    }
+  });
+
   it('fills both locales', () => {
     const e = wb(3700, { ab: { axis: 'A', amount: 7 }, gm: { axis: 'M', amount: 0.5 } });
     for (const key of ['temperature', 'shiftAb', 'shiftGm']) {
@@ -232,11 +260,113 @@ describe('white balance summary', () => {
     expect(tinted.net.vi.toLowerCase()).toContain('xanh lá');
   });
 
+  it('says the shift pulls past a base it outweighs, and only part of one it does not', () => {
+    // Kyoto Jade. 3700K is -88.5 mired and A7 is +119: the net lands warm, so
+    // "pulls part of it back" contradicted the net sentence right above it.
+    const past = sum(3700, { ab: { axis: 'A', amount: 7 } });
+    expect(past.net.en.toLowerCase()).toContain('warm');
+    expect(past.interplay?.en).not.toContain('part of it back');
+    expect(past.interplay?.en).toContain('past it');
+    expect(past.interplay?.vi).toContain('vượt qua');
+
+    const partial = sum(8000, { ab: { axis: 'B', amount: 2 } });
+    expect(partial.net.en.toLowerCase()).toContain('warm');
+    expect(partial.interplay?.en).toContain('part of it back');
+  });
+
+  it('names no side in the interplay when the net is inside one shift step', () => {
+    // Mojave Sun again: the net says "cancel", so the interplay may not say
+    // which side of neutral the pair lands on either.
+    const { net, interplay } = sum(7000, { ab: { axis: 'B', amount: 3 } });
+    expect(net.en).toContain('cancel');
+    expect(interplay?.en).not.toContain('past it');
+    expect(interplay?.en).not.toContain('part of it back');
+    expect(interplay?.en).toContain('about neutral');
+  });
+
+  it('does not claim the pair reaches what the Kelvin dial cannot', () => {
+    // A net of +30.5 mired is a Kelvin value the dial sets directly.
+    for (const recipe of recipes) {
+      const { interplay } = wbSummary(recipe.whiteBalance);
+      expect(interplay?.en ?? '', recipe.slug).not.toContain('cannot reach');
+    }
+  });
+
+  it('offers no interplay for a Kelvin the Temperature row calls neutral', () => {
+    // 5600K is 3.2 mired and 5200K -10.5: the row reads "Close to neutral
+    // daylight", so the summary may not call either a warm or cool base.
+    expect(sum(5600, { ab: { axis: 'B', amount: 4 } }).interplay).toBeUndefined();
+    expect(sum(5200, { ab: { axis: 'A', amount: 4 } }).interplay).toBeUndefined();
+    for (const recipe of recipes) {
+      const neutralRow = wbEffects(recipe.whiteBalance).temperature.en.startsWith('Close to neutral');
+      if (neutralRow) expect(wbSummary(recipe.whiteBalance).interplay, recipe.slug).toBeUndefined();
+    }
+  });
+
+  it('keeps a neutral amber–blue reading from denying the tint it then adds', () => {
+    // SCL-CL-021 and Mojave Sun: "not from the white balance", then a magenta
+    // tint that IS the white balance.
+    for (const shift of [
+      { ab: { axis: 'B', amount: 2.5 }, gm: { axis: 'M', amount: 5 } },
+      { ab: { axis: 'B', amount: 3 }, gm: { axis: 'M', amount: 1.5 } },
+    ]) {
+      const { net } = sum(shift.ab.amount === 3 ? 7000 : 6500, shift);
+      expect(net.en).not.toContain('not from the white balance');
+      expect(net.en).toContain('magenta');
+      expect(net.vi).not.toContain('không phải từ cân bằng trắng');
+    }
+    expect(sum(5500, { gm: { axis: 'G', amount: 5 } }).net.en).not.toContain('whites stay white');
+    // Untinted, the strong claim still holds.
+    expect(sum(5500).net.en).toContain('whites stay white');
+  });
+
+  it('only says the two controls cancel when they pull against each other', () => {
+    // 5900K (+12.3) and A0.25 (+4.25) both warm; they stack, never cancel.
+    expect(sum(5900, { ab: { axis: 'A', amount: 0.25 } }).net.en).not.toContain('cancel');
+  });
+
   it('produces a net reading for every recipe in the catalogue, in both locales', () => {
     for (const recipe of recipes) {
       const { net } = wbSummary(recipe.whiteBalance);
       expect(net.en.length, recipe.slug).toBeGreaterThan(20);
       expect(net.vi.length, recipe.slug).toBeGreaterThan(20);
+    }
+  });
+});
+
+describe('HLG colour modes', () => {
+  /* Sony (TP0000909109): BT.2020 is the BT.2100 HDR gamut; 709 records HLG
+     in HDTV (ITU-R BT.709) colour. Both used to read "HDR colour space". */
+  it('tells BT.2020 and 709 apart', () => {
+    const wide = withPp({ colorMode: 'BT.2020' }).colorMode.en;
+    const hdtv = withPp({ colorMode: '709' }).colorMode.en;
+    expect(wide).toMatch(/BT\.2020|BT\.2100/);
+    expect(hdtv).toMatch(/BT\.709/);
+    expect(hdtv).not.toBe(wide);
+  });
+});
+
+describe('unsigned intensity params grade up from their minimum', () => {
+  /* Fade, Sharpness and Clarity (0–9) and the PP Detail Limit, Crispening and
+     Hi-Light Detail were graded around their midpoint, so the whole low half
+     of each range fell back to the wording for the minimum: Fade 3 read
+     "No fade", Sharpness 4 "No sharpening", and every PP recipe at Limit 3
+     read "capped hard". Only the minimum itself may say "none". */
+  it('keeps the "none" wording for the minimum only', () => {
+    expect(clEffects({ ...baseCl, fade: 0 }).fade.en).toMatch(/^No fade/);
+    expect(clEffects({ ...baseCl, fade: 3 }).fade.en).not.toMatch(/^No fade/);
+    expect(clEffects({ ...baseCl, sharpness: 4 }).sharpness.en).not.toMatch(/^No sharpening/);
+    expect(clEffects({ ...baseCl, clarity: 1 }).clarity.en).not.toMatch(/^No clarity/);
+    expect(withPp({ detail: { ...basePp.detail, hiLightDetail: 2 } }).hiLightDetail.en).not.toMatch(/^No extra/);
+    expect(withPp({ detail: { ...basePp.detail, limit: 3 } }).detailLimit.en).not.toMatch(/capped hard/);
+  });
+
+  it('describes every value above the minimum with a non-minimum phrase', () => {
+    for (const param of ['fade', 'sharpness', 'clarity'] as const) {
+      const none = clEffects({ ...baseCl, [param]: 0 })[param].en;
+      for (let v = 1; v <= 9; v++) {
+        expect(clEffects({ ...baseCl, [param]: v })[param].en, `${param} ${v}`).not.toBe(none);
+      }
     }
   });
 });

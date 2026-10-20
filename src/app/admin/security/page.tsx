@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
+import { ADMIN_LOCALE } from '@/lib/admin/locale';
 import { SecurityPanel } from '@/components/admin-ui/security-panel';
 
 /**
@@ -12,9 +14,10 @@ import { SecurityPanel } from '@/components/admin-ui/security-panel';
  * and from the next sign-in onward the ratchet holds.
  */
 
-export const metadata: Metadata = {
-  title: 'Bảo mật',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations({ locale: ADMIN_LOCALE, namespace: 'adminUi' });
+  return { title: t('metaSecurity') };
+}
 
 export default function AdminSecurityPage() {
   return <SecurityPanel />;

@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useRef } from 'react'
 import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { recapRows, setupSteps } from '@/lib/lab/setup-steps'
@@ -33,6 +33,16 @@ import type { MenuVersion } from '@/lib/lab/types'
 /** `old` is the default: it is the tree on the cheaper, more numerous bodies. */
 const MENU_VERSIONS: readonly MenuVersion[] = ['old', 'new']
 
+/**
+ * Where an arrow key moves the selection in a radio group of `count`
+ * options, wrapping at both ends — or `null` for any other key, which the
+ * browser keeps. The ARIA radio pattern: one tab stop, arrows to choose.
+ */
+export function nextRadioIndex(key: string, index: number, count: number): number | null {
+  const step = key === 'ArrowRight' || key === 'ArrowDown' ? 1 : key === 'ArrowLeft' || key === 'ArrowUp' ? -1 : 0
+  return step === 0 ? null : (index + step + count) % count
+}
+
 export function SetupGuide() {
   const t = useTranslations('lab')
   /* Both come from the storage-backed external store, whose server snapshot is
@@ -42,6 +52,7 @@ export function SetupGuide() {
   const version = usePreference<MenuVersion>(MENU_VERSION_KEY, 'old', MENU_VERSIONS)
   const done = useTicks(SETUP_KEY)
 
+  const radios = useRef<(HTMLButtonElement | null)[]>([])
   const steps = useMemo(() => setupSteps(version, t), [version, t])
   const recap = useMemo(() => recapRows(steps), [steps])
 
@@ -55,109 +66,124 @@ export function SetupGuide() {
 
   return (
     <div className="mx-auto w-full max-w-[73.75rem] px-6 pb-24">
-      <header className="sticky top-0 z-10 bg-void/95 pt-3.5 backdrop-blur">
-        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
-          <Link href="/blog" className="text-left">
-            <span className="block text-body-lg font-extrabold tracking-[-0.02em] text-ink">
-              {t('setupWordmark')}
-            </span>
-          </Link>
+      {/* Position and the opaque ground on the plain wrapper, the elevation on
+          the panel inside it: a surface class decides its own position, and
+          the void underneath keeps the text off whatever scrolls past. */}
+      <header className="sticky top-0 z-10 bg-void pt-3">
+        <div className="surface-raised px-4 pt-3">
+          <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+            <Link href="/blog" className="text-left">
+              <span className="block text-body-lg font-extrabold tracking-[-0.02em] text-ink">
+                {t('setupWordmark')}
+              </span>
+            </Link>
 
-          {/* The page's central control: it rewrites every menu path on the
-              screen, including the recap. A segmented control rather than two
-              buttons because the two options are mutually exclusive readings
-              of the same setting, and the rut makes that visible. */}
-          <div
-            role="radiogroup"
-            aria-label={t('menuVersion')}
-            className="surface-sunken flex gap-1 p-[3px]"
-          >
-            {versions.map((v) => {
-              const on = version === v.id
-              return (
-                <button
-                  key={v.id}
-                  type="button"
-                  role="radio"
-                  aria-checked={on}
-                  onClick={() => setPreference(MENU_VERSION_KEY, v.id)}
-                  className={
-                    'flex min-h-[var(--layout-touch-target)] cursor-pointer flex-col justify-center rounded-[11px] px-4 py-1.5 text-left transition-colors ' +
-                    (on ? 'surface-selected text-ink' : 'text-ink-muted hover:text-ink')
-                  }
-                >
-                  <span className="text-label font-semibold uppercase tracking-[0.08em]">
-                    {v.label}
-                  </span>
-                  <span className={on ? 'text-meta text-ink-muted' : 'meta'}>{v.bodies}</span>
-                </button>
-              )
-            })}
+            {/* The page's central control: it rewrites every menu path on the
+                screen, including the recap. A segmented control rather than two
+                buttons because the two options are mutually exclusive readings
+                of the same setting, and the rut makes that visible. */}
+            <div
+              role="radiogroup"
+              aria-label={t('menuVersion')}
+              className="surface-sunken flex gap-1 p-[3px]"
+            >
+              {versions.map((v, i) => {
+                const on = version === v.id
+                return (
+                  <button
+                    key={v.id}
+                    ref={(el) => {
+                      radios.current[i] = el
+                    }}
+                    type="button"
+                    role="radio"
+                    aria-checked={on}
+                    tabIndex={on ? 0 : -1}
+                    onClick={() => setPreference(MENU_VERSION_KEY, v.id)}
+                    onKeyDown={(e) => {
+                      const next = nextRadioIndex(e.key, i, versions.length)
+                      if (next === null) return
+                      e.preventDefault()
+                      setPreference(MENU_VERSION_KEY, versions[next].id)
+                      radios.current[next]?.focus()
+                    }}
+                    className={
+                      'flex min-h-[var(--layout-touch-target)] cursor-pointer flex-col justify-center rounded-sm px-4 py-1.5 text-left transition-colors ' +
+                      (on ? 'surface-selected text-ink' : 'text-ink-muted hover:text-ink')
+                    }
+                  >
+                    <span className="text-label font-semibold uppercase tracking-[0.08em]">
+                      {v.label}
+                    </span>
+                    <span className={on ? 'text-meta text-ink-muted' : 'meta'}>{v.bodies}</span>
+                  </button>
+                )
+              })}
+            </div>
           </div>
-        </div>
 
-        {/* Only the chips scroll. The progress bar and its counter are a
-            sibling of the scroll container, not a child of it — inside, `n/8`
-            sat past the right edge on a phone and scrolled away, which is the
-            one number on the page a reader comes back to check. */}
-        <div className="mt-3 flex items-center gap-3 pb-3">
-          <ul className="scroll-area flex min-w-0 flex-1 gap-1.5 overflow-x-auto">
-            {steps.map((s) => (
-              <li key={s.id}>
+          {/* Only the chips scroll. The progress bar and its counter are a
+              sibling of the scroll container, not a child of it — inside, `n/8`
+              sat past the right edge on a phone and scrolled away, which is the
+              one number on the page a reader comes back to check. */}
+          <div className="mt-3 flex items-center gap-3 pb-3">
+            <ul className="scroll-area flex min-w-0 flex-1 gap-1.5 overflow-x-auto">
+              {steps.map((s) => (
+                <li key={s.id}>
+                  <a
+                    href={`#${s.anchor}`}
+                    className={
+                      'chip chip-action tabular-nums font-extrabold ' +
+                      (done[s.id] ? 'text-accent-400' : '')
+                    }
+                  >
+                    {s.n}
+                  </a>
+                </li>
+              ))}
+              <li>
                 <a
-                  href={`#${s.anchor}`}
-                  className={
-                    'chip chip-action tabular-nums font-extrabold ' +
-                    (done[s.id] ? 'text-accent-400' : '')
-                  }
+                  href="#recap"
+                  className="chip chip-action bg-accent-900 font-semibold uppercase tracking-[0.08em] text-accent-300 whitespace-nowrap"
                 >
-                  {s.n}
+                  {t('recap')}
                 </a>
               </li>
-            ))}
-            <li>
-              <a
-                href="#recap"
-                className="chip chip-action bg-accent-900 font-semibold uppercase tracking-[0.08em] text-accent-300 whitespace-nowrap"
-              >
-                {t('recap')}
-              </a>
-            </li>
-          </ul>
+            </ul>
 
-          <div className="flex shrink-0 items-center gap-3">
-            {/* `role="progressbar"` rather than `<progress>`: the native
-                element cannot be restyled to a 6px rut on WebKit without
-                per-vendor pseudo-elements, and this is the same rut the rest
-                of the system uses. */}
-            <div
-              role="progressbar"
-              aria-valuenow={doneCount}
-              aria-valuemin={0}
-              aria-valuemax={steps.length}
-              aria-label={t('progress')}
-              /* `.surface-sunken` whole, with the radius overridden — a bare
-                 `bg-sunken` is black at 35% on a #07080B ground, which is an
-                 empty progress bar nobody can see the shape of. The rut needs
-                 its inset shadow and specular highlight to read at 6px. */
-              className="surface-sunken h-1.5 w-24 overflow-hidden rounded-full sm:w-40"
-            >
-              <span
-                className="block h-full rounded-full bg-accent-400 transition-[width] duration-200"
-                style={{ width: `${percent}%` }}
-              />
+            <div className="flex shrink-0 items-center gap-3">
+              {/* `role="progressbar"` rather than `<progress>`: the native
+                  element cannot be restyled to a 6px rut on WebKit without
+                  per-vendor pseudo-elements, and this is the same rut the rest
+                  of the system uses. */}
+              <div
+                role="progressbar"
+                aria-valuenow={doneCount}
+                aria-valuemin={0}
+                aria-valuemax={steps.length}
+                aria-label={t('progress')}
+                /* `.surface-sunken` whole, with the radius overridden — a bare
+                   `bg-sunken` is black at 35% on a #07080B ground, which is an
+                   empty progress bar nobody can see the shape of. The rut needs
+                   its inset shadow and specular highlight to read at 6px. */
+                className="surface-sunken h-1.5 w-24 overflow-hidden rounded-sm sm:w-40"
+              >
+                <span
+                  className="block h-full rounded-sm bg-accent-400 transition-[width] duration-200"
+                  style={{ width: `${percent}%` }}
+                />
+              </div>
+              <span className="text-label font-extrabold tabular-nums text-ink">
+                {doneCount}/{steps.length}
+              </span>
             </div>
-            <span className="text-label font-extrabold tabular-nums text-ink">
-              {doneCount}/{steps.length}
-            </span>
           </div>
         </div>
-        <hr className="seam" />
       </header>
 
       <section className="py-10 sm:py-14">
         <p className="label text-accent-400">{t('setupKicker')}</p>
-        <h1 className="mt-3 max-w-[16ch] text-[clamp(2.125rem,5.4vw,3.5rem)] font-extrabold leading-[1.05] tracking-[-0.02em] text-ink [text-wrap:pretty]">
+        <h1 className="mt-3 max-w-[16ch] text-display font-extrabold leading-[1.05] tracking-[-0.02em] text-ink [text-wrap:pretty]">
           {t('setupTitle')}
         </h1>
 
@@ -179,12 +205,12 @@ export function SetupGuide() {
       {steps.map((step) => {
         const on = Boolean(done[step.id])
         return (
-          <section key={step.id} id={step.anchor} className="scroll-mt-[8.75rem] py-11">
+          <section key={step.id} id={step.anchor} className="scroll-mt-[9.5rem] py-11">
             <div className="flex flex-wrap gap-x-8 gap-y-6">
               <div className="flex basis-16 flex-row items-center gap-4 sm:flex-col sm:items-start sm:gap-3">
                 <span
                   aria-hidden
-                  className="text-[2.75rem] font-extrabold leading-[0.85] tabular-nums text-accent-400"
+                  className="text-title-1 font-extrabold leading-[0.85] tabular-nums text-accent-400"
                 >
                   {step.n}
                 </span>
@@ -206,7 +232,7 @@ export function SetupGuide() {
                   <span
                     aria-hidden
                     className={
-                      'grid h-[22px] w-[22px] place-items-center rounded-lg ' +
+                      'grid h-[22px] w-[22px] place-items-center rounded-sm ' +
                       (on
                         ? 'bg-accent-500 text-white'
                         : 'bg-glass-raised shadow-[var(--elevation-spec)]')
@@ -219,7 +245,7 @@ export function SetupGuide() {
 
               <div className="min-w-0 flex-1 basis-95">
                 <p className="label">{step.kicker}</p>
-                <h2 className="mt-2 text-[clamp(1.5625rem,3vw,2rem)] font-extrabold leading-[1.15] tracking-[-0.02em] text-ink [text-wrap:pretty]">
+                <h2 className="mt-2 text-title-2 font-extrabold leading-[1.15] tracking-[-0.02em] text-ink [text-wrap:pretty]">
                   {step.title}
                 </h2>
 

@@ -87,8 +87,3 @@ export function contentAdmin(): SupabaseClient {
 }
 
 export { hasContentConfig, hasControlConfig };
-
-/** Test seam: the module caches clients, and a suite may change the env. */
-export function resetSupabaseClients(): void {
-  clients.clear();
-}

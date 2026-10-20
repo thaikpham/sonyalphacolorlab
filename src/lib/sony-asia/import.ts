@@ -17,9 +17,17 @@
  * recipe.
  */
 
-import { parseWhiteBalance } from '../camera/format';
+import { formatClValue, formatWhiteBalance, parseWhiteBalance } from '../camera/format';
 import { recipeSchema, type Recipe, type WhiteBalance } from '../camera/schema';
-import { CL_MONOCHROME_LOOKS, CREATIVE_LOOK_CODES } from '../camera/constants';
+import {
+  CL_MONOCHROME_LOOKS,
+  CL_PARAM_ORDER,
+  CREATIVE_LOOK_CODES,
+  CREATIVE_LOOKS,
+  WB_AUTO_MODES,
+  WB_PRESETS,
+} from '../camera/constants';
+import { SONY_ASIA_IDS, type PinnedId } from './ids';
 
 // ---------------------------------------------------------------------------
 // CSV
@@ -64,6 +72,9 @@ export function parseCsv(text: string): ScrapeRow[] {
     else if (c === '\n') endRow();
     else if (c !== '\r') field += c;
   }
+  // An open quote at end of file has swallowed every row after it. Reported,
+  // like every other defect in the scrape, rather than imported short.
+  if (quoted) throw new Error('unterminated quoted field — the rest of the file would be read as one value');
   if (field !== '' || row.length) endRow();
 
   const [header, ...body] = rows;
@@ -95,23 +106,13 @@ export const SCRAPE_CORRECTIONS: Correction[] = [
   },
   {
     from: 'VV2 \\(Vivid 2 Preset\\)',
-    to: 'VV2 (Vivid2)',
+    to: 'VV2 (Vivid 2)',
     why: '"Preset" is page furniture, not part of the Look name.',
-  },
-  {
-    from: 'VV2 \\(Vivid 2\\)',
-    to: 'VV2 (Vivid2)',
-    why: 'Sony spells the Look "Vivid2"; the space is a typo on some entries.',
   },
   {
     from: 'WB Colour Temp AWB',
     to: 'WB AWB',
     why: 'Contradictory: C.Temp./Filter and Auto are different menu items. AWB is the operative one.',
-  },
-  {
-    from: 'Fade 0,Saturation',
-    to: 'Fade 0, Saturation',
-    why: 'Missing space after a comma would swallow the Saturation token.',
   },
 ];
 
@@ -176,7 +177,12 @@ const CL_KEYS = {
  * The page writes unsigned parameters with a leading `+` ("Sharpness Range +3")
  * even though the camera does not. `Number()` reads both, and the stored value
  * is a plain number — `format.ts` decides how it is displayed.
+ *
+ * Only a numeric literal counts. `Number('')` is 0, so a bare "Contrast," was
+ * stored as Contrast 0 — a value the page never stated.
  */
+const NUMERIC = /^[+-]?\d+(?:\.\d+)?$/;
+
 function parseSettingsTokens(body: string): Record<string, number> {
   const out: Record<string, number> = {};
   // Longest key first, or "Sharpness" consumes "Sharpness Range".
@@ -187,8 +193,7 @@ function parseSettingsTokens(body: string): Record<string, number> {
     const key = keys.find((k) => t.startsWith(k));
     if (!key) continue;
     const raw = t.slice(key.length).trim();
-    const n = Number(raw);
-    if (Number.isFinite(n)) out[CL_KEYS[key as keyof typeof CL_KEYS]] = n;
+    if (NUMERIC.test(raw)) out[CL_KEYS[key as keyof typeof CL_KEYS]] = Number(raw);
   }
   return out;
 }
@@ -207,11 +212,29 @@ const SHIFT_SEP = '\u0000';
  * The page is inconsistent: "WB AWB", "AWB", "WB Colour Temp 5600K B4.0 M0.25",
  * "WB Cloudy A1.5, M0.5". Shift letters are space-separated here but
  * comma-separated in `parseWhiteBalance`, so the clause is normalised first.
+ *
+ * The names it looks for are `WB_AUTO_MODES` and `WB_PRESETS` themselves, so
+ * a preset added to `constants.ts` is found here too (rule 5) instead of
+ * skipping its row as stating "no White Balance". The loose `Fluor.` is the
+ * one scrape-only extra: a misspelt fluorescent preset is still found, then
+ * refused by `parseWhiteBalance` by name.
  */
+const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const WB_CLAUSE = new RegExp(
+  '(?:^|,)\\s*(?:WB\\s+)?((?:Colour Temp\\s+)?[^,]*?(?:' +
+    [
+      // Longest first: alternation takes the first match, not the best one.
+      ...[...WB_AUTO_MODES, ...WB_PRESETS].sort((a, b) => b.length - a.length).map(esc),
+      'Fluor\\.[^,]*',
+      '\\d{3,4}K',
+    ].join('|') +
+    ')[^,]*(?:,\\s*[GM]\\d+(?:\\.\\d+)?)?)\\s*$',
+  'i',
+);
+
 function extractWhiteBalance(body: string): { wb: WhiteBalance | null; rest: string } {
-  const m = /(?:^|,)\s*(?:WB\s+)?((?:Colour Temp\s+)?[^,]*?(?:AWB|\d{3,4}K|Daylight|Shade|Cloudy|Incandescent|Fluor\.[^,]*|Flash|Underwater Auto)[^,]*(?:,\s*[GM]\d+(?:\.\d+)?)?)\s*$/i.exec(
-    body,
-  );
+  const m = WB_CLAUSE.exec(body);
   if (!m) return { wb: null, rest: body };
 
   const clause = m[1]
@@ -242,7 +265,28 @@ export type ImportResult = {
   skipped: { data: string; why: string }[];
   corrections: number;
   duplicates: number;
+  /**
+   * Keys of recipes that had no entry in `SONY_ASIA_IDS` and were given the
+   * next free id. Pin them in `ids.ts` before publishing — until then their id
+   * is only as stable as the row order.
+   */
+  unpinned: string[];
 };
+
+/**
+ * What a recipe *is*: photographer, Look, every parameter and the White
+ * Balance. The importer's dedupe identity and the key `SONY_ASIA_IDS` pins an
+ * id to. Written out rather than hashed so a pinned entry can be read.
+ */
+export function recipeKey(settings: Record<string, unknown>, wb: WhiteBalance, photographer: string): string {
+  const params = CL_PARAM_ORDER.map((p) =>
+    typeof settings[p] === 'number' ? formatClValue(p, settings[p]) : '–',
+  ).join(' ');
+  return `${photographer} · ${String(settings.look)} ${params} · ${formatWhiteBalance(wb)}`;
+}
+
+const ID_PREFIX = 'SCL-CL-';
+const idOf = (n: number) => `${ID_PREFIX}${String(n).padStart(3, '0')}`;
 
 export type Credit = {
   photographer: string;
@@ -254,10 +298,14 @@ export type Credit = {
 
 const SOURCE_URL = 'https://www.sony-asia.com/microsite/rmdc/creativelooks/alpha-recipes/';
 
-export function importSonyAsia(csv: string): ImportResult {
+export function importSonyAsia(
+  csv: string,
+  pinned: Record<string, PinnedId> = SONY_ASIA_IDS,
+): ImportResult {
   const rows = parseCsv(csv);
   const skipped: ImportResult['skipped'] = [];
   const descriptions: Record<string, string> = {};
+  const unpinned: string[] = [];
   let corrections = 0;
   let duplicates = 0;
 
@@ -265,7 +313,12 @@ export function importSonyAsia(csv: string): ImportResult {
   // collapses to one recipe carrying all of its photos.
   const seen = new Map<string, number>();
   const recipes: ImportResult['recipes'] = [];
-  const usedSlugs = new Map<string, number>();
+
+  // Every pinned id and slug stays reserved, including those of a recipe the
+  // page no longer shows: a URL that once meant one recipe never means another.
+  const pins = Object.values(pinned);
+  const takenSlugs = new Set(pins.map((p) => p.slug));
+  let nextId = Math.max(0, ...pins.map((p) => Number(p.id.slice(ID_PREFIX.length)))) + 1;
 
   for (const row of rows) {
     // Production notes are appended to `data` after a run of newlines, and are
@@ -303,11 +356,14 @@ export function importSonyAsia(csv: string): ImportResult {
       continue;
     }
     const look = lookMatch[1];
-    const lookLabel = lookMatch[2].trim();
     if (!(CREATIVE_LOOK_CODES as readonly string[]).includes(look)) {
       skipped.push({ data, why: `"${look}" is not one of the ten built-in Creative Looks` });
       continue;
     }
+    /* The name is Sony's, from constants.ts — never the scrape's spelling,
+       which said "Vivid2" and "Film Look" where the help guide says "Vivid 2"
+       and "Film" (TP1000640837). Only the code is read from the row. */
+    const lookLabel = CREATIVE_LOOKS.find((l) => l.code === look)!.label;
 
     const settingsBody = settingsParts.join('|').trim();
 
@@ -365,7 +421,7 @@ export function importSonyAsia(csv: string): ImportResult {
     // A recipe is its settings plus its balance. Two photographers landing on
     // the same numbers is possible but has not happened; the credit is part of
     // the fingerprint so it would not silently merge them if it did.
-    const fingerprint = JSON.stringify([settings, wb, photographer]);
+    const fingerprint = recipeKey(settings, wb, photographer);
 
     const images = [row.image, row.image2, row.image3, row.image4, row.image5]
       .map((u) => (u ?? '').trim())
@@ -380,12 +436,17 @@ export function importSonyAsia(csv: string): ImportResult {
       continue;
     }
 
-    const id = `SCL-CL-${String(recipes.length + 1).padStart(3, '0')}`;
-
+    // The id and slug are public and SEO-bearing, so they come from the pinned
+    // table, never from this row's position: numbering by order meant
+    // un-skipping one row renumbered every recipe after it, and the
+    // hand-keyed Vietnamese prose then named the wrong photographer.
     const baseSlug = slugify(`${look} ${photographer}`) || slugify(look);
-    const n = (usedSlugs.get(baseSlug) ?? 0) + 1;
-    usedSlugs.set(baseSlug, n);
-    const slug = n === 1 ? baseSlug : `${baseSlug}-${n}`;
+    const pin = pinned[fingerprint];
+    let slug = pin?.slug ?? baseSlug;
+    for (let k = 2; !pin && takenSlugs.has(slug); k++) slug = `${baseSlug}-${k}`;
+    const id = pin?.id ?? idOf(nextId);
+    const suffix = /^-(\d+)$/.exec(slug.slice(baseSlug.length));
+    const n = suffix ? Number(suffix[1]) : 1;
 
     const displayName = `${lookLabel} · ${photographer}${n === 1 ? '' : ` ${n}`}`;
 
@@ -413,6 +474,12 @@ export function importSonyAsia(csv: string): ImportResult {
       continue;
     }
 
+    if (!pin) {
+      nextId++;
+      takenSlugs.add(slug);
+      unpinned.push(fingerprint);
+    }
+
     const notes = (row.data2 ?? '').replace(/\s+/g, ' ').trim();
     seen.set(fingerprint, recipes.length);
     recipes.push({
@@ -437,5 +504,5 @@ export function importSonyAsia(csv: string): ImportResult {
       .join(' ');
   }
 
-  return { recipes, descriptions, skipped, corrections, duplicates };
+  return { recipes, descriptions, skipped, corrections, duplicates, unpinned };
 }

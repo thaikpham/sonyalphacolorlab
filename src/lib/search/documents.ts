@@ -40,6 +40,10 @@ export type SearchDoc = {
   readonly body: string
   /** Breaks a tie in favour of an authored page over a generated entry. */
   readonly boost: number
+  /** What the snippet is cut from, when it is not the summary. */
+  readonly snippetText?: string
+  /** The snippet's language, when it is not `contentLanguage`. */
+  readonly snippetLanguage?: string
   readonly display: {
     readonly subtitle?: string
     readonly badge?: string
@@ -71,7 +75,7 @@ export type RecipeForSearch = {
   readonly accent?: Accent
 }
 
-export function recipeDoc(r: RecipeForSearch): SearchDoc {
+export function recipeDoc(r: RecipeForSearch, locale: Locale): SearchDoc {
   /* "SCL-PP-001: Mojave Sun" — the code and the name are each an exact hit. */
   const bare = r.name.includes(': ') ? r.name.split(': ').slice(1).join(': ') : r.name
   const look = r.format === 'cl' ? CREATIVE_LOOKS.find((l) => l.code === r.look) : undefined
@@ -83,7 +87,7 @@ export function recipeDoc(r: RecipeForSearch): SearchDoc {
     title: r.name,
     url: `/recipe/${r.slug}`,
     /* Recipe names are never translated (Rule 3); the description follows the
-       locale it was read in. The name is what a hit shows. */
+       locale it was read in, and the snippet is cut from it. */
     contentLanguage: 'en',
     exact: [squash(r.id), squash(bare), squash(r.name), squash(r.slug)].filter(Boolean),
     aliases: [],
@@ -99,6 +103,7 @@ export function recipeDoc(r: RecipeForSearch): SearchDoc {
     headings: [],
     body: '',
     boost: 0,
+    snippetLanguage: locale,
     display: {
       subtitle: `${look ? `${formatLabel} (${look.code})` : formatLabel} · ${r.wbLabel}`,
       badge: look ? `CL:${look.code}` : 'PP',
@@ -112,7 +117,7 @@ export function recipeDoc(r: RecipeForSearch): SearchDoc {
 /* Products                                                               */
 /* --------------------------------------------------------------------- */
 
-export { productDoc, type ProductForSearch } from './product-doc'
+export { productDoc } from './product-doc'
 
 /* --------------------------------------------------------------------- */
 /* Articles and knowledge pages                                           */
@@ -203,7 +208,11 @@ export function glossaryDocs(locale: Locale): SearchDoc[] {
       headings: [],
       body: '',
       boost: 0,
-      display: { subtitle: snippetOf(group.overview[0] ?? group.entries.map((e) => e.label).join(' · ')) },
+      /* No subtitle where there is an overview: the snippet opens with it,
+         and the first sentence would print twice — as `articleDoc` says. */
+      display: {
+        subtitle: group.overview.length > 0 ? undefined : snippetOf(group.entries.map((e) => e.label).join(' · ')),
+      },
     },
     ...group.entries.map((e): SearchDoc => {
       const title = e.parent ? `${e.parent} · ${e.label}` : `${group.title} · ${e.label}`
@@ -238,5 +247,6 @@ export function glossaryDocs(locale: Locale): SearchDoc[] {
 }
 
 export function snippetFor(doc: SearchDoc): string | undefined {
+  if (doc.snippetText !== undefined) return snippetOf(doc.snippetText)
   return doc.kind === 'recipe' || doc.kind === 'knowledge' ? snippetOf(doc.summary) : snippetOf(doc.summary || doc.body)
 }

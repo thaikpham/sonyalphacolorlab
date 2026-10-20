@@ -26,12 +26,15 @@ import { isDevStore } from './dev-store';
  *
  * - **Publishing** copies bytes first, then flips the article. A failed copy
  *   means a private article with some public objects — invisible, and cleaned
- *   up by the next publish.
+ *   up by the next publish. What the new body no longer references comes out
+ *   only after the row is written: until then the live page is the previous
+ *   version, which still shows it.
  * - **Unpublishing** flips the article and invalidates the cache first, then
  *   removes bytes. A failed removal means a private article whose objects are
  *   briefly still fetchable by URL, which is bad; doing it the other way round
  *   means a *published* article with no images, which is bad and visible to
- *   everybody. The failed asset is marked so the cleanup view lists it.
+ *   everybody. The failed asset is marked `cleanup_failed`, and every later
+ *   save retries its removal.
  * - **Deleting** clears both buckets before it touches a row. The restrictive
  *   foreign key on `lab_assets` enforces this even if the code forgets.
  */
@@ -125,14 +128,34 @@ async function publishAssets(articleId: string, ids: readonly string[]): Promise
 }
 
 /**
+ * A row whose objects may be in the public bucket: a published one, and one an
+ * earlier removal failed on. `cleanup_failed` used to be a dead end — nothing
+ * retried it, so the copy a failed unpublish left behind stayed fetchable by
+ * URL for as long as the article existed. Removing a path that is not there is
+ * not an error, so including a row with no public copy costs nothing.
+ */
+const mayBePublic = (row: AssetRow) => row.state === 'published' || row.state === 'cleanup_failed';
+
+/**
  * Remove the public copies and return the assets to draft.
  *
  * The private variants stay. That is what makes a republish free — no
  * reprocessing, no re-upload — and it is why the editor's preview can always
  * come from the private bucket whatever the article's status is.
+ *
+ * A `cleanup_failed` row returns to draft only while the body references it:
+ * that is the image a failed unpublish left public, and a retire never touches
+ * its private copy. An unreferenced one keeps its label — it may be an upload
+ * whose own compensating delete failed, with no whole private copy, and the
+ * label is what the cleanup count reads.
  */
-async function retireAssets(articleId: string, ids: readonly string[]): Promise<boolean> {
-  if (ids.length === 0) return true;
+async function retireAssets(
+  articleId: string,
+  rows: readonly AssetRow[],
+  referenced: ReadonlySet<string>,
+): Promise<boolean> {
+  if (rows.length === 0) return true;
+  const ids = rows.map((row) => row.id);
   const paths = ids.flatMap((id) => assetVariantPaths(articleId, id));
   const { error } = await contentAdmin().storage.from(PUBLIC_BUCKET).remove(paths);
   if (error) {
@@ -140,7 +163,10 @@ async function retireAssets(articleId: string, ids: readonly string[]): Promise<
     await setState(ids, 'cleanup_failed');
     return false;
   }
-  return setState(ids, 'draft');
+  const restored = rows
+    .filter((row) => row.state === 'published' || referenced.has(row.id))
+    .map((row) => row.id);
+  return setState(restored, 'draft');
 }
 
 /**
@@ -157,33 +183,53 @@ export async function reconcileArticleAssets(
 ): Promise<LifecycleResult> {
   if (isDevStore()) return { ok: true };
 
-  const resolved = await resolveReferencedAssets(articleId, blocks);
-  if (!resolved.ok) return resolved;
-
-  const owned = await ownedAssets(articleId);
-  const referenced = new Set(resolved.ids);
-
-  /* Anything currently public that the body no longer references has to come
-     back out, whatever the article's status is. Deleting a figure from a
-     published article is the ordinary way an image becomes unreferenced, and
-     leaving it public would mean a picture the editor removed is still served. */
-  const strandedPublic = owned
-    .filter((row) => row.state === 'published' && !referenced.has(row.id))
-    .map((row) => row.id);
-
-  if (nextStatus === 'published') {
-    if (!(await publishAssets(articleId, resolved.ids))) {
-      return { ok: false, error: 'assetSyncFailed' };
-    }
-    if (!(await retireAssets(articleId, strandedPublic))) {
+  if (nextStatus === 'draft') {
+    /* Unpublishing, or saving a draft: everything that may be public comes
+       out, referenced or not. No reference check here. The row has already
+       been written and nothing is published from these ids, so refusing one —
+       an image left `cleanup_failed` by a previous unpublish — answered every
+       later draft save 502 and never retried the copy it was refusing over. */
+    const owned = await ownedAssets(articleId);
+    const referenced = new Set(referencedAssetIds(blocks));
+    if (!(await retireAssets(articleId, owned.filter(mayBePublic), referenced))) {
       return { ok: false, error: 'assetSyncFailed' };
     }
     return { ok: true };
   }
 
-  /* Unpublishing: everything public comes out, referenced or not. */
-  const allPublic = owned.filter((row) => row.state === 'published').map((row) => row.id);
-  if (!(await retireAssets(articleId, allPublic))) {
+  /* Publishing does check, before anything is copied: see
+     `resolveReferencedAssets`. It copies and removes nothing: the row write
+     that follows can still fail, and the live page it would replace still
+     names every image the old body had. `retireUnreferencedAssets` runs once
+     the row is written. */
+  const resolved = await resolveReferencedAssets(articleId, blocks);
+  if (!resolved.ok) return resolved;
+
+  if (!(await publishAssets(articleId, resolved.ids))) {
+    return { ok: false, error: 'assetSyncFailed' };
+  }
+  return { ok: true };
+}
+
+/**
+ * After a published save is written: take out what the body no longer names.
+ *
+ * Deleting a figure from a published article is the ordinary way an image
+ * becomes unreferenced, and leaving it public would mean a picture the editor
+ * removed is still served. Run before the row write, a failed write left the
+ * live page — the previous version, still naming that picture — with a
+ * broken image.
+ */
+export async function retireUnreferencedAssets(
+  articleId: string,
+  blocks: readonly unknown[],
+): Promise<LifecycleResult> {
+  if (isDevStore()) return { ok: true };
+
+  const owned = await ownedAssets(articleId);
+  const referenced = new Set(referencedAssetIds(blocks));
+  const stranded = owned.filter((row) => mayBePublic(row) && !referenced.has(row.id));
+  if (!(await retireAssets(articleId, stranded, referenced))) {
     return { ok: false, error: 'assetSyncFailed' };
   }
   return { ok: true };

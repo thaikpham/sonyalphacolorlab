@@ -48,6 +48,20 @@ describe('PATCH', () => {
     expect(invalidate).toBeLessThan(retire);
   });
 
+  it('retires what a published body dropped only after the row is written', () => {
+    /* Before, the publish step removed a deleted figure's public copy and then
+       wrote the row. A failed write left the live page — still the old
+       version, still naming that figure — with a broken image. */
+    const flip = body.indexOf('updateArticleRecord(');
+    const invalidate = body.indexOf('revalidateTag(LAB_TAG, IMMEDIATE)');
+    const retire = body.indexOf('retireUnreferencedAssets(');
+    expect(retire).toBeGreaterThan(-1);
+    expect(flip).toBeLessThan(retire);
+    expect(invalidate).toBeLessThan(retire);
+    // A failure answers with the stored version, as the draft path does.
+    expect(body.slice(retire)).toMatch(/if \(!synced\.ok\)[\s\S]{0,160}\.\.\.stored \}, \{ status: 502 \}/);
+  });
+
   it('never invalidates on a failed save', () => {
     const failure = body.lastIndexOf("{ error: 'saveFailed' }");
     expect(failure).toBeLessThan(body.indexOf('revalidateTag(LAB_TAG, IMMEDIATE)'));
@@ -85,6 +99,11 @@ describe('GET', () => {
   it('hands back signed previews rather than public URLs', () => {
     expect(body).toMatch(/articlePreviews\(id, referencedAssetIds\(article\.blocks\)\)/);
   });
+
+  it('says when the previews could not be read, without refusing the article', () => {
+    /* A ledger outage is not a reason to keep the editor out of the text. */
+    expect(body).toMatch(/previewsFailed: previews\.failed/);
+  });
 });
 
 describe('the upload route', () => {
@@ -117,15 +136,19 @@ describe('the upload route', () => {
 describe('the editor', () => {
   const source = readFileSync('src/components/lab/admin/article-admin.tsx', 'utf8');
 
-  it('reloads the record when the parser dropped a block', () => {
+  it('rebuilds the draft from the stored row the save answered with', () => {
     /* A dropped block is gone from the row the moment the save returns, but it
-       is still on screen — and `dirty` is false, so nothing prompts the editor
-       to reconcile them. Left alone they keep editing blocks that no longer
-       exist, and the next save drops them again. */
-    expect(source).toMatch(/if \(data\.dropped[^)]*\)[\s\S]{0,400}openArticle\(savedId\)/);
-    /* The same holds for metadata the parser refused: a source row that did
-       not save must not stay on screen looking saved. */
-    expect(source).toMatch(/if \(data\.dropped \|\| data\.droppedMeta\)/);
+       used to stay on screen — and `dirty` was false, so nothing prompted the
+       editor to reconcile them. The same held for refused metadata and for
+       text the parser cut. The answer now carries what was stored, and the
+       draft is rebuilt from it (`afterSave`, executed in article-draft.test). */
+    expect(source).toMatch(/setDraft\(\(d\) => afterSave\(d, sent, stored\)\)/);
+    expect(source).toMatch(/data\.dropped\s*\?\s*t\('savedWithDropped'/);
+    expect(source).toMatch(/t\('savedWithDroppedMeta'/);
+  });
+
+  it('tells the editor a preview outage, rather than showing every image as expired', () => {
+    expect(source).toMatch(/data\.previewsFailed[\s\S]{0,120}codeMessage\('previewsFailed'\)/);
   });
 
   it('never persists a signed preview into a block', () => {
@@ -133,6 +156,23 @@ describe('the editor', () => {
        article body and a dead link an hour later. */
     expect(source).not.toMatch(/previewUrl[^\n]*blocks/);
     expect(source).toMatch(/setPreviews\(/);
+  });
+
+  it('saves a published article without unpublishing it', () => {
+    /* Both buttons used to send 'draft' on a live article: fixing a typo took
+       the page down for readers and pulled its images out of the public
+       bucket, under a toast that said only "Saved." */
+    expect(source).not.toMatch(/save\('draft'\)/);
+    expect(source).toMatch(/onClick=\{\(\) => void save\(draft\.status\)\}/);
+  });
+
+  it('names the version it opened on every save', () => {
+    /* Without it the route's 409 never fires: a second tab's save silently
+       reverted the first, and both said "Saved". */
+    const draft = readFileSync('src/components/lab/admin/article-draft.ts', 'utf8');
+    expect(source).toMatch(/savePayload\(sent, nextStatus\)/);
+    expect(draft).toMatch(/expectedUpdatedAt: d\.version/);
+    expect(draft).toMatch(/version: a\.updatedAt/);
   });
 
   it('will not upload against an article that has no row yet', () => {

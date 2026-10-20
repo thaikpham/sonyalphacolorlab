@@ -11,7 +11,7 @@ import {
   slugify,
 } from './parse'
 import { parseKind, parseMeta } from './meta'
-import type { Article, ArticleKind, ArticleRecord, ArticleStatus } from './types'
+import type { Article, ArticleRecord, ArticleStatus } from './types'
 
 /**
  * The admin's view of the article store: every row, drafts included.
@@ -89,29 +89,12 @@ export async function getArticleRecord(id: string): Promise<ArticleRecord | null
     .eq('id', id)
     .maybeSingle()
 
-  if (error || !data) return null
+  /* `null` is "no such row" and nothing else. Answering it for an error too
+     made a restricted content project read as a deleted article: every editor
+     opening any page was told it no longer existed. */
+  if (error) throw new Error(`lab_articles: ${error.message}`)
+  if (!data) return null
   return toRecord(data as Row)
-}
-
-/**
- * The row shape a write produces, from an untrusted body.
- *
- * Every field is re-derived rather than spread: the body is JSON an admin's
- * browser sent, and an admin is trusted to publish, not trusted to have sent
- * well-formed JSON. `blocks` goes through `parseBlocks`, which is the only
- * place a block's shape is checked before it reaches a renderer.
- */
-export type WritePayload = {
-  kind: ArticleKind
-  topic: string
-  level: string
-  archetype: string
-  read: string
-  title: string
-  dek: string
-  blocks: unknown
-  meta: unknown
-  status: ArticleStatus
 }
 
 export type NormalisedWrite = {
@@ -125,6 +108,14 @@ export type NormalisedWrite = {
   droppedMeta: number
 }
 
+/**
+ * The row shape a write produces, from an untrusted body.
+ *
+ * Every field is re-derived rather than spread: the body is JSON an admin's
+ * browser sent, and an admin is trusted to publish, not trusted to have sent
+ * well-formed JSON. `blocks` goes through `parseBlocks`, which is the only
+ * place a block's shape is checked before it reaches a renderer.
+ */
 export function normaliseWrite(id: string, body: Record<string, unknown>): NormalisedWrite | null {
   const title = typeof body.title === 'string' ? body.title.trim().slice(0, 200) : ''
   if (!title) return null
@@ -225,23 +216,34 @@ function row(article: Article, status: ArticleStatus, email: string) {
   }
 }
 
+/**
+ * Both writes answer the row's new `updated_at` — the version the editor names
+ * on its next save. Read back from the database rather than echoed from
+ * `row()`: PostgREST formats a timestamp its own way (`+00:00`, microseconds),
+ * and the route compares versions as strings, so an echoed `toISOString()`
+ * would make the first save after every create read as stale.
+ */
 export async function insertArticleRecord(
   article: Article,
   status: ArticleStatus,
   email: string,
-): Promise<void> {
+): Promise<string> {
   if (isDevStore()) {
-    devUpsert(devRecord(article, status, email))
-    return
+    const record = devRecord(article, status, email)
+    devUpsert(record)
+    return record.updatedAt
   }
 
-  const { error } = await contentAdmin()
+  const { data, error } = await contentAdmin()
     .from('lab_articles')
     .insert({ id: article.id, created_at: new Date().toISOString(), ...row(article, status, email) })
-  if (error) {
+    .select('updated_at')
+    .single()
+  if (error || typeof data?.updated_at !== 'string') {
     console.error('[lab] insert failed:', JSON.stringify(error))
     throw new Error('saveFailed')
   }
+  return data.updated_at
 }
 
 /** Thrown when the row the editor is saving is no longer there. */
@@ -249,18 +251,41 @@ export class ArticleMissingError extends Error {
   readonly code = 'notFound'
 }
 
+/** Thrown when the row has been saved since the editor opened it. */
+export class StaleEditError extends Error {
+  readonly code = 'staleEdit'
+}
+
+/**
+ * Write the article, but only over the version the editor opened.
+ *
+ * `expectedUpdatedAt` is that version. A row saved since — by another editor,
+ * or by the same one in a second tab — matches nothing and is refused as
+ * `StaleEditError`, rather than having this save silently revert that one.
+ * The route compares the version before it writes; the filter here closes the
+ * window between that read and this write. `updated_at` is NOT NULL on
+ * `lab_articles`, so unlike a product there is no never-edited `null` case.
+ */
 export async function updateArticleRecord(
   article: Article,
   status: ArticleStatus,
   email: string,
-): Promise<void> {
+  expectedUpdatedAt: string,
+): Promise<string> {
   if (isDevStore()) {
-    /* An update to an id the store does not hold is an upsert here rather than
-       an error. The dev store is seeded lazily from the compiled catalogue, so
-       the first edit to one of those three articles is genuinely its first
-       write to the file. */
-    devUpsert(devRecord(article, status, email))
-    return
+    /* Missing is missing, as in production. The seeded articles are found
+       here before the file exists — the store reads the seed when there is no
+       file — so an upsert only ever served an id the store does not hold: an
+       article deleted in another tab came back, and an id nobody created was
+       created. */
+    const current = devGet(article.id)
+    if (!current) throw new ArticleMissingError(`lab_articles ${article.id} no longer exists`)
+    if (current.updatedAt !== expectedUpdatedAt) {
+      throw new StaleEditError(`lab_articles ${article.id} was saved since it was opened`)
+    }
+    const record = devRecord(article, status, email)
+    devUpsert(record)
+    return record.updatedAt
   }
 
   /* `.select('id')` is what makes a missing row an error.
@@ -275,14 +300,24 @@ export async function updateArticleRecord(
     .from('lab_articles')
     .update(row(article, status, email))
     .eq('id', article.id)
-    .select('id')
+    .eq('updated_at', expectedUpdatedAt)
+    .select('id, updated_at')
   if (error) {
     console.error('[lab] update failed:', JSON.stringify(error))
     throw new Error('saveFailed')
   }
-  if (!data || data.length === 0) {
+  const saved = data?.[0] as { updated_at?: unknown } | undefined
+  if (!saved) {
+    /* Nothing matched: the row went, or it moved on. Asked again rather than
+       guessed, so a deletion still reads as one. A failed re-read throws, and
+       is a failed save — not evidence of either. */
+    if (await getArticleRecord(article.id)) {
+      throw new StaleEditError(`lab_articles ${article.id} was saved since it was opened`)
+    }
     throw new ArticleMissingError(`lab_articles ${article.id} no longer exists`)
   }
+  if (typeof saved.updated_at !== 'string') throw new Error('saveFailed')
+  return saved.updated_at
 }
 
 export async function deleteArticleRecord(id: string): Promise<void> {

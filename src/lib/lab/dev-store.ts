@@ -1,10 +1,10 @@
 import 'server-only'
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { hasContentConfig } from '@/lib/supabase/server'
 import { ARTICLES } from './articles'
 import { PILOT_DRAFTS } from './pilot-drafts'
-import { parseBlocks } from './parse'
+import { parseArchetype, parseBlocks, parseLevel, parseStatus, parseTopic } from './parse'
 import { parseKind, parseMeta } from './meta'
 import type { ArticleRecord } from './types'
 
@@ -54,6 +54,45 @@ function assertDev() {
 }
 
 /**
+ * The version every seeded record carries until the first write creates the
+ * file. Fixed, not the clock: `updatedAt` is what the editor sends back as
+ * `expectedUpdatedAt`, and the seed is rebuilt on every read, so a clock stamp
+ * gave GET one version and the save's re-read a later one — every save of a
+ * seeded article was refused as stale, and reopening it fetched another.
+ */
+const SEED_VERSION = '1970-01-01T00:00:00.000Z'
+
+/**
+ * One stored row, rebuilt field by field the way `toRecord` rebuilds a
+ * Supabase row: an unknown topic, level or archetype falls back so the row can
+ * still be opened and fixed, and only an unusable id or title is refused.
+ */
+function toDevRecord(row: unknown): ArticleRecord | null {
+  if (typeof row !== 'object' || row === null) return null
+  const r = row as Record<string, unknown>
+  if (typeof r.id !== 'string' || typeof r.title !== 'string') return null
+  return {
+    id: r.id,
+    /* A file written before knowledge pages existed has neither field; it
+       holds ordinary articles with no metadata. */
+    kind: parseKind(r.kind) ?? 'article',
+    topic: parseTopic(r.topic) ?? 'setup',
+    level: parseLevel(r.level) ?? 'newbie',
+    archetype: parseArchetype(r.archetype) ?? 'explainer',
+    read: typeof r.read === 'string' ? r.read : '',
+    title: r.title,
+    dek: typeof r.dek === 'string' ? r.dek : '',
+    blocks: parseBlocks(r.blocks).blocks,
+    meta: parseMeta(r.meta).meta,
+    status: parseStatus(r.status),
+    /* The list sorts on it, so a hand-edited row without one would take the
+       whole list down. */
+    updatedAt: typeof r.updatedAt === 'string' ? r.updatedAt : SEED_VERSION,
+    updatedBy: typeof r.updatedBy === 'string' ? r.updatedBy : null,
+  }
+}
+
+/**
  * Read the file, falling back to the authored catalogue the first time.
  *
  * Seeding from `ARTICLES` rather than starting empty is the point: a developer
@@ -61,52 +100,48 @@ function assertDev() {
  * which is a far better test of the screen than three blank ones they have to
  * type first. They are marked `published` because that is what they are on the
  * live site. The pilot pages from `pilot-drafts.ts` come in as drafts.
+ *
+ * Only a file that does not exist seeds. One that cannot be read or is not a
+ * list throws: read as empty, the next save wrote back a single record and
+ * every other local article was gone.
  */
 function readAll(): ArticleRecord[] {
   assertDev()
   let raw: string
   try {
     raw = readFileSync(FILE, 'utf8')
-  } catch {
-    const now = new Date().toISOString()
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
+      throw new Error(`${FILE} could not be read: ${(err as Error).message}`)
+    }
     return [
-      ...ARTICLES.map((a) => ({ ...a, status: 'published' as const, updatedAt: now, updatedBy: null })),
+      ...ARTICLES.map((a) => ({ ...a, status: 'published' as const, updatedAt: SEED_VERSION, updatedBy: null })),
       /* The pilot pages arrive as drafts, which is what they are: content for
          the owner to review in the editor, never a seed of the live site. */
-      ...PILOT_DRAFTS.map((a) => ({ ...a, status: 'draft' as const, updatedAt: now, updatedBy: null })),
+      ...PILOT_DRAFTS.map((a) => ({ ...a, status: 'draft' as const, updatedAt: SEED_VERSION, updatedBy: null })),
     ]
   }
 
+  let parsed: unknown
   try {
-    const parsed = JSON.parse(raw) as unknown
-    if (!Array.isArray(parsed)) return []
-    /* Parsed, not cast, for the same reason a Supabase row is: this file is
-       written by an editor and hand-editable, so it is untrusted input with a
-       shorter path to a renderer than the database has. */
-    return parsed.flatMap((row) => {
-      if (typeof row !== 'object' || row === null) return []
-      const r = row as Record<string, unknown>
-      if (typeof r.id !== 'string' || typeof r.title !== 'string') return []
-      return [
-        {
-          ...(r as unknown as ArticleRecord),
-          /* A file written before knowledge pages existed has neither field;
-             it holds ordinary articles with no metadata. */
-          kind: parseKind(r.kind) ?? 'article',
-          blocks: parseBlocks(r.blocks).blocks,
-          meta: parseMeta(r.meta).meta,
-        },
-      ]
-    })
-  } catch {
-    return []
+    parsed = JSON.parse(raw)
+  } catch (err) {
+    throw new Error(`${FILE} is not valid JSON — fix or remove it: ${(err as Error).message}`)
   }
+  if (!Array.isArray(parsed)) throw new Error(`${FILE} is not a list of articles — fix or remove it`)
+  /* Parsed, not cast, for the same reason a Supabase row is: this file is
+     written by an editor and hand-editable, so it is untrusted input with a
+     shorter path to a renderer than the database has. */
+  return parsed.map(toDevRecord).filter((r): r is ArticleRecord => r !== null)
 }
 
+/** Through a temporary file and a rename, so a killed process cannot leave half a file. */
 function writeAll(records: readonly ArticleRecord[]) {
   assertDev()
   mkdirSync(dirname(FILE), { recursive: true })
-  writeFileSync(FILE, `${JSON.stringify(records, null, 2)}\n`, 'utf8')
+  const temp = `${FILE}.${process.pid}.tmp`
+  writeFileSync(temp, `${JSON.stringify(records, null, 2)}\n`, 'utf8')
+  renameSync(temp, FILE)
 }
 
 export function devList(): ArticleRecord[] {

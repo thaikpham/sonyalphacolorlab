@@ -40,18 +40,16 @@ function contentStorageOrigin(): string | null {
 }
 
 /**
- * Where one variant of one asset is served from.
- *
- * Returns `undefined` rather than a guess when there is no content project
- * configured and no local copy to fall back on — a renderer that gets
- * `undefined` renders nothing, which is the correct outcome for a picture that
- * does not exist anywhere.
+ * Where one variant of one asset is served from: the content project's public
+ * bucket, or the offline copy under `public/lab/` when no project is
+ * configured. Always a URL — whether the picture exists is the block's
+ * question (it has an asset id or it does not), not this function's.
  */
 export function assetUrl(
   articleId: string,
   assetId: string,
   width: LabAssetWidth = DEFAULT_RUNG,
-): string | undefined {
+): string {
   const path = assetVariantPath(articleId, assetId, width);
   const origin = contentStorageOrigin();
   if (origin) return `${origin}/storage/v1/object/public/${PUBLIC_BUCKET}/${path}`;

@@ -43,12 +43,17 @@ export function translateSpecValue(field: string, value: string, locale: string)
   const rules = rulesFor(field);
   if (!rules) return value;
 
-  const literal = rules.literals?.[value];
+  /* The rules are NFC. Admin input is stored as typed, and Vietnamese pasted
+     from macOS or a PDF can arrive decomposed — identical on screen, and a
+     match for nothing here. */
+  const nfc = value.normalize('NFC');
+
+  const literal = rules.literals?.[nfc];
   if (literal) return literal;
 
   /* Ordered, and applied to the accumulating result: a later pair must not be
      able to match inside text an earlier pair already produced. */
-  let out = value;
+  let out = nfc;
   for (const [from, to] of rules.replace ?? []) {
     out = out.split(from).join(to);
   }

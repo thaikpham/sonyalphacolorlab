@@ -1,7 +1,21 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { clConstraints, constraintsFor, ppConstraints, wbConstraints } from './constraints';
 import { checkDailyBudget, checkRateLimit, resetRateLimits } from './rate-limit';
-import { CREATIVE_LOOKS, PP_GAMMA } from '../camera/constants';
+import {
+  CL_RANGES,
+  CREATIVE_LOOKS,
+  PP_BLACK_GAMMA_RANGE,
+  PP_COLOR_MODE,
+  PP_DETAIL_BW_BALANCE,
+  PP_DETAIL_MODE,
+  PP_GAMMA,
+  PP_KNEE_AUTO_SENSITIVITY,
+  PP_RANGES,
+  WB_AUTO_MODES,
+  WB_KELVIN,
+  WB_PRESETS,
+  type Range,
+} from '../camera/constants';
 
 /**
  * The prompt text is generated from constants.ts. These tests exist because a
@@ -35,6 +49,33 @@ describe('AI constraint text', () => {
   it('tells the model to omit Saturation on monochrome Looks', () => {
     expect(clConstraints()).toContain("OMITTED");
     expect(clConstraints()).toContain("BW, SE");
+  });
+
+  /* Structured outputs move `enum` into description text, so the brief is the
+     only place the model is told the legal names — and a preset recipe whose
+     own White Balance is missing from it reads as illegal (rule 1b). */
+  it('names all three White Balance modes and every value in them', () => {
+    const wb = wbConstraints();
+    expect(wb).toContain(`${WB_KELVIN.min} to ${WB_KELVIN.max}`);
+    for (const m of WB_AUTO_MODES) expect(wb).toContain(m);
+    for (const p of WB_PRESETS) expect(wb).toContain(p);
+  });
+
+  it('states every Picture Profile and Creative Look range and enum', () => {
+    const spanOf = (r: Range) => `${r.min} to ${r.max}`;
+    const pp = constraintsFor('pp');
+    for (const [key, r] of Object.entries(PP_RANGES)) expect(pp, key).toContain(spanOf(r));
+    for (const v of [
+      ...PP_BLACK_GAMMA_RANGE,
+      ...PP_COLOR_MODE,
+      ...PP_KNEE_AUTO_SENSITIVITY,
+      ...PP_DETAIL_MODE,
+      ...PP_DETAIL_BW_BALANCE,
+    ]) {
+      expect(pp, v).toContain(v);
+    }
+    const cl = constraintsFor('cl');
+    for (const [key, r] of Object.entries(CL_RANGES)) expect(cl, key).toContain(spanOf(r));
   });
 
   it('includes the WB shift quarter-step', () => {

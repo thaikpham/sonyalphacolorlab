@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import type { Session } from '@supabase/supabase-js';
 import { authBrowser, isAuthOutage } from '@/lib/supabase/browser';
@@ -22,6 +22,7 @@ import { authBrowser, isAuthOutage } from '@/lib/supabase/browser';
 export type UserProfile = {
   name: string;
   email: string;
+  /** The Google photo, or '' when the account has none. */
   avatarUrl: string;
 };
 
@@ -52,10 +53,13 @@ function toProfile(session: Session | null): UserProfile | null {
     (typeof meta.picture === 'string' && meta.picture.trim()) ||
     (typeof meta.avatarUrl === 'string' && meta.avatarUrl.trim()) ||
     '';
+  /* Empty when there is no usable photo, and each surface draws its own
+     fallback from tokens. This used to substitute a generated image from a
+     third-party avatar service, with a raw hex for its colour. */
   const avatarUrl =
     rawAvatar.startsWith('http://') || rawAvatar.startsWith('https://') || rawAvatar.startsWith('//')
       ? rawAvatar
-      : `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0D8ABC&color=fff&bold=true`;
+      : '';
   return { name, email: u.email, avatarUrl };
 }
 
@@ -76,6 +80,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   /* The reachability probe below is a network round trip, so the button has to
      say it is doing something. Without this it looks dead for up to 5s. */
   const [isSigningIn, setIsSigningIn] = useState(false);
+  /* The sheet's primary action, which takes focus when the sheet opens. */
+  const primaryRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const supabase = authBrowser();
@@ -101,8 +107,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const openLoginModal = useCallback(() => setIsLoginModalOpen(true), []);
+  const openLoginModal = useCallback(() => {
+    /* A fresh sheet. The error was cleared only by pressing Google again, so
+       reopening after an outage showed the old alert before anything had been
+       tried. */
+    setError(null);
+    setIsLoginModalOpen(true);
+  }, []);
   const closeLoginModal = useCallback(() => setIsLoginModalOpen(false), []);
+
+  /**
+   * Escape and focus, while the sheet is open.
+   *
+   * It is `aria-modal`, yet focus stayed on the control that opened it, behind
+   * the scrim, and the header's Escape handler knows nothing of it — so a
+   * keyboard reader had to tab through the page to reach the ✕. Focus moves to
+   * the primary action on open and returns to the opener on close.
+   */
+  useEffect(() => {
+    if (!isLoginModalOpen) return;
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    primaryRef.current?.focus();
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsLoginModalOpen(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      opener?.focus();
+    };
+  }, [isLoginModalOpen]);
 
   const loginWithGoogle = useCallback(async () => {
     const supabase = authBrowser();
@@ -129,6 +163,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         options: { redirectTo: window.location.href },
       });
       if (err) setError('errOpenFailed');
+    } catch {
+      /* `isAuthOutage` fails open and auth-js falls back to memory storage, so
+         this is unlikely — but a throw here was an unhandled rejection and a
+         sheet that said nothing. */
+      setError('errOpenFailed');
     } finally {
       setIsSigningIn(false);
     }
@@ -199,6 +238,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                   slab. White ground with black type is the one contrast
                   direction this system does not have. */}
               <button
+                ref={primaryRef}
                 type="button"
                 onClick={loginWithGoogle}
                 disabled={isSigningIn}

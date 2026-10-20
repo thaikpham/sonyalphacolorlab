@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 /**
@@ -25,12 +25,51 @@ import { describe, expect, it } from 'vitest';
 const SESSION = 'src/components/admin-ui/session.tsx';
 const SHELL = 'src/components/admin-ui/shell.tsx';
 
-/** Every client component that may render an admin screen. */
+/**
+ * Every client component that may render an admin screen — discovered, not
+ * listed. The hand-kept list held four files and missed both recipe screens,
+ * `recipe-admin.tsx` and `image-panel.tsx`, which call `useAdminSession()` and
+ * fetch `/api/admin/recipes`; `admin-gate.test.ts` discovers its routes for the
+ * same reason. A screen is admin when it reads the session module or calls an
+ * admin route.
+ */
+function clientFiles(dir: string): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+    const p = `${dir}/${e.name}`;
+    if (e.isDirectory()) return clientFiles(p);
+    if (!/\.tsx?$/.test(e.name) || /\.test\.tsx?$/.test(e.name)) return [];
+    return readFileSync(p, 'utf8').includes("'use client'") ? [p] : [];
+  });
+}
+
 const ADMIN_CLIENTS = [
-  'src/components/admin/admin-editor.tsx',
-  'src/components/lab/admin/article-admin.tsx',
-  SHELL,
-];
+  ...new Set([
+    ...clientFiles('src/components').filter((p) => {
+      if (p === SESSION) return false;
+      const src = readFileSync(p, 'utf8');
+      return /from '(@\/components\/admin-ui|\.)\/session'/.test(src) || src.includes("'/api/admin");
+    }),
+    /* Not an admin screen any more, and listed so it cannot become one again
+       behind the gate's back: it carried its own tokenless session probe and
+       two bearer-less PATCH modals, so every edit it offered could only fail.
+       /admin/wiki is the product editor. */
+    'src/components/camera-compare-view.tsx',
+  ]),
+].sort();
+
+describe('the admin client inventory', () => {
+  it('finds every admin screen, the recipe editor and its photographs included', () => {
+    for (const p of [
+      'src/components/admin/admin-editor.tsx',
+      'src/components/lab/admin/article-admin.tsx',
+      'src/components/colorlab/admin/recipe-admin.tsx',
+      'src/components/colorlab/admin/image-panel.tsx',
+      SHELL,
+    ]) {
+      expect(ADMIN_CLIENTS).toContain(p);
+    }
+  });
+});
 
 describe(SESSION, () => {
   const source = readFileSync(SESSION, 'utf8');
@@ -51,8 +90,23 @@ describe(SESSION, () => {
     /* The `catch` is the same case as the 503: a fetch that never resolves
        tells us nothing about the caller's rights. Falling to a denial there
        was the second half of the same bug. */
-    expect(source).toMatch(/catch\s*{\s*if\s*\(live\)\s*setGate\('unavailable'\)/);
-    expect(source).not.toMatch(/catch\s*{\s*if\s*\(live\)\s*setGate\('denied'\)/);
+    expect(source).toMatch(/catch\s*{\s*settle\('unavailable'\)/);
+    expect(source).not.toMatch(/catch\s*{\s*settle\('denied'\)/);
+  });
+
+  it('probes once per identity, not once per token', () => {
+    /* The session object changes on every hourly TOKEN_REFRESHED. Keyed on
+       it, each refresh re-probed, and one failed re-probe swapped an open
+       editor — and its unsaved draft — for the outage panel. */
+    expect(source).toMatch(/\}, \[identity, nonce\]\);/);
+    expect(source).not.toMatch(/\}, \[authed, nonce\]\);/);
+  });
+
+  it('shows an answer only to the identity it was given for', () => {
+    /* A password sign-in fires SIGNED_IN before the new probe answers; the
+       tokenless probe's `denied` then read as "not an admin" to the admin who
+       had just typed the right password. */
+    expect(source).toMatch(/probe\.for === identity \? probe\.gate : 'checking'/);
   });
 
   it('carries three outcomes, not a boolean', () => {
@@ -93,6 +147,18 @@ describe(SHELL, () => {
     /* And the restore window is its own state, or a signed-in admin's screen
        flickers through a login prompt on every load. */
     expect(source).toMatch(/!isReady/);
+  });
+});
+
+describe('src/components/admin-ui/sign-in.tsx', () => {
+  const source = readFileSync('src/components/admin-ui/sign-in.tsx', 'utf8');
+
+  it('leaves the code to StepUp instead of a second form of its own', () => {
+    /* Its code stage could never render: SIGNED_IN re-probes the gate and the
+       shell unmounts this form before `setStage('code')` runs, leaving an
+       orphaned challenge behind. The shell's StepUp is what asks for it. */
+    expect(source).not.toMatch(/setStage\('code'\)/);
+    expect(source).not.toMatch(/mfa\.challenge\(/);
   });
 });
 

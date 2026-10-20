@@ -207,6 +207,28 @@ not exist yet and every `select(PRODUCT_COLUMNS)` against content fails with
 to tolerate the missing column — a read that cannot select a column it names
 must fail loudly, not fall back.
 
+**Pending: `0019_community_photo_grant_and_proposal_sample.sql` (control).**
+The proposals route names `recipe_proposals.sample_image_url` in
+`PROPOSAL_COLUMNS` and inserts it, and only 0019 adds that column. Control
+migrations arrive by the merge-time integration, which does not gate Vercel:
+if the deployment goes live first, or the push goes `MIGRATIONS_FAILED`, every
+`GET /api/proposals` answers 503 and every proposal `POST` fails. Before
+merging, run the `schema_migrations` query above and confirm every row matches
+a file prefix, so the push cannot refuse. Safest is to land 0019 on `main` on
+its own, confirm `0019` is recorded and the column exists, then merge the
+route. Do not make the route tolerate the missing column.
+
+0019 also takes table-level writes on `recipe_comments`, `recipe_proposals`,
+`recipes`, `recipe_translations` and `recipe_images` away from anon and
+authenticated, drops the `'super'` default from `admin_emails.role` (an
+insert must now name its role), and requires `admin_emails.email` to be
+lowercase — existing rows are lowercased first, and if two addresses collide
+the migration stops on the primary key. Check for that before merging:
+
+```sql
+select lower(email), count(*) from admin_emails group by 1 having count(*) > 1;
+```
+
 ### The content project's lineage
 
 `touiyczjvnuaxfzulgeq` was not built from `0001_content_baseline.sql`. Its

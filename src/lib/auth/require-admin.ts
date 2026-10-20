@@ -1,6 +1,7 @@
 import 'server-only';
 import { controlAdmin, hasControlConfig } from '@/lib/supabase/server';
 import { ControlUnavailableError } from '@/lib/supabase/errors';
+import type { AdminRole } from '@/lib/admin/category-roles';
 import { requireUser, type AuthedUser } from './require-user';
 
 /**
@@ -31,8 +32,6 @@ import { requireUser, type AuthedUser } from './require-user';
  * evidence that somebody is an administrator. It is 503.
  */
 
-export type AdminRole = 'super' | 'di' | 'pe';
-
 export type AdminUser = AuthedUser & {
   role: AdminRole;
 };
@@ -52,13 +51,6 @@ export type AdminUser = AuthedUser & {
  */
 export class MfaRequiredError extends Error {
   readonly code = 'mfaRequired';
-}
-
-export function canManageCategory(role: AdminRole, category: string): boolean {
-  if (role === 'super') return true;
-  if (role === 'di') return category !== 'audio';
-  if (role === 'pe') return category === 'audio';
-  return false;
 }
 
 /**
@@ -81,6 +73,14 @@ const LOCAL_DEV_ADMIN: AdminUser = {
   assuranceLevel: null,
   role: 'super',
 };
+
+/* Keyed by the union, so a role added to `AdminRole` fails to compile here
+   until it is listed. */
+const ADMIN_ROLES: Record<AdminRole, true> = { super: true, di: true, pe: true };
+
+function isAdminRole(role: string): role is AdminRole {
+  return Object.hasOwn(ADMIN_ROLES, role);
+}
 
 export async function requireAdmin(request: Request): Promise<AdminUser | null> {
   if (!hasControlConfig()) {
@@ -111,7 +111,9 @@ export async function requireAdmin(request: Request): Promise<AdminUser | null> 
     throw new ControlUnavailableError(`admin_emails: ${(error as Error).message}`);
   }
 
-  if (!data) return null;
+  /* A role this code does not know grants nothing. It used to fall back to
+     'super' — failing open, to the most privileged role there is. */
+  if (!data || !isAdminRole(data.role)) return null;
 
   /* The ratchet: a second factor is required as soon as one exists, and not
      before.
@@ -126,18 +128,8 @@ export async function requireAdmin(request: Request): Promise<AdminUser | null> 
     throw new MfaRequiredError('admin has an enrolled factor but the session is aal1');
   }
 
-  return { ...user, role: (data.role as AdminRole) || 'super' };
+  return { ...user, role: data.role };
 }
-
-/**
- * The body every admin route returns when the caller is not an admin.
- *
- * A code, not a sentence, for the same reason the community routes use one: a
- * literal here renders untranslated to the other locale and is invisible to the
- * message parity test. The client looks it up under `admin.errors.*`.
- */
-export const NOT_ADMIN = { error: 'notAdmin' as const };
-
 
 /**
  * Whether this account has a TOTP factor it has finished enrolling.

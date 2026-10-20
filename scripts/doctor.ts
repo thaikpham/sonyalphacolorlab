@@ -36,6 +36,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import { recipeSchema } from '../src/lib/camera/schema';
 import { SPEC_ROWS, type ProductSpecs, type SonyCamera } from '../src/lib/cameras/types';
 import { splitFeatures } from '../src/lib/cameras/features';
+import { highlightsSchema } from '../src/lib/cameras/highlights';
+import { variantPaths } from './lib/recipe-image-manifest';
 
 // ---------------------------------------------------------------------------
 // Report model
@@ -136,6 +138,11 @@ const recipes = readJson<SeedRecipe[]>('data/recipes.seed.json');
 const translations = readJson<Translation[]>('data/translations.seed.json');
 const images = readJson<ImageRow[]>('data/images.seed.json');
 const products = readJson<SonyCamera[]>('data/sony-cameras.seed.json');
+/* The audio catalogue lands in the same `sony_cameras` table — push:supabase
+   upserts both files in one call — so an id repeated across the two fails that
+   call after the recipes are already written. */
+const audio = readJson<SonyCamera[]>('data/sony-audio.seed.json');
+const catalogue = [...products, ...audio];
 const en = readJson<Record<string, unknown>>('messages/en.json');
 const vi = readJson<Record<string, unknown>>('messages/vi.json');
 
@@ -248,12 +255,23 @@ function checkImages(): Section {
   const covered = new Set(images.map((r) => r.recipeId));
   const noImage = recipes.filter((r) => !covered.has(r.id)).map((r) => r.id);
 
+  /* The seed is only half of a photograph; the other half is three files in
+     public/recipes. A path nothing serves — the `.jpg` paths migrate:images
+     once wrote — renders as a broken photo in production and nowhere else. */
+  const unserved = images.flatMap((r) => {
+    if (!r.storagePath?.trim()) return [];
+    const files = variantPaths(r.storagePath);
+    const missing = files.filter((p) => !existsSync(`public/recipes/${p}`));
+    return missing.length ? [`${r.storagePath} — ${missing.length} of ${files.length} files missing`] : [];
+  });
+
   const findings = compact([
     issue('fail', orphans, 'reference a recipe that does not exist'),
     /* `sort` is the gallery order. A repeated (recipe, sort) pair orders
        non-deterministically, so the hero photo changes between deploys. */
     issue('fail', dupeSort, 'duplicate (recipeId, sort) pair'),
     issue('fail', blankPath, 'have a blank storagePath'),
+    issue('fail', unserved, 'photographs are not in public/recipes'),
     issue('warn', noImage, 'recipes have no photo'),
   ]);
 
@@ -269,7 +287,7 @@ function checkImages(): Section {
 }
 
 // ---------------------------------------------------------------------------
-// sony-cameras.seed.json
+// sony-cameras.seed.json, sony-audio.seed.json
 // ---------------------------------------------------------------------------
 
 const SPEC_BOOKKEEPING = ['kind', 'specsSource', 'specsMissing', 'keySpecs'];
@@ -295,8 +313,27 @@ function valueFields(specs: ProductSpecs): [string, unknown][] {
   return Object.entries(specs).filter(([k]) => !SPEC_BOOKKEEPING.includes(k));
 }
 
-function checkProducts(): Section {
-  const CATEGORIES = ['camera', 'lens', 'accessory'];
+/** The spec template each category renders through. */
+const KINDS: Record<string, readonly string[]> = {
+  camera: ['camera'],
+  lens: ['lens'],
+  accessory: ['accessory'],
+  audio: ['headphone', 'speaker'],
+};
+const CATEGORIES = Object.keys(KINDS);
+
+/**
+ * Whether a spec block names where it came from.
+ *
+ * The B&H catalogue cites a page. The audio catalogue is extracted from Sony
+ * Vietnam's FY26 comparison sheets, which are print artwork with no URL, so
+ * there the citation is the sheet's name.
+ */
+function sourced(p: SonyCamera, source: string | undefined): boolean {
+  return p.category === 'audio' ? Boolean(source?.trim()) : /^https:\/\//.test(source ?? '');
+}
+
+function checkProducts(file: string, products: SonyCamera[]): Section {
 
   const badCategory: string[] = [];
   const noSpecs: string[] = [];
@@ -309,6 +346,7 @@ function checkProducts(): Section {
   const noFeaturesEn: string[] = [];
   const noFeaturesVi: string[] = [];
   const badImageUrl: string[] = [];
+  const badHighlights: string[] = [];
 
   for (const p of products) {
     const who = p.name ?? p.id;
@@ -326,6 +364,15 @@ function checkProducts(): Section {
        exactly this in the admin list; the doctor just counts the backlog. */
     else if (fVi.length === 0) noFeaturesVi.push(who);
 
+    /* The page validates on read and quietly renders the fallback; the doctor
+       is where an invalid block should be loud. */
+    if (p.highlights !== null && p.highlights !== undefined) {
+      const parsed = highlightsSchema.safeParse(p.highlights);
+      if (!parsed.success) {
+        badHighlights.push(`${who} — ${parsed.error.issues[0]?.path.join('.') || '(root)'}`);
+      }
+    }
+
     if (!p.specs) {
       noSpecs.push(who);
       continue;
@@ -334,8 +381,10 @@ function checkProducts(): Section {
 
     /* A lens rendered through the camera template shows thirteen "not
        published" rows, which reads as a sparse source rather than a bug. */
-    if (specs.kind !== p.category) kindMismatch.push(`${who} — ${specs.kind} on a ${p.category}`);
-    if (!/^https:\/\//.test(specs.specsSource ?? '')) noSource.push(who);
+    if (!(KINDS[p.category] ?? []).includes(specs.kind)) {
+      kindMismatch.push(`${who} — ${specs.kind} on a ${p.category}`);
+    }
+    if (!sourced(p, specs.specsSource)) noSource.push(who);
 
     const fields = valueFields(specs);
     const nulls = fields.filter(([, v]) => v === null).map(([k]) => k);
@@ -387,11 +436,19 @@ function checkProducts(): Section {
     issue('fail', unlabelled, 'SPEC_ROWS fields have no label in messages/en.json'),
     issue('fail', badImageUrl, 'product image references are unusable'),
     issue('fail', noFeaturesEn, 'products have no English feature bullets'),
+    issue('fail', badHighlights, 'highlights do not parse against highlightsSchema'),
     issue('warn', sourceProse, 'spec values carry Vietnamese source prose'),
     issue('warn', noSpecs, 'products have no specs block yet'),
     issue('warn', noFeaturesVi, 'products await a Vietnamese feature pass'),
-    issue('fail', duplicates(products.map((p) => p.id)), 'duplicate product id'),
-    issue('fail', duplicates(products.map((p) => p.sku)), 'duplicate sku'),
+    /* Across both seeds: they share one table. An id here that is also in
+       the other file is the same failure as a repeat inside this one. */
+    issue(
+      'fail',
+      duplicates(catalogue.map((p) => p.id)).filter((id) => products.some((p) => p.id === id)),
+      'duplicate product id across the catalogue seeds',
+    ),
+    /* `''` is the audio sheets' "no SKU published", not a value two rows share. */
+    issue('fail', duplicates(products.map((p) => p.sku).filter(Boolean)), 'duplicate sku'),
   ]);
 
   const withSpecs = products.filter((p) => p.specs).length;
@@ -399,11 +456,12 @@ function checkProducts(): Section {
     findings.unshift({ level: 'ok', text: `${withSpecs} spec blocks are fully sourced` });
   }
 
-  const byCat = CATEGORIES.map(
-    (c) => `${products.filter((p) => p.category === c).length} ${c}`,
-  ).join(' / ');
+  const byCat = CATEGORIES.map((c) => [c, products.filter((p) => p.category === c).length] as const)
+    .filter(([, n]) => n > 0)
+    .map(([c, n]) => `${n} ${c}`)
+    .join(' / ');
   return {
-    title: 'data/sony-cameras.seed.json',
+    title: file,
     subtitle: `${products.length} products · ${byCat} · ${withSpecs} with specs`,
     findings,
   };
@@ -493,7 +551,7 @@ async function checkImageUrls(): Promise<Section> {
   // verified against public/ by the offline pass — there is nothing to fetch.
   const targets = new Map<string, string>();
   let local = 0;
-  for (const p of products) {
+  for (const p of catalogue) {
     for (const url of [p.imageUrl, ...(p.galleryUrls ?? [])]) {
       if (!url) continue;
       if (!/^https:\/\//.test(url)) {
@@ -589,7 +647,8 @@ async function main() {
     checkRecipes(),
     checkTranslations(),
     checkImages(),
-    checkProducts(),
+    checkProducts('data/sony-cameras.seed.json', products),
+    checkProducts('data/sony-audio.seed.json', audio),
     checkMessages(),
   ];
   if (OPT.images) sections.push(await checkImageUrls());

@@ -14,7 +14,15 @@ export const config = {
    * `/opengraph-image` and friends have no file extension, so the
    * `.*\\..*` escape does not catch them and the locale rewrite swallows
    * them — the icon 404s and social cards lose their image, silently.
+   * `proxy.test.ts` pins the list against Next's own matcher compiler.
    * `/manifest.webmanifest` is already covered by the extension rule.
+   *
+   * A NESTED `opengraph-image` is excluded too, anywhere in the path. Next
+   * fills the `[locale]` param into the og:image URL, so an English recipe's
+   * card is `/en/recipe/<slug>/opengraph-image-<hash>` — and through this
+   * middleware `as-needed` 307s the `/en/` away, a redirect hop on every
+   * scrape that some scrapers do not follow. Unmatched, the request reaches
+   * the route directly, with the locale already in its path.
    *
    * `/admin` is excluded for a different reason. It is a route tree of its own
    * outside the `[locale]` segment, and `localePrefix: 'as-needed'` would
@@ -22,5 +30,7 @@ export const config = {
    * pages that now redirect to here, which is a loop. The admin document names
    * its own `lang`; it has no locale for this middleware to negotiate.
    */
-  matcher: ['/((?!api|admin|_next|_vercel|icon|apple-icon|opengraph-image|twitter-image|sitemap|robots|.*\\..*).*)'],
+  matcher: [
+    '/((?!api|admin|_next|_vercel|icon|apple-icon|opengraph-image|twitter-image|sitemap|robots|.*/opengraph-image|.*\\..*).*)',
+  ],
 };
