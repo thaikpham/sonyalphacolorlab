@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { PGlite } from '@electric-sql/pglite';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { toRow } from './row';
+import { PROPOSAL_COLUMNS } from '../community/columns';
 import type { Recipe } from '../camera/schema';
 
 /**
@@ -218,8 +219,7 @@ describe('migrations', () => {
        the grant does not cover is "permission denied" for the whole query, so
        every GET /api/proposals would answer 503. This pins the dependency; it
        cannot pin the order — 0019 must be applied before the route ships. */
-    const route = readFileSync('src/app/api/proposals/route.ts', 'utf8');
-    const columns = route.match(/const PROPOSAL_COLUMNS =\s*'([^']+)'/)?.[1];
+    const columns = PROPOSAL_COLUMNS;
     expect(columns).toContain('sample_image_url');
     await db.exec(`set role ${role}`);
     try {
