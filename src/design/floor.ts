@@ -100,11 +100,26 @@ export function sourceFiles(): string[] {
  */
 const TAILWIND_NAMED_BELOW_FLOOR = /\btext-xs\b/g
 
-/** `text-[10px]`, `text-[0.65rem]`. Arbitrary values, which is where most are. */
-const ARBITRARY_SIZE = /\btext-\[(\d*\.?\d+)(px|rem)\]/g
+/**
+ * `text-[10px]`, `text-[0.65rem]`, and the `text-[length:11px]` type hint.
+ * Arbitrary values, which is where most are.
+ */
+const ARBITRARY_SIZE = /\btext-\[(?:length:)?(\d*\.?\d+)(px|rem)\]/g
 
 /** A raw declaration in a stylesheet: `font-size: 0.725rem`. */
 const CSS_FONT_SIZE = /font-size:\s*(\d*\.?\d+)(px|rem)/g
+
+/**
+ * The `font:` shorthand, where the size follows an optional style and weight:
+ * `font: 600 11px/1 sans-serif`. `font: inherit` has no length and is skipped.
+ */
+const CSS_FONT_SHORTHAND = /\bfont:\s*(?:[^;\n}'"]*?\s)?(\d*\.?\d+)(px|rem)/g
+
+/**
+ * A JSX style object: `fontSize: '11px'`, or a bare number, which React reads
+ * as px. The lookahead keeps `'1.5em'` from matching as a bare `1`.
+ */
+const JSX_FONT_SIZE = /\bfontSize:\s*['"`]?(\d*\.?\d+)(px|rem)?(?![\w.%])/g
 
 /**
  * Deliberately not matching `em`: it resolves against the parent, so 0.75em is
@@ -112,20 +127,32 @@ const CSS_FONT_SIZE = /font-size:\s*(\d*\.?\d+)(px|rem)/g
  * guard that gets muted. There are none in this repo; if one appears, the
  * reviewer catches it.
  */
-function toPx(value: string, unit: string): number {
+function toPx(value: string, unit: string | undefined): number {
   return unit === 'rem' ? Number(value) * 16 : Number(value)
 }
 
-/** The `font-mono` utility, and any hand-rolled read of the variable. */
-const MONO = /\bfont-mono\b|var\(--font-mono\)/g
+/**
+ * The `font-mono` utility, any hand-rolled read of the variable, and the mono
+ * stacks CLAUDE.md's audit grep lists: `ui-monospace`, `monospace` and
+ * `Noto Sans Mono`. `ui-monospace` is one match, not two.
+ */
+const MONO = /\bfont-mono\b|var\(--font-mono\)|\b(?:ui-)?monospace\b|\bNoto Sans Mono\b/g
+
+const HUES =
+  'slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose'
 
 /**
  * A Tailwind default palette colour on any utility that takes one. Matches the
  * full `<utility>-<hue>-<step>` shape so that prose, a variable named `slate`,
- * or one of our own tokens cannot trip it.
+ * or one of our own tokens cannot trip it. A side or offset segment may sit
+ * between utility and hue (`border-t-red-500`, `ring-offset-green-500`), and
+ * the palette's own variable may be read directly (`var(--color-sky-300)`).
  */
-const PALETTE =
-  /\b(?:bg|text|border|ring|from|to|via|shadow|fill|stroke|outline|decoration|accent|caret|divide|placeholder)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-\d{2,3}\b/g
+const PALETTE = new RegExp(
+  `\\b(?:bg|text|border|ring|from|to|via|shadow|fill|stroke|outline|decoration|accent|caret|divide|placeholder)(?:-(?:[trblxyse]|offset))?-(?:${HUES})-\\d{2,3}\\b` +
+    `|var\\(--color-(?:${HUES})-\\d{2,3}\\)`,
+  'g',
+)
 
 function lineOf(source: string, index: number): number {
   let line = 1
@@ -168,13 +195,48 @@ function collect(
  * that `text-amber-400` and `text-emerald-400` were deleted.
  *
  * Strings are deliberately NOT stripped. A Tailwind class always lives in one,
- * so stripping them would blind the scanner to every real violation.
+ * so stripping them would blind the scanner to every real violation. They are
+ * still tracked, because a comment opener inside one is not a comment: a regex
+ * strip read `accept="image/*"` as one and blanked the code up to the next
+ * close — the very strings the scanner exists to read. A quoted string ends at
+ * a newline, so a stray apostrophe (JSX text, a regex literal) costs at most
+ * the rest of its line, and only ever as an over-report.
+ *
+ * A `//` right after `:` is a URL scheme, not a comment.
  */
 function stripComments(source: string): string {
-  const blank = (text: string) => text.replace(/[^\n]/g, ' ')
-  return source
-    .replace(/\/\*[\s\S]*?\*\//g, blank)
-    .replace(/(^|[^:])\/\/[^\n]*/g, (match, lead: string) => lead + blank(match.slice(lead.length)))
+  const out = source.split('')
+  const blank = (from: number, to: number) => {
+    for (let i = from; i < to; i += 1) if (out[i] !== '\n') out[i] = ' '
+  }
+  let quote: string | null = null
+  let i = 0
+  while (i < source.length) {
+    const char = source[i]
+    if (quote !== null) {
+      if (char === '\\') i += 2
+      else {
+        if (char === quote || (char === '\n' && quote !== '`')) quote = null
+        i += 1
+      }
+      continue
+    }
+    if (char === '"' || char === "'" || char === '`') {
+      quote = char
+      i += 1
+    } else if (char === '/' && source[i + 1] === '*') {
+      const close = source.indexOf('*/', i + 2)
+      const end = close === -1 ? source.length : close + 2
+      blank(i, end)
+      i = end
+    } else if (char === '/' && source[i + 1] === '/' && source[i - 1] !== ':') {
+      const newline = source.indexOf('\n', i)
+      const end = newline === -1 ? source.length : newline
+      blank(i, end)
+      i = end
+    } else i += 1
+  }
+  return out.join('')
 }
 
 export function scanSource(source: string, file: string): Violation[] {
@@ -185,6 +247,8 @@ export function scanSource(source: string, file: string): Violation[] {
     ...collect(code, file, TAILWIND_NAMED_BELOW_FLOOR, 'belowFloor'),
     ...collect(code, file, ARBITRARY_SIZE, 'belowFloor', underFloor),
     ...collect(code, file, CSS_FONT_SIZE, 'belowFloor', underFloor),
+    ...collect(code, file, CSS_FONT_SHORTHAND, 'belowFloor', underFloor),
+    ...collect(code, file, JSX_FONT_SIZE, 'belowFloor', underFloor),
     ...collect(code, file, MONO, 'mono'),
     ...collect(code, file, PALETTE, 'palette'),
   ].sort((a, b) => a.line - b.line)

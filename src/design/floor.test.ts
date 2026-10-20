@@ -3,7 +3,8 @@ import { join } from 'node:path'
 
 import { describe, expect, it } from 'vitest'
 
-import { REPO_ROOT, scanRepo, scanSource, tally, totals } from './floor'
+import { TEXT } from '../../packages/colorlab-tokens/src/tokens'
+import { FLOOR_PX, REPO_ROOT, scanRepo, scanSource, tally, totals } from './floor'
 
 /**
  * The enforceable part of the design system.
@@ -62,6 +63,21 @@ describe('design floor', () => {
       ['text-amber-400', 'palette'],
       ['bg-emerald-500', 'palette'],
       ['border-slate-300', 'palette'],
+      /* Shapes the first patterns missed: a side or offset segment before the
+         hue, a palette variable read directly, the `length:` type hint, the
+         `font` shorthand, a JSX style object, and the mono stacks CLAUDE.md's
+         own audit grep lists. */
+      ['border-t-red-500', 'palette'],
+      ['border-x-amber-400', 'palette'],
+      ['ring-offset-green-500', 'palette'],
+      ['color: var(--color-sky-300)', 'palette'],
+      ['text-[length:11px]', 'belowFloor'],
+      ['font: 600 11px/1 sans-serif', 'belowFloor'],
+      ["fontSize: '11px'", 'belowFloor'],
+      ['fontSize: 11', 'belowFloor'],
+      ['font-family: ui-monospace', 'mono'],
+      ['font-family: monospace', 'mono'],
+      ["font-family: 'Noto Sans Mono'", 'mono'],
     ])('flags %s as %s', (snippet, rule) => {
       const found = scanSource(`const c = "flex ${snippet} items-center"`, 'probe.tsx')
       expect(found.map((v) => v.rule)).toContain(rule)
@@ -76,6 +92,9 @@ describe('design floor', () => {
       'bg-accent-500',
       'text-community',
       'tabular-nums',
+      'font: inherit',
+      'fontSize: 15',
+      'ring-offset-2',
     ])('leaves %s alone', (snippet) => {
       expect(scanSource(`const c = "flex ${snippet}"`, 'probe.tsx')).toEqual([])
     })
@@ -100,6 +119,24 @@ describe('design floor', () => {
       expect(found[0].text).toBe('text-xs')
     })
 
+    // A comment opener inside a string is not a comment. The old strip blanked
+    // from `accept="image/*"` to the next comment close, hiding everything
+    // between — and strings are exactly where the classes live.
+    it('does not treat /* inside a string as a comment', () => {
+      const found = scanSource('const a = "image/*"; const c = "text-[10px]"; /* x */', 'p.tsx')
+      expect(found.map((v) => v.rule)).toEqual(['belowFloor'])
+    })
+
+    it('does not treat // inside a string as a comment', () => {
+      const found = scanSource("const a = 'a // b'; const c = 'font-mono';", 'p.ts')
+      expect(found.map((v) => v.rule)).toEqual(['mono'])
+    })
+
+    it('keeps line numbers through a blanked comment', () => {
+      const found = scanSource('/* one\ntwo */\nconst c = "font-mono"', 'p.ts')
+      expect(found[0].line).toBe(3)
+    })
+
     /* A URL is not a comment. `https://…` contains `//`, and a naive line-
        comment strip blanks the rest of the line — which would silently hide
        every violation written after any link in the file. */
@@ -110,5 +147,18 @@ describe('design floor', () => {
       )
       expect(found.map((v) => v.rule)).toContain('mono')
     })
+  })
+})
+
+/* The scanner reads call sites, not the scale itself: `meta: '0.8125rem'` is a
+   bare rem string, and theme.css — where it becomes a font size — is vendored
+   and out of scope. Shrink a step in tokens.ts and every `.meta` drops below
+   the floor with the scan green. */
+describe('the type scale', () => {
+  it.each(Object.entries(TEXT.tokens))('--text-%s (%s) is at or above the floor', (_name, value) => {
+    const m = value.match(/^(\d*\.?\d+)(px|rem)$/)
+    expect(m, `${value} is not a px or rem length`).not.toBeNull()
+    const px = m![2] === 'rem' ? Number(m![1]) * 16 : Number(m![1])
+    expect(px).toBeGreaterThanOrEqual(FLOOR_PX)
   })
 })

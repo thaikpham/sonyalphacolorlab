@@ -3,5 +3,15 @@
     "belowFloor": 3,
     "mono": 1,
     "palette": 0
+  },
+  "src/app/fonts.test.ts": {
+    "belowFloor": 0,
+    "mono": 1,
+    "palette": 0
+  },
+  "src/components/colorlab/admin/recipe-admin.test.ts": {
+    "belowFloor": 0,
+    "mono": 1,
+    "palette": 0
   }
 }
