@@ -85,4 +85,13 @@ describe('not-found boundary', () => {
     expect(source).toContain('<NotFoundBody copy={copy} />');
     expect(source).toMatch(/NOT_FOUND_APPS\.map\(/);
   });
+
+  it('reads the app list from a plain module, never from the client component', () => {
+    /* A server component that imports a VALUE from a 'use client' module gets
+       a client reference, not the array: the build failed with
+       "NOT_FOUND_APPS.map is not a function" while every unit test passed. */
+    const source = readFileSync('src/app/[locale]/not-found.tsx', 'utf8');
+    expect(source).toMatch(/import \{ NOT_FOUND_APPS \} from '@\/components\/not-found-apps'/);
+    expect(source).not.toMatch(/NOT_FOUND_APPS[^\n]*from '@\/components\/not-found-body'/);
+  });
 });

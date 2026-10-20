@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { SiteHeader } from '@/components/site-header';
-import { NOT_FOUND_APPS, NotFoundBody, type NotFoundCopy } from '@/components/not-found-body';
+import { NotFoundBody, type NotFoundCopy } from '@/components/not-found-body';
+import { NOT_FOUND_APPS } from '@/components/not-found-apps';
 
 export default async function NotFound() {
   const t = await getTranslations('notFound');

@@ -1,6 +1,7 @@
 'use client';
 
 import { Link, usePathname } from '@/i18n/navigation';
+import { NOT_FOUND_APPS, type NotFoundApp } from './not-found-apps';
 
 /**
  * The apps a missing page can belong to, each with its own index.
@@ -11,8 +12,7 @@ import { Link, usePathname } from '@/i18n/navigation';
  * its way out was `/colorlab`, so a dead `/blog/<id>` link apologised for a
  * recipe under the blog's header and sent the reader to the recipe grid.
  */
-export const NOT_FOUND_APPS = ['recipe', 'camera', 'audio', 'blog', 'learn'] as const;
-export type NotFoundApp = (typeof NOT_FOUND_APPS)[number];
+export { NOT_FOUND_APPS, type NotFoundApp };
 
 const INDEX: Record<NotFoundApp, string> = {
   recipe: '/colorlab',
