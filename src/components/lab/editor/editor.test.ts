@@ -72,6 +72,13 @@ describe('ArticleEditor', () => {
     expect(src).toMatch(/window\.history\.replaceState\(null, '', getPathname\(\{ href: `\$\{pathFor\(stored\.kind, stored\.id\)\}\/edit`, locale \}\)\)/)
   })
 
+  it('compares the stored kind against the URL’s own ref, not the route prop, so a second kind change still moves it', () => {
+    expect(src).toMatch(/const urlKind = useRef\(kind\)/)
+    expect(src).toMatch(/stored\.kind !== urlKind\.current/)
+    expect(src).toMatch(/urlKind\.current = stored\.kind/)
+    expect(src).not.toMatch(/stored\.kind !== kind/)
+  })
+
   it('keeps one block open at a time, and opens a block as it is inserted', () => {
     expect(src).toMatch(/const \[openKey, setOpenKey\] = useState<number \| null>\(null\)/)
     expect(src).toMatch(/setOpenKey\(editor\.insertBlock\(type, 0\)\)/)

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { getPathname, useRouter } from '@/i18n/navigation'
 import type { ArticleKind } from '@/lib/lab/types'
@@ -19,14 +19,21 @@ export function ArticleEditor({ id, kind }: { id: string | null; kind: ArticleKi
   const t = useTranslations('labAdmin')
   const locale = useLocale()
   const router = useRouter()
+  /* The kind the URL currently names. Starts at the route's prop, but the
+     prop is fixed at mount and this instance no longer remounts on a
+     kind-changing save — comparing against `kind` itself would take the
+     `replaceState` branch forever after the first move, and `router.refresh()`
+     would never fire again. */
+  const urlKind = useRef(kind)
   const editor = useArticleEditor({
     onStored: (stored, created) => {
-      if (created || stored.kind !== kind) {
+      if (created || stored.kind !== urlKind.current) {
         /* `router.replace` would remount the route, dropping whatever was
            typed during the round trip (which `afterSave` keeps, dirty) and
            losing the "created"/"saved at" line on the fresh instance. The
            URL alone moves; this instance and its draft stay. */
         window.history.replaceState(null, '', getPathname({ href: `${pathFor(stored.kind, stored.id)}/edit`, locale }))
+        urlKind.current = stored.kind
       } else {
         router.refresh()
       }
