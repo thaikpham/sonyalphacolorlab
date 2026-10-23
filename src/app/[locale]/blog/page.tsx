@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { bilingualAlternates } from '@/i18n/alternates'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { LabFeed, parseFilter } from '@/components/lab/lab-feed'
+import { FeedAdminRow } from '@/components/lab/feed-admin-row'
 import { SiteHeader } from '@/components/site-header'
 import { getPublishedArticles } from '@/lib/lab/data'
 import type { Locale } from '@/i18n/routing'
@@ -44,6 +45,7 @@ export default async function BlogFeedPage({
   const { locale } = await params
   setRequestLocale(locale)
   const filter = parseFilter(await searchParams)
+  const t = await getTranslations('lab')
   const articles = await getPublishedArticles()
 
   return (
@@ -57,6 +59,7 @@ export default async function BlogFeedPage({
     <div className="theme-paper contents">
       <SiteHeader />
       <main className="min-h-screen-dynamic w-full">
+        <FeedAdminRow kind="article" create={t('adminNew')} drafts={t('adminDrafts')} />
         <LabFeed filter={filter} articles={articles} />
       </main>
     </div>

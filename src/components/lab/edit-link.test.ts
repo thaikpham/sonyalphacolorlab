@@ -33,3 +33,30 @@ describe('ArticleView', () => {
     expect(view).not.toMatch(/cookies\(\)|headers\(\)/)
   })
 })
+
+describe('FeedAdminRow', () => {
+  const row = readFileSync('src/components/lab/feed-admin-row.tsx', 'utf8')
+  const blog = readFileSync('src/app/[locale]/blog/page.tsx', 'utf8')
+  const learn = readFileSync('src/app/[locale]/learn/page.tsx', 'utf8')
+
+  it('is for an admin only and leaves a signed-out reader unprobed', () => {
+    expect(row).toMatch(/<AdminSessionProvider probeSignedOut=\{false\}>/)
+    expect(row).toMatch(/if \(gate !== 'admin'\) return null/)
+  })
+
+  it('reads the drafts with the session’s own headers, only once the gate is open', () => {
+    expect(row).toMatch(/fetch\('\/api\/admin\/articles', \{ headers: authed\(\) \}\)/)
+    expect(row).toMatch(/if \(gate !== 'admin'\) return\b/)
+  })
+
+  it('lists the drafts of its own kind, each at its edit path', () => {
+    expect(row).toMatch(/a\.status === 'draft' && a\.kind === kind/)
+    expect(row).toMatch(/href=\{`\$\{base\}\/\$\{a\.id\}\/edit`\}/)
+  })
+
+  it('sits on both hubs, with its words from the server', () => {
+    expect(blog).toMatch(/<FeedAdminRow\s+kind="article"/)
+    expect(learn).toMatch(/<FeedAdminRow\s+kind="knowledge"/)
+    expect(row).not.toMatch(/useTranslations\(/)
+  })
+})

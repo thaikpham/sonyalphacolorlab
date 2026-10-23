@@ -674,6 +674,8 @@
   },
   "lab": {
     "edit": "Sửa",
+    "adminNew": "Bài mới",
+    "adminDrafts": "Bản nháp",
     "feedTitle": "Alpha Tech Blogs",
     "feedHeading": "Bài viết kỹ thuật",
     "pathLabel": "Lộ trình",

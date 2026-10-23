@@ -674,6 +674,8 @@
   },
   "lab": {
     "edit": "Edit",
+    "adminNew": "New article",
+    "adminDrafts": "Drafts",
     "feedTitle": "Alpha Tech Blogs",
     "feedHeading": "Technical articles",
     "pathLabel": "Learning path",

@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 import type { Metadata, Viewport } from 'next'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
+import { FeedAdminRow } from '@/components/lab/feed-admin-row'
 import { SiteHeader } from '@/components/site-header'
 import { Link } from '@/i18n/navigation'
 import { bilingualAlternates } from '@/i18n/alternates'
@@ -45,7 +46,11 @@ export default async function LearnPage({ params }: { params: Promise<{ locale: 
   const { locale } = await params
   setRequestLocale(locale)
 
-  const [t, pages] = await Promise.all([getTranslations('learn'), getPublishedKnowledge()])
+  const [t, tl, pages] = await Promise.all([
+    getTranslations('learn'),
+    getTranslations('lab'),
+    getPublishedKnowledge(),
+  ])
   const glossary = buildGlossary(locale)
   const glossaryCount = glossary.reduce((n, g) => n + g.entries.length, 0)
 
@@ -68,6 +73,7 @@ export default async function LearnPage({ params }: { params: Promise<{ locale: 
         <SiteHeader />
       </Suspense>
       <main className="mx-auto min-h-screen-dynamic w-full max-w-[86rem] inset-safe pt-8 pb-24">
+        <FeedAdminRow kind="knowledge" create={tl('adminNew')} drafts={tl('adminDrafts')} />
         <h1 className="text-display font-semibold tracking-[-0.02em] leading-[1.1] text-ink">
           {t('title')}
         </h1>
