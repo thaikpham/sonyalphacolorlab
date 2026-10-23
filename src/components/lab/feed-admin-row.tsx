@@ -44,7 +44,7 @@ function Row({ kind, create, drafts }: { kind: ArticleKind; create: string; draf
 
   if (gate !== 'admin') return null
   return (
-    <div className="mx-auto w-full max-w-[160rem] inset-safe pt-6">
+    <div className="mx-auto w-full max-w-[160rem] inset-safe pt-6 mb-6">
       <div className="flex flex-wrap items-start gap-3">
         <Link href={`${base}/new`} className="btn-glass">
           {create}
