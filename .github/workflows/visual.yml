@@ -21,19 +21,43 @@ permissions:
   contents: read
 
 jobs:
+  # A new push needs a new look: take a stale "visual-ok" off. Its own job so that the comparison,
+  # which runs the PR's code, never holds a token that can write to the pull request.
+  stale-label:
+    name: Visual (stale label)
+    if: github.event.action == 'synchronize' && contains(github.event.pull_request.labels.*.name, 'visual-ok')
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: A new push needs a new look
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        # A 404 means the label is already gone; anything else is a real failure.
+        run: |
+          if out=$(gh api -X DELETE "repos/$REPO/issues/$PR/labels/visual-ok" 2>&1); then
+            echo "Đã gỡ nhãn visual-ok: lần đẩy mới cần được xem lại."
+          elif printf '%s' "$out" | grep -q 'HTTP 404'; then
+            echo "Nhãn visual-ok đã không còn."
+          else
+            printf '%s\n' "$out"; exit 1
+          fi
+
   visual:
     name: Visual (PR vs base)
-    # Other labels change nothing here.
-    if: (github.event.action != 'labeled' && github.event.action != 'unlabeled') || github.event.label.name == 'visual-ok'
+    # No label filter on purpose. A job skipped by an `if:` still records a "skipped" check run under
+    # this name on the same commit, and a skipped latest run can read as passing: adding an unrelated
+    # label to a failed PR would turn the check green. Every event runs the full comparison, and
+    # ACCEPTED alone decides the verdict.
     runs-on: ubuntu-latest
-    # On the job, not the workflow: a run skipped for another label must not cancel a comparison.
+    # On the job, not the workflow: a newer event for the same PR replaces an older comparison.
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
     permissions:
       contents: read
-      # Only to take a stale "visual-ok" off after a new push.
-      pull-requests: write
     env:
       # What counts as "the front changed".
       FRONT_PATHS: src public/fonts messages packages/colorlab-tokens e2e/visual.spec.ts playwright.config.ts
@@ -42,27 +66,14 @@ jobs:
       # The label counts unless this run is for a new push (which takes it off).
       ACCEPTED: ${{ contains(github.event.pull_request.labels.*.name, 'visual-ok') && github.event.action != 'synchronize' }}
     steps:
-      - name: Accepted
-        if: github.event.action == 'labeled'
-        run: echo "Thay đổi trên màn hình đã được chấp nhận bằng nhãn visual-ok."
-
-      - name: A new push needs a new look
-        if: github.event.action == 'synchronize' && contains(github.event.pull_request.labels.*.name, 'visual-ok')
-        run: gh pr edit "$PR" --repo "$REPO" --remove-label visual-ok || true
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PR: ${{ github.event.pull_request.number }}
-          REPO: ${{ github.repository }}
-
       - uses: actions/checkout@v4
-        if: github.event.action != 'labeled'
         with:
           path: head
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Did the front change?
         id: front
-        if: github.event.action != 'labeled'
         working-directory: head
         run: |
           if git diff --quiet "$BASE" HEAD -- $FRONT_PATHS; then
@@ -76,6 +87,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.base.sha }}
           path: base
+          persist-credentials: false
 
       - uses: actions/setup-node@v4
         if: steps.front.outputs.changed == 'true'
@@ -113,7 +125,6 @@ jobs:
       # same way. The whole e2e/ folder, not just the spec: visual.spec.ts imports ./setup.ts, which
       # reads e2e/fixtures/photo.webp at import, and a base from before the gates has no e2e/ at all.
       # Replaced rather than merged, so a stale helper on base cannot shadow the PR's.
-      #
       #
       # Playwright itself does not need base's tsconfig.json: it compiles the spec with its own
       # transform and resolves `./setup.ts` itself, so a base without `allowImportingTsExtensions`

@@ -160,7 +160,15 @@ describe('the visual check', () => {
     const wf = read('.github/workflows/visual.yml');
     expect(wf).toMatch(/FRONT_PATHS: src public\/fonts messages packages\/colorlab-tokens e2e\/visual\.spec\.ts playwright\.config\.ts/);
     expect(wf).toMatch(/CL_VISUAL=1 CL_SNAPSHOT_DIR=/);
-    expect(wf).toMatch(/--remove-label visual-ok/);
+    expect(wf).toMatch(/gh api -X DELETE "repos\/\$REPO\/issues\/\$PR\/labels\/visual-ok"/);
     expect(wf).not.toMatch(/E2E_DIR|WEB_DIR|FF_/);
+  });
+
+  it('runs the comparison on every event: a skipped run under its name could read as passing', () => {
+    const wf = read('.github/workflows/visual.yml');
+    const job = /\n  visual:\n([\s\S]*?)\n    steps:/.exec(wf)?.[1];
+    expect(job).toBeDefined();
+    expect(job).not.toMatch(/^    if:/m);
+    expect(job).not.toMatch(/pull-requests: write/);
   });
 });
