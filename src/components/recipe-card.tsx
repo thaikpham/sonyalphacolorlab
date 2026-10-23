@@ -1,26 +1,29 @@
 import { Link } from '@/i18n/navigation';
 import { accentCss } from '@/lib/camera/color';
+import { FORMAT_LABELS } from '@/lib/camera/constants';
 import type { RecipeView } from '@/lib/recipes/source';
 import type { SituationId } from '@/lib/recipes/taxonomy';
 import { recipeTitle } from '@/lib/recipes/title';
-import { RecipeColorField } from './recipe-color-field';
-import { RecipePhoto } from './recipe-photo';
+import { RecipePalette } from './recipe-palette';
 
 /**
- * Grid card: a 210px photograph, then the recipe's identity underneath.
+ * Grid card: the recipe's palette in a 210px slot, then its identity
+ * underneath. No recipe carries a photograph — pictures come only from
+ * readers, on the recipe page — so the thumbnail is the nine swatches its own
+ * settings grade (`paletteFor`), the same layout on every card so a column
+ * means the same thing across the grid.
  *
- * The photograph no longer carries the text. Type over an arbitrary frame is
- * the one contrast the system cannot guarantee — every scrim strong enough to
- * fix it also hid the picture — so the format, the name and the situations sit
- * on the card's own surface, where `ink` / `ink-faint` mean what they say.
+ * The format, the name and the situations sit on the card's own surface,
+ * where `ink` / `ink-faint` mean what they say.
  *
  * Three lines and no more (D10, Q4). The format is a plain `.label` in
  * `ink-faint` — it used to borrow `community` cyan and `proposal` violet, and
  * a signal colour classifies content, never decorates a format. The parameter
  * chips and the tag line are gone: the dials are on the recipe page, where
  * they have room to be explained, and the tags were provenance ("sri-lanka"),
- * not purpose. The name drops its `SCL-xx-000:` code on the card only; the
- * recipe page still shows the code in its own chip.
+ * not purpose. The name is the recipe's code and mood (`PP-048-Soft Clean
+ * Portrait`); a row still on its old `SCL-PP-048: Huế Silk` shape until the
+ * library sync runs shows its title without the code.
  *
  * `.surface` is the whole elevation: white 5% film, blur 30, elevation 1 and
  * the 1px specular highlight that stands in for the border. It is unlayered
@@ -40,7 +43,7 @@ export function RecipeCard({
   /* The two formats are mutually exclusive on the camera (rule 2), and the two
      names stay in English because they are Sony menu items, not copy (rule 3,
      same as `structured-data.tsx`). */
-  const kind = recipe.format === 'pp' ? 'Picture Profile' : 'Creative Look';
+  const kind = FORMAT_LABELS[recipe.format];
   const situations = recipe.situations.map((s) => situationLabels[s]).join(' · ');
 
   return (
@@ -58,24 +61,8 @@ export function RecipeCard({
       /* Scopes ::selection inside the card to this recipe's own colour. */
       style={{ '--accent': accent } as React.CSSProperties}
     >
-      <div className="relative h-[210px] w-full overflow-hidden">
-        {recipe.images.length > 0 ? (
-          /* Falls back to the same field on its own if the photograph does not
-             arrive — Storage answers `402` for the whole catalogue while the
-             project's egress quota is spent, and a grid of broken-image boxes
-             reads as a broken site. */
-          <RecipePhoto
-            src={recipe.images[0]}
-            alt={recipe.name}
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, (max-width: 2100px) 25vw, 20vw"
-            accent={accent}
-          />
-        ) : (
-          /* Only a minority of the catalogue is photographed. The rest show
-             the field this recipe's own colour science produces, which is
-             information, not a placeholder. */
-          <RecipeColorField accent={accent} />
-        )}
+      <div className="h-[210px] w-full overflow-hidden">
+        <RecipePalette palette={recipe.palette} tone={recipe.tone} style={recipe.style} variant="card" />
       </div>
 
       <div className="flex flex-col gap-2 px-5 pt-[19px] pb-[22px]">

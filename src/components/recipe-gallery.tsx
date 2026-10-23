@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { OPEN_PROPOSAL_EVENT, OPEN_TWEAK_EVENT } from '@/lib/community/events';
 import { communityErrorOf } from '@/lib/community/errors';
+import { isExpiringImageHost } from '@/lib/community/image-hosts';
 import { useAuth } from '@/components/auth-context';
 import catalogueImageLoader from '@/lib/images/catalogue-loader';
 import {
@@ -20,9 +21,17 @@ import {
 
 interface RecipeGalleryProps {
   slug: string;
-  images: string[];
   title: string;
 }
+
+/** Narrower than this and a contributed photograph is a smudge in the large tile. */
+const MIN_PREVIEW_WIDTH = 320;
+
+/**
+ * The preview of the URL being contributed, once the browser has tried it.
+ * `width` is the decoded natural width, 0 when it did not decode at all.
+ */
+type PreviewState = { src: string; ok: boolean; width: number };
 
 /*
  * The three offer icons.
@@ -97,18 +106,11 @@ function AiSparkleIcon({ className }: { className?: string }) {
 /**
  * The lightbox's own images, sized.
  *
- * Everything in the collage above goes through `next/image` and so through the
- * catalogue loader. The lightbox cannot: its photos may be community
- * contributions, which are arbitrary third-party URLs that `next/image` refuses
- * because they are not in `remotePatterns`. So they are raw `<img>` — and a raw
- * `<img>` bypasses the loader, which meant every one of them pulled the full
- * original straight from Storage. The filmstrip renders up to sixteen at 48px
- * each; that was ~3.2MB to open a lightbox once, against a CDN egress quota
- * billed by the byte.
- *
- * Calling the loader by hand restores the sizing without giving up the escape
- * hatch: a Storage object comes back as an optimizer URL at the right rung, and
- * a community URL comes back untouched, exactly as before.
+ * Every photograph here is a reader's contribution — an arbitrary third-party
+ * URL that `next/image` refuses because it is not in `remotePatterns` — so the
+ * lightbox draws raw `<img>`. Routed through the catalogue loader by hand all
+ * the same, so a source the loader does know how to size (a B&H or article
+ * rung) comes back at the right width, and anything else comes back untouched.
  */
 const sized = (src: string, width: number) => catalogueImageLoader({ src, width });
 
@@ -169,9 +171,11 @@ function ActionTile({
 }
 
 /**
- * Photographic collage gallery with community contributions, author credits, and full-screen slider lightbox.
+ * The recipe's photographs: readers' contributions only, newest first, the
+ * first one the large tile, with author credits and a full-screen lightbox.
+ * The catalogue carries no photograph of its own any more.
  */
-export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
+export function RecipeGallery({ slug, title }: RecipeGalleryProps) {
   const t = useTranslations('recipe');
   const { user, openLoginModal, accessToken } = useAuth();
   /* Deliberately the whole `community` namespace, not `community.errors`:
@@ -202,6 +206,9 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
   const [inputUrl, setInputUrl] = useState('');
   const [authorSocial, setAuthorSocial] = useState('');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  /* What the browser made of `previewUrl`. Keyed by src, so an answer for an
+     address the reader has since edited cannot vouch for the new one. */
+  const [preview, setPreview] = useState<PreviewState | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   /* The form now stays open while its request is in flight, so a second click
      could send a second POST. A ref for the guard, because two clicks land
@@ -221,14 +228,23 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
      simply closes the lightbox. */
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
+  /* Which slug's first answer has arrived — ok, refused or unreachable. Until
+     it has, the grid shows placeholder tiles rather than "No photos yet", so a
+     photographed recipe never flashes empty. Keyed by slug rather than a bare
+     boolean, so moving to another recipe starts loading again without a
+     synchronous reset inside the effect. */
+  const [loadedSlug, setLoadedSlug] = useState<string | null>(null);
+  const loaded = loadedSlug === slug;
+
   // Pull community photos & credits shared by other people from Supabase
   useEffect(() => {
     const controller = new AbortController();
-    /* An outage is a 503 whose body is an error, not a list. The catalogue's
-       own photographs still show; the community's simply do not arrive. */
+    /* An outage is a 503 whose body is an error, not a list: the gallery
+       settles empty rather than waiting for an answer that will not come. */
     fetch(`/api/community-photos?slug=${encodeURIComponent(slug)}`, { signal: controller.signal })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
+        setLoadedSlug(slug);
         if (data?.ok && Array.isArray(data.photos)) {
           setRemotePhotos(data.photos.filter((p: unknown): p is string => typeof p === 'string'));
         }
@@ -242,6 +258,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
       })
       .catch((err) => {
         if (err?.name !== 'AbortError') {
+          setLoadedSlug(slug);
           console.error('Failed to load community photos:', err);
         }
       });
@@ -253,10 +270,9 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
     [remotePhotos, localPhotos],
   );
 
-  /* Photographs whose bytes never arrived. Storage answers `402` for the whole
-     catalogue whenever the project's egress quota is spent, and a community
-     contribution is an arbitrary third-party URL that can rot at any time, so
-     neither source can be trusted to still resolve. A dead src is dropped
+  /* Photographs whose bytes never arrived. A contribution is an arbitrary
+     third-party URL that can rot at any time, so none can be trusted to still
+     resolve. A dead src is dropped
      rather than drawn as a broken tile: the collage, the lightbox, its
      filmstrip and the frame counter all derive from `allPhotos`, so removing it
      here keeps every one of them consistent — and when the last photograph
@@ -268,8 +284,8 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
   }, []);
 
   const allPhotos = useMemo(
-    () => [...new Set([...images, ...userPhotos])].filter((src) => !failedPhotos.has(src)),
-    [images, userPhotos, failedPhotos],
+    () => userPhotos.filter((src) => !failedPhotos.has(src)),
+    [userPhotos, failedPhotos],
   );
 
   const at = lightboxSrc === null ? -1 : allPhotos.indexOf(lightboxSrc);
@@ -305,6 +321,11 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
     return () => document.removeEventListener('keydown', onKey);
   }, [lightboxIndex, nextPhoto, prevPhoto, openPhoto]);
 
+  /* The browser is still fetching the preview of the URL in the box. Submit
+     waits for it rather than calling a photo that is merely slow "could not
+     load" — the button is disabled meanwhile, which also stops Enter. */
+  const previewPending = previewUrl !== null && preview?.src !== previewUrl;
+
   const handleUrlChange = (val: string) => {
     setInputUrl(val);
     setErrorMsg(null);
@@ -336,8 +357,23 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
       setErrorMsg(t('errUrlScheme'));
       return;
     }
+    // The route's list too: a Facebook or Instagram CDN link expires.
+    if (isExpiringImageHost(cleanUrl)) {
+      setErrorMsg(tCommunity('errors.expiringImageHost'));
+      return;
+    }
     if (cleanSocial && !cleanSocial.startsWith('http://') && !cleanSocial.startsWith('https://')) {
       setErrorMsg(t('errSocialScheme'));
+      return;
+    }
+    /* Only a photograph the browser has actually decoded, at a size the large
+       tile can use. A link to a web page, a dead file or a thumbnail would be
+       stored and then dropped from the grid by its `onError`, or drawn as a
+       smudge. Not yet decoded counts as not loaded. */
+    if (previewPending && previewUrl === cleanUrl) return;
+    const decoded = preview?.src === cleanUrl ? preview : null;
+    if (!decoded?.ok) {
+      setErrorMsg(decoded && decoded.width > 0 ? t('errPreviewSmall') : t('errPreviewLoad'));
       return;
     }
 
@@ -398,6 +434,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
     setInputUrl('');
     setAuthorSocial('');
     setPreviewUrl(null);
+    setPreview(null);
     setIsFormOpen(false);
   };
 
@@ -446,11 +483,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
       {allPhotos.length > 0 && (
         <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 mb-6">
           {allPhotos.map((src, i) => {
-            const isUserPhoto = userPhotos.includes(src);
             const isHeroTile = i === 0;
-            /* Only a catalogue photograph is fetched early. On a recipe with
-               none, tile 0 is the first community upload — any https URL. */
-            const isCatalogueHero = isHeroTile && !isUserPhoto;
             const credit = allCredits[src];
 
             return (
@@ -477,22 +510,18 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
                         ? '(max-width: 1024px) 100vw, 50vw'
                         : '(max-width: 1024px) 50vw, 25vw'
                     }
-                    loading={isCatalogueHero ? 'eager' : undefined}
-                    fetchPriority={isCatalogueHero ? 'high' : undefined}
                     className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-                    unoptimized={isUserPhoto}
+                    /* Every tile is a reader's URL: nothing to size, and
+                       nothing preloaded on a third party's behalf. */
+                    unoptimized
                     onError={() => markPhotoFailed(src)}
                   />
 
                   <div className="absolute inset-0 bg-gradient-to-t from-void/90 via-transparent to-void/40 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-3 sm:p-4">
                     <span className="self-start text-label font-semibold uppercase tracking-[0.08em] px-2.5 py-1 rounded-sm bg-void/70 text-ink backdrop-blur-[30px]">
-                      {/* Community first: the hero slot is positional, and a
-                          reader's upload there is not a featured shot. */}
-                      {isUserPhoto
-                        ? t('tagCommunity')
-                        : isHeroTile
-                          ? t('featuredShot')
-                          : t('frame', { index: i + 1 })}
+                      {/* Every photograph is a reader's, the hero included:
+                          the large slot is positional, not a featured shot. */}
+                      {t('tagCommunity')}
                     </span>
 
                     <div className="flex items-end justify-between text-meta text-ink">
@@ -516,8 +545,24 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
         </ul>
       )}
 
+      {/* Still asking: neutral tiles in the collage's own grid, no copy. */}
+      {!loaded && allPhotos.length === 0 && (
+        <ul aria-hidden className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 mb-6">
+          {[0, 1, 2].map((i) => (
+            <li
+              key={i}
+              className={`bg-glass rounded-lg ${
+                i === 0
+                  ? 'sm:col-span-2 lg:col-span-2 sm:row-span-2 aspect-[4/3] sm:aspect-[16/10] h-full min-h-[18rem]'
+                  : 'aspect-[4/3]'
+              }`}
+            />
+          ))}
+        </ul>
+      )}
+
       {/* Empty State */}
-      {allPhotos.length === 0 && !isFormOpen && (
+      {loaded && allPhotos.length === 0 && !isFormOpen && (
         <div className="surface p-8 text-center flex flex-col items-center justify-center gap-3 mb-6">
           <p className="text-body text-ink-muted max-w-md">{t('galleryEmpty')}</p>
         </div>
@@ -650,12 +695,20 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
               <div className="relative w-full aspect-[16/9] max-h-48 overflow-hidden rounded-md bg-void/60 shadow-[var(--elevation-1)]">
                 {/* eslint-disable-next-line @next/next/no-img-element -- arbitrary user URL */}
                 <img
+                  key={previewUrl}
                   src={previewUrl}
                   alt={t('previewAlt')}
                   className="w-full h-full object-cover"
-                  onError={() =>
-                    setErrorMsg(t('errPreviewLoad'))
-                  }
+                  onLoad={(e) => {
+                    const width = e.currentTarget.naturalWidth;
+                    const ok = width >= MIN_PREVIEW_WIDTH;
+                    setPreview({ src: previewUrl, ok, width });
+                    if (!ok) setErrorMsg(t('errPreviewSmall'));
+                  }}
+                  onError={() => {
+                    setPreview({ src: previewUrl, ok: false, width: 0 });
+                    setErrorMsg(t('errPreviewLoad'));
+                  }}
                 />
               </div>
             </div>
@@ -668,6 +721,7 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
                 setIsFormOpen(false);
                 setErrorMsg(null);
                 setPreviewUrl(null);
+                setPreview(null);
               }}
               className="min-h-[var(--layout-touch-target)] px-3 text-body font-semibold text-ink-muted hover:text-ink transition-colors cursor-pointer"
             >
@@ -675,8 +729,8 @@ export function RecipeGallery({ slug, images, title }: RecipeGalleryProps) {
             </button>
             <button
               type="submit"
-              disabled={isSharing}
-              aria-busy={isSharing || undefined}
+              disabled={isSharing || previewPending}
+              aria-busy={isSharing || previewPending || undefined}
               className="btn-accent cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {t('addToGallery')}

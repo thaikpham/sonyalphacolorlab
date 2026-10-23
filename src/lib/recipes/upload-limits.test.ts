@@ -19,24 +19,21 @@ describe('upload limits', () => {
     expect(MAX_UPLOAD_REQUEST_BYTES).toBeLessThan(VERCEL_BODY_CAP);
   });
 
-  it('is declared once — neither upload route keeps its own number', () => {
-    for (const route of [
-      'src/app/api/admin/articles/upload/route.ts',
-      'src/app/api/admin/recipes/[id]/images/route.ts',
-    ]) {
+  /* The recipe photograph upload went with the recipe photographs; the
+     article media upload is the one route left, and it still must not keep a
+     number of its own. */
+  it('is declared once — the upload route keeps no number of its own', () => {
+    for (const route of ['src/app/api/admin/articles/upload/route.ts']) {
       const source = readFileSync(route, 'utf8');
       expect(source, route).not.toMatch(/\d+\s*\*\s*1024/);
       expect(source, route).toMatch(/declaresOversizedBody\(request\)/);
     }
   });
 
-  it('is checked by both editors before sending, and a 413 is read by its status', () => {
+  it('is checked by the editor before sending, and a 413 is read by its status', () => {
     /* The platform's 413 is plain text: `res.json()` on it throws, and the
        editor reported "upload failed" for a file that was simply too large. */
-    for (const editor of [
-      'src/components/colorlab/admin/image-panel.tsx',
-      'src/components/lab/admin/use-article-editor.ts',
-    ]) {
+    for (const editor of ['src/components/lab/admin/use-article-editor.ts']) {
       const source = readFileSync(editor, 'utf8');
       expect(source, editor).toMatch(/file\.size > MAX_UPLOAD_BYTES[\s\S]{0,120}tooLarge/);
       expect(source, editor).toMatch(/res\.status === 413[\s\S]{0,120}tooLarge[\s\S]*?res\.json\(\)/);

@@ -94,7 +94,6 @@ const recipe = (over: Partial<RecipeView>): RecipeView =>
     wbLabel: '5600K',
     description: '',
     tags: [],
-    images: [],
     ...over,
   }) as RecipeView
 

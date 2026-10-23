@@ -249,8 +249,10 @@ data/               recipes.seed.json (generated — never hand-edit)
 ```
 
 The catalogue is three libraries in one table: the ten Picture Profile recipes
-kept from sonycolorlab, ColorLab's own Picture Profile originals, and Creative
-Look recipes imported from a scrape of Sony's Alpha Recipes microsite. The
+kept from sonycolorlab, ColorLab's own originals (`src/lib/originals/pp.ts`
+and `cl.ts`, both formats), and Creative Look recipes imported from a scrape of
+Sony's Alpha Recipes microsite. The originals share the `SCL-CL-` sequence with
+the scrape, so `emit-seed` passes their ids to the importer as reserved. The
 first and last come from **untrusted input parsed against `constants.ts`** —
 `LEGACY_CORRECTIONS` and `SCRAPE_CORRECTIONS` record every fix by name and
 reason. A row the source does not fully state is **skipped and reported**,
@@ -264,9 +266,12 @@ their share links live on only as `RETIRED_LEGACY_IDS` in
 `src/lib/recipes/redirects.ts`: ids and replacement slugs, no settings. Do not
 restore their numbers from git history into the tree; the repository is
 public. The originals that replace them ship `published: false` until the
-owner has shot each on the a7 IV (D8) and publishes it in `/admin/colorlab`;
-`npm run pp:refresh -- --target content` is the one-off that unpublished the
-old and inserted the new, and it prints its plan before writing.
+owner has shot each on the a7 IV (D8) and publishes it in `/admin/colorlab`.
+`npm run library:sync -- --target content` brings production in line with the
+seed — withdrawn recipes unpublished, names updated, unpublished originals
+refreshed whole, missing recipes inserted unpublished, a published recipe's
+settings never touched — and prints its plan before writing (rules:
+`scripts/lib/library-plan.ts`).
 
 `npm run seed:emit` prints the skips. Read them — they are the to-do list for
 whatever the source failed to publish.
@@ -292,10 +297,41 @@ Do not write App Router code from memory. Read the relevant file first:
 | Route Handlers | `01-getting-started/15-route-handlers.md` |
 | `generateStaticParams` | `03-api-reference/04-functions/generate-static-params.md` |
 
+## Names, palette, pictures
+
+- **A recipe's name is its code and mood**: `PP-048-Soft Clean Portrait`,
+  `CL-013-Airy Warm Pastel` — format, the id's three-digit number, two or
+  three words from the closed `NAME_VOCABULARY` in `src/lib/recipes/names.ts`.
+  Never translated. A temperature word must agree with the recipe's tone
+  (Warm, Golden, Amber ⇒ warm; Cool ⇒ cool; Mono, Sepia ⇒ mono), names and
+  word sets are unique; `names.test.ts` and `emit-seed` refuse anything else.
+  The legacy and Sony Asia rows take their names from `RECIPE_NAMES`; ids and
+  slugs did not change, and search reads the slug, so a former name ("mojave
+  sun") and an original's place ("da lat") still find the recipe.
+- **No recipe carries a photograph.** Pictures come only from readers: Google
+  sign-in, an image URL, `community_photos` on the control plane, shown in the
+  recipe's grid and lightbox. There is no primary photograph, no admin upload
+  and no vendoring script; the `recipe_images` table and the private
+  `recipe-uploads` bucket remain only because migrations are history. A
+  contribution must decode at ≥ 320px wide before it can be sent, and signed
+  social-CDN links that expire (`EXPIRING_IMAGE_HOSTS`) are refused.
+- **The thumbnail is the palette.** `paletteFor()` (`src/lib/camera/palette.ts`)
+  grades nine swatches — a neutral ramp and six hues — from the recipe's own
+  settings in Sony's documented directions. It is a reading of the settings,
+  never a camera preview, and the recipe page says so in one line. Every
+  magnitude is in `PALETTE_WEIGHTS`, neutral defaults to refit from an a7 IV
+  ColorChecker shoot; the tests pin direction and bands, not numbers. Color
+  Depth is raw (the accent's is centred: it answers a different question),
+  Color Phase rotates every hue including a white-balance cast on the
+  neutrals, monochrome is applied last, Detail and Clarity are not painted,
+  AWB and presets carry no Kelvin (Rule 1). Each swatch's `css` and `hex` come
+  from one gamut-mapped value, so the grid and the OG card agree.
+
 ## Browse by situation
 
-The catalogue browses by **situation · style · tone**, not by format, Look or
-tag (D1–D4 of the 2026-10-23 handoff). The rules:
+The catalogue browses by **colour system · situation · style · tone**, not by
+Look or tag (D1–D4 of the 2026-10-23 handoff; the colour system, Picture
+Profile or Creative Look, was added on 2026-10-24). The rules:
 
 - **Taxonomy ids live in `src/lib/recipes/taxonomy.ts`**, labels in
   `messages/*.json` under `browse`, and the editor's assignments in the git
@@ -310,7 +346,8 @@ tag (D1–D4 of the 2026-10-23 handoff). The rules:
   only — Sài Gòn Café is warm under bulbs and reads cool here — so the manifest
   may override it, and does.
 - **One address per result.** The situation is the path,
-  `/colorlab/[situation]`; `style`, `tone` and `q` are the query string;
+  `/colorlab/[situation]`; `format` (`pp`|`cl`, the same strings the previous
+  catalogue used), `style`, `tone` and `q` are the query string;
   `?situation=` is not read. An unknown situation is `notFound()`, which is why
   the index page lives in the `(index)` route group: its `loading.tsx` must not
   sit above the route that refuses (`next-boundaries.test.ts`).
@@ -318,10 +355,10 @@ tag (D1–D4 of the 2026-10-23 handoff). The rules:
   new goes into the `catalogueCache` key. The browse row is a server component
   of `<Link>`s with facet counts; only the header's search box is client code,
   and it builds its URL with `colorlabSearch()` so a typed query keeps the
-  chosen style and tone and the current pathname.
-- **Tags stay in the data for search and are not shown (D9).** `?format=`,
-  `?look=` and `?tag=` are still honoured by `matchesLegacyFilters` for one
-  release, then dropped.
+  chosen colour system, style and tone and the current pathname.
+- **Tags stay in the data for search and are not shown (D9).** `?look=` and
+  `?tag=` are still honoured by `matchesLegacyFilters` for one release, then
+  dropped.
 - **Search inherits the taxonomy.** `taxonomyTerms()` feeds both `matchesQuery`
   and `recipeDoc`, so "cafe", "chân dung", "phim" and "đen trắng" are tag hits
   in one engine; new eval queries are labelled from the manifest, never from

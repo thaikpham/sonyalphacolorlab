@@ -32,11 +32,38 @@ export type Effect = { axis: EffectAxis; en: string; vi: string };
 type Step = -2 | -1 | 0 | 1 | 2;
 
 /**
+ * Where a value sits in its range: −1..1 around 0 for a signed range, 0..1
+ * above the minimum otherwise.
+ *
+ * The one definition of "how far along" a dial is, read by the wording here
+ * and by the palette (`palette.ts`), so words and colour cannot disagree. A
+ * signed range is measured on each side of 0 separately, which is what lets
+ * PP Saturation ±32 and CL Saturation ±9 meet at the same endpoints.
+ */
+export function fraction(value: number, range: Range): number {
+  if (range.min < 0) {
+    if (value === 0) return 0;
+    return value > 0 ? value / range.max : value / -range.min;
+  }
+  const span = range.max - range.min;
+  return span === 0 ? 0 : (value - range.min) / span;
+}
+
+/**
  * Where a value sits in its own range, as a graded step.
  * "Strong" is past 55% of the distance to the bound, which keeps the wording
  * honest for both a ±7 scale and a ±32 one.
+ *
+ * A signed range reads `fraction()` directly. An unsigned one is graded
+ * around its midpoint, not its minimum, so it keeps its own arithmetic.
  */
 function step(value: number, range: Range): Step {
+  if (range.min < 0 && range.max > 0) {
+    const f = fraction(value, range);
+    if (f === 0) return 0;
+    const strong = Math.abs(f) >= 0.55;
+    return f > 0 ? (strong ? 2 : 1) : strong ? -2 : -1;
+  }
   const pivot = range.min < 0 ? 0 : (range.min + range.max) / 2;
   if (value === pivot) return 0;
   const span = value > pivot ? range.max - pivot : pivot - range.min;

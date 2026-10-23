@@ -1,9 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import imagesSeed from '../../../data/images.seed.json';
 import recipesSeed from '../../../data/recipes.seed.json';
 import type { Recipe } from '../camera/schema';
-import { publicRecipeImageUrl } from './images';
 import { RECIPE_COLUMNS, toRow, type RecipeRow } from './row';
 
 /**
@@ -117,13 +115,15 @@ describe('free-text search', () => {
   });
 });
 
-describe('photograph URLs', () => {
-  it('come from the one mapping the admin’s live check also uses', async () => {
-    const photographed = (imagesSeed as { recipeId: string; storagePath: string; sort: number }[])[0];
-    const recipe = seed.find((r) => r.id === photographed.recipeId)!;
+describe('photographs', () => {
+  /* The catalogue carries none: a recipe's pictures are readers'
+     contributions, which the gallery fetches from the control plane itself. */
+  it('are not part of a recipe view', async () => {
+    const recipe = seed[0];
     db.rows = [toRow(recipe, recipe.legacyId)];
 
     const view = await getRecipe(recipe.slug, 'en');
-    expect(view?.images[0]).toBe(publicRecipeImageUrl(photographed.storagePath));
+    expect(view?.id).toBe(recipe.id);
+    expect(view).not.toHaveProperty('images');
   });
 });

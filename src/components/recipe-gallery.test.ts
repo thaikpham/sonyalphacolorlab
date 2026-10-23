@@ -50,7 +50,11 @@ describe('handleAddPhoto', () => {
     expect(guard).toBeGreaterThan(-1);
     expect(handler.indexOf("fetch('/api/community-photos'")).toBeGreaterThan(guard);
     expect(handler).toMatch(/finally \{\s*setSharing\(false\)/);
-    expect(source).toMatch(/<button\s+type="submit"[^>]*disabled=\{isSharing\}[^>]*aria-busy=\{isSharing \|\| undefined\}/);
+    /* Disabled while a request is in flight — and while the preview is still
+       loading, which the case below pins. */
+    expect(source).toMatch(
+      /<button\s+type="submit"[^>]*disabled=\{isSharing \|\| previewPending\}[^>]*aria-busy=\{isSharing \|\| previewPending \|\| undefined\}/,
+    );
   });
 
   /* A duplicate is a photo someone else already shared. Writing a local credit
@@ -60,6 +64,41 @@ describe('handleAddPhoto', () => {
     const guard = handler.indexOf('if (!body?.duplicate)');
     expect(guard).toBeGreaterThan(-1);
     expect(handler.indexOf('setLocalCredit(')).toBeGreaterThan(guard);
+  });
+
+  /* A link to a web page, a dead file or a thumbnail was stored, then dropped
+     from the grid by its onError or drawn as a smudge in the large tile. */
+  it('refuses before the request unless the preview decoded at 320px or wider', () => {
+    const gate = handler.indexOf('if (!decoded?.ok)');
+    expect(gate).toBeGreaterThan(-1);
+    expect(gate).toBeLessThan(handler.indexOf('setSharing(true)'));
+    expect(handler).toMatch(/const decoded = preview\?\.src === cleanUrl \? preview : null;/);
+    expect(handler).toContain("t('errPreviewSmall')");
+    expect(handler).toContain("t('errPreviewLoad')");
+    expect(source).toContain('const MIN_PREVIEW_WIDTH = 320;');
+    expect(source).toMatch(/const ok = width >= MIN_PREVIEW_WIDTH;/);
+    expect(source).toMatch(/onError=\{\(\) => \{\s*setPreview\(\{ src: previewUrl, ok: false, width: 0 \}\);/);
+  });
+
+  /* A slow but valid photo is not "could not load": Submit waits, disabled,
+     while the browser is still fetching the preview, and the handler returns
+     quietly rather than raising errPreviewLoad. */
+  it('waits for a preview still loading instead of calling it a failure', () => {
+    expect(source).toMatch(/const previewPending = previewUrl !== null && preview\?\.src !== previewUrl;/);
+    const wait = handler.indexOf('if (previewPending && previewUrl === cleanUrl) return;');
+    expect(wait).toBeGreaterThan(-1);
+    expect(wait).toBeLessThan(handler.indexOf('if (!decoded?.ok)'));
+    expect(source).toMatch(/disabled=\{isSharing \|\| previewPending\}/);
+  });
+
+  /* Facebook and Instagram CDN links are signed and expire: refused here with
+     the route's own list and its own code, before the round trip. */
+  it('refuses an expiring social-CDN host before the request', () => {
+    const check = handler.indexOf('if (isExpiringImageHost(cleanUrl))');
+    expect(check).toBeGreaterThan(-1);
+    expect(check).toBeLessThan(handler.indexOf('setSharing(true)'));
+    expect(handler).toContain("tCommunity('errors.expiringImageHost')");
+    expect(source).toContain("from '@/lib/community/image-hosts'");
   });
 
   it('no longer says the photo is saved before the request goes out', () => {
@@ -115,24 +154,56 @@ describe('the lightbox', () => {
 });
 
 describe('collage tiles', () => {
-  const tiles = source.slice(source.indexOf('{allPhotos.map((src, i)'), source.indexOf('{/* Empty State */}'));
+  const tiles = source.slice(source.indexOf('{allPhotos.map((src, i)'), source.indexOf('{/* Still asking'));
 
-  /* Tile 0 is the hero whatever it is. On a recipe with no catalogue photo
-     that is the first community upload — any https URL a reader posted — and it
-     was badged "Featured shot" with no Community tag. */
-  it('tags a community photo as community, even in the hero slot', () => {
-    const tag = tiles.slice(tiles.indexOf('{isUserPhoto'), tiles.indexOf('</span>', tiles.indexOf('{isUserPhoto')));
-    expect(tag.indexOf("t('tagCommunity')")).toBeGreaterThan(-1);
-    expect(tag.indexOf("t('tagCommunity')")).toBeLessThan(tag.indexOf("t('featuredShot')"));
+  /* Every photograph is a reader's now; the catalogue carries none. Tile 0 is
+     the large one by position, which never made it a featured shot. */
+  it('tags every photo as community, the hero included', () => {
+    expect(tiles).toContain("{t('tagCommunity')}");
+    expect(source).not.toContain("t('featuredShot')");
+    expect(source).not.toMatch(/\bisUserPhoto\b/);
   });
 
-  /* `priority` is deprecated in Next 16, and it preloaded whatever was first —
-     an arbitrary third-party URL when the catalogue had nothing. */
-  it('raises fetch priority for a catalogue hero only, without the deprecated prop', () => {
+  /* `priority` is deprecated in Next 16, and an early fetch is a preload on a
+     third party's behalf when every tile is an arbitrary reader URL. */
+  it('preloads nothing, without the deprecated prop', () => {
     expect(source).not.toMatch(/\bpriority=\{/);
-    expect(tiles).toContain('const isCatalogueHero = isHeroTile && !isUserPhoto;');
-    expect(tiles).toMatch(/loading=\{isCatalogueHero \? 'eager' : undefined\}/);
-    expect(tiles).toMatch(/fetchPriority=\{isCatalogueHero \? 'high' : undefined\}/);
+    expect(tiles).not.toMatch(/fetchPriority=/);
+    expect(tiles).not.toMatch(/loading=\{/);
+    expect(tiles).toMatch(/\bunoptimized\b/);
+  });
+});
+
+describe('the collage, with no catalogue photographs', () => {
+  it('takes no images prop and shows only what readers contributed', () => {
+    expect(source).toMatch(/interface RecipeGalleryProps \{\s*slug: string;\s*title: string;\s*\}/);
+    expect(source).toMatch(/export function RecipeGallery\(\{ slug, title \}: RecipeGalleryProps\)/);
+    expect(source).toMatch(/const allPhotos = useMemo\(\s*\(\) => userPhotos\.filter\(/);
+  });
+
+  /* A photographed recipe used to flash "No photos yet" until the GET came
+     back. Placeholders until it settles — ok, refused or offline — and the
+     empty state only after. */
+  it('shows placeholder tiles until the first answer, and the empty state only after it', () => {
+    /* `loaded` is "the answer for THIS recipe has come back": it starts
+       unset, and a recipe the GET has not answered yet is not loaded. */
+    expect(source).toMatch(/const \[loadedSlug, setLoadedSlug\] = useState<string \| null>\(null\);/);
+    expect(source).toMatch(/const loaded = loadedSlug === slug;/);
+    expect(source).toMatch(/\{!loaded && allPhotos\.length === 0 && \(/);
+    expect(source).toMatch(/\{loaded && allPhotos\.length === 0 && !isFormOpen && \(/);
+    const placeholders = source.slice(source.indexOf('{/* Still asking'), source.indexOf('{/* Empty State */}'));
+    expect(placeholders).toMatch(/<ul aria-hidden className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3/);
+    /* The radius of the tiles they stand in for, so nothing changes shape
+       when the photographs arrive. */
+    expect(placeholders).toContain('bg-glass rounded-lg');
+    expect(source).toContain('overflow-hidden rounded-lg cursor-zoom-in');
+    expect(placeholders).not.toMatch(/\bt\(/);
+  });
+
+  it('settles on every answer the GET can give, but not on an abort', () => {
+    const read = source.slice(source.indexOf('fetch(`/api/community-photos?slug='), source.indexOf('return () => controller.abort();'));
+    expect(read).toMatch(/\.then\(\(data\) => \{\s*setLoadedSlug\(slug\);/);
+    expect(read).toMatch(/if \(err\?\.name !== 'AbortError'\) \{\s*setLoadedSlug\(slug\);/);
   });
 });
 
@@ -153,6 +224,14 @@ describe('the gallery copy', () => {
 
   it('no longer offers http:// as a valid photo address', () => {
     for (const m of messages) expect(m.recipe.errUrlScheme).not.toContain('http://');
+  });
+
+  it('says why a small preview was refused, in both locales', () => {
+    for (const m of messages) expect(m.recipe.errPreviewSmall).toMatch(/320/);
+  });
+
+  it('no longer carries the featured-shot badge', () => {
+    for (const m of messages) expect(m.recipe).not.toHaveProperty('featuredShot');
   });
 
   it('no longer claims a failed share was saved on the device', () => {

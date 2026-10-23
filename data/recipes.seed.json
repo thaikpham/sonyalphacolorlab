@@ -2,7 +2,7 @@
   {
     "id": "SCL-PP-001",
     "slug": "mojave-sun",
-    "name": "SCL-PP-001: Mojave Sun",
+    "name": "PP-001-Vivid Nostalgia Film",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 7000,
@@ -66,7 +66,7 @@
   {
     "id": "SCL-PP-002",
     "slug": "kyoto-jade",
-    "name": "SCL-PP-002: Kyoto Jade",
+    "name": "PP-002-Jade Soft Film",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 3700,
@@ -130,7 +130,7 @@
   {
     "id": "SCL-PP-009",
     "slug": "urban-teal",
-    "name": "SCL-PP-009: Urban Teal",
+    "name": "PP-009-Teal Muted Street",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 4000,
@@ -195,7 +195,7 @@
   {
     "id": "SCL-PP-015",
     "slug": "vintage-slide",
-    "name": "SCL-PP-015: Vintage Slide",
+    "name": "PP-015-Warm Faded Slide",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 3600,
@@ -258,7 +258,7 @@
   {
     "id": "SCL-PP-025",
     "slug": "saturated-cinema",
-    "name": "SCL-PP-025: Saturated Cinema",
+    "name": "PP-025-Vivid Deep Cinema",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 4000,
@@ -321,7 +321,7 @@
   {
     "id": "SCL-PP-027",
     "slug": "daylight-cinema",
-    "name": "SCL-PP-027: Daylight Cinema",
+    "name": "PP-027-Vivid Daylight Cinema",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 3700,
@@ -387,7 +387,7 @@
   {
     "id": "SCL-PP-044",
     "slug": "filmic-fj-c200",
-    "name": "SCL-PP-044: Filmic FJ C200",
+    "name": "PP-044-Matte Vivid Film",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB",
@@ -447,7 +447,7 @@
   {
     "id": "SCL-PP-045",
     "slug": "clearcast-pro",
-    "name": "SCL-PP-045: ClearCast Pro",
+    "name": "PP-045-Clean Neutral Stream",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB",
@@ -510,7 +510,7 @@
   {
     "id": "SCL-PP-046",
     "slug": "clearcast-pro-2",
-    "name": "SCL-PP-046: ClearCast Pro 2",
+    "name": "PP-046-Clean Soft Stream",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB",
@@ -573,7 +573,7 @@
   {
     "id": "SCL-PP-047",
     "slug": "extra-dr-stream-109",
-    "name": "SCL-PP-047: EXTRA DR Stream 109",
+    "name": "PP-047-Range Neutral Stream",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB",
@@ -638,7 +638,7 @@
   {
     "id": "SCL-PP-048",
     "slug": "hue-silk",
-    "name": "SCL-PP-048: Huế Silk",
+    "name": "PP-048-Soft Clean Portrait",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5300,
@@ -695,7 +695,7 @@
   {
     "id": "SCL-PP-049",
     "slug": "clear-day",
-    "name": "SCL-PP-049: Clear Day",
+    "name": "PP-049-Clean Natural Daylight",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5500
@@ -746,7 +746,7 @@
   {
     "id": "SCL-PP-050",
     "slug": "linen-editorial",
-    "name": "SCL-PP-050: Linen Editorial",
+    "name": "PP-050-Neutral Crisp Studio",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5600,
@@ -801,7 +801,7 @@
   {
     "id": "SCL-PP-051",
     "slug": "sa-pa-morning",
-    "name": "SCL-PP-051: Sa Pa Morning",
+    "name": "PP-051-Range Soft Landscape",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5600,
@@ -821,11 +821,11 @@
     "published": false,
     "format": "pp",
     "settings": {
-      "blackLevel": -3,
+      "blackLevel": -1,
       "gamma": "Cine1",
       "blackGamma": {
         "range": "Wide",
-        "level": -2
+        "level": 2
       },
       "knee": {
         "mode": "Manual",
@@ -858,7 +858,7 @@
   {
     "id": "SCL-PP-052",
     "slug": "mekong-noon",
-    "name": "SCL-PP-052: Mekong Noon",
+    "name": "PP-052-Range Bright Daylight",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5400,
@@ -891,7 +891,7 @@
       },
       "colorMode": "S-Cinetone",
       "saturation": 10,
-      "colorPhase": 1,
+      "colorPhase": 0,
       "colorDepth": {
         "R": -1,
         "G": 2,
@@ -915,7 +915,7 @@
   {
     "id": "SCL-PP-053",
     "slug": "mui-ne-dusk",
-    "name": "SCL-PP-053: Mũi Né Dusk",
+    "name": "PP-053-Range Warm Dusk",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 6200
@@ -966,7 +966,7 @@
   {
     "id": "SCL-PP-054",
     "slug": "phu-quoc-blue",
-    "name": "SCL-PP-054: Phú Quốc Blue",
+    "name": "PP-054-Cyan Vivid Coast",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5200,
@@ -1023,7 +1023,7 @@
   {
     "id": "SCL-PP-055",
     "slug": "tam-coc-green",
-    "name": "SCL-PP-055: Tam Cốc Green",
+    "name": "PP-055-Green Vivid Nature",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5800,
@@ -1080,7 +1080,7 @@
   {
     "id": "SCL-PP-056",
     "slug": "hoi-an-lantern",
-    "name": "SCL-PP-056: Hội An Lantern",
+    "name": "PP-056-Warm Vivid Festival",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 6000
@@ -1130,7 +1130,7 @@
   {
     "id": "SCL-PP-057",
     "slug": "tet-blossom",
-    "name": "SCL-PP-057: Tết Blossom",
+    "name": "PP-057-Rosy Bright Portrait",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 6000,
@@ -1163,7 +1163,7 @@
       },
       "colorMode": "Still",
       "saturation": 13,
-      "colorPhase": 1,
+      "colorPhase": 0,
       "colorDepth": {
         "R": -1,
         "G": 2,
@@ -1187,7 +1187,7 @@
   {
     "id": "SCL-PP-058",
     "slug": "da-lat-mist",
-    "name": "SCL-PP-058: Đà Lạt Mist",
+    "name": "PP-058-Cool Pastel Matte",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5200,
@@ -1244,7 +1244,7 @@
   {
     "id": "SCL-PP-059",
     "slug": "ha-noi-winter",
-    "name": "SCL-PP-059: Hà Nội Winter",
+    "name": "PP-059-Warm Muted Nostalgia",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 6000,
@@ -1274,7 +1274,7 @@
         "mode": "Auto"
       },
       "colorMode": "Movie",
-      "saturation": 2,
+      "saturation": -8,
       "colorPhase": 1,
       "colorDepth": {
         "R": 1,
@@ -1299,7 +1299,7 @@
   {
     "id": "SCL-PP-060",
     "slug": "cho-lon-slide",
-    "name": "SCL-PP-060: Chợ Lớn Slide",
+    "name": "PP-060-Warm Dense Slide",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5000,
@@ -1356,7 +1356,7 @@
   {
     "id": "SCL-PP-061",
     "slug": "sai-gon-cafe",
-    "name": "SCL-PP-061: Sài Gòn Café",
+    "name": "PP-061-Tungsten Soft Indoor",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 3400
@@ -1406,7 +1406,7 @@
   {
     "id": "SCL-PP-062",
     "slug": "neon-night",
-    "name": "SCL-PP-062: Neon Night",
+    "name": "PP-062-Cyan Deep Night",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 3800,
@@ -1463,7 +1463,7 @@
   {
     "id": "SCL-PP-063",
     "slug": "ben-thanh-night",
-    "name": "SCL-PP-063: Bến Thành Night",
+    "name": "PP-063-Warm Vivid Night",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 4000
@@ -1514,7 +1514,7 @@
   {
     "id": "SCL-PP-064",
     "slug": "old-quarter-mono",
-    "name": "SCL-PP-064: Old Quarter Mono",
+    "name": "PP-064-Mono Crisp Street",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5500
@@ -1565,7 +1565,7 @@
   {
     "id": "SCL-PP-065",
     "slug": "pearl-mono",
-    "name": "SCL-PP-065: Pearl Mono",
+    "name": "PP-065-Mono Soft Portrait",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5500
@@ -1616,7 +1616,7 @@
   {
     "id": "SCL-PP-066",
     "slug": "ho-tay-golden",
-    "name": "SCL-PP-066: Hồ Tây Golden",
+    "name": "PP-066-Golden Soft Portrait",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 6000,
@@ -1649,7 +1649,7 @@
       },
       "colorMode": "Cinema",
       "saturation": 8,
-      "colorPhase": 1,
+      "colorPhase": 0,
       "colorDepth": {
         "R": -2,
         "G": 1,
@@ -1673,7 +1673,7 @@
   {
     "id": "SCL-PP-067",
     "slug": "moc-chau-frost",
-    "name": "SCL-PP-067: Mộc Châu Frost",
+    "name": "PP-067-Cool Crisp Airy",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 4600,
@@ -1730,7 +1730,7 @@
   {
     "id": "SCL-PP-068",
     "slug": "vung-tau-pop",
-    "name": "SCL-PP-068: Vũng Tàu Pop",
+    "name": "PP-068-Punchy Vivid Pop",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5400,
@@ -1787,7 +1787,7 @@
   {
     "id": "SCL-PP-069",
     "slug": "hem-noir",
-    "name": "SCL-PP-069: Hẻm Noir",
+    "name": "PP-069-Mono Hard Noir",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 7500
@@ -1838,7 +1838,7 @@
   {
     "id": "SCL-PP-070",
     "slug": "late-night-mono",
-    "name": "SCL-PP-070: Late Night Mono",
+    "name": "PP-070-Mono Soft Night",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 4000
@@ -1887,9 +1887,669 @@
     "legacyId": null
   },
   {
+    "id": "SCL-PP-071",
+    "slug": "silver-hard-muted",
+    "name": "PP-071-Silver Hard Muted",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 5500,
+      "shift": {
+        "ab": {
+          "axis": "B",
+          "amount": 0.5
+        }
+      }
+    },
+    "tags": [
+      "bleach-bypass",
+      "muted",
+      "contrast",
+      "street"
+    ],
+    "published": false,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -6,
+      "gamma": "Cine4",
+      "blackGamma": {
+        "range": "Narrow",
+        "level": -3
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 92.5,
+        "slope": 1
+      },
+      "colorMode": "Still",
+      "saturation": -14,
+      "colorPhase": 0,
+      "colorDepth": {
+        "R": 1,
+        "G": 0,
+        "B": 1,
+        "C": 0,
+        "M": 0,
+        "Y": 1
+      },
+      "detail": {
+        "level": 2,
+        "mode": "Manual",
+        "vhBalance": 0,
+        "bwBalance": "Type2",
+        "limit": 6,
+        "crispening": 3,
+        "hiLightDetail": 2
+      }
+    },
+    "legacyId": null
+  },
+  {
+    "id": "SCL-PP-072",
+    "slug": "teal-orange-cinema",
+    "name": "PP-072-Teal Orange Cinema",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 5600,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 1.5
+        }
+      }
+    },
+    "tags": [
+      "teal-orange",
+      "cinematic",
+      "portrait",
+      "street"
+    ],
+    "published": false,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -3,
+      "gamma": "Cine2",
+      "blackGamma": {
+        "range": "Middle",
+        "level": -2
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 85,
+        "slope": -1
+      },
+      "colorMode": "Cinema",
+      "saturation": 12,
+      "colorPhase": 0,
+      "colorDepth": {
+        "R": -2,
+        "G": 3,
+        "B": 4,
+        "C": 5,
+        "M": 1,
+        "Y": -2
+      },
+      "detail": {
+        "level": -1,
+        "mode": "Manual",
+        "vhBalance": -1,
+        "bwBalance": "Type3",
+        "limit": 4,
+        "crispening": 5,
+        "hiLightDetail": 1
+      }
+    },
+    "legacyId": null
+  },
+  {
+    "id": "SCL-PP-073",
+    "slug": "bright-airy-studio",
+    "name": "PP-073-Bright Airy Studio",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 5500
+    },
+    "tags": [
+      "high-key",
+      "studio",
+      "bright",
+      "portrait"
+    ],
+    "published": false,
+    "format": "pp",
+    "settings": {
+      "blackLevel": 4,
+      "gamma": "Cine2",
+      "blackGamma": {
+        "range": "Middle",
+        "level": 3
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 80,
+        "slope": 2
+      },
+      "colorMode": "Cinema",
+      "saturation": 2,
+      "colorPhase": 0,
+      "colorDepth": {
+        "R": -2,
+        "G": -1,
+        "B": -1,
+        "C": -1,
+        "M": -1,
+        "Y": -2
+      },
+      "detail": {
+        "level": -3,
+        "mode": "Manual",
+        "vhBalance": -1,
+        "bwBalance": "Type4",
+        "limit": 4,
+        "crispening": 4,
+        "hiLightDetail": 2
+      }
+    },
+    "legacyId": null
+  },
+  {
+    "id": "SCL-PP-074",
+    "slug": "dark-rich-velvet",
+    "name": "PP-074-Dark Rich Velvet",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 5800,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 1
+        }
+      }
+    },
+    "tags": [
+      "low-key",
+      "moody",
+      "portrait",
+      "interior"
+    ],
+    "published": false,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -8,
+      "gamma": "Cine4",
+      "blackGamma": {
+        "range": "Narrow",
+        "level": -5
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 95,
+        "slope": 1
+      },
+      "colorMode": "Still",
+      "saturation": 8,
+      "colorPhase": 0,
+      "colorDepth": {
+        "R": -1,
+        "G": 3,
+        "B": 3,
+        "C": 2,
+        "M": 2,
+        "Y": -1
+      },
+      "detail": {
+        "level": -1,
+        "mode": "Manual",
+        "vhBalance": -1,
+        "bwBalance": "Type2",
+        "limit": 4,
+        "crispening": 5,
+        "hiLightDetail": 1
+      }
+    },
+    "legacyId": null
+  },
+  {
+    "id": "SCL-PP-075",
+    "slug": "warm-pastel-cream",
+    "name": "PP-075-Warm Pastel Cream",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 6200,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 0.5
+        }
+      }
+    },
+    "tags": [
+      "pastel",
+      "cream",
+      "soft",
+      "cafe"
+    ],
+    "published": false,
+    "format": "pp",
+    "settings": {
+      "blackLevel": 4,
+      "gamma": "Cine1",
+      "blackGamma": {
+        "range": "Wide",
+        "level": 3
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 85,
+        "slope": -1
+      },
+      "colorMode": "Cinema",
+      "saturation": -6,
+      "colorPhase": 0,
+      "colorDepth": {
+        "R": -2,
+        "G": -1,
+        "B": -1,
+        "C": 0,
+        "M": -2,
+        "Y": -2
+      },
+      "detail": {
+        "level": -2,
+        "mode": "Manual",
+        "vhBalance": -1,
+        "bwBalance": "Type3",
+        "limit": 4,
+        "crispening": 5,
+        "hiLightDetail": 1
+      }
+    },
+    "legacyId": null
+  },
+  {
+    "id": "SCL-PP-076",
+    "slug": "violet-cool-dusk",
+    "name": "PP-076-Violet Cool Dusk",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 4200,
+      "shift": {
+        "gm": {
+          "axis": "M",
+          "amount": 2
+        }
+      }
+    },
+    "tags": [
+      "blue-hour",
+      "dusk",
+      "violet",
+      "city"
+    ],
+    "published": false,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -3,
+      "gamma": "Still",
+      "blackGamma": {
+        "range": "Middle",
+        "level": 0
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 90,
+        "slope": -1
+      },
+      "colorMode": "Still",
+      "saturation": 12,
+      "colorPhase": 0,
+      "colorDepth": {
+        "R": 0,
+        "G": 1,
+        "B": 4,
+        "C": 2,
+        "M": 3,
+        "Y": -1
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 0,
+        "bwBalance": "Type3",
+        "limit": 4,
+        "crispening": 6,
+        "hiLightDetail": 2
+      }
+    },
+    "legacyId": null
+  },
+  {
+    "id": "SCL-PP-077",
+    "slug": "cool-muted-overcast",
+    "name": "PP-077-Cool Muted Overcast",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 5000,
+      "shift": {
+        "ab": {
+          "axis": "B",
+          "amount": 1
+        }
+      }
+    },
+    "tags": [
+      "overcast",
+      "rainy-day",
+      "muted",
+      "everyday"
+    ],
+    "published": false,
+    "format": "pp",
+    "settings": {
+      "blackLevel": 2,
+      "gamma": "Movie",
+      "blackGamma": {
+        "range": "Wide",
+        "level": 3
+      },
+      "knee": {
+        "mode": "Auto"
+      },
+      "colorMode": "Movie",
+      "saturation": -10,
+      "colorPhase": 0,
+      "colorDepth": {
+        "R": 0,
+        "G": 1,
+        "B": 1,
+        "C": 1,
+        "M": 0,
+        "Y": 0
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 0,
+        "bwBalance": "Type3",
+        "limit": 5,
+        "crispening": 4,
+        "hiLightDetail": 2
+      }
+    },
+    "legacyId": null
+  },
+  {
+    "id": "SCL-PP-078",
+    "slug": "amber-vivid-autumn",
+    "name": "PP-078-Amber Vivid Autumn",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 6000,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 1.5
+        }
+      }
+    },
+    "tags": [
+      "autumn",
+      "foliage",
+      "vivid",
+      "landscape"
+    ],
+    "published": false,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -3,
+      "gamma": "Still",
+      "blackGamma": {
+        "range": "Narrow",
+        "level": -1
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 92,
+        "slope": 1
+      },
+      "colorMode": "Still",
+      "saturation": 14,
+      "colorPhase": 0,
+      "colorDepth": {
+        "R": 2,
+        "G": -1,
+        "B": 2,
+        "C": 1,
+        "M": 0,
+        "Y": 2
+      },
+      "detail": {
+        "level": 1,
+        "mode": "Manual",
+        "vhBalance": 0,
+        "bwBalance": "Type3",
+        "limit": 5,
+        "crispening": 2,
+        "hiLightDetail": 3
+      }
+    },
+    "legacyId": null
+  },
+  {
+    "id": "SCL-PP-079",
+    "slug": "warm-rich-table",
+    "name": "PP-079-Warm Rich Table",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 5800,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 1
+        }
+      }
+    },
+    "tags": [
+      "food",
+      "daylight",
+      "table",
+      "cafe"
+    ],
+    "published": false,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -2,
+      "gamma": "S-Cinetone",
+      "blackGamma": {
+        "range": "Middle",
+        "level": 1
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 88,
+        "slope": -1
+      },
+      "colorMode": "S-Cinetone",
+      "saturation": 10,
+      "colorPhase": 0,
+      "colorDepth": {
+        "R": 1,
+        "G": 1,
+        "B": 0,
+        "C": 0,
+        "M": 0,
+        "Y": -1
+      },
+      "detail": {
+        "level": 1,
+        "mode": "Manual",
+        "vhBalance": 0,
+        "bwBalance": "Type4",
+        "limit": 5,
+        "crispening": 4,
+        "hiLightDetail": 2
+      }
+    },
+    "legacyId": null
+  },
+  {
+    "id": "SCL-PP-080",
+    "slug": "range-hlg-daylight",
+    "name": "PP-080-Range HLG Daylight",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 5500
+    },
+    "tags": [
+      "hdr",
+      "hlg",
+      "dynamic-range",
+      "landscape"
+    ],
+    "published": false,
+    "format": "pp",
+    "settings": {
+      "blackLevel": 0,
+      "gamma": "HLG2",
+      "blackGamma": {
+        "range": "Middle",
+        "level": 0
+      },
+      "knee": {
+        "mode": "Manual",
+        "point": 95,
+        "slope": 0
+      },
+      "colorMode": "709",
+      "saturation": 8,
+      "colorPhase": 0,
+      "colorDepth": {
+        "R": 0,
+        "G": 1,
+        "B": 1,
+        "C": 1,
+        "M": 0,
+        "Y": 0
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 0,
+        "bwBalance": "Type3",
+        "limit": 5,
+        "crispening": 4,
+        "hiLightDetail": 3
+      }
+    },
+    "legacyId": null
+  },
+  {
+    "id": "SCL-PP-081",
+    "slug": "flat-log-base",
+    "name": "PP-081-Flat Log Base",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 5500
+    },
+    "tags": [
+      "s-log3",
+      "log",
+      "grading",
+      "flat"
+    ],
+    "published": false,
+    "format": "pp",
+    "settings": {
+      "blackLevel": 0,
+      "gamma": "S-Log3",
+      "blackGamma": {
+        "range": "Middle",
+        "level": 0
+      },
+      "knee": {
+        "mode": "Auto"
+      },
+      "colorMode": "S-Gamut3.Cine",
+      "saturation": 0,
+      "colorPhase": 0,
+      "colorDepth": {
+        "R": 0,
+        "G": 0,
+        "B": 0,
+        "C": 0,
+        "M": 0,
+        "Y": 0
+      },
+      "detail": {
+        "level": -7,
+        "mode": "Manual",
+        "vhBalance": 0,
+        "bwBalance": "Type3",
+        "limit": 4,
+        "crispening": 4,
+        "hiLightDetail": 2
+      }
+    },
+    "legacyId": null
+  },
+  {
+    "id": "SCL-PP-082",
+    "slug": "cyan-vivid-monsoon",
+    "name": "PP-082-Cyan Vivid Monsoon",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 4800,
+      "shift": {
+        "ab": {
+          "axis": "B",
+          "amount": 1
+        }
+      }
+    },
+    "tags": [
+      "monsoon",
+      "rain",
+      "cyan",
+      "street"
+    ],
+    "published": false,
+    "format": "pp",
+    "settings": {
+      "blackLevel": -1,
+      "gamma": "Movie",
+      "blackGamma": {
+        "range": "Wide",
+        "level": 1
+      },
+      "knee": {
+        "mode": "Auto"
+      },
+      "colorMode": "Movie",
+      "saturation": 10,
+      "colorPhase": 0,
+      "colorDepth": {
+        "R": 0,
+        "G": 1,
+        "B": 2,
+        "C": 4,
+        "M": 0,
+        "Y": -1
+      },
+      "detail": {
+        "level": 0,
+        "mode": "Manual",
+        "vhBalance": 0,
+        "bwBalance": "Type3",
+        "limit": 5,
+        "crispening": 5,
+        "hiLightDetail": 2
+      }
+    },
+    "legacyId": null
+  },
+  {
     "id": "SCL-CL-001",
     "slug": "fl-raoul-rutnam",
-    "name": "SCL-CL-001: Film · Raoul Rutnam",
+    "name": "CL-001-Film Hard Faded",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB"
@@ -1916,7 +2576,7 @@
   {
     "id": "SCL-CL-002",
     "slug": "fl-arantha-sirimanne",
-    "name": "SCL-CL-002: Film · Arantha Sirimanne",
+    "name": "CL-002-Film Warm Muted",
     "whiteBalance": {
       "mode": "preset",
       "preset": "Cloudy",
@@ -1953,7 +2613,7 @@
   {
     "id": "SCL-CL-003",
     "slug": "vv2-ravi-ranasinghe",
-    "name": "SCL-CL-003: Vivid 2 · Ravi Ranasinghe",
+    "name": "CL-003-Vivid Crisp Neutral",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB"
@@ -1980,7 +2640,7 @@
   {
     "id": "SCL-CL-004",
     "slug": "vv2-sony-asia",
-    "name": "SCL-CL-004: Vivid 2 · Sony Asia",
+    "name": "CL-004-Vivid Soft Faded",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5600
@@ -2007,7 +2667,7 @@
   {
     "id": "SCL-CL-005",
     "slug": "vv2-jonpoon-jpg",
-    "name": "SCL-CL-005: Vivid 2 · Jonpoon.jpg",
+    "name": "CL-005-Vivid Warm Crisp",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB",
@@ -2044,7 +2704,7 @@
   {
     "id": "SCL-CL-006",
     "slug": "vv2-jonpoon-jpg-2",
-    "name": "SCL-CL-006: Vivid 2 · Jonpoon.jpg 2",
+    "name": "CL-006-Vivid Bright Crisp",
     "whiteBalance": {
       "mode": "preset",
       "preset": "Daylight"
@@ -2071,7 +2731,7 @@
   {
     "id": "SCL-CL-007",
     "slug": "vv-khong",
-    "name": "SCL-CL-007: Vivid · Khong ខុង",
+    "name": "CL-007-Vivid Natural Daylight",
     "whiteBalance": {
       "mode": "preset",
       "preset": "Daylight"
@@ -2098,7 +2758,7 @@
   {
     "id": "SCL-CL-008",
     "slug": "vv-filmreel",
-    "name": "SCL-CL-008: Vivid · Filmreel",
+    "name": "CL-008-Vivid Cool Natural",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5000
@@ -2125,7 +2785,7 @@
   {
     "id": "SCL-CL-009",
     "slug": "st-sandeeshwara-perera",
-    "name": "SCL-CL-009: Standard · Sandeeshwara Perera",
+    "name": "CL-009-Flat Cool Standard",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5500,
@@ -2162,7 +2822,7 @@
   {
     "id": "SCL-CL-010",
     "slug": "st-ravi-ranasinghe",
-    "name": "SCL-CL-010: Standard · Ravi Ranasinghe",
+    "name": "CL-010-Soft Natural Standard",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB"
@@ -2189,7 +2849,7 @@
   {
     "id": "SCL-CL-011",
     "slug": "st-khong",
-    "name": "SCL-CL-011: Standard · Khong ខុង",
+    "name": "CL-011-Natural Standard Daylight",
     "whiteBalance": {
       "mode": "preset",
       "preset": "Daylight"
@@ -2216,7 +2876,7 @@
   {
     "id": "SCL-CL-012",
     "slug": "st-filmreel",
-    "name": "SCL-CL-012: Standard · Filmreel",
+    "name": "CL-012-Soft Warm Rich",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 6000
@@ -2243,7 +2903,7 @@
   {
     "id": "SCL-CL-013",
     "slug": "sh-sony-asia",
-    "name": "SCL-CL-013: Soft Highkey · Sony Asia",
+    "name": "CL-013-Airy Warm Pastel",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5600,
@@ -2280,7 +2940,7 @@
   {
     "id": "SCL-CL-014",
     "slug": "sh-jonpoon-jpg",
-    "name": "SCL-CL-014: Soft Highkey · Jonpoon.jpg",
+    "name": "CL-014-Airy Warm Rich",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 4700,
@@ -2317,7 +2977,7 @@
   {
     "id": "SCL-CL-015",
     "slug": "sh-puy",
-    "name": "SCL-CL-015: Soft Highkey · Puy",
+    "name": "CL-015-Airy Faded Soft",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB"
@@ -2344,7 +3004,7 @@
   {
     "id": "SCL-CL-016",
     "slug": "sh-jomnot",
-    "name": "SCL-CL-016: Soft Highkey · Jomnot",
+    "name": "CL-016-Airy Matte Natural",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB"
@@ -2371,7 +3031,7 @@
   {
     "id": "SCL-CL-017",
     "slug": "se-satheeshan-thiyagaraja",
-    "name": "SCL-CL-017: Sepia · Satheeshan Thiyagaraja",
+    "name": "CL-017-Sepia Soft Deep",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB"
@@ -2398,7 +3058,7 @@
   {
     "id": "SCL-CL-018",
     "slug": "se-ravi-ranasinghe",
-    "name": "SCL-CL-018: Sepia · Ravi Ranasinghe",
+    "name": "CL-018-Sepia Flat Crisp",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB"
@@ -2425,7 +3085,7 @@
   {
     "id": "SCL-CL-019",
     "slug": "pt-sandeeshwara-perera",
-    "name": "SCL-CL-019: Portrait · Sandeeshwara Perera",
+    "name": "CL-019-Portrait Soft Warm",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5500,
@@ -2462,7 +3122,7 @@
   {
     "id": "SCL-CL-020",
     "slug": "in-eranga-siriwardhana",
-    "name": "SCL-CL-020: Instant · Eranga Siriwardhana",
+    "name": "CL-020-Instant Faded Natural",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB"
@@ -2489,7 +3149,7 @@
   {
     "id": "SCL-CL-021",
     "slug": "in-sony-asia",
-    "name": "SCL-CL-021: Instant · Sony Asia",
+    "name": "CL-021-Instant Soft Violet",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 6500,
@@ -2526,7 +3186,7 @@
   {
     "id": "SCL-CL-022",
     "slug": "in-sony-asia-2",
-    "name": "SCL-CL-022: Instant · Sony Asia 2",
+    "name": "CL-022-Instant Cool Soft",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5600,
@@ -2563,7 +3223,7 @@
   {
     "id": "SCL-CL-023",
     "slug": "in-jonpoon-jpg",
-    "name": "SCL-CL-023: Instant · Jonpoon.jpg",
+    "name": "CL-023-Instant Warm Faded",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB",
@@ -2600,7 +3260,7 @@
   {
     "id": "SCL-CL-024",
     "slug": "in-check-in-siemreap",
-    "name": "SCL-CL-024: Instant · Check In Siemreap ដើរលេងសៀមរាប",
+    "name": "CL-024-Instant Warm Punchy",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5000,
@@ -2637,7 +3297,7 @@
   {
     "id": "SCL-CL-025",
     "slug": "fl-sandeeshwara-perera",
-    "name": "SCL-CL-025: Film · Sandeeshwara Perera",
+    "name": "CL-025-Film Warm Bright",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5200,
@@ -2674,7 +3334,7 @@
   {
     "id": "SCL-CL-026",
     "slug": "fl-sandeeshwara-perera-2",
-    "name": "SCL-CL-026: Film · Sandeeshwara Perera 2",
+    "name": "CL-026-Film Warm Soft",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5900,
@@ -2711,7 +3371,7 @@
   {
     "id": "SCL-CL-027",
     "slug": "fl-sandeeshwara-perera-3",
-    "name": "SCL-CL-027: Film · Sandeeshwara Perera 3",
+    "name": "CL-027-Film Deep Muted",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5200,
@@ -2748,7 +3408,7 @@
   {
     "id": "SCL-CL-028",
     "slug": "fl-lahiru-rumesh",
-    "name": "SCL-CL-028: Film · Lahiru Rumesh",
+    "name": "CL-028-Film Warm Deep",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 7600,
@@ -2785,7 +3445,7 @@
   {
     "id": "SCL-CL-029",
     "slug": "fl-isuru-mudalige",
-    "name": "SCL-CL-029: Film · Isuru Mudalige",
+    "name": "CL-029-Film Flat Rich",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB"
@@ -2812,7 +3472,7 @@
   {
     "id": "SCL-CL-030",
     "slug": "fl-sony-asia",
-    "name": "SCL-CL-030: Film · Sony Asia",
+    "name": "CL-030-Film Soft Faded",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5600
@@ -2839,7 +3499,7 @@
   {
     "id": "SCL-CL-031",
     "slug": "fl-sony-asia-2",
-    "name": "SCL-CL-031: Film · Sony Asia 2",
+    "name": "CL-031-Film Hard Muted",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5600,
@@ -2876,7 +3536,7 @@
   {
     "id": "SCL-CL-032",
     "slug": "fl-jonpoon-jpg",
-    "name": "SCL-CL-032: Film · Jonpoon.jpg",
+    "name": "CL-032-Film Warm Faded",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 4700,
@@ -2913,7 +3573,7 @@
   {
     "id": "SCL-CL-033",
     "slug": "fl-mardy-suong",
-    "name": "SCL-CL-033: Film · Mardy Suong",
+    "name": "CL-033-Film Natural Daylight",
     "whiteBalance": {
       "mode": "preset",
       "preset": "Daylight"
@@ -2940,7 +3600,7 @@
   {
     "id": "SCL-CL-034",
     "slug": "fl-mardy-suong-2",
-    "name": "SCL-CL-034: Film · Mardy Suong 2",
+    "name": "CL-034-Film Natural Neutral",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB"
@@ -2967,7 +3627,7 @@
   {
     "id": "SCL-CL-035",
     "slug": "fl-khong",
-    "name": "SCL-CL-035: Film · Khong ខុង",
+    "name": "CL-035-Film Deep Crisp",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB"
@@ -2994,7 +3654,7 @@
   {
     "id": "SCL-CL-036",
     "slug": "fl-hea-kimhong",
-    "name": "SCL-CL-036: Film · Hea Kimhong ហ៊ាន គីមហុង",
+    "name": "CL-036-Film Warm Natural",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5000,
@@ -3031,7 +3691,7 @@
   {
     "id": "SCL-CL-037",
     "slug": "fl-filmreel",
-    "name": "SCL-CL-037: Film · Filmreel",
+    "name": "CL-037-Film Soft Rich",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 6500
@@ -3054,5 +3714,268 @@
       "sharpnessRange": 3,
       "clarity": 0
     }
+  },
+  {
+    "id": "SCL-CL-038",
+    "slug": "mono-deep-noir",
+    "name": "CL-038-Mono Deep Noir",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 5500
+    },
+    "tags": [
+      "black-and-white",
+      "high-contrast",
+      "noir",
+      "street"
+    ],
+    "published": false,
+    "format": "cl",
+    "settings": {
+      "look": "BW",
+      "contrast": 6,
+      "highlights": -2,
+      "shadows": -4,
+      "fade": 0,
+      "sharpness": 6,
+      "sharpnessRange": 3,
+      "clarity": 5
+    },
+    "legacyId": null
+  },
+  {
+    "id": "SCL-CL-039",
+    "slug": "mono-airy-portrait",
+    "name": "CL-039-Mono Airy Portrait",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 5500
+    },
+    "tags": [
+      "black-and-white",
+      "portrait",
+      "soft"
+    ],
+    "published": false,
+    "format": "cl",
+    "settings": {
+      "look": "BW",
+      "contrast": -3,
+      "highlights": -4,
+      "shadows": 3,
+      "fade": 2,
+      "sharpness": 2,
+      "sharpnessRange": 2,
+      "clarity": 0
+    },
+    "legacyId": null
+  },
+  {
+    "id": "SCL-CL-040",
+    "slug": "neutral-clean-product",
+    "name": "CL-040-Neutral Clean Product",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 5500
+    },
+    "tags": [
+      "product",
+      "neutral",
+      "catalogue",
+      "fashion"
+    ],
+    "published": false,
+    "format": "cl",
+    "settings": {
+      "look": "NT",
+      "contrast": 1,
+      "highlights": -2,
+      "shadows": 0,
+      "fade": 0,
+      "saturation": 0,
+      "sharpness": 5,
+      "sharpnessRange": 3,
+      "clarity": 2
+    },
+    "legacyId": null
+  },
+  {
+    "id": "SCL-CL-041",
+    "slug": "portrait-golden-daylight",
+    "name": "CL-041-Portrait Golden Daylight",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 5600,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 2
+        },
+        "gm": {
+          "axis": "M",
+          "amount": 0.5
+        }
+      }
+    },
+    "tags": [
+      "portrait",
+      "golden-hour",
+      "warm",
+      "skin"
+    ],
+    "published": false,
+    "format": "cl",
+    "settings": {
+      "look": "PT",
+      "contrast": -1,
+      "highlights": -4,
+      "shadows": 2,
+      "fade": 1,
+      "saturation": 1,
+      "sharpness": 2,
+      "sharpnessRange": 2,
+      "clarity": 0
+    },
+    "legacyId": null
+  },
+  {
+    "id": "SCL-CL-042",
+    "slug": "airy-cool-pastel",
+    "name": "CL-042-Airy Cool Pastel",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 5200,
+      "shift": {
+        "ab": {
+          "axis": "B",
+          "amount": 1
+        }
+      }
+    },
+    "tags": [
+      "high-key",
+      "pastel",
+      "cool-tone",
+      "portrait"
+    ],
+    "published": false,
+    "format": "cl",
+    "settings": {
+      "look": "SH",
+      "contrast": -3,
+      "highlights": -2,
+      "shadows": 3,
+      "fade": 3,
+      "saturation": -2,
+      "sharpness": 2,
+      "sharpnessRange": 2,
+      "clarity": 0
+    },
+    "legacyId": null
+  },
+  {
+    "id": "SCL-CL-043",
+    "slug": "film-matte-cool",
+    "name": "CL-043-Film Matte Cool",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 5200,
+      "shift": {
+        "ab": {
+          "axis": "B",
+          "amount": 1
+        }
+      }
+    },
+    "tags": [
+      "matte",
+      "faded",
+      "cool-tone",
+      "street"
+    ],
+    "published": false,
+    "format": "cl",
+    "settings": {
+      "look": "FL",
+      "contrast": 3,
+      "highlights": -4,
+      "shadows": 2,
+      "fade": 6,
+      "saturation": -3,
+      "sharpness": 3,
+      "sharpnessRange": 3,
+      "clarity": 2
+    },
+    "legacyId": null
+  },
+  {
+    "id": "SCL-CL-044",
+    "slug": "instant-amber-soft",
+    "name": "CL-044-Instant Amber Soft",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 5800,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 2
+        }
+      }
+    },
+    "tags": [
+      "instant",
+      "warm",
+      "soft",
+      "everyday"
+    ],
+    "published": false,
+    "format": "cl",
+    "settings": {
+      "look": "IN",
+      "contrast": -2,
+      "highlights": -3,
+      "shadows": 2,
+      "fade": 3,
+      "saturation": 2,
+      "sharpness": 2,
+      "sharpnessRange": 2,
+      "clarity": 0
+    },
+    "legacyId": null
+  },
+  {
+    "id": "SCL-CL-045",
+    "slug": "vivid-tropical-punchy",
+    "name": "CL-045-Vivid Tropical Punchy",
+    "whiteBalance": {
+      "mode": "kelvin",
+      "kelvin": 5800,
+      "shift": {
+        "ab": {
+          "axis": "A",
+          "amount": 1
+        }
+      }
+    },
+    "tags": [
+      "tropical",
+      "beach",
+      "vivid",
+      "travel"
+    ],
+    "published": false,
+    "format": "cl",
+    "settings": {
+      "look": "VV2",
+      "contrast": 2,
+      "highlights": -3,
+      "shadows": -1,
+      "fade": 0,
+      "saturation": 3,
+      "sharpness": 4,
+      "sharpnessRange": 3,
+      "clarity": 4
+    },
+    "legacyId": null
   }
 ]

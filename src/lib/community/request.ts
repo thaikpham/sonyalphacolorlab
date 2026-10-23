@@ -1,5 +1,8 @@
 import 'server-only';
 import { z } from 'zod';
+import { isExpiringImageHost } from './image-hosts';
+
+export { EXPIRING_IMAGE_HOSTS, isExpiringImageHost } from './image-hosts';
 
 /**
  * Reading a community POST body, before any handler logic runs.
@@ -69,10 +72,17 @@ export const recipeSlugSchema = z
  * https only, bounded like `community_photos.image_url` — both ends: the
  * CHECK is `length between 12 and 2048`, and `https://a.b` (11) passed here
  * to fail there as a 500.
+ *
+ * And on a host that keeps it: a Facebook or Instagram CDN link expires, so it
+ * fails with its own message, which the routes answer as `expiringImageHost`
+ * rather than as an invalid URL.
  */
+export const EXPIRING_IMAGE_HOST_ISSUE = 'expiringImageHost';
+
 export const httpsImageUrlSchema = z
   .string()
   .url()
   .min(12)
   .max(2048)
-  .refine((u) => u.startsWith('https://'), { message: 'Image URL must use https://' });
+  .refine((u) => u.startsWith('https://'), { message: 'Image URL must use https://' })
+  .refine((u) => !isExpiringImageHost(u), { message: EXPIRING_IMAGE_HOST_ISSUE });

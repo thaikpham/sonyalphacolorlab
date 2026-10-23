@@ -3,6 +3,7 @@ import { accentHex } from '@/lib/camera/color';
 import { CREATIVE_LOOKS } from '@/lib/camera/constants';
 import type { Locale } from '@/i18n/routing';
 import { getRecipe, listSlugs } from '@/lib/recipes/source';
+import { recipeTitle } from '@/lib/recipes/title';
 
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
@@ -15,8 +16,13 @@ export async function generateStaticParams() {
  * The card Facebook, Messenger and Zalo render when someone shares a recipe.
  *
  * Built from the recipe's own data: the accent is derived from its White
- * Balance, and the WB value is the headline, because that is what a
- * photographer actually wants to see before opening the link.
+ * Balance, the WB value is the headline, because that is what a photographer
+ * actually wants to see before opening the link, and the palette — the nine
+ * swatches the recipe's card shows — runs along the bottom. No recipe carries
+ * a photograph, so this is the picture. Each swatch's `hex` is emitted from
+ * the same gamut-mapped value as its on-screen `oklch()`, so the share card
+ * and the grid agree. No copy on it: the palette's accuracy line lives on the
+ * recipe page, and Satori's default font has no Vietnamese subset.
  *
  * ImageResponse supports a subset of CSS — flexbox only, no `gap` shorthand
  * quirks, and every element with more than one child needs an explicit
@@ -54,7 +60,10 @@ export default async function OgImage({
 
   // Hex, not oklch(): Satori ignores oklch() silently, producing a colourless card.
   const accent = accentHex(recipe.accent);
-  const title = recipe.name.split(': ').slice(1).join(': ') || recipe.name;
+  const title = recipeTitle(recipe.name);
+  /* A row still on the old `SCL-PP-048: Huế Silk` shape shows its code above
+     the title, which drops it; the new name carries the code itself. */
+  const legacyName = recipe.name.includes(': ');
   const look =
     recipe.format === 'cl' ? CREATIVE_LOOKS.find((l) => l.code === recipe.settings.look) : null;
 
@@ -86,10 +95,12 @@ export default async function OgImage({
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <div style={{ display: 'flex', fontSize: 24, letterSpacing: 5, opacity: 0.6 }}>
-            {recipe.id}
-          </div>
-          <div style={{ display: 'flex', fontSize: 84, fontWeight: 600, marginTop: 12 }}>
+          {legacyName && (
+            <div style={{ display: 'flex', fontSize: 24, letterSpacing: 5, opacity: 0.6 }}>
+              {recipe.id}
+            </div>
+          )}
+          <div style={{ display: 'flex', fontSize: 72, fontWeight: 600, marginTop: 12 }}>
             {title}
           </div>
           <div
@@ -108,6 +119,14 @@ export default async function OgImage({
               Creative Look {look.code} · {look.label}
             </div>
           )}
+        </div>
+
+        {/* The palette, in the card's order: the neutral ramp, then the six
+            hues. No `gap` — Satori's support is partial — and no strokes. */}
+        <div style={{ display: 'flex', height: 64, borderRadius: 20, overflow: 'hidden' }}>
+          {recipe.palette.map((swatch) => (
+            <div key={swatch.id} style={{ display: 'flex', flexGrow: 1, background: swatch.hex }} />
+          ))}
         </div>
       </div>
     ),

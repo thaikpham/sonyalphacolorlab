@@ -11,6 +11,7 @@ import {
   WB_PRESETS,
 } from '../camera/constants';
 import { recipeSchema } from '../camera/schema';
+import { ORIGINAL_CL } from '../originals/cl';
 
 /**
  * The scrape is a third-party HTML export of a marketing page: inconsistent
@@ -231,7 +232,10 @@ describe('stable ids', () => {
 
   it('matches the ids and slugs the committed seed ships', () => {
     const seed = JSON.parse(readFileSync('data/recipes.seed.json', 'utf8')) as { id: string; slug: string; format: string }[];
-    const shipped = seed.filter((r) => r.format === 'cl').map((r) => [r.id, r.slug]);
+    /* ColorLab's own Creative Looks share the seed and the id sequence but not
+       the importer: they are numbered after its pins. */
+    const ours = new Set(ORIGINAL_CL.map((o) => o.recipe.id));
+    const shipped = seed.filter((r) => r.format === 'cl' && !ours.has(r.id)).map((r) => [r.id, r.slug]);
     expect(result.recipes.map((r) => [r.id, r.slug])).toEqual(shipped);
   });
 
@@ -267,6 +271,30 @@ describe('stable ids', () => {
     const { recipes } = importSonyAsia(csvOf(`${ST}, WB AWB`), retired);
     expect(recipes[0]?.id).toBe('SCL-CL-091');
     expect(recipes[0]?.slug).toBe('st-test-2');
+  });
+
+  it('steps past the ids and slugs ColorLab’s own Creative Looks hold', () => {
+    /* The originals share the SCL-CL- sequence. emit-seed passes them as
+       `reserved`, so a newcomer the scrape has never seen cannot be handed
+       CL-038 — the number Mono Deep Noir already holds. */
+    const reserved = {
+      ids: ORIGINAL_CL.map((o) => o.recipe.id),
+      slugs: ORIGINAL_CL.map((o) => o.recipe.slug),
+    };
+    const last = Math.max(...reserved.ids.map((id) => Number(id.slice(-3))));
+    const { recipes } = importSonyAsia(csvOf(`${ST}, WB AWB`), SONY_ASIA_IDS, reserved);
+    expect(recipes[0]?.id).toBe(`SCL-CL-${String(last + 1).padStart(3, '0')}`);
+    expect(reserved.slugs).not.toContain(recipes[0]?.slug);
+
+    /* And a reserved slug the newcomer would otherwise take is stepped past:
+       this row's own slug is `st-test`. */
+    const own = importSonyAsia(csvOf(`${ST}, WB AWB`), SONY_ASIA_IDS);
+    expect(own.recipes[0]?.slug).toBe('st-test');
+    const stepped = importSonyAsia(csvOf(`${ST}, WB AWB`), SONY_ASIA_IDS, { slugs: ['st-test'] });
+    expect(stepped.recipes[0]?.slug).toBe('st-test-2');
+    const emit = readFileSync('scripts/emit-seed.ts', 'utf8');
+    expect(emit).toMatch(/importSonyAsia\(readFileSync\([^)]*\), SONY_ASIA_IDS, \{\s*ids: ORIGINAL_CL\.map/);
+    expect(emit).toContain('slugs: ORIGINAL_CL.map((o) => o.recipe.slug)');
   });
 });
 

@@ -13,7 +13,12 @@ import { hasContentConfig } from '@/lib/supabase/server';
 import { publishedRecipeFormat } from '@/lib/recipes/existence';
 import { clSettingsSchema, ppSettingsSchema, whiteBalanceSchema } from '@/lib/camera/schema';
 import { MAX_PHOTOS_PER_RECIPE, clientKey } from '@/lib/community/gallery';
-import { httpsImageUrlSchema, readJsonBody, recipeSlugSchema } from '@/lib/community/request';
+import {
+  EXPIRING_IMAGE_HOST_ISSUE,
+  httpsImageUrlSchema,
+  readJsonBody,
+  recipeSlugSchema,
+} from '@/lib/community/request';
 /* One list for the read and the insert's return, so the two cannot drift. */
 import { PROPOSAL_COLUMNS } from '@/lib/community/columns';
 
@@ -61,6 +66,7 @@ function bodyErrorCode(
 ): CommunityErrorCode {
   switch (issue?.path[0]) {
     case 'sampleImageUrl': {
+      if (issue?.message === EXPIRING_IMAGE_HOST_ISSUE) return 'expiringImageHost';
       const sample = body.sampleImageUrl;
       return typeof sample === 'string' && sample.trim() ? 'invalidImageUrl' : 'sampleUrlRequired';
     }

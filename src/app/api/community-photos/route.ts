@@ -6,7 +6,12 @@ import { publishedRecipeExists } from '@/lib/recipes/existence';
 import { COMMUNITY_ERRORS, communityErrorBody, outageErrorCode } from '@/lib/community/errors';
 import { requireUser, UNAUTHENTICATED, type AuthedUser } from '@/lib/auth/require-user';
 import { MAX_PHOTOS_PER_RECIPE, clientKey } from '@/lib/community/gallery';
-import { httpsImageUrlSchema, readJsonBody, recipeSlugSchema } from '@/lib/community/request';
+import {
+  EXPIRING_IMAGE_HOST_ISSUE,
+  httpsImageUrlSchema,
+  readJsonBody,
+  recipeSlugSchema,
+} from '@/lib/community/request';
 import { PHOTO_COLUMNS } from '@/lib/community/columns';
 
 /**
@@ -127,9 +132,12 @@ export async function POST(req: Request) {
      told their (valid) image URL was not. */
   const parsed = postBody.safeParse(read.body);
   if (!parsed.success) {
-    return parsed.error.issues[0]?.path[0] === 'imageUrl'
-      ? NextResponse.json(communityErrorBody('invalidImageUrl'), { status: 400 })
-      : NextResponse.json(communityErrorBody('missingFields'), { status: 400 });
+    const issue = parsed.error.issues[0];
+    if (issue?.path[0] !== 'imageUrl') {
+      return NextResponse.json(communityErrorBody('missingFields'), { status: 400 });
+    }
+    const code = issue.message === EXPIRING_IMAGE_HOST_ISSUE ? 'expiringImageHost' : 'invalidImageUrl';
+    return NextResponse.json(communityErrorBody(code), { status: COMMUNITY_ERRORS[code] });
   }
   const body = parsed.data;
 

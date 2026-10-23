@@ -5,10 +5,10 @@
  * This is an operator tool, not a second test suite. `npm run verify` is still
  * the gate. The doctor exists for the three things the gate cannot give you:
  *
- *  - **Cross-file references.** A row in `translations.seed.json` or
- *    `images.seed.json` naming a recipe that no longer exists is invisible to
- *    every per-file test, and invisible at runtime too — the join just returns
- *    nothing and the page renders a recipe with no photo and no prose.
+ *  - **Cross-file references.** A row in `translations.seed.json` naming a
+ *    recipe that no longer exists is invisible to every per-file test, and
+ *    invisible at runtime too — the join just returns nothing and the page
+ *    renders a recipe with no prose.
  *  - **A survey rather than a stop.** Vitest reports the first failure per
  *    assertion; when a scrape lands 94 products at once you want the whole list
  *    of what it got wrong, ranked, in one screen.
@@ -37,7 +37,6 @@ import { recipeSchema } from '../src/lib/camera/schema';
 import { SPEC_ROWS, type ProductSpecs, type SonyCamera } from '../src/lib/cameras/types';
 import { splitFeatures } from '../src/lib/cameras/features';
 import { highlightsSchema } from '../src/lib/cameras/highlights';
-import { variantPaths } from './lib/recipe-image-manifest';
 
 // ---------------------------------------------------------------------------
 // Report model
@@ -128,15 +127,9 @@ interface Translation {
   locale: string;
   description: string;
 }
-interface ImageRow {
-  recipeId: string;
-  storagePath: string;
-  sort: number;
-}
 
 const recipes = readJson<SeedRecipe[]>('data/recipes.seed.json');
 const translations = readJson<Translation[]>('data/translations.seed.json');
-const images = readJson<ImageRow[]>('data/images.seed.json');
 const products = readJson<SonyCamera[]>('data/sony-cameras.seed.json');
 /* The audio catalogue lands in the same `sony_cameras` table — push:supabase
    upserts both files in one call — so an id repeated across the two fails that
@@ -237,51 +230,6 @@ function checkTranslations(): Section {
   return {
     title: 'data/translations.seed.json',
     subtitle: `${translations.length} rows · ${withEn.size} en / ${withVi.size} vi`,
-    findings,
-  };
-}
-
-// ---------------------------------------------------------------------------
-// images.seed.json
-// ---------------------------------------------------------------------------
-
-function checkImages(): Section {
-  const orphans = [
-    ...new Set(images.filter((r) => !recipeIds.has(r.recipeId)).map((r) => r.recipeId)),
-  ];
-  const dupeSort = duplicates(images.map((r) => `${r.recipeId}#${r.sort}`));
-  const blankPath = images.filter((r) => !r.storagePath?.trim()).map((r) => r.recipeId);
-
-  const covered = new Set(images.map((r) => r.recipeId));
-  const noImage = recipes.filter((r) => !covered.has(r.id)).map((r) => r.id);
-
-  /* The seed is only half of a photograph; the other half is three files in
-     public/recipes. A path nothing serves — the `.jpg` paths migrate:images
-     once wrote — renders as a broken photo in production and nowhere else. */
-  const unserved = images.flatMap((r) => {
-    if (!r.storagePath?.trim()) return [];
-    const files = variantPaths(r.storagePath);
-    const missing = files.filter((p) => !existsSync(`public/recipes/${p}`));
-    return missing.length ? [`${r.storagePath} — ${missing.length} of ${files.length} files missing`] : [];
-  });
-
-  const findings = compact([
-    issue('fail', orphans, 'reference a recipe that does not exist'),
-    /* `sort` is the gallery order. A repeated (recipe, sort) pair orders
-       non-deterministically, so the hero photo changes between deploys. */
-    issue('fail', dupeSort, 'duplicate (recipeId, sort) pair'),
-    issue('fail', blankPath, 'have a blank storagePath'),
-    issue('fail', unserved, 'photographs are not in public/recipes'),
-    issue('warn', noImage, 'recipes have no photo'),
-  ]);
-
-  if (findings.length === 0) {
-    findings.push({ level: 'ok', text: `${covered.size} recipes have at least one photo` });
-  }
-
-  return {
-    title: 'data/images.seed.json',
-    subtitle: `${images.length} rows · ${covered.size} recipes covered`,
     findings,
   };
 }
@@ -646,7 +594,6 @@ async function main() {
   const sections = [
     checkRecipes(),
     checkTranslations(),
-    checkImages(),
     checkProducts('data/sony-cameras.seed.json', products),
     checkProducts('data/sony-audio.seed.json', audio),
     checkMessages(),

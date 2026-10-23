@@ -33,14 +33,14 @@ export type BrowseModel = {
  * header pushes `?q=` after every typing pause — so "mojave" used to be up to
  * six cache misses, each a recipes select plus a translations read, and any
  * `?q=` from anyone added an entry. Nothing new goes into that key: the text
- * match, the three groups and the legacy `?format=`/`?look=`/`?tag=` of the
- * previous catalogue (one more release, then gone) all run here.
+ * match, the four groups and the legacy `?look=`/`?tag=` of the previous
+ * catalogue (one more release, then gone) all run here. `?format=` is not
+ * legacy any more: it is the colour-system group, read by `browseFilters`.
  */
 export async function loadBrowse(locale: Locale, situation: SituationId | null, sp: BrowseSearchParams): Promise<BrowseModel> {
   const filters = browseFilters(situation, sp);
   const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
   const legacy = {
-    format: one(sp.format) === 'pp' || one(sp.format) === 'cl' ? (one(sp.format) as 'pp' | 'cl') : undefined,
     look: one(sp.look),
     tag: one(sp.tag),
   };

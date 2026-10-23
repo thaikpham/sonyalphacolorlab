@@ -1,20 +1,29 @@
 /**
- * Alpha ColorLab's own Picture Profile library — 23 originals, cooked from the
+ * Alpha ColorLab's own Picture Profile library — 35 originals, cooked from the
  * way Sony's Help Guide for Creators explains each parameter (Gamma / Color
  * Mode, Black Level / Black Gamma / Knee, Saturation / Color Phase / Color
  * Depth, Detail), never from memory and never from anyone else's recipes.
  *
- * They replace the 36 Picture Profiles withdrawn on 2026-10-23 as matching a
- * licensed third-party collection (see RETIRED_LEGACY_IDS in
- * src/lib/recipes/redirects.ts). Each one was checked against recipeSchema,
- * against Sony's own constraints (no Knee Auto on a gamma Sony says turns it
- * off, no slope +5, |Color Phase| ≤ 2, no Color Depth at ±7) and for distance
- * from the withdrawn set.
+ * The first 23 (048–070) replace the 36 Picture Profiles withdrawn on
+ * 2026-10-23 as matching a licensed third-party collection (see
+ * RETIRED_LEGACY_IDS in src/lib/recipes/redirects.ts); the next 12 (071–082),
+ * added 2026-10-24, fill moods the catalogue had no recipe for. Each one was
+ * checked against recipeSchema, against Sony's own constraints (no Knee Auto
+ * on a gamma Sony says turns it off, no slope +5, |Color Phase| ≤ 2 and 0 on
+ * a portrait recipe, no Color Depth at ±7, a documented Gamma / Color Mode
+ * pair or a stated reason) and for distance from that collection. The rules
+ * are pinned in originals.test.ts.
+ *
+ * Cine3 and Cine4 with the Still colour mode (060, 062, 071, 074) is the set's
+ * one departure from Sony's pairing, by design and said so in each `intent`:
+ * the curve's contrast under Still's hues.
+ *
+ * Names are `PP-NNN-Mood Words` (src/lib/recipes/names.ts); the slug keeps the
+ * place each was first imagined for.
  *
  * `published: false` on every one, deliberately (D8): the numbers are design
  * hypotheses until the owner has shot each on the a7 IV. Publishing is an
- * editor's act in /admin/colorlab, after at least one real photograph is
- * attached.
+ * editor's act in /admin/colorlab.
  *
  * Vietnamese prose lives in data/translations.vi.json like every other
  * recipe's; the situations, style and tone in data/recipe-taxonomy.json.
@@ -40,7 +49,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'SCL-PP-048',
       slug: 'hue-silk',
-      name: 'SCL-PP-048: Huế Silk',
+      name: 'PP-048-Soft Clean Portrait',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5300,
@@ -93,14 +102,14 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
       format: 'pp',
       published: false
     },
-    intent: 'daylight portrait — bright clean skin, quiet background',
+    intent: 'daylight portrait — bright clean skin, quiet background (Knee 90% −1 is nearly inert: try 85% +1, Sony’s film-like pair, after the shoot)',
     description: 'Soft S-Cinetone contrast with skin lifted a touch brighter and less flushed, while foliage and sky stay slightly deeper so the face separates from the background. Built for daylight portraits in open shade.'
   },
   {
     recipe: {
       id: 'SCL-PP-049',
       slug: 'clear-day',
-      name: 'SCL-PP-049: Clear Day',
+      name: 'PP-049-Clean Natural Daylight',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5500
@@ -154,7 +163,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'SCL-PP-050',
       slug: 'linen-editorial',
-      name: 'SCL-PP-050: Linen Editorial',
+      name: 'PP-050-Neutral Crisp Studio',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5600,
@@ -212,7 +221,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'SCL-PP-051',
       slug: 'sa-pa-morning',
-      name: 'SCL-PP-051: Sa Pa Morning',
+      name: 'PP-051-Range Soft Landscape',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5600,
@@ -230,11 +239,11 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
         'mountain'
       ],
       settings: {
-        blackLevel: -3,
+        blackLevel: -1,
         gamma: 'Cine1',
         blackGamma: {
           range: 'Wide',
-          level: -2
+          level: 2
         },
         knee: {
           mode: 'Manual',
@@ -272,7 +281,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'SCL-PP-052',
       slug: 'mekong-noon',
-      name: 'SCL-PP-052: Mekong Noon',
+      name: 'PP-052-Range Bright Daylight',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5400,
@@ -303,7 +312,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
         },
         colorMode: 'S-Cinetone',
         saturation: 10,
-        colorPhase: 1,
+        colorPhase: 0,
         colorDepth: {
           R: -1,
           G: 2,
@@ -332,7 +341,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'SCL-PP-053',
       slug: 'mui-ne-dusk',
-      name: 'SCL-PP-053: Mũi Né Dusk',
+      name: 'PP-053-Range Warm Dusk',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 6200
@@ -380,13 +389,13 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
       published: false
     },
     intent: 'sunsets and into-the-sun — the widest range this set gets out of camera',
-    description: 'The flattest recipe in the set on purpose: an early, very gentle knee and opened shadows keep the sun’s glow and the foreground together, with warm white balance and extra saturation so it still reads as a sunset. Soft by design.'
+    description: 'Deliberately one of the flattest colour recipes here: an early, very gentle knee and opened shadows keep the sun’s glow and the foreground together, with warm white balance and extra saturation so it still reads as a sunset. Soft by design.'
   },
   {
     recipe: {
       id: 'SCL-PP-054',
       slug: 'phu-quoc-blue',
-      name: 'SCL-PP-054: Phú Quốc Blue',
+      name: 'PP-054-Cyan Vivid Coast',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5200,
@@ -446,7 +455,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'SCL-PP-055',
       slug: 'tam-coc-green',
-      name: 'SCL-PP-055: Tam Cốc Green',
+      name: 'PP-055-Green Vivid Nature',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5800,
@@ -506,7 +515,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'SCL-PP-056',
       slug: 'hoi-an-lantern',
-      name: 'SCL-PP-056: Hội An Lantern',
+      name: 'PP-056-Warm Vivid Festival',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 6000
@@ -559,7 +568,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'SCL-PP-057',
       slug: 'tet-blossom',
-      name: 'SCL-PP-057: Tết Blossom',
+      name: 'PP-057-Rosy Bright Portrait',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 6000,
@@ -590,7 +599,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
         },
         colorMode: 'Still',
         saturation: 13,
-        colorPhase: 1,
+        colorPhase: 0,
         colorDepth: {
           R: -1,
           G: 2,
@@ -619,7 +628,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'SCL-PP-058',
       slug: 'da-lat-mist',
-      name: 'SCL-PP-058: Đà Lạt Mist',
+      name: 'PP-058-Cool Pastel Matte',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5200,
@@ -679,7 +688,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'SCL-PP-059',
       slug: 'ha-noi-winter',
-      name: 'SCL-PP-059: Hà Nội Winter',
+      name: 'PP-059-Warm Muted Nostalgia',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 6000,
@@ -707,7 +716,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
           mode: 'Auto'
         },
         colorMode: 'Movie',
-        saturation: 2,
+        saturation: -8,
         colorPhase: 1,
         colorDepth: {
           R: 1,
@@ -737,7 +746,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'SCL-PP-060',
       slug: 'cho-lon-slide',
-      name: 'SCL-PP-060: Chợ Lớn Slide',
+      name: 'PP-060-Warm Dense Slide',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5000,
@@ -790,14 +799,14 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
       format: 'pp',
       published: false
     },
-    intent: 'dense slide-film punch — deep blacks, rich warm colour',
+    intent: 'dense slide-film punch — deep blacks, rich warm colour (Cine3 with Still colour, off Sony’s pairing by design: Cine3’s contrast under Still’s hues)',
     description: 'Dense, slide-film punch: Cine3 contrast with deep blacks, every colour deepened a little and a warm turn in the hues. For street, markets and bold daylight scenes.'
   },
   {
     recipe: {
       id: 'SCL-PP-061',
       slug: 'sai-gon-cafe',
-      name: 'SCL-PP-061: Sài Gòn Café',
+      name: 'PP-061-Tungsten Soft Indoor',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 3400
@@ -850,7 +859,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'SCL-PP-062',
       slug: 'neon-night',
-      name: 'SCL-PP-062: Neon Night',
+      name: 'PP-062-Cyan Deep Night',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 3800,
@@ -903,14 +912,14 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
       format: 'pp',
       published: false
     },
-    intent: 'city night — clean cyan streets, rolled-off signs',
+    intent: 'city night — clean cyan streets, rolled-off signs (Cine4 with Still colour, off Sony’s pairing by design: Cine4’s dark contrast under Still’s hues)',
     description: 'City night with clean cyan and blue accents, deep Cine4 blacks and signs rolled off by the knee. Made for street lamps and neon; in daylight it renders strongly blue.'
   },
   {
     recipe: {
       id: 'SCL-PP-063',
       slug: 'ben-thanh-night',
-      name: 'SCL-PP-063: Bến Thành Night',
+      name: 'PP-063-Warm Vivid Night',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 4000
@@ -964,7 +973,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'SCL-PP-064',
       slug: 'old-quarter-mono',
-      name: 'SCL-PP-064: Old Quarter Mono',
+      name: 'PP-064-Mono Crisp Street',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5500
@@ -1018,7 +1027,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'SCL-PP-065',
       slug: 'pearl-mono',
-      name: 'SCL-PP-065: Pearl Mono',
+      name: 'PP-065-Mono Soft Portrait',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5500
@@ -1072,7 +1081,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'SCL-PP-066',
       slug: 'ho-tay-golden',
-      name: 'SCL-PP-066: Hồ Tây Golden',
+      name: 'PP-066-Golden Soft Portrait',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 6000,
@@ -1103,7 +1112,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
         },
         colorMode: 'Cinema',
         saturation: 8,
-        colorPhase: 1,
+        colorPhase: 0,
         colorDepth: {
           R: -2,
           G: 1,
@@ -1132,7 +1141,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'SCL-PP-067',
       slug: 'moc-chau-frost',
-      name: 'SCL-PP-067: Mộc Châu Frost',
+      name: 'PP-067-Cool Crisp Airy',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 4600,
@@ -1192,7 +1201,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'SCL-PP-068',
       slug: 'vung-tau-pop',
-      name: 'SCL-PP-068: Vũng Tàu Pop',
+      name: 'PP-068-Punchy Vivid Pop',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5400,
@@ -1252,7 +1261,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'SCL-PP-069',
       slug: 'hem-noir',
-      name: 'SCL-PP-069: Hẻm Noir',
+      name: 'PP-069-Mono Hard Noir',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 7500
@@ -1306,7 +1315,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'SCL-PP-070',
       slug: 'late-night-mono',
-      name: 'SCL-PP-070: Late Night Mono',
+      name: 'PP-070-Mono Soft Night',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 4000
@@ -1355,5 +1364,701 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     },
     intent: 'black & white after dark — open shadows, quiet noise',
     description: 'Black and white for after dark: Cine4 keeps contrast in the darks while Black Gamma opens them, street lamps roll off, and noise is not sharpened.'
+  },
+  {
+    recipe: {
+      id: 'SCL-PP-071',
+      slug: 'silver-hard-muted',
+      name: 'PP-071-Silver Hard Muted',
+      whiteBalance: {
+        mode: 'kelvin',
+        kelvin: 5500,
+        shift: {
+          ab: {
+            axis: 'B',
+            amount: 0.5
+          }
+        }
+      },
+      tags: [
+        'bleach-bypass',
+        'muted',
+        'contrast',
+        'street'
+      ],
+      settings: {
+        blackLevel: -6,
+        gamma: 'Cine4',
+        blackGamma: {
+          range: 'Narrow',
+          level: -3
+        },
+        knee: {
+          mode: 'Manual',
+          point: 92.5,
+          slope: 1
+        },
+        colorMode: 'Still',
+        saturation: -14,
+        colorPhase: 0,
+        colorDepth: {
+          R: 1,
+          G: 0,
+          B: 1,
+          C: 0,
+          M: 0,
+          Y: 1
+        },
+        detail: {
+          level: 2,
+          mode: 'Manual',
+          vhBalance: 0,
+          bwBalance: 'Type2',
+          limit: 6,
+          crispening: 3,
+          hiLightDetail: 2
+        }
+      },
+      format: 'pp',
+      published: false
+    },
+    intent: 'bleach bypass — hard, silvery, colour held right down (Cine4 with Still colour, off Sony’s pairing by design: Cine4’s dark contrast under Still’s hues)',
+    description: 'A bleach-bypass mood: Cine4’s deep dark contrast, blacks pressed down by Black Level and a Narrow Black Gamma, and Saturation well below zero so colour turns silvery — the low saturation is the look, not a fault. Reds, blues and yellows are held a step denser so they do not wash out, and firm edge detail suits street and fashion.'
+  },
+  {
+    recipe: {
+      id: 'SCL-PP-072',
+      slug: 'teal-orange-cinema',
+      name: 'PP-072-Teal Orange Cinema',
+      whiteBalance: {
+        mode: 'kelvin',
+        kelvin: 5600,
+        shift: {
+          ab: {
+            axis: 'A',
+            amount: 1.5
+          }
+        }
+      },
+      tags: [
+        'teal-orange',
+        'cinematic',
+        'portrait',
+        'street'
+      ],
+      settings: {
+        blackLevel: -3,
+        gamma: 'Cine2',
+        blackGamma: {
+          range: 'Middle',
+          level: -2
+        },
+        knee: {
+          mode: 'Manual',
+          point: 85,
+          slope: -1
+        },
+        colorMode: 'Cinema',
+        saturation: 12,
+        colorPhase: 0,
+        colorDepth: {
+          R: -2,
+          G: 3,
+          B: 4,
+          C: 5,
+          M: 1,
+          Y: -2
+        },
+        detail: {
+          level: -1,
+          mode: 'Manual',
+          vhBalance: -1,
+          bwBalance: 'Type3',
+          limit: 4,
+          crispening: 5,
+          hiLightDetail: 1
+        }
+      },
+      format: 'pp',
+      published: false
+    },
+    intent: 'teal and orange — warm skin, teal skies and shade',
+    description: 'Teal and orange in camera: an amber white balance warms skin, while Color Depth deepens green, cyan and blue, so foliage, skies and water sit deep and cool beside it. Red and yellow are lifted and paled a little so faces stay light, and Cine2 with an early, gentle knee keeps the highlights soft. For portraits and street scenes.'
+  },
+  {
+    recipe: {
+      id: 'SCL-PP-073',
+      slug: 'bright-airy-studio',
+      name: 'PP-073-Bright Airy Studio',
+      whiteBalance: {
+        mode: 'kelvin',
+        kelvin: 5500
+      },
+      tags: [
+        'high-key',
+        'studio',
+        'bright',
+        'portrait'
+      ],
+      settings: {
+        blackLevel: 4,
+        gamma: 'Cine2',
+        blackGamma: {
+          range: 'Middle',
+          level: 3
+        },
+        knee: {
+          mode: 'Manual',
+          point: 80,
+          slope: 2
+        },
+        colorMode: 'Cinema',
+        saturation: 2,
+        colorPhase: 0,
+        colorDepth: {
+          R: -2,
+          G: -1,
+          B: -1,
+          C: -1,
+          M: -1,
+          Y: -2
+        },
+        detail: {
+          level: -3,
+          mode: 'Manual',
+          vhBalance: -1,
+          bwBalance: 'Type4',
+          limit: 4,
+          crispening: 4,
+          hiLightDetail: 2
+        }
+      },
+      format: 'pp',
+      published: false
+    },
+    intent: 'high key — bright, airy studio and white walls',
+    description: 'High key, clean and light: Black Level and Black Gamma lift the shadows, Cine2 keeps contrast low, and a knee from 80% rounds off white backgrounds without flattening them. Negative Color Depth on every hue pales colour slightly, and softened detail with Type4 keeps skin smooth and whites glossy. For studio, white walls and window light.'
+  },
+  {
+    recipe: {
+      id: 'SCL-PP-074',
+      slug: 'dark-rich-velvet',
+      name: 'PP-074-Dark Rich Velvet',
+      whiteBalance: {
+        mode: 'kelvin',
+        kelvin: 5800,
+        shift: {
+          ab: {
+            axis: 'A',
+            amount: 1
+          }
+        }
+      },
+      tags: [
+        'low-key',
+        'moody',
+        'portrait',
+        'interior'
+      ],
+      settings: {
+        blackLevel: -8,
+        gamma: 'Cine4',
+        blackGamma: {
+          range: 'Narrow',
+          level: -5
+        },
+        knee: {
+          mode: 'Manual',
+          point: 95,
+          slope: 1
+        },
+        colorMode: 'Still',
+        saturation: 8,
+        colorPhase: 0,
+        colorDepth: {
+          R: -1,
+          G: 3,
+          B: 3,
+          C: 2,
+          M: 2,
+          Y: -1
+        },
+        detail: {
+          level: -1,
+          mode: 'Manual',
+          vhBalance: -1,
+          bwBalance: 'Type2',
+          limit: 4,
+          crispening: 5,
+          hiLightDetail: 1
+        }
+      },
+      format: 'pp',
+      published: false
+    },
+    intent: 'low key — rich warm colour out of deep shadow (Cine4 with Still colour, off Sony’s pairing by design: Cine4’s dark contrast under Still’s hues)',
+    description: 'Low key and warm: Cine4 with a strongly negative Black Level and a Narrow Black Gamma sinks the shadows, while a late knee leaves the highlights bright. Greens, blues and magentas are deepened and reds and yellows kept a touch lighter, so skin stands out warm against a dark ground. For moody portraits and interiors lit by one window.'
+  },
+  {
+    recipe: {
+      id: 'SCL-PP-075',
+      slug: 'warm-pastel-cream',
+      name: 'PP-075-Warm Pastel Cream',
+      whiteBalance: {
+        mode: 'kelvin',
+        kelvin: 6200,
+        shift: {
+          ab: {
+            axis: 'A',
+            amount: 0.5
+          }
+        }
+      },
+      tags: [
+        'pastel',
+        'cream',
+        'soft',
+        'cafe'
+      ],
+      settings: {
+        blackLevel: 4,
+        gamma: 'Cine1',
+        blackGamma: {
+          range: 'Wide',
+          level: 3
+        },
+        knee: {
+          mode: 'Manual',
+          point: 85,
+          slope: -1
+        },
+        colorMode: 'Cinema',
+        saturation: -6,
+        colorPhase: 0,
+        colorDepth: {
+          R: -2,
+          G: -1,
+          B: -1,
+          C: 0,
+          M: -2,
+          Y: -2
+        },
+        detail: {
+          level: -2,
+          mode: 'Manual',
+          vhBalance: -1,
+          bwBalance: 'Type3',
+          limit: 4,
+          crispening: 5,
+          hiLightDetail: 1
+        }
+      },
+      format: 'pp',
+      published: false
+    },
+    intent: 'warm pastel — creamy, lifted, low colour',
+    description: 'Warm pastel: Black Level and a Wide Black Gamma lift the shadows and mid-greys, Cine1 keeps contrast low, and Saturation below zero with negative Color Depth on red, yellow and magenta turns colour towards cream. A slightly warm white balance. For cafés, interiors, soft portraits and light fashion.'
+  },
+  {
+    recipe: {
+      id: 'SCL-PP-076',
+      slug: 'violet-cool-dusk',
+      name: 'PP-076-Violet Cool Dusk',
+      whiteBalance: {
+        mode: 'kelvin',
+        kelvin: 4200,
+        shift: {
+          gm: {
+            axis: 'M',
+            amount: 2
+          }
+        }
+      },
+      tags: [
+        'blue-hour',
+        'dusk',
+        'violet',
+        'city'
+      ],
+      settings: {
+        blackLevel: -3,
+        gamma: 'Still',
+        blackGamma: {
+          range: 'Middle',
+          level: 0
+        },
+        knee: {
+          mode: 'Manual',
+          point: 90,
+          slope: -1
+        },
+        colorMode: 'Still',
+        saturation: 12,
+        colorPhase: 0,
+        colorDepth: {
+          R: 0,
+          G: 1,
+          B: 4,
+          C: 2,
+          M: 3,
+          Y: -1
+        },
+        detail: {
+          level: 0,
+          mode: 'Manual',
+          vhBalance: 0,
+          bwBalance: 'Type3',
+          limit: 4,
+          crispening: 6,
+          hiLightDetail: 2
+        }
+      },
+      format: 'pp',
+      published: false
+    },
+    intent: 'blue hour — cool, violet, saturated',
+    description: 'Blue hour, turned towards violet: a low Kelvin cools the frame and a magenta shift tips it violet, with blue and magenta deepened and yellow kept light so lamps stay clean. A gentle knee holds lit windows and the last light in the sky, and raised Crispening keeps noise out of the sharpening. For dusk over cities, water and hills; in daylight it renders strongly blue-violet.'
+  },
+  {
+    recipe: {
+      id: 'SCL-PP-077',
+      slug: 'cool-muted-overcast',
+      name: 'PP-077-Cool Muted Overcast',
+      whiteBalance: {
+        mode: 'kelvin',
+        kelvin: 5000,
+        shift: {
+          ab: {
+            axis: 'B',
+            amount: 1
+          }
+        }
+      },
+      tags: [
+        'overcast',
+        'rainy-day',
+        'muted',
+        'everyday'
+      ],
+      settings: {
+        blackLevel: 2,
+        gamma: 'Movie',
+        blackGamma: {
+          range: 'Wide',
+          level: 3
+        },
+        knee: {
+          mode: 'Auto'
+        },
+        colorMode: 'Movie',
+        saturation: -10,
+        colorPhase: 0,
+        colorDepth: {
+          R: 0,
+          G: 1,
+          B: 1,
+          C: 1,
+          M: 0,
+          Y: 0
+        },
+        detail: {
+          level: 0,
+          mode: 'Manual',
+          vhBalance: 0,
+          bwBalance: 'Type3',
+          limit: 5,
+          crispening: 4,
+          hiLightDetail: 2
+        }
+      },
+      format: 'pp',
+      published: false
+    },
+    intent: 'overcast — calm, cool, quiet colour that does not go grey',
+    description: 'Grey-day calm: a cool white balance, Black Level and a Wide Black Gamma open the shadows and mid-greys, and Saturation below zero quiets colour, while green, blue and cyan are deepened a step so they do not go grey. Movie gamma with Knee Auto. For overcast streets, rain and everyday walks.'
+  },
+  {
+    recipe: {
+      id: 'SCL-PP-078',
+      slug: 'amber-vivid-autumn',
+      name: 'PP-078-Amber Vivid Autumn',
+      whiteBalance: {
+        mode: 'kelvin',
+        kelvin: 6000,
+        shift: {
+          ab: {
+            axis: 'A',
+            amount: 1.5
+          }
+        }
+      },
+      tags: [
+        'autumn',
+        'foliage',
+        'vivid',
+        'landscape'
+      ],
+      settings: {
+        blackLevel: -3,
+        gamma: 'Still',
+        blackGamma: {
+          range: 'Narrow',
+          level: -1
+        },
+        knee: {
+          mode: 'Manual',
+          point: 92,
+          slope: 1
+        },
+        colorMode: 'Still',
+        saturation: 14,
+        colorPhase: 0,
+        colorDepth: {
+          R: 2,
+          G: -1,
+          B: 2,
+          C: 1,
+          M: 0,
+          Y: 2
+        },
+        detail: {
+          level: 1,
+          mode: 'Manual',
+          vhBalance: 0,
+          bwBalance: 'Type3',
+          limit: 5,
+          crispening: 2,
+          hiLightDetail: 3
+        }
+      },
+      format: 'pp',
+      published: false
+    },
+    intent: 'autumn — warm, saturated leaves, not film',
+    description: 'Autumn colour: an amber white balance and strong Saturation, with reds and yellows deepened so leaves read rich rather than bright orange, and green lifted and paled a little so it steps back. Firm blacks and a light knee on the Still curve. For autumn landscapes, gardens and travel in warm light.'
+  },
+  {
+    recipe: {
+      id: 'SCL-PP-079',
+      slug: 'warm-rich-table',
+      name: 'PP-079-Warm Rich Table',
+      whiteBalance: {
+        mode: 'kelvin',
+        kelvin: 5800,
+        shift: {
+          ab: {
+            axis: 'A',
+            amount: 1
+          }
+        }
+      },
+      tags: [
+        'food',
+        'daylight',
+        'table',
+        'cafe'
+      ],
+      settings: {
+        blackLevel: -2,
+        gamma: 'S-Cinetone',
+        blackGamma: {
+          range: 'Middle',
+          level: 1
+        },
+        knee: {
+          mode: 'Manual',
+          point: 88,
+          slope: -1
+        },
+        colorMode: 'S-Cinetone',
+        saturation: 10,
+        colorPhase: 0,
+        colorDepth: {
+          R: 1,
+          G: 1,
+          B: 0,
+          C: 0,
+          M: 0,
+          Y: -1
+        },
+        detail: {
+          level: 1,
+          mode: 'Manual',
+          vhBalance: 0,
+          bwBalance: 'Type4',
+          limit: 5,
+          crispening: 4,
+          hiLightDetail: 2
+        }
+      },
+      format: 'pp',
+      published: false
+    },
+    intent: 'daylight food — warm, rich, glossy',
+    description: 'Food in daylight: S-Cinetone colour with a warm white balance and raised Saturation, reds and greens deepened a step so sauces and herbs look rich, and yellows kept bright. A gentle knee holds reflections on plates and glass, and Type4 B/W Balance favours white detail for a clean, glossy finish. For tables by a window and markets.'
+  },
+  {
+    recipe: {
+      id: 'SCL-PP-080',
+      slug: 'range-hlg-daylight',
+      name: 'PP-080-Range HLG Daylight',
+      whiteBalance: {
+        mode: 'kelvin',
+        kelvin: 5500
+      },
+      tags: [
+        'hdr',
+        'hlg',
+        'dynamic-range',
+        'landscape'
+      ],
+      settings: {
+        blackLevel: 0,
+        gamma: 'HLG2',
+        blackGamma: {
+          range: 'Middle',
+          level: 0
+        },
+        knee: {
+          mode: 'Manual',
+          point: 95,
+          slope: 0
+        },
+        colorMode: '709',
+        saturation: 8,
+        colorPhase: 0,
+        colorDepth: {
+          R: 0,
+          G: 1,
+          B: 1,
+          C: 1,
+          M: 0,
+          Y: 0
+        },
+        detail: {
+          level: 0,
+          mode: 'Manual',
+          vhBalance: 0,
+          bwBalance: 'Type3',
+          limit: 5,
+          crispening: 4,
+          hiLightDetail: 3
+        }
+      },
+      format: 'pp',
+      published: false
+    },
+    intent: 'HDR delivery — HLG range for grading, flat on SDR',
+    description: 'For HDR delivery and grading: HLG2 with the 709 colour mode records the wider range HLG is made for, so it is meant for an HDR screen; on an ordinary SDR screen straight out of camera it looks flat. Saturation is raised a little, green, blue and cyan deepened a step, and a knee at 95% eases only the very top. For landscapes and travel.'
+  },
+  {
+    recipe: {
+      id: 'SCL-PP-081',
+      slug: 'flat-log-base',
+      name: 'PP-081-Flat Log Base',
+      whiteBalance: {
+        mode: 'kelvin',
+        kelvin: 5500
+      },
+      tags: [
+        's-log3',
+        'log',
+        'grading',
+        'flat'
+      ],
+      settings: {
+        blackLevel: 0,
+        gamma: 'S-Log3',
+        blackGamma: {
+          range: 'Middle',
+          level: 0
+        },
+        knee: {
+          mode: 'Auto'
+        },
+        colorMode: 'S-Gamut3.Cine',
+        saturation: 0,
+        colorPhase: 0,
+        colorDepth: {
+          R: 0,
+          G: 0,
+          B: 0,
+          C: 0,
+          M: 0,
+          Y: 0
+        },
+        detail: {
+          level: -7,
+          mode: 'Manual',
+          vhBalance: 0,
+          bwBalance: 'Type3',
+          limit: 4,
+          crispening: 4,
+          hiLightDetail: 2
+        }
+      },
+      format: 'pp',
+      published: false
+    },
+    intent: 'grade later — the base Sony gives for PP8, not a look',
+    description: 'Not a look: the base Sony gives for PP8 — S-Log3 with S-Gamut3.Cine and Detail at −7, so no in-camera sharpening is baked in — with every other setting at zero, and Knee off as it is on S-Log. It records flat, low-contrast footage meant for grading or a LUT afterwards.'
+  },
+  {
+    recipe: {
+      id: 'SCL-PP-082',
+      slug: 'cyan-vivid-monsoon',
+      name: 'PP-082-Cyan Vivid Monsoon',
+      whiteBalance: {
+        mode: 'kelvin',
+        kelvin: 4800,
+        shift: {
+          ab: {
+            axis: 'B',
+            amount: 1
+          }
+        }
+      },
+      tags: [
+        'monsoon',
+        'rain',
+        'cyan',
+        'street'
+      ],
+      settings: {
+        blackLevel: -1,
+        gamma: 'Movie',
+        blackGamma: {
+          range: 'Wide',
+          level: 1
+        },
+        knee: {
+          mode: 'Auto'
+        },
+        colorMode: 'Movie',
+        saturation: 10,
+        colorPhase: 0,
+        colorDepth: {
+          R: 0,
+          G: 1,
+          B: 2,
+          C: 4,
+          M: 0,
+          Y: -1
+        },
+        detail: {
+          level: 0,
+          mode: 'Manual',
+          vhBalance: 0,
+          bwBalance: 'Type3',
+          limit: 5,
+          crispening: 5,
+          hiLightDetail: 2
+        }
+      },
+      format: 'pp',
+      published: false
+    },
+    intent: 'monsoon — cool, saturated colour on grey days',
+    description: 'Rainy-season colour: a cool white balance with a blue shift and raised Saturation, cyan deepened most and then blue, so wet streets, umbrellas and grey skies keep their colour, and yellow lifted to stay bright. A Wide Black Gamma opens the shade a little, with Knee Auto on the Movie curve. For monsoon streets and travel on grey days.'
   }
 ];

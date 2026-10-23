@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { SiteHeader } from '@/components/site-header';
 import { RecipeGallery } from '@/components/recipe-gallery';
+import { RecipePalette } from '@/components/recipe-palette';
 import { RecipeStructuredData } from '@/components/structured-data';
 import { ClTable, PpTable } from '@/components/settings-table';
 import { RecipeCommunitySection } from '@/components/recipe-community-section';
@@ -141,9 +142,15 @@ export default async function RecipePage({
             {/* Recipe Header & Description */}
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <span className="chip label text-ink">
-                  {recipe.id}
-                </span>
+                {/* The name carries the code now (`PP-048-Soft Clean
+                    Portrait`). A row still on the old `SCL-PP-048: Huế Silk`
+                    shape — until the library sync reaches production — keeps
+                    its code here, since its title drops it. */}
+                {recipe.name.includes(': ') && (
+                  <span className="chip label text-ink">
+                    {recipe.id}
+                  </span>
+                )}
                 {/* The code is uppercase on the camera; the Look's name is not,
                     and in `.label` "BW (Black & White)" ran to four words. */}
                 {look && (
@@ -166,6 +173,13 @@ export default async function RecipePage({
                 {recipe.description}
               </p>
 
+              {/* The recipe's colour, read off its settings: the same nine
+                  swatches as its card, named, with the one accuracy line the
+                  palette needs (it is not a camera preview). */}
+              <div className="mt-6">
+                <RecipePalette palette={recipe.palette} tone={recipe.tone} style={recipe.style} variant="page" light={recipe.light} />
+              </div>
+
               {/* Situations, style and tone, each a way back into the catalogue. */}
               <div className="mt-5 flex flex-wrap items-center justify-between gap-4 pt-4">
                 <ul className="flex flex-wrap gap-2">
@@ -181,7 +195,7 @@ export default async function RecipePage({
             </div>
 
             {/* Photographic Collage Gallery & User URL Contribution */}
-            <RecipeGallery slug={slug} images={recipe.images} title={title} />
+            <RecipeGallery slug={slug} title={title} />
 
             {/* AI Tweak Section */}
             <TweakPanel

@@ -133,9 +133,9 @@ describe('the wiki search keeps the reader’s filters', () => {
     expect(hiddenInputs(html)).toEqual([]);
   });
 
-  it('carries the catalogue’s style and tone, never a legacy format, look or tag', () => {
+  it('carries the catalogue’s style, tone and colour system, never a legacy look or tag', () => {
     const html = render('/colorlab?q=a&style=film&tone=warm&format=cl&look=FL&tag=portrait');
-    expect(hiddenInputs(html)).toEqual(['style=film', 'tone=warm']);
+    expect(hiddenInputs(html)).toEqual(['style=film', 'tone=warm', 'format=cl']);
   });
 });
 
