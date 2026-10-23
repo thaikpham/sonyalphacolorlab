@@ -91,6 +91,12 @@ describe('design floor', () => {
       ['h-[38px]', 'arbitraryPx'],
       ['text-[15px]', 'arbitraryPx'],
       ['duration-200', 'duration'],
+      ['duration-[250ms]', 'duration'],
+      /* Tailwind v4's bare stroke classes are 1px, and DESIGN.md's grep could not see them. */
+      ['border', 'stroke'],
+      ['hover:ring', 'stroke'],
+      ['outline', 'stroke'],
+      ['not-focus-visible:ring-2', 'stroke'],
       /* `.glass` the deleted primitive, as a class and as a selector. */
       ['glass p-4', 'deletedVocab'],
       ['.glass { opacity: 1 }', 'deletedVocab'],
@@ -118,6 +124,13 @@ describe('design floor', () => {
       ['duration-(--motion)', 'duration'],
       /* A zero width removes a stroke; it does not draw one. */
       ['border-0', 'stroke'],
+      ['"focus-visible:outline"', 'stroke'],
+      ["style={{ border: 'none' }}", 'stroke'],
+      ['props.outline', 'stroke'],
+      ['const ring = box * 0.42', 'stroke'],
+      ["import { buildOutline } from '@/lib/lab/outline'", 'stroke'],
+      ['{outline.map((entry) => entry)}', 'stroke'],
+      ['"ring-offset-2"', 'stroke'],
       /* An HTML entity is not a colour. */
       ['&#123;', 'hex'],
       /* One site, one rule: a sub-floor size is belowFloor's. */
@@ -125,6 +138,48 @@ describe('design floor', () => {
     ])('does not count %s as %s', (sample, rule) => {
       expect(scanSource(sample, 'src/components/x.tsx').filter((v) => v.rule === rule)).toEqual([])
     })
+
+    it.each([
+      ['.x { animation: spin 1s linear infinite; }', 'src/components/x.css'],
+      [
+        '@media (prefers-reduced-motion: no-preference) {\n  .x { transition: opacity 200ms; }\n}',
+        'packages/colorlab-tokens/src/primitives.css',
+      ],
+    ])('flags a duration of its own in %s', (source, file) => {
+      expect(scanSource(source, file).map((v) => v.rule)).toEqual(['duration'])
+    })
+
+    it('does not read a CSS property or transition target as a bare stroke', () => {
+      const source = '.x { border: 3px solid transparent; transition: border 0.2s; }'
+      expect(scanSource(source, 'src/app/globals.css').filter((v) => v.rule === 'stroke')).toEqual([])
+    })
+
+    /* `comment:` blanking is the token source's alone. Anywhere else a
+       `comment: '` would swallow real code up to the next quote. */
+    it('reads the code after a comment: inside a line comment', () => {
+      const source = "// reviewer's comment: 'needs work\nconst c = \"text-xs border-2\"\nconst d = 'y'"
+      expect(scanSource(source, 'src/components/x.tsx').map((v) => v.rule).sort()).toEqual([
+        'belowFloor',
+        'stroke',
+      ])
+    })
+
+    it('reads a comment: key in a component', () => {
+      const found = scanSource("const o = { comment: 'text-xs', cls: 'text-xs' }", 'src/components/x.tsx')
+      expect(found.map((v) => v.rule)).toEqual(['belowFloor', 'belowFloor'])
+    })
+
+    it('counts glass as an object key in a component', () => {
+      const found = scanSource('cond({ glass: open })', 'src/components/x.tsx')
+      expect(found.map((v) => v.rule)).toEqual(['deletedVocab'])
+    })
+
+    it.each(['src/components/icon.tsx', 'src/app/apple-icon.tsx'])(
+      'counts a hex in %s (not a file DESIGN.md names)',
+      (file) => {
+        expect(scanSource('fill="#07080B"', file).map((v) => v.rule)).toEqual(['hex'])
+      },
+    )
 
     it('counts a stroke beside a focus-visible one on the same line', () => {
       const found = scanSource('"border-2 focus-visible:ring-2"', 'src/components/x.tsx')
@@ -175,7 +230,9 @@ describe('design floor', () => {
 
     it('reads the code after a comment: property', () => {
       const source = "const g = {\n  comment: 'about text-xs',\n  cls: 'text-xs',\n}"
-      expect(scanSource(source, 'probe.ts').map((v) => [v.rule, v.line])).toEqual([['belowFloor', 3]])
+      expect(scanSource(source, 'packages/colorlab-tokens/src/tokens.ts').map((v) => [v.rule, v.line])).toEqual([
+        ['belowFloor', 3],
+      ])
     })
 
     it('counts a hex in the component after GoogleMark', () => {

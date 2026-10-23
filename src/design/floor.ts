@@ -208,13 +208,42 @@ const HEX_COMPONENTS = new Set(['GoogleMark'])
 /**
  * A stroke doing elevation's job (rule 4). Only `:focus-visible` may draw one,
  * and that is read from the class's own variant prefix, so a `border-2` beside
- * a `focus-visible:ring-2` on the same line still counts. A zero width
- * (`border-0`, `outline-0`) removes a stroke rather than drawing one, so it is
- * not counted — DESIGN.md's grep matches it, but the grep is the floor of the
- * judgement, not the ceiling.
+ * a `focus-visible:ring-2` on the same line still counts, and so does a
+ * `not-focus-visible:` one. A zero width (`border-0`, `outline-0`) removes a
+ * stroke rather than drawing one, so it is not counted — DESIGN.md's grep
+ * matches it, but the grep is the floor of the judgement, not the ceiling.
+ *
+ * The bare `border` / `ring` / `outline` class is a 1px stroke in Tailwind v4,
+ * and the grep could not see it. It is read only as a whole class inside a
+ * string literal, outside stylesheets: the same word is a CSS property or
+ * transition target, an identifier (`const ring = box * 0.42`), and a module
+ * path (`'@/lib/lab/outline'`).
  */
 const STROKE =
   /(?<![\w-])(?:border(?:-[trblxyse])?-(?!0(?![\d.]))\d+|border-(?:solid|white|black)|ring-(?!0(?![\d.]))\d+|outline-(?!0(?![\d.]))\d+)(?![\w-])/g
+const BARE_STROKE = /(?<=[\s"'`:])(?:border|ring|outline)(?=[\s"'`])/g
+
+/** Which characters of `source` sit inside a quoted string (quotes excluded). */
+function stringMask(source: string): Uint8Array {
+  const mask = new Uint8Array(source.length)
+  let quote: string | null = null
+  for (let i = 0; i < source.length; i += 1) {
+    const char = source[i]
+    if (quote === null) {
+      if (char === '"' || char === "'" || char === '`') quote = char
+    } else if (char === '\\') {
+      mask[i] = 1
+      if (i + 1 < source.length) mask[i + 1] = 1
+      i += 1
+    } else if (char === quote || (char === '\n' && quote !== '`')) quote = null
+    else mask[i] = 1
+  }
+  return mask
+}
+const strokeAccept = (code: string) => (m: RegExpExecArray) => {
+  const prefix = classPrefix(code, m.index)
+  return !prefix.includes('focus-visible:') || prefix.includes('not-focus-visible:')
+}
 
 /**
  * DESIGN.md "Deleted — do not reintroduce". `.glass` the primitive is the bare
@@ -226,13 +255,19 @@ const STROKE =
 const DELETED =
   /(?<![\w-])(?:glass-flat|eyebrow|y2k-[\w-]*|holo-[\w-]*|water-[\w-]*|cyber-[\w-]*|animate-radar-[\w-]*|app-glow|rainbow-glow-bar|animate-float-gentle|vfx\.css|glass)(?![\w-])|--font-mono\b|--font-display\b|--color-edge\b|(?<![\w)\]])\.rule(?![\w-])/g
 const SURVIVORS = /btn-glass|glass-raised|bg-glass|--color-glass/
-/** `glass: 'oklch(…)'` — the surviving token's own key in the token source, not a class. */
+/**
+ * `glass: 'oklch(…)'` — the surviving token's own key, in the token source
+ * only. In a component, `cond({ glass: open })` is the deleted class.
+ */
 const GLASS_TOKEN_KEY = /^\s*:/
-function deletedAccept(code: string) {
+function deletedAccept(code: string, file: string) {
   return (m: RegExpExecArray) => {
     if (m[0] !== 'glass') return true
     if (SURVIVORS.test(lineText(code, m.index))) return false
-    const isKey = code[m.index - 1] !== '.' && GLASS_TOKEN_KEY.test(code.slice(m.index + 5, m.index + 7))
+    const isKey =
+      file === TOKEN_SOURCE &&
+      code[m.index - 1] !== '.' &&
+      GLASS_TOKEN_KEY.test(code.slice(m.index + 5, m.index + 7))
     return !isKey
   }
 }
@@ -251,21 +286,28 @@ const arbitraryPxAccept = (code: string) => (m: RegExpExecArray) =>
   !(code.slice(Math.max(0, m.index - 5), m.index) === 'text-' && Number(m[1]) < FLOOR_PX)
 
 /**
- * A duration of its own (D1, 2026-10-23): a `duration-<n>` class in a
- * component, or a `transition` with a time in a stylesheet. CLAUDE.md §Motion
- * allows `.animate-fade-in` and the launcher glow, both in globals.css, which
- * is the one file whose transitions are not counted.
+ * A duration of its own (D1, 2026-10-23): a `duration-<n>` or `duration-[…]`
+ * class in a component, or a `transition` / `animation` with a time in a
+ * stylesheet. CLAUDE.md §Motion allows `.animate-fade-in` and the launcher
+ * glow, both in globals.css, which is the one file whose transitions and
+ * animations are not counted. `duration-(--motion)` reads a token and is not.
  */
-const DURATION_CLASS = /(?<![\w-])duration-\d+\b/g
-const RAW_TRANSITION = /\btransition(?:-duration)?\s*:[^;{}]*?(?<![\w-])\d*\.?\d+m?s\b/g
+const DURATION_CLASS = /(?<![\w-])duration-(?:\d+\b|\[[^\]\s]*\])/g
+const RAW_TRANSITION =
+  /\b(?:transition|animation)(?:-duration)?\s*:[^;{}]*?(?<![\w-])\d*\.?\d+m?s\b/g
 
 /**
  * Inside `@media (prefers-reduced-motion: reduce)` a duration is the global
  * stillness override CLAUDE.md §Motion describes (`0.01ms !important` in the
  * shared primitives), the opposite of a duration of its own.
  */
+const REDUCED_MOTION = /prefers-reduced-motion\s*:\s*reduce\b/g
 function insideReducedMotion(code: string, index: number): boolean {
-  const media = code.lastIndexOf('prefers-reduced-motion', index)
+  let media = -1
+  REDUCED_MOTION.lastIndex = 0
+  for (let m = REDUCED_MOTION.exec(code); m !== null && m.index < index; m = REDUCED_MOTION.exec(code)) {
+    media = m.index
+  }
   if (media === -1) return false
   const open = code.indexOf('{', media)
   if (open === -1 || open > index) return false
@@ -344,6 +386,25 @@ function collect(
 }
 
 /**
+ * Blanks the prose value of a `comment:` property in the token source — its
+ * `TokenGroup.comment`, emitted as a CSS comment into theme.css — including
+ * its `'…' +` continuations. It is documentation by name, and it is where the
+ * token source explains the very sizes, families and names these rules ban:
+ * `text-[9px]`, `--font-mono`, "the three glass layers".
+ *
+ * Only in that file, and only after `stripComments`: the string body may cross
+ * newlines, so anywhere else a `comment: '` (in a `//` remark, or a
+ * component's own object key) would blank real code for every rule.
+ */
+const TOKEN_SOURCE = 'packages/colorlab-tokens/src/tokens.ts'
+const COMMENT_PROPERTY = /\bcomment\s*:\s*((?:(['"`])(?:\\.|(?!\2)[^\\])*\2\s*\+?\s*)+)/g
+function stripCommentProperties(source: string): string {
+  return source.replace(COMMENT_PROPERTY, (whole: string, value: string) =>
+    whole.slice(0, whole.length - value.length) + value.replace(/[^\n]/g, ' '),
+  )
+}
+
+/**
  * Blanks out comment bodies, preserving newlines so every reported line number
  * still points at the right line.
  *
@@ -366,20 +427,6 @@ function collect(
  *
  * A `//` right after `:` is a URL scheme, not a comment.
  */
-/**
- * Blanks the prose value of a `comment:` property — the token source's
- * `TokenGroup.comment`, emitted as a CSS comment into theme.css — including
- * its `'…' +` continuations. It is documentation by name, and it is where the
- * token source explains the very sizes, families and names these rules ban:
- * `text-[9px]`, `--font-mono`, "the three glass layers".
- */
-const COMMENT_PROPERTY = /\bcomment\s*:\s*((?:(['"`])(?:\\.|(?!\2)[^\\])*\2\s*\+?\s*)+)/g
-function stripCommentProperties(source: string): string {
-  return source.replace(COMMENT_PROPERTY, (whole: string, value: string) =>
-    whole.slice(0, whole.length - value.length) + value.replace(/[^\n]/g, ' '),
-  )
-}
-
 function stripComments(source: string): string {
   const out = source.split('')
   const blank = (from: number, to: number) => {
@@ -417,7 +464,8 @@ function stripComments(source: string): string {
 
 export function scanSource(source: string, file: string): Violation[] {
   const underFloor = (match: RegExpExecArray) => toPx(match[1], match[2]) < FLOOR_PX
-  const code = stripComments(stripCommentProperties(source))
+  const uncommented = stripComments(source)
+  const code = file === TOKEN_SOURCE ? stripCommentProperties(uncommented) : uncommented
 
   return [
     ...collect(code, file, TAILWIND_NAMED_BELOW_FLOOR, 'belowFloor'),
@@ -432,6 +480,12 @@ export function scanSource(source: string, file: string): Violation[] {
 }
 
 /** The six rules that were DESIGN.md's audit greps. */
+function bareStrokes(code: string, file: string): Violation[] {
+  const inString = stringMask(code)
+  const accept = strokeAccept(code)
+  return collect(code, file, BARE_STROKE, 'stroke', (m) => inString[m.index] === 1 && accept(m))
+}
+
 function auditRules(code: string, file: string): Violation[] {
   return [
     ...(HEX_SCOPE.test(file) && !HEX_FILES.test(file)
@@ -441,8 +495,9 @@ function auditRules(code: string, file: string): Violation[] {
           return owner === undefined || !HEX_COMPONENTS.has(owner)
         })
       : []),
-    ...collect(code, file, STROKE, 'stroke', (m) => !classPrefix(code, m.index).includes('focus-visible:')),
-    ...collect(code, file, DELETED, 'deletedVocab', deletedAccept(code)),
+    ...collect(code, file, STROKE, 'stroke', strokeAccept(code)),
+    ...(file.endsWith('.css') ? [] : bareStrokes(code, file)),
+    ...collect(code, file, DELETED, 'deletedVocab', deletedAccept(code, file)),
     ...(file === SCROLLBAR_FILE ? [] : collect(code, file, SCROLLBAR, 'scrollbarCss')),
     ...(file.endsWith('.tsx') ? collect(code, file, ARBITRARY_PX, 'arbitraryPx', arbitraryPxAccept(code)) : []),
     ...(file.endsWith('.tsx') ? collect(code, file, DURATION_CLASS, 'duration') : []),
