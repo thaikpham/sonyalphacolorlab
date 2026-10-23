@@ -134,7 +134,13 @@ describe('the upload route', () => {
 });
 
 describe('the editor', () => {
-  const source = readFileSync('src/components/lab/admin/article-admin.tsx', 'utf8');
+  /* The rail that carries the save/publish buttons, and the page that renders
+     each block — the JSX this used to read off the retired list screen,
+     `article-admin.tsx`, now lives here. */
+  const source = readFileSync('src/components/lab/editor/editor-rail.tsx', 'utf8');
+  const editorPage = readFileSync('src/components/lab/editor/article-editor.tsx', 'utf8');
+  /* The data layer both read — reading it, saving it, its uploads. */
+  const hookSource = readFileSync('src/components/lab/admin/use-article-editor.ts', 'utf8');
 
   it('rebuilds the draft from the stored row the save answered with', () => {
     /* A dropped block is gone from the row the moment the save returns, but it
@@ -142,20 +148,20 @@ describe('the editor', () => {
        editor to reconcile them. The same held for refused metadata and for
        text the parser cut. The answer now carries what was stored, and the
        draft is rebuilt from it (`afterSave`, executed in article-draft.test). */
-    expect(source).toMatch(/setDraft\(\(d\) => afterSave\(d, sent, stored\)\)/);
-    expect(source).toMatch(/data\.dropped\s*\?\s*t\('savedWithDropped'/);
-    expect(source).toMatch(/t\('savedWithDroppedMeta'/);
+    expect(hookSource).toMatch(/setDraft\(\(d\) => afterSave\(d, sent, stored\)\)/);
+    expect(hookSource).toMatch(/data\.dropped\s*\?\s*t\('savedWithDropped'/);
+    expect(hookSource).toMatch(/t\('savedWithDroppedMeta'/);
   });
 
   it('tells the editor a preview outage, rather than showing every image as expired', () => {
-    expect(source).toMatch(/data\.previewsFailed[\s\S]{0,120}codeMessage\('previewsFailed'\)/);
+    expect(hookSource).toMatch(/data\.previewsFailed[\s\S]{0,120}codeMessage\('previewsFailed'\)/);
   });
 
   it('never persists a signed preview into a block', () => {
     /* A signed URL in a `jsonb` column is a credential-bearing string in the
        article body and a dead link an hour later. */
-    expect(source).not.toMatch(/previewUrl[^\n]*blocks/);
-    expect(source).toMatch(/setPreviews\(/);
+    expect(hookSource).not.toMatch(/previewUrl[^\n]*blocks/);
+    expect(hookSource).toMatch(/setPreviews\(/);
   });
 
   it('saves a published article without unpublishing it', () => {
@@ -163,21 +169,21 @@ describe('the editor', () => {
        the page down for readers and pulled its images out of the public
        bucket, under a toast that said only "Saved." */
     expect(source).not.toMatch(/save\('draft'\)/);
-    expect(source).toMatch(/onClick=\{\(\) => void save\(draft\.status\)\}/);
+    expect(source).toMatch(/onClick=\{\(\) => void editor\.save\(draft\.status\)\}/);
   });
 
   it('names the version it opened on every save', () => {
     /* Without it the route's 409 never fires: a second tab's save silently
        reverted the first, and both said "Saved". */
     const draft = readFileSync('src/components/lab/admin/article-draft.ts', 'utf8');
-    expect(source).toMatch(/savePayload\(sent, nextStatus\)/);
+    expect(hookSource).toMatch(/savePayload\(sent, nextStatus\)/);
     expect(draft).toMatch(/expectedUpdatedAt: d\.version/);
     expect(draft).toMatch(/version: a\.updatedAt/);
   });
 
   it('will not upload against an article that has no row yet', () => {
-    expect(source).toMatch(/if \(!articleId\)[\s\S]{0,200}saveBeforeUpload/);
-    expect(source).toMatch(/canUpload=\{articleId !== null\}/);
+    expect(hookSource).toMatch(/if \(!articleId\)[\s\S]{0,200}saveBeforeUpload/);
+    expect(editorPage).toMatch(/canUpload=\{draft\.id !== null\}/);
   });
 });
 

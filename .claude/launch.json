@@ -3,10 +3,28 @@
   "//": "Offline seed mode is no longer something a launch config arranges — it is what the application does when none of the six Supabase variables is set, which is the state `.env.local` is in. `configurationMode()` in src/lib/supabase/config.ts returns 'offline' only when *all six* are absent; a half-configured boundary throws rather than degrading. So there is nothing left for a config to blank. The three entries that used to live here each cleared NEXT_PUBLIC_SUPABASE_ANON_KEY to force a seed fallback; that variable was retired with the control/content split and no code reads it any more, which made all three configs identical to plain `npm run dev` while claiming otherwise.",
   "configurations": [
     {
-      "// ": "The only dev config. While the six Supabase variables are absent this is the full offline preview: recipes and articles come from the repository seed, uploads land in public/lab/ and data/lab-articles.dev.json (both gitignored), and /blog/admin is open with no login — requireAdmin() hands out the dev@localhost super-admin whenever hasControlConfig() is false and NODE_ENV is development. Port 3000 is also the OAuth callback origin, which matters again as soon as the control plane is configured. Next 16 takes a per-directory lock and refuses a second `next dev` in this tree, so there is one server here, not a choice of three.",
+      "// ": "The only dev config. While the six Supabase variables are absent this is the full offline preview: recipes and articles come from the repository seed, uploads land in public/lab/ and data/lab-articles.dev.json (both gitignored), and the edit routes (/blog/new, /blog/<id>/edit, /learn/new, /learn/<id>/edit) are open with no login — requireAdmin() hands out the dev@localhost super-admin whenever hasControlConfig() is false and NODE_ENV is development. Port 3000 is also the OAuth callback origin, which matters again as soon as the control plane is configured. Next 16 takes a per-directory lock and refuses a second `next dev` in this tree, so there is one server here, not a choice of three.",
       "name": "alpha-colorlab",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
+        "run",
+        "dev"
+      ],
+      "port": 3000,
+      "autoPort": false
+    },
+    {
+      "// ": "Offline seed mode while .env.local holds real credentials. Next keeps a variable that is already in the environment, even an empty one (@next/env processEnv: typeof initial[key] === 'undefined'), and configurationMode() treats empty as absent, so blanking the six boundary variables here gives the dev@localhost admin and the file-backed dev stores. Use this for any browser check that saves, publishes or deletes: the plain config writes to the real projects. One next dev per tree: stop the other first.",
+      "name": "alpha-colorlab-offline",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "NEXT_PUBLIC_AUTH_SUPABASE_URL=",
+        "NEXT_PUBLIC_AUTH_SUPABASE_ANON_KEY=",
+        "AUTH_SUPABASE_SECRET_KEY=",
+        "NEXT_PUBLIC_CONTENT_SUPABASE_URL=",
+        "CONTENT_SUPABASE_ANON_KEY=",
+        "CONTENT_SUPABASE_SECRET_KEY=",
+        "npm",
         "run",
         "dev"
       ],

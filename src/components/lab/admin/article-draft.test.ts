@@ -7,8 +7,10 @@ import {
   asDraft,
   blankDraft,
   edited,
+  insertBlock,
   isDirty,
   leavesInPlace,
+  nextKey,
   publishProblems,
   savePayload,
   withAsset,
@@ -192,6 +194,32 @@ describe('the spec checklist', () => {
 
   it('carries the server’s unknown links', () => {
     expect(publishProblems(blankDraft(), [{ kind: 'recipe', id: 'scl-999' }])).toContain('relatedUnknown')
+  })
+})
+
+describe('inserting a block where the editor points', () => {
+  const base = () => {
+    let d = blankDraft()
+    d = addBlock(d, 'p')
+    d = addBlock(d, 'h')
+    return d
+  }
+
+  it('puts the new block at the position asked for, under the key it was given', () => {
+    const key = nextKey()
+    const d = insertBlock(base(), 'callout', 1, key)
+    expect(d.blocks.map((b) => b.block.t)).toEqual(['p', 'callout', 'h'])
+    expect(d.blocks[1].key).toBe(key)
+  })
+
+  it('clamps a position past either end', () => {
+    expect(insertBlock(base(), 'tldr', -3, nextKey()).blocks[0].block.t).toBe('tldr')
+    expect(insertBlock(base(), 'figure', 99, nextKey()).blocks[2].block.t).toBe('figure')
+  })
+
+  it('is an edit: the draft becomes dirty', () => {
+    const d = base()
+    expect(insertBlock(d, 'p', 0, nextKey()).rev).toBe(d.rev + 1)
   })
 })
 

@@ -22,6 +22,7 @@ import {
 } from './blocks'
 import { Checklist } from './checklist'
 import { CompareSlider } from './compare-slider'
+import { EditLink } from './edit-link'
 
 /**
  * One article or knowledge page, with the derived rail beside it.
@@ -162,6 +163,10 @@ export async function ArticleView({ article }: { article: Article }) {
               </>
             ) : null}
           </span>
+          <EditLink
+            href={`/${knowledge ? 'learn' : 'blog'}/${article.id}/edit`}
+            label={t('edit')}
+          />
         </p>
 
         {/* The body is authored in Vietnamese on every locale (`types.ts`).

@@ -25,9 +25,10 @@ import { PILOT_DRAFTS } from '../src/lib/lab/pilot-drafts';
 
 /**
  * `--with-pilot-drafts` also inserts the nine pilot pages from
- * `pilot-drafts.ts` — always as drafts, for review in `/admin/blog`. Without
- * the flag the script does exactly what it always did. `--dry-run` prints the
- * plan and writes nothing.
+ * `pilot-drafts.ts` — always as drafts, which an administrator finds under
+ * "Bản nháp" on `/blog` and `/learn` and reviews in each page's own editor
+ * (`/learn/<id>/edit`). Without the flag the script does exactly what it
+ * always did. `--dry-run` prints the plan and writes nothing.
  */
 async function main() {
   const { args, target } = requireTarget(process.argv.slice(2), [

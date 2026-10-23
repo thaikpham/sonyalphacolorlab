@@ -1,7 +1,8 @@
 # Hướng dẫn biên tập — bài viết, trang kiến thức, liên kết và nguồn
 
-Dành cho người biên tập nội dung trong `/admin/blog`. Áp dụng từ bản có trang
-`/learn` (kho kiến thức) và tìm kiếm thống nhất.
+Dành cho người biên tập nội dung, ngay trên trang: nút **Sửa** trên mỗi bài và
+trang kiến thức mở `/blog/<mã>/edit` hoặc `/learn/<mã>/edit`; **Bài mới** và
+**Bản nháp** ở đầu `/blog` và `/learn`.
 
 ## 1. Hai loại trang trong cùng một trình soạn
 
@@ -18,12 +19,14 @@ cả hai loại — một mã chỉ thuộc một trang.
 
 ## 2. Tạo và sửa
 
-1. **Bài mới** → nhập tiêu đề → **Lưu nháp**. Ảnh chỉ tải lên được sau lần lưu
-   đầu, vì ảnh phải thuộc về một trang.
+1. **Bài mới** (đầu trang `/blog` hoặc `/learn`) → nhập tiêu đề → **Lưu nháp**.
+   Ảnh chỉ tải lên được sau lần lưu đầu, vì ảnh phải thuộc về một trang.
 2. Thêm khối nội dung như trước (đoạn văn, tiêu đề, menu, bảng, ảnh…).
-3. Ô **Còn N quy tắc** luôn hiển thị những gì việc đăng sẽ từ chối — xử lý dần
+3. Bấm vào một khối để sửa ngay tại chỗ; **Xong** hoặc Esc để đóng. **+ Thêm
+   khối** giữa hai khối để chèn.
+4. Ô **Còn N quy tắc** luôn hiển thị những gì việc đăng sẽ từ chối — xử lý dần
    trong lúc viết.
-4. Không có tự lưu. Đóng tab khi chưa lưu, trình duyệt sẽ hỏi lại.
+5. Không có tự lưu. Đóng tab khi chưa lưu, trình duyệt sẽ hỏi lại.
 
 ## 3. Liên kết và nguồn
 

@@ -2,8 +2,10 @@
 
 Nine drafts live in `src/lib/lab/pilot-drafts.ts`: six knowledge pages
 (`/learn/<id>`) and three experiment frames (`/blog/<id>`). **None is
-published by any code path.** Locally they appear as drafts in `/admin/blog`
-the first time the development store is created; on the content project they
+published by any code path.** Locally they appear under "Bản nháp" on `/vi/blog`
+and `/vi/learn` (administrators only), each opening its editor at
+`/learn/<id>/edit` or `/blog/<id>/edit`, the first time the development store
+is created; on the content project they
 arrive only via:
 
 ```bash
@@ -46,7 +48,7 @@ guide in its print edition. Result:
   the one place that records the reading.
 
 All six knowledge pages now **pass the publish rules**. They are still drafts:
-which go live is the owner's call in `/admin/blog`. Before publishing, set
+which go live is the owner's call, from each page's own editor. Before publishing, set
 "Ngày rà soát" and the public author name.
 
 ## Knowledge pages

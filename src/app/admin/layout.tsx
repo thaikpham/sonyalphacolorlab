@@ -57,15 +57,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   /* Explicit namespaces, not the whole catalogue — the same rule the public
      layout follows and `messages.test.ts` checks. `adminUi` is the shell's;
-     `admin`, `labAdmin` and `recipeAdmin` belong to the three editors
-     below; `auth` is `AuthProvider`'s; `cameras` is read by the product
-     editor's spec labels. */
+     `admin` and `recipeAdmin` belong to the two editors still here; `auth`
+     is `AuthProvider`'s; `cameras` is read by the product editor's spec
+     labels. The article editor's `labAdmin` left with it — it lives at
+     `/blog/<id>/edit` now, inside the public tree's own provider. */
   const clientMessages = {
     admin: messages.admin,
     adminUi: messages.adminUi,
     auth: messages.auth,
     cameras: messages.cameras,
-    labAdmin: messages.labAdmin,
     recipeAdmin: messages.recipeAdmin,
   };
 

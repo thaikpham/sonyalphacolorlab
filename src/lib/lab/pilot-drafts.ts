@@ -19,8 +19,8 @@
  *    host was unreachable, then re-read in raw text on 2026-10-05 once the
  *    owner opened it; that pass corrected two claims (what Color Mode `Pro` is
  *    for, and HLG grouped with the log curves) and dated every source. Which
- *    pages to publish is still the owner's call in `/admin/blog` — see
- *    `docs/plans/2026-10-05-pilot-content.md`.
+ *    pages to publish is still the owner's call in the page's editor
+ *    (/blog/<id>/edit) — see `docs/plans/2026-10-05-pilot-content.md`.
  * 2. **No invented results.** The three experiment frames carry no photograph,
  *    no EXIF, no measured value and no "I tried this". What only a real shoot
  *    can fill in is marked `[CẦN BỔ SUNG: …]`, and publishing refuses any page

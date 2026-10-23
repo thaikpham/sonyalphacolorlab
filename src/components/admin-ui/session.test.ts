@@ -24,6 +24,7 @@ import { describe, expect, it } from 'vitest';
 
 const SESSION = 'src/components/admin-ui/session.tsx';
 const SHELL = 'src/components/admin-ui/shell.tsx';
+const GATE = 'src/components/admin-ui/gate.tsx';
 
 /**
  * Every client component that may render an admin screen — discovered, not
@@ -61,10 +62,11 @@ describe('the admin client inventory', () => {
   it('finds every admin screen, the recipe editor and its photographs included', () => {
     for (const p of [
       'src/components/admin/admin-editor.tsx',
-      'src/components/lab/admin/article-admin.tsx',
+      'src/components/lab/admin/use-article-editor.ts',
       'src/components/colorlab/admin/recipe-admin.tsx',
       'src/components/colorlab/admin/image-panel.tsx',
       SHELL,
+      GATE,
     ]) {
       expect(ADMIN_CLIENTS).toContain(p);
     }
@@ -118,10 +120,31 @@ describe(SESSION, () => {
        that renders its controls to nobody in particular. */
     expect(source).toMatch(/if \(!ctx\) throw new Error/);
   });
+
+  it('can leave a signed-out reader unprobed: always in production, and in development once there is an auth client', () => {
+    /* A public page mounts the probe for every reader. A request per page view
+       for somebody with no session would be a Function call that can only
+       answer "no". Offline in development there is no auth client and the dev
+       admin is found by probing, so there the skip needs an auth client to
+       exist; in production the dev admin does not exist, so a `next start` in
+       seed mode must skip too rather than probe every reader. */
+    expect(source).toMatch(/probeSignedOut = true/);
+    expect(source).toMatch(
+      /!probeSignedOut &&\s+!identity &&\s+\(authBrowser\(\) !== null \|\| process\.env\.NODE_ENV === 'production'\)/,
+    );
+    const skip = source.indexOf('if (skipProbe())');
+    const probe = source.indexOf("fetch('/api/admin/session'");
+    expect(skip, 'no skip before the probe').toBeGreaterThan(-1);
+    expect(skip).toBeLessThan(probe);
+  });
 });
 
-describe(SHELL, () => {
-  const source = readFileSync(SHELL, 'utf8');
+describe(GATE, () => {
+  const source = readFileSync(GATE, 'utf8');
+
+  it('is what the shell renders its sections inside', () => {
+    expect(readFileSync(SHELL, 'utf8')).toMatch(/<AdminGate>/);
+  });
 
   it('keeps a screen of its own for each of the gate’s four answers', () => {
     /* Distinct copy per state, not one panel reworded: "we cannot check", "you
@@ -155,8 +178,9 @@ describe('src/components/admin-ui/sign-in.tsx', () => {
 
   it('leaves the code to StepUp instead of a second form of its own', () => {
     /* Its code stage could never render: SIGNED_IN re-probes the gate and the
-       shell unmounts this form before `setStage('code')` runs, leaving an
-       orphaned challenge behind. The shell's StepUp is what asks for it. */
+       gate unmounts this form before `setStage('code')` runs, leaving an
+       orphaned challenge behind. `AdminGate`'s StepUp (gate.tsx) is what asks
+       for it — under the admin shell and on the edit routes alike. */
     expect(source).not.toMatch(/setStage\('code'\)/);
     expect(source).not.toMatch(/mfa\.challenge\(/);
   });

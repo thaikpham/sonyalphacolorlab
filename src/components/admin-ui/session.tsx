@@ -10,6 +10,7 @@ import {
   useState,
 } from 'react';
 import { useAuth } from '@/components/auth-context';
+import { authBrowser } from '@/lib/supabase/browser';
 import type { AdminRole } from '@/lib/admin/category-roles';
 
 /**
@@ -86,7 +87,14 @@ export type AdminSession = {
 
 const Ctx = createContext<AdminSession | undefined>(undefined);
 
-export function AdminSessionProvider({ children }: { children: React.ReactNode }) {
+export function AdminSessionProvider({
+  children,
+  probeSignedOut = true,
+}: {
+  children: React.ReactNode;
+  /** False on public pages: a reader with no session is not asked about. */
+  probeSignedOut?: boolean;
+}) {
   const { accessToken, user } = useAuth();
   /* Who the session is, not which token it holds: a refreshed token is the
      same person and needs no new answer. */
@@ -120,6 +128,20 @@ export function AdminSessionProvider({ children }: { children: React.ReactNode }
      dependency of the effect — see the note on `identity`. */
   const headersNow = useEffectEvent(() => authed());
 
+  /* Read through an effect event so the dependency list stays
+     `[identity, nonce]` — the probe is about who, not about how it was told.
+
+     Offline in development there is no auth client and the dev admin is found
+     by probing, so the skip needs one to exist. In production there is no dev
+     admin: with no auth client nobody can be one, and a `next start` in seed
+     mode must not probe every reader of every hub. */
+  const skipProbe = useEffectEvent(
+    () =>
+      !probeSignedOut &&
+      !identity &&
+      (authBrowser() !== null || process.env.NODE_ENV === 'production'),
+  );
+
   useEffect(() => {
     let live = true;
     const asked = identity;
@@ -127,6 +149,10 @@ export function AdminSessionProvider({ children }: { children: React.ReactNode }
       if (live) setProbe({ for: asked, gate: next });
     };
     (async () => {
+      if (skipProbe()) {
+        settle('denied');
+        return;
+      }
       try {
         const res = await fetch('/api/admin/session', { headers: headersNow() });
         if (res.status === 503) {

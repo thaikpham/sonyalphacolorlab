@@ -29,11 +29,12 @@ import { FIELD } from './controls';
  * factor and that is correct; this screen is for the four addresses that can
  * rewrite the catalogue.
  *
- * The code is asked for by the shell's `StepUp`, not here. This form had a
- * code stage of its own that could never render: a correct password fires
- * SIGNED_IN, the gate re-probes for the new identity, and the shell unmounts
- * this form before it could switch stages — leaving an orphaned challenge
- * behind. The probe's `mfaRequired` answer is what opens the code form.
+ * The code is asked for by `AdminGate`'s `StepUp` (gate.tsx), not here. This
+ * form had a code stage of its own that could never render: a correct password
+ * fires SIGNED_IN, the gate re-probes for the new identity, and unmounts this
+ * form before it could switch stages — leaving an orphaned challenge behind.
+ * The probe's `mfaRequired` answer is what opens the code form, wherever the
+ * gate is rendered: under the admin shell or on an edit route.
  */
 
 export function AdminSignIn({ onSignedIn }: { onSignedIn: () => void }) {
@@ -63,8 +64,8 @@ export function AdminSignIn({ onSignedIn }: { onSignedIn: () => void }) {
       }
 
       /* Enrolled or not, the gate decides what comes next: the server refuses
-         an aal1 session for an account with a factor and says so, and the
-         shell shows `StepUp` for that answer. */
+         an aal1 session for an account with a factor and says so, and
+         `AdminGate` shows `StepUp` for that answer. */
       onSignedIn();
     } catch {
       fail('signInUnavailable');

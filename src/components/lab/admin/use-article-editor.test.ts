@@ -2,17 +2,18 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
 /**
- * The article editor's wiring, read from its source.
+ * `useArticleEditor()`'s wiring, read from its source.
  *
  * What lands on the draft is executed in `article-draft.test.ts`; this file
- * pins that the component actually goes through those functions, and the
- * ordering a static render cannot show. Source assertions because the suite
- * has no DOM — the same call `admin-editor.test.ts` makes for the product
- * editor. Each handler is sliced out so a match in one cannot pass for
- * another.
+ * pins that the hook actually goes through those functions, and the ordering
+ * a static render cannot show. Source assertions because the suite has no
+ * DOM — the same call `editor.test.ts` makes for the page-shaped editor.
+ * The list screen this hook once belonged to (`article-admin.tsx`) is gone
+ * (an article is edited on its own page now); the assertions that still held
+ * moved here with it.
  */
 
-const source = readFileSync('src/components/lab/admin/article-admin.tsx', 'utf8')
+const source = readFileSync('src/components/lab/admin/use-article-editor.ts', 'utf8')
 const blocks = readFileSync('src/components/lab/admin/block-editor.tsx', 'utf8')
 
 /** The source with comments removed, so prose never reads as code. */
@@ -40,29 +41,19 @@ describe('saving', () => {
   })
 
   it('never reloads through the path that asks to discard changes', () => {
-    /* `openArticle` read `dirty` from the render that pressed Save, where it
-       was true: the editor was asked to discard an article just saved. */
-    expect(save).not.toMatch(/openArticle\(|loadArticle\(|window\.confirm/)
+    expect(save).not.toMatch(/loadArticle\(|window\.confirm/)
   })
 
-  it('holds the list and the new-article button still while a request is out', () => {
-    expect(code).toMatch(/onClick=\{startNew\}\s*disabled=\{busy !== ''\}/)
-    expect(code).toMatch(/onClick=\{\(\) => openArticle\(a\.id\)\}\s*disabled=\{busy !== ''\}/)
-  })
-
-  it('will not publish an article with a blank title', () => {
-    expect(code).toMatch(
-      /save\(draft\.status === 'published' \? 'draft' : 'published'\)\}\s*disabled=\{busy !== '' \|\| !draft\.title\.trim\(\)\}/,
-    )
+  it('tells the caller after the save line is set, outside the try, so a throwing callback cannot turn a written row into saveFailed', () => {
+    const call = save.indexOf('onStored?.(written, creating)')
+    expect(call).toBeGreaterThan(-1)
+    expect(save.match(/onStored\?\.\(/g)?.length).toBe(1)
+    expect(call).toBeGreaterThan(save.indexOf('setSavedAt(new Date())'))
+    expect(call).toBeGreaterThan(save.indexOf('} finally {'))
   })
 })
 
 describe('opening', () => {
-  it('asks about unsaved changes on the click, and only there', () => {
-    expect(fn('openArticle')).toMatch(/dirty && !window\.confirm\(t\('discardConfirm'\)\)/)
-    expect(fn('loadArticle')).not.toMatch(/window\.confirm/)
-  })
-
   it('drops an answer for an article the editor has since moved off', () => {
     const load = fn('loadArticle')
     expect(load).toMatch(/opening\.current = id/)
@@ -73,22 +64,13 @@ describe('opening', () => {
     expect(fn('loadArticle')).toMatch(/catch \{[\s\S]*codeMessage\('loadFailed'\)/)
     expect(fn('remove')).toMatch(/catch \{[\s\S]*codeMessage\('deleteFailed'\)/)
   })
+
+  it('never asks to discard changes itself — the caller does, before calling it', () => {
+    expect(fn('loadArticle')).not.toMatch(/window\.confirm/)
+  })
 })
 
 describe('what the editor reports', () => {
-  it('shows the status line with or without an open article', () => {
-    /* "Article deleted" was set after the draft was cleared, inside a branch
-       that only renders with a draft — so it never appeared. */
-    const statusAt = code.indexOf('role="status"')
-    expect(statusAt).toBeGreaterThan(-1)
-    expect(statusAt).toBeLessThan(code.indexOf('{!draft ? ('))
-  })
-
-  it('says the list is empty only after it has loaded, and says why it did not', () => {
-    expect(code).toMatch(/listError \? \([\s\S]{0,160}codeMessage\(listError\)/)
-    expect(code).toMatch(/listLoaded && visible\.length === 0/)
-  })
-
   it('computes the publish checklist from the draft on screen', () => {
     expect(code).toMatch(/publishProblems\(draft, unknownRefs\)/)
     expect(code).not.toMatch(/setProblems/)
@@ -96,13 +78,7 @@ describe('what the editor reports', () => {
 })
 
 describe('blocks', () => {
-  it('keys each block by identity, not by position', () => {
-    expect(code).toMatch(/<section key=\{key\}/)
-    expect(code).not.toMatch(/key=\{i\}/)
-  })
-
   it('merges an upload into the current block rather than writing back the one it picked from', () => {
-    expect(code).toMatch(/onAsset=\{\(field, assetId\) => setAsset\(draft\.session, key, field, assetId\)\}/)
     expect(code).toMatch(/withAsset\(d, session, key, field, assetId\)/)
     expect(strip(blocks)).not.toMatch(/onChange\(\{ \.\.\.block, (before|after)?[aA]ssetId/)
   })
@@ -112,12 +88,37 @@ describe('blocks', () => {
   })
 })
 
+describe('leaving', () => {
+  it('asks before a client-side navigation, which beforeunload never sees', () => {
+    expect(code).toMatch(/window\.addEventListener\('click', guard, true\)/)
+    expect(code).toMatch(/leavesInPlace\(e, link\)/)
+    expect(code).toMatch(/window\.addEventListener\('beforeunload', warn\)/)
+  })
+})
+
+describe('inserting', () => {
+  it('chooses the key before the update, so the caller can open the new block', () => {
+    const insert = fn('insertAt')
+    expect(insert).toMatch(/const key = nextKey\(\)/)
+    expect(insert).toMatch(/insertBlock\(d, type, at, key\)/)
+    expect(insert).toMatch(/return key/)
+  })
+})
+
 describe('design', () => {
   it('borrows no signal colour for an editor notice', () => {
     /* Signals classify content and nothing else (CLAUDE.md). `community` tinted
        "needs both images" and "needs a video id", which are neither. */
-    for (const file of ['article-admin.tsx', 'block-editor.tsx', 'meta-editor.tsx']) {
-      const src = readFileSync(`src/components/lab/admin/${file}`, 'utf8')
+    for (const file of [
+      'src/components/lab/admin/block-editor.tsx',
+      'src/components/lab/admin/meta-editor.tsx',
+      'src/components/lab/admin/use-article-editor.ts',
+      'src/components/lab/editor/article-editor.tsx',
+      'src/components/lab/editor/editable-block.tsx',
+      'src/components/lab/editor/editor-rail.tsx',
+      'src/components/lab/editor/block-preview.tsx',
+    ]) {
+      const src = readFileSync(file, 'utf8')
       expect(src, file).not.toMatch(/(text|bg)-(community|proposal|ai)\b/)
     }
   })
@@ -148,22 +149,15 @@ describe('one list of archetypes and link kinds', () => {
     const { REF_KINDS } = await import('@/lib/lab/meta')
     for (const a of ARCHETYPES) expect(parseArchetype(a)).toBe(a)
 
+    const rail = readFileSync('src/components/lab/editor/editor-rail.tsx', 'utf8')
     const meta = readFileSync('src/components/lab/admin/meta-editor.tsx', 'utf8')
-    expect(code).not.toMatch(/const ARCHETYPES/)
+    expect(rail).not.toMatch(/const ARCHETYPES/)
     expect(meta).not.toMatch(/const REF_KINDS/)
-    expect(code).toMatch(/import \{[^}]*\bARCHETYPES\b[^}]*\} from '@\/lib\/lab\/parse'/)
+    expect(rail).toMatch(/import \{[^}]*\bARCHETYPES\b[^}]*\} from '@\/lib\/lab\/parse'/)
     expect(meta).toMatch(/import \{[^}]*\bREF_KINDS\b[^}]*\} from '@\/lib\/lab\/meta'/)
 
     const labels = JSON.parse(readFileSync('messages/en.json', 'utf8')).labAdmin
     expect(Object.keys(labels.archetypes).sort()).toEqual([...ARCHETYPES].sort())
     expect(Object.keys(labels.relatedKinds).sort()).toEqual([...REF_KINDS].sort())
-  })
-})
-
-describe('leaving', () => {
-  it('asks before a client-side navigation, which beforeunload never sees', () => {
-    expect(code).toMatch(/window\.addEventListener\('click', guard, true\)/)
-    expect(code).toMatch(/leavesInPlace\(e, link\)/)
-    expect(code).toMatch(/window\.addEventListener\('beforeunload', warn\)/)
   })
 })

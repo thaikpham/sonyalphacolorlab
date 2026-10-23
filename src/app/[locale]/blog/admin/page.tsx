@@ -1,14 +1,20 @@
-import { redirect } from 'next/navigation';
+import { redirect } from '@/i18n/navigation';
+import type { Locale } from '@/i18n/routing';
 
 /**
- * Moved to `/admin/blog`.
- *
- * The article editor joined the other two admin surfaces rather than living under the app it edits.
+ * Moved to `/blog`: an article is edited on its own page now, not in a
+ * separate admin screen, so there is nothing left at `/admin/blog` either —
+ * this redirects straight to the feed, in one hop.
  *
  * A page that redirects rather than an entry in `next.config.ts`: middleware
  * runs before config redirects, so a config rule here would race next-intl's
  * locale rewrite on the very paths this app prefixes. A redirect inside the
  * segment runs after the locale is resolved and cannot be raced.
+ *
+ * The locale-aware `redirect`, given the request's locale. `next/navigation`'s
+ * sent every reader to the bare `/blog`, which under `as-needed` prefixing is
+ * the English feed — a Vietnamese reader following an old bookmark landed in
+ * the wrong language.
  */
 /* Dynamic, so this answers with a real 307.
  *
@@ -19,6 +25,7 @@ import { redirect } from 'next/navigation';
  * whose entire body is a redirect has nothing to gain from being static. */
 export const dynamic = 'force-dynamic';
 
-export default function MovedPage() {
-  redirect('/admin/blog');
+export default async function MovedPage({ params }: { params: Promise<{ locale: Locale }> }) {
+  const { locale } = await params;
+  redirect({ href: '/blog', locale });
 }
