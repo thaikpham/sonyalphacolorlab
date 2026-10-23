@@ -12,33 +12,10 @@ import { BlogShelfSwitch } from './blog-shelf-switch';
 import { WikiDivisionSwitch } from './wiki-division-switch';
 import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import { routing } from '@/i18n/routing';
-import { CREATIVE_LOOKS } from '@/lib/camera/constants';
 import { DEFAULT_WIKI_SORT } from '@/lib/cameras/types';
 import { subCategoryLabel } from '@/lib/cameras/display';
-
-
-interface TagItem {
-  tag: string;
-  count: number;
-}
-
-interface SiteHeaderProps {
-  tags?: TagItem[];
-}
-
-const FALLBACK_TAGS: TagItem[] = [
-  { tag: 'atmospheric', count: 0 },
-  { tag: 'high-contrast', count: 0 },
-  { tag: 'stylized', count: 0 },
-  { tag: 'versatile', count: 0 },
-  { tag: 'clean', count: 0 },
-  { tag: 'neutral', count: 0 },
-  { tag: 'portrait', count: 0 },
-  { tag: 'surreal', count: 0 },
-  { tag: 'artistic', count: 0 },
-  { tag: 'high-saturation', count: 0 },
-  { tag: 'bold', count: 0 },
-];
+import { colorlabSearch } from '@/lib/recipes/browse';
+import { CHIP_IDLE, CHIP_SELECTED } from './chip-styles';
 
 /**
  * The bar itself: film, blur, shadow — and its radius.
@@ -58,23 +35,6 @@ const HEADER_BAR =
   'bg-[linear-gradient(180deg,oklch(100%_0_0/0.075),oklch(100%_0_0/0.035))] ' +
   '[backdrop-filter:var(--elevation-blur-strong)] [-webkit-backdrop-filter:var(--elevation-blur-strong)] ' +
   'shadow-[0_14px_34px_-18px_oklch(0%_0_0/0.9),var(--elevation-spec)]';
-
-/**
- * The two states of every filter chip in the console.
- *
- * Deliberately NOT `chip chip-action surface-selected`. `.chip` and
- * `.surface-selected` are both unlayered and `.chip` is written *after*
- * `.surface-selected` in globals.css, so on one element the chip's own white
- * film and specular shadow win and the selection renders as an ordinary chip —
- * and `.chip-action:hover` would repaint the accent fill white on top of that.
- * The selected state therefore carries `.surface-selected` plus the chip's
- * geometry as utilities. Both land on the same 44px touch target and the same
- * 12px radius, so the two states are the same object.
- */
-const CHIP_IDLE = 'chip chip-action shrink-0 whitespace-nowrap';
-const CHIP_SELECTED =
-  'surface-selected shrink-0 inline-flex items-center justify-center gap-1.5 whitespace-nowrap ' +
-  'px-3 min-h-[var(--layout-touch-target)] text-label font-semibold text-ink cursor-pointer';
 
 /**
  * The wiki console's dropdowns. A select is an input, so it is pressed into the
@@ -137,12 +97,15 @@ const ICON_BUTTON_IDLE =
  *
  * Features:
  * - Wordmark with Sony Alpha 'α' glyph standing in for the "A".
- * - Expandable console integrating recipe keyword search, format filters (PP/CL),
- *   Creative Look sub-filters, and Tag filters.
+ * - Expandable console: the search box, and the Wiki's category, sort and
+ *   view controls. ColorLab's Format, Look and Tag rows are gone (D1) — the
+ *   catalogue browses by situation, style and tone in its own row of links
+ *   under the heading, and this box only adds a query to whatever that row
+ *   has chosen.
  * - Auto-hides on scroll down, reappears on scroll up (locked open when search is focused).
  * - Keyboard shortcuts (⌘K / / to expand, ESC to close).
  */
-function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
+function SiteHeaderInner() {
   const t = useTranslations('search');
   const tNav = useTranslations('nav');
   const tAuth = useTranslations('auth');
@@ -183,15 +146,18 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
   /* The grid the box filters in place. Everywhere else in ColorLab and the
      Wiki — a recipe, a product, the compare page — there is nothing behind
      the box to filter, and a live push would carry the reader off the page
-     mid-word; there the box waits for Enter. */
-  const isCatalogueIndex = pathname === '/colorlab' || pathname === wikiBase;
+     mid-word; there the box waits for Enter. `/colorlab/<situation>` is the
+     same grid narrowed, and the push keeps the reader on it. */
+  const isCatalogueIndex =
+    pathname === '/colorlab' || pathname.startsWith('/colorlab/') || pathname === wikiBase;
+  /* Where a ColorLab query goes: the grid the reader is on, or the index. */
+  const colorlabBase = isCatalogueIndex && !isWiki ? pathname : '/colorlab';
   const searchParams = useSearchParams();
   const { user, isReady, openLoginModal, logout } = useAuth();
 
   const currentQ = searchParams?.get('q') ?? '';
-  const currentFormat = searchParams?.get('format') ?? '';
-  const currentLook = searchParams?.get('look') ?? '';
-  const currentTag = searchParams?.get('tag') ?? '';
+  const currentStyle = searchParams?.get('style') ?? '';
+  const currentTone = searchParams?.get('tone') ?? '';
 
   const wikiCat = searchParams?.get('cat') ?? 'all';
   const wikiSub1 = searchParams?.get('sub1') ?? 'all';
@@ -199,12 +165,14 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
   const wikiSort = searchParams?.get('sort') ?? DEFAULT_WIKI_SORT;
   const wikiView = searchParams?.get('view') ?? 'grid';
 
-  const tagList = providedTags && providedTags.length > 0 ? providedTags : FALLBACK_TAGS;
+  /* ColorLab: a query only. Style and tone are chosen in the browse row under
+     the heading, which has its own clear link — opening this console for them
+     would show a drawer holding nothing but "Clear all filters". */
   const hasActiveFilters = isAll
     ? false
     : isWiki
       ? Boolean(currentQ || wikiCat !== 'all' || wikiSub1 !== 'all' || wikiSub2 !== 'all' || wikiSort !== DEFAULT_WIKI_SORT)
-      : Boolean(currentQ || currentFormat || currentLook || currentTag);
+      : Boolean(currentQ);
 
   const [isHidden, setIsHidden] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(hasActiveFilters);
@@ -476,7 +444,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
   );
 
   const updateFilters = useCallback(
-    (patch: { q?: string; format?: string; look?: string; tag?: string }) => {
+    (patch: { q?: string }) => {
       const newQ = patch.q !== undefined ? patch.q : currentQ;
 
       if (isAll) {
@@ -491,23 +459,16 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
         return;
       }
 
-      const next: Record<string, string> = {};
-      const newFormat = patch.format !== undefined ? patch.format : currentFormat;
-      const newLook = patch.look !== undefined ? patch.look : currentLook;
-      const newTag = patch.tag !== undefined ? patch.tag : currentTag;
-
-      if (newQ.trim()) next.q = newQ.trim();
-      if (newFormat) next.format = newFormat;
-      if (newLook && newFormat === 'cl') next.look = newLook;
-      if (newTag) next.tag = newTag;
-
-      const qs = new URLSearchParams(next).toString();
-      /* `/colorlab`, not `/` — the root is the ecosystem launcher now, and it
-         renders no grid, so every recipe search and filter here would have
-         navigated out of the app and shown four tiles instead of results. */
-      router.push(qs ? `/colorlab?${qs}` : '/colorlab', { scroll: false });
+      /* Through the catalogue's own builder, so the style and tone the reader
+         chose in the browse row ride along — rebuilt from `q` alone, typing a
+         word used to clear them. The pathname stays too: a query typed on
+         `/colorlab/portrait` narrows the portraits rather than leaving them.
+         `/colorlab`, never `/` — the root is the ecosystem launcher now, and
+         it renders no grid. */
+      const qs = colorlabSearch(searchParams, { q: newQ });
+      router.push(qs ? `${colorlabBase}?${qs}` : colorlabBase, { scroll: false });
     },
-    [currentQ, currentFormat, currentLook, currentTag, isAll, isWiki, updateWikiFilters, router],
+    [currentQ, colorlabBase, searchParams, isAll, isWiki, updateWikiFilters, router],
   );
 
   /**
@@ -921,19 +882,6 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                       )}
                     </span>
 
-                    {/* Active Filter Badges in Compact Bar (ColorLab mode) */}
-                    {!isWiki && !isAll && currentFormat && (
-                      <span className="chip shrink-0">
-                        {currentFormat === 'pp'
-                          ? 'PP'
-                          : currentLook
-                          ? `CL:${currentLook}`
-                          : 'CL'}
-                      </span>
-                    )}
-                    {!isWiki && !isAll && currentTag && (
-                      <span className="chip shrink-0 truncate max-w-[6rem]">#{currentTag}</span>
-                    )}
                   </span>
 
                   {/* No ⌘K badge: keyboard hints are removed copy, and the glyph
@@ -953,22 +901,21 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                   /* `/colorlab`, not `/` — the root is the launcher, which has no
                      grid, so a no-JS ColorLab search used to land there. */
                   action={(() => {
-                    const base = isAll ? '/search' : isWiki ? wikiBase : '/colorlab';
+                    const base = isAll ? '/search' : isWiki ? wikiBase : colorlabBase;
                     return locale === routing.defaultLocale ? base : `/${locale}${base}`;
                   })()}
                   method="get"
                   onSubmit={handleSubmit}
                   className="relative flex min-h-[var(--layout-touch-target)] items-center w-full animate-fade-in"
                 >
+                  {/* The catalogue's, from the same builder its live push
+                      navigates with: the style and tone chosen in the browse
+                      row, never `q`, which the box itself submits. */}
                   {!isWiki &&
                     !isAll &&
-                    Object.entries({
-                      format: currentFormat,
-                      look: currentFormat === 'cl' ? currentLook : '',
-                      tag: currentTag,
-                    }).map(([key, value]) =>
-                      value ? <input key={key} type="hidden" name={key} value={value} /> : null,
-                    )}
+                    [...new URLSearchParams(colorlabSearch(searchParams, { q: '' }))].map(([key, value]) => (
+                      <input key={key} type="hidden" name={key} value={value} />
+                    ))}
                   {/* The wiki's, from the same builder its controls navigate
                       with: everything not at its default except `q`, which
                       the box itself submits. */}
@@ -1530,124 +1477,22 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
                   )}
                 </div>
               ) : (
-                /* ColorLab Recipe Controls */
-                <>
-                  {/* Every chip in these three rows used to be black type on a
-                      white pill when live, and a dimmed white on the deleted
-                      flat-surface primitive when not — dark on light in a
-                      dark-only interface, forced past the cascade with
-                      `!important` because that primitive was unlayered and
-                      outranked the colour utility. Both halves are gone: the
-                      live state is an accent-tinted FILL and the idle one is the
-                      system's own chip. */}
-
-                  {/* Row 1: Format Filters */}
-                  <div className="flex items-start gap-3">
-                    <span className="label w-14 shrink-0 leading-11">{t('filterFormat')}</span>
-
-                    <div className="filter-scroll flex flex-wrap items-center gap-2 min-w-0">
-                      <button
-                        type="button"
-                        onClick={() => updateFilters({ format: '', look: '' })}
-                        aria-current={!currentFormat ? 'true' : undefined}
-                        className={!currentFormat ? CHIP_SELECTED : CHIP_IDLE}
-                      >
-                        {t('filterAll')}
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() =>
-                          updateFilters({ format: currentFormat === 'pp' ? '' : 'pp', look: '' })
-                        }
-                        aria-current={currentFormat === 'pp' ? 'true' : undefined}
-                        className={currentFormat === 'pp' ? CHIP_SELECTED : CHIP_IDLE}
-                      >
-                        Picture Profile
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => updateFilters({ format: currentFormat === 'cl' ? '' : 'cl' })}
-                        aria-current={currentFormat === 'cl' ? 'true' : undefined}
-                        className={currentFormat === 'cl' ? CHIP_SELECTED : CHIP_IDLE}
-                      >
-                        Creative Look
-                      </button>
-                    </div>
+                /* ColorLab. The three rows of chips that lived here — Format,
+                   Look and Tag — are gone (D1): the catalogue browses by
+                   situation, style and tone in its own row of links under the
+                   heading, so the console holds the box above and the way to
+                   clear everything, and nothing else. */
+                hasActiveFilters && (
+                  <div className="flex items-center justify-between gap-3">
+                    <button
+                      type="button"
+                      onClick={handleResetAll}
+                      className="text-body-sm font-semibold text-accent-400 transition-colors cursor-pointer underline underline-offset-2"
+                    >
+                      {t('clearAll')}
+                    </button>
                   </div>
-
-                  {/* Row 2: Creative Look Sub-Filters (only visible when format=cl) */}
-                  {currentFormat === 'cl' && (
-                    <div className="flex items-start gap-3">
-                      <span className="label w-14 shrink-0 leading-11">Look</span>
-
-                      <div className="filter-scroll flex flex-wrap items-center gap-2 min-w-0">
-                        <button
-                          type="button"
-                          onClick={() => updateFilters({ look: '' })}
-                          aria-current={!currentLook ? 'true' : undefined}
-                          className={!currentLook ? CHIP_SELECTED : CHIP_IDLE}
-                        >
-                          {t('filterAll')}
-                        </button>
-
-                        {CREATIVE_LOOKS.map((l) => (
-                          <button
-                            key={l.code}
-                            type="button"
-                            onClick={() => updateFilters({ look: currentLook === l.code ? '' : l.code })}
-                            aria-current={currentLook === l.code ? 'true' : undefined}
-                            className={currentLook === l.code ? CHIP_SELECTED : CHIP_IDLE}
-                          >
-                            {l.code}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Row 3: Tag Chips Bar */}
-                  <div className="flex items-start gap-3">
-                    <span className="label w-14 shrink-0 leading-11">{t('filterTags')}</span>
-
-                    <div className="filter-scroll flex flex-wrap items-center gap-2 min-w-0">
-                      <button
-                        type="button"
-                        onClick={() => updateFilters({ tag: '' })}
-                        aria-current={!currentTag ? 'true' : undefined}
-                        className={!currentTag ? CHIP_SELECTED : CHIP_IDLE}
-                      >
-                        {t('filterAll')}
-                      </button>
-
-                      {tagList.map((item) => (
-                        <button
-                          key={item.tag}
-                          type="button"
-                          onClick={() => updateFilters({ tag: currentTag === item.tag ? '' : item.tag })}
-                          aria-current={currentTag === item.tag ? 'true' : undefined}
-                          className={currentTag === item.tag ? CHIP_SELECTED : CHIP_IDLE}
-                        >
-                          {item.tag}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Footer row: Clear all filters & Shortcut hint */}
-                  {hasActiveFilters && (
-                    <div className="flex items-center justify-between gap-3">
-                      <button
-                        type="button"
-                        onClick={handleResetAll}
-                        className="text-body-sm font-semibold text-accent-400 transition-colors cursor-pointer underline underline-offset-2"
-                      >
-                        {t('clearAll')}
-                      </button>
-                    </div>
-                  )}
-                </>
+                )
               )}
             </div>
           </div>
@@ -1736,7 +1581,7 @@ function SiteHeaderInner({ tags: providedTags }: SiteHeaderProps) {
 }
 
 
-export function SiteHeader(props: SiteHeaderProps) {
+export function SiteHeader() {
   return (
     <Suspense
       /* The placeholder is the same bar as the real one — same film, same 40px
@@ -1758,7 +1603,7 @@ export function SiteHeader(props: SiteHeaderProps) {
         </header>
       }
     >
-      <SiteHeaderInner {...props} />
+      <SiteHeaderInner />
     </Suspense>
   );
 }

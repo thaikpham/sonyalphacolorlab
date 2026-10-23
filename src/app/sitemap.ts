@@ -1,7 +1,8 @@
 import type { MetadataRoute } from 'next';
 import { bilingualAlternates } from '@/i18n/alternates';
 import { routing } from '@/i18n/routing';
-import { listSlugs } from '@/lib/recipes/source';
+import { visibleSituations } from '@/lib/recipes/browse';
+import { listRecipes, listSlugs } from '@/lib/recipes/source';
 import { getSonyAudio } from '@/lib/audio/data';
 import { getSonyCameras } from '@/lib/cameras/data';
 import { ARTICLE_LANG } from '@/lib/lab/articles';
@@ -32,8 +33,11 @@ const path = (locale: string, rest: string) => bilingualAlternates(locale, rest)
  * article under English chrome, not a translation of it.
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [slugs, audio, cameras, articles, knowledge] = await Promise.all([
+  const [slugs, recipes, audio, cameras, articles, knowledge] = await Promise.all([
     listSlugs(),
+    /* For the situation pages: only a situation with enough published recipes
+       to be worth a tile is listed, and that is counted at render, not typed. */
+    listRecipes('en'),
     getSonyAudio(),
     getSonyCameras(),
     // Published only, and from the store rather than the seed: an article an
@@ -79,6 +83,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
        filter surface and every recipe link, so it keeps the crawl priority the
        root had. */
     ...bilingual('/colorlab', 'weekly', 1),
+    /* One page per browsable situation (`MIN_SITUATION_RECIPES`). A
+       situation with one or two recipes stays a valid route but is not
+       advertised — it reads as a broken page. */
+    ...visibleSituations(recipes).flatMap((s) => bilingual(`/colorlab/${s}`, 'weekly', 0.9)),
     ...slugs.flatMap((slug) => bilingual(`/recipe/${slug}`, 'monthly', 0.8)),
 
     /* Sony Wiki — the camera, lens and accessory catalogue. Missing until this

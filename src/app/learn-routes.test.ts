@@ -63,7 +63,7 @@ describe('canonical URLs for Vietnamese bodies (ADR 0004)', () => {
 
   it.each([
     ['src/app/[locale]/page.tsx', '/'],
-    ['src/app/[locale]/colorlab/page.tsx', '/colorlab'],
+    ['src/app/[locale]/colorlab/(index)/page.tsx', '/colorlab'],
     ['src/app/[locale]/cameras/page.tsx', '/cameras'],
     ['src/app/[locale]/audio/page.tsx', '/audio'],
     ['src/app/[locale]/blog/page.tsx', '/blog'],
