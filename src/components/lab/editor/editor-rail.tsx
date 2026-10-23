@@ -27,10 +27,17 @@ export function EditorRail({ editor, onDeleted }: { editor: ArticleEditor; onDel
       ? t('saving')
       : status?.kind === 'err'
         ? status.msg
-        : status?.kind === 'ok'
-          ? status.msg
-          : dirty
-            ? t('unsaved')
+        : dirty
+          ? t('unsaved')
+          /* An edit never clears `status`, so a plain "Saved." from before the
+             edit must not keep reading after it — that is what `dirty` above
+             guards against. Past that point an `ok` status is only shown when
+             it says more than "saved": a dropped-block count, "published" or
+             "created" — text the save line would otherwise swallow. The plain
+             message gives way to the save-time line instead, which is the
+             more useful fact once there is nothing left to explain. */
+          : status?.kind === 'ok' && status.msg !== t('saved')
+            ? status.msg
             : savedAt
               ? t('savedAt', {
                   time: format.dateTime(savedAt, {

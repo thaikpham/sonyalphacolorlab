@@ -108,6 +108,14 @@ describe('EditorRail', () => {
     expect(src).toMatch(/t\('unsaved'\)/)
   })
 
+  it('decides dirty before an ok message, so an edit after a save is not hidden behind "Saved"', () => {
+    const dirtyIndex = src.search(/dirty\s*\?/)
+    const okIndex = src.search(/status\?\.kind === 'ok'/)
+    expect(dirtyIndex).toBeGreaterThan(-1)
+    expect(okIndex).toBeGreaterThan(-1)
+    expect(dirtyIndex).toBeLessThan(okIndex)
+  })
+
   it('shows the publish rules the whole time', () => {
     expect(src).toMatch(/editor\.problems\.length === 0 \? t\('specClear'\)/)
   })

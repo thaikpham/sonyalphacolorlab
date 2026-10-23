@@ -59,7 +59,7 @@ export function ArticleEditor({ id, kind }: { id: string | null; kind: ArticleKi
 
   return (
     <>
-      <div className="flex flex-wrap-reverse items-end gap-y-8 gap-x-[clamp(2rem,3.5vw,4rem)] pb-28 lg:pb-0">
+      <div className="flex flex-wrap-reverse items-end gap-y-8 gap-x-[clamp(2rem,3.5vw,4rem)] pb-44 lg:pb-0">
         <article className="lab-article min-w-0 max-w-[46rem] flex-1 basis-[32.5rem]" lang="vi">
           <label className="sr-only" htmlFor="ed-title">{t('title')}</label>
           <textarea
