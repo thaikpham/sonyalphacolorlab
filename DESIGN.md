@@ -159,48 +159,20 @@ the launcher stops being the signature — at which point delete it there too.
 
 ## Audit — run before every commit
 
-```bash
-# 1. Type below the floor (was 68 occurrences)
-rg -n 'text-\[(9|10|11|12)px\]|text-\[0\.(5|6|7)[0-9]*rem\]' src/
-
-# 2. A second typeface
-rg -n 'font-mono|ui-monospace|Noto Sans Mono|font-display' src/ packages/
-
-# 3. Tailwind palette instead of tokens
-rg -n '(text|bg|border|ring|from|to|via)-(amber|sky|slate|cyan|purple|emerald|gray|zinc|red|yellow|green)-[0-9]' src/
-
-# 4. Raw hex in a component.
-#    icon.tsx, opengraph-image.tsx, manifest.ts and the `themeColor` viewport
-#    export are exempt and are excluded by name: Satori and the OS browser
-#    chrome both ignore `oklch()` silently, so a token there renders nothing
-#    rather than erroring. `GoogleMark` is Google's trademark reproduced to
-#    their sign-in branding guidelines — recolouring it to tokens would make it
-#    a different mark, and a third party's logo is not a colour this interface
-#    chooses.
-rg -n '#[0-9a-fA-F]{3,8}' src/components/ src/app/ \
-  | rg -v 'icon\.tsx|opengraph-image\.tsx|manifest\.ts|themeColor|GoogleMark'
-
-# 5. Strokes — allowed only on :focus-visible
-rg -n 'border(-[trblxy])?-[0-9]|border-(solid|white|black)|\bring-[0-9]|outline-[0-9]' src/
-
-# 6. Deleted vocabulary.
-#    `.btn-glass` and the `glass` / `glass-raised` surface TOKENS survive and
-#    are filtered out — what was deleted is the `.glass` / `.glass-flat`
-#    primitive, which is why the filter names the survivors rather than
-#    narrowing the pattern. The deleted divider is matched as `\.rule` and not
-#    `\brule\b`: the bare word matched the English noun in forty comments,
-#    including every one explaining a rule of this design system.
-rg -n 'glass|y2k|holo-|water-|cyber-|radar|app-glow|rainbow-glow|eyebrow|\.rule\b' src/ \
-  | rg -v 'btn-glass|glass-raised|bg-glass|--color-glass'
-
-# 7. Per-component scrollbar CSS (belongs in globals.css only)
-rg -n 'scrollbar|::-webkit-scrollbar' src/ | rg -v 'scroll-silent|scroll-area'
-
-# 8. Hard corners
-rg -n 'rounded-none|radius:\s*0' src/
-```
+The eight greps that used to live here are `src/design/floor.test.ts` now,
+naming nine rules instead of eight: type below the 13px floor, a second
+typeface, a Tailwind palette colour instead of a token, a raw hex in a
+component, a stroke outside `:focus-visible`, deleted vocabulary, scrollbar
+CSS outside `globals.css`, an arbitrary `[Npx]`, and a duration of its own.
+`npm test` runs it on every commit, against a recorded baseline
+(`src/design/floor.baseline.json`) that may only go down; `npm run
+design:baseline` records a drop once a fix lands. A grep someone forgot to run
+could not fail a build — a test that runs with the suite can.
 
 Every hit is a defect. Fix it or delete it; do not add an exception.
+
+What a grep cannot see runs in a browser: `npm run test:screens` (`e2e/`),
+described in `docs/DESIGN_GOVERNANCE.md`.
 
 ## Fonts
 

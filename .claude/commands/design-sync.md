@@ -5,6 +5,12 @@ description: Re-read the design tokens and audit the working tree against them
 Bring this repo back in line with the design system. Do not ask questions
 first — run the audit, then report.
 
+## 0. Measure
+
+`npm run test:screens` — read the first-screen and perf tables it prints and
+the per-route lists; a number that went down is lowered in `e2e/budgets.json`
+/ the spec, in this change.
+
 ## 1. Load the system
 
 Read, in this order, and hold the values in context for the rest of the session:
@@ -18,11 +24,15 @@ Read, in this order, and hold the values in context for the rest of the session:
 
 ## 2. Audit
 
-Run every command in the **Audit** section of `DESIGN.md` against `src/`.
-For each hit, record: file, line, the offending value, and the token that
-should replace it.
+Run `npx vitest run src/design` and read any failure: it is the nine rules
+`DESIGN.md` §Audit names (type below the floor, a second typeface, a Tailwind
+palette colour, a raw hex, a stroke outside `:focus-visible`, deleted
+vocabulary, scrollbar CSS outside `globals.css`, an arbitrary `[Npx]`, a
+duration of its own), checked against the recorded baseline in
+`src/design/floor.baseline.json`. For each failure, record: file, line, the
+offending value, and the token that should replace it.
 
-Then check the five things grep cannot see:
+Then check the five things a scanner cannot see:
 
 - **Contrast** — any text colour that is not `ink`, `ink-muted`, `ink-faint`,
   pure white on a tinted field, or an `accent-400`+ step. Dark type on a dark
@@ -60,4 +70,5 @@ do not touch `dist/` or `vendor/` by hand — run `npm run tokens:emit`.
 ## 4. Verify
 
 `npm run lint` · `npm test` (the token drift test and `fonts.test.ts` must
-pass) · re-run the audit and confirm it comes back empty.
+pass) · re-run the audit and confirm it comes back empty · `npm run
+test:screens` if anything on screen changed.

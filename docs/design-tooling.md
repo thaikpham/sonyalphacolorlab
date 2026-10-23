@@ -118,12 +118,14 @@ image generation. They are installed for completeness and will not work here.
 
 ---
 
-## The gate, unchanged
+## The gate
 
 ```bash
-npm run verify   # lint → typecheck → test → build
+npm run verify        # lint → typecheck → test → build (two minutes)
+npm run test:screens  # layout, axe, targets, perf, first-screen (ten minutes, for anything on screen)
+npm run test:visual   # opt-in, local baselines
 ```
 
-A design change is finished when that passes and a phone-width screenshot
-exists. Neither alone is sufficient: the suite has never caught a white
-rectangle, and a screenshot has never caught a missing `aria-label`.
+A design change is finished when the first two pass and `Visual` has been
+looked at. See `docs/DESIGN_GOVERNANCE.md` for what each gate checks and what
+budgets only going down means.
