@@ -14,6 +14,7 @@ import { describe, expect, it } from 'vitest'
  */
 
 const source = readFileSync('src/components/lab/admin/use-article-editor.ts', 'utf8')
+const blocks = readFileSync('src/components/lab/admin/block-editor.tsx', 'utf8')
 
 /** The source with comments removed, so prose never reads as code. */
 const strip = (s: string) =>
@@ -71,6 +72,11 @@ describe('what the editor reports', () => {
 describe('blocks', () => {
   it('merges an upload into the current block rather than writing back the one it picked from', () => {
     expect(code).toMatch(/withAsset\(d, session, key, field, assetId\)/)
+    expect(strip(blocks)).not.toMatch(/onChange\(\{ \.\.\.block, (before|after)?[aA]ssetId/)
+  })
+
+  it('takes a slot’s preview from the shared map alone', () => {
+    expect(strip(blocks)).not.toMatch(/fresh/)
   })
 })
 
