@@ -168,7 +168,7 @@ character comes from.
 White Balance has a third layer: `wbSummary()` says what the dials do
 **together**. Temperature and Shift A/B are one amber–blue axis in different
 units, so a warm Kelvin beside a `B` shift is not the mistake it looks like —
-31 of 46 recipes are that shape. Keep it out of the rows; a combined cast is
+most legacy recipes were that shape. Keep it out of the rows; a combined cast is
 not any single dial's property. Its neutral band is deliberately wider than the
 Kelvin row's, because it inherits `MIRED_PER_SHIFT_STEP` — **fitted, not
 published**. Never let it name warm or cool inside one shift step of neutral;
@@ -240,6 +240,7 @@ mean something else.
 ```
 src/lib/camera/     constants.ts · schema.ts · format.ts   ← source of truth
 src/lib/legacy/     one-shot migration from sonycolorlab (delete after cutover)
+src/lib/originals/  pp.ts — ColorLab's own Picture Profile library (2026-10-23)
 src/lib/sony-asia/  import.ts — Creative Look library from Sony's Alpha Recipes
 src/lib/recipes/    row.ts (Recipe ⇄ DB row) · Supabase data access
 supabase/migrations/  SQL; runs for real against PGlite in migration.test.ts
@@ -247,13 +248,25 @@ src/app/            App Router routes
 data/               recipes.seed.json (generated — never hand-edit)
 ```
 
-The catalogue is two libraries in one table: Picture Profile recipes migrated
-from sonycolorlab, and Creative Look recipes imported from a scrape of Sony's
-Alpha Recipes microsite. Both come from **untrusted input parsed against
-`constants.ts`** — `LEGACY_CORRECTIONS` and `SCRAPE_CORRECTIONS` record every
-fix by name and reason. A row the source does not fully state is **skipped and
-reported**, never completed with a plausible value: `Default Settings` has no
-published expansion, and a Kelvin *range* is not a Kelvin.
+The catalogue is three libraries in one table: the ten Picture Profile recipes
+kept from sonycolorlab, ColorLab's own Picture Profile originals, and Creative
+Look recipes imported from a scrape of Sony's Alpha Recipes microsite. The
+first and last come from **untrusted input parsed against `constants.ts`** —
+`LEGACY_CORRECTIONS` and `SCRAPE_CORRECTIONS` record every fix by name and
+reason. A row the source does not fully state is **skipped and reported**,
+never completed with a plausible value: `Default Settings` has no published
+expansion, and a Kelvin *range* is not a Kelvin.
+
+**36 legacy Picture Profiles were withdrawn on 2026-10-23** as matching a
+licensed third-party collection. They are unpublished on the content plane
+(never deleted — community rows point at their slugs), gone from HEAD, and
+their share links live on only as `RETIRED_LEGACY_IDS` in
+`src/lib/recipes/redirects.ts`: ids and replacement slugs, no settings. Do not
+restore their numbers from git history into the tree; the repository is
+public. The originals that replace them ship `published: false` until the
+owner has shot each on the a7 IV (D8) and publishes it in `/admin/colorlab`;
+`npm run pp:refresh -- --target content` is the one-off that unpublished the
+old and inserted the new, and it prints its plan before writing.
 
 `npm run seed:emit` prints the skips. Read them — they are the to-do list for
 whatever the source failed to publish.

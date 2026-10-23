@@ -39,9 +39,9 @@ export type EvalQuery = {
 export const EVAL_QUERIES: readonly EvalQuery[] = [
   // --- exact names and ids --------------------------------------------
   { q: 'Mojave Sun', locale: 'vi', type: 'exact', relevant: ['SCL-PP-001'], top1: 'SCL-PP-001' },
-  { q: 'Midnight Halogen', locale: 'en', type: 'exact', relevant: ['SCL-PP-011'], top1: 'SCL-PP-011' },
+  { q: 'Urban Teal', locale: 'en', type: 'exact', relevant: ['SCL-PP-009'], top1: 'SCL-PP-009' },
   { q: 'SCL-CL-017', locale: 'vi', type: 'exact', relevant: ['SCL-CL-017'], top1: 'SCL-CL-017' },
-  { q: 'scl pp 011', locale: 'vi', type: 'exact', relevant: ['SCL-PP-011'], top1: 'SCL-PP-011' },
+  { q: 'scl pp 009', locale: 'vi', type: 'exact', relevant: ['SCL-PP-009'], top1: 'SCL-PP-009' },
   { q: 'ILCE-7CM2', locale: 'vi', type: 'exact', relevant: ['sony-ilce-7cm2-sqap2'], top1: 'sony-ilce-7cm2-sqap2' },
   { q: 'ZV-E10', locale: 'vi', type: 'exact', relevant: ['sony-zv-e10-bq-ap2'], top1: 'sony-zv-e10-bq-ap2' },
   { q: 'WH-1000XM6', locale: 'en', type: 'exact', relevant: ['sony-wh-1000xm6'], top1: 'sony-wh-1000xm6' },
@@ -59,8 +59,8 @@ export const EVAL_QUERIES: readonly EvalQuery[] = [
 
   // --- typos ------------------------------------------------------------
   { q: 'mojav sun', locale: 'vi', type: 'typo', relevant: ['SCL-PP-001'] },
-  { q: 'caspain blue', locale: 'en', type: 'typo', relevant: ['SCL-PP-003'] },
-  { q: 'somerset medow', locale: 'en', type: 'typo', relevant: ['SCL-PP-005'] },
+  { q: 'urban teel', locale: 'en', type: 'typo', relevant: ['SCL-PP-009'] },
+  { q: 'vintge slide', locale: 'en', type: 'typo', relevant: ['SCL-PP-015'] },
   { q: 'kyotto jade', locale: 'vi', type: 'typo', relevant: ['SCL-PP-002'] },
 
   // --- Vietnamese with and without diacritics ---------------------------
@@ -82,12 +82,14 @@ export const EVAL_QUERIES: readonly EvalQuery[] = [
   { q: 'black level', locale: 'vi', type: 'concept', relevant: ['glossary-pp-blackLevel'] },
   { q: 'white balance shift', locale: 'vi', type: 'concept', relevant: ['white-balance-shift', 'glossary-wb-shiftAb', 'glossary-wb-shiftGm'], corpus: 'with-pilot' },
   { q: 'color depth', locale: 'vi', type: 'concept', relevant: ['color-depth', 'glossary-pp-colorDepth'], corpus: 'with-pilot' },
-  { q: 'S-Cinetone', locale: 'en', type: 'concept', relevant: ['SCL-PP-020', 'SCL-PP-027', 'SCL-PP-029'] },
+  { q: 'S-Cinetone', locale: 'en', type: 'concept', relevant: ['SCL-PP-027'] },
 
   // --- a mood or a scene -------------------------------------------------
-  { q: 'màu ấm ban đêm', locale: 'vi', type: 'mood', relevant: ['SCL-PP-003'] },
-  { q: 'warm golden hour', locale: 'en', type: 'mood', relevant: ['SCL-PP-001', 'SCL-PP-012'] },
-  { q: 'night city lights', locale: 'en', type: 'mood', relevant: ['SCL-PP-011'] },
+  /* The night queries return with the originals (Neon Night, Bến Thành
+     Night, Sài Gòn Café) once they are published; no published recipe answers
+     them today, and a label with no document behind it is a label from the
+     ranker. */
+  { q: 'warm golden hour', locale: 'en', type: 'mood', relevant: ['SCL-PP-001'] },
   { q: 'sepia look', locale: 'en', type: 'mood', relevant: ['SCL-CL-017', 'SCL-CL-018'] },
 
   // --- a situation, a style or a tone, by its browse label -----------------
@@ -98,31 +100,25 @@ export const EVAL_QUERIES: readonly EvalQuery[] = [
     q: 'chan dung',
     locale: 'vi',
     type: 'vi-plain',
-    relevant: ['SCL-PP-002', 'SCL-PP-005', 'SCL-PP-008', 'SCL-PP-012', 'SCL-PP-015', 'SCL-PP-016', 'SCL-PP-017', 'SCL-PP-027', 'SCL-PP-029', 'SCL-PP-030', 'SCL-PP-033', 'SCL-PP-034', 'SCL-PP-038', 'SCL-PP-039', 'SCL-PP-045', 'SCL-PP-046', 'SCL-CL-013', 'SCL-CL-014', 'SCL-CL-015', 'SCL-CL-016', 'SCL-CL-019'],
+    relevant: ['SCL-PP-002', 'SCL-PP-015', 'SCL-PP-027', 'SCL-PP-045', 'SCL-PP-046', 'SCL-CL-013', 'SCL-CL-014', 'SCL-CL-015', 'SCL-CL-016', 'SCL-CL-019'],
   },
   {
     q: 'cafe',
     locale: 'vi',
     type: 'mood',
-    relevant: ['SCL-PP-001', 'SCL-PP-006', 'SCL-PP-012', 'SCL-PP-019', 'SCL-PP-020', 'SCL-PP-021', 'SCL-CL-001', 'SCL-CL-013', 'SCL-CL-014', 'SCL-CL-015', 'SCL-CL-016', 'SCL-CL-020', 'SCL-CL-021', 'SCL-CL-022', 'SCL-CL-023', 'SCL-CL-024', 'SCL-CL-030'],
+    relevant: ['SCL-PP-001', 'SCL-CL-001', 'SCL-CL-013', 'SCL-CL-014', 'SCL-CL-015', 'SCL-CL-016', 'SCL-CL-020', 'SCL-CL-021', 'SCL-CL-022', 'SCL-CL-023', 'SCL-CL-024', 'SCL-CL-030'],
   },
   {
     q: 'phim',
     locale: 'vi',
     type: 'mood',
-    relevant: ['SCL-PP-001', 'SCL-PP-002', 'SCL-PP-003', 'SCL-PP-006', 'SCL-PP-007', 'SCL-PP-009', 'SCL-PP-010', 'SCL-PP-012', 'SCL-PP-015', 'SCL-PP-020', 'SCL-PP-024', 'SCL-PP-029', 'SCL-PP-031', 'SCL-PP-032', 'SCL-PP-033', 'SCL-PP-035', 'SCL-PP-036', 'SCL-PP-037', 'SCL-PP-039', 'SCL-PP-040', 'SCL-PP-041', 'SCL-PP-044', 'SCL-CL-001', 'SCL-CL-002', 'SCL-CL-017', 'SCL-CL-018', 'SCL-CL-020', 'SCL-CL-021', 'SCL-CL-022', 'SCL-CL-023', 'SCL-CL-024', 'SCL-CL-025', 'SCL-CL-026', 'SCL-CL-027', 'SCL-CL-028', 'SCL-CL-029', 'SCL-CL-030', 'SCL-CL-031', 'SCL-CL-032', 'SCL-CL-033', 'SCL-CL-034', 'SCL-CL-035', 'SCL-CL-036', 'SCL-CL-037'],
+    relevant: ['SCL-PP-001', 'SCL-PP-002', 'SCL-PP-009', 'SCL-PP-015', 'SCL-PP-044', 'SCL-CL-001', 'SCL-CL-002', 'SCL-CL-017', 'SCL-CL-018', 'SCL-CL-020', 'SCL-CL-021', 'SCL-CL-022', 'SCL-CL-023', 'SCL-CL-024', 'SCL-CL-025', 'SCL-CL-026', 'SCL-CL-027', 'SCL-CL-028', 'SCL-CL-029', 'SCL-CL-030', 'SCL-CL-031', 'SCL-CL-032', 'SCL-CL-033', 'SCL-CL-034', 'SCL-CL-035', 'SCL-CL-036', 'SCL-CL-037'],
   },
   {
     q: 'đen trắng',
     locale: 'vi',
     type: 'vi-accent',
-    relevant: ['SCL-PP-030', 'SCL-PP-031', 'SCL-PP-032', 'SCL-PP-033', 'SCL-PP-034', 'SCL-PP-035', 'SCL-PP-036', 'SCL-PP-037', 'SCL-PP-038', 'SCL-CL-017', 'SCL-CL-018'],
-  },
-  {
-    q: 'ban đêm',
-    locale: 'vi',
-    type: 'mood',
-    relevant: ['SCL-PP-003', 'SCL-PP-011', 'SCL-PP-029', 'SCL-PP-036', 'SCL-PP-037'],
+    relevant: ['SCL-CL-017', 'SCL-CL-018'],
   },
 
   // --- nothing to find ---------------------------------------------------
