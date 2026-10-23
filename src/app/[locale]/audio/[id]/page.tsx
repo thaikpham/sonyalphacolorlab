@@ -63,7 +63,7 @@ export default async function AudioProductPage({
       {/* A reading layout, like the camera product route — not the browse grid. */}
       <main className="flex-1 w-full max-w-[86rem] mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6 flex flex-col gap-5">
         <div className="flex items-center justify-between gap-4 pb-3">
-          <div className="flex items-center gap-2 text-meta text-ink-muted">
+          <div className="flex min-w-0 items-center gap-2 text-meta text-ink-muted">
             <Link href="/colorlab" className="hover:text-accent-400 transition-colors">
               ColorLab
             </Link>
@@ -72,7 +72,7 @@ export default async function AudioProductPage({
               {t('audioTitle')}
             </Link>
             <span className="text-ink-faint">/</span>
-            <span className="text-ink font-semibold">{product.name}</span>
+            <span className="min-w-0 truncate text-ink font-semibold">{product.name}</span>
           </div>
 
           <Link href="/audio" className="btn-glass inline-flex items-center gap-1.5 shrink-0">

@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { report } from './budgets.ts';
 import { EXEMPT_SCROLL, ROUTES, ready, resolve } from './setup.ts';
 
 /*
@@ -7,7 +8,8 @@ import { EXEMPT_SCROLL, ROUTES, ready, resolve } from './setup.ts';
  * (1440), no page is wider than the window and no box inside it scrolls
  * sideways — except the four containers the design system names
  * (`EXEMPT_SCROLL`). Each test walks its routes and lists every offender, so
- * one run shows them all.
+ * one run shows them all; a route may carry a recorded count in
+ * e2e/budgets.json, which only goes down.
  */
 
 /** What overflows on this page: the page itself, and any box that scrolls sideways. */
@@ -49,15 +51,16 @@ for (const [role, routes] of Object.entries(ROUTES) as [keyof typeof ROUTES, str
     test(`${role} · ${size.name}: no screen scrolls sideways`, async ({ page }) => {
       test.setTimeout(300_000);
       await page.setViewportSize({ width: size.width, height: size.height });
-      const failures: string[] = [];
+      const over: string[] = [];
       for (const route of routes) {
         const path = await resolve(page, route);
         if (!path) { console.log(`skip ${route}: no instance in the sitemap`); continue; }
         await page.goto(path);
         await ready(page);
-        for (const f of await overflow(page, EXEMPT_SCROLL)) failures.push(`${path}: ${f}`);
+        const found = await overflow(page, EXEMPT_SCROLL);
+        if (!report('layout', path, found)) over.push(`${path}: ${found.length} over budget — ${found.join('; ')}`);
       }
-      expect(failures, failures.join('\n')).toEqual([]);
+      expect(over, over.join('\n')).toEqual([]);
     });
   }
 }

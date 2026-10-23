@@ -95,3 +95,28 @@ describe('e2e/layout.spec.ts', () => {
     expect(src).toMatch(/doc\.scrollWidth > W \+ 1/);
   });
 });
+
+describe('e2e/budgets.json', () => {
+  const budgets = JSON.parse(read('e2e/budgets.json')) as Record<string, Record<string, number>>;
+  it('carries only the three per-route kinds, every count a non-negative integer', () => {
+    expect(Object.keys(budgets).filter((k) => k !== '//').sort()).toEqual(['axe', 'layout', 'targets']);
+    for (const kind of ['axe', 'layout', 'targets']) {
+      for (const [path, n] of Object.entries(budgets[kind] ?? {})) {
+        expect(path.startsWith('/'), `${kind} ${path}`).toBe(true);
+        expect(Number.isInteger(n) && n >= 0, `${kind} ${path} = ${n}`).toBe(true);
+      }
+    }
+  });
+});
+
+describe('e2e/wcag.spec.ts and targets.spec.ts', () => {
+  it('fail on faults a page can hide, and read their budgets from one file', () => {
+    const wcag = read('e2e/wcag.spec.ts');
+    expect(wcag).toMatch(/watch\(page\)/);
+    expect(wcag).toMatch(/withTags\(TAGS\)/);
+    expect(wcag).toMatch(/report\('axe'/);
+    const targets = read('e2e/targets.spec.ts');
+    expect(targets).toMatch(/const MIN = 44/);
+    expect(targets).toMatch(/report\('targets'/);
+  });
+});
