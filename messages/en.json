@@ -875,6 +875,8 @@
     "removeBlock": "Remove",
     "moveUp": "Move up",
     "moveDown": "Move down",
+    "editBlock": "Edit block",
+    "doneBlock": "Done",
     "uploadFile": "Upload image",
     "uploading": "Uploading…",
     "clearImage": "Remove image",

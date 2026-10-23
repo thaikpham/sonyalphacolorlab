@@ -875,6 +875,8 @@
     "removeBlock": "Xoá",
     "moveUp": "Đưa lên",
     "moveDown": "Đưa xuống",
+    "editBlock": "Sửa khối",
+    "doneBlock": "Xong",
     "uploadFile": "Tải ảnh lên",
     "uploading": "Đang tải lên…",
     "clearImage": "Gỡ ảnh",
