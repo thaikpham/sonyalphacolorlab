@@ -129,9 +129,17 @@ export function AdminSessionProvider({
   const headersNow = useEffectEvent(() => authed());
 
   /* Read through an effect event so the dependency list stays
-     `[identity, nonce]` — the probe is about who, not about how it was told. */
+     `[identity, nonce]` — the probe is about who, not about how it was told.
+
+     Offline in development there is no auth client and the dev admin is found
+     by probing, so the skip needs one to exist. In production there is no dev
+     admin: with no auth client nobody can be one, and a `next start` in seed
+     mode must not probe every reader of every hub. */
   const skipProbe = useEffectEvent(
-    () => !probeSignedOut && !identity && authBrowser() !== null,
+    () =>
+      !probeSignedOut &&
+      !identity &&
+      (authBrowser() !== null || process.env.NODE_ENV === 'production'),
   );
 
   useEffect(() => {

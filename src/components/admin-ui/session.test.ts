@@ -121,13 +121,17 @@ describe(SESSION, () => {
     expect(source).toMatch(/if \(!ctx\) throw new Error/);
   });
 
-  it('can leave a signed-out reader unprobed, and still probes offline', () => {
+  it('can leave a signed-out reader unprobed: always in production, and in development once there is an auth client', () => {
     /* A public page mounts the probe for every reader. A request per page view
        for somebody with no session would be a Function call that can only
-       answer "no". Offline there is no auth client and the dev admin is found
-       by probing, so the skip needs an auth client to exist. */
+       answer "no". Offline in development there is no auth client and the dev
+       admin is found by probing, so there the skip needs an auth client to
+       exist; in production the dev admin does not exist, so a `next start` in
+       seed mode must skip too rather than probe every reader. */
     expect(source).toMatch(/probeSignedOut = true/);
-    expect(source).toMatch(/!probeSignedOut && !identity && authBrowser\(\) !== null/);
+    expect(source).toMatch(
+      /!probeSignedOut &&\s+!identity &&\s+\(authBrowser\(\) !== null \|\| process\.env\.NODE_ENV === 'production'\)/,
+    );
     const skip = source.indexOf('if (skipProbe())');
     const probe = source.indexOf("fetch('/api/admin/session'");
     expect(skip, 'no skip before the probe').toBeGreaterThan(-1);
@@ -174,8 +178,9 @@ describe('src/components/admin-ui/sign-in.tsx', () => {
 
   it('leaves the code to StepUp instead of a second form of its own', () => {
     /* Its code stage could never render: SIGNED_IN re-probes the gate and the
-       shell unmounts this form before `setStage('code')` runs, leaving an
-       orphaned challenge behind. The shell's StepUp is what asks for it. */
+       gate unmounts this form before `setStage('code')` runs, leaving an
+       orphaned challenge behind. `AdminGate`'s StepUp (gate.tsx) is what asks
+       for it — under the admin shell and on the edit routes alike. */
     expect(source).not.toMatch(/setStage\('code'\)/);
     expect(source).not.toMatch(/mfa\.challenge\(/);
   });

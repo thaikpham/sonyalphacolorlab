@@ -46,7 +46,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# The local article store, written by /blog/admin when Supabase is absent.
+# The local article store, written by the article editor (/blog/<id>/edit,
+# /learn/<id>/edit) when Supabase is absent.
 # Scratch content for one developer's machine, never a seed — see
 # src/lib/lab/dev-store.ts.
 /data/lab-articles.dev.json
@@ -63,7 +64,7 @@ next-env.d.ts
 /public/recipes-dev/
 /data/recipe-images.dev.json
 
-# Images uploaded through /blog/admin in local development.
+# Images uploaded through the article editor in local development.
 /public/lab/
 
 # Export/import artifacts from the control/content migration. They are a full

@@ -24,7 +24,8 @@ verifies the control-plane session and the `admin_emails` row *first*.
 
 ### Where an admin save goes
 
-`/admin/wiki` (DI and PE), `/admin/colorlab` and `/admin/blog` write to the
+`/admin/wiki` (DI and PE), `/admin/colorlab` and the article editor on the
+pages themselves (`/blog/<id>/edit`, `/learn/<id>/edit`) write to the
 **content** project — the one `NEXT_PUBLIC_CONTENT_SUPABASE_URL` names, in the
 content organisation. The save bar says which: "Đã lưu vào Supabase · <ref>".
 
