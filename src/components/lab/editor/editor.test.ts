@@ -59,3 +59,62 @@ describe('BlockInserter', () => {
     expect(src).toMatch(/focus-within:opacity-100/)
   })
 })
+
+describe('ArticleEditor', () => {
+  const src = read('article-editor.tsx')
+
+  it('opens the record it was given, or starts a page of the route’s kind', () => {
+    expect(src).toMatch(/if \(id\) void editor\.loadArticle\(id\)/)
+    expect(src).toMatch(/else editor\.startNew\(kind\)/)
+  })
+
+  it('moves to the page’s own edit URL once it has an id, or changes kind', () => {
+    expect(src).toMatch(/router\.replace\(`\$\{pathFor\(stored\.kind, stored\.id\)\}\/edit`\)/)
+  })
+
+  it('keeps one block open at a time, and opens a block as it is inserted', () => {
+    expect(src).toMatch(/const \[openKey, setOpenKey\] = useState<number \| null>\(null\)/)
+    expect(src).toMatch(/setOpenKey\(editor\.insertBlock\(type, 0\)\)/)
+    expect(src).toMatch(/setOpenKey\(editor\.insertBlock\(type, i \+ 1\)\)/)
+  })
+
+  it('keys blocks by identity', () => {
+    expect(src).toMatch(/key=\{key\}/)
+    expect(src).not.toMatch(/key=\{i\}/)
+  })
+
+  it('merges an upload into the block as it is now', () => {
+    expect(src).toMatch(/editor\.setAsset\(draft\.session, key, field, assetId\)/)
+  })
+
+  it('reads the same column measure as the published page', () => {
+    expect(src).toMatch(/max-w-\[46rem\] flex-1 basis-\[32\.5rem\]/)
+  })
+})
+
+describe('EditorRail', () => {
+  const src = read('editor-rail.tsx')
+
+  it('says what saving is doing, politely, as a status', () => {
+    expect(src).toMatch(/aria-live="polite"/)
+    expect(src).toMatch(/t\('savedAt'/)
+    expect(src).toMatch(/t\('unsaved'\)/)
+  })
+
+  it('shows the publish rules the whole time', () => {
+    expect(src).toMatch(/editor\.problems\.length === 0 \? t\('specClear'\)/)
+  })
+
+  it('will not save or publish a page with a blank title', () => {
+    expect(src.match(/disabled=\{busy !== '' \|\| !draft\.title\.trim\(\)\}/g)?.length).toBe(2)
+  })
+
+  it('keeps the bottom bar out of any animated parent and pays back the safe area', () => {
+    expect(src).toMatch(/fixed inset-x-0 bottom-0 z-30 pb-safe lg:hidden/)
+    expect(src).not.toMatch(/animate-fade-in/)
+  })
+
+  it('locks the kind of a published page, as the route does', () => {
+    expect(src).toMatch(/disabled=\{draft\.status === 'published'\}/)
+  })
+})

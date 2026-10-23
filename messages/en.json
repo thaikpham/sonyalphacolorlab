@@ -849,6 +849,8 @@
     "saveDraft": "Save draft",
     "saveChanges": "Save changes",
     "saving": "Saving…",
+    "unsaved": "Not saved",
+    "savedAt": "Saved at {time}",
     "publish": "Publish",
     "unpublish": "Move back to draft",
     "viewLive": "View live",

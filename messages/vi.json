@@ -849,6 +849,8 @@
     "saveDraft": "Lưu nháp",
     "saveChanges": "Lưu thay đổi",
     "saving": "Đang lưu…",
+    "unsaved": "Chưa lưu",
+    "savedAt": "Đã lưu lúc {time}",
     "publish": "Đăng bài",
     "unpublish": "Đưa về bản nháp",
     "viewLive": "Xem trên web",
