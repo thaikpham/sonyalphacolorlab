@@ -1,0 +1,157 @@
+name: Visual
+
+# A pull request that touches the front has its main screens (e2e/visual.spec.ts) shot on its base
+# branch and on itself, on the same runner, and compared. A difference fails the check and leaves the
+# expected, actual and diff images in the "visual-diff" artifact; the "visual-ok" label accepts it. A
+# new push takes the label off, so an approval is always of the latest screens.
+#
+# Adapted from design-kit's gates/github/visual.yml. This repo is one package, so the kit's
+# per-package directory variables are gone: the two checkouts are `head/` and `base/`, each with its
+# own package.json, playwright.config.ts and e2e/.
+#
+# The snapshots never touch either tree: CL_SNAPSHOT_DIR (playwright.config.ts) points
+# `snapshotPathTemplate` at $RUNNER_TEMP/visual, the base run writes the pictures there and the PR
+# run compares against them. Local baselines (e2e/**/*-snapshots/) are gitignored and unused here.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+
+jobs:
+  visual:
+    name: Visual (PR vs base)
+    # Other labels change nothing here.
+    if: (github.event.action != 'labeled' && github.event.action != 'unlabeled') || github.event.label.name == 'visual-ok'
+    runs-on: ubuntu-latest
+    # On the job, not the workflow: a run skipped for another label must not cancel a comparison.
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    permissions:
+      contents: read
+      # Only to take a stale "visual-ok" off after a new push.
+      pull-requests: write
+    env:
+      # What counts as "the front changed".
+      FRONT_PATHS: src public/fonts messages packages/colorlab-tokens e2e/visual.spec.ts playwright.config.ts
+      BASE: ${{ github.event.pull_request.base.sha }}
+      NEXT_TELEMETRY_DISABLED: '1'
+      # The label counts unless this run is for a new push (which takes it off).
+      ACCEPTED: ${{ contains(github.event.pull_request.labels.*.name, 'visual-ok') && github.event.action != 'synchronize' }}
+    steps:
+      - name: Accepted
+        if: github.event.action == 'labeled'
+        run: echo "Thay đổi trên màn hình đã được chấp nhận bằng nhãn visual-ok."
+
+      - name: A new push needs a new look
+        if: github.event.action == 'synchronize' && contains(github.event.pull_request.labels.*.name, 'visual-ok')
+        run: gh pr edit "$PR" --repo "$REPO" --remove-label visual-ok || true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+
+      - uses: actions/checkout@v4
+        if: github.event.action != 'labeled'
+        with:
+          path: head
+          fetch-depth: 0
+
+      - name: Did the front change?
+        id: front
+        if: github.event.action != 'labeled'
+        working-directory: head
+        run: |
+          if git diff --quiet "$BASE" HEAD -- $FRONT_PATHS; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"; echo "Không có gì trên màn hình thay đổi."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.front.outputs.changed == 'true'
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: base
+
+      - uses: actions/setup-node@v4
+        if: steps.front.outputs.changed == 'true'
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            head/package-lock.json
+            base/package-lock.json
+
+      # Both sides run the PR's Playwright, at the exact version head's lockfile installed.
+      #
+      # The base may predate the gates (no e2e/, no @playwright/test in its package.json) or pin an
+      # older Playwright, so after base's own `npm ci` the PR's version is added to base/node_modules
+      # with `--no-save`: base's package.json and lockfile are untouched, and when base already has
+      # Playwright this replaces it with head's, so the two sides shoot with one screenshot engine and
+      # the one Chromium installed below (the browser build is tied to the playwright-core version).
+      #
+      # Not head's binary with NODE_PATH: playwright.config.ts and the spec import @playwright/test
+      # from base/, and Node resolves that from base/node_modules before NODE_PATH. Once base has its
+      # own copy, the runner (head's) and the test file (base's) would load two different copies,
+      # which Playwright refuses ("Requiring @playwright/test second time").
+      #
+      # The version comes from head/node_modules, not head/package.json: the manifest holds a range
+      # (^1.x), the installed package holds what the lockfile actually resolved.
+      - name: Install
+        if: steps.front.outputs.changed == 'true'
+        run: |
+          for d in base head; do (cd "$d" && npm ci); done
+          PW=$(node -p "require('./head/node_modules/@playwright/test/package.json').version")
+          (cd base && npm i --no-save --no-audit --no-fund "@playwright/test@$PW")
+          cd head && npx playwright install --with-deps chromium
+
+      # The PR's own check, helpers, fixtures and config, so both sides shoot the same screens the
+      # same way. The whole e2e/ folder, not just the spec: visual.spec.ts imports ./setup.ts, which
+      # reads e2e/fixtures/photo.webp at import, and a base from before the gates has no e2e/ at all.
+      # Replaced rather than merged, so a stale helper on base cannot shadow the PR's.
+      #
+      #
+      # Playwright itself does not need base's tsconfig.json: it compiles the spec with its own
+      # transform and resolves `./setup.ts` itself, so a base without `allowImportingTsExtensions`
+      # runs the spec fine. `next build` does need it: it type-checks everything tsconfig includes
+      # (`**/*.ts`), and the PR's e2e/ on a base from before the gates fails that check (TS5097 on
+      # every `./setup.ts` import, TS2307 on `@axe-core/playwright`), so the base server never
+      # starts. The copied tests are therefore excluded from base's type check. This changes what
+      # tsc looks at, not what Next emits: the screens are built from base's own source as before.
+      - name: Shoot the base branch
+        if: steps.front.outputs.changed == 'true'
+        run: |
+          rm -rf base/e2e
+          cp -R head/e2e base/e2e
+          cp head/playwright.config.ts base/playwright.config.ts
+          cd base
+          node -e "const fs=require('fs'),f='tsconfig.json',t=JSON.parse(fs.readFileSync(f,'utf8'));t.exclude=[...(t.exclude??[]),'e2e','playwright.config.ts'];fs.writeFileSync(f,JSON.stringify(t,null,2)+'\n')"
+          CL_VISUAL=1 CL_SNAPSHOT_DIR="$RUNNER_TEMP/visual" npx playwright test e2e/visual.spec.ts --update-snapshots
+
+      - name: Compare the pull request
+        id: compare
+        if: steps.front.outputs.changed == 'true'
+        continue-on-error: true
+        working-directory: head
+        run: CL_VISUAL=1 CL_SNAPSHOT_DIR="$RUNNER_TEMP/visual" npx playwright test e2e/visual.spec.ts --reporter=list,html
+
+      - name: Keep the images
+        if: steps.compare.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-diff
+          path: |
+            head/test-results/
+            head/playwright-report/
+          retention-days: 14
+
+      - name: Verdict
+        if: steps.compare.outcome == 'failure'
+        run: |
+          if [ "$ACCEPTED" = true ]; then echo "::notice::Màn hình đã thay đổi; đã được chấp nhận bằng nhãn visual-ok."; exit 0; fi
+          echo "::error::Màn hình đã thay đổi. Xem artifact visual-diff (expected, actual, diff); nếu thay đổi là cố ý, hãy thêm nhãn visual-ok."
+          exit 1

@@ -150,3 +150,17 @@ describe('e2e/first-screen.spec.ts', () => {
     expect(src).not.toMatch(/detailRows/);
   });
 });
+
+describe('the visual check', () => {
+  it('is opt-in locally and compares PR with base on CI', () => {
+    const spec = read('e2e/visual.spec.ts');
+    expect(spec).toMatch(/test\.skip\(!process\.env\.CL_VISUAL/);
+    expect(spec).toMatch(/animations: 'disabled'/);
+    expect(spec).toMatch(/maxDiffPixelRatio: 0\.01/);
+    const wf = read('.github/workflows/visual.yml');
+    expect(wf).toMatch(/FRONT_PATHS: src public\/fonts messages packages\/colorlab-tokens e2e\/visual\.spec\.ts playwright\.config\.ts/);
+    expect(wf).toMatch(/CL_VISUAL=1 CL_SNAPSHOT_DIR=/);
+    expect(wf).toMatch(/--remove-label visual-ok/);
+    expect(wf).not.toMatch(/E2E_DIR|WEB_DIR|FF_/);
+  });
+});
