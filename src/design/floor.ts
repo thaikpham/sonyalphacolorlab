@@ -1,5 +1,5 @@
 /**
- * Scanner for the three design-system rules that can be checked mechanically.
+ * Scanner for the design-system rules that can be checked mechanically.
  *
  * The Alpha design system states nine rules. Six of them ("separate layers with
  * light, not strokes", "uppercase only at label size") need eyes on a screen.
@@ -17,6 +17,12 @@
  *                red, yellow and green are Canon's, Nikon's and Fuji's
  *                signatures, which is a bad look on a Sony tool.
  *
+ * Six more were DESIGN.md's audit greps, which only ran when someone
+ * remembered `/design-sync`: a raw hex in a component, a stroke doing
+ * elevation's job, deleted vocabulary, scrollbar CSS outside globals.css, an
+ * arbitrary pixel value in a class, and a duration of its own. The only
+ * allowlists are the files and symbols DESIGN.md itself names.
+ *
  * This module only counts. `floor.test.ts` compares the counts to a recorded
  * baseline, which is what makes the rules enforceable before the ~950 existing
  * call sites are fixed: the number may not go up, and every time it goes down
@@ -33,7 +39,28 @@ export const REPO_ROOT = resolve(HERE, '..', '..')
 /** 13px at a 16px root. Below this nothing renders. */
 export const FLOOR_PX = 13
 
-export type Rule = 'belowFloor' | 'mono' | 'palette'
+export type Rule =
+  | 'belowFloor'
+  | 'mono'
+  | 'palette'
+  | 'hex'
+  | 'stroke'
+  | 'deletedVocab'
+  | 'scrollbarCss'
+  | 'arbitraryPx'
+  | 'duration'
+
+export const RULES: readonly Rule[] = [
+  'belowFloor',
+  'mono',
+  'palette',
+  'hex',
+  'stroke',
+  'deletedVocab',
+  'scrollbarCss',
+  'arbitraryPx',
+  'duration',
+]
 
 export interface Violation {
   readonly file: string
@@ -154,6 +181,141 @@ const PALETTE = new RegExp(
   'g',
 )
 
+/**
+ * The six rules that were DESIGN.md's audit greps, so `/design-sync` runs as a
+ * test instead of as something a person remembers.
+ *
+ * `hex`: a colour written as a hex literal, in a component or a route. Scoped
+ * to `src/components` and `src/app` as the grep was; the token source and
+ * `lib/camera/color.ts` compute colour and are out of scope. DESIGN.md names
+ * the files that may carry one (Satori ignores `oklch()`; the web manifest and
+ * `themeColor` are read by the OS; Google's mark is Google's), and those are
+ * the only exceptions — by filename or by the symbol DESIGN.md names, never by
+ * a per-line escape. `&#123;` is an HTML entity, not a colour.
+ */
+const HEX = /(?<![&\w])#(?:[0-9a-f]{8}|[0-9a-f]{6}|[0-9a-f]{4}|[0-9a-f]{3})(?![\w-])/gi
+const HEX_SCOPE = /^src\/(components|app)\//
+/**
+ * By basename, as DESIGN.md's grep matches them: a metadata route keeps its
+ * name at any depth (`[locale]/recipe/[slug]/opengraph-image.tsx`), and a
+ * full-path list missed exactly that one.
+ */
+const HEX_FILES = /^src\/app\/(?:.+\/)?(?:icon\.tsx|opengraph-image\.tsx|manifest\.ts)$/
+const HEX_LINE = /\bthemeColor\b/
+/** The component whose body is Google's colours, not ours. */
+const HEX_COMPONENTS = new Set(['GoogleMark'])
+
+/**
+ * A stroke doing elevation's job (rule 4). Only `:focus-visible` may draw one,
+ * and that is read from the class's own variant prefix, so a `border-2` beside
+ * a `focus-visible:ring-2` on the same line still counts. A zero width
+ * (`border-0`, `outline-0`) removes a stroke rather than drawing one, so it is
+ * not counted — DESIGN.md's grep matches it, but the grep is the floor of the
+ * judgement, not the ceiling.
+ */
+const STROKE =
+  /(?<![\w-])(?:border(?:-[trblxyse])?-(?!0(?![\d.]))\d+|border-(?:solid|white|black)|ring-(?!0(?![\d.]))\d+|outline-(?!0(?![\d.]))\d+)(?![\w-])/g
+
+/**
+ * DESIGN.md "Deleted — do not reintroduce". `.glass` the primitive is the bare
+ * word; the surviving surface tokens are `glass` behind a hyphen (`btn-glass`,
+ * `bg-glass`, `bg-glass-raised`, `--color-glass`), which the guards on the bare
+ * word never match. The divider is `.rule` with its dot, as DESIGN.md explains,
+ * and not after an identifier (`violation.rule` is a property read).
+ */
+const DELETED =
+  /(?<![\w-])(?:glass-flat|eyebrow|y2k-[\w-]*|holo-[\w-]*|water-[\w-]*|cyber-[\w-]*|animate-radar-[\w-]*|app-glow|rainbow-glow-bar|animate-float-gentle|vfx\.css|glass)(?![\w-])|--font-mono\b|--font-display\b|--color-edge\b|(?<![\w)\]])\.rule(?![\w-])/g
+const SURVIVORS = /btn-glass|glass-raised|bg-glass|--color-glass/
+/** `glass: 'oklch(…)'` — the surviving token's own key in the token source, not a class. */
+const GLASS_TOKEN_KEY = /^\s*:/
+function deletedAccept(code: string) {
+  return (m: RegExpExecArray) => {
+    if (m[0] !== 'glass') return true
+    if (SURVIVORS.test(lineText(code, m.index))) return false
+    const isKey = code[m.index - 1] !== '.' && GLASS_TOKEN_KEY.test(code.slice(m.index + 5, m.index + 7))
+    return !isKey
+  }
+}
+
+/** Scrollbar CSS anywhere but globals.css (rule 6). The two class names are the sanctioned API. */
+const SCROLLBAR = /::-webkit-scrollbar|\bscrollbar(?!-(?:silent|area|table))/g
+const SCROLLBAR_FILE = 'src/app/globals.css'
+
+/**
+ * An arbitrary pixel value in a class name. The count is the budget. A
+ * `text-[10px]` is already `belowFloor`'s and is not counted twice; an
+ * off-scale size at or above the floor (`text-[15px]`) is counted here.
+ */
+const ARBITRARY_PX = /\[(-?\d+(?:\.\d+)?)px\]/g
+const arbitraryPxAccept = (code: string) => (m: RegExpExecArray) =>
+  !(code.slice(Math.max(0, m.index - 5), m.index) === 'text-' && Number(m[1]) < FLOOR_PX)
+
+/**
+ * A duration of its own (D1, 2026-10-23): a `duration-<n>` class in a
+ * component, or a `transition` with a time in a stylesheet. CLAUDE.md §Motion
+ * allows `.animate-fade-in` and the launcher glow, both in globals.css, which
+ * is the one file whose transitions are not counted.
+ */
+const DURATION_CLASS = /(?<![\w-])duration-\d+\b/g
+const RAW_TRANSITION = /\btransition(?:-duration)?\s*:[^;{}]*?(?<![\w-])\d*\.?\d+m?s\b/g
+
+/**
+ * Inside `@media (prefers-reduced-motion: reduce)` a duration is the global
+ * stillness override CLAUDE.md §Motion describes (`0.01ms !important` in the
+ * shared primitives), the opposite of a duration of its own.
+ */
+function insideReducedMotion(code: string, index: number): boolean {
+  const media = code.lastIndexOf('prefers-reduced-motion', index)
+  if (media === -1) return false
+  const open = code.indexOf('{', media)
+  if (open === -1 || open > index) return false
+  let depth = 0
+  for (let i = open; i < index; i += 1) {
+    if (code[i] === '{') depth += 1
+    else if (code[i] === '}') depth -= 1
+    if (depth === 0) return false
+  }
+  return true
+}
+
+/**
+ * A test names what it forbids — `expect(page).not.toContain('eyebrow')`, an
+ * `it('puts no eyebrow over …')` title — and puts nothing on a screen, so the
+ * six audit rules do not read test files.
+ */
+const TEST_FILE = /\.test\.tsx?$/
+
+/** The text of the line holding `index`. */
+function lineText(source: string, index: number): string {
+  const start = source.lastIndexOf('\n', index - 1) + 1
+  const end = source.indexOf('\n', index)
+  return source.slice(start, end === -1 ? source.length : end)
+}
+
+/** The variant prefix of the class holding `index`: `focus-visible:` in `focus-visible:ring-2`. */
+function classPrefix(source: string, index: number): string {
+  let start = index
+  while (start > 0 && !/[\s"'`{}(),]/.test(source[start - 1])) start -= 1
+  return source.slice(start, index)
+}
+
+/**
+ * The nearest component or function declared above `index`. Good enough to
+ * scope an allowlist to one named symbol: a hex after GoogleMark's closing
+ * brace sits under the next declaration, not under GoogleMark.
+ */
+const DECLARATION = /\bfunction\s+([A-Za-z_$][\w$]*)|\b(?:const|let)\s+([A-Za-z_$][\w$]*)\s*=/g
+function enclosingName(source: string, index: number): string | undefined {
+  DECLARATION.lastIndex = 0
+  let name: string | undefined
+  let match = DECLARATION.exec(source)
+  while (match !== null && match.index < index) {
+    name = match[1] ?? match[2]
+    match = DECLARATION.exec(source)
+  }
+  return name
+}
+
 function lineOf(source: string, index: number): number {
   let line = 1
   for (let i = 0; i < index; i += 1) if (source[i] === '\n') line += 1
@@ -204,6 +366,20 @@ function collect(
  *
  * A `//` right after `:` is a URL scheme, not a comment.
  */
+/**
+ * Blanks the prose value of a `comment:` property — the token source's
+ * `TokenGroup.comment`, emitted as a CSS comment into theme.css — including
+ * its `'…' +` continuations. It is documentation by name, and it is where the
+ * token source explains the very sizes, families and names these rules ban:
+ * `text-[9px]`, `--font-mono`, "the three glass layers".
+ */
+const COMMENT_PROPERTY = /\bcomment\s*:\s*((?:(['"`])(?:\\.|(?!\2)[^\\])*\2\s*\+?\s*)+)/g
+function stripCommentProperties(source: string): string {
+  return source.replace(COMMENT_PROPERTY, (whole: string, value: string) =>
+    whole.slice(0, whole.length - value.length) + value.replace(/[^\n]/g, ' '),
+  )
+}
+
 function stripComments(source: string): string {
   const out = source.split('')
   const blank = (from: number, to: number) => {
@@ -241,7 +417,7 @@ function stripComments(source: string): string {
 
 export function scanSource(source: string, file: string): Violation[] {
   const underFloor = (match: RegExpExecArray) => toPx(match[1], match[2]) < FLOOR_PX
-  const code = stripComments(source)
+  const code = stripComments(stripCommentProperties(source))
 
   return [
     ...collect(code, file, TAILWIND_NAMED_BELOW_FLOOR, 'belowFloor'),
@@ -251,7 +427,29 @@ export function scanSource(source: string, file: string): Violation[] {
     ...collect(code, file, JSX_FONT_SIZE, 'belowFloor', underFloor),
     ...collect(code, file, MONO, 'mono'),
     ...collect(code, file, PALETTE, 'palette'),
+    ...(TEST_FILE.test(file) ? [] : auditRules(code, file)),
   ].sort((a, b) => a.line - b.line)
+}
+
+/** The six rules that were DESIGN.md's audit greps. */
+function auditRules(code: string, file: string): Violation[] {
+  return [
+    ...(HEX_SCOPE.test(file) && !HEX_FILES.test(file)
+      ? collect(code, file, HEX, 'hex', (m) => {
+          if (HEX_LINE.test(lineText(code, m.index))) return false
+          const owner = enclosingName(code, m.index)
+          return owner === undefined || !HEX_COMPONENTS.has(owner)
+        })
+      : []),
+    ...collect(code, file, STROKE, 'stroke', (m) => !classPrefix(code, m.index).includes('focus-visible:')),
+    ...collect(code, file, DELETED, 'deletedVocab', deletedAccept(code)),
+    ...(file === SCROLLBAR_FILE ? [] : collect(code, file, SCROLLBAR, 'scrollbarCss')),
+    ...(file.endsWith('.tsx') ? collect(code, file, ARBITRARY_PX, 'arbitraryPx', arbitraryPxAccept(code)) : []),
+    ...(file.endsWith('.tsx') ? collect(code, file, DURATION_CLASS, 'duration') : []),
+    ...(file.endsWith('.css') && file !== SCROLLBAR_FILE
+      ? collect(code, file, RAW_TRANSITION, 'duration', (m) => !insideReducedMotion(code, m.index))
+      : []),
+  ]
 }
 
 export function scanRepo(): Violation[] {
@@ -261,22 +459,24 @@ export function scanRepo(): Violation[] {
 }
 
 /** Per-file counts, omitting clean files so the baseline shrinks as work lands. */
+function zero(): Record<Rule, number> {
+  return Object.fromEntries(RULES.map((rule) => [rule, 0])) as Record<Rule, number>
+}
+
 export function tally(violations: readonly Violation[]): Baseline {
-  const baseline: Record<string, { belowFloor: number; mono: number; palette: number }> = {}
+  const baseline: Record<string, Record<Rule, number>> = {}
   for (const violation of violations) {
-    baseline[violation.file] ??= { belowFloor: 0, mono: 0, palette: 0 }
+    baseline[violation.file] ??= zero()
     baseline[violation.file][violation.rule] += 1
   }
   return Object.fromEntries(Object.entries(baseline).sort(([a], [b]) => a.localeCompare(b)))
 }
 
 export function totals(baseline: Baseline): Counts {
-  return Object.values(baseline).reduce(
-    (sum, counts) => ({
-      belowFloor: sum.belowFloor + counts.belowFloor,
-      mono: sum.mono + counts.mono,
-      palette: sum.palette + counts.palette,
-    }),
-    { belowFloor: 0, mono: 0, palette: 0 },
-  )
+  const sum = zero()
+  for (const counts of Object.values(baseline)) {
+    // `?? 0`: a baseline written before a rule existed has no key for it.
+    for (const rule of RULES) sum[rule] += counts[rule] ?? 0
+  }
+  return sum
 }

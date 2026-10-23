@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import { TEXT } from '../../packages/colorlab-tokens/src/tokens'
-import { FLOOR_PX, REPO_ROOT, scanRepo, scanSource, tally, totals } from './floor'
+import { FLOOR_PX, REPO_ROOT, RULES, scanRepo, scanSource, tally, totals, type Baseline } from './floor'
 
 /**
  * The enforceable part of the design system.
@@ -28,7 +28,7 @@ import { FLOOR_PX, REPO_ROOT, scanRepo, scanSource, tally, totals } from './floo
  */
 const BASELINE = JSON.parse(
   readFileSync(join(REPO_ROOT, 'src/design/floor.baseline.json'), 'utf8'),
-) as Record<string, { belowFloor: number; mono: number; palette: number }>
+) as Baseline
 
 describe('design floor', () => {
   const current = tally(scanRepo())
@@ -44,9 +44,7 @@ describe('design floor', () => {
   it('has not regressed on the totals', () => {
     const now = totals(current)
     const then = totals(BASELINE)
-    expect(now.belowFloor).toBeLessThanOrEqual(then.belowFloor)
-    expect(now.mono).toBeLessThanOrEqual(then.mono)
-    expect(now.palette).toBeLessThanOrEqual(then.palette)
+    for (const rule of RULES) expect(now[rule], rule).toBeLessThanOrEqual(then[rule])
   })
 
   /**
@@ -78,9 +76,114 @@ describe('design floor', () => {
       ['font-family: ui-monospace', 'mono'],
       ['font-family: monospace', 'mono'],
       ["font-family: 'Noto Sans Mono'", 'mono'],
+      /* The six rules that used to be DESIGN.md's greps. */
+      ['#8A9CFF', 'hex'],
+      ['color: #fff', 'hex'],
+      ['border-t-2', 'stroke'],
+      ['ring-2', 'stroke'],
+      ['outline-1', 'stroke'],
+      ['border-solid', 'stroke'],
+      ['className="eyebrow"', 'deletedVocab'],
+      ['var(--font-display)', 'deletedVocab'],
+      ['animate-radar-sweep', 'deletedVocab'],
+      ['::-webkit-scrollbar { display: none }', 'scrollbarCss'],
+      ['scrollbar-width: none', 'scrollbarCss'],
+      ['h-[38px]', 'arbitraryPx'],
+      ['text-[15px]', 'arbitraryPx'],
+      ['duration-200', 'duration'],
+      /* `.glass` the deleted primitive, as a class and as a selector. */
+      ['glass p-4', 'deletedVocab'],
+      ['.glass { opacity: 1 }', 'deletedVocab'],
     ])('flags %s as %s', (snippet, rule) => {
-      const found = scanSource(`const c = "flex ${snippet} items-center"`, 'probe.tsx')
+      // `hex` is scoped to src/components and src/app, so the probe lives there.
+      const found = scanSource(`const c = "flex ${snippet} items-center"`, 'src/components/x.tsx')
       expect(found.map((v) => v.rule)).toContain(rule)
+    })
+
+    /* A raw `transition` with a time is a stylesheet shape; the scanner reads
+       it in `.css` files, where `duration-*` classes do not occur. */
+    it('flags a transition with a time of its own in a stylesheet', () => {
+      const found = scanSource('.x { transition: opacity 0.18s ease; }', 'src/components/x.css')
+      expect(found.map((v) => v.rule)).toEqual(['duration'])
+    })
+
+    it.each([
+      ['focus-visible:ring-2', 'stroke'],
+      ['btn-glass', 'deletedVocab'],
+      ['bg-glass-raised', 'deletedVocab'],
+      ['var(--color-glass)', 'deletedVocab'],
+      ['scroll-silent', 'scrollbarCss'],
+      ['scroll-area', 'scrollbarCss'],
+      ['#about', 'hex'],
+      ['duration-(--motion)', 'duration'],
+      /* A zero width removes a stroke; it does not draw one. */
+      ['border-0', 'stroke'],
+      /* An HTML entity is not a colour. */
+      ['&#123;', 'hex'],
+      /* One site, one rule: a sub-floor size is belowFloor's. */
+      ['text-[10px]', 'arbitraryPx'],
+    ])('does not count %s as %s', (sample, rule) => {
+      expect(scanSource(sample, 'src/components/x.tsx').filter((v) => v.rule === rule)).toEqual([])
+    })
+
+    it('counts a stroke beside a focus-visible one on the same line', () => {
+      const found = scanSource('"border-2 focus-visible:ring-2"', 'src/components/x.tsx')
+      expect(found.filter((v) => v.rule === 'stroke').map((v) => v.text)).toEqual(['border-2'])
+    })
+
+    it.each([
+      ['src/app/icon.tsx', '#07080B', 'hex'],
+      ['src/app/opengraph-image.tsx', '#07080B', 'hex'],
+      ['src/app/manifest.ts', '#07080B', 'hex'],
+      ['src/components/auth-context.tsx', 'themeColor: "#07080B"', 'hex'],
+      [
+        'src/components/auth-context.tsx',
+        'export function GoogleMark() {\n  return <path fill="#4285F4" />\n}',
+        'hex',
+      ],
+      ['src/app/globals.css', '::-webkit-scrollbar { width: 6px }', 'scrollbarCss'],
+      ['src/app/globals.css', 'transition: opacity 0.18s ease', 'duration'],
+      ['src/lib/camera/color.ts', '#8A9CFF', 'hex'],
+      ['src/app/[locale]/recipe/[slug]/opengraph-image.tsx', '#07080B', 'hex'],
+      [
+        'packages/colorlab-tokens/src/primitives.css',
+        '@media (prefers-reduced-motion: reduce) {\n  * { transition-duration: 0.01ms !important; }\n}',
+        'duration',
+      ],
+      ['packages/colorlab-tokens/src/tokens.ts', "tokens: {\n  glass: 'oklch(100% 0 0 / 0.05)',\n}", 'deletedVocab'],
+      ['src/app/recipe-page.test.ts', "it('puts no eyebrow over the heading', () => {})", 'deletedVocab'],
+    ])('does not count %s in %s (DESIGN.md names the exception)', (file, sample, rule) => {
+      expect(scanSource(sample, file).filter((v) => v.rule === rule)).toEqual([])
+    })
+
+    it('still counts a transition after the reduced-motion block closes', () => {
+      const source =
+        '@media (prefers-reduced-motion: reduce) {\n  * { transition-duration: 0.01ms; }\n}\n' +
+        '.x { transition: opacity 200ms; }'
+      const found = scanSource(source, 'packages/colorlab-tokens/src/primitives.css')
+      expect(found.map((v) => [v.rule, v.line])).toEqual([['duration', 4]])
+    })
+
+    /* `TokenGroup.comment` is the token source's documentation, emitted as a
+       CSS comment. It names the sizes, families and words the rules ban. */
+    it('ignores the pattern inside a comment: property', () => {
+      const source =
+        "export const TEXT = {\n  comment:\n    'fails on text-[9px] and --font-mono\\n' +\n" +
+        "    'and the three glass layers.',\n  tokens: { meta: '0.8125rem' },\n}"
+      expect(scanSource(source, 'packages/colorlab-tokens/src/tokens.ts')).toEqual([])
+    })
+
+    it('reads the code after a comment: property', () => {
+      const source = "const g = {\n  comment: 'about text-xs',\n  cls: 'text-xs',\n}"
+      expect(scanSource(source, 'probe.ts').map((v) => [v.rule, v.line])).toEqual([['belowFloor', 3]])
+    })
+
+    it('counts a hex in the component after GoogleMark', () => {
+      const source =
+        'export function GoogleMark() {\n  return <path fill="#4285F4" />\n}\n' +
+        'export function Other() {\n  return <path fill="#123456" />\n}'
+      const found = scanSource(source, 'src/components/auth-context.tsx')
+      expect(found.filter((v) => v.rule === 'hex').map((v) => v.text)).toEqual(['#123456'])
     })
 
     it.each([
