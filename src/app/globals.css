@@ -305,6 +305,8 @@ body {
      why the 44px floor is on this modifier and not on `.chip`. */
   .chip-action {
     min-height: var(--layout-touch-target);
+    min-width: var(--layout-touch-target);
+    justify-content: center;
     font-weight: 600;
     cursor: pointer;
     transition: background 0.18s ease, color 0.18s ease;

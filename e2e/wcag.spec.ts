@@ -1,12 +1,14 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import { report } from './budgets.ts';
-import { ROUTES, ready, resolve, watch } from './setup.ts';
+import { ROUTES, ready, resolve, routeAssetHosts, watch } from './setup.ts';
 
 /*
  * Accessibility, by axe-core, on every screen at a phone and a desktop width:
  * no serious or critical violation of WCAG 2.1 A/AA beyond the route's
- * recorded count (e2e/budgets.json, which only goes down). The same walk fails
+ * recorded count at that width (e2e/budgets.json, keyed `<path> · <width>`,
+ * which only goes down). One line per violating node, so fixing one of four
+ * low-contrast labels lowers the count. The same walk fails
  * on an uncaught error, a console error or a 5xx — a page that renders and
  * logs an error is not a page that works (FeestFinder's axe walk caught a
  * crash this way).
@@ -19,6 +21,7 @@ for (const [role, routes] of Object.entries(ROUTES) as [keyof typeof ROUTES, str
     test(`${role} · ${size.name}: no serious or critical accessibility violation, no error`, async ({ page }) => {
       test.setTimeout(600_000);
       await page.setViewportSize({ width: size.width, height: size.height });
+      await routeAssetHosts(page);
       const faults = watch(page);
       const over: string[] = [];
       for (const route of routes) {
@@ -29,8 +32,8 @@ for (const [role, routes] of Object.entries(ROUTES) as [keyof typeof ROUTES, str
         const { violations } = await new AxeBuilder({ page }).withTags(TAGS).analyze();
         const found = violations
           .filter((v) => v.impact === 'serious' || v.impact === 'critical')
-          .map((v) => `[${v.impact}] ${v.id} ×${v.nodes.length} — ${v.help} (${v.nodes.slice(0, 3).map((n) => n.target.join(' ')).join(' | ')})`);
-        if (!report('axe', path, found)) over.push(`${path}: ${found.length} over budget`);
+          .flatMap((v) => v.nodes.map((n) => `[${v.impact}] ${v.id} — ${v.help} (${n.target.join(' ')})`));
+        if (!report('axe', `${path} · ${size.name}`, found)) over.push(`${path}: ${found.length} over budget`);
         const seen = faults();
         if (seen.length) over.push(`${path}: ${seen.join('; ')}`);
       }

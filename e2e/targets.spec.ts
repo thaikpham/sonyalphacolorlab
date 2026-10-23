@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { report } from './budgets.ts';
-import { ROUTES, ready, resolve } from './setup.ts';
+import { ROUTES, ready, resolve, routeAssetHosts } from './setup.ts';
 
 /*
  * Touch targets on a phone (design-kit's "Mobile" gate): on every screen
@@ -43,13 +43,22 @@ async function small(page: Page, path: string): Promise<string[]> {
         }
       }
       // What an ancestor clips away cannot be tapped.
+      // Deviation from design-kit: once an ancestor scrolls on an axis
+      // (`auto` / `scroll`), nothing at or above it clips on that axis. What
+      // sits inside a scroller is reachable by scrolling, so it is measured at
+      // its real size; the kit's maths gave a chip scrolled past the edge of a
+      // filter row a negative width (`-232×44`) and counted it as small.
       const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      let scrollsX = false, scrollsY = false;
       for (let a = el.parentElement; a && a !== document.body; a = a.parentElement) {
         const ac = getComputedStyle(a);
+        if (/auto|scroll/.test(ac.overflowX)) scrollsX = true;
+        if (/auto|scroll/.test(ac.overflowY)) scrollsY = true;
+        if (scrollsX && scrollsY) break;
         if (!/hidden|clip/.test(ac.overflowX + ac.overflowY)) continue;
         const ar = a.getBoundingClientRect();
-        if (/hidden|clip/.test(ac.overflowY)) h = Math.min(h, 2 * Math.min(cy - ar.top, ar.bottom - cy));
-        if (/hidden|clip/.test(ac.overflowX)) w = Math.min(w, 2 * Math.min(cx - ar.left, ar.right - cx));
+        if (!scrollsY && /hidden|clip/.test(ac.overflowY)) h = Math.min(h, 2 * Math.min(cy - ar.top, ar.bottom - cy));
+        if (!scrollsX && /hidden|clip/.test(ac.overflowX)) w = Math.min(w, 2 * Math.min(cx - ar.left, ar.right - cx));
       }
       return { w, h };
     };
@@ -96,6 +105,7 @@ async function small(page: Page, path: string): Promise<string[]> {
 for (const [role, routes] of Object.entries(ROUTES) as [keyof typeof ROUTES, string[]][]) {
   test(`${role}: every target on a phone is at least 44px`, async ({ page }) => {
     test.setTimeout(600_000);
+    await routeAssetHosts(page);
     const over: string[] = [];
     for (const route of routes) {
       const path = await resolve(page, route);

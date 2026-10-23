@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { report } from './budgets.ts';
-import { EXEMPT_SCROLL, ROUTES, ready, resolve } from './setup.ts';
+import { EXEMPT_SCROLL, ROUTES, ready, resolve, routeAssetHosts } from './setup.ts';
 
 /*
  * Every screen fits the device and nothing scrolls sideways (design-kit's
@@ -51,6 +51,7 @@ for (const [role, routes] of Object.entries(ROUTES) as [keyof typeof ROUTES, str
     test(`${role} · ${size.name}: no screen scrolls sideways`, async ({ page }) => {
       test.setTimeout(300_000);
       await page.setViewportSize({ width: size.width, height: size.height });
+      await routeAssetHosts(page);
       const over: string[] = [];
       for (const route of routes) {
         const path = await resolve(page, route);
