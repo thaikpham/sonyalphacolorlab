@@ -10,7 +10,7 @@ export default async function AdminHome() {
   const cards = [
     { href: '/admin/colorlab', title: t('sectionColorlab'), body: t('sectionColorlabBody') },
     { href: '/admin/wiki', title: t('sectionWiki'), body: t('sectionWikiBody') },
-    { href: '/admin/blog', title: t('sectionBlog'), body: t('sectionBlogBody') },
+    { href: '/blog', title: t('sectionBlog'), body: t('sectionBlogBody') },
   ];
 
   return (

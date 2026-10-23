@@ -67,8 +67,8 @@ signs them in everywhere):
 6. The right rail (where the contents list is on the reading page) holds the
    status chip, the spec checklist (**Sẵn sàng đăng** / **Còn n quy tắc**, with
    the rules listed), and the actions: **Lưu**, **Đăng bài** / **Đưa về bản
-   nháp**, **Xem trang**, **Xoá**. Below `lg` the rail collapses: the checklist
-   sits above the footer and the actions become a bar fixed to the bottom of
+   nháp**, **Xem trang**, **Xoá**. Below `lg` the rail sits above the body, as
+   the reading page's does, and the actions become a bar fixed to the bottom of
    the viewport with `pb-safe`. The bar is a sibling of the article, never
    inside `.animate-fade-in` (CLAUDE.md, fixed-inside-transform trap).
 7. Lưu writes with `expectedUpdatedAt`; a 409 says the page was saved elsewhere
@@ -163,8 +163,8 @@ Unchanged contracts, all behind `adminGate()`:
 The probe in `edit-link.tsx`: when `useAuth().isReady` and a user exists (or
 no auth is configured at all, which is the offline development case where
 `requireAdmin()` answers the local dev admin), fetch `/api/admin/session` with
-the bearer token. Cache the answer in module scope keyed by the address, so a
-session makes one request however many pages it reads. A 503 or a thrown fetch
+the bearer token. A signed-in administrator makes one request per page view;
+a reader with no session makes none (`probeSignedOut={false}`). A 503 or a thrown fetch
 is "no link", never an error on a reader's page. The probe logic is the one in
 `admin-ui/session.tsx`, exported as a hook rather than copied
 (`session.test.ts` pins "one probe per identity" and "unreachable is not a

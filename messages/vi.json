@@ -840,14 +840,8 @@
     "learnLink": "Kiến thức"
   },
   "labAdmin": {
-    "newArticle": "Bài mới",
-    "searchPlaceholder": "Tìm theo tiêu đề hoặc slug",
-    "listEmpty": "Chưa có bài nào.",
     "statusPublished": "Đã đăng",
     "statusDraft": "Bản nháp",
-    "blockCount": "{n, plural, other {# khối}}",
-    "pickTitle": "Chọn một bài, hoặc tạo bài mới",
-    "pickBody": "Mỗi bài là một chuỗi khối theo loại định sẵn — đoạn văn, cặp menu, bảng, khối so sánh. Không có ô soạn thảo tự do, và chính điều đó giúp mục lục bên phải, checklist và nhãn so sánh hoạt động đúng.",
     "saveDraft": "Lưu nháp",
     "saveChanges": "Lưu thay đổi",
     "saving": "Đang lưu…",

@@ -54,9 +54,10 @@ export type ArticleEditor = {
 
 /**
  * One article in the editor: reading it, saving it, publishing it, deleting
- * it, its pictures and its link picker. Lifted out of `article-admin.tsx` so
- * the page-shaped editor at /blog/<id>/edit and the list screen run the same
- * code. What lands on the draft is still `article-draft.ts`.
+ * it, its pictures and its link picker. Lifted out of the retired list
+ * screen, `article-admin.tsx`, so the page-shaped editor at /blog/<id>/edit
+ * could use the same code — and now the only caller, since that screen is
+ * gone. What lands on the draft is still `article-draft.ts`.
  */
 export function useArticleEditor(options: {
   /** After a save that stored a row: the list refreshes, the route moves to the id. */

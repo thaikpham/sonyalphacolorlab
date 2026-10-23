@@ -62,7 +62,7 @@ describe('the admin client inventory', () => {
   it('finds every admin screen, the recipe editor and its photographs included', () => {
     for (const p of [
       'src/components/admin/admin-editor.tsx',
-      'src/components/lab/admin/article-admin.tsx',
+      'src/components/lab/admin/use-article-editor.ts',
       'src/components/colorlab/admin/recipe-admin.tsx',
       'src/components/colorlab/admin/image-panel.tsx',
       SHELL,

@@ -7,10 +7,10 @@ import { describe, expect, it } from 'vitest'
  * What lands on the draft is executed in `article-draft.test.ts`; this file
  * pins that the hook actually goes through those functions, and the ordering
  * a static render cannot show. Source assertions because the suite has no
- * DOM — the same call `article-admin.test.ts` makes for the list screen.
- * Moved here from `article-admin.test.ts` when the editor's data layer moved
- * into this hook; `article-admin.test.ts` keeps only what is still true about
- * the list screen's own rendering.
+ * DOM — the same call `editor.test.ts` makes for the page-shaped editor.
+ * The list screen this hook once belonged to (`article-admin.tsx`) is gone
+ * (an article is edited on its own page now); the assertions that still held
+ * moved here with it.
  */
 
 const source = readFileSync('src/components/lab/admin/use-article-editor.ts', 'utf8')
@@ -88,5 +88,62 @@ describe('inserting', () => {
     expect(insert).toMatch(/const key = nextKey\(\)/)
     expect(insert).toMatch(/insertBlock\(d, type, at, key\)/)
     expect(insert).toMatch(/return key/)
+  })
+})
+
+describe('design', () => {
+  it('borrows no signal colour for an editor notice', () => {
+    /* Signals classify content and nothing else (CLAUDE.md). `community` tinted
+       "needs both images" and "needs a video id", which are neither. */
+    for (const file of [
+      'src/components/lab/admin/block-editor.tsx',
+      'src/components/lab/admin/meta-editor.tsx',
+      'src/components/lab/admin/use-article-editor.ts',
+      'src/components/lab/editor/article-editor.tsx',
+      'src/components/lab/editor/editable-block.tsx',
+      'src/components/lab/editor/editor-rail.tsx',
+      'src/components/lab/editor/block-preview.tsx',
+    ]) {
+      const src = readFileSync(file, 'utf8')
+      expect(src, file).not.toMatch(/(text|bg)-(community|proposal|ai)\b/)
+    }
+  })
+})
+
+describe('copy', () => {
+  const messages = {
+    en: JSON.parse(readFileSync('messages/en.json', 'utf8')).labAdmin,
+    vi: JSON.parse(readFileSync('messages/vi.json', 'utf8')).labAdmin,
+  }
+
+  it('names the panel a refused metadata entry came from, not only its links and sources', () => {
+    /* parseMeta also refuses an author name with an "@", a bad review date, a
+       section, an order and entries past its caps — and the message used to
+       send the editor checking links that were fine. */
+    for (const locale of ['en', 'vi'] as const) {
+      const m = messages[locale]
+      expect(m.savedWithDroppedMeta, locale).toContain(m.metaHeading)
+    }
+  })
+})
+
+describe('one list of archetypes and link kinds', () => {
+  it('offers exactly what the parser accepts, from the parser’s own list', async () => {
+    /* Declared three times, a new archetype could compile, be offered, and
+       answer every save 400 — or be accepted and never offered. */
+    const { ARCHETYPES, parseArchetype } = await import('@/lib/lab/parse')
+    const { REF_KINDS } = await import('@/lib/lab/meta')
+    for (const a of ARCHETYPES) expect(parseArchetype(a)).toBe(a)
+
+    const rail = readFileSync('src/components/lab/editor/editor-rail.tsx', 'utf8')
+    const meta = readFileSync('src/components/lab/admin/meta-editor.tsx', 'utf8')
+    expect(rail).not.toMatch(/const ARCHETYPES/)
+    expect(meta).not.toMatch(/const REF_KINDS/)
+    expect(rail).toMatch(/import \{[^}]*\bARCHETYPES\b[^}]*\} from '@\/lib\/lab\/parse'/)
+    expect(meta).toMatch(/import \{[^}]*\bREF_KINDS\b[^}]*\} from '@\/lib\/lab\/meta'/)
+
+    const labels = JSON.parse(readFileSync('messages/en.json', 'utf8')).labAdmin
+    expect(Object.keys(labels.archetypes).sort()).toEqual([...ARCHETYPES].sort())
+    expect(Object.keys(labels.relatedKinds).sort()).toEqual([...REF_KINDS].sort())
   })
 })

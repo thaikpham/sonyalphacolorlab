@@ -458,7 +458,7 @@ one that matters most: an unreadable factor list is 503, never "no factor".
 - **`npm run search:eval`** is the ranking's regression gate: label new queries
   from the documents, not from the ranker's output.
 - Pilot drafts (`pilot-drafts.ts`) are drafts. Nothing may publish them but an
-  editor in `/admin/blog`.
+  editor, from the page's own Sửa link (`/blog/<id>/edit`).
 
 ## Camera pages
 

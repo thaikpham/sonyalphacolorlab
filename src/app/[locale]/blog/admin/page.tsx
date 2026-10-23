@@ -1,9 +1,9 @@
 import { redirect } from 'next/navigation';
 
 /**
- * Moved to `/admin/blog`.
- *
- * The article editor joined the other two admin surfaces rather than living under the app it edits.
+ * Moved to `/blog`: an article is edited on its own page now, not in a
+ * separate admin screen, so there is nothing left at `/admin/blog` either —
+ * this redirects straight to the feed, in one hop.
  *
  * A page that redirects rather than an entry in `next.config.ts`: middleware
  * runs before config redirects, so a config rule here would race next-intl's
@@ -20,5 +20,5 @@ import { redirect } from 'next/navigation';
 export const dynamic = 'force-dynamic';
 
 export default function MovedPage() {
-  redirect('/admin/blog');
+  redirect('/blog');
 }

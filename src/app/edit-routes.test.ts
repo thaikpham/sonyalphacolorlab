@@ -58,3 +58,11 @@ describe('the public tree', () => {
     expect(layout).not.toMatch(/adminUi:|labAdmin:/)
   })
 })
+
+describe('/admin/blog', () => {
+  it('sends the editor to the feed, where the pages and the drafts are', () => {
+    const src = read('src/app/admin/blog/page.tsx')
+    expect(src).toMatch(/redirect\('\/blog'\)/)
+    expect(src).toMatch(/export const dynamic = 'force-dynamic'/)
+  })
+})

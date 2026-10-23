@@ -134,9 +134,12 @@ describe('the upload route', () => {
 });
 
 describe('the editor', () => {
-  const source = readFileSync('src/components/lab/admin/article-admin.tsx', 'utf8');
-  /* The data layer this screen renders — reading it, saving it, its uploads —
-     moved into this hook so the page-shaped editor can share it. */
+  /* The rail that carries the save/publish buttons, and the page that renders
+     each block — the JSX this used to read off the retired list screen,
+     `article-admin.tsx`, now lives here. */
+  const source = readFileSync('src/components/lab/editor/editor-rail.tsx', 'utf8');
+  const editorPage = readFileSync('src/components/lab/editor/article-editor.tsx', 'utf8');
+  /* The data layer both read — reading it, saving it, its uploads. */
   const hookSource = readFileSync('src/components/lab/admin/use-article-editor.ts', 'utf8');
 
   it('rebuilds the draft from the stored row the save answered with', () => {
@@ -166,7 +169,7 @@ describe('the editor', () => {
        the page down for readers and pulled its images out of the public
        bucket, under a toast that said only "Saved." */
     expect(source).not.toMatch(/save\('draft'\)/);
-    expect(source).toMatch(/onClick=\{\(\) => void save\(draft\.status\)\}/);
+    expect(source).toMatch(/onClick=\{\(\) => void editor\.save\(draft\.status\)\}/);
   });
 
   it('names the version it opened on every save', () => {
@@ -180,7 +183,7 @@ describe('the editor', () => {
 
   it('will not upload against an article that has no row yet', () => {
     expect(hookSource).toMatch(/if \(!articleId\)[\s\S]{0,200}saveBeforeUpload/);
-    expect(source).toMatch(/canUpload=\{articleId !== null\}/);
+    expect(editorPage).toMatch(/canUpload=\{draft\.id !== null\}/);
   });
 });
 

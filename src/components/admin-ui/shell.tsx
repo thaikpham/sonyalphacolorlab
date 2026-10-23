@@ -28,7 +28,7 @@ import { AdminGate } from './gate';
 const SECTIONS = [
   { href: '/admin/colorlab', key: 'sectionColorlab' as const },
   { href: '/admin/wiki', key: 'sectionWiki' as const },
-  { href: '/admin/blog', key: 'sectionBlog' as const },
+  { href: '/blog', key: 'sectionBlog' as const },
 ];
 
 /**

@@ -93,7 +93,8 @@ describe('the reference pages', () => {
     '%s passes the publish rules, and is still only a draft',
     (_id, draft) => {
       /* Publishable is not published: which pilots go live is the owner's
-         call in /admin/blog. The store-side draft status is pinned above. */
+         call in the page's editor (/blog/<id>/edit). The store-side draft
+         status is pinned above. */
       expect(validateForPublish(draft)).toEqual([])
     },
   )
