@@ -120,3 +120,27 @@ describe('e2e/wcag.spec.ts and targets.spec.ts', () => {
     expect(targets).toMatch(/report\('targets'/);
   });
 });
+
+describe('e2e/perf.spec.ts', () => {
+  const src = read('e2e/perf.spec.ts');
+  it('throttles like a phone, routes the photo hosts, and holds CLS, JS and LCP to budgets', () => {
+    expect(src).toMatch(/setCPUThrottlingRate', \{ rate: 4 \}/);
+    expect(src).toMatch(/routeAssetHosts\(page\)/);
+    expect(src).toMatch(/const CLS_MAX = 0\.05/);
+    expect(src).toMatch(/const LCP_MAX = 2500/);
+    expect(src).toMatch(/largest-contentful-paint/);
+  });
+  it('has no placeholder budget left once measured', () => {
+    /* 999 is the "measure me" value. The plan writes the measured numbers in
+       the same task that adds the spec. */
+    expect(src).not.toMatch(/, 999\]/);
+  });
+});
+
+describe('e2e/first-screen.spec.ts', () => {
+  const src = read('e2e/first-screen.spec.ts');
+  it('counts the parameter rows apart from the controls, and has measured budgets', () => {
+    expect(src).toMatch(/details\.param-row > summary/);
+    expect(src).not.toMatch(/BUDGET = \{ list: 99, detail: 99/);
+  });
+});
