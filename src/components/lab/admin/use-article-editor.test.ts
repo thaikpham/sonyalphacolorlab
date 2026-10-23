@@ -55,6 +55,10 @@ describe('opening', () => {
     expect(fn('loadArticle')).toMatch(/catch \{[\s\S]*codeMessage\('loadFailed'\)/)
     expect(fn('remove')).toMatch(/catch \{[\s\S]*codeMessage\('deleteFailed'\)/)
   })
+
+  it('never asks to discard changes itself — the caller does, before calling it', () => {
+    expect(fn('loadArticle')).not.toMatch(/window\.confirm/)
+  })
 })
 
 describe('what the editor reports', () => {
