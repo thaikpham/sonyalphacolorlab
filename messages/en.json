@@ -673,6 +673,7 @@
     "status": "Loading recipes…"
   },
   "lab": {
+    "edit": "Edit",
     "feedTitle": "Alpha Tech Blogs",
     "feedHeading": "Technical articles",
     "pathLabel": "Learning path",
