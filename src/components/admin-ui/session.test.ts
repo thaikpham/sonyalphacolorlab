@@ -118,6 +118,19 @@ describe(SESSION, () => {
        that renders its controls to nobody in particular. */
     expect(source).toMatch(/if \(!ctx\) throw new Error/);
   });
+
+  it('can leave a signed-out reader unprobed, and still probes offline', () => {
+    /* A public page mounts the probe for every reader. A request per page view
+       for somebody with no session would be a Function call that can only
+       answer "no". Offline there is no auth client and the dev admin is found
+       by probing, so the skip needs an auth client to exist. */
+    expect(source).toMatch(/probeSignedOut = true/);
+    expect(source).toMatch(/!probeSignedOut && !identity && authBrowser\(\) !== null/);
+    const skip = source.indexOf('if (skipProbe())');
+    const probe = source.indexOf("fetch('/api/admin/session'");
+    expect(skip, 'no skip before the probe').toBeGreaterThan(-1);
+    expect(skip).toBeLessThan(probe);
+  });
 });
 
 describe(SHELL, () => {
