@@ -71,8 +71,11 @@ describe('loading boundaries', () => {
 
   it('keeps the recipe-grid skeleton on the recipe grid', () => {
     /* It says "Loading recipes" and draws recipe cards. At the segment root it
-       was the skeleton for every page under `[locale]`. */
-    expect(existsSync('src/app/[locale]/colorlab/loading.tsx')).toBe(true);
+       was the skeleton for every page under `[locale]`; at `colorlab/` it
+       would sit above `/colorlab/[situation]`, which refuses an unknown id —
+       so the index lives in a route group of its own. */
+    expect(existsSync('src/app/[locale]/colorlab/(index)/loading.tsx')).toBe(true);
+    expect(existsSync('src/app/[locale]/colorlab/loading.tsx')).toBe(false);
     expect(existsSync('src/app/[locale]/loading.tsx')).toBe(false);
   });
 });

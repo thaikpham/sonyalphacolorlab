@@ -5,8 +5,42 @@
     "emptyAction": "Xoá bộ lọc",
     "emptyTail": "để xem cả {total} công thức.",
     "title": "Tất cả công thức",
-    "metaDescription": "Xem các công thức White Balance Shift cho Sony Alpha, lọc theo thẻ và áp dụng thiết lập vào máy ảnh của bạn.",
+    "metaDescription": "Xem các công thức White Balance Shift cho Sony Alpha theo tình huống chụp và áp dụng thiết lập vào máy ảnh của bạn.",
     "planeLabel": "Lưới White Balance Shift: {count, plural, other {# công thức}}, {shifted} công thức lệch khỏi trung tính"
+  },
+  "browse": {
+    "title": "Công thức màu",
+    "bySituation": "Theo tình huống",
+    "situation": "Tình huống",
+    "style": "Phong cách",
+    "tone": "Tông",
+    "clear": "Xoá bộ lọc",
+    "filtersLabel": "Bộ lọc",
+    "metaDescription": "Công thức màu {situation} cho Sony Alpha: White Balance Shift đi cùng Picture Profile hoặc Creative Look, áp dụng thẳng vào máy ảnh.",
+    "situations": {
+      "portrait": "Chân dung",
+      "daily": "Đời thường",
+      "street": "Đường phố",
+      "travel": "Du lịch",
+      "landscape": "Phong cảnh & thiên nhiên",
+      "lifestyle": "Lifestyle & cà phê",
+      "fashion": "Thời trang",
+      "heritage": "Áo dài & Tết",
+      "night": "Ban đêm",
+      "livestream": "Livestream"
+    },
+    "styles": {
+      "natural": "Hài hoà",
+      "range": "Dynamic range",
+      "vivid": "Tươi tắn",
+      "film": "Retro phim"
+    },
+    "tones": {
+      "warm": "Ấm",
+      "neutral": "Trung tính",
+      "cool": "Lạnh",
+      "mono": "Đen trắng"
+    }
   },
   "launcher": {
     "title": "Hệ sinh thái Sony Alpha",
@@ -186,7 +220,7 @@
   },
   "search": {
     "label": "Tìm công thức",
-    "placeholder": "Tìm theo tên hoặc thẻ…",
+    "placeholder": "Tìm theo tên hoặc tình huống…",
     "wikiPlaceholder": "Tìm sản phẩm, thông số…",
     "clear": "Xoá tìm kiếm",
     "clearAll": "Xoá tất cả bộ lọc",
@@ -207,10 +241,7 @@
       "article": "Bài viết",
       "knowledge": "Kiến thức"
     },
-    "partial": "Một số nguồn chưa tìm được lúc này.",
-    "filterFormat": "Kiểu",
-    "filterTags": "Thẻ",
-    "filterAll": "Tất cả"
+    "partial": "Một số nguồn chưa tìm được lúc này."
   },
   "cameras": {
     "actionLabel": "Chi tiết & so sánh",

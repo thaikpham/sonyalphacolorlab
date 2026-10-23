@@ -19,6 +19,7 @@ import { ARTICLE_LANG, LEVELS, TOPICS } from '@/lib/lab/articles'
 import { truncateOnWord } from '@/lib/lab/outline'
 import type { Article, Block } from '@/lib/lab/types'
 import { buildGlossary } from '@/lib/learn/glossary'
+import { taxonomyTerms, type RecipeTaxonomy } from '@/lib/recipes/taxonomy'
 import { squash } from './text'
 import type { SearchKind } from './types'
 
@@ -73,6 +74,10 @@ export type RecipeForSearch = {
   readonly tags: readonly string[]
   readonly images?: readonly string[]
   readonly accent?: Accent
+  /** The browse taxonomy, when the caller has it (a `RecipeView` always does). */
+  readonly situations?: RecipeTaxonomy['situations']
+  readonly style?: RecipeTaxonomy['style']
+  readonly tone?: RecipeTaxonomy['tone']
 }
 
 export function recipeDoc(r: RecipeForSearch, locale: Locale): SearchDoc {
@@ -80,6 +85,14 @@ export function recipeDoc(r: RecipeForSearch, locale: Locale): SearchDoc {
   const bare = r.name.includes(': ') ? r.name.split(': ').slice(1).join(': ') : r.name
   const look = r.format === 'cl' ? CREATIVE_LOOKS.find((l) => l.code === r.look) : undefined
   const formatLabel = r.format === 'pp' ? 'Picture Profile' : 'Creative Look'
+  /* Every synonym of the recipe's situations, style and tone, both languages:
+     "cafe", "chân dung", "phim", "đen trắng" land on it as tag hits. One
+     ranking for the header, the grid and `/search` — the browse row is not a
+     second engine, it is vocabulary the one engine already reads. */
+  const inherited =
+    r.situations && r.style && r.tone
+      ? taxonomyTerms({ situations: r.situations, style: r.style, tone: r.tone })
+      : []
 
   return {
     kind: 'recipe',
@@ -95,6 +108,7 @@ export function recipeDoc(r: RecipeForSearch, locale: Locale): SearchDoc {
     summary: r.description,
     tags: [
       ...r.tags.map((t) => t.replace(/-/g, ' ')),
+      ...inherited,
       formatLabel,
       r.format.toUpperCase(),
       ...(look ? [look.code, look.label] : []),

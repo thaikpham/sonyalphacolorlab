@@ -5,8 +5,42 @@
     "emptyAction": "Clear them",
     "emptyTail": "to see all {total}.",
     "title": "All recipes",
-    "metaDescription": "Browse White Balance Shift recipes for Sony Alpha, filter by tag, and dial the settings into your camera.",
+    "metaDescription": "Browse White Balance Shift recipes for Sony Alpha by shooting situation, and dial the settings into your camera.",
     "planeLabel": "White Balance Shift grid: {count, plural, one {# recipe} other {# recipes}}, {shifted} shifted away from neutral"
+  },
+  "browse": {
+    "title": "Colour recipes",
+    "bySituation": "By situation",
+    "situation": "Situation",
+    "style": "Style",
+    "tone": "Tone",
+    "clear": "Clear filters",
+    "filtersLabel": "Filters",
+    "metaDescription": "{situation} colour recipes for Sony Alpha: White Balance Shift paired with a Picture Profile or a Creative Look, ready to dial into the camera.",
+    "situations": {
+      "portrait": "Portrait",
+      "daily": "Everyday",
+      "street": "Street",
+      "travel": "Travel",
+      "landscape": "Landscape & nature",
+      "lifestyle": "Lifestyle & café",
+      "fashion": "Fashion",
+      "heritage": "Áo dài & Lunar New Year",
+      "night": "Night",
+      "livestream": "Livestream"
+    },
+    "styles": {
+      "natural": "Natural",
+      "range": "Dynamic range",
+      "vivid": "Vivid",
+      "film": "Film look"
+    },
+    "tones": {
+      "warm": "Warm",
+      "neutral": "Neutral",
+      "cool": "Cool",
+      "mono": "Black & white"
+    }
   },
   "launcher": {
     "title": "Sony Alpha ecosystem",
@@ -186,7 +220,7 @@
   },
   "search": {
     "label": "Search recipes",
-    "placeholder": "Search by name or tag…",
+    "placeholder": "Search by name or situation…",
     "wikiPlaceholder": "Search products, specs…",
     "clear": "Clear search",
     "clearAll": "Clear all filters",
@@ -207,10 +241,7 @@
       "article": "Article",
       "knowledge": "Reference"
     },
-    "partial": "Some sources could not be searched right now.",
-    "filterFormat": "Format",
-    "filterTags": "Tags",
-    "filterAll": "All"
+    "partial": "Some sources could not be searched right now."
   },
   "cameras": {
     "actionLabel": "Details & compare",

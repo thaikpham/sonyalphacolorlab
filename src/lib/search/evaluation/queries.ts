@@ -90,6 +90,41 @@ export const EVAL_QUERIES: readonly EvalQuery[] = [
   { q: 'night city lights', locale: 'en', type: 'mood', relevant: ['SCL-PP-011'] },
   { q: 'sepia look', locale: 'en', type: 'mood', relevant: ['SCL-CL-017', 'SCL-CL-018'] },
 
+  // --- a situation, a style or a tone, by its browse label -----------------
+  // Labelled from the taxonomy the documents carry (`data/recipe-taxonomy.json`
+  // plus `deriveTaxonomy`), not from the ranker: every recipe that browses
+  // under the word is relevant, and Recall@5 asks for any five of them.
+  {
+    q: 'chan dung',
+    locale: 'vi',
+    type: 'vi-plain',
+    relevant: ['SCL-PP-002', 'SCL-PP-005', 'SCL-PP-008', 'SCL-PP-012', 'SCL-PP-015', 'SCL-PP-016', 'SCL-PP-017', 'SCL-PP-027', 'SCL-PP-029', 'SCL-PP-030', 'SCL-PP-033', 'SCL-PP-034', 'SCL-PP-038', 'SCL-PP-039', 'SCL-PP-045', 'SCL-PP-046', 'SCL-CL-013', 'SCL-CL-014', 'SCL-CL-015', 'SCL-CL-016', 'SCL-CL-019'],
+  },
+  {
+    q: 'cafe',
+    locale: 'vi',
+    type: 'mood',
+    relevant: ['SCL-PP-001', 'SCL-PP-006', 'SCL-PP-012', 'SCL-PP-019', 'SCL-PP-020', 'SCL-PP-021', 'SCL-CL-001', 'SCL-CL-013', 'SCL-CL-014', 'SCL-CL-015', 'SCL-CL-016', 'SCL-CL-020', 'SCL-CL-021', 'SCL-CL-022', 'SCL-CL-023', 'SCL-CL-024', 'SCL-CL-030'],
+  },
+  {
+    q: 'phim',
+    locale: 'vi',
+    type: 'mood',
+    relevant: ['SCL-PP-001', 'SCL-PP-002', 'SCL-PP-003', 'SCL-PP-006', 'SCL-PP-007', 'SCL-PP-009', 'SCL-PP-010', 'SCL-PP-012', 'SCL-PP-015', 'SCL-PP-020', 'SCL-PP-024', 'SCL-PP-029', 'SCL-PP-031', 'SCL-PP-032', 'SCL-PP-033', 'SCL-PP-035', 'SCL-PP-036', 'SCL-PP-037', 'SCL-PP-039', 'SCL-PP-040', 'SCL-PP-041', 'SCL-PP-044', 'SCL-CL-001', 'SCL-CL-002', 'SCL-CL-017', 'SCL-CL-018', 'SCL-CL-020', 'SCL-CL-021', 'SCL-CL-022', 'SCL-CL-023', 'SCL-CL-024', 'SCL-CL-025', 'SCL-CL-026', 'SCL-CL-027', 'SCL-CL-028', 'SCL-CL-029', 'SCL-CL-030', 'SCL-CL-031', 'SCL-CL-032', 'SCL-CL-033', 'SCL-CL-034', 'SCL-CL-035', 'SCL-CL-036', 'SCL-CL-037'],
+  },
+  {
+    q: 'đen trắng',
+    locale: 'vi',
+    type: 'vi-accent',
+    relevant: ['SCL-PP-030', 'SCL-PP-031', 'SCL-PP-032', 'SCL-PP-033', 'SCL-PP-034', 'SCL-PP-035', 'SCL-PP-036', 'SCL-PP-037', 'SCL-PP-038', 'SCL-CL-017', 'SCL-CL-018'],
+  },
+  {
+    q: 'ban đêm',
+    locale: 'vi',
+    type: 'mood',
+    relevant: ['SCL-PP-003', 'SCL-PP-011', 'SCL-PP-029', 'SCL-PP-036', 'SCL-PP-037'],
+  },
+
   // --- nothing to find ---------------------------------------------------
   { q: 'xqzvbnmw', locale: 'vi', type: 'none', relevant: [] },
   { q: 'zzzz 12345', locale: 'en', type: 'none', relevant: [] },

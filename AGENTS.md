@@ -279,6 +279,41 @@ Do not write App Router code from memory. Read the relevant file first:
 | Route Handlers | `01-getting-started/15-route-handlers.md` |
 | `generateStaticParams` | `03-api-reference/04-functions/generate-static-params.md` |
 
+## Browse by situation
+
+The catalogue browses by **situation · style · tone**, not by format, Look or
+tag (D1–D4 of the 2026-10-23 handoff). The rules:
+
+- **Taxonomy ids live in `src/lib/recipes/taxonomy.ts`**, labels in
+  `messages/*.json` under `browse`, and the editor's assignments in the git
+  manifest `data/recipe-taxonomy.json`, keyed by recipe id. No content column
+  yet: a recipe the manifest does not name browses by what `deriveTaxonomy`
+  reads off its settings (Look → style and situations; white balance → tone).
+  `taxonomy.test.ts` fails a manifest that names an unknown id, more than
+  three situations, or a tone that contradicts the settings.
+- **Mono is read off the settings, never edited.** `tone = 'mono'` iff the
+  colour mode is Black & White or the Look is BW/SE. Warm/cool is an estimate
+  from the white balance (`toneFromWhiteBalance`), right for daylight recipes
+  only — Sài Gòn Café is warm under bulbs and reads cool here — so the manifest
+  may override it, and does.
+- **One address per result.** The situation is the path,
+  `/colorlab/[situation]`; `style`, `tone` and `q` are the query string;
+  `?situation=` is not read. An unknown situation is `notFound()`, which is why
+  the index page lives in the `(index)` route group: its `loading.tsx` must not
+  sit above the route that refuses (`next-boundaries.test.ts`).
+- **Filter in the page after one unfiltered `listRecipes(locale)`.** Nothing
+  new goes into the `catalogueCache` key. The browse row is a server component
+  of `<Link>`s with facet counts; only the header's search box is client code,
+  and it builds its URL with `colorlabSearch()` so a typed query keeps the
+  chosen style and tone and the current pathname.
+- **Tags stay in the data for search and are not shown (D9).** `?format=`,
+  `?look=` and `?tag=` are still honoured by `matchesLegacyFilters` for one
+  release, then dropped.
+- **Search inherits the taxonomy.** `taxonomyTerms()` feeds both `matchesQuery`
+  and `recipeDoc`, so "cafe", "chân dung", "phim" and "đen trắng" are tag hits
+  in one engine; new eval queries are labelled from the manifest, never from
+  the ranker's output.
+
 ## Design
 
 Browse page runs full-bleed (`max-w-[160rem]`) at 1 / 2 / 3 / 4 / 5 / 6 columns.

@@ -6,7 +6,8 @@ import { SiteHeader } from '@/components/site-header';
  * content arrives. Marked aria-hidden and announced via role=status instead —
  * a screen reader gains nothing from twelve empty boxes.
  *
- * IT LIVES HERE, not at `[locale]/`, and the move fixed two things at once.
+ * IT LIVES HERE, in the `(index)` route group, and the placement fixed two
+ * things at once.
  *
  * It says "Loading recipes" and draws a grid of recipe cards, but at the
  * segment root it was the skeleton for EVERY page under `[locale]` — a reader
@@ -22,9 +23,10 @@ import { SiteHeader } from '@/components/site-header';
  * 404s from one file in the wrong place.
  *
  * So: a loading boundary belongs above a route that CANNOT 404. This one is the
- * catalogue — it always has a grid to show, even an empty one. The detail
- * routes have no boundary above them now and answer a real 404, which costs
- * them a skeleton they were never drawn for.
+ * catalogue index — it always has a grid to show, even an empty one. Its
+ * sibling `/colorlab/[situation]` refuses an unknown id, which is why the index
+ * sits in a route group of its own: at `colorlab/` this file would have been
+ * above that route too, and the first soft 404 back.
  */
 export default async function Loading() {
   const t = await getTranslations('loading');
@@ -46,19 +48,25 @@ export default async function Loading() {
         <p role="status" className="sr-only">
           {t('status')}
         </p>
+        {/* Three filter rows at a chip's height. */}
+        <div aria-hidden className="flex flex-col gap-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="h-11 w-full max-w-3xl rounded-sm bg-glass" />
+          ))}
+        </div>
         {/* `.surface` rather than a hand-rolled radius: it is the class the real
             recipe card uses, so the skeleton lands at the same 26px corner and
             elevation and nothing shifts when content arrives. The 210px photo
-            and the body's padding and gaps are `RecipeCard`'s. */}
+            and the body's padding and gaps are `RecipeCard`'s: a label, a
+            title and one meta line. */}
         <ul aria-hidden className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 3xl:grid-cols-5 4xl:grid-cols-6">
           {Array.from({ length: 6 }).map((_, i) => (
             <li key={i} className="surface overflow-hidden">
               <div className="h-[210px] w-full bg-glass" />
-              <div className="flex flex-col gap-[11px] px-5 pt-[19px] pb-[22px]">
+              <div className="flex flex-col gap-2 px-5 pt-[19px] pb-[22px]">
                 <div className="h-4 w-24 rounded-sm bg-glass" />
                 <div className="h-6 w-3/4 rounded-sm bg-glass" />
-                <div className="h-7 w-1/2 rounded-sm bg-glass" />
-                <div className="h-10 w-full rounded-sm bg-glass" />
+                <div className="h-4 w-1/2 rounded-sm bg-glass" />
               </div>
             </li>
           ))}
