@@ -66,6 +66,7 @@ export type StoredArticle = Article & { status: ArticleStatus; updatedAt: string
 
 let counter = 0
 const next = () => (counter += 1)
+export const nextKey = next
 
 const keyed = (block: Block, key = next()): DraftBlock => ({ key, block })
 
@@ -119,6 +120,14 @@ export const edited = (d: Draft, patch: Partial<DraftFields>): Draft => ({
 
 export const addBlock = (d: Draft, type: Block['t']): Draft =>
   edited(d, { blocks: [...d.blocks, keyed(emptyBlock(type))] })
+
+/** A new block at `at`, under a key the caller chose so it can open it. */
+export function insertBlock(d: Draft, type: Block['t'], at: number, key: number): Draft {
+  const i = Math.max(0, Math.min(at, d.blocks.length))
+  const blocks = [...d.blocks]
+  blocks.splice(i, 0, keyed(emptyBlock(type), key))
+  return edited(d, { blocks })
+}
 
 /** Which image fields each block type has. */
 const ASSET_FIELDS: Partial<Record<Block['t'], readonly AssetField[]>> = {

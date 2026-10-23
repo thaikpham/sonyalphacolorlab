@@ -35,7 +35,7 @@ describe('upload limits', () => {
        editor reported "upload failed" for a file that was simply too large. */
     for (const editor of [
       'src/components/colorlab/admin/image-panel.tsx',
-      'src/components/lab/admin/article-admin.tsx',
+      'src/components/lab/admin/use-article-editor.ts',
     ]) {
       const source = readFileSync(editor, 'utf8');
       expect(source, editor).toMatch(/file\.size > MAX_UPLOAD_BYTES[\s\S]{0,120}tooLarge/);
