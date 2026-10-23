@@ -491,7 +491,7 @@ function CameraWikiViewInner({ initialCameras, basePath = '/cameras' }: CameraWi
                 the remainder can still overflow, and there the cap gives the
                 gesture something real to scroll and the head something to pin
                 against. */}
-            <div className="overflow-x-auto overscroll-x-contain max-h-[75dvh] 2xl:max-h-none">
+            <div className="scroll-table max-h-[75dvh] 2xl:max-h-none">
               <table className="w-full text-left text-body-sm text-ink">
                 <thead className="label select-none sticky top-0 z-10">
                   <tr>

@@ -152,6 +152,17 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
+/* A table wider than its column: it scrolls sideways and a sideways swipe
+   stops at its edge instead of becoming browser back-navigation. Contains x
+   only — `.scroll-area` would also contain y and stop the table handing the
+   page scroll back at its last row (camera-compare-view.tsx explains the
+   gesture latch). The layout gate (e2e/layout.spec.ts) lets exactly this,
+   `.scroll-silent`, `.filter-scroll` and `.scroll-area` scroll sideways. */
+.scroll-table {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
 /* ---------------------------------------------------------------------------
    Type
 

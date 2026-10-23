@@ -75,3 +75,23 @@ describe('the fixture', () => {
     expect(readFileSync('e2e/fixtures/photo.webp').length).toBeLessThan(20_000);
   });
 });
+
+describe('.scroll-table', () => {
+  it('is the named exception for a table wider than its column, and the two tables use it', () => {
+    expect(read('src/app/globals.css')).toMatch(/\.scroll-table \{\s*overflow-x: auto;\s*overscroll-behavior-x: contain;/);
+    expect(read('DESIGN.md')).toMatch(/`\.scroll-table`/);
+    for (const f of ['src/components/camera-compare-view.tsx', 'src/components/camera-wiki-view.tsx']) {
+      const src = read(f);
+      expect(src, f).toMatch(/className="scroll-table max-h-\[75dvh\]/);
+      expect(src, f).not.toMatch(/overflow-x-auto overscroll-x-contain/);
+    }
+  });
+});
+
+describe('e2e/layout.spec.ts', () => {
+  const src = read('e2e/layout.spec.ts');
+  it('exempts only the sanctioned containers from the box rule, and nothing from the page rule', () => {
+    expect(src).toMatch(/closest\(EXEMPT_SCROLL\)/);
+    expect(src).toMatch(/doc\.scrollWidth > W \+ 1/);
+  });
+});

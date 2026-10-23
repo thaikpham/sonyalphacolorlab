@@ -107,7 +107,11 @@ export function watch(page: Page): () => string[] {
  * runner's network must not decide a layout shift or an LCP, so every request
  * to them answers with one local picture.
  */
-const PHOTO = readFileSync(join(import.meta.dirname, 'fixtures', 'photo.webp'));
+// Not `import.meta.dirname`: Playwright's test loader requires this module as
+// CJS, where `import.meta` throws a hard SyntaxError before any test runs.
+// Every spec and script already assumes cwd is the repo root (e.g.
+// ci.test.ts's `existsSync('e2e/fixtures/photo.webp')`), so this does too.
+const PHOTO = readFileSync(join(process.cwd(), 'e2e', 'fixtures', 'photo.webp'));
 export async function routeAssetHosts(page: Page) {
   await page.route(/https:\/\/(static\.bhphoto\.com|sony\.scene7\.com|www\.sony\.com\.vn)\//, (route) =>
     route.fulfill({ status: 200, contentType: 'image/webp', body: PHOTO }),

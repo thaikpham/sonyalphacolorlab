@@ -119,6 +119,9 @@ Hidden at rest, hinted on hover, never part of layout.
 - `.scroll-area` for a scrolling region inside a panel — it sets
   `overscroll-behavior: contain` so an inner scroll never chains out to the
   page.
+- `.scroll-table` for a table wider than its column (compare, wiki specs): x
+  scroll with x containment only. These three classes and `.filter-scroll` are
+  the only boxes the layout gate (`e2e/layout.spec.ts`) lets scroll sideways.
 - Never hide overflow by clipping content, and never remove keyboard scroll.
   The indicator is what's hidden, not the scrolling.
 
