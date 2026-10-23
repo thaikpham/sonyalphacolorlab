@@ -1,4 +1,5 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { dirname, normalize } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
@@ -113,33 +114,186 @@ function sentNamespaces(): string[] {
   return [...new Set(providerFiles().flatMap((p) => [...p.sends]))].sort();
 }
 
-/**
- * Every client component a file mounts directly, resolved through its own
- * imports, with the namespaces each of them reads.
+/*
+ * The per-route walk. What follows resolves, for one provider, every
+ * `useTranslations` call its subtree can reach — through as many files as it
+ * takes. The previous version looked one import level deep and asked only
+ * whether the imported FILE was a client component, so `EditGate` was the
+ * whole of what it saw on an edit route: `AdminGate`, `ArticleEditor`, the
+ * rail, the block editor and the preview behind it were never examined.
  *
- * This is what makes the check per-route rather than a union. A union answers
- * "does SOMEBODY send `admin`" — so dropping it from one of the five admin
- * routes left the suite green while that route rendered raw keys. Asking
- * instead "does THIS provider send what the components on THIS page read"
- * fails the moment one route falls behind its siblings.
+ * It walks DECLARATIONS, not files. A file is the wrong unit in both
+ * directions. Too coarse: `gate.tsx` imports `useAuth` from `auth-context.tsx`,
+ * whose `AuthProvider` reads `auth` — but `AuthProvider` is mounted by the
+ * layout, outside the route's provider, so a file-level walk would demand
+ * `auth` from every edit route for a string none of them renders. Too fine
+ * would be an AST; a top-level declaration and the text up to the next one is
+ * enough, because an identifier in that text that names another declaration
+ * (rendered as JSX, called as a hook, read as a constant) is a reference, and
+ * references are what a React tree is made of.
  */
-function mountedClientNamespaces(file: string, src: string): Array<[string, string]> {
-  const out: Array<[string, string]> = [];
-  for (const imp of src.matchAll(/import\s*\{([^}]+)\}\s*from\s*'(@\/[^']+|\.[^']+)'/g)) {
-    const names = imp[1].split(',').map((n) => n.trim().split(/\s+as\s+/)[0].trim());
-    const spec = imp[2];
-    const base = spec.startsWith('@/')
-      ? `src/${spec.slice(2)}`
-      : `${file.split('/').slice(0, -1).join('/')}/${spec}`;
-    const candidate = [`${base}.tsx`, `${base}.ts`, `${base}/index.tsx`].find((p) => existsSync(p));
-    if (!candidate) continue;
-    const dep = readFileSync(candidate, 'utf8');
-    if (!dep.includes("'use client'")) continue;
-    // Only count it if the file actually renders the component.
-    if (!names.some((n) => new RegExp(`<${n}[\\s/>]`).test(src))) continue;
-    for (const m of dep.matchAll(/useTranslations\('([^']+)'\)/g)) out.push([candidate, m[1]]);
+
+/** The source with comments removed, so prose never reads as a reference. */
+const strip = (s: string) =>
+  s
+    .replace(/\{\/\*[\s\S]*?\*\/\}/g, '')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/(^|[^:])\/\/.*$/gm, '$1');
+
+const isClient = (file: string) => readFileSync(file, 'utf8').includes("'use client'");
+
+/** A specifier as a file in this repo, or null for a package. */
+function resolveImport(spec: string, from: string): string | null {
+  if (!spec.startsWith('@/') && !spec.startsWith('.')) return null;
+  const base = spec.startsWith('@/') ? `src/${spec.slice(2)}` : `${dirname(from)}/${spec}`;
+  const norm = normalize(base);
+  return [`${norm}.tsx`, `${norm}.ts`, `${norm}/index.tsx`, `${norm}/index.ts`].find((p) => existsSync(p)) ?? null;
+}
+
+/**
+ * What a file imports, by the local name each binding gets. Type-only imports
+ * bind nothing at runtime and are left out; a package resolves to `null`.
+ */
+function imports(file: string): Map<string, { file: string | null; name: string }> {
+  const out = new Map<string, { file: string | null; name: string }>();
+  const src = strip(readFileSync(file, 'utf8'));
+  for (const m of src.matchAll(/import\s+(type\s+)?([\w$]+)?\s*,?\s*(?:\{([^}]*)\})?\s*from\s*'([^']+)'/g)) {
+    if (m[1]) continue;
+    const resolved = resolveImport(m[4], file);
+    if (m[2]) out.set(m[2], { file: resolved, name: 'default' });
+    for (const spec of (m[3] ?? '').split(',')) {
+      const s = spec.trim();
+      if (!s || s.startsWith('type ')) continue;
+      const [name, alias] = s.split(/\s+as\s+/);
+      out.set(alias ?? name, { file: resolved, name });
+    }
   }
   return out;
+}
+
+type Region = { file: string; names: string[]; body: string };
+
+/**
+ * A file's top-level declarations, each with its text up to the next one. A
+ * declaration binds one name, or several for a destructuring —
+ * `export const { Link, redirect, … } = createNavigation(routing)` — and
+ * `default` as well when it is the default export.
+ */
+const regionCache = new Map<string, Region[]>();
+function regions(file: string): Region[] {
+  const cached = regionCache.get(file);
+  if (cached) return cached;
+  const lines = strip(readFileSync(file, 'utf8')).split('\n');
+  const HEAD = /^(?:export\s+)?(?:default\s+)?(?:async\s+)?(?:function\*?|class|const|let|var|enum)\s+(?:([\w$]+)|\{([^}]*)\})/;
+  const starts = lines.flatMap((l, i) => (HEAD.test(l) ? [i] : []));
+  const out = starts.map((start, i): Region => {
+    const body = lines.slice(start, starts[i + 1] ?? lines.length).join('\n');
+    const m = lines[start].match(HEAD)!;
+    const names = m[1]
+      ? [m[1]]
+      : m[2].split(',').map((s) => s.trim().split(/\s*:\s*/).pop()!.split(/\s*=\s*/)[0]).filter(Boolean);
+    if (/^export\s+default\b/.test(lines[start])) names.push('default');
+    return { file, names, body };
+  });
+  regionCache.set(file, out);
+  return out;
+}
+
+/**
+ * The declaration a file exports under `name`, following `export … from`
+ * re-exports. A type exports nothing to walk. A name this cannot place is
+ * answered with the whole file, so an unmodelled export shape errs towards
+ * reading too much rather than too little.
+ */
+function declaration(file: string, name: string): Region | null {
+  const own = regions(file).find((r) => r.names.includes(name));
+  if (own) return own;
+  const src = strip(readFileSync(file, 'utf8'));
+  if (new RegExp(`^(?:export\\s+)?(?:type|interface)\\s+${name}\\b`, 'm').test(src)) return null;
+  for (const m of src.matchAll(/export\s*\{([^}]*)\}\s*from\s*'([^']+)'/g)) {
+    for (const spec of m[1].split(',')) {
+      const [orig, alias] = spec.trim().split(/\s+as\s+/);
+      if ((alias ?? orig) !== name) continue;
+      const target = resolveImport(m[2], file);
+      return target ? declaration(target, orig) : null;
+    }
+  }
+  for (const m of src.matchAll(/export\s*\*\s*from\s*'([^']+)'/g)) {
+    const target = resolveImport(m[1], file);
+    const found = target && declaration(target, name);
+    if (found) return found;
+  }
+  return { file, names: [name], body: src };
+}
+
+/**
+ * Every `useTranslations` call reachable from the JSX inside one provider, as
+ * `[file, namespace]`.
+ *
+ * Breadth-first over references: each identifier in a region that names a
+ * declaration in the same file, or an import from another file in this repo,
+ * is walked in turn; a package is not entered. A namespace counts once the
+ * walk has passed a `'use client'` file — a server component inside the
+ * provider reads the request's messages, not the provider's, but everything
+ * below the first client boundary reads the provider's and nothing else.
+ */
+function reachableNamespaces(file: string, subtree: string): Array<[string, string]> {
+  const found = new Map<string, [string, string]>();
+  const seen = new Set<string>();
+  const queue: Array<{ file: string; body: string; client: boolean }> = [
+    { file, body: strip(subtree), client: isClient(file) },
+  ];
+  const visit = (r: Region, client: boolean) => {
+    const key = `${r.file}#${r.names[0]}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    queue.push({ file: r.file, body: r.body, client: client || isClient(r.file) });
+  };
+  while (queue.length) {
+    const { file, body, client } = queue.shift()!;
+    if (client) {
+      for (const m of body.matchAll(/useTranslations\('([^']+)'\)/g)) found.set(`${file}#${m[1]}`, [file, m[1]]);
+    }
+    const local = regions(file);
+    const imported = imports(file);
+    for (const id of identifiers(body)) {
+      const own = local.find((r) => r.names.includes(id));
+      if (own) {
+        visit(own, client);
+        continue;
+      }
+      const from = imported.get(id);
+      if (!from?.file) continue;
+      const target = declaration(from.file, from.name);
+      if (target) visit(target, client);
+    }
+  }
+  return [...found.values()].sort();
+}
+
+/**
+ * The identifiers in a body, read past its string literals. A word inside
+ * quotes is a message, not a reference — `useAuth` says "must be used within
+ * AuthProvider" in its error, and that is not a render of `AuthProvider`. A
+ * template literal is text too, except for the expressions inside `${…}`.
+ */
+function identifiers(body: string): Set<string> {
+  const out = new Set<string>();
+  for (const [tok] of body.matchAll(/'(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*"|`(?:[^`\\]|\\.)*`|[A-Za-z_$][\w$]*/g)) {
+    if (tok[0] === '`') {
+      for (const e of tok.matchAll(/\$\{([^}]*)\}/g)) for (const id of identifiers(e[1])) out.add(id);
+    } else if (tok[0] !== "'" && tok[0] !== '"') {
+      out.add(tok);
+    }
+  }
+  return out;
+}
+
+/** The JSX between a file's `<NextIntlClientProvider …>` and `</NextIntlClientProvider>`. */
+function providerSubtree(src: string): string {
+  return [...src.matchAll(/<NextIntlClientProvider\b[^>]*>([\s\S]*?)<\/NextIntlClientProvider>/g)]
+    .map((m) => m[1])
+    .join('\n');
 }
 
 /** Flattens to dotted paths so a nested key missing on one side is visible. */
@@ -173,32 +327,42 @@ describe('client message scoping', () => {
   });
 
   /**
-   * The per-route check. A route that mounts its own provider is opting out of
-   * the layout's set, so it has to carry everything its own subtree reads —
-   * `src/app/[locale]/layout.tsx` is above these and its namespaces are added
-   * to whatever the route sends.
+   * The per-route check, and what makes the guard per-route rather than a
+   * union. A union answers "does SOMEBODY send `admin`" — so dropping it from
+   * one of the five admin routes left the suite green while that route
+   * rendered raw keys. This asks "does THIS provider send what the tree inside
+   * it reads", transitively, so a namespace read five components down an edit
+   * route is the route's to send.
+   *
+   * The provider's OWN list, and nothing from the layout above it. A nested
+   * `NextIntlClientProvider` does not add to its parent's messages, it
+   * replaces them (use-intl `IntlProvider`: `messages === undefined ?
+   * prevContext?.messages : messages`), so a route that sends `labAdmin` and
+   * relies on the layout for `auth` renders `auth` as raw keys. The previous
+   * version of this test added the layout's namespaces to every route's and
+   * so could not see that.
+   *
+   * `{children}` is a prop, not a reference, so a layout's pages are not
+   * walked here; what they read is covered by the union check above.
    */
-  it('every route with its own provider sends what its components read', () => {
-    const fromLayout = new Set(
-      [...layout.matchAll(PROVIDER_BLOCK)].flatMap((b) =>
-        [...b[1].matchAll(/^\s*(\w+):/gm)].map((m) => m[1]),
-      ),
-    );
-
+  it('every route with its own provider sends what the subtree inside it reads', () => {
     const routes = sourceFiles('src/app').filter(([, src]) => src.includes('const clientMessages'));
     expect(routes.length).toBeGreaterThan(0);
 
     for (const [file, src] of routes) {
-      const sends = new Set([
-        ...fromLayout,
-        ...[...src.matchAll(PROVIDER_BLOCK)].flatMap((b) =>
+      const sends = new Set(
+        [...src.matchAll(PROVIDER_BLOCK)].flatMap((b) =>
           [...b[1].matchAll(/^\s*(\w+):/gm)].map((m) => m[1]),
         ),
-      ]);
-      for (const [dep, ns] of mountedClientNamespaces(file, src)) {
+      );
+      const subtree = providerSubtree(src);
+      expect(subtree, `${file} declares clientMessages but renders no <NextIntlClientProvider>`).not.toBe('');
+      const reads = reachableNamespaces(file, subtree);
+      expect(reads.length, `${file}: nothing inside its provider reads a namespace`).toBeGreaterThan(0);
+      for (const [dep, ns] of reads) {
         expect(
           sends.has(root(ns)),
-          `${file} mounts ${dep}, which reads "${ns}", but that route's provider does not send "${root(ns)}"`,
+          `${file} renders ${dep} inside its provider, which reads "${ns}", but its clientMessages does not send "${root(ns)}" — a nested provider replaces the layout's messages, so that renders as raw keys`,
         ).toBe(true);
       }
     }
