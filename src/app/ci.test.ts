@@ -172,3 +172,17 @@ describe('the visual check', () => {
     expect(job).not.toMatch(/pull-requests: write/);
   });
 });
+
+describe('.github/workflows/ci.yml', () => {
+  const wf = read('.github/workflows/ci.yml');
+  it('runs the browser gates as their own job and builds once in verify', () => {
+    expect(wf).toMatch(/^\s{2}screens:/m);
+    expect(wf).toMatch(/npx playwright install --with-deps chromium/);
+    expect(wf).toMatch(/npm run test:screens/);
+    expect(wf).toMatch(/path: \.next\/cache/);
+    expect(wf).toMatch(/actions\/upload-artifact/);
+    /* `verify` already builds; the second build cost two minutes a run and
+       proved nothing new. */
+    expect(wf.match(/run: npm run build/g) ?? []).toHaveLength(0);
+  });
+});
