@@ -33,7 +33,9 @@ describe('accent invariants', () => {
     // Unambiguous, unlike the warm/cool question: a monochrome recipe showing
     // a hue is plainly wrong on a card, whatever the weights are.
     const bw = recipes.filter((r) => r.format === 'pp' && r.settings.colorMode === 'Black & White');
-    expect(bw.length).toBe(9);
+    /* Counted, not pinned: the library changes, and a pinned nine once meant
+       "the nine withdrawn ones". The invariant is the chroma. */
+    expect(bw.length).toBeGreaterThan(0);
     for (const r of bw) expect(accentFor(r).c, `${r.id} should have no chroma`).toBe(0);
   });
 
@@ -62,9 +64,9 @@ describe('accent invariants', () => {
       if (!found) throw new Error(`recipe not in catalogue: ${title}`);
       return accentFor(found);
     };
-    // Same A7 amber shift, similar Kelvin; Jade pushes G to +7 and must not
-    // land on the same hue as a recipe with flat Color Depth.
-    const gap = Math.abs(at('Kyoto Jade').h - at('Amber Glow').h);
+    // Same A7 amber shift, 3700K beside 3600K; Jade pushes G to +7 and must
+    // not land on the same hue as a recipe whose Color Depth leans elsewhere.
+    const gap = Math.abs(at('Kyoto Jade').h - at('Vintage Slide').h);
     expect(Math.min(gap, 360 - gap)).toBeGreaterThan(30);
   });
 

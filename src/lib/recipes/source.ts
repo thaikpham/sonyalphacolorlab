@@ -233,7 +233,7 @@ const pickDescription = (
  * Recipes with a photograph first, everything else after in its existing order.
  *
  * The grid falls back to a derived colour field when a recipe has no photo, and
- * most of the catalogue has none — 11 of the 46 Picture Profile recipes, and
+ * most of the catalogue has none — ten of the Picture Profile recipes, and
  * none of the Creative Look ones until their images are migrated to Storage.
  * Ordered by id, that put a long run of colour fields at the top and the page
  * read as though the images were broken.

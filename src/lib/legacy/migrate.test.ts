@@ -5,16 +5,22 @@ import { LEGACY_CORRECTIONS, migrateAll, migrateRecipe, toRecipeId, toSlug } fro
 const { ok, failed } = migrateAll(legacyRecipes as Record<string, unknown>[]);
 
 describe('legacy migration', () => {
-  it('carries over every recipe from the original dataset', () => {
-    expect(legacyRecipes).toHaveLength(46);
+  /* Ten of the original 46 remain: the five originals and the five
+     photographed recipes the owner chose to keep (D11). The other 36 were
+     withdrawn on 2026-10-23 as matching a licensed third-party collection and
+     live on only as redirect ids (`RETIRED_LEGACY_IDS`). */
+  const KEPT = 10;
+
+  it('carries over every recipe still in the original dataset', () => {
+    expect(legacyRecipes).toHaveLength(KEPT);
     // Surface the actual reason on failure instead of a bare count mismatch.
     expect(failed.map((f) => `${f.legacyId}: ${f.error}`)).toEqual([]);
-    expect(ok).toHaveLength(46);
+    expect(ok).toHaveLength(KEPT);
   });
 
   it('produces unique ids and slugs', () => {
-    expect(new Set(ok.map((r) => r.recipe.id)).size).toBe(46);
-    expect(new Set(ok.map((r) => r.recipe.slug)).size).toBe(46);
+    expect(new Set(ok.map((r) => r.recipe.id)).size).toBe(KEPT);
+    expect(new Set(ok.map((r) => r.recipe.slug)).size).toBe(KEPT);
   });
 
   it('maps ids into the SCL-PP-NNN scheme', () => {
