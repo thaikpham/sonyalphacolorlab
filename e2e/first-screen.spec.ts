@@ -11,7 +11,12 @@ import { SCREENS, ready, resolve, routeAssetHosts } from './setup.ts';
  *
  * A recipe page is a reading layout of `<details>` parameter rows (AGENTS.md
  * Rule 4), each with a `<summary>`. Those are the content, not the frame, so
- * they are counted apart and reported as their own number.
+ * they are counted apart, logged, and held to no ceiling: a phone layout that
+ * brings the settings up the page is the point, not a regression.
+ *
+ * "In sight" means on the screen: an element's box is clipped by the viewport
+ * and by every scrolling or clipping ancestor, so a chip scrolled off the side
+ * of a `.filter-scroll` rail does not count.
  */
 
 test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
@@ -20,9 +25,17 @@ test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true
 async function inSight(page: Page) {
   return page.evaluate(() => {
     const seen = (el: Element) => {
-      const r = el.getBoundingClientRect();
       const cs = getComputedStyle(el);
-      return r.width > 1 && r.height > 1 && r.top < innerHeight && r.bottom > 0 && cs.visibility !== 'hidden' && cs.display !== 'none' && !el.closest('[aria-hidden="true"]');
+      if (cs.visibility === 'hidden' || cs.display === 'none' || el.closest('[aria-hidden="true"]')) return false;
+      const r = el.getBoundingClientRect();
+      let [left, top, right, bottom] = [Math.max(r.left, 0), Math.max(r.top, 0), Math.min(r.right, innerWidth), Math.min(r.bottom, innerHeight)];
+      for (let a = el.parentElement; a && a !== document.documentElement; a = a.parentElement) {
+        const s = getComputedStyle(a);
+        if (s.overflowX === 'visible' && s.overflowY === 'visible') continue;
+        const c = a.getBoundingClientRect();
+        [left, top, right, bottom] = [Math.max(left, c.left), Math.max(top, c.top), Math.min(right, c.right), Math.min(bottom, c.bottom)];
+      }
+      return right - left > 1 && bottom - top > 1;
     };
     const all = [...document.querySelectorAll('a[href],button,[role=button],input,select,summary')].filter(seen);
     const rows = all.filter((el) => el.matches('details.param-row > summary'));
@@ -32,8 +45,8 @@ async function inSight(page: Page) {
   });
 }
 
-/** Measured 2026-10-23 on the seed build: the counts the run printed. */
-const BUDGET = { list: 24, detail: 28, detailRows: 0 };
+/** Measured 2026-10-23 on the seed build, counting only what is on screen: the counts the run printed. */
+const BUDGET = { list: 6, detail: 13 };
 
 test('the first screens ask little: the list and a recipe page stay within their budgets', async ({ page }) => {
   await routeAssetHosts(page);
@@ -50,7 +63,6 @@ test('the first screens ask little: the list and a recipe page stay within their
   const d = await inSight(page);
   console.log(`detail ${d.controls} controls + ${d.rows} parameter rows: ${d.names.join(' | ')}`);
   expect(d.controls, d.names.join(' | ')).toBeLessThanOrEqual(BUDGET.detail);
-  expect(d.rows).toBeLessThanOrEqual(BUDGET.detailRows);
   const screens = await page.evaluate(() => document.documentElement.scrollHeight / innerHeight);
   console.log(`detail height: ${screens.toFixed(1)} screens`);
   // Measured 2026-10-23 (7.08 screens); AGENTS.md calls this a reading layout, so the cap is the measurement, only down.

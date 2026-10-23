@@ -133,7 +133,7 @@ describe('e2e/perf.spec.ts', () => {
   it('has no placeholder budget left once measured', () => {
     /* 999 is the "measure me" value. The plan writes the measured numbers in
        the same task that adds the spec. */
-    expect(src).not.toMatch(/, 999\]/);
+    expect(src).not.toMatch(/\b999\b/);
   });
 });
 
@@ -141,6 +141,12 @@ describe('e2e/first-screen.spec.ts', () => {
   const src = read('e2e/first-screen.spec.ts');
   it('counts the parameter rows apart from the controls, and has measured budgets', () => {
     expect(src).toMatch(/details\.param-row > summary/);
-    expect(src).not.toMatch(/BUDGET = \{ list: 99, detail: 99/);
+    /* 99 is the "measure me" value. */
+    const budget = /const BUDGET = \{[^}]*\}/.exec(src)?.[0];
+    expect(budget).toBeDefined();
+    expect(budget).not.toMatch(/: 99\b/);
+  });
+  it('holds no ceiling on parameter rows in sight: they are content', () => {
+    expect(src).not.toMatch(/detailRows/);
   });
 });
