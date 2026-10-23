@@ -40,9 +40,18 @@ export const SCREENS = {
 /** Containers DESIGN.md §Scrollbars lets scroll sideways. Nothing else may. */
 export const EXEMPT_SCROLL = '.scroll-silent, .filter-scroll, .scroll-area, .scroll-table';
 
-/** The first sitemap entry under each prefix, read once per run. */
+/**
+ * The sitemap prefix to search and strip for each placeholder. Recipes,
+ * cameras and audio are listed bilingually (a bare-path and a `/vi/` entry
+ * per instance), so the bare prefix finds one. An article or knowledge page
+ * is authored Vietnamese-bodied on both locales (ADR 0004) and indexed ONLY
+ * at its Vietnamese canonical URL — the English route renders the same
+ * article under English chrome, not a translation of it — so those two
+ * search the `/vi/...` prefix even though the id they find is spliced back
+ * into whichever prefix the calling template already carries.
+ */
 const PREFIX: Record<string, string> = {
-  ':recipe': '/recipe/', ':camera': '/cameras/', ':audio': '/audio/', ':article': '/blog/', ':knowledge': '/learn/',
+  ':recipe': '/recipe/', ':camera': '/cameras/', ':audio': '/audio/', ':article': '/vi/blog/', ':knowledge': '/vi/learn/',
 };
 let locs: string[] | null = null;
 async function sitemap(page: Page): Promise<string[]> {
@@ -55,14 +64,17 @@ async function sitemap(page: Page): Promise<string[]> {
 /**
  * `/recipe/:recipe` → `/recipe/<first slug in the sitemap>`; null when the
  * sitemap has no page under that prefix (the caller skips and logs). Static
- * siblings (`/blog/setup`, `/learn/glossary`) are not instances.
+ * siblings (`/blog/setup`, `/learn/glossary`, and their `/vi/` counterparts,
+ * both bilingual) are not instances. `/blog/:article` and `/vi/blog/:article`
+ * (plus the edit route) resolve from the same `/vi/blog/<id>` sitemap entry —
+ * only the id moves, so the English template keeps the English prefix.
  */
 export async function resolve(page: Page, path: string): Promise<string | null> {
   const key = Object.keys(PREFIX).find((k) => path.includes(k));
   if (!key) return path;
   const prefix = PREFIX[key];
-  const skip = new Set(['/blog/setup', '/blog/admin', '/learn/glossary']);
-  const hit = (await sitemap(page)).find((p) => p.startsWith(prefix) && !skip.has(p) && !p.startsWith('/vi/'));
+  const skip = new Set(['/blog/setup', '/vi/blog/setup', '/blog/admin', '/vi/blog/admin', '/learn/glossary', '/vi/learn/glossary']);
+  const hit = (await sitemap(page)).find((p) => p.startsWith(prefix) && !skip.has(p));
   if (!hit) return null;
   return path.replace(key, hit.slice(prefix.length));
 }
