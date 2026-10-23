@@ -11,11 +11,17 @@ import { resolve } from '../e2e/setup';
  * its own `/vi/blog/<id>` entry here is exactly the bug that let three
  * published articles resolve to null and skip silently.
  *
+ * The recipes are listed `b` before `a` on purpose: the sitemap's order is
+ * whatever the data source returned (the live table's, unordered), so the
+ * instance must not depend on it.
+ *
  * `setup.ts` caches the sitemap fetch in a module-level variable, so one fake
  * XML answers every case in this file — it is read once per process.
  */
 const XML = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>http://localhost:3100/recipe/b</loc></url>
+  <url><loc>http://localhost:3100/vi/recipe/b</loc></url>
   <url><loc>http://localhost:3100/recipe/a</loc></url>
   <url><loc>http://localhost:3100/vi/recipe/a</loc></url>
   <url><loc>http://localhost:3100/blog/setup</loc></url>
@@ -32,6 +38,11 @@ const page = {
 describe('resolve()', () => {
   it('resolves a recipe id from its bare sitemap entry', async () => {
     expect(await resolve(page, '/recipe/:recipe')).toBe('/recipe/a');
+  });
+
+  it('picks the smallest path under the prefix, not the first one listed', async () => {
+    expect(await resolve(page, '/recipe/:recipe')).toBe('/recipe/a');
+    expect(await resolve(page, '/recipe/:recipe')).not.toBe('/recipe/b');
   });
 
   it('resolves the same recipe id into a /vi template', async () => {

@@ -62,7 +62,7 @@ async function sitemap(page: Page): Promise<string[]> {
 }
 
 /**
- * `/recipe/:recipe` → `/recipe/<first slug in the sitemap>`; null when the
+ * `/recipe/:recipe` → `/recipe/<smallest slug in the sitemap>`; null when the
  * sitemap has no page under that prefix (the caller skips and logs). Static
  * siblings (`/blog/setup`, `/learn/glossary`, and their `/vi/` counterparts,
  * both bilingual) are not instances. `/blog/:article` and `/vi/blog/:article`
@@ -74,7 +74,16 @@ export async function resolve(page: Page, path: string): Promise<string | null> 
   if (!key) return path;
   const prefix = PREFIX[key];
   const skip = new Set(['/blog/setup', '/vi/blog/setup', '/blog/admin', '/vi/blog/admin', '/learn/glossary', '/vi/learn/glossary']);
-  const hit = (await sitemap(page)).find((p) => p.startsWith(prefix) && !skip.has(p));
+  /* The smallest path, not the first listed. The sitemap's order is the data
+     source's: the seed file's row order offline, and whatever an unordered
+     select returned online. "First" moved to another recipe, camera and
+     headphone when a build read the live table (2026-10-24), and every budget
+     keyed by a concrete path then named a route the gates no longer walked.
+     Sorting ties the instance to the ids alone. No id is named here on
+     purpose (ci.test.ts): the sitemap decides which ones exist. */
+  const hit = (await sitemap(page))
+    .filter((p) => p.startsWith(prefix) && !skip.has(p))
+    .sort()[0];
   if (!hit) return null;
   return path.replace(key, hit.slice(prefix.length));
 }

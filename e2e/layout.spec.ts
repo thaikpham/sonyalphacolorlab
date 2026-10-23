@@ -9,7 +9,8 @@ import { EXEMPT_SCROLL, ROUTES, ready, resolve, routeAssetHosts } from './setup.
  * sideways — except the four containers the design system names
  * (`EXEMPT_SCROLL`). Each test walks its routes and lists every offender, so
  * one run shows them all; a route may carry a recorded count in
- * e2e/budgets.json, which only goes down.
+ * e2e/budgets.json, which only goes down. Keyed `<path> · <width>` like axe:
+ * a debt measured on a phone must not license the same count on a desktop.
  */
 
 /** What overflows on this page: the page itself, and any box that scrolls sideways. */
@@ -59,7 +60,7 @@ for (const [role, routes] of Object.entries(ROUTES) as [keyof typeof ROUTES, str
         await page.goto(path);
         await ready(page);
         const found = await overflow(page, EXEMPT_SCROLL);
-        if (!report('layout', path, found)) over.push(`${path}: ${found.length} over budget — ${found.join('; ')}`);
+        if (!report('layout', `${path} · ${size.name}`, found)) over.push(`${path}: ${found.length} over budget — ${found.join('; ')}`);
       }
       expect(over, over.join('\n')).toEqual([]);
     });

@@ -16,7 +16,13 @@ import { resolve, routeAssetHosts } from './setup.ts';
 
 const CLS_MAX = 0.05;
 const LCP_MAX = 2500;
-/** [path, KB of gzipped boot JS], measured 2026-10-23 on the seed build and rounded up. */
+/**
+ * [path, KB of gzipped boot JS], measured 2026-10-23 on the seed build and
+ * rounded up. Re-measured 2026-10-24 after the seed build stopped inheriting
+ * a live build's data cache and `resolve()` began picking the smallest path:
+ * `/recipe/alpine-cool` 189 KB and `/cameras/sony-dsc-rx100m7-e32` 177 KB,
+ * the same numbers, so every budget stands.
+ */
 const SCREENS: [string, number][] = [
   ['/', 174], ['/colorlab', 184], ['/recipe/:recipe', 190], ['/cameras', 250], ['/cameras/:camera', 177],
   ['/audio', 250], ['/blog', 247], ['/blog/:article', 180], ['/learn', 247], ['/vi/colorlab', 184],

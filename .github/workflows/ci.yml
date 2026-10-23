@@ -91,11 +91,17 @@ jobs:
       - name: Install browsers
         run: npx playwright install --with-deps chromium
 
-      # Next's own build cache, kept between runs: a run rebuilds only what changed.
+      # Turbopack's compiler cache, kept between runs: a run rebuilds only what
+      # changed. Only that folder. `.next/cache/fetch-cache` beside it holds the
+      # data cache (every `unstable_cache` answer), and a build reads what it
+      # finds there instead of calling the read, so a restored copy would hand
+      # this build a past run's catalogue. The Playwright web server deletes
+      # it before building anyway (playwright.config.ts); not caching it keeps
+      # the cache honest about what it holds.
       - name: Next build cache
         uses: actions/cache@v4
         with:
-          path: .next/cache
+          path: .next/cache/turbopack
           key: next-build-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('src/**', 'messages/**', 'packages/**', 'next.config.ts') }}
           restore-keys: |
             next-build-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-

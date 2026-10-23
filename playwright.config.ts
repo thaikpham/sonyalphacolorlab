@@ -16,6 +16,7 @@ import { defineConfig, devices } from '@playwright/test';
  */
 const PORT = Number(process.env.SCREENS_PORT ?? 3100);
 const WEB = `http://localhost:${PORT}`;
+const CLEAR_DATA_CACHE = `node -e "require('fs').rmSync('.next/cache/fetch-cache',{recursive:true,force:true})"`;
 
 export default defineConfig({
   testDir: './e2e',
@@ -38,9 +39,22 @@ export default defineConfig({
     // the source, not merely parameterized away; SCREENS_PORT only switches
     // this to the dynamic form, for the one-off case where :3100 is already
     // taken by something this run didn't start (implementer-rules.md).
-    command: process.env.SCREENS_PORT
-      ? `npm run build && npx next start --port ${PORT}`
-      : 'npm run build && npx next start --port 3100',
+    //
+    // The data cache goes first. `.next/cache/fetch-cache` holds every
+    // `unstable_cache` answer (`catalogueCache`, `getPublishedEntries`) and
+    // outlives a build; the next build is served what it finds there instead
+    // of calling the read, whatever mode it runs in. So a seed build straight
+    // after `npm run verify` (which builds against `.env.local`, the live
+    // projects) prerendered the live catalogue: the sitemap listed
+    // `/recipe/vv-khong` first, not the seed's `mojave-sun`, and the gates
+    // measured live data while calling it seed mode (2026-10-24). FeestFinder's
+    // `playwright.next.config.ts` clears the same folder for the same reason.
+    // `node -e` rather than `rm -rf` so the command runs on Windows too.
+    command: `${CLEAR_DATA_CACHE} && ${
+      process.env.SCREENS_PORT
+        ? `npm run build && npx next start --port ${PORT}`
+        : 'npm run build && npx next start --port 3100'
+    }`,
     url: `${WEB}/robots.txt`,
     timeout: 300_000,
     reuseExistingServer: false,

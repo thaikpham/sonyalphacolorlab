@@ -45,8 +45,14 @@ async function inSight(page: Page) {
   });
 }
 
-/** Measured 2026-10-23 on the seed build, counting only what is on screen: the counts the run printed. */
-const BUDGET = { list: 6, detail: 13 };
+/**
+ * Measured 2026-10-23 on the seed build, counting only what is on screen: the
+ * counts the run printed. `detail` re-measured 2026-10-24 after fixing the
+ * measurement, not raised: the instance is now the smallest recipe slug
+ * (`alpine-cool`, nine tags in sight) rather than whichever came first, so
+ * the number is that page's (14), where `mojave-sun` had printed 13.
+ */
+const BUDGET = { list: 6, detail: 14 };
 
 test('the first screens ask little: the list and a recipe page stay within their budgets', async ({ page }) => {
   await routeAssetHosts(page);
@@ -65,6 +71,8 @@ test('the first screens ask little: the list and a recipe page stay within their
   expect(d.controls, d.names.join(' | ')).toBeLessThanOrEqual(BUDGET.detail);
   const screens = await page.evaluate(() => document.documentElement.scrollHeight / innerHeight);
   console.log(`detail height: ${screens.toFixed(1)} screens`);
-  // Measured 2026-10-23 (7.08 screens); AGENTS.md calls this a reading layout, so the cap is the measurement, only down.
-  expect(screens).toBeLessThanOrEqual(7.1);
+  // Measured 2026-10-23 (7.08 screens, mojave-sun); re-measured 2026-10-24 on alpine-cool, which printed 6.3 —
+  // toFixed(1) hides up to 0.05, so the cap is the next tenth. AGENTS.md calls this a reading layout, so the cap
+  // is the measurement, only down.
+  expect(screens).toBeLessThanOrEqual(6.4);
 });

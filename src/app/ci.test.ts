@@ -21,6 +21,17 @@ describe('playwright.config.ts', () => {
     ]) expect(src, `${v} is not blanked for the server under test`).toMatch(new RegExp(`${v}: ''`));
   });
 
+  /* `.next/cache/fetch-cache` survives a build and the next build is served
+     its entries instead of calling the read: a seed build straight after a
+     live `npm run verify` prerendered the live catalogue (2026-10-24). The
+     clear must come before the build, in the same command. */
+  it('clears the data cache before the build, so seed mode never inherits a live build', () => {
+    expect(src).toMatch(
+      /node -e "require\('fs'\)\.rmSync\('\.next\/cache\/fetch-cache',\{recursive:true,force:true\}\)"/,
+    );
+    expect(src).toMatch(/command: `\$\{CLEAR_DATA_CACHE\} && \$\{/);
+  });
+
   it('pins the clock, one worker and no parallel files', () => {
     expect(src).toMatch(/timezoneId: 'UTC'/);
     expect(src).toMatch(/workers: 1/);
@@ -115,6 +126,8 @@ describe('e2e/wcag.spec.ts and targets.spec.ts', () => {
     expect(wcag).toMatch(/watch\(page\)/);
     expect(wcag).toMatch(/withTags\(TAGS\)/);
     expect(wcag).toMatch(/report\('axe'/);
+    /* Per width, like axe: a phone-only overflow must not buy a desktop one. */
+    expect(read('e2e/layout.spec.ts')).toMatch(/report\('layout', `\$\{path\} · \$\{size\.name\}`/);
     const targets = read('e2e/targets.spec.ts');
     expect(targets).toMatch(/const MIN = 44/);
     expect(targets).toMatch(/report\('targets'/);
@@ -179,7 +192,10 @@ describe('.github/workflows/ci.yml', () => {
     expect(wf).toMatch(/^\s{2}screens:/m);
     expect(wf).toMatch(/npx playwright install --with-deps chromium/);
     expect(wf).toMatch(/npm run test:screens/);
-    expect(wf).toMatch(/path: \.next\/cache/);
+    /* The compiler cache only. The data cache beside it would carry a past
+       run's answers into this build (playwright.config.ts clears it too). */
+    expect(wf).toMatch(/path: \.next\/cache\/turbopack$/m);
+    expect(wf).not.toMatch(/path: \.next\/cache$/m);
     expect(wf).toMatch(/actions\/upload-artifact/);
     /* `verify` already builds; the second build cost two minutes a run and
        proved nothing new. */
