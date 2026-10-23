@@ -68,8 +68,8 @@ describe('ArticleEditor', () => {
     expect(src).toMatch(/else editor\.startNew\(kind\)/)
   })
 
-  it('moves to the page’s own edit URL once it has an id, or changes kind', () => {
-    expect(src).toMatch(/router\.replace\(`\$\{pathFor\(stored\.kind, stored\.id\)\}\/edit`\)/)
+  it('moves to the page’s own edit URL once it has an id, or changes kind, without remounting', () => {
+    expect(src).toMatch(/window\.history\.replaceState\(null, '', getPathname\(\{ href: `\$\{pathFor\(stored\.kind, stored\.id\)\}\/edit`, locale \}\)\)/)
   })
 
   it('keeps one block open at a time, and opens a block as it is inserted', () => {

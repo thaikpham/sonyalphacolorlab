@@ -1,9 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useTranslations } from 'next-intl'
-import { useRouter } from '@/i18n/navigation'
-import { AREA } from '@/components/admin-ui/controls'
+import { useLocale, useTranslations } from 'next-intl'
+import { getPathname, useRouter } from '@/i18n/navigation'
 import type { ArticleKind } from '@/lib/lab/types'
 import { MetaEditor } from '../admin/meta-editor'
 import { useArticleEditor } from '../admin/use-article-editor'
@@ -18,11 +17,19 @@ import { EditorBottomBar, EditorRail, pathFor } from './editor-rail'
  */
 export function ArticleEditor({ id, kind }: { id: string | null; kind: ArticleKind }) {
   const t = useTranslations('labAdmin')
+  const locale = useLocale()
   const router = useRouter()
   const editor = useArticleEditor({
     onStored: (stored, created) => {
-      if (created || stored.kind !== kind) router.replace(`${pathFor(stored.kind, stored.id)}/edit`)
-      else router.refresh()
+      if (created || stored.kind !== kind) {
+        /* `router.replace` would remount the route, dropping whatever was
+           typed during the round trip (which `afterSave` keeps, dirty) and
+           losing the "created"/"saved at" line on the fresh instance. The
+           URL alone moves; this instance and its draft stay. */
+        window.history.replaceState(null, '', getPathname({ href: `${pathFor(stored.kind, stored.id)}/edit`, locale }))
+      } else {
+        router.refresh()
+      }
     },
   })
   const [openKey, setOpenKey] = useState<number | null>(null)
@@ -39,7 +46,9 @@ export function ArticleEditor({ id, kind }: { id: string | null; kind: ArticleKi
   if (!draft) {
     return editor.status ? <p role="status" className="meta text-danger">{editor.status.msg}</p> : null
   }
-  const onDeleted = () => router.push(kind === 'knowledge' ? '/learn' : '/blog')
+  /* `draft.kind`, not the `kind` prop: a kind change after a create updates
+     the URL in place rather than remounting, so the prop can be stale. */
+  const onDeleted = () => router.push(draft.kind === 'knowledge' ? '/learn' : '/blog')
 
   return (
     <>
@@ -51,7 +60,10 @@ export function ArticleEditor({ id, kind }: { id: string | null; kind: ArticleKi
             value={draft.title}
             onChange={(e) => editor.edit({ title: e.target.value.replace(/\n/g, ' ') })}
             rows={2}
-            className={`${AREA} text-display font-semibold tracking-[-0.02em] leading-[1.15]`}
+            /* Not `AREA`: it carries `leading-relaxed`, which wins over a
+               `leading-[…]` utility by stylesheet order, so the h1's own
+               leading never applied. Spelled out instead of combined. */
+            className="w-full px-4 py-3 surface-sunken text-ink resize-y placeholder:text-ink-faint text-display font-semibold tracking-[-0.02em] leading-[1.15]"
           />
           <label className="sr-only" htmlFor="ed-dek">{t('dek')}</label>
           <textarea
@@ -59,7 +71,7 @@ export function ArticleEditor({ id, kind }: { id: string | null; kind: ArticleKi
             value={draft.dek}
             onChange={(e) => editor.edit({ dek: e.target.value })}
             rows={2}
-            className={`${AREA} mt-4 text-title-3 leading-[1.5]`}
+            className="mt-4 w-full px-4 py-3 surface-sunken text-ink resize-y placeholder:text-ink-faint text-title-3 leading-[1.5]"
           />
           <p className={`meta mt-1 text-right tabular-nums ${draft.dek.length > 220 ? 'text-danger' : ''}`}>{draft.dek.length}/220</p>
           <hr className="seam mt-6 mb-6" />

@@ -27,11 +27,19 @@ export function EditorRail({ editor, onDeleted }: { editor: ArticleEditor; onDel
       ? t('saving')
       : status?.kind === 'err'
         ? status.msg
-        : dirty
-          ? t('unsaved')
-          : savedAt
-            ? t('savedAt', { time: format.dateTime(savedAt, { hour: '2-digit', minute: '2-digit' }) })
-            : null
+        : status?.kind === 'ok'
+          ? status.msg
+          : dirty
+            ? t('unsaved')
+            : savedAt
+              ? t('savedAt', {
+                  time: format.dateTime(savedAt, {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                  }),
+                })
+              : null
 
   return (
     <aside className="flex grow basis-[clamp(15rem,19vw,20rem)] flex-col gap-4 self-end lg:sticky lg:top-6 lg:grow-0">
