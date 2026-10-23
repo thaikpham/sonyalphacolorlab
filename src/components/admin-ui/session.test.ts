@@ -24,6 +24,7 @@ import { describe, expect, it } from 'vitest';
 
 const SESSION = 'src/components/admin-ui/session.tsx';
 const SHELL = 'src/components/admin-ui/shell.tsx';
+const GATE = 'src/components/admin-ui/gate.tsx';
 
 /**
  * Every client component that may render an admin screen — discovered, not
@@ -65,6 +66,7 @@ describe('the admin client inventory', () => {
       'src/components/colorlab/admin/recipe-admin.tsx',
       'src/components/colorlab/admin/image-panel.tsx',
       SHELL,
+      GATE,
     ]) {
       expect(ADMIN_CLIENTS).toContain(p);
     }
@@ -133,8 +135,12 @@ describe(SESSION, () => {
   });
 });
 
-describe(SHELL, () => {
-  const source = readFileSync(SHELL, 'utf8');
+describe(GATE, () => {
+  const source = readFileSync(GATE, 'utf8');
+
+  it('is what the shell renders its sections inside', () => {
+    expect(readFileSync(SHELL, 'utf8')).toMatch(/<AdminGate>/);
+  });
 
   it('keeps a screen of its own for each of the gate’s four answers', () => {
     /* Distinct copy per state, not one panel reworded: "we cannot check", "you

@@ -35,7 +35,7 @@ describe('authFailureKey', () => {
 describe('every admin auth call reads its error through it', () => {
   const files = {
     'sign-in.tsx': "authFailureKey(err, 'signInRefused')",
-    'shell.tsx': "authFailureKey(err, 'codeRefused')",
+    'gate.tsx': "authFailureKey(err, 'codeRefused')",
     'security-panel.tsx': "authFailureKey(error, 'codeRefused')",
   };
 
