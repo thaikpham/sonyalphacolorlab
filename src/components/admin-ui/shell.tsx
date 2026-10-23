@@ -7,13 +7,14 @@ import { AdminSessionProvider, useAdminSession, type AdminRole } from './session
 import { AdminGate } from './gate';
 
 /**
- * The chrome every admin screen sits in, and the only place the gate is read.
+ * The chrome every admin screen sits in. The gate's screens themselves live
+ * in `AdminGate` (`gate.tsx`); this file owns only the header around them.
  *
  * Three surfaces used to render their own header, their own "checking…", their
  * own not-an-admin panel and their own outage panel — six screens for two
- * states, drifting apart one edit at a time. They are here once, above the
- * editors, so an editor renders only when the gate has actually opened and can
- * assume an admin from its first line.
+ * states, drifting apart one edit at a time. They are in `AdminGate` once,
+ * above the editors, so an editor renders only when the gate has actually
+ * opened and can assume an admin from its first line.
  *
  * `SiteHeader` is deliberately absent. It is 1,536 lines, reads four message
  * namespaces, needs a `useSearchParams` Suspense boundary of its own and
