@@ -879,6 +879,7 @@
     "uploading": "Uploading…",
     "clearImage": "Remove image",
     "uploadFailed": "Upload failed.",
+    "summary": "Summary",
     "tldrLines": "TL;DR",
     "tldrHint": "Exactly three, each a decision or an action",
     "tldrLineN": "Line {n}",

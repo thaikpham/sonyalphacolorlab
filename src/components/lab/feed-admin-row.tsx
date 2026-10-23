@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from '@/i18n/navigation'
 import { AdminSessionProvider, useAdminSession } from '@/components/admin-ui/session'
+import { ARTICLE_LANG } from '@/lib/lab/articles'
 import type { ArticleKind, ArticleRecord } from '@/lib/lab/types'
 
 /**
@@ -51,10 +52,11 @@ function Row({ kind, create, drafts }: { kind: ArticleKind; create: string; draf
         </Link>
         {rows && rows.length > 0 ? (
           <details className="min-w-0 flex-1">
-            <summary className="chip chip-action list-none">
+            {/* `list-none` alone leaves WebKit's own disclosure triangle. */}
+            <summary className="chip chip-action list-none [&::-webkit-details-marker]:hidden">
               {drafts} · <span className="tabular-nums">{rows.length}</span>
             </summary>
-            <ul className="mt-2 flex flex-col" lang="vi">
+            <ul className="mt-2 flex flex-col" lang={ARTICLE_LANG}>
               {rows.map((a) => (
                 <li key={a.id}>
                   <hr className="seam" />

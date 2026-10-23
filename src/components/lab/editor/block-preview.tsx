@@ -31,7 +31,8 @@ export function BlockPreview({
 
   switch (block.t) {
     case 'tldr':
-      return block.items.some((s) => s.trim()) ? <TldrCard block={block} label={t('tldrLines')} /> : empty
+      /* `summary`, the reader's word for the card, not the field's `tldrLines`. */
+      return block.items.some((s) => s.trim()) ? <TldrCard block={block} label={t('summary')} /> : empty
     case 'h':
       return block.text.trim() ? <Heading block={block} index={index} /> : empty
     case 'p':
@@ -49,8 +50,13 @@ export function BlockPreview({
       if (!src) return empty
       return (
         <figure className={BLOCK_GAP}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={src} alt={block.alt ?? ''} className="surface-sunken aspect-video w-full rounded-lg object-cover" />
+          {/* The surface on a wrapper, whole, as the reader's `ArticleFigure`;
+              the picture fills it. A surface class is an elevation, and the
+              `rounded-*` that sat beside it on the `<img>` was dead. */}
+          <div className="surface-sunken aspect-video overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={src} alt={block.alt ?? ''} className="h-full w-full object-cover" />
+          </div>
           <figcaption className="meta mt-2">{block.caption}</figcaption>
         </figure>
       )
@@ -64,8 +70,10 @@ export function BlockPreview({
           <div className="grid grid-cols-2 gap-2">
             {[{ src: before, label: block.beforeLabel }, { src: after, label: block.afterLabel }].map((half) => (
               <div key={half.label} className="flex flex-col gap-1">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={half.src} alt="" className="surface-sunken aspect-3/2 w-full rounded-lg object-cover" />
+                <div className="surface-sunken aspect-3/2 overflow-hidden">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={half.src} alt="" className="h-full w-full object-cover" />
+                </div>
                 <span className="meta tabular-nums">{half.label}</span>
               </div>
             ))}

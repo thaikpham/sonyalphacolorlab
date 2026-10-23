@@ -22,6 +22,28 @@ describe('BlockPreview', () => {
   it('has a case for every block type', () => {
     expect(src).toMatch(/const unreachable: never = block/)
   })
+
+  it('labels the TL;DR card with the reader’s word for it', () => {
+    /* The field is `tldrLines` in the editor; the card is "Tóm tắt" / "Summary"
+       on the page, and the preview is the page. Same two strings as
+       `lab.summary`, in the namespace this route sends. */
+    expect(src).toMatch(/<TldrCard block=\{block\} label=\{t\('summary'\)\} \/>/)
+    for (const locale of ['en', 'vi'] as const) {
+      const m = JSON.parse(readFileSync(`messages/${locale}.json`, 'utf8'))
+      expect(m.labAdmin.summary, locale).toBe(m.lab.summary)
+    }
+  })
+
+  it('puts the surface on a wrapper around a picture, never on the <img> with a radius of its own', () => {
+    /* `surface-sunken` and `rounded-lg` sat on one `<img>`; a surface class is
+       an elevation whole, and the utility beside it was dead. The wrapper is
+       the reader's: the aspect ratio and `overflow-hidden`, the image filling it. */
+    expect(src).not.toMatch(/<img[^>]*surface-/)
+    expect(src).not.toMatch(/<img[^>]*rounded-/)
+    expect(src).toMatch(/<div className="surface-sunken aspect-video overflow-hidden">/)
+    expect(src).toMatch(/<div className="surface-sunken aspect-3\/2 overflow-hidden">/)
+    expect(src.match(/<img [^>]*className="h-full w-full object-cover"/g)?.length).toBe(2)
+  })
 })
 
 describe('EditableBlock', () => {

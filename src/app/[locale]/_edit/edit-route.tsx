@@ -24,11 +24,14 @@ export async function EditRoute({ kind, id }: { kind: ArticleKind; id: string | 
       <Suspense>
         <SiteHeader />
       </Suspense>
-      <main className="mx-auto min-h-screen-dynamic w-full max-w-[86rem] inset-safe pt-8 pb-24">
+      {/* A `div`, not `main`: the gate's screens and the sign-in form each
+          bring their own `main`, and the editor gets one inside `EditGate` —
+          one landmark in every state, and one gutter rather than two. */}
+      <div className="mx-auto min-h-screen-dynamic w-full max-w-[86rem] inset-safe pt-8 pb-24">
         <NextIntlClientProvider messages={clientMessages}>
           <EditGate kind={kind} id={id} />
         </NextIntlClientProvider>
-      </main>
+      </div>
     </div>
   )
 }

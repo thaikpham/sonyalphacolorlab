@@ -879,6 +879,7 @@
     "uploading": "Đang tải lên…",
     "clearImage": "Gỡ ảnh",
     "uploadFailed": "Không tải được ảnh lên.",
+    "summary": "Tóm tắt",
     "tldrLines": "TL;DR",
     "tldrHint": "Đúng ba dòng, mỗi dòng là một quyết định hoặc một việc cần làm",
     "tldrLineN": "Dòng {n}",

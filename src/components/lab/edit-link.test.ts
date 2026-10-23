@@ -59,4 +59,12 @@ describe('FeedAdminRow', () => {
     expect(learn).toMatch(/<FeedAdminRow\s+kind="knowledge"/)
     expect(row).not.toMatch(/useTranslations\(/)
   })
+
+  it('hides the disclosure triangle in WebKit too, and names the drafts’ language from the one constant', () => {
+    /* `list-none` removes the marker everywhere but WebKit, which draws its own
+       `::-webkit-details-marker` beside the chip. */
+    expect(row).toMatch(/<summary className="chip chip-action list-none \[&::-webkit-details-marker\]:hidden">/)
+    expect(row).toMatch(/lang=\{ARTICLE_LANG\}/)
+    expect(row).not.toMatch(/lang="vi"/)
+  })
 })

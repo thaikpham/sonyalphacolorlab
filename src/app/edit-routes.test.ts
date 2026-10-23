@@ -46,6 +46,16 @@ describe('EditRoute', () => {
   it('keeps the header outside the provider, which replaces the layout’s messages', () => {
     expect(src.indexOf('<SiteHeader')).toBeLessThan(src.indexOf('<NextIntlClientProvider'))
   })
+
+  it('leaves the one main landmark to the gate, whose own screens bring theirs', () => {
+    /* The route wrapper was a `main` around a gate whose panels, sign-in form
+       and step-up form each render a `main` of their own: two landmarks, and
+       the gutter paid twice. */
+    expect(src).not.toMatch(/<main/)
+    expect(src).toMatch(/<div className="mx-auto min-h-screen-dynamic w-full max-w-\[86rem\] inset-safe pt-8 pb-24">/)
+    const gate = read('src/components/lab/editor/edit-gate.tsx')
+    expect(gate).toMatch(/<main>\s*<ArticleEditor id=\{id\} kind=\{kind\} \/>\s*<\/main>/)
+  })
 })
 
 describe('the public tree', () => {
