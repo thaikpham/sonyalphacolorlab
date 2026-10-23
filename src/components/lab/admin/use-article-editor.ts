@@ -283,11 +283,12 @@ export function useArticleEditor(options: {
   async function save(nextStatus: ArticleStatus) {
     if (!draft) return null
     const sent = draft
+    const creating = sent.id === null
     setBusy('saving')
     setStatus(null)
 
+    let written: StoredArticle
     try {
-      const creating = sent.id === null
       const res = await fetch(
         creating ? '/api/admin/articles' : `/api/admin/articles/${sent.id}`,
         {
@@ -321,7 +322,6 @@ export function useArticleEditor(options: {
         return null
       }
 
-      onStored?.(stored, creating)
       /* Read the previews back rather than trusting the ones in hand.
          Publishing moves an asset's bytes between buckets, so a signed URL
          taken before the save may point at the wrong copy. */
@@ -344,13 +344,17 @@ export function useArticleEditor(options: {
               : t('saved'),
       })
       setSavedAt(new Date())
-      return stored
+      written = stored
     } catch {
       setStatus({ kind: 'err', msg: codeMessage('saveFailed') })
       return null
     } finally {
       setBusy('')
     }
+    /* After the status, and outside the `try`: the row is written by now, so
+       a caller's callback that throws must not report it as a failed save. */
+    onStored?.(written, creating)
+    return written
   }
 
   async function remove() {

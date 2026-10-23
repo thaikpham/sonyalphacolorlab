@@ -79,6 +79,24 @@ describe('ArticleEditor', () => {
     expect(src).not.toMatch(/stored\.kind !== kind/)
   })
 
+  it('stops refreshing once the URL has moved in place, since Next still holds the old route tree and a refresh remounts the editor', () => {
+    expect(src).toMatch(/const moved = useRef\(false\)/)
+    expect(src).toMatch(/urlKind\.current = stored\.kind\n\s+moved\.current = true/)
+    expect(src).toMatch(/\} else if \(!moved\.current\) \{\n\s+router\.refresh\(\)/)
+    const code = src.replace(/\/\*[\s\S]*?\*\//g, '')
+    expect(code.match(/router\.refresh\(\)/g)?.length).toBe(1)
+  })
+
+  it('paints only an error rose when there is no draft, so a delete does not flash as a failure', () => {
+    expect(src).toMatch(/status\.kind === 'err' \? 'text-danger' : ''/)
+    expect(src).not.toMatch(/className="meta text-danger"/)
+  })
+
+  it('names the article’s language from the one constant', () => {
+    expect(src).toMatch(/lang=\{ARTICLE_LANG\}/)
+    expect(src).not.toMatch(/lang="vi"/)
+  })
+
   it('keeps one block open at a time, and opens a block as it is inserted', () => {
     expect(src).toMatch(/const \[openKey, setOpenKey\] = useState<number \| null>\(null\)/)
     expect(src).toMatch(/setOpenKey\(editor\.insertBlock\(type, 0\)\)/)
@@ -108,12 +126,14 @@ describe('EditorRail', () => {
     expect(src).toMatch(/t\('unsaved'\)/)
   })
 
-  it('decides dirty before an ok message, so an edit after a save is not hidden behind "Saved"', () => {
-    const dirtyIndex = src.search(/dirty\s*\?/)
-    const okIndex = src.search(/status\?\.kind === 'ok'/)
-    expect(dirtyIndex).toBeGreaterThan(-1)
-    expect(okIndex).toBeGreaterThan(-1)
-    expect(dirtyIndex).toBeLessThan(okIndex)
+  it('reads its save line from `saveLine`, whose order is executed in save-line.test.ts', () => {
+    expect(src).toMatch(/saveLine\(\{ busy, status, dirty, savedAt, saved: t\('saved'\) \}\)/)
+    expect(src).not.toMatch(/status\?\.kind === 'ok'/)
+  })
+
+  it('opens the public page with a full load, not a client navigation from this route’s tree', () => {
+    expect(src).toMatch(/<a href=\{getPathname\(\{ href: pathFor\(draft\.kind, draft\.id\), locale \}\)\} className="chip chip-action">\{t\('viewLive'\)\}<\/a>/)
+    expect(src).not.toMatch(/<Link\b/)
   })
 
   it('shows the publish rules the whole time', () => {

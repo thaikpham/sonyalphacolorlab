@@ -43,6 +43,14 @@ describe('saving', () => {
   it('never reloads through the path that asks to discard changes', () => {
     expect(save).not.toMatch(/loadArticle\(|window\.confirm/)
   })
+
+  it('tells the caller after the save line is set, outside the try, so a throwing callback cannot turn a written row into saveFailed', () => {
+    const call = save.indexOf('onStored?.(written, creating)')
+    expect(call).toBeGreaterThan(-1)
+    expect(save.match(/onStored\?\.\(/g)?.length).toBe(1)
+    expect(call).toBeGreaterThan(save.indexOf('setSavedAt(new Date())'))
+    expect(call).toBeGreaterThan(save.indexOf('} finally {'))
+  })
 })
 
 describe('opening', () => {

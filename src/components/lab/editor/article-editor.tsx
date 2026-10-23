@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { getPathname, useRouter } from '@/i18n/navigation'
+import { ARTICLE_LANG } from '@/lib/lab/articles'
 import type { ArticleKind } from '@/lib/lab/types'
 import { MetaEditor } from '../admin/meta-editor'
 import { useArticleEditor } from '../admin/use-article-editor'
@@ -25,6 +26,14 @@ export function ArticleEditor({ id, kind }: { id: string | null; kind: ArticleKi
      `replaceState` branch forever after the first move, and `router.refresh()`
      would never fire again. */
   const urlKind = useRef(kind)
+  /* Whether the URL has been moved in place. Next keeps the route tree it
+     mounted (`blog/new`, or the other kind's `[id]/edit`), so a later
+     refresh asks the server for a tree that no longer matches and
+     remounts the whole gate: the session probed again, the article read
+     again, the save line blank and the open block shut (seen on
+     /vi/blog/new → Lưu nháp → edit → Lưu nháp, 2026-10-23). Once moved,
+     there is nothing on this route for a refresh to bring back. */
+  const moved = useRef(false)
   const editor = useArticleEditor({
     onStored: (stored, created) => {
       if (created || stored.kind !== urlKind.current) {
@@ -34,7 +43,8 @@ export function ArticleEditor({ id, kind }: { id: string | null; kind: ArticleKi
            URL alone moves; this instance and its draft stay. */
         window.history.replaceState(null, '', getPathname({ href: `${pathFor(stored.kind, stored.id)}/edit`, locale }))
         urlKind.current = stored.kind
-      } else {
+        moved.current = true
+      } else if (!moved.current) {
         router.refresh()
       }
     },
@@ -51,7 +61,10 @@ export function ArticleEditor({ id, kind }: { id: string | null; kind: ArticleKi
 
   const { draft } = editor
   if (!draft) {
-    return editor.status ? <p role="status" className="meta text-danger">{editor.status.msg}</p> : null
+    const { status } = editor
+    return status ? (
+      <p role="status" className={'meta ' + (status.kind === 'err' ? 'text-danger' : '')}>{status.msg}</p>
+    ) : null
   }
   /* `draft.kind`, not the `kind` prop: a kind change after a create updates
      the URL in place rather than remounting, so the prop can be stale. */
@@ -60,7 +73,7 @@ export function ArticleEditor({ id, kind }: { id: string | null; kind: ArticleKi
   return (
     <>
       <div className="flex flex-wrap-reverse items-end gap-y-8 gap-x-[clamp(2rem,3.5vw,4rem)] pb-44 lg:pb-0">
-        <article className="lab-article min-w-0 max-w-[46rem] flex-1 basis-[32.5rem]" lang="vi">
+        <article className="lab-article min-w-0 max-w-[46rem] flex-1 basis-[32.5rem]" lang={ARTICLE_LANG}>
           <label className="sr-only" htmlFor="ed-title">{t('title')}</label>
           <textarea
             id="ed-title"

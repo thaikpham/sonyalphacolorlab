@@ -1,13 +1,14 @@
 'use client'
 
-import { useFormatter, useTranslations } from 'next-intl'
-import { Link } from '@/i18n/navigation'
+import { useFormatter, useLocale, useTranslations } from 'next-intl'
+import { getPathname } from '@/i18n/navigation'
 import { FIELD, SELECT } from '@/components/admin-ui/controls'
 import { LEVELS, TOPICS } from '@/lib/lab/articles'
 import { ARCHETYPES } from '@/lib/lab/parse'
 import type { Archetype, ArticleKind } from '@/lib/lab/types'
 import type { Draft } from '../admin/article-draft'
 import type { ArticleEditor } from '../admin/use-article-editor'
+import { saveLine } from './save-line'
 
 /** Where a saved page lives. */
 export const pathFor = (kind: ArticleKind, id: string) =>
@@ -22,31 +23,21 @@ export function EditorRail({ editor, onDeleted }: { editor: ArticleEditor; onDel
   const { draft, busy, status, savedAt, dirty } = editor
   if (!draft) return null
 
+  const choice = saveLine({ busy, status, dirty, savedAt, saved: t('saved') })
   const line =
-    busy === 'saving'
+    choice.kind === 'saving'
       ? t('saving')
-      : status?.kind === 'err'
-        ? status.msg
-        : dirty
-          ? t('unsaved')
-          /* An edit never clears `status`, so a plain "Saved." from before the
-             edit must not keep reading after it — that is what `dirty` above
-             guards against. Past that point an `ok` status is only shown when
-             it says more than "saved": a dropped-block count, "published" or
-             "created" — text the save line would otherwise swallow. The plain
-             message gives way to the save-time line instead, which is the
-             more useful fact once there is nothing left to explain. */
-          : status?.kind === 'ok' && status.msg !== t('saved')
-            ? status.msg
-            : savedAt
-              ? t('savedAt', {
-                  time: format.dateTime(savedAt, {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                  }),
-                })
-              : null
+      : choice.kind === 'unsaved'
+        ? t('unsaved')
+        : choice.kind === 'savedAt' && savedAt
+          ? t('savedAt', {
+              time: format.dateTime(savedAt, {
+                hour: '2-digit',
+                minute: '2-digit',
+                timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+              }),
+            })
+          : (choice.msg ?? null)
 
   return (
     <aside className="flex grow basis-[clamp(15rem,19vw,20rem)] flex-col gap-4 self-end lg:sticky lg:top-6 lg:grow-0">
@@ -55,7 +46,7 @@ export function EditorRail({ editor, onDeleted }: { editor: ArticleEditor; onDel
           <span className={'chip font-semibold uppercase tracking-[0.08em] ' + (draft.status === 'published' ? 'bg-accent-500 text-white' : 'bg-glass-raised text-ink-muted')}>
             {draft.status === 'published' ? t('statusPublished') : t('statusDraft')}
           </span>
-          <p role="status" aria-live="polite" className={'meta ' + (status?.kind === 'err' ? 'text-danger' : '')}>
+          <p role="status" aria-live="polite" className={'meta ' + (choice.kind === 'err' ? 'text-danger' : '')}>
             {line}
           </p>
         </div>
@@ -132,6 +123,7 @@ export function EditorActions({
   onDeleted?: () => void
 }) {
   const t = useTranslations('labAdmin')
+  const locale = useLocale()
   const { draft, busy } = editor
   if (!draft) return null
   return (
@@ -147,7 +139,11 @@ export function EditorActions({
         </button>
       ) : null}
       {draft.id && draft.status === 'published' ? (
-        <Link href={pathFor(draft.kind, draft.id)} className="chip chip-action">{t('viewLive')}</Link>
+        /* A plain link, a full load: the public page is rendered fresh rather
+           than from the client router's copy, and after a create or a kind
+           change this route's tree is not the one Next would navigate from.
+           The leave guard still asks about unsaved changes first. */
+        <a href={getPathname({ href: pathFor(draft.kind, draft.id), locale })} className="chip chip-action">{t('viewLive')}</a>
       ) : null}
       {draft.id && onDeleted ? (
         <button
