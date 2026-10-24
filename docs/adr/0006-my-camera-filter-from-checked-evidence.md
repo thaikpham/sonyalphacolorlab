@@ -71,9 +71,10 @@ records what the page says and nothing more.
 
 **Two generic choices.** "Older camera, Creative Style menu" hides Creative
 Look by the same rule and knows nothing else. It warns — never hides — about
-options that **every** checked Creative Style body's list lacks (S-Cinetone
-today), derived from the evidence rather than typed: eight bodies do not
-prove it of every older body. "Unknown / skip" knows nothing and shows
+options that **every** checked Creative Style body's list lacks (today the
+S-Cinetone gamma and colour mode, and the 709tone colour mode), derived from
+the evidence rather than typed: eight bodies do not prove it of every older
+body. "Unknown / skip" knows nothing and shows
 everything.
 
 **One accuracy line.** A hidden or doubtful recipe carries structured

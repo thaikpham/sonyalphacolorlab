@@ -382,7 +382,8 @@ cannot install (ADR 0006). The rules:
   checked Help Guide claims in `src/lib/cameras/capabilities/`, never from a
   table typed here. A list counts only when complete; Creative Style means no
   Creative Look (the owner's rule, in `installable.ts` alone); the generic
-  older camera hides Creative Look and only *warns* about S-Cinetone.
+  older camera hides Creative Look and only *warns* about what no checked
+  Creative Style body has (S-Cinetone, 709tone).
 - **No data shows all.** An unknown, malformed or uncatalogued value is no
   camera, and a catalogue camera without checked claims hides nothing.
 - **`npm run capabilities:check` is the gate.** Adding a body means adding its

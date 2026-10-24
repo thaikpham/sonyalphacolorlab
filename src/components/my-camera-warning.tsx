@@ -31,8 +31,8 @@ export function MyCameraWarning({ warnings }: { warnings: Readonly<Record<string
 
 /**
  * One line per reason. A confirmed reason is why browse hides the recipe for
- * this camera; an unconfirmed one (the generic older camera and S-Cinetone)
- * only warns. `label` is Sony's own name and is never translated; neither is
+ * this camera; an unconfirmed one (the generic older camera and S-Cinetone or
+ * 709tone) only warns. `label` is Sony's own name and is never translated; neither is
  * the camera's.
  */
 export function CameraWarningLines({ camera, reasons }: { camera: string | null; reasons: readonly InstallReason[] }) {

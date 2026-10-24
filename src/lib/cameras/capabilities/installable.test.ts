@@ -144,9 +144,12 @@ describe('the older-camera choice (Creative Style menu)', () => {
     })
   })
 
+  /* Exact sets, in constants.ts order: the warning list is derived from the
+     evidence, so a body added or a claim dropped that changes it has to be a
+     visible decision here, not a quiet widening. */
   it('warns only about what every checked Creative Style body lacks', () => {
     expect(caps.mayLack?.gammas).toEqual(['S-Cinetone'])
-    expect(caps.mayLack?.colorModes).toContain('S-Cinetone')
+    expect(caps.mayLack?.colorModes).toEqual(['S-Cinetone', '709tone'])
     expect(caps.mayLack?.gammas).not.toContain('Cine4')
   })
 
