@@ -22,10 +22,15 @@ const LCP_MAX = 2500;
  * a live build's data cache and `resolve()` began picking the smallest path:
  * `/recipe/alpine-cool` 189 KB and `/cameras/sony-dsc-rx100m7-e32` 177 KB,
  * the same numbers, so every budget stands.
+ *
+ * Re-measured 2026-10-24 after merging main a3ef537 (situations, PP refresh,
+ * library colour): `/colorlab` and `/vi/colorlab` boot 176 KB (the console's
+ * Format, Look and Tag rows left the header), so both are lowered 184 -> 176;
+ * `/recipe/clearcast-pro` (alpine-cool was withdrawn) 189 KB, inside 190.
  */
 const SCREENS: [string, number][] = [
-  ['/', 174], ['/colorlab', 184], ['/recipe/:recipe', 190], ['/cameras', 250], ['/cameras/:camera', 177],
-  ['/audio', 250], ['/blog', 247], ['/blog/:article', 180], ['/learn', 247], ['/vi/colorlab', 184],
+  ['/', 174], ['/colorlab', 176], ['/recipe/:recipe', 190], ['/cameras', 250], ['/cameras/:camera', 177],
+  ['/audio', 250], ['/blog', 247], ['/blog/:article', 180], ['/learn', 247], ['/vi/colorlab', 176],
 ];
 
 async function phone(browser: Browser) {

@@ -22,6 +22,12 @@ import { resolve } from '../e2e/setup';
  */
 const XML = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>http://localhost:3100/colorlab</loc></url>
+  <url><loc>http://localhost:3100/vi/colorlab</loc></url>
+  <url><loc>http://localhost:3100/colorlab/travel</loc></url>
+  <url><loc>http://localhost:3100/vi/colorlab/travel</loc></url>
+  <url><loc>http://localhost:3100/colorlab/portrait</loc></url>
+  <url><loc>http://localhost:3100/vi/colorlab/portrait</loc></url>
   <url><loc>http://localhost:3100/recipe/b</loc></url>
   <url><loc>http://localhost:3100/vi/recipe/b</loc></url>
   <url><loc>http://localhost:3100/recipe/a</loc></url>
@@ -76,6 +82,13 @@ describe('resolve()', () => {
      there skipped the route and every walk passed without it. */
   it('throws when a camera has no instance in the sitemap', async () => {
     await expect(resolve(page, '/cameras/:camera')).rejects.toThrow('no instance of /cameras/:camera in the sitemap');
+  });
+
+  /* The catalogue (`/colorlab`, no trailing slash) is not a situation, and
+     the smallest situation wins whichever order the sitemap lists them in. */
+  it('resolves a situation off its bare sitemap entry, never the catalogue itself', async () => {
+    expect(await resolve(page, '/colorlab/:situation')).toBe('/colorlab/portrait');
+    expect(await resolve(page, '/vi/colorlab/:situation')).toBe('/vi/colorlab/portrait');
   });
 
   it('leaves a path with no placeholder unchanged', async () => {

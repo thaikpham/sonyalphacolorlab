@@ -1,5 +1,5 @@
 {
-  "src/app/[locale]/colorlab/loading.tsx": {
+  "src/app/[locale]/colorlab/(index)/loading.tsx": {
     "belowFloor": 0,
     "mono": 0,
     "palette": 0,
@@ -7,7 +7,7 @@
     "stroke": 0,
     "deletedVocab": 0,
     "scrollbarCss": 0,
-    "arbitraryPx": 4,
+    "arbitraryPx": 3,
     "duration": 0,
     "hardCorner": 0
   },
@@ -45,6 +45,18 @@
     "scrollbarCss": 0,
     "arbitraryPx": 1,
     "duration": 0,
+    "hardCorner": 0
+  },
+  "src/components/browse/situation-tiles.tsx": {
+    "belowFloor": 0,
+    "mono": 0,
+    "palette": 0,
+    "hex": 0,
+    "stroke": 0,
+    "deletedVocab": 0,
+    "scrollbarCss": 0,
+    "arbitraryPx": 0,
+    "duration": 1,
     "hardCorner": 0
   },
   "src/components/camera-compare-view.tsx": {
@@ -175,7 +187,7 @@
     "stroke": 0,
     "deletedVocab": 0,
     "scrollbarCss": 0,
-    "arbitraryPx": 6,
+    "arbitraryPx": 3,
     "duration": 1,
     "hardCorner": 0
   },

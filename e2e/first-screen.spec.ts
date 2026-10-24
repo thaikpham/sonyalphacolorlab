@@ -30,8 +30,17 @@ test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true
  * measurement, not raised: the instance is now the smallest recipe slug
  * (`alpine-cool`, nine tags in sight) rather than whichever came first, so
  * the number is that page's (14), where `mojave-sun` had printed 13.
+ *
+ * `list` re-measured 2026-10-24 after merging main a3ef537 (situations, PP
+ * refresh, library colour): 6 -> 22, main's debt at the merge. The browse
+ * page now opens on its filter row (colour system, situation, style and tone
+ * links with their counts, 14 in sight) and the first four situation tiles,
+ * above the first recipe card, where it used to open on two cards. `detail`
+ * 14 -> 9 on the same date: the PP refresh withdrew `alpine-cool`, so the
+ * instance is now `clearcast-pro`, whose first screen shows four taxonomy
+ * links (situation, style, tone) where alpine-cool showed nine tags.
  */
-const BUDGET = { list: 6, detail: 14 };
+const BUDGET = { list: 22, detail: 9 };
 
 test('the first screens ask little: the list and a recipe page stay within their budgets', async ({ page }) => {
   await routeAssetHosts(page);
@@ -52,6 +61,7 @@ test('the first screens ask little: the list and a recipe page stay within their
   console.log(`detail height: ${screens.toFixed(1)} screens`);
   // Measured 2026-10-23 (7.08 screens, mojave-sun); re-measured 2026-10-24 on alpine-cool, which printed 6.3 —
   // toFixed(1) hides up to 0.05, so the cap is the next tenth. AGENTS.md calls this a reading layout, so the cap
-  // is the measurement, only down.
-  expect(screens).toBeLessThanOrEqual(6.4);
+  // is the measurement, only down. Re-measured 2026-10-24 after merging main a3ef537 (situations, PP refresh,
+  // library colour) on clearcast-pro, which printed 6.2: lowered 6.4 -> 6.3.
+  expect(screens).toBeLessThanOrEqual(6.3);
 });

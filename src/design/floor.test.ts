@@ -117,6 +117,8 @@ describe('design floor', () => {
       /* `.glass` the deleted primitive, as a class and as a selector. */
       ['glass p-4', 'deletedVocab'],
       ['.glass { opacity: 1 }', 'deletedVocab'],
+      /* A sentence in the next string does not excuse the class in its own. */
+      ['glass", "mist, rain and fog.', 'deletedVocab'],
     ])('flags %s as %s', (snippet, rule) => {
       // `hex` is scoped to src/components and src/app, so the probe lives there.
       const found = scanSource(`const c = "flex ${snippet} items-center"`, 'src/components/x.tsx')
@@ -135,6 +137,11 @@ describe('design floor', () => {
       ['btn-glass', 'deletedVocab'],
       ['bg-glass-raised', 'deletedVocab'],
       ['var(--color-glass)', 'deletedVocab'],
+      /* The English word in a recipe's prose, not the deleted class: a
+         string holding a comma or a full stop is a sentence, never a class
+         list (src/lib/originals/pp.ts, merged from main 2026-10-24). */
+      ["intent: 'cool, airy and crisp — winter hills, mist, glass and concrete'", 'deletedVocab'],
+      ["description: 'A gentle knee holds reflections on plates and glass. For tables by a window.'", 'deletedVocab'],
       ['scroll-silent', 'scrollbarCss'],
       ['scroll-area', 'scrollbarCss'],
       ['#about', 'hex'],

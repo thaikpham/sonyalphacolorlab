@@ -265,10 +265,27 @@ const SURVIVORS = /btn-glass|glass-raised|bg-glass|--color-glass/
  * only. In a component, `cond({ glass: open })` is the deleted class.
  */
 const GLASS_TOKEN_KEY = /^\s*:/
+/**
+ * A string holding a comma or a full stop before a space (or a closing full
+ * stop) is a sentence, not a class list: `'mist, glass and concrete'` in a
+ * recipe's description is the English word. A Tailwind class string has
+ * neither (`p-0.5` is a digit after the dot).
+ */
+const PROSE = /[,;] |[A-Za-z)]\.(?: |$)/
+function enclosingString(code: string, inString: Uint8Array, index: number): string {
+  let start = index
+  while (start > 0 && inString[start - 1] === 1) start -= 1
+  let end = index
+  while (end < code.length && inString[end] === 1) end += 1
+  return code.slice(start, end)
+}
 function deletedAccept(code: string, file: string) {
+  let inString: Uint8Array | undefined
   return (m: RegExpExecArray) => {
     if (m[0] !== 'glass') return true
     if (SURVIVORS.test(lineText(code, m.index))) return false
+    inString ??= stringMask(code)
+    if (inString[m.index] === 1 && PROSE.test(enclosingString(code, inString, m.index))) return false
     const isKey =
       file === TOKEN_SOURCE &&
       code[m.index - 1] !== '.' &&

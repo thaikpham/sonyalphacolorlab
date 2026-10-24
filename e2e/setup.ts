@@ -20,7 +20,7 @@ export type Role = 'visitor';
  * published), and it is skipped and said so — any other missing one throws. `/admin` and the edit route show the gate to a signed-out visitor.
  */
 const TEMPLATES = [
-  '/', '/colorlab', '/colorlab?format=pp', '/recipe/:recipe',
+  '/', '/colorlab', '/colorlab?format=pp', '/colorlab/:situation', '/recipe/:recipe',
   '/cameras', '/cameras/:camera', '/cameras/compare', '/audio', '/audio/:audio',
   '/blog', '/blog/:article', '/blog/setup', '/blog/:article/edit',
   '/learn', '/learn/glossary', '/learn/:knowledge',
@@ -49,9 +49,14 @@ export const EXEMPT_SCROLL = '.scroll-silent, .filter-scroll, .scroll-area, .scr
  * article under English chrome, not a translation of it — so those two
  * search the `/vi/...` prefix even though the id they find is spliced back
  * into whichever prefix the calling template already carries.
+ *
+ * `/colorlab/` lists only situation pages (`visibleSituations` in
+ * src/app/sitemap.ts, bilingual): the catalogue itself is `/colorlab` with no
+ * trailing segment, and its filtered views are query strings the sitemap
+ * leaves out, so nothing else under the prefix needs skipping.
  */
 const PREFIX: Record<string, string> = {
-  ':recipe': '/recipe/', ':camera': '/cameras/', ':audio': '/audio/', ':article': '/vi/blog/', ':knowledge': '/vi/learn/',
+  ':situation': '/colorlab/', ':recipe': '/recipe/', ':camera': '/cameras/', ':audio': '/audio/', ':article': '/vi/blog/', ':knowledge': '/vi/learn/',
 };
 let locs: string[] | null = null;
 /**
