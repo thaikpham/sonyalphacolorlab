@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useEffectEvent, useState } from 'react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useAdminSession } from '@/components/admin-ui/session';
 import type { ModeratedPhoto } from '@/lib/community/moderation';
@@ -42,28 +42,38 @@ export function PhotoModeration({ slug }: { slug: string }) {
     [t],
   );
 
+  /* The token and the wording as of the moment the list is asked for, without
+     making either a dependency. `authed` changes with every token refresh, and
+     a reload it set off could land after a switch and draw the row in its old
+     state. The list is loaded once per slug — the parent's `key={slug}` is the
+     only refetch — and the switches only appear once it has loaded, so no
+     answer to this read can arrive after one of theirs. */
+  const headersNow = useEffectEvent(() => authed());
+  const loadFailed = useEffectEvent((code: string) => setError(message(code, 'loadFailed')));
+
   useEffect(() => {
     let live = true;
     (async () => {
       try {
         const res = await fetch(`/api/admin/community-photos?slug=${encodeURIComponent(slug)}`, {
-          headers: authed(),
+          headers: headersNow(),
         });
         const data = (await res.json()) as { photos?: ModeratedPhoto[]; error?: string };
         if (!live) return;
         if (!res.ok || !data.photos) {
-          setError(message(data.error ?? 'loadFailed', 'loadFailed'));
+          loadFailed(data.error ?? 'loadFailed');
           return;
         }
+        setError(null);
         setPhotos(data.photos);
       } catch {
-        if (live) setError(message('loadFailed', 'loadFailed'));
+        if (live) loadFailed('loadFailed');
       }
     })();
     return () => {
       live = false;
     };
-  }, [slug, authed, message]);
+  }, [slug]);
 
   const toggle = async (photo: ModeratedPhoto) => {
     setPending(photo.id);

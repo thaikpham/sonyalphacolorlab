@@ -196,8 +196,24 @@ describe('community photo moderation, on this screen', () => {
   });
 
   it('lists and switches through the admin route, with the editor’s bearer token', () => {
-    expect(panel).toMatch(/fetch\(`\/api\/admin\/community-photos\?slug=\$\{encodeURIComponent\(slug\)\}`, \{\s*headers: authed\(\),/);
+    expect(panel).toMatch(/fetch\(`\/api\/admin\/community-photos\?slug=\$\{encodeURIComponent\(slug\)\}`, \{\s*headers: headersNow\(\),/);
+    expect(panel).toMatch(/const headersNow = useEffectEvent\(\(\) => authed\(\)\);/);
     expect(panel).toMatch(/method: 'PATCH',\s*headers: authed\(\),\s*body: JSON\.stringify\(\{ id: photo\.id, approved: !photo\.approved \}\)/);
+  });
+
+  it('loads the list once per slug, not again on every token refresh', () => {
+    /* `authed` changes with each refresh. As a dependency it re-ran the read,
+       and an answer landing after a switch drew the row in its old state. */
+    const start = panel.indexOf('useEffect(() => {');
+    const effect = panel.slice(start, panel.indexOf('}, [', start) + 20);
+    expect(effect).toContain('/api/admin/community-photos?slug=');
+    expect(effect).toMatch(/\}, \[slug\]\);/);
+    // Read through effect events, so neither can become a dependency again.
+    expect(effect).not.toMatch(/\bauthed\(|\bmessage\(/);
+  });
+
+  it('clears an earlier error once the list loads', () => {
+    expect(panel).toMatch(/setError\(null\);\s*setPhotos\(data\.photos\);/);
   });
 
   it('applies the row the server answered with, not the state it asked for', () => {
