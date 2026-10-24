@@ -26,8 +26,9 @@ come back with this ADR.
 ## Decision
 
 **Reuse the evidence, for a new purpose.** `src/lib/cameras/capabilities/`
-(`evidence.ts`, `checks.ts`, `page-text.ts`, `keys.ts`, `features.ts`,
-`index.ts`), `data/camera-evidence.checks.json` and
+(`evidence.ts`, `checks.ts`, `page-text.ts`, `keys.ts`, `features.ts` —
+since deleted, see Consequences — and `index.ts`),
+`data/camera-evidence.checks.json` and
 `npm run capabilities:check` are restored from `ced75a9^` unchanged in
 method:
 
@@ -100,5 +101,12 @@ the `catalogueCache` key.
   back — the failure mode is showing too much, never too little.
 - A firmware update that adds an option is invisible until the guide says
   so; the Help Guide is the source, not release notes.
-- `features.ts` (the old camera-page summary) is restored with the mechanism
-  but has no page. Delete it if part 2 does not find a use for it.
+- `features.ts` (the old camera-page summary) came back with the mechanism,
+  found no use and was deleted again with its test and the two label helpers
+  in `keys.ts` only it read.
+- The recipe page stays prerendered. Reading `cookies()` there would render
+  every recipe per request, so the page computes, at build, what every choice
+  has to say about its recipe (`cameraWarnings`) and a client island looks the
+  browser's cookie up in that map. That is why the cookie is not `httpOnly`;
+  it holds a model code, not a credential. The browse pages already render
+  per request (`searchParams`) and read it with `cookies()`.

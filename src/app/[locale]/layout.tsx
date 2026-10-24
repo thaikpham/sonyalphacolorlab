@@ -63,6 +63,8 @@ export default async function LocaleLayout({
        subtree; shipped whole from here, every page carried it. */
     lab: { compareControl: (messages.lab as Record<string, string>).compareControl },
     language: messages.language,
+    /* The browse page's camera picker and the recipe page's warning line. */
+    myCamera: messages.myCamera,
     nav: messages.nav,
     recipe: messages.recipe,
     search: messages.search,

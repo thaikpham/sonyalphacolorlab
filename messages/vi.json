@@ -43,6 +43,15 @@
       "mono": "Đen trắng"
     }
   },
+  "myCamera": {
+    "label": "Máy ảnh",
+    "choose": "Chọn máy",
+    "older": "Máy đời cũ khác (menu Creative Style)",
+    "unknown": "Không rõ / bỏ qua",
+    "olderSubject": "Máy đời cũ",
+    "lacks": "{camera} không có {label}",
+    "mayLack": "{camera} có thể không có {label}"
+  },
   "palette": {
     "label": "Bảng màu {tone}, {style}",
     "note": "Suy ra từ thông số, không phải ảnh chụp từ máy.",

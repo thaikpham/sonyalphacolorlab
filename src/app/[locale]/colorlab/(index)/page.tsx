@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
+import { cookies } from 'next/headers';
 import { bilingualAlternates } from '@/i18n/alternates';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { loadBrowse, RecipeBrowse, type BrowseSearchParams } from '@/components/browse/recipe-browse';
 import { SiteStructuredData } from '@/components/structured-data';
 import { SiteHeader } from '@/components/site-header';
+import { MY_CAMERA_COOKIE } from '@/lib/cameras/my-camera-cookie';
 import type { Locale } from '@/i18n/routing';
 
 export async function generateMetadata({
@@ -52,7 +54,7 @@ export default async function ColorLabPage({
   const [t, tBrowse, model] = await Promise.all([
     getTranslations('home'),
     getTranslations('browse'),
-    loadBrowse(locale, null, await searchParams),
+    loadBrowse(locale, null, await searchParams, (await cookies()).get(MY_CAMERA_COOKIE)?.value),
   ]);
 
   return (

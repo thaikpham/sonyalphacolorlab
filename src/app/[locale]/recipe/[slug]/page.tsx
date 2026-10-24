@@ -11,10 +11,13 @@ import { RecipeLearnMore } from '@/components/content/reverse-links';
 import { TweakPanel } from '@/components/tweak-panel';
 import { WbShiftPlane } from '@/components/wb-shift-plane';
 import { FormattedWb, WbTable } from '@/components/wb-table';
+import { MyCameraWarning } from '@/components/my-camera-warning';
 import { Link } from '@/i18n/navigation';
 import { routing, type Locale } from '@/i18n/routing';
 import { accentCss } from '@/lib/camera/color';
 import { CREATIVE_LOOKS } from '@/lib/camera/constants';
+import { getSonyCameras } from '@/lib/cameras/data';
+import { cameraOptions, cameraWarnings } from '@/lib/cameras/my-camera';
 import { getRecipe, listSlugs } from '@/lib/recipes/source';
 import { recipeTitle } from '@/lib/recipes/title';
 
@@ -73,12 +76,18 @@ export default async function RecipePage({
   const { slug, locale } = await params;
   setRequestLocale(locale);
 
-  const [recipe, t, tBrowse] = await Promise.all([
+  const [recipe, t, tBrowse, products] = await Promise.all([
     getRecipe(slug, locale),
     getTranslations('recipe'),
     getTranslations('browse'),
+    getSonyCameras(),
   ]);
   if (!recipe) notFound();
+
+  /* What each camera choice has to say about this recipe, worked out here so
+     the page stays prerendered: the cookie is read in the browser, by the
+     island, never by this render (ADR 0006). */
+  const warnings = cameraWarnings(recipe, cameraOptions(products));
 
   const accent = accentCss(recipe.accent);
   const title = recipeTitle(recipe.name);
@@ -172,6 +181,13 @@ export default async function RecipePage({
               <p className="mt-4 whitespace-pre-line leading-relaxed text-ink-muted text-body sm:text-body-lg">
                 {recipe.description}
               </p>
+
+              {/* The reader's camera, when it cannot install this recipe or
+                  may not: an accuracy line, one per reason. Empty until the
+                  browser has read the cookie, and then usually still empty. */}
+              <div className="mt-4 empty:hidden">
+                <MyCameraWarning warnings={warnings} />
+              </div>
 
               {/* The recipe's colour, read off its settings: the same nine
                   swatches as its card, named, with the one accuracy line the
