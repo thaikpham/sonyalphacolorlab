@@ -20,6 +20,7 @@
 import manifest from '../../../data/recipe-taxonomy.json';
 import { WB_KELVIN } from '../camera/constants';
 import type { Recipe } from '../camera/schema';
+import { recipeIdKey } from './recipe-id';
 import {
   deriveTaxonomy,
   isMonochrome,
@@ -45,9 +46,15 @@ export type ManifestEntry = {
 
 export const TAXONOMY_MANIFEST = manifest as Readonly<Record<string, ManifestEntry>>;
 
+/* Keyed through `recipeIdKey`, so a recipe read as `PP-001` after the id
+   migration finds the entry the manifest still files under `SCL-PP-001`. */
+const MANIFEST_BY_KEY: ReadonlyMap<string, ManifestEntry> = new Map(
+  Object.entries(TAXONOMY_MANIFEST).map(([id, entry]) => [recipeIdKey(id), entry]),
+);
+
 /** The manifest's say on one recipe, validated, with unknown ids dropped. */
 function fromManifest(id: string): Partial<RecipeTaxonomy> {
-  const entry = TAXONOMY_MANIFEST[id];
+  const entry = MANIFEST_BY_KEY.get(recipeIdKey(id));
   if (!entry) return {};
   const out: { situations?: SituationId[]; style?: RecipeTaxonomy['style']; tone?: RecipeTaxonomy['tone'] } = {};
   if (entry.situations) {
@@ -68,7 +75,7 @@ function fromManifest(id: string): Partial<RecipeTaxonomy> {
  * a light the camera cannot be set to.
  */
 export function designedLightFor(id: string): number | null {
-  const light = TAXONOMY_MANIFEST[id]?.light;
+  const light = MANIFEST_BY_KEY.get(recipeIdKey(id))?.light;
   return typeof light === 'number' && light >= WB_KELVIN.min && light <= WB_KELVIN.max ? light : null;
 }
 

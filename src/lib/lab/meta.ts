@@ -13,7 +13,7 @@
  * web page cannot become one field.
  */
 
-import { RECIPE_ID_RE } from '@/lib/camera/schema'
+import { RECIPE_ID_TRANSITION_RE } from '@/lib/camera/schema'
 import { isConceptKey, type ConceptKey } from '@/lib/content/concepts'
 import type {
   ArticleKind,
@@ -128,7 +128,7 @@ export function parseRef(raw: unknown): ContentRef | null {
   if (!kind || !id) return null
   switch (kind) {
     case 'recipe':
-      return RECIPE_ID_RE.test(id) ? { kind, id } : null
+      return RECIPE_ID_TRANSITION_RE.test(id) ? { kind, id } : null
     case 'product':
       return PRODUCT_ID_RE.test(id) && id.length <= 80 ? { kind, id } : null
     case 'article':

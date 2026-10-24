@@ -12,6 +12,7 @@
 import type { ConceptKey } from './concepts'
 import type { Article, ArticleMeta, ContentRef, ContentRefKind } from '@/lib/lab/types'
 import { modelCode } from '@/lib/cameras/aliases'
+import { recipeIdKey } from '@/lib/recipes/recipe-id'
 
 /** A link a page can render. `href` is locale-free; the caller's `Link` adds it. */
 export type LinkTarget = {
@@ -93,7 +94,10 @@ export function buildUniverse(input: {
   readonly recipes: readonly RecipeSummary[]
   readonly products: readonly ProductSummary[]
 }): Universe {
-  const recipes = new Map(input.recipes.map((r) => [r.id, recipeTarget(r)]))
+  /* Recipe ids compare through `recipeIdKey`: article meta and the catalogue
+     sit in caches with different lifetimes, so across the SCL- rename one can
+     hold `SCL-PP-001` while the other already reads `PP-001`. */
+  const recipes = new Map(input.recipes.map((r) => [recipeIdKey(r.id), recipeTarget(r)]))
   const products = new Map(input.products.map((p) => [p.id, productTarget(p)]))
   const pages = new Map(input.entries.map((a) => [a.id, pageTarget(a)]))
 
@@ -101,7 +105,7 @@ export function buildUniverse(input: {
     get(ref) {
       switch (ref.kind) {
         case 'recipe':
-          return recipes.get(ref.id)
+          return recipes.get(recipeIdKey(ref.id))
         case 'product':
           return products.get(ref.id)
         case 'article':
@@ -142,7 +146,11 @@ export function entriesReferencing(
   entries: readonly Article[],
 ): readonly Article[] {
   return entries.filter((a) =>
-    a.meta.related.some((r) => r.kind === target.kind && r.id === target.id),
+    a.meta.related.some(
+      (r) =>
+        r.kind === target.kind &&
+        (r.kind === 'recipe' ? recipeIdKey(r.id) === recipeIdKey(target.id) : r.id === target.id),
+    ),
   )
 }
 
@@ -185,10 +193,11 @@ export function unknownRefs(
   },
 ): ContentRef[] {
   const missing: ContentRef[] = []
+  const recipeKeys = new Set([...known.recipes].map(recipeIdKey))
   for (const ref of meta.related) {
     const ok =
       ref.kind === 'recipe'
-        ? known.recipes.has(ref.id)
+        ? recipeKeys.has(recipeIdKey(ref.id))
         : ref.kind === 'product'
           ? known.products.has(ref.id)
           : known.pages.get(ref.id) === ref.kind

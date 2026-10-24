@@ -169,14 +169,27 @@ export const clSettingsSchema = z
 // Recipe
 // ---------------------------------------------------------------------------
 
-/** `SCL-PP-001` / `SCL-CL-042` — the prefix is retained for SEO continuity. */
+/** `SCL-PP-001` / `SCL-CL-042` — the shape the content plane's CHECK stores today. */
 export const RECIPE_ID_RE = /^SCL-(PP|CL)-\d{3}$/;
+
+/**
+ * Either shape: the stored `SCL-PP-001` or the code `PP-001` the ids are moving
+ * to (2026-10-24, sub-project 3). Everything that READS an id accepts both, so
+ * this code keeps working across the hand-applied content migration that
+ * renames them. The order is not free: code that predates this pattern throws
+ * on a `PP-001` row, so the migration waits until every deployment reading the
+ * content project, previews included, carries it. The release that ships the
+ * new ids makes `RECIPE_ID_RE` the code shape and deletes this. Group 1 is the
+ * format code.
+ */
+export const RECIPE_ID_TRANSITION_RE = /^(?:SCL-)?(PP|CL)-\d{3}$/;
+
 
 /** A recipe tag: lower-case, digits and dashes. Also what a `?tag=` filter must be. */
 export const RECIPE_TAG_RE = /^[a-z0-9-]+$/;
 
 const baseRecipe = {
-  id: z.string().regex(RECIPE_ID_RE, 'id must look like SCL-PP-001 or SCL-CL-001'),
+  id: z.string().regex(RECIPE_ID_TRANSITION_RE, 'id must look like PP-001 or SCL-PP-001'),
   slug: z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'slug must be kebab-case'),
   /** Display title, e.g. "SCL-PP-001: Mojave Sun". Never translated. */
   name: z.string().min(1),
@@ -192,11 +205,11 @@ export const recipeSchema = z
   ])
   .superRefine((v, ctx) => {
     const expected = v.format === 'pp' ? 'PP' : 'CL';
-    if (!v.id.includes(`-${expected}-`)) {
+    if (RECIPE_ID_TRANSITION_RE.exec(v.id)?.[1] !== expected) {
       ctx.addIssue({
         code: 'custom',
         path: ['id'],
-        message: `id segment must match format: expected SCL-${expected}-…`,
+        message: `id segment must match format: expected ${expected}-…`,
       });
     }
   });
