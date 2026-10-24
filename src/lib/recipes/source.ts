@@ -30,6 +30,7 @@ import { contentRead } from '../supabase/server';
 import { contentOrOfflineSeed } from '../supabase/content-source';
 import { fromRow, RECIPE_COLUMNS, type RecipeRow } from './row';
 import { devListRecipes, isRecipeDevStore } from './dev-store';
+import { recipeIdAliases } from './recipe-id';
 import { designedLightFor, taxonomyFor } from './taxonomy-assign';
 import { taxonomyTerms, type RecipeTaxonomy } from './taxonomy';
 
@@ -141,7 +142,10 @@ export const matchesQuery = (r: Recipe & Partial<RecipeTaxonomy>, q: string) => 
     r.situations && r.style && r.tone
       ? taxonomyTerms({ situations: r.situations, style: r.style, tone: r.tone })
       : [];
-  const haystack = norm([r.name, r.id, r.slug.replace(/-/g, ' '), ...r.tags, ...inherited].join(' '));
+  /* Both id spellings: `PP-009` and the `SCL-PP-009` readers knew for years. */
+  const haystack = norm(
+    [r.name, ...recipeIdAliases(r.id), r.slug.replace(/-/g, ' '), ...r.tags, ...inherited].join(' '),
+  );
   // Every whitespace-separated term must appear.
   return needle.split(/\s+/).every((term) => haystack.includes(term));
 };

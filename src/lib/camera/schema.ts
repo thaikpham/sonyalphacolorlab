@@ -175,12 +175,15 @@ export const RECIPE_ID_RE = /^SCL-(PP|CL)-\d{3}$/;
 /**
  * Either shape: the stored `SCL-PP-001` or the code `PP-001` the ids are moving
  * to (2026-10-24, sub-project 3). Everything that READS an id accepts both, so
- * the live site keeps working across the hand-applied content migration that
- * renames them, in whichever order the deploy and the migration land. The
- * release that ships the new ids makes `RECIPE_ID_RE` the code shape and
- * deletes this. Group 1 is the format code.
+ * this code keeps working across the hand-applied content migration that
+ * renames them. The order is not free: code that predates this pattern throws
+ * on a `PP-001` row, so the migration waits until every deployment reading the
+ * content project, previews included, carries it. The release that ships the
+ * new ids makes `RECIPE_ID_RE` the code shape and deletes this. Group 1 is the
+ * format code.
  */
 export const RECIPE_ID_TRANSITION_RE = /^(?:SCL-)?(PP|CL)-\d{3}$/;
+
 
 /** A recipe tag: lower-case, digits and dashes. Also what a `?tag=` filter must be. */
 export const RECIPE_TAG_RE = /^[a-z0-9-]+$/;

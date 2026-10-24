@@ -19,6 +19,7 @@ import { ARTICLE_LANG, LEVELS, TOPICS } from '@/lib/lab/articles'
 import { truncateOnWord } from '@/lib/lab/outline'
 import type { Article, Block } from '@/lib/lab/types'
 import { buildGlossary } from '@/lib/learn/glossary'
+import { recipeIdAliases } from '@/lib/recipes/recipe-id'
 import { taxonomyTerms, type RecipeTaxonomy } from '@/lib/recipes/taxonomy'
 import { squash } from './text'
 import type { SearchKind } from './types'
@@ -105,7 +106,15 @@ export function recipeDoc(r: RecipeForSearch, locale: Locale): SearchDoc {
     /* Recipe names are never translated (Rule 3); the description follows the
        locale it was read in, and the snippet is cut from it. */
     contentLanguage: 'en',
-    exact: [squash(r.id), squash(code), squash(bare), squash(r.name), squash(r.slug)].filter(Boolean),
+    /* Both id spellings are exact hits: `PP-009`, and the `SCL-PP-009` the
+       site displayed for years, whichever shape the row is stored in. */
+    exact: [
+      ...recipeIdAliases(r.id).map(squash),
+      squash(code),
+      squash(bare),
+      squash(r.name),
+      squash(r.slug),
+    ].filter(Boolean),
     aliases: [],
     titleText: r.name,
     summary: r.description,

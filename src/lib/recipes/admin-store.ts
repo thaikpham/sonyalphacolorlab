@@ -141,26 +141,27 @@ export async function nextRecipeId(format: 'pp' | 'cl'): Promise<string> {
 
 /**
  * Numbers across both id shapes, so the same number is never issued twice
- * while the table is mid-migration, and answers in the shape the table already
- * uses for that format: the CHECK accepts exactly one shape at a time, and the
- * rows say which.
+ * while the table is mid-migration, and answers in the shape the table
+ * already uses: the CHECK accepts exactly one shape at a time, and the rows
+ * say which. The shape is read across both formats, because a format with no
+ * rows of its own still sits under the same CHECK.
  */
 export function nextIdAmong(code: string, ids: readonly string[]): string {
-  const shape = new RegExp(`^(SCL-)?${code}-(\\d{3})$`);
+  const sameFormat = new RegExp(`^(?:SCL-)?${code}-(\\d{3})$`);
   let highest = 0;
-  let codeShape = false;
   for (const id of ids) {
-    const m = shape.exec(id);
+    const m = sameFormat.exec(id);
     if (!m) continue;
-    if (!m[1]) codeShape = true;
-    const n = Number(m[2]);
+    const n = Number(m[1]);
     if (n > highest) highest = n;
   }
 
   const next = highest + 1;
   if (next > 999) throw new Error('idSpaceExhausted');
-  /* The migration renames every row in one transaction, so one code-shaped row
-     means the CHECK has moved; with none, the stored shape still holds. */
+  /* The migration renames every row in one transaction, so one code-shaped id
+     in either format means the CHECK has moved; with none, the stored shape
+     still holds. */
+  const codeShape = ids.some((id) => /^(PP|CL)-\d{3}$/.test(id));
   const prefix = codeShape ? '' : 'SCL-';
   return `${prefix}${code}-${String(next).padStart(3, '0')}`;
 }

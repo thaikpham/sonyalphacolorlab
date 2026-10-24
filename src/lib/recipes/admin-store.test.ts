@@ -297,6 +297,10 @@ describe('nextIdAmong', () => {
     expect(nextIdAmong('CL', ['SCL-PP-001'])).toBe('SCL-CL-001');
   });
 
+  it('reads the shape across both formats once the CHECK has moved', () => {
+    expect(nextIdAmong('CL', ['PP-001'])).toBe('CL-001');
+  });
+
   it('ignores ids of other shapes and refuses past 999', () => {
     expect(nextIdAmong('PP', ['scl-001', 'PROCOLOR-001', 'SCL-PP-007'])).toBe('SCL-PP-008');
     expect(() => nextIdAmong('PP', ['PP-999'])).toThrow('idSpaceExhausted');
