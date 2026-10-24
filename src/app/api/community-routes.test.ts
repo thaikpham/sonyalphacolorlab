@@ -7,6 +7,7 @@ import { ControlUnavailableError } from '@/lib/supabase/errors';
 import { PP_RANGES } from '@/lib/camera/constants';
 import type { Recipe } from '@/lib/camera/schema';
 import { MAX_PHOTOS_PER_RECIPE } from '@/lib/community/gallery';
+import { PHOTO_COLUMNS } from '@/lib/community/columns';
 
 import * as comments from './comments/route';
 import * as photos from './community-photos/route';
@@ -465,6 +466,22 @@ describe('GET /api/community-photos', () => {
     const res = await photos.GET(get(`/api/community-photos?slug=${PP.slug}`));
     expect(res.status).toBe(503);
     expect((await res.json()).error).toBe('controlUnavailable');
+  });
+
+  /* A photo hidden in /admin/colorlab must not come back here. The anon
+     client is what guarantees it: 0002's policy shows anon approved rows only,
+     and `migration.test.ts` runs that policy as anon. The service client
+     bypasses RLS, so reading with it would serve every hidden row. */
+  it('reads through the anon control client, so a hidden photo is never served', async () => {
+    const res = await photos.GET(get(`/api/community-photos?slug=${PP.slug}`));
+    expect(res.status).toBe(200);
+    expect(db.calls).toHaveLength(1);
+    const [read] = db.calls;
+    expect(read).toMatchObject({ client: 'controlRead', table: 'community_photos', op: 'select' });
+    expect(read.columns).toBe(PHOTO_COLUMNS);
+    /* No `approved` filter: anon holds no grant on that column, so one would
+       fail every gallery read instead of narrowing it. */
+    expect(read.filters).toEqual([['recipe_slug', PP.slug]]);
   });
 });
 

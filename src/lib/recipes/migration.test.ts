@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { PGlite } from '@electric-sql/pglite';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { toRow } from './row';
-import { PROPOSAL_COLUMNS } from '../community/columns';
+import { PHOTO_COLUMNS, PROPOSAL_COLUMNS } from '../community/columns';
 import type { Recipe } from '../camera/schema';
 
 /**
@@ -183,6 +183,32 @@ describe('migrations', () => {
       expect(q.rows).toEqual([
         { image_url: 'https://cdn.example.com/a.jpg', author_name: 'Reader', author_social: null },
       ]);
+    } finally {
+      await db.exec('reset role');
+    }
+  });
+
+  it.each(['anon', 'authenticated'])('never serves %s a photo a moderator has hidden', async (role) => {
+    /* `/admin/colorlab` hides a photo by setting `approved = false` on the
+       service role. The public GET adds no filter of its own — it cannot:
+       0019 grants anon no `approved` column, so naming it there would be
+       "permission denied" for every gallery. 0002's policy is the filter, and
+       this is its proof, in the exact shape the route sends. */
+    await db.query(
+      `insert into community_photos (recipe_slug, image_url, author_name, approved)
+       values ('hidden-probe', 'https://cdn.example.com/shown.jpg', 'Reader', true),
+              ('hidden-probe', 'https://cdn.example.com/hidden.jpg', 'Reader', false)
+       on conflict do nothing`,
+    );
+    await db.exec(`set role ${role}`);
+    try {
+      const q = await db.query<{ image_url: string }>(
+        `select ${PHOTO_COLUMNS} from community_photos
+          where recipe_slug = $1 order by created_at desc limit 40`,
+        ['hidden-probe'],
+      );
+      expect(q.rows.map((r) => r.image_url)).toEqual(['https://cdn.example.com/shown.jpg']);
+      await expect(db.query('select approved from community_photos')).rejects.toThrow(/permission denied/);
     } finally {
       await db.exec('reset role');
     }

@@ -1,5 +1,5 @@
 /**
- * What each public community read selects.
+ * What each community read selects: the public reads, and one admin read.
  *
  * Explicit columns, never `*`: `author_email` and `submitted_by` must not ride
  * along into a response the whole internet can fetch, and the anon role is
@@ -18,3 +18,15 @@ export const COMMENT_COLUMNS = 'id, recipe_slug, author_name, author_avatar, con
 
 /** `community_photos` — the gallery read. */
 export const PHOTO_COLUMNS = 'image_url, author_name, author_social';
+
+/**
+ * `community_photos` — the moderation read in `/api/admin/community-photos`,
+ * which is the one list here that is not public.
+ *
+ * It runs on the service role, which bypasses RLS and the column grant alike
+ * and can read every column, `submitted_by` included — so on this path the list
+ * is the only thing deciding what leaves the database. `id` and `approved` are
+ * outside 0019's anon grant on purpose, which is why this list is never sent as
+ * anon and why the public read leaves the `approved` filter to RLS.
+ */
+export const MODERATION_PHOTO_COLUMNS = 'id, image_url, author_name, approved, created_at';
