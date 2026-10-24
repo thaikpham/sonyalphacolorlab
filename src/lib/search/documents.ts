@@ -72,7 +72,6 @@ export type RecipeForSearch = {
   readonly wbLabel: string
   readonly description: string
   readonly tags: readonly string[]
-  readonly images?: readonly string[]
   readonly accent?: Accent
   /** The browse taxonomy, when the caller has it (a `RecipeView` always does). */
   readonly situations?: RecipeTaxonomy['situations']
@@ -81,8 +80,12 @@ export type RecipeForSearch = {
 }
 
 export function recipeDoc(r: RecipeForSearch, locale: Locale): SearchDoc {
-  /* "SCL-PP-001: Mojave Sun" — the code and the name are each an exact hit. */
+  /* "PP-001-Vivid Nostalgia Film" — the code alone and the whole name are each an
+     exact hit, and so is the id and the slug. A row still on the old
+     "SCL-PP-001: Mojave Sun" shape (until the library sync reaches
+     production) keeps its bare name as an exact hit too. */
   const bare = r.name.includes(': ') ? r.name.split(': ').slice(1).join(': ') : r.name
+  const code = /^(PP|CL)-\d{3}/.exec(r.name)?.[0] ?? ''
   const look = r.format === 'cl' ? CREATIVE_LOOKS.find((l) => l.code === r.look) : undefined
   const formatLabel = r.format === 'pp' ? 'Picture Profile' : 'Creative Look'
   /* Every synonym of the recipe's situations, style and tone, both languages:
@@ -102,11 +105,16 @@ export function recipeDoc(r: RecipeForSearch, locale: Locale): SearchDoc {
     /* Recipe names are never translated (Rule 3); the description follows the
        locale it was read in, and the snippet is cut from it. */
     contentLanguage: 'en',
-    exact: [squash(r.id), squash(bare), squash(r.name), squash(r.slug)].filter(Boolean),
+    exact: [squash(r.id), squash(code), squash(bare), squash(r.name), squash(r.slug)].filter(Boolean),
     aliases: [],
     titleText: r.name,
     summary: r.description,
     tags: [
+      /* The slug never changes, so it carries the name a reader learnt first
+         ("Mojave Sun", "Raoul Rutnam") and the place an original was imagined
+         for ("Đà Lạt"), now that the name itself is a mood. As a tag, a typo
+         of it still reaches the recipe through the near-miss tier. */
+      r.slug.replace(/-/g, ' '),
       ...r.tags.map((t) => t.replace(/-/g, ' ')),
       ...inherited,
       formatLabel,
@@ -121,7 +129,6 @@ export function recipeDoc(r: RecipeForSearch, locale: Locale): SearchDoc {
     display: {
       subtitle: `${look ? `${formatLabel} (${look.code})` : formatLabel} · ${r.wbLabel}`,
       badge: look ? `CL:${look.code}` : 'PP',
-      imageUrl: r.images?.[0] || undefined,
       accentHex: r.accent ? accentHex(r.accent) : undefined,
     },
   }

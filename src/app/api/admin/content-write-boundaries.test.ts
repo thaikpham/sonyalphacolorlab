@@ -39,26 +39,10 @@ const RECIPE_ROUTES = [
   'src/app/api/admin/recipes/[id]/route.ts',
 ];
 
-/**
- * The photograph routes are mutating but deliberately do NOT invalidate.
- *
- * An upload goes to a PRIVATE bucket and is not on the site: readers are served
- * from `public/recipes`, and a file arrives there only when
- * `npm run vendor:uploads` runs and the result is deployed. So a
- * `revalidateTag` here would throw away warm cache entries in order to
- * re-render byte-identical pages. They are held apart from RECIPE_ROUTES for
- * that reason and get their own assertion below.
- */
-const RECIPE_IMAGE_ROUTES = [
-  'src/app/api/admin/recipes/[id]/images/route.ts',
-  'src/app/api/admin/recipes/[id]/images/[imageId]/route.ts',
-];
-
 const MUTATING_ROUTES = [
   ...PRODUCT_ROUTES,
   ...ARTICLE_ROUTES,
   ...RECIPE_ROUTES,
-  ...RECIPE_IMAGE_ROUTES,
   'src/app/api/admin/articles/upload/route.ts',
 ];
 
@@ -70,8 +54,8 @@ const read = (path: string) => readFileSync(path, 'utf8');
  * Every assertion in this file is about what the code does, and these files are
  * heavily commented by house style — so a prose mention of `seedRecipes()` or
  * `revalidateTag` reads to a regex exactly like a call. That is not a
- * hypothetical: the comment explaining why `imagesFor()` mirrors
- * `seedRecipes()` broke the assertion below the day it was written.
+ * hypothetical: a comment explaining why one reader mirrored `seedRecipes()`
+ * broke an assertion here the day it was written.
  */
 const code = (path: string) =>
   read(path)
@@ -238,72 +222,6 @@ describe.each(RECIPE_ROUTES)('%s', (path) => {
     const call = /revalidateTag\(CATALOGUE_TAG, IMMEDIATE\)/;
     expect(source).toMatch(call);
     for (const handler of writers(source)) expect(invalidationProblems(handler, call)).toEqual([]);
-  });
-});
-
-describe.each(RECIPE_IMAGE_ROUTES)('%s', (path) => {
-  const source = read(path);
-
-  it('invalidates only where an image write is actually live', () => {
-    /* Deployed, nothing these routes write is on the site: the bucket is
-       private, the origin is `public/recipes`, and the door between them is a
-       vendor run and a deploy. Offline in development the bytes land in
-       `public/recipes-dev`, which `imagesFor()` reads, so the same write IS
-       live and the sixty-second catalogue cache is the only thing hiding it.
-       So the rule is not "never invalidate" but "invalidate exactly where a
-       reader would see something different" — and every call must go through
-       the guard that encodes it. */
-    const body = code(path);
-    const calls = [...body.matchAll(/revalidateTag\(/g)];
-    for (const call of calls) {
-      const enclosing = body.slice(Math.max(0, call.index - 200), call.index);
-      expect(enclosing, 'a revalidateTag outside isRecipeDevStore()').toMatch(
-        /isRecipeDevStore\(\)/,
-      );
-    }
-    /* And the handlers reach it only through the named helper, so a future
-       handler cannot quietly add a bare call beside it. */
-    expect(source).toMatch(/function revalidateOffline\(\)/);
-  });
-
-  it('never makes the private intake bucket public', () => {
-    /* The 2026-09-11 incident in one line. A reader fetching a recipe
-       photograph from Storage is what spent the egress quota and restricted
-       Auth along with it. */
-    expect(source).not.toMatch(/getPublicUrl|PUBLIC_BUCKET|'recipes'\s*\)/);
-  });
-
-  it('tells the editor the photograph is not live yet', () => {
-    /* The single fact an editor cannot see for themselves, so it is carried in
-       the response rather than left to the UI to remember. */
-    expect(source).toMatch(/pendingVendor/);
-  });
-});
-
-describe('the recipe image store', () => {
-  const source = read('src/lib/recipes/image-store.ts');
-
-  it('writes only to the private intake bucket', () => {
-    expect(source).toMatch(/RECIPE_UPLOAD_BUCKET/);
-    expect(source).not.toMatch(/getPublicUrl/);
-    expect(source).not.toMatch(/controlAdmin|controlRead/);
-  });
-
-  it('uploads the objects before the row that names them', () => {
-    /* `recipe_images` has no status column to mark a row as not-yet-backed, so
-       the ordering is the safety: bytes with no row cost storage and nothing
-       else, while a row with no bytes fails the next vendor run and blocks a
-       deploy. */
-    const upload = source.indexOf('bucket.upload(');
-    const insert = source.indexOf(".from('recipe_images')\n    .insert(");
-    expect(upload).toBeGreaterThan(-1);
-    expect(insert).toBeGreaterThan(upload);
-  });
-
-  it('never persists a signed preview URL', () => {
-    /* A signed URL carries an expiry. Stored in a row it becomes a broken
-       image in half an hour. */
-    expect(source).not.toMatch(/(storage_path|storagePath):\s*.*signedUrl/);
   });
 });
 

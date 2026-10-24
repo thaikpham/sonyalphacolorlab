@@ -5,6 +5,7 @@ import { useFormatter, useTranslations } from 'next-intl';
 import { useAuth } from './auth-context';
 import { OPEN_PROPOSAL_EVENT } from '@/lib/community/events';
 import { communityErrorOf, type CommunityAlertCode } from '@/lib/community/errors';
+import { isExpiringImageHost } from '@/lib/community/image-hosts';
 import { kneeForMode, proposalPills, stepInRange } from '@/lib/community/proposal-draft';
 import type { CommentItem } from '@/app/api/comments/route';
 import type { ProposalItem } from '@/app/api/proposals/route';
@@ -661,6 +662,12 @@ export function RecipeCommunitySection({
        answer would be the same code a round trip later. */
     if (!sampleImageUrl.startsWith('https://')) {
       setProposalError('invalidImageUrl');
+      return;
+    }
+    /* Same list as the route: a Facebook or Instagram CDN link expires, and
+       the proposal's evidence would go with it. */
+    if (isExpiringImageHost(sampleImageUrl)) {
+      setProposalError('expiringImageHost');
       return;
     }
 

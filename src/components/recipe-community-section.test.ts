@@ -254,6 +254,17 @@ describe('the editor', () => {
        tap, and seeding again silently threw away every edit in progress. */
     expect(source).toMatch(/if \(!isPropFormOpenRef\.current\) openProposalForm\(\)/);
   });
+
+  it('refuses an expiring social-CDN sample before the round trip', () => {
+    /* The route's own list: a Facebook or Instagram link expires, and the
+       proposal's evidence would go with it. */
+    const submit = source.slice(source.indexOf('const handleCreateProposal'));
+    const check = submit.indexOf('if (isExpiringImageHost(sampleImageUrl))');
+    expect(check).toBeGreaterThan(-1);
+    expect(check).toBeLessThan(submit.indexOf('setIsSubmittingProp(true)'));
+    expect(submit.slice(check, check + 200)).toContain("setProposalError('expiringImageHost')");
+    expect(source).toContain("from '@/lib/community/image-hosts'");
+  });
 });
 
 describe('CommentList', () => {

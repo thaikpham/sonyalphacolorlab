@@ -21,6 +21,7 @@ import { catalogueCache } from '../catalogue-cache';
 import recipesSeed from '../../../data/recipes.seed.json';
 import translationsSeed from '../../../data/translations.seed.json';
 import { accentFor, type Accent } from '../camera/color';
+import { paletteFor, type Palette } from '../camera/palette';
 import { CREATIVE_LOOK_CODES } from '../camera/constants';
 import { formatWhiteBalance } from '../camera/format';
 import { RECIPE_TAG_RE, type Recipe } from '../camera/schema';
@@ -29,11 +30,8 @@ import { contentRead } from '../supabase/server';
 import { contentOrOfflineSeed } from '../supabase/content-source';
 import { fromRow, RECIPE_COLUMNS, type RecipeRow } from './row';
 import { devListRecipes, isRecipeDevStore } from './dev-store';
-import { devImageUrl, devListImages } from './image-dev-store';
-import { publicRecipeImageUrl } from './images';
-import { taxonomyFor } from './taxonomy-assign';
+import { designedLightFor, taxonomyFor } from './taxonomy-assign';
 import { taxonomyTerms, type RecipeTaxonomy } from './taxonomy';
-import { VENDORED_IMAGES } from './vendored-images';
 
 export type Locale = 'en' | 'vi';
 
@@ -46,59 +44,15 @@ export type RecipeView = Recipe &
     wbLabel: string;
     /** Derived from this recipe's own colour science. */
     accent: Accent;
-    /** Public image URLs, first is the grid thumbnail and the OG card. */
-    images: string[];
+    /**
+     * Nine swatches graded by this recipe's own settings — the thumbnail, now
+     * that no recipe carries a photograph. A reading of the settings in Sony's
+     * documented directions, never a preview of the camera (`palette.ts`).
+     */
+    palette: Palette;
+    /** Kelvin of the light the recipe is built for, or null for daylight — what the palette is read under. */
+    light: number | null;
   };
-
-/**
- * Recipe id -> ordered image paths, served as `publicRecipeImageUrl` URLs.
- *
- * These are vendored into `public/recipes/` by `npm run vendor:images`, not
- * fetched from Supabase Storage. Storage served every photograph at its stored
- * resolution — 1.27GB of CDN egress a day, ~38GB a month against a 5GB quota —
- * and that is what restricted the whole project, Auth and PostgREST included.
- *
- * Serving them from `public/` puts them on the same static CDN as the fonts:
- * no egress quota and no optimizer in the path, because the sizes already exist
- * on disk and `catalogue-loader.ts` picks between them by rewriting the suffix.
- * It also means a photograph no longer vanishes without credentials, which is
- * what `AGENTS.md` promised all along — the app "builds, runs and tests
- * offline".
- *
- * Read from the manifest rather than the database: the association is the
- * storage path itself, so it cannot drift from the recipe even if the table is
- * out of sync. Most recipes have no photograph and render the derived colour
- * field.
- */
-const seedImages = VENDORED_IMAGES.slice()
-  .sort((a, b) => a.sort - b.sort)
-  .reduce<Record<string, string[]>>((acc, r) => {
-    (acc[r.recipeId] ||= []).push(r.storagePath);
-    return acc;
-  }, {});
-
-/**
- * The photographs a recipe shows, from exactly one source per environment.
- *
- * - **Online and offline-elsewhere** — `data/images.seed.json`, which is what
- *   the deploy serves out of `public/recipes`.
- * - **Offline, development** — the dev photograph store, which starts as a copy
- *   of the manifest and then follows what `/admin/colorlab` uploads (into the
- *   gitignored `public/recipes-dev`) and deletes. Without this the image panel
- *   works on a laptop and the site beside it shows nothing, which is the same
- *   half-feature the recipe list had before `seedRecipes()` learned the same
- *   trick.
- *
- * Note the ordering difference between the two branches, and that it is not a
- * difference in behaviour: the dev store keeps `sort` on each row, and
- * `devListImages` returns them sorted, so both paths are in display order.
- */
-const imagesFor = (recipeId: string): string[] => {
-  if (isRecipeDevStore()) {
-    return devListImages(recipeId).map((i) => devImageUrl(i.storagePath));
-  }
-  return (seedImages[recipeId] ?? []).map(publicRecipeImageUrl);
-};
 
 export type RecipeFilters = { format?: 'pp' | 'cl'; look?: string; tag?: string; q?: string };
 
@@ -144,6 +98,7 @@ function toView(
   legacyId: string | null,
   description: string,
 ): RecipeView {
+  const light = designedLightFor(recipe.id);
   return {
     ...recipe,
     /* Situations, style and tone: the editor's manifest over the settings'
@@ -153,7 +108,8 @@ function toView(
     description,
     wbLabel: formatWhiteBalance(recipe.whiteBalance),
     accent: accentFor(recipe),
-    images: imagesFor(recipe.id),
+    palette: paletteFor(recipe, { light: light ?? undefined }),
+    light,
   };
 }
 
@@ -170,6 +126,11 @@ function toView(
  * synonym of its situations, style and tone in both languages — "cafe",
  * "chan dung", "phim", "đen trắng" — which is how the tags stopped being shown
  * without the search losing a word (D9).
+ *
+ * And to its slug, which never changes: the name is a mood now
+ * (`PP-009-Teal Muted Street`), so the slug is what still answers to the name a
+ * reader learnt first ("mojave sun") and to the place an original was imagined
+ * for ("da lat").
  */
 const norm = (s: string) => removeAccents(s).toLowerCase();
 
@@ -180,15 +141,17 @@ export const matchesQuery = (r: Recipe & Partial<RecipeTaxonomy>, q: string) => 
     r.situations && r.style && r.tone
       ? taxonomyTerms({ situations: r.situations, style: r.style, tone: r.tone })
       : [];
-  const haystack = norm([r.name, r.id, ...r.tags, ...inherited].join(' '));
+  const haystack = norm([r.name, r.id, r.slug.replace(/-/g, ' '), ...r.tags, ...inherited].join(' '));
   // Every whitespace-separated term must appear.
   return needle.split(/\s+/).every((term) => haystack.includes(term));
 };
 
 /**
- * The query-string filters of the previous catalogue — `?format=`, `?look=`
- * and `?tag=` — still honoured for one release so a link shared before the
- * situation browse keeps answering, and then dropped.
+ * The query-string filters of the previous catalogue — `?look=` and `?tag=` —
+ * still honoured for one release so a link shared before the situation browse
+ * keeps answering, and then dropped. `format` stays accepted for callers of
+ * `listRecipes`, but the browse no longer passes it: `?format=` is the
+ * colour-system group now, read by `browseFilters`.
  */
 export const matchesLegacyFilters = (r: Recipe, f: Omit<RecipeFilters, 'q'>) =>
   (!f.format || r.format === f.format) &&
@@ -229,21 +192,6 @@ const pickDescription = (
   locale: Locale,
 ): string => lookup.get(`${id}:${locale}`) ?? lookup.get(`${id}:en`) ?? '';
 
-/**
- * Recipes with a photograph first, everything else after in its existing order.
- *
- * The grid falls back to a derived colour field when a recipe has no photo, and
- * most of the catalogue has none — ten of the Picture Profile recipes, and
- * none of the Creative Look ones until their images are migrated to Storage.
- * Ordered by id, that put a long run of colour fields at the top and the page
- * read as though the images were broken.
- *
- * `sort` is stable, so this is a partition, not a reshuffle: within each group
- * the id order is untouched and the page stays deterministic.
- */
-export const photosFirst = <T extends { images: string[] }>(views: T[]): T[] =>
-  views.slice().sort((a, b) => (b.images.length > 0 ? 1 : 0) - (a.images.length > 0 ? 1 : 0));
-
 export const listRecipes = catalogueCache('listRecipes', _listRecipes);
 
 async function _listRecipes(
@@ -254,12 +202,10 @@ async function _listRecipes(
   if (!filters) return [];
 
   const seed = () =>
-    photosFirst(
-      seedRecipes()
-        .filter((r) => r.published && matchesLegacyFilters(r, filters))
-        .map((r) => toView(r, r.legacyId, pickDescription(seedDescriptions, r.id, locale)))
-        .filter((v) => !filters.q || matchesQuery(v, filters.q)),
-    );
+    seedRecipes()
+      .filter((r) => r.published && matchesLegacyFilters(r, filters))
+      .map((r) => toView(r, r.legacyId, pickDescription(seedDescriptions, r.id, locale)))
+      .filter((v) => !filters.q || matchesQuery(v, filters.q));
 
   return contentOrOfflineSeed('recipes.list', async () => {
   const db = contentRead();
@@ -280,7 +226,7 @@ async function _listRecipes(
   // that a full-text index would be more moving parts than it earns, and this
   // keeps the seed and Supabase paths behaving identically. After `toView`, so
   // the query sees the taxonomy the seed path's `matches` also sees.
-  return photosFirst(filters.q ? views.filter((v) => matchesQuery(v, filters.q!)) : views);
+  return filters.q ? views.filter((v) => matchesQuery(v, filters.q!)) : views;
   }, seed);
 }
 

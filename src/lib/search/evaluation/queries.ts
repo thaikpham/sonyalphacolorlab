@@ -49,6 +49,9 @@ export const EVAL_QUERIES: readonly EvalQuery[] = [
   { q: 'Knee', locale: 'en', type: 'exact', relevant: ['glossary-pp-knee'], top1: 'glossary-pp-knee' },
   { q: 'V/H Balance', locale: 'vi', type: 'exact', relevant: ['glossary-pp-detail-vhBalance'], top1: 'glossary-pp-detail-vhBalance' },
   { q: 'ISO Auto Min SS', locale: 'vi', type: 'exact', relevant: ['iso-auto-min-ss'], top1: 'iso-auto-min-ss' },
+  // The code a recipe's name now starts with (`PP-009-Teal Muted Street`).
+  { q: 'PP-009', locale: 'vi', type: 'exact', relevant: ['SCL-PP-009'], top1: 'SCL-PP-009' },
+  { q: 'cl 013', locale: 'en', type: 'exact', relevant: ['SCL-CL-013'], top1: 'SCL-CL-013' },
 
   // --- aliases (derived from SKUs and names, never typed) ---------------
   { q: 'a7cii', locale: 'vi', type: 'alias', relevant: ['sony-ilce-7cm2-sqap2'], top1: 'sony-ilce-7cm2-sqap2' },
@@ -91,6 +94,10 @@ export const EVAL_QUERIES: readonly EvalQuery[] = [
      ranker. */
   { q: 'warm golden hour', locale: 'en', type: 'mood', relevant: ['SCL-PP-001'] },
   { q: 'sepia look', locale: 'en', type: 'mood', relevant: ['SCL-CL-017', 'SCL-CL-018'] },
+  // The mood words of a name (`PP-009-Teal Muted Street`, `CL-013-Airy Warm
+  // Pastel`): the only published recipes whose names hold both words.
+  { q: 'teal muted', locale: 'en', type: 'mood', relevant: ['SCL-PP-009'] },
+  { q: 'airy pastel', locale: 'vi', type: 'mood', relevant: ['SCL-CL-013'] },
 
   // --- a situation, a style or a tone, by its browse label -----------------
   // Labelled from the taxonomy the documents carry (`data/recipe-taxonomy.json`

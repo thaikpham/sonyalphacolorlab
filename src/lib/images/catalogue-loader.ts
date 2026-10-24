@@ -60,11 +60,13 @@
  * down together with `402 exceed_cached_egress_quota`.
  *
  * They were briefly routed back through `/_next/image`, which traded a Supabase
- * quota for a Vercel one — and Vercel's had already run out once. They are
- * vendored into `public/recipes` at three widths now, and article media is
- * written to Storage at the same three widths at upload. Both branches below do
- * the same thing: pick the rung that already exists by rewriting the path. No
- * optimizer, no transformation bill, no per-request work anywhere.
+ * quota for a Vercel one — and Vercel's had already run out once. They were
+ * then vendored into `public/recipes` at three widths, and have since been
+ * removed outright: a recipe's only pictures now are readers' contributions,
+ * arbitrary https URLs that pass through untouched. Article media is written
+ * to Storage at three widths at upload, and the branch below picks the rung
+ * that already exists by rewriting the path. No optimizer, no transformation
+ * bill, no per-request work anywhere.
  */
 
 /** Directories confirmed to serve the same filename at both variant sizes. */
@@ -120,18 +122,6 @@ interface LoaderArgs {
 }
 
 /**
- * The vendored recipe photographs, and the rungs they exist at on disk.
- *
- * Must agree with `WIDTHS` in `scripts/vendor-recipe-images.ts`, which writes
- * them. Picking between real files by rewriting the suffix means no optimizer
- * is involved at all — not Vercel's, not Supabase's. It is the same move the
- * B&H branch below makes against B&H's published size paths; the difference is
- * that here we publish the sizes ourselves.
- */
-const LOCAL_RECIPE_RUNG = /^\/recipes\/(.+)-(\d+)\.webp$/;
-const LOCAL_WIDTHS = [320, 640, 1024] as const;
-
-/**
  * Whether this loader can offer a source at more than one size.
  *
  * Sony's own hosts and the B&H directories that publish no size variants are
@@ -159,12 +149,6 @@ export default function catalogueImageLoader({ src, width }: LoaderArgs): string
   if (asset) {
     const rung = LAB_WIDTHS.find((w) => width <= w) ?? LAB_WIDTHS[LAB_WIDTHS.length - 1];
     return `${asset[1]}${rung}.webp`;
-  }
-
-  const local = LOCAL_RECIPE_RUNG.exec(src);
-  if (local) {
-    const rung = LOCAL_WIDTHS.find((w) => width <= w) ?? LOCAL_WIDTHS[LOCAL_WIDTHS.length - 1];
-    return `/recipes/${local[1]}-${rung}.webp`;
   }
 
   // Relative sources (`/logo.png`) are not URLs and must not reach `new URL`.

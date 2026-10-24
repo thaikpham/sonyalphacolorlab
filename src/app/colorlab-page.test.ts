@@ -22,7 +22,7 @@ describe('/colorlab and /colorlab/[situation]', () => {
      pushes `?q=` after every typing pause — so "mojave" was up to six cache
      misses, each a recipes select plus a translations read, and any random
      `?q=` from anyone added an entry. Nothing new goes into that key: the
-     text match, the three groups and the legacy parameters all run in memory
+     text match, the four groups and the legacy parameters all run in memory
      after one unfiltered read. */
   it('reads the catalogue once, unfiltered, and filters in the page', () => {
     const code = browse.replace(/\/\*[\s\S]*?\*\//g, '');
@@ -31,6 +31,17 @@ describe('/colorlab and /colorlab/[situation]', () => {
     expect(browse).toMatch(/matchesLegacyFilters\(r, legacy\)/);
     expect(browse).toMatch(/facetCounts\(narrowed, filters\)/);
     for (const page of [index, situation]) expect(page).not.toMatch(/listRecipes\(/);
+  });
+
+  /* `?format=` was a legacy parameter for one release; it is the colour-system
+     group now, read once by `browseFilters`. Left in the legacy object too it
+     would filter twice and the system row's counts would lose the other
+     system — every count for it would read zero and its chip would vanish. */
+  it('reads ?format= as the colour-system group, not as a legacy parameter', () => {
+    const legacy = browse.slice(browse.indexOf('const legacy = {'), browse.indexOf('};', browse.indexOf('const legacy = {')));
+    expect(legacy).toContain('look: one(sp.look)');
+    expect(legacy).toContain('tag: one(sp.tag)');
+    expect(legacy).not.toMatch(/format/);
   });
 
   it('are one browse: the same component, the heading the only difference', () => {
@@ -84,6 +95,17 @@ describe('the browse row', () => {
     expect(filters).not.toMatch(/filterAll|'all'/);
   });
 
+  it('puts the colour system first, named by Sony’s own menu words', () => {
+    const keys = [...filters.matchAll(/key: '(\w+)' as const/g)].map((m) => m[1]);
+    expect(keys).toEqual(['format', 'situation', 'style', 'tone']);
+    expect(filters).toContain("label: t('system')");
+    expect(filters).toContain('ids: RECIPE_FORMATS');
+    expect(filters).toContain('counts: facets.formats');
+    expect(filters).toMatch(/name: \(id: string\) => FORMAT_LABELS\[/);
+    /* Never a message key: Picture Profile and Creative Look are not translated. */
+    expect(filters).not.toMatch(/t\(`formats?\./);
+  });
+
   it('leaves out a chip that would yield nothing, unless it is the selected one', () => {
     expect(filters).toMatch(/\.filter\(\(id\) => g\.counts\[id\] > 0 \|\| g\.selected === id\)/);
   });
@@ -117,6 +139,53 @@ describe('the recipe card', () => {
     expect(card).toMatch(/<span className="label">\{kind\}<\/span>/);
     expect(card).toContain('recipeTitle(recipe.name)');
     expect(card).toMatch(/<p className="meta line-clamp-1">\{situations\}<\/p>/);
+  });
+
+  /* No recipe carries a photograph: the 210px slot is the palette its own
+     settings grade, never a photo component or the old accent wash. */
+  it('shows the recipe’s palette as its thumbnail', () => {
+    expect(card).toMatch(
+      /<div className="h-\[210px\] w-full overflow-hidden">\s*<RecipePalette palette=\{recipe\.palette\} tone=\{recipe\.tone\} style=\{recipe\.style\} variant="card" \/>/,
+    );
+    expect(card).not.toMatch(/RecipePhoto|RecipeColorField|recipe\.images|<Image|<img/);
+    expect(card).toContain('FORMAT_LABELS[recipe.format]');
+  });
+});
+
+describe('the recipe palette', () => {
+  const palette = readFileSync('src/components/recipe-palette.tsx', 'utf8');
+  const recipePage = readFileSync('src/app/[locale]/recipe/[slug]/page.tsx', 'utf8');
+  const og = readFileSync('src/app/[locale]/recipe/[slug]/opengraph-image.tsx', 'utf8');
+
+  it('is one labelled image, the ramp then six hues, with nothing written on it and no strokes', () => {
+    expect(palette).toMatch(/role="img"\s*aria-label=\{label\}/);
+    expect(palette).toContain("const RAMP: readonly SwatchId[] = ['highlight', 'mid', 'shadow'];");
+    expect(palette).toContain(
+      "const BARS: readonly SwatchId[] = ['red', 'skin', 'yellow', 'foliage', 'sky', 'blossom'];",
+    );
+    expect(palette).toMatch(/grid-cols-\[1fr_3fr\]/);
+    expect(palette).toMatch(/<span key=\{id\} style=\{\{ background: swatch\[id\]\.css \}\} \/>/g);
+    expect(palette).not.toMatch(/\bborder\b|\bring-|outline-|#[0-9a-fA-F]{3}/);
+  });
+
+  it('names its swatches and states its limit on the recipe page only', () => {
+    expect(palette).toMatch(/if \(variant === 'card'\) return grid;/);
+    expect(palette).toMatch(/<p className="meta">\{t\('note'\)\}<\/p>/);
+    expect(recipePage).toMatch(
+      /<RecipePalette palette=\{recipe\.palette\} tone=\{recipe\.tone\} style=\{recipe\.style\} variant="page" light=\{recipe\.light\} \/>/,
+    );
+  });
+
+  it('says which light it was read under when that is not daylight', () => {
+    expect(palette).toMatch(/\{light \? <p className="meta">\{t\('light', \{ kelvin: light \}\)\}<\/p> : null\}/);
+  });
+
+  it('runs along the share card in hex, from the same swatches', () => {
+    expect(og).toMatch(/recipe\.palette\.map\(\(swatch\) =>/);
+    expect(og).toContain('background: swatch.hex');
+    /* Satori ignores oklch() and renders no colour, silently. */
+    const code = og.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
+    expect(code).not.toMatch(/swatch\.css|oklch\(/);
   });
 });
 

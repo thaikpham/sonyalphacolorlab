@@ -2,9 +2,9 @@
  * Which taxonomy a recipe carries: the editor's manifest first, the settings'
  * own suggestion where the manifest is silent.
  *
- * `data/recipe-taxonomy.json` is a git-time manifest keyed by recipe id, the
- * same shape of thing as `data/images.seed.json`: no content-plane column yet,
- * no admin field, so a recipe an administrator creates on production after
+ * `data/recipe-taxonomy.json` is a git-time manifest keyed by recipe id: no
+ * content-plane column yet, no admin field, so a recipe an administrator
+ * creates on production after
  * this commit still browses — by what `deriveTaxonomy` reads off its numbers —
  * until an editor places it here. A column and an admin control are the next
  * release's job (handoff, "Quyết định cho bản phát hành này").
@@ -18,6 +18,7 @@
  */
 
 import manifest from '../../../data/recipe-taxonomy.json';
+import { WB_KELVIN } from '../camera/constants';
 import type { Recipe } from '../camera/schema';
 import {
   deriveTaxonomy,
@@ -33,6 +34,13 @@ export type ManifestEntry = {
   readonly situations?: readonly string[];
   readonly style?: string;
   readonly tone?: string;
+  /**
+   * The Kelvin of the light the recipe is built for, when it is not daylight
+   * — Sài Gòn Café's bulbs, a night market's mixed lamps. An editorial
+   * statement about the scene, never a camera value; the palette reads the
+   * recipe under it (`paletteFor(r, { light })`).
+   */
+  readonly light?: number;
 };
 
 export const TAXONOMY_MANIFEST = manifest as Readonly<Record<string, ManifestEntry>>;
@@ -52,6 +60,16 @@ function fromManifest(id: string): Partial<RecipeTaxonomy> {
   const tone = parseTone(entry.tone);
   if (tone) out.tone = tone;
   return out;
+}
+
+/**
+ * The light the recipe is built for, from the manifest, or null for daylight.
+ * Outside the camera's own Kelvin range it is ignored: no recipe is built for
+ * a light the camera cannot be set to.
+ */
+export function designedLightFor(id: string): number | null {
+  const light = TAXONOMY_MANIFEST[id]?.light;
+  return typeof light === 'number' && light >= WB_KELVIN.min && light <= WB_KELVIN.max ? light : null;
 }
 
 export function taxonomyFor(recipe: Recipe): RecipeTaxonomy {

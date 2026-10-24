@@ -48,9 +48,9 @@ export default async function Loading() {
         <p role="status" className="sr-only">
           {t('status')}
         </p>
-        {/* Three filter rows at a chip's height. */}
+        {/* Four filter rows at a chip's height: system, situation, style, tone. */}
         <div aria-hidden className="flex flex-col gap-3">
-          {Array.from({ length: 3 }).map((_, i) => (
+          {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="h-11 w-full max-w-3xl rounded-sm bg-glass" />
           ))}
         </div>

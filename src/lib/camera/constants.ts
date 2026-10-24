@@ -132,6 +132,15 @@ export const PP_COLOR_MODE = [
 export const PP_BLACK_GAMMA_RANGE = ['Narrow', 'Middle', 'Wide'] as const;
 export const PP_KNEE_MODE = ['Auto', 'Manual'] as const;
 export const PP_KNEE_AUTO_SENSITIVITY = ['Low', 'Mid', 'High'] as const;
+
+/**
+ * The gammas on which Knee Auto acts (TP0000909110): "Automatically adjusts
+ * the knee … (when [Movie]* or [ITU709] is selected in [Gamma])"; on any
+ * other gamma "the Knee function is disabled". `ITU709(800%)` is a different
+ * gamma and is not on the list. The asterisk: on some models Movie does not
+ * exceed the white clip point either, and Auto is disabled there too.
+ */
+export const PP_KNEE_AUTO_GAMMA = ['Movie', 'ITU709'] as const;
 export const PP_DETAIL_MODE = ['Auto', 'Manual'] as const;
 
 /** Sony writes these without a space: Type1 … Type5. */
@@ -332,6 +341,16 @@ export const HELP_GUIDE_SOURCES = {
  * than [Off]."  A recipe is therefore exactly one format, never both.
  */
 export const RECIPE_FORMATS = ['pp', 'cl'] as const;
+
+/**
+ * Each format by its Sony menu name. Never translated (Rule 3): these are the
+ * words printed on the camera, and the browse row's colour-system chips read
+ * them from here rather than from a message catalogue.
+ */
+export const FORMAT_LABELS: Readonly<Record<'pp' | 'cl', string>> = {
+  pp: 'Picture Profile',
+  cl: 'Creative Look',
+};
 
 // ---------------------------------------------------------------------------
 // Types

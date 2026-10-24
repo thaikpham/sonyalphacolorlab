@@ -28,11 +28,10 @@ const GATE = 'src/components/admin-ui/gate.tsx';
 
 /**
  * Every client component that may render an admin screen — discovered, not
- * listed. The hand-kept list held four files and missed both recipe screens,
- * `recipe-admin.tsx` and `image-panel.tsx`, which call `useAdminSession()` and
- * fetch `/api/admin/recipes`; `admin-gate.test.ts` discovers its routes for the
- * same reason. A screen is admin when it reads the session module or calls an
- * admin route.
+ * listed. The hand-kept list held four files and missed both recipe screens
+ * of the time, which call `useAdminSession()` and fetch `/api/admin/recipes`;
+ * `admin-gate.test.ts` discovers its routes for the same reason. A screen is
+ * admin when it reads the session module or calls an admin route.
  */
 function clientFiles(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
@@ -59,12 +58,11 @@ const ADMIN_CLIENTS = [
 ].sort();
 
 describe('the admin client inventory', () => {
-  it('finds every admin screen, the recipe editor and its photographs included', () => {
+  it('finds every admin screen, the recipe editor included', () => {
     for (const p of [
       'src/components/admin/admin-editor.tsx',
       'src/components/lab/admin/use-article-editor.ts',
       'src/components/colorlab/admin/recipe-admin.tsx',
-      'src/components/colorlab/admin/image-panel.tsx',
       SHELL,
       GATE,
     ]) {

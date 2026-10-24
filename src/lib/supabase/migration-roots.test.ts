@@ -580,9 +580,10 @@ describe('the three buckets', () => {
     expect(rows.rows).toEqual([
       { id: 'lab', public: true },
       { id: 'lab-drafts', public: false },
-      /* Recipe photograph INTAKE, and private forever. It is not a runtime
-         path: `vendor:images` pulls from it into `public/recipes`, which is
-         what readers are served. See 0002 and the assertion below. */
+      /* The former recipe photograph INTAKE, and private forever. Nothing
+         reads it any more — the catalogue carries no photograph — but the
+         migration that made it is applied history. See 0002 and the
+         assertion below. */
       { id: 'recipe-uploads', public: false },
     ]);
   });
@@ -599,8 +600,8 @@ describe('the three buckets', () => {
 
   it('never gives a recipe photograph a Storage runtime path again', () => {
     /* ~1.27 GB of cached egress a day, and the reason the old project is
-       restricted. The photographs live in `public/recipes` at three WebP
-       widths; `recipe_images` keeps only the association. */
+       restricted. The catalogue's photographs are gone altogether now, and
+       `recipe_images` is a table nothing reads. */
     const sql = readFileSync(`${CONTENT_ROOT}/0001_content_baseline.sql`, 'utf8');
     expect(sql).not.toMatch(/values \('recipes', 'recipes'/);
   });

@@ -1,6 +1,6 @@
 ---
 name: add-recipe
-description: Add a new colour recipe to Alpha ColorLab — either WB + Picture Profile or WB + Creative Look. Use when the user wants to add, publish, or draft a recipe, supplies camera settings to turn into a recipe, or says "new recipe" / "thêm công thức". Handles ID assignment, validation, bilingual descriptions, and image upload.
+description: Add a new colour recipe to Alpha ColorLab — either WB + Picture Profile or WB + Creative Look. Use when the user wants to add, publish, or draft a recipe, supplies camera settings to turn into a recipe, or says "new recipe" / "thêm công thức". Handles ID assignment, validation and bilingual descriptions.
 ---
 
 # Add a recipe
@@ -75,10 +75,10 @@ codes, gamma names and WB values all stay in English. Descriptions live in
 
 ## 6. Images
 
-Upload to Supabase Storage, never hotlink. The original site hotlinked Google
-Photos URLs and they expire — that is why this rule exists.
-
-Order matters: the first image is the grid thumbnail and the OG share card.
+None. A recipe carries no photograph of its own: the card shows the colour
+derived from its settings, and pictures come only from readers, who
+contribute a URL on the recipe page (`community_photos`). Do not upload,
+vendor or hotlink one.
 
 ## 7. Finish
 

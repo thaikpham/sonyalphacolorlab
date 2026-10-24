@@ -77,7 +77,7 @@
   {
     "recipeId": "SCL-PP-053",
     "locale": "en",
-    "description": "The flattest recipe in the set on purpose: an early, very gentle knee and opened shadows keep the sun’s glow and the foreground together, with warm white balance and extra saturation so it still reads as a sunset. Soft by design."
+    "description": "Deliberately one of the flattest colour recipes here: an early, very gentle knee and opened shadows keep the sun’s glow and the foreground together, with warm white balance and extra saturation so it still reads as a sunset. Soft by design."
   },
   {
     "recipeId": "SCL-PP-054",
@@ -163,6 +163,66 @@
     "recipeId": "SCL-PP-070",
     "locale": "en",
     "description": "Black and white for after dark: Cine4 keeps contrast in the darks while Black Gamma opens them, street lamps roll off, and noise is not sharpened."
+  },
+  {
+    "recipeId": "SCL-PP-071",
+    "locale": "en",
+    "description": "A bleach-bypass mood: Cine4’s deep dark contrast, blacks pressed down by Black Level and a Narrow Black Gamma, and Saturation well below zero so colour turns silvery — the low saturation is the look, not a fault. Reds, blues and yellows are held a step denser so they do not wash out, and firm edge detail suits street and fashion."
+  },
+  {
+    "recipeId": "SCL-PP-072",
+    "locale": "en",
+    "description": "Teal and orange in camera: an amber white balance warms skin, while Color Depth deepens green, cyan and blue, so foliage, skies and water sit deep and cool beside it. Red and yellow are lifted and paled a little so faces stay light, and Cine2 with an early, gentle knee keeps the highlights soft. For portraits and street scenes."
+  },
+  {
+    "recipeId": "SCL-PP-073",
+    "locale": "en",
+    "description": "High key, clean and light: Black Level and Black Gamma lift the shadows, Cine2 keeps contrast low, and a knee from 80% rounds off white backgrounds without flattening them. Negative Color Depth on every hue pales colour slightly, and softened detail with Type4 keeps skin smooth and whites glossy. For studio, white walls and window light."
+  },
+  {
+    "recipeId": "SCL-PP-074",
+    "locale": "en",
+    "description": "Low key and warm: Cine4 with a strongly negative Black Level and a Narrow Black Gamma sinks the shadows, while a late knee leaves the highlights bright. Greens, blues and magentas are deepened and reds and yellows kept a touch lighter, so skin stands out warm against a dark ground. For moody portraits and interiors lit by one window."
+  },
+  {
+    "recipeId": "SCL-PP-075",
+    "locale": "en",
+    "description": "Warm pastel: Black Level and a Wide Black Gamma lift the shadows and mid-greys, Cine1 keeps contrast low, and Saturation below zero with negative Color Depth on red, yellow and magenta turns colour towards cream. A slightly warm white balance. For cafés, interiors, soft portraits and light fashion."
+  },
+  {
+    "recipeId": "SCL-PP-076",
+    "locale": "en",
+    "description": "Blue hour, turned towards violet: a low Kelvin cools the frame and a magenta shift tips it violet, with blue and magenta deepened and yellow kept light so lamps stay clean. A gentle knee holds lit windows and the last light in the sky, and raised Crispening keeps noise out of the sharpening. For dusk over cities, water and hills; in daylight it renders strongly blue-violet."
+  },
+  {
+    "recipeId": "SCL-PP-077",
+    "locale": "en",
+    "description": "Grey-day calm: a cool white balance, Black Level and a Wide Black Gamma open the shadows and mid-greys, and Saturation below zero quiets colour, while green, blue and cyan are deepened a step so they do not go grey. Movie gamma with Knee Auto. For overcast streets, rain and everyday walks."
+  },
+  {
+    "recipeId": "SCL-PP-078",
+    "locale": "en",
+    "description": "Autumn colour: an amber white balance and strong Saturation, with reds and yellows deepened so leaves read rich rather than bright orange, and green lifted and paled a little so it steps back. Firm blacks and a light knee on the Still curve. For autumn landscapes, gardens and travel in warm light."
+  },
+  {
+    "recipeId": "SCL-PP-079",
+    "locale": "en",
+    "description": "Food in daylight: S-Cinetone colour with a warm white balance and raised Saturation, reds and greens deepened a step so sauces and herbs look rich, and yellows kept bright. A gentle knee holds reflections on plates and glass, and Type4 B/W Balance favours white detail for a clean, glossy finish. For tables by a window and markets."
+  },
+  {
+    "recipeId": "SCL-PP-080",
+    "locale": "en",
+    "description": "For HDR delivery and grading: HLG2 with the 709 colour mode records the wider range HLG is made for, so it is meant for an HDR screen; on an ordinary SDR screen straight out of camera it looks flat. Saturation is raised a little, green, blue and cyan deepened a step, and a knee at 95% eases only the very top. For landscapes and travel."
+  },
+  {
+    "recipeId": "SCL-PP-081",
+    "locale": "en",
+    "description": "Not a look: the base Sony gives for PP8 — S-Log3 with S-Gamut3.Cine and Detail at −7, so no in-camera sharpening is baked in — with every other setting at zero, and Knee off as it is on S-Log. It records flat, low-contrast footage meant for grading or a LUT afterwards."
+  },
+  {
+    "recipeId": "SCL-PP-082",
+    "locale": "en",
+    "description": "Rainy-season colour: a cool white balance with a blue shift and raised Saturation, cyan deepened most and then blue, so wet streets, umbrellas and grey skies keep their colour, and yellow lifted to stay bright. A Wide Black Gamma opens the shade a little, with Knee Auto on the Movie curve. For monsoon streets and travel on grey days."
   },
   {
     "recipeId": "SCL-CL-001",
@@ -350,6 +410,46 @@
     "description": "Film (FL) Creative Look recipe by Filmreel, Cambodia, from Sony’s Alpha Recipes collection."
   },
   {
+    "recipeId": "SCL-CL-038",
+    "locale": "en",
+    "description": "Hard black and white on the BW Look: Contrast well up and Shadows pulled down for deep blacks, Highlights eased a little so whites keep their texture, and Clarity with raised Sharpness for gritty edges. For street at night and hard light."
+  },
+  {
+    "recipeId": "SCL-CL-039",
+    "locale": "en",
+    "description": "Soft black and white for portraits on the BW Look: lower Contrast, Shadows lifted and Highlights pulled back for an open, airy grey scale, a little Fade, and low Sharpness with no Clarity so skin stays smooth."
+  },
+  {
+    "recipeId": "SCL-CL-040",
+    "locale": "en",
+    "description": "The NT Look with almost nothing added: a step of Contrast, Highlights eased so white products and fabrics keep their detail, moderate Sharpness and a little Clarity for texture, and Saturation left at zero. For product, catalogue and clothing shots that want restrained colour."
+  },
+  {
+    "recipeId": "SCL-CL-041",
+    "locale": "en",
+    "description": "The PT Look warmed for golden light: an A2 amber shift with a touch of magenta keeps skin rosy rather than yellow, Highlights pulled well down to hold sunlit skin, and Shadows lifted with a little less Contrast for a soft finish. Low Sharpness, no Clarity. For portraits in late sun and window-lit rooms."
+  },
+  {
+    "recipeId": "SCL-CL-042",
+    "locale": "en",
+    "description": "Soft Highkey taken cool: a blue shift on 5200K, lower Contrast and Saturation, Shadows lifted and some Fade for a pale, pastel finish, with low Sharpness and no Clarity to keep it soft. For bright portraits, fashion and white interiors."
+  },
+  {
+    "recipeId": "SCL-CL-043",
+    "locale": "en",
+    "description": "The FL Look with a cool, matte finish: a strong Fade lifts the blacks into grey while Contrast stays up so the image keeps its shape, with Highlights pulled down, Shadows lifted, Saturation lowered and a blue shift. For cool street scenes and everyday moments."
+  },
+  {
+    "recipeId": "SCL-CL-044",
+    "locale": "en",
+    "description": "The IN Look made warmer and softer: an A2 amber shift, lower Contrast with Highlights pulled down and Shadows lifted, some Fade and a little more Saturation, with low Sharpness. For cafés, home and everyday snapshots in daylight."
+  },
+  {
+    "recipeId": "SCL-CL-045",
+    "locale": "en",
+    "description": "VV2 pushed for tropical light: more Contrast and Saturation, Highlights pulled down to hold bright skies and sand, Shadows a step darker and Clarity for punch, on a slightly warm white balance. For beaches, islands and bright travel days."
+  },
+  {
     "recipeId": "SCL-PP-001",
     "locale": "vi",
     "description": "Phong cách hoài niệm, ngập nắng, phủ lên khung hình ánh sáng ấm áp của Golden Hour.\nRất hợp cho ảnh du lịch và phong cách sống, tái hiện sắc vàng đậm và xanh lam sâu, gợi cảm giác một hành trình rong ruổi mùa hè bất tận."
@@ -427,7 +527,7 @@
   {
     "recipeId": "SCL-PP-053",
     "locale": "vi",
-    "description": "Công thức phẳng nhất trong bộ, có chủ ý: knee sớm và rất thoải cùng vùng tối được mở giữ được cả quầng nắng lẫn tiền cảnh, cân bằng trắng ấm và độ bão hoà cao để vẫn ra chất hoàng hôn. Mềm là có chủ ý."
+    "description": "Một trong những công thức màu phẳng nhất ở đây, có chủ ý: knee sớm và rất thoải cùng vùng tối được mở giữ được cả quầng nắng lẫn tiền cảnh, cân bằng trắng ấm và độ bão hoà cao để vẫn ra chất hoàng hôn. Mềm là có chủ ý."
   },
   {
     "recipeId": "SCL-PP-054",
@@ -513,6 +613,66 @@
     "recipeId": "SCL-PP-070",
     "locale": "vi",
     "description": "Đen trắng cho ban đêm: Cine4 giữ tương phản vùng tối trong khi Black Gamma mở chúng ra, đèn đường được nén lại, hạt nhiễu không bị làm nét thêm."
+  },
+  {
+    "recipeId": "SCL-PP-071",
+    "locale": "vi",
+    "description": "Chất bleach bypass: tương phản vùng tối sâu của Cine4, vùng đen được Black Level và Black Gamma Narrow ép xuống, độ bão hoà giảm mạnh để màu ngả bạc — màu nhạt là chủ ý, không phải lỗi. Sắc đỏ, xanh dương và vàng được giữ đậm hơn một nấc để không bị bệt, đường nét chắc, hợp đường phố và thời trang."
+  },
+  {
+    "recipeId": "SCL-PP-072",
+    "locale": "vi",
+    "description": "Teal và cam ngay từ máy: cân bằng trắng ngả hổ phách làm ấm da, còn Color Depth làm đậm xanh lá, cyan và xanh dương để cây lá, bầu trời và mặt nước trầm và lạnh bên cạnh làn da. Sắc đỏ và vàng được nâng sáng, nhạt đi một chút để khuôn mặt vẫn sáng; Cine2 cùng knee sớm và thoải giữ vùng sáng mềm. Dành cho chân dung và cảnh đường phố."
+  },
+  {
+    "recipeId": "SCL-PP-073",
+    "locale": "vi",
+    "description": "Tông sáng (high key), sạch và nhẹ: Black Level và Black Gamma nâng vùng tối, Cine2 giữ tương phản thấp, knee từ 80% nén mềm phông trắng mà không làm bệt. Color Depth âm trên mọi sắc làm màu nhạt đi đôi chút, chi tiết được làm dịu cùng Type4 giữ da mịn và vùng trắng bóng sạch. Dành cho studio, tường trắng và ánh sáng cửa sổ."
+  },
+  {
+    "recipeId": "SCL-PP-074",
+    "locale": "vi",
+    "description": "Tông tối (low key) và ấm: Cine4 cùng Black Level âm mạnh và Black Gamma Narrow nhấn chìm vùng tối, trong khi knee muộn giữ vùng sáng sáng rõ. Xanh lá, xanh dương và magenta được làm đậm, đỏ và vàng giữ sáng hơn một chút để làn da nổi bật, ấm áp trên nền tối. Dành cho chân dung có chiều sâu và nội thất chỉ có một khung cửa sổ chiếu sáng."
+  },
+  {
+    "recipeId": "SCL-PP-075",
+    "locale": "vi",
+    "description": "Pastel ấm: Black Level và Black Gamma Wide nâng vùng tối và vùng xám trung gian, Cine1 giữ tương phản thấp, độ bão hoà âm cùng Color Depth âm ở đỏ, vàng và magenta đưa màu về sắc kem. Cân bằng trắng hơi ấm. Dành cho quán cà phê, nội thất, chân dung mềm và thời trang nhẹ nhàng."
+  },
+  {
+    "recipeId": "SCL-PP-076",
+    "locale": "vi",
+    "description": "Giờ xanh, ngả sang tím: nhiệt độ màu thấp làm lạnh khung hình và độ lệch magenta đẩy sang tím, xanh dương và magenta được làm đậm, sắc vàng giữ sáng để ánh đèn vẫn sạch. Knee thoải giữ được ô cửa sáng đèn và chút ánh sáng cuối trên trời, Crispening cao để hạt nhiễu không bị làm nét. Dành cho chạng vạng trên phố, mặt nước và đồi núi; dùng ban ngày ảnh sẽ rất xanh tím."
+  },
+  {
+    "recipeId": "SCL-PP-077",
+    "locale": "vi",
+    "description": "Bình yên ngày âm u: cân bằng trắng lạnh, Black Level và Black Gamma Wide mở vùng tối và vùng xám trung gian, độ bão hoà âm làm màu lắng xuống, trong khi xanh lá, xanh dương và cyan được làm đậm một nấc để không bị xám. Gamma Movie với Knee Auto. Dành cho phố ngày âm u, ngày mưa và những buổi dạo đời thường."
+  },
+  {
+    "recipeId": "SCL-PP-078",
+    "locale": "vi",
+    "description": "Màu mùa thu: cân bằng trắng ngả hổ phách và độ bão hoà cao, đỏ và vàng được làm đậm để lá cây trông đằm thay vì cam chói, xanh lá được nâng sáng và nhạt đi một chút để lùi về phía sau. Vùng đen chắc và knee nhẹ trên đường cong Still. Dành cho phong cảnh mùa thu, khu vườn và du lịch dưới nắng ấm."
+  },
+  {
+    "recipeId": "SCL-PP-079",
+    "locale": "vi",
+    "description": "Món ăn dưới ánh sáng ban ngày: màu S-Cinetone với cân bằng trắng ấm và độ bão hoà tăng, đỏ và xanh lá được làm đậm một nấc để nước sốt và rau thơm trông đậm đà, sắc vàng giữ sáng. Knee thoải giữ được phản chiếu trên đĩa và ly, B/W Balance Type4 ưu tiên chi tiết vùng trắng cho bề mặt sạch, bóng. Dành cho bàn ăn cạnh cửa sổ và khu chợ."
+  },
+  {
+    "recipeId": "SCL-PP-080",
+    "locale": "vi",
+    "description": "Dành cho xuất HDR và hậu kỳ: HLG2 với color mode 709 ghi lại dải sáng rộng mà HLG được tạo ra để thể hiện, nên cần xem trên màn hình HDR; trên màn hình SDR thông thường, ảnh lấy thẳng từ máy trông phẳng. Độ bão hoà tăng nhẹ, xanh lá, xanh dương và cyan đậm hơn một nấc, knee ở 95% chỉ nén phần sáng nhất. Dành cho phong cảnh và du lịch."
+  },
+  {
+    "recipeId": "SCL-PP-081",
+    "locale": "vi",
+    "description": "Không phải một look: nền Sony đưa ra cho PP8 — S-Log3 với S-Gamut3.Cine và Detail −7, không có độ nét nào được làm sẵn trong máy — mọi thông số khác để 0, knee tắt như trên S-Log. Ghi lại hình phẳng, tương phản thấp, dành để chỉnh màu hoặc áp LUT về sau."
+  },
+  {
+    "recipeId": "SCL-PP-082",
+    "locale": "vi",
+    "description": "Màu mùa mưa: cân bằng trắng lạnh với độ lệch xanh và độ bão hoà tăng, cyan được làm đậm nhất rồi đến xanh dương, để phố ướt, ô dù và bầu trời xám vẫn giữ màu, sắc vàng được nâng sáng. Black Gamma Wide mở nhẹ vùng bóng, Knee Auto trên đường cong Movie. Dành cho phố mùa mưa và du lịch ngày trời xám."
   },
   {
     "recipeId": "SCL-CL-001",
@@ -698,5 +858,45 @@
     "recipeId": "SCL-CL-037",
     "locale": "vi",
     "description": "Công thức Creative Look Film (FL) của Filmreel (Campuchia), thuộc bộ sưu tập Alpha Recipes của Sony."
+  },
+  {
+    "recipeId": "SCL-CL-038",
+    "locale": "vi",
+    "description": "Đen trắng gắt trên Look BW: Contrast tăng mạnh và Shadows kéo xuống cho vùng đen sâu, Highlights hạ nhẹ để vùng trắng còn chất liệu, Clarity cùng Sharpness cao cho đường nét gai góc. Dành cho đường phố về đêm và ánh sáng gắt."
+  },
+  {
+    "recipeId": "SCL-CL-039",
+    "locale": "vi",
+    "description": "Đen trắng mềm cho chân dung trên Look BW: Contrast thấp, Shadows nâng lên và Highlights kéo xuống cho thang xám mở và thoáng, thêm chút Fade, Sharpness thấp và không dùng Clarity để da luôn mịn."
+  },
+  {
+    "recipeId": "SCL-CL-040",
+    "locale": "vi",
+    "description": "Look NT gần như giữ nguyên: Contrast tăng một nấc, Highlights hạ nhẹ để sản phẩm và vải màu trắng giữ được chi tiết, Sharpness vừa phải cùng chút Clarity cho chất liệu, Saturation để 0. Dành cho ảnh sản phẩm, catalogue và quần áo cần màu tiết chế."
+  },
+  {
+    "recipeId": "SCL-CL-041",
+    "locale": "vi",
+    "description": "Look PT được làm ấm cho ánh nắng vàng: độ lệch A2 cùng chút magenta giữ da hồng hào thay vì vàng, Highlights kéo xuống nhiều để giữ làn da dưới nắng, Shadows nâng lên và Contrast giảm nhẹ cho cảm giác mềm. Sharpness thấp, không dùng Clarity. Dành cho chân dung lúc nắng chiều và trong phòng có ánh sáng cửa sổ."
+  },
+  {
+    "recipeId": "SCL-CL-042",
+    "locale": "vi",
+    "description": "Soft Highkey theo hướng lạnh: độ lệch B trên nền 5200K, Contrast và Saturation thấp, Shadows nâng lên cùng chút Fade cho màu nhạt kiểu pastel, Sharpness thấp và không dùng Clarity để giữ độ mềm. Dành cho chân dung sáng, thời trang và nội thất trắng."
+  },
+  {
+    "recipeId": "SCL-CL-043",
+    "locale": "vi",
+    "description": "Look FL với bề mặt mờ (matte) và lạnh: Fade mạnh nâng vùng đen thành xám trong khi Contrast vẫn cao để hình giữ khối, Highlights kéo xuống, Shadows nâng lên, Saturation giảm cùng độ lệch xanh. Dành cho cảnh đường phố tông lạnh và khoảnh khắc đời thường."
+  },
+  {
+    "recipeId": "SCL-CL-044",
+    "locale": "vi",
+    "description": "Look IN ấm hơn và mềm hơn: độ lệch A2, Contrast thấp cùng Highlights kéo xuống và Shadows nâng lên, thêm chút Fade và Saturation, Sharpness thấp. Dành cho quán cà phê, ở nhà và ảnh chụp đời thường ban ngày."
+  },
+  {
+    "recipeId": "SCL-CL-045",
+    "locale": "vi",
+    "description": "VV2 đẩy mạnh cho nắng nhiệt đới: Contrast và Saturation cao hơn, Highlights kéo xuống để giữ bầu trời sáng và bãi cát, Shadows tối hơn một nấc cùng Clarity cho độ đanh, trên cân bằng trắng hơi ấm. Dành cho biển, đảo và những ngày du lịch nhiều nắng."
   }
 ]

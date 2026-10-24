@@ -156,8 +156,6 @@ function SiteHeaderInner() {
   const { user, isReady, openLoginModal, logout } = useAuth();
 
   const currentQ = searchParams?.get('q') ?? '';
-  const currentStyle = searchParams?.get('style') ?? '';
-  const currentTone = searchParams?.get('tone') ?? '';
 
   const wikiCat = searchParams?.get('cat') ?? 'all';
   const wikiSub1 = searchParams?.get('sub1') ?? 'all';
