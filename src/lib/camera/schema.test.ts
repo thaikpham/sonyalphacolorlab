@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { clSettingsSchema, ppSettingsSchema, recipeSchema, whiteBalanceSchema } from './schema';
+import {
+  clSettingsSchema,
+  ppSettingsSchema,
+  RECIPE_ID_RE,
+  RECIPE_ID_TRANSITION_RE,
+  recipeSchema,
+  whiteBalanceSchema,
+} from './schema';
 import { formatClValue, formatWhiteBalance, parseWhiteBalance } from './format';
 import {
   CL_MONOCHROME_LOOKS,
@@ -143,12 +150,30 @@ describe('recipe', () => {
     ).toBe(true);
   });
 
+  it('accepts the code shape the ids are moving to, in both formats', () => {
+    expect(recipeSchema.safeParse({ ...base, id: 'PP-001', format: 'pp', settings: validPp }).success).toBe(true);
+    expect(
+      recipeSchema.safeParse({ ...base, id: 'CL-045', slug: 'x', name: 'y', format: 'cl', settings: validCl }).success,
+    ).toBe(true);
+  });
+
   it('rejects an id whose segment disagrees with the format', () => {
     expect(recipeSchema.safeParse({ ...base, id: 'SCL-CL-001', format: 'pp', settings: validPp }).success).toBe(false);
+    expect(recipeSchema.safeParse({ ...base, id: 'CL-001', format: 'pp', settings: validPp }).success).toBe(false);
+    expect(
+      recipeSchema.safeParse({ ...base, id: 'PP-001', slug: 'x', name: 'y', format: 'cl', settings: validCl }).success,
+    ).toBe(false);
+  });
+
+  it('keeps RECIPE_ID_RE to the stored shape the CHECK enforces', () => {
+    expect(RECIPE_ID_RE.test('SCL-PP-001')).toBe(true);
+    expect(RECIPE_ID_RE.test('PP-001')).toBe(false);
+    expect(RECIPE_ID_TRANSITION_RE.test('PP-001')).toBe(true);
+    expect(RECIPE_ID_TRANSITION_RE.test('SCL-PP-001')).toBe(true);
   });
 
   it('rejects legacy ids that predate the two-format split', () => {
-    for (const id of ['scl-001', 'SCL-44', 'PROCOLOR-001']) {
+    for (const id of ['scl-001', 'SCL-44', 'PROCOLOR-001', 'pp-001', 'PP-1000', 'XSCL-PP-001', 'SCL-PP-01', 'SCL--PP-001']) {
       expect(recipeSchema.safeParse({ ...base, id, format: 'pp', settings: validPp }).success).toBe(false);
     }
   });
