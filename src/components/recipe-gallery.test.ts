@@ -128,6 +128,24 @@ describe('shared photos', () => {
       /^fetch\(`[^`]*`, \{ signal: controller\.signal \}\)\s*\.then\(\(res\) => \(res\.ok \? res\.json\(\) : null\)\)/,
     );
   });
+
+  /* A moderator's hide reached every reader but the contributor: their device
+     kept its own copy in localStorage and drew it in the grid and the
+     lightbox. A live answer that leaves a photo out is what forgets it. */
+  it('forgets a local copy the server stopped serving, on a live answer only', () => {
+    const effect = source.slice(
+      source.indexOf('// Pull community photos'),
+      source.indexOf('return () => controller.abort();'),
+    );
+    const asked = effect.indexOf('const askedWith = getLocalPhotos(slug);');
+    expect(asked).toBeGreaterThan(-1);
+    /* Taken before the request leaves, so a photo shared while it was out —
+       perhaps inserted after the server read — is not in it. */
+    expect(asked).toBeLessThan(effect.indexOf('fetch(`/api/community-photos?slug='));
+    expect(effect).toMatch(/if \(data\.source === 'supabase'\) \{/);
+    expect(effect).toMatch(/askedWith\.filter\(\(p\) => !served\.includes\(p\)\)/);
+    expect(effect).toMatch(/setLocalPhotos\(slug, getLocalPhotos\(slug\)\.filter\(\(p\) => !gone\.has\(p\)\)\)/);
+  });
 });
 
 /**
