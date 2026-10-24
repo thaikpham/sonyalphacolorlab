@@ -15,15 +15,12 @@
  */
 
 import {
-  CL_PARAM_LABELS,
   CL_PARAM_ORDER,
   CREATIVE_LOOKS,
   PP_COLOR_MODE,
   PP_GAMMA,
   PP_MENU_ITEMS,
-  PP_PARAM_LABELS,
   WB_AUTO_MODES,
-  WB_PARAM_LABELS,
   WB_PRESETS,
   type ClParam,
   type CreativeLookCode,
@@ -70,46 +67,4 @@ const KEY_SET: ReadonlySet<string> = new Set(CAPABILITY_KEYS)
 
 export function isCapabilityKey(value: string): value is CapabilityKey {
   return KEY_SET.has(value)
-}
-
-const LOOK_LABEL: Record<string, string> = Object.fromEntries(
-  CREATIVE_LOOKS.map((l) => [l.code, `${l.code} (${l.label})`]),
-)
-
-/**
- * The name a reader sees for a key. Technical labels only — the same strings
- * the recipe tables print — so nothing here is translated (Rule 3).
- */
-export function capabilityLabel(key: CapabilityKey): string {
-  if (key === 'picture-profile') return 'Picture Profile'
-  if (key === 'creative-look') return 'Creative Look'
-  if (key === 'creative-style') return 'Creative Style'
-  if (key === 'wb.kelvin') return WB_PARAM_LABELS.temperature
-  if (key === 'wb.shift:ab') return WB_PARAM_LABELS.shiftAb
-  if (key === 'wb.shift:gm') return WB_PARAM_LABELS.shiftGm
-  const i = key.indexOf(':')
-  const kind = key.slice(0, i)
-  const value = key.slice(i + 1)
-  switch (kind) {
-    case 'pp.item':
-      return value
-    case 'pp.gamma':
-      return `${PP_PARAM_LABELS.gamma} ${value}`
-    case 'pp.colorMode':
-      return `${PP_PARAM_LABELS.colorMode} ${value}`
-    case 'cl.look':
-      return LOOK_LABEL[value] ?? value
-    case 'cl.adjust':
-      return CL_PARAM_LABELS[value as ClParam] ?? value
-    default:
-      /* wb.auto / wb.preset: the value is already the menu's own name. */
-      return value
-  }
-}
-
-/** Where a key belongs on a camera page: the three groups the recipe pages use. */
-export function capabilityGroup(key: CapabilityKey): 'pp' | 'cl' | 'wb' {
-  if (key === 'picture-profile' || key.startsWith('pp.')) return 'pp'
-  if (key === 'creative-look' || key === 'creative-style' || key.startsWith('cl.')) return 'cl'
-  return 'wb'
 }
