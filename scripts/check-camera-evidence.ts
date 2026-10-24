@@ -20,9 +20,9 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { absentKey, checksFileSchema, type ChecksFile, type SourceCheck } from '../src/lib/cameras/capabilities/checks'
+import { checkSource, checksFileSchema, type ChecksFile } from '../src/lib/cameras/capabilities/checks'
 import { EVIDENCE_SOURCES, type EvidenceSource } from '../src/lib/cameras/capabilities/evidence'
-import { findLiteral, helpGuideText, normalise, section } from '../src/lib/cameras/capabilities/page-text'
+import { normalise } from '../src/lib/cameras/capabilities/page-text'
 
 const CHECKS_PATH = join('data', 'camera-evidence.checks.json')
 
@@ -40,8 +40,6 @@ function parseArgs(argv: string[]): Args {
   return args
 }
 
-const today = () => new Date().toISOString().slice(0, 10)
-
 async function readPage(source: EvidenceSource, from?: string): Promise<{ html?: string; status?: number }> {
   if (from) {
     try {
@@ -55,39 +53,6 @@ async function readPage(source: EvidenceSource, from?: string): Promise<{ html?:
     return res.ok ? { html: await res.text(), status: res.status } : { status: res.status }
   } catch {
     return {}
-  }
-}
-
-export function checkSource(source: EvidenceSource, html: string | undefined, status?: number): SourceCheck {
-  const base = { url: source.url, checkedAt: today(), found: {}, missing: [], absent: {} }
-  if (html === undefined) return { ...base, outcome: 'unreachable', ...(status ? { httpStatus: status } : {}) }
-  const page = helpGuideText(html)
-  if (!page) return { ...base, outcome: 'unreadable', ...(status ? { httpStatus: status } : {}) }
-
-  const found: Record<string, string> = {}
-  const missing = new Set<string>()
-  const absent: SourceCheck['absent'] = {}
-  for (const claim of source.claims) {
-    for (const literal of claim.match) {
-      const key = normalise(literal)
-      const hit = findLiteral(page.body, literal)
-      if (hit) found[key] = hit.context
-      else missing.add(key)
-    }
-    if (claim.absentFrom) {
-      const list = section(page.body, claim.absentFrom.after, claim.absentFrom.before)
-      absent[absentKey(claim.absentFrom)] =
-        list === null ? 'no-list' : findLiteral(list, claim.absentFrom.literal) ? 'present' : 'absent'
-    }
-  }
-  return {
-    ...base,
-    outcome: 'ok',
-    ...(status ? { httpStatus: status } : {}),
-    title: page.title,
-    found: Object.fromEntries(Object.entries(found).sort(([a], [b]) => a.localeCompare(b))),
-    missing: [...missing].sort(),
-    absent: Object.fromEntries(Object.entries(absent).sort(([a], [b]) => a.localeCompare(b))),
   }
 }
 
@@ -107,11 +72,15 @@ async function runChecks(args: Args) {
     const check = checkSource(source, html, status)
     next.sources[source.id] = check
     const titleOk = check.title === normalise(source.topic)
+    /* Another body's guide: its topic can match word for word, and confirms nothing. */
+    const modelOk = check.model === source.camera
     const presentWhereAbsent = Object.entries(check.absent).filter(([, v]) => v !== 'absent')
     const line = [
       source.id.padEnd(28),
       check.outcome.padEnd(11),
-      check.outcome === 'ok' ? `title ${titleOk ? 'ok' : `"${check.title}"`}` : `status ${check.httpStatus ?? '—'}`,
+      check.outcome === 'ok'
+        ? `title ${titleOk ? 'ok' : `"${check.title}"`}  model ${modelOk ? 'ok' : `"${check.model ?? '—'}"`}`
+        : `status ${check.httpStatus ?? '—'}`,
       `found ${Object.keys(check.found).length}`,
       `missing ${check.missing.length}`,
       `absent ${Object.values(check.absent).filter((v) => v === 'absent').length}/${Object.keys(check.absent).length}`,
@@ -119,7 +88,10 @@ async function runChecks(args: Args) {
     console.log(line)
     for (const m of check.missing) console.log(`    missing: ${m}`)
     for (const [k, v] of presentWhereAbsent) console.log(`    ${v}: ${k}`)
-    if (check.outcome !== 'ok' || !titleOk || check.missing.length || presentWhereAbsent.length) problems++
+    if (check.outcome === 'ok' && !modelOk) {
+      console.log(`    the guide is for ${check.model ?? 'no body its title names'}, not ${source.camera}`)
+    }
+    if (check.outcome !== 'ok' || !titleOk || !modelOk || check.missing.length || presentWhereAbsent.length) problems++
   }
 
   const ordered: ChecksFile = {

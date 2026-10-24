@@ -3,7 +3,7 @@ import camerasSeed from '../../../../data/sony-cameras.seed.json'
 import { modelCode } from '../aliases'
 import { EVIDENCE_SOURCES, type Claim, type EvidenceSource } from './evidence'
 import { EVIDENCE_CHECKS } from './index'
-import { absentKey, confirmedClaims, type ConfirmedClaim, type SourceCheck } from './checks'
+import { absentKey, checkSource, confirmedClaims, type ConfirmedClaim, type SourceCheck } from './checks'
 import { isCapabilityKey } from './keys'
 import { normalise } from './page-text'
 
@@ -93,6 +93,7 @@ describe('the checks file', () => {
       const check = EVIDENCE_CHECKS.sources[source.id]
       expect(check?.outcome).toBe('ok')
       expect(check?.title).toBe(normalise(source.topic))
+      expect(check?.model, 'the page read must be in this body’s own guide').toBe(source.camera)
       const confirmed = new Set(confirmedClaims(source, check))
       const unconfirmed = source.claims
         .filter((c) => ![...confirmed].some((k) => sameClaim(k, c)))
@@ -130,6 +131,7 @@ const passing = (s: EvidenceSource): SourceCheck => ({
   checkedAt: '2026-10-05',
   outcome: 'ok',
   title: s.topic,
+  model: s.camera,
   found: Object.fromEntries(s.claims.flatMap((c) => c.match).map((m) => [m, `…${m}…`])),
   missing: [],
   absent: Object.fromEntries(s.claims.filter((c) => c.absentFrom).map((c) => [absentKey(c.absentFrom!), 'absent'])),
@@ -144,6 +146,8 @@ describe('only confirmed claims count', () => {
     ['an unreachable page', { ...passing(s), outcome: 'unreachable' as const }],
     ['a check of another URL', { ...passing(s), url: 'https://helpguide.sony.net/other.html' }],
     ['a check that read another topic', { ...passing(s), title: 'Something Else (still image)' }],
+    ['a check of another body’s guide', { ...passing(s), model: 'TEST-2' }],
+    ['a check whose page named no body', { ...passing(s), model: undefined }],
     ['a literal the check did not find', { ...passing(s), found: {}, missing: ['FL(Film):'] }],
   ])('%s confirms nothing', (_label, check) => {
     expect(confirmedClaims(s, check)).toEqual([])
@@ -166,5 +170,38 @@ describe('only confirmed claims count', () => {
     const [c] = confirmedClaims(s, passing(s)) as ConfirmedClaim[]
     expect(c.mode).toBe('both')
     expect(c.source.checkedAt).toBe('2026-10-05')
+  })
+})
+
+/* From fetched page to confirmed claim, through the writer the check runs.
+   Topic ids repeat across guides — ZV-E10 and DSC-RX100M7 share both of
+   theirs — so a source pointed at the wrong root reads a real topic of the
+   wrong camera. The page is synthetic, shaped like the older template; the
+   two runs differ only in the body its document title names. */
+describe('a page from another body’s guide', () => {
+  const zvE10: EvidenceSource = {
+    id: 'ZV-E10/fixture',
+    camera: 'ZV-E10',
+    url: 'https://helpguide.sony.net/fixture/shared-topic.html',
+    topic: 'Creative Style',
+    scope: 'unstated',
+    claims: [{ capability: 'creative-style', status: 'supported', match: ['MENU → (Fixture Settings) → [Creative Style].'] }],
+  }
+  const page = (title: string) => `<html><head><title>${title}</title></head><body><main>
+    <h2 id="id_title"> <span>Creative Style</span> </h2>
+    <div id="id_content"><p>MENU → (Fixture Settings) → [<span>Creative Style</span>].</p></div>
+  </main></body></html>`
+
+  it('confirms nothing, though its topic and every literal match', () => {
+    const check = checkSource(zvE10, page('ILCE-6400 | Help Guide |   Creative Style  '), 200, '2026-10-24')
+    expect(check).toMatchObject({ outcome: 'ok', title: 'Creative Style', model: 'ILCE-6400', missing: [] })
+    expect(Object.keys(check.found)).toHaveLength(1)
+    expect(confirmedClaims(zvE10, check)).toEqual([])
+  })
+
+  it('the same page in the body’s own guide confirms the claim', () => {
+    const check = checkSource(zvE10, page('ZV-E10 | Help Guide |   Creative Style  '), 200, '2026-10-24')
+    expect(check.model).toBe('ZV-E10')
+    expect(confirmedClaims(zvE10, check)).toHaveLength(1)
   })
 })

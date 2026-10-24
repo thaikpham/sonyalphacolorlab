@@ -40,6 +40,16 @@ describe('helpGuideText', () => {
   it('is null for a page that is not a topic', () => {
     expect(helpGuideText('<html><body><p>No topic here</p></body></html>')).toBeNull()
   })
+
+  it('reads the body the guide is for from the document title, and only from there', () => {
+    const titled = (title: string) => PAGE.replace('<title>Ignored - Sony</title>', `<title>${title}</title>`)
+    expect(helpGuideText(titled('TEST-1 | Help Guide |  Fixture Look (still image/movie)'))?.model).toBe('TEST-1')
+    expect(helpGuideText(titled('\n  TEST-2&nbsp;| Help Guide | Fixture Look'))?.model).toBe('TEST-2')
+    /* A title not shaped like a guide's names no body — never a guess at one. */
+    expect(page?.model).toBeNull()
+    expect(helpGuideText(titled(' | Help Guide | Fixture Look'))?.model).toBeNull()
+    expect(helpGuideText(PAGE.replace('<title>Ignored - Sony</title>', ''))?.model).toBeNull()
+  })
 })
 
 describe('normalise', () => {

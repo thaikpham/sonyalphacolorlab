@@ -11,7 +11,8 @@
       "absent": {},
       "outcome": "ok",
       "httpStatus": 200,
-      "title": "Creative Style"
+      "title": "Creative Style",
+      "model": "DSC-RX100M7"
     },
     "DSC-RX100M7/picture-profile": {
       "url": "https://helpguide.sony.net/dsc/1920/v1/en/contents/TP0001211745.html",
@@ -61,7 +62,8 @@
       },
       "outcome": "ok",
       "httpStatus": 200,
-      "title": "Picture Profile"
+      "title": "Picture Profile",
+      "model": "DSC-RX100M7"
     },
     "ILCE-6400/creative-style": {
       "url": "https://helpguide.sony.net/ilc/1810/v1/en/contents/TP0002264693.html",
@@ -73,7 +75,8 @@
       "absent": {},
       "outcome": "ok",
       "httpStatus": 200,
-      "title": "Creative Style"
+      "title": "Creative Style",
+      "model": "ILCE-6400"
     },
     "ILCE-6400/picture-profile": {
       "url": "https://helpguide.sony.net/ilc/1810/v1/en/contents/TP0002273496.html",
@@ -123,7 +126,8 @@
       },
       "outcome": "ok",
       "httpStatus": 200,
-      "title": "Picture Profile"
+      "title": "Picture Profile",
+      "model": "ILCE-6400"
     },
     "ILCE-6700/creative-look": {
       "url": "https://helpguide.sony.net/ilc/2320/v1/en/contents/0411B_creative_look.html",
@@ -154,7 +158,8 @@
       "absent": {},
       "outcome": "ok",
       "httpStatus": 200,
-      "title": "Creative Look (still image/movie)"
+      "title": "Creative Look (still image/movie)",
+      "model": "ILCE-6700"
     },
     "ILCE-6700/picture-profile": {
       "url": "https://helpguide.sony.net/ilc/2320/v1/en/contents/0412D_picture_profile.html",
@@ -204,7 +209,8 @@
       },
       "outcome": "ok",
       "httpStatus": 200,
-      "title": "Picture Profile (still image/movie)"
+      "title": "Picture Profile (still image/movie)",
+      "model": "ILCE-6700"
     },
     "ILCE-6700/white-balance": {
       "url": "https://helpguide.sony.net/ilc/2320/v1/en/contents/0410C_white_balance.html",
@@ -229,7 +235,8 @@
       "absent": {},
       "outcome": "ok",
       "httpStatus": 200,
-      "title": "White Balance (still image/movie)"
+      "title": "White Balance (still image/movie)",
+      "model": "ILCE-6700"
     },
     "ILCE-7C/creative-style": {
       "url": "https://helpguide.sony.net/ilc/2020/v1/en/contents/TP1000139964.html",
@@ -241,7 +248,8 @@
       "absent": {},
       "outcome": "ok",
       "httpStatus": 200,
-      "title": "Creative Style"
+      "title": "Creative Style",
+      "model": "ILCE-7C"
     },
     "ILCE-7C/picture-profile": {
       "url": "https://helpguide.sony.net/ilc/2020/v1/en/contents/TP1000147733.html",
@@ -291,7 +299,8 @@
       },
       "outcome": "ok",
       "httpStatus": 200,
-      "title": "Picture Profile"
+      "title": "Picture Profile",
+      "model": "ILCE-7C"
     },
     "ILCE-7CM2/creative-look": {
       "url": "https://helpguide.sony.net/ilc/2360/v1/en/contents/0411B_creative_look.html",
@@ -322,7 +331,8 @@
       "absent": {},
       "outcome": "ok",
       "httpStatus": 200,
-      "title": "Creative Look (still image/movie)"
+      "title": "Creative Look (still image/movie)",
+      "model": "ILCE-7CM2"
     },
     "ILCE-7CM2/picture-profile": {
       "url": "https://helpguide.sony.net/ilc/2360/v1/en/contents/0412D_picture_profile.html",
@@ -372,7 +382,8 @@
       },
       "outcome": "ok",
       "httpStatus": 200,
-      "title": "Picture Profile (still image/movie)"
+      "title": "Picture Profile (still image/movie)",
+      "model": "ILCE-7CM2"
     },
     "ILCE-7CM2/white-balance": {
       "url": "https://helpguide.sony.net/ilc/2360/v1/en/contents/0410C_white_balance.html",
@@ -397,7 +408,8 @@
       "absent": {},
       "outcome": "ok",
       "httpStatus": 200,
-      "title": "White Balance (still image/movie)"
+      "title": "White Balance (still image/movie)",
+      "model": "ILCE-7CM2"
     },
     "ILCE-7M3/creative-style": {
       "url": "https://helpguide.sony.net/ilc/1720/v1/en/contents/TP0001653152.html",
@@ -409,7 +421,8 @@
       "absent": {},
       "outcome": "ok",
       "httpStatus": 200,
-      "title": "Creative Style"
+      "title": "Creative Style",
+      "model": "ILCE-7M3"
     },
     "ILCE-7M3/picture-profile": {
       "url": "https://helpguide.sony.net/ilc/1720/v1/en/contents/TP0001661955.html",
@@ -459,7 +472,8 @@
       },
       "outcome": "ok",
       "httpStatus": 200,
-      "title": "Picture Profile"
+      "title": "Picture Profile",
+      "model": "ILCE-7M3"
     },
     "ILCE-7M4/creative-look": {
       "url": "https://helpguide.sony.net/ilc/2110/v1/en/contents/TP1000640837.html",
@@ -490,7 +504,8 @@
       "absent": {},
       "outcome": "ok",
       "httpStatus": 200,
-      "title": "Creative Look (still image/movie)"
+      "title": "Creative Look (still image/movie)",
+      "model": "ILCE-7M4"
     },
     "ILCE-7M4/picture-profile": {
       "url": "https://helpguide.sony.net/ilc/2110/v1/en/contents/TP1000649066.html",
@@ -540,7 +555,8 @@
       },
       "outcome": "ok",
       "httpStatus": 200,
-      "title": "Picture Profile (still image/movie)"
+      "title": "Picture Profile (still image/movie)",
+      "model": "ILCE-7M4"
     },
     "ILCE-7M4/white-balance": {
       "url": "https://helpguide.sony.net/ilc/2110/v1/en/contents/TP1000640840.html",
@@ -565,7 +581,8 @@
       "absent": {},
       "outcome": "ok",
       "httpStatus": 200,
-      "title": "White Balance (still image/movie)"
+      "title": "White Balance (still image/movie)",
+      "model": "ILCE-7M4"
     },
     "ILCE-7M5/creative-look": {
       "url": "https://helpguide.sony.net/ilc/2540/v1/en/contents/0411B_creative_look.html",
@@ -596,7 +613,8 @@
       "absent": {},
       "outcome": "ok",
       "httpStatus": 200,
-      "title": "Creative Look (still image/movie)"
+      "title": "Creative Look (still image/movie)",
+      "model": "ILCE-7M5"
     },
     "ILCE-7M5/picture-profile": {
       "url": "https://helpguide.sony.net/ilc/2540/v1/en/contents/0412D_picture_profile.html",
@@ -646,7 +664,8 @@
       },
       "outcome": "ok",
       "httpStatus": 200,
-      "title": "Picture Profile (still image/movie)"
+      "title": "Picture Profile (still image/movie)",
+      "model": "ILCE-7M5"
     },
     "ILCE-7M5/white-balance": {
       "url": "https://helpguide.sony.net/ilc/2540/v1/en/contents/0410C_white_balance.html",
@@ -671,7 +690,8 @@
       "absent": {},
       "outcome": "ok",
       "httpStatus": 200,
-      "title": "White Balance (still image/movie)"
+      "title": "White Balance (still image/movie)",
+      "model": "ILCE-7M5"
     },
     "ILCE-7RM3A/creative-style": {
       "url": "https://helpguide.sony.net/ilc/2050/v1/en/contents/TP1000181741.html",
@@ -683,7 +703,8 @@
       "absent": {},
       "outcome": "ok",
       "httpStatus": 200,
-      "title": "Creative Style"
+      "title": "Creative Style",
+      "model": "ILCE-7RM3A"
     },
     "ILCE-7RM3A/picture-profile": {
       "url": "https://helpguide.sony.net/ilc/2050/v1/en/contents/TP1000189510.html",
@@ -733,7 +754,8 @@
       },
       "outcome": "ok",
       "httpStatus": 200,
-      "title": "Picture Profile"
+      "title": "Picture Profile",
+      "model": "ILCE-7RM3A"
     },
     "ILCE-7RM4A/creative-style": {
       "url": "https://helpguide.sony.net/ilc/2060/v1/en/contents/TP0002711852.html",
@@ -745,7 +767,8 @@
       "absent": {},
       "outcome": "ok",
       "httpStatus": 200,
-      "title": "Creative Style"
+      "title": "Creative Style",
+      "model": "ILCE-7RM4A"
     },
     "ILCE-7RM4A/picture-profile": {
       "url": "https://helpguide.sony.net/ilc/2060/v1/en/contents/TP0002720655.html",
@@ -795,7 +818,8 @@
       },
       "outcome": "ok",
       "httpStatus": 200,
-      "title": "Picture Profile"
+      "title": "Picture Profile",
+      "model": "ILCE-7RM4A"
     },
     "ZV-1/creative-style": {
       "url": "https://helpguide.sony.net/dc/1910/v1/en/contents/TP0002870007.html",
@@ -807,7 +831,8 @@
       "absent": {},
       "outcome": "ok",
       "httpStatus": 200,
-      "title": "Creative Style"
+      "title": "Creative Style",
+      "model": "ZV-1"
     },
     "ZV-1/picture-profile": {
       "url": "https://helpguide.sony.net/dc/1910/v1/en/contents/TP0002878810.html",
@@ -857,7 +882,8 @@
       },
       "outcome": "ok",
       "httpStatus": 200,
-      "title": "Picture Profile"
+      "title": "Picture Profile",
+      "model": "ZV-1"
     },
     "ZV-E10/creative-style": {
       "url": "https://helpguide.sony.net/ilc/2070/v1/en/contents/TP0001140462.html",
@@ -869,7 +895,8 @@
       "absent": {},
       "outcome": "ok",
       "httpStatus": 200,
-      "title": "Creative Style"
+      "title": "Creative Style",
+      "model": "ZV-E10"
     },
     "ZV-E10/picture-profile": {
       "url": "https://helpguide.sony.net/ilc/2070/v1/en/contents/TP0001211745.html",
@@ -919,7 +946,8 @@
       },
       "outcome": "ok",
       "httpStatus": 200,
-      "title": "Picture Profile"
+      "title": "Picture Profile",
+      "model": "ZV-E10"
     }
   }
 }

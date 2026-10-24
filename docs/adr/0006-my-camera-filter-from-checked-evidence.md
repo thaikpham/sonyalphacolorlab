@@ -37,6 +37,12 @@ method:
   (never the navigation tree), and is the only writer of the checks file;
 - a claim counts only when its last check found its literals as the claim
   quotes them now, and `evidence.test.ts` fails on any claim that does not;
+- and only when the page was in that body's own guide: the check records the
+  model the document title names (`ILCE-7M3 | Help Guide | …`), and a page
+  from another body's guide confirms nothing. Topic ids repeat across guides
+  — ZV-E10 and DSC-RX100M7 share both of theirs — so a source pointed at the
+  wrong root would otherwise read a real topic of the wrong camera (added
+  2026-10-24);
 - an absence is read only from the body's **complete** list, bounded by the
   text before and after it (`GAMMA_LIST`, `COLOR_MODE_LIST`). An unbounded or
   unreadable list proves nothing.

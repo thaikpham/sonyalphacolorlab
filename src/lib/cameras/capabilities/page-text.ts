@@ -9,11 +9,19 @@
  * in the sidebar of an unrelated page. The topic is `<h2 id="id_title">` and
  * `<div id="id_content">`, on both the older (ILCE-7M4) and the current
  * (ILCE-7CM2, ILCE-6700, ILCE-7M5) page templates.
+ *
+ * Neither says which body the guide is for — topic ids repeat across guides
+ * (ZV-E10 and DSC-RX100M7 share both of theirs), so a source pointed at the
+ * wrong root reads a real topic of the wrong camera. The document `<title>`
+ * does say: `ILCE-7M4 | Help Guide | Creative Look (still image/movie)` on
+ * every template read so far.
  */
 
 export type HelpGuidePage = {
   /** The topic's own heading, e.g. `Creative Look (still image/movie)`. */
   readonly title: string
+  /** The body the guide is for, from the document title: `ILCE-7M4`. `null` when the title does not say. */
+  readonly model: string | null
   /** The topic's text, normalised. */
   readonly body: string
 }
@@ -80,12 +88,26 @@ function between(html: string, startMarker: RegExp, endMarker: RegExp): string |
   return end < 0 ? rest : rest.slice(0, end)
 }
 
+/**
+ * The model code a Help Guide's document title starts with: the text before
+ * the first `| Help Guide`. `null` when there is no title or it is not shaped
+ * like one — which confirms nothing, rather than guessing a body.
+ */
+function guideModel(html: string): string | null {
+  const title = /<title\b[^>]*>([\s\S]*?)<\/title>/i.exec(html)
+  if (!title) return null
+  const text = normalise(toText(title[1]))
+  const end = text.search(/ ?\| ?Help Guide\b/)
+  const model = end > 0 ? text.slice(0, end).trim() : ''
+  return model || null
+}
+
 /** The topic of a Help Guide page, or `null` when the page is not shaped like one. */
 export function helpGuideText(html: string): HelpGuidePage | null {
   const title = between(html, /<h2[^>]*\bid="id_title"/i, /<\/h2>/i)
   const body = between(html, /<div[^>]*\bid="id_content"/i, /\bid="(?:questionnaire|link_nav_prev_next)"|<\/main>/i)
   if (title === null || body === null) return null
-  const page = { title: normalise(toText(title)), body: normalise(toText(body)) }
+  const page = { title: normalise(toText(title)), model: guideModel(html), body: normalise(toText(body)) }
   return page.title && page.body ? page : null
 }
 
