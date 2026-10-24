@@ -21,6 +21,7 @@ import {
 } from '@/lib/community/request';
 /* One list for the read and the insert's return, so the two cannot drift. */
 import { PROPOSAL_COLUMNS } from '@/lib/community/columns';
+import { MODERATION_LIST_LIMIT, withoutHiddenSamples } from '@/lib/community/moderation';
 
 /**
  * PostgREST rejects with a plain object, not an Error, so `String(err)` gave
@@ -40,6 +41,47 @@ function logFallback(where: string, err: unknown) {
 
 /** Proposals are ranked by votes; nobody reads past the first hundred. */
 const PROPOSAL_LIST_LIMIT = 100;
+
+/**
+ * The recipe's hidden gallery photos, by URL — or `null` when that is unknown.
+ *
+ * A proposal's sample is the same URL as a gallery photo, and moderation hides
+ * the gallery row only, so every sample this route sends is checked against
+ * this first (`withoutHiddenSamples`).
+ *
+ * The service role, because nothing else can answer: anon sees approved rows
+ * only (RLS) and holds no grant on `approved`. Asking anon for the *visible*
+ * set instead would also blank samples that never joined the gallery — the
+ * cap was reached, or the insert failed — which no editor ever hid. Only
+ * `image_url` is named, so nothing else of the row leaves the database.
+ *
+ * Never fails the list: an error, returned or thrown, is "unknown", and so is
+ * a read that fills its bound, since it may have stopped short of a hidden
+ * row. Unknown fails closed downstream.
+ */
+async function hiddenPhotoUrls(slug: string): Promise<ReadonlySet<string> | null> {
+  try {
+    const { data, error } = await controlAdmin()
+      .from('community_photos')
+      .select('image_url')
+      .eq('recipe_slug', slug)
+      .eq('approved', false)
+      .limit(MODERATION_LIST_LIMIT);
+    if (error) {
+      logFallback('proposals/hidden-photos', error);
+      return null;
+    }
+    const rows = (data ?? []) as { image_url: string }[];
+    if (rows.length >= MODERATION_LIST_LIMIT) {
+      console.error(`[proposals/hidden-photos] ${slug} has ${rows.length}+ hidden photos; dropping every sample`);
+      return null;
+    }
+    return new Set(rows.map((r) => r.image_url));
+  } catch (err) {
+    logFallback('proposals/hidden-photos', err);
+    return null;
+  }
+}
 
 /**
  * The proposal payload, checked before anything is written.
@@ -183,6 +225,12 @@ export async function GET(request: Request) {
 
     if (error) throw error;
 
+    /* Started now and awaited below, beside the vote read. It never rejects:
+       a failure is `null`, which drops every sample rather than the list. */
+    const hiddenRead = (proposalRows || []).some((p) => p.sample_image_url)
+      ? hiddenPhotoUrls(slug)
+      : Promise.resolve(new Set<string>());
+
     /* Only ever resolve the *viewer's* own vote.
        This used to return every voter's email address to every browser, so
        `GET /api/proposals?slug=…` enumerated the Google address of everyone who
@@ -211,7 +259,7 @@ export async function GET(request: Request) {
       }
     }
 
-    const proposals: ProposalItem[] = (proposalRows || []).map((row) => ({
+    const rows: ProposalItem[] = (proposalRows || []).map((row) => ({
       id: row.id,
       recipeSlug: row.recipe_slug,
       title: row.title,
@@ -224,6 +272,8 @@ export async function GET(request: Request) {
       hasVoted: votedByViewer.has(row.id),
       createdAt: row.created_at,
     }));
+    /* A photo hidden in /admin/colorlab leaves the proposal cards with it. */
+    const proposals = withoutHiddenSamples(rows, await hiddenRead);
 
     return NextResponse.json({ proposals, voteStateUnknown, source: 'supabase' });
   } catch (err) {
@@ -339,19 +389,27 @@ export async function POST(request: Request) {
       }
     }
 
-    const savedProposal: ProposalItem = {
-      id: data.id,
-      recipeSlug: data.recipe_slug,
-      title: data.title,
-      authorName: data.author_name,
-      authorAvatar: data.author_avatar,
-      sampleImageUrl: data.sample_image_url ?? null,
-      settings: data.settings,
-      whiteBalance: data.white_balance,
-      voteCount: data.vote_count,
-      hasVoted: false,
-      createdAt: data.created_at,
-    };
+    /* The poster's page draws this answer straight into the list, so it is
+       held to the GET's rule: a URL an editor hid (the gallery insert above
+       met it as a 23505) comes back with no sample, as it will on reload. */
+    const [savedProposal] = withoutHiddenSamples(
+      [
+        {
+          id: data.id,
+          recipeSlug: data.recipe_slug,
+          title: data.title,
+          authorName: data.author_name,
+          authorAvatar: data.author_avatar,
+          sampleImageUrl: data.sample_image_url ?? null,
+          settings: data.settings,
+          whiteBalance: data.white_balance,
+          voteCount: data.vote_count,
+          hasVoted: false,
+          createdAt: data.created_at,
+        } satisfies ProposalItem,
+      ],
+      await hiddenPhotoUrls(recipeSlug),
+    );
 
     return NextResponse.json({ proposal: savedProposal, source: 'supabase' });
   } catch (err) {

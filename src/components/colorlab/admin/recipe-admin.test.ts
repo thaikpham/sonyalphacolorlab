@@ -140,9 +140,13 @@ describe('unsaved work is never dropped without asking', () => {
 });
 
 describe('the design rules, on this screen', () => {
-  const files = ['recipe-admin.tsx', 'fields.tsx', 'wb-fields.tsx', 'settings-fields.tsx'].map(
-    (f) => [f, readFileSync(`src/components/colorlab/admin/${f}`, 'utf8')] as const,
-  );
+  const files = [
+    'recipe-admin.tsx',
+    'fields.tsx',
+    'wb-fields.tsx',
+    'settings-fields.tsx',
+    'photo-moderation.tsx',
+  ].map((f) => [f, readFileSync(`src/components/colorlab/admin/${f}`, 'utf8')] as const);
 
   it('has one h1, as every other admin screen does', () => {
     /* The shell renders a wordmark link and no heading, so the recipe name's
@@ -174,5 +178,78 @@ describe('the design rules, on this screen', () => {
       }
     }
     expect(labels).toBe(3);
+  });
+});
+
+describe('community photo moderation, on this screen', () => {
+  const PANEL = 'src/components/colorlab/admin/photo-moderation.tsx';
+  const panel = readFileSync(PANEL, 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/(^|[^:])\/\/.*$/gm, '$1');
+
+  it('opens with the recipe, keyed on its stored slug', () => {
+    /* The stored slug, not the draft's: it is the column community_photos
+       joins on, and keying on it starts the list afresh per recipe. */
+    expect(code).toMatch(
+      /<PhotoModeration key=\{editing\.stored\.recipe\.slug\} slug=\{editing\.stored\.recipe\.slug\} \/>/,
+    );
+  });
+
+  it('lists and switches through the admin route, with the editor’s bearer token', () => {
+    expect(panel).toMatch(/fetch\(`\/api\/admin\/community-photos\?slug=\$\{encodeURIComponent\(slug\)\}`, \{\s*headers: headersNow\(\),/);
+    expect(panel).toMatch(/const headersNow = useEffectEvent\(\(\) => authed\(\)\);/);
+    expect(panel).toMatch(/method: 'PATCH',\s*headers: authed\(\),\s*body: JSON\.stringify\(\{ id: photo\.id, approved: !photo\.approved \}\)/);
+  });
+
+  it('loads the list once per slug, not again on every token refresh', () => {
+    /* `authed` changes with each refresh. As a dependency it re-ran the read,
+       and an answer landing after a switch drew the row in its old state. */
+    const start = panel.indexOf('useEffect(() => {');
+    const effect = panel.slice(start, panel.indexOf('}, [', start) + 20);
+    expect(effect).toContain('/api/admin/community-photos?slug=');
+    expect(effect).toMatch(/\}, \[slug\]\);/);
+    // Read through effect events, so neither can become a dependency again.
+    expect(effect).not.toMatch(/\bauthed\(|\bmessage\(/);
+  });
+
+  it('clears an earlier error once the list loads', () => {
+    expect(panel).toMatch(/setError\(null\);\s*setPhotos\(data\.photos\);/);
+  });
+
+  it('applies the row the server answered with, not the state it asked for', () => {
+    expect(panel).toMatch(/const fresh = data\.photo;/);
+    expect(panel).toMatch(/p\.id === fresh\.id \? fresh : p/);
+  });
+
+  it('asks the photo’s host for the thumbnail without a referrer', () => {
+    expect(panel).toMatch(/referrerPolicy="no-referrer"/);
+    expect(panel).toMatch(/rel="noopener noreferrer"/);
+  });
+
+  it('holds only error codes the moderation route or the gate can answer with', () => {
+    const emitters = [
+      'src/app/api/admin/community-photos/route.ts',
+      'src/lib/auth/admin-gate.ts',
+      PANEL,
+    ]
+      .map((f) => readFileSync(f, 'utf8'))
+      .join('\n');
+    for (const side of ['en', 'vi'] as const) {
+      const photos = (messages[side] as unknown as { photos: { errors: Record<string, string> } }).photos;
+      for (const key of Object.keys(photos.errors)) expect(emitters, `${side}: ${key}`).toContain(`'${key}'`);
+    }
+  });
+
+  it('can say every code the route answers with', () => {
+    /* Each one is a message in the panel's own errors or in the editor's
+       shared ones, so none of them falls through to "could not load". */
+    const route = readFileSync('src/app/api/admin/community-photos/route.ts', 'utf8');
+    const codes = new Set([...route.matchAll(/\{ error: '(\w+)' \}/g)].map((m) => m[1]));
+    expect(codes.size).toBeGreaterThan(0);
+    for (const side of ['en', 'vi'] as const) {
+      const shared = (messages[side] as unknown as { errors: Record<string, string> }).errors;
+      const own = (messages[side] as unknown as { photos: { errors: Record<string, string> } }).photos.errors;
+      for (const c of codes) expect(own[c] ?? shared[c], `${side}: ${c}`).toBeTruthy();
+    }
   });
 });

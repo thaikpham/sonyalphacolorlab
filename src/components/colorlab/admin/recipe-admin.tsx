@@ -7,6 +7,7 @@ import { FIELD, FIELD_SM } from '@/components/admin-ui/controls';
 import { CREATIVE_LOOK_CODES, PP_RANGES, CL_RANGES, WB_KELVIN } from '@/lib/camera/constants';
 import type { ClSettings, PpSettings, Recipe } from '@/lib/camera/schema';
 import type { UnreadableRecipe } from '@/lib/recipes/admin-types';
+import { PhotoModeration } from './photo-moderation';
 import { PpFields, ClFields } from './settings-fields';
 import { WhiteBalanceFields } from './wb-fields';
 import {
@@ -549,6 +550,10 @@ export function RecipeAdmin() {
                 onChange={(settings) => edit({ ...draft, format: 'cl', settings })}
               />
             )}
+
+            {/* From the stored row: the slug never changes, and keying on it
+                starts the list afresh when another recipe is opened. */}
+            <PhotoModeration key={editing.stored.recipe.slug} slug={editing.stored.recipe.slug} />
           </>
         )}
       </section>

@@ -7,6 +7,8 @@ import { ControlUnavailableError } from '@/lib/supabase/errors';
 import { PP_RANGES } from '@/lib/camera/constants';
 import type { Recipe } from '@/lib/camera/schema';
 import { MAX_PHOTOS_PER_RECIPE } from '@/lib/community/gallery';
+import { PHOTO_COLUMNS } from '@/lib/community/columns';
+import { MODERATION_LIST_LIMIT } from '@/lib/community/moderation';
 
 import * as comments from './comments/route';
 import * as photos from './community-photos/route';
@@ -380,6 +382,179 @@ describe('GET /api/proposals', () => {
   });
 });
 
+/**
+ * A photo hidden in /admin/colorlab must leave the proposal cards too.
+ *
+ * Moderation switches `community_photos.approved` and nothing else, but a
+ * proposal's sample is the same URL stored a second time, in
+ * `recipe_proposals.sample_image_url`. Two tables, so the fake below holds
+ * both, and answers the photo read from the filters the route actually sent:
+ * a read that forgot `approved = false` would get the visible row as well and
+ * blank it, and these tests would say so.
+ */
+describe('/api/proposals and a hidden gallery photo', () => {
+  const HIDDEN = 'https://cdn.example.com/hidden.jpg';
+  const VISIBLE = 'https://cdn.example.com/visible.jpg';
+  /* Over the cap, or its gallery insert failed: in no gallery, never hidden. */
+  const NEVER_JOINED = 'https://cdn.example.com/over-cap.jpg';
+
+  type PhotoRow = { recipe_slug: string; image_url: string; approved: boolean };
+  let gallery: PhotoRow[];
+  let stored: Record<string, unknown>[];
+
+  const proposalRow = (id: string, sample: string) => ({
+    id,
+    recipe_slug: PP.slug,
+    title: `Variant ${id}`,
+    author_name: 'Reader',
+    author_avatar: null,
+    sample_image_url: sample,
+    settings: PP.settings,
+    white_balance: PP.whiteBalance,
+    vote_count: 0,
+    created_at: '2026-10-08T00:00:00.000Z',
+  });
+
+  const matches = (row: object, filters: Call['filters']) =>
+    filters.every(([column, value]) => (row as Record<string, unknown>)[column] === value);
+
+  function tables(call: Call): Result | undefined {
+    if (call.table === 'recipe_proposals' && call.op === 'select') {
+      return { data: stored.filter((r) => matches(r, call.filters)), error: null };
+    }
+    if (call.table === 'recipe_proposals' && call.op === 'insert') {
+      const row = { ...proposalRow(`p-${stored.length + 1}`, ''), ...call.payload };
+      stored.push(row);
+      return { data: row, error: null };
+    }
+    if (call.table === 'community_photos' && call.op === 'select') {
+      const rows = gallery.filter((r) => matches(r, call.filters));
+      if (call.options?.head) return { data: null, error: null, count: rows.length };
+      return { data: rows.slice(0, call.limit).map((r) => ({ image_url: r.image_url })), error: null };
+    }
+    if (call.table === 'community_photos' && call.op === 'insert') {
+      const { recipe_slug, image_url } = call.payload as PhotoRow;
+      /* unique (recipe_slug, image_url): a hidden link sent again is a
+         duplicate, not a fresh visible row. */
+      if (gallery.some((r) => r.recipe_slug === recipe_slug && r.image_url === image_url)) {
+        return { data: null, error: { code: '23505', message: 'duplicate key' } };
+      }
+      gallery.push({ recipe_slug, image_url, approved: true });
+      return { data: null, error: null };
+    }
+    return undefined;
+  }
+
+  const samples = async (res: Response) =>
+    Object.fromEntries(
+      ((await res.json()).proposals as { id: string; sampleImageUrl: string | null }[]).map((p) => [
+        p.id,
+        p.sampleImageUrl,
+      ]),
+    );
+
+  beforeEach(() => {
+    gallery = [
+      { recipe_slug: PP.slug, image_url: HIDDEN, approved: false },
+      { recipe_slug: PP.slug, image_url: VISIBLE, approved: true },
+    ];
+    stored = [
+      proposalRow('hidden', HIDDEN),
+      proposalRow('visible', VISIBLE),
+      proposalRow('never-joined', NEVER_JOINED),
+    ];
+    db.answer = tables;
+  });
+
+  it('drops the sample of a proposal whose photo an editor hid, and serves the rest', async () => {
+    const res = await proposals.GET(get(`/api/proposals?slug=${PP.slug}`));
+    expect(res.status).toBe(200);
+    expect(await samples(res)).toEqual({
+      hidden: null,
+      visible: VISIBLE,
+      /* Matched on "hidden", never on "absent from the visible gallery". */
+      'never-joined': NEVER_JOINED,
+    });
+  });
+
+  it('asks the service role for that recipe’s hidden URLs, and for nothing else', async () => {
+    await proposals.GET(get(`/api/proposals?slug=${PP.slug}`));
+    const reads = callsTo('community_photos', 'select');
+    expect(reads).toHaveLength(1);
+    /* anon sees approved rows only and holds no grant on `approved`. */
+    expect(reads[0]).toMatchObject({ client: 'controlAdmin', columns: 'image_url' });
+    expect(reads[0].filters).toEqual([
+      ['recipe_slug', PP.slug],
+      ['approved', false],
+    ]);
+    expect(reads[0].limit).toBe(MODERATION_LIST_LIMIT);
+  });
+
+  it('keeps a hidden photo off a new proposal that reuses its URL', async () => {
+    /* The bypass: anyone signed in could file a proposal with the hidden link
+       and have it drawn on the recipe page again. */
+    const posted = await proposals.POST(post('/api/proposals', proposalBody({ sampleImageUrl: HIDDEN })));
+    expect(posted.status).toBe(200);
+    const { proposal } = await posted.json();
+    // The poster's own page draws this answer straight into the list.
+    expect(proposal.sampleImageUrl).toBeNull();
+    // The duplicate never became a second, visible gallery row.
+    expect(gallery.filter((r) => r.image_url === HIDDEN)).toEqual([
+      { recipe_slug: PP.slug, image_url: HIDDEN, approved: false },
+    ]);
+    // Still stored as sent: hiding is a reading, not a data change.
+    expect(stored.find((r) => r.id === proposal.id)?.sample_image_url).toBe(HIDDEN);
+
+    const listed = await samples(await proposals.GET(get(`/api/proposals?slug=${PP.slug}`)));
+    expect(listed[proposal.id]).toBeNull();
+    expect(listed.hidden).toBeNull();
+    expect(listed.visible).toBe(VISIBLE);
+  });
+
+  it('gives the sample back on "Show again", with no change to the proposals', async () => {
+    await proposals.POST(post('/api/proposals', proposalBody({ sampleImageUrl: HIDDEN })));
+    gallery.find((r) => r.image_url === HIDDEN)!.approved = true;
+    const listed = await samples(await proposals.GET(get(`/api/proposals?slug=${PP.slug}`)));
+    expect(listed.hidden).toBe(HIDDEN);
+    expect(listed['p-4']).toBe(HIDDEN);
+  });
+
+  it.each([
+    ['answers with an error', () => ({ data: null, error: { message: 'boom' } })],
+    [
+      'throws',
+      () => {
+        throw new ControlUnavailableError();
+      },
+    ],
+    [
+      'fills its bound, and so may have stopped short of a hidden row',
+      () => ({
+        data: Array.from({ length: MODERATION_LIST_LIMIT }, (_, i) => ({
+          image_url: `https://cdn.example.com/${i}.jpg`,
+        })),
+        error: null,
+      }),
+    ],
+  ])('drops every sample, and keeps the list, when the hidden read %s', async (_case, fail) => {
+    const errors = vi.spyOn(console, 'error').mockImplementation(() => {});
+    db.answer = (call) =>
+      call.table === 'community_photos' && call.op === 'select' ? fail() : tables(call);
+    const res = await proposals.GET(get(`/api/proposals?slug=${PP.slug}`));
+    expect(res.status).toBe(200);
+    expect(await samples(res)).toEqual({ hidden: null, visible: null, 'never-joined': null });
+    expect(errors).toHaveBeenCalled();
+    errors.mockRestore();
+  });
+
+  it('does not ask when no proposal carries a sample', async () => {
+    stored = [];
+    const res = await proposals.GET(get(`/api/proposals?slug=${PP.slug}`));
+    expect((await res.json()).proposals).toEqual([]);
+    expect(callsTo('community_photos')).toHaveLength(0);
+  });
+});
+
 describe('/api/comments', () => {
   it('answers a control read failure with 503 and no invented comments', async () => {
     db.answer = () => ({ data: null, error: { message: 'boom' } });
@@ -465,6 +640,22 @@ describe('GET /api/community-photos', () => {
     const res = await photos.GET(get(`/api/community-photos?slug=${PP.slug}`));
     expect(res.status).toBe(503);
     expect((await res.json()).error).toBe('controlUnavailable');
+  });
+
+  /* A photo hidden in /admin/colorlab must not come back here. The anon
+     client is what guarantees it: 0002's policy shows anon approved rows only,
+     and `migration.test.ts` runs that policy as anon. The service client
+     bypasses RLS, so reading with it would serve every hidden row. */
+  it('reads through the anon control client, so a hidden photo is never served', async () => {
+    const res = await photos.GET(get(`/api/community-photos?slug=${PP.slug}`));
+    expect(res.status).toBe(200);
+    expect(db.calls).toHaveLength(1);
+    const [read] = db.calls;
+    expect(read).toMatchObject({ client: 'controlRead', table: 'community_photos', op: 'select' });
+    expect(read.columns).toBe(PHOTO_COLUMNS);
+    /* No `approved` filter: anon holds no grant on that column, so one would
+       fail every gallery read instead of narrowing it. */
+    expect(read.filters).toEqual([['recipe_slug', PP.slug]]);
   });
 });
 

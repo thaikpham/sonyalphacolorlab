@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import * as COLUMN_LISTS from '@/lib/community/columns';
+import { toModeratedPhoto } from '@/lib/community/moderation';
 
 /**
  * `/api/comments` and `/api/proposals` are public and unauthenticated: anyone
@@ -76,5 +77,48 @@ describe('proposals vote state', () => {
     expect(source).not.toMatch(/votedBy:/);
     // Scoping the vote query to one address is what keeps it from being a dump.
     expect(source).toMatch(/\.eq\(\s*['"`]user_email['"`]\s*,\s*viewer\s*\)/);
+  });
+});
+
+/**
+ * Photo moderation is behind `adminGate()`, not public — but it reads on the
+ * service role, which RLS and the column grant do not bind. Every column of
+ * `community_photos` is readable there, `submitted_by` included, so the column
+ * list and the mapper are the whole boundary between an address and the
+ * browser.
+ */
+describe('the photo moderation route', () => {
+  const source = readFileSync('src/app/api/admin/community-photos/route.ts', 'utf8');
+  /* Comments out, so a sentence that mentions `.select()` is not a call. */
+  const code = source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+
+  it('selects only the shared moderation list', () => {
+    expect(code).not.toMatch(/\.select\(\s*['"`]\*['"`]\s*\)/);
+    const selects = [...code.matchAll(/\.select\(\s*([^)]*)\)/g)].map((m) => m[1].trim());
+    expect(selects.length).toBeGreaterThan(0);
+    for (const s of selects) expect(s).toBe('MODERATION_PHOTO_COLUMNS');
+    expect(source).toMatch(/import \{[^}]*\bMODERATION_PHOTO_COLUMNS\b[^}]*\} from '@\/lib\/community\/columns'/);
+  });
+
+  it('names no address and no wildcard in that list', () => {
+    const columns = COLUMN_LISTS.MODERATION_PHOTO_COLUMNS.split(',').map((c) => c.trim());
+    expect(columns).not.toContain('*');
+    for (const column of columns) expect(column).not.toMatch(/email|submitted_by|updated_by/);
+  });
+
+  it('sends five named fields, whatever the row held', () => {
+    const row = {
+      id: '6f1c1d2e-8a4b-4c3d-9e5f-0a1b2c3d4e5f',
+      image_url: 'https://cdn.example.com/a.jpg',
+      author_name: 'Reader',
+      approved: false,
+      created_at: '2026-10-20T09:00:00.000Z',
+      submitted_by: 'reader@gmail.com',
+      author_email: 'reader@gmail.com',
+    };
+    const sent = toModeratedPhoto(row);
+    expect(Object.keys(sent).sort()).toEqual(['approved', 'authorName', 'createdAt', 'id', 'imageUrl']);
+    expect(JSON.stringify(sent)).not.toContain('@');
+    expect(source).toMatch(/rows\.map\(toModeratedPhoto\)/);
   });
 });
