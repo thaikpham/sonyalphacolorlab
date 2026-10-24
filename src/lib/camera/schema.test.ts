@@ -167,9 +167,10 @@ describe('recipe', () => {
     ).toBe(false);
   });
 
-  it('keeps RECIPE_ID_RE to the stored shape the CHECK enforces', () => {
-    expect(RECIPE_ID_RE.test('SCL-PP-001')).toBe(true);
-    expect(RECIPE_ID_RE.test('PP-001')).toBe(false);
+  it('keeps RECIPE_ID_RE to the code shape the CHECK enforces, and reading tolerant', () => {
+    expect(RECIPE_ID_RE.test('PP-001')).toBe(true);
+    expect(RECIPE_ID_RE.test('CL-042')).toBe(true);
+    expect(RECIPE_ID_RE.test('SCL-PP-001')).toBe(false);
     expect(RECIPE_ID_TRANSITION_RE.test('PP-001')).toBe(true);
     expect(RECIPE_ID_TRANSITION_RE.test('SCL-PP-001')).toBe(true);
   });

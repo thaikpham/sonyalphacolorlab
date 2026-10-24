@@ -60,7 +60,11 @@ as the admin left it.
 Community rows reference a recipe by `recipe_slug`, a plain string. Postgres
 cannot enforce that across databases, so:
 
-- **recipe slugs are immutable.** Renaming one orphans every comment on it.
+- **a slug changes only by a paired migration**, one per plane, from
+  `data/former-slugs.json`. Renaming one anywhere else orphans every comment on
+  it. Community reads match `slugAliases(slug)` — the slug and its other
+  spelling — permanently, so a row written while the two planes disagreed is
+  still found.
 - the server calls `publishedRecipeExists()` against the content plane before
   writing a comment, proposal or photo.
 - a recipe may be unpublished; hard deletion is blocked while operational rows
@@ -229,6 +233,34 @@ the migration stops on the primary key. Check for that before merging:
 ```sql
 select lower(email), count(*) from admin_emails group by 1 having count(*) > 1;
 ```
+
+**Pending: recipe code ids — `20261024000000_recipe_code_ids.sql` (content)
+and `0020_recipe_slugs_to_codes.sql` (control).** Ids lose the prefix
+(`SCL-PP-048` → `PP-048`) and slugs become the name in kebab case (`hue-silk`
+→ `pp-048-soft-clean-portrait`). The content file renames every recipe id,
+cascades it to translations and images, replaces the two id CHECKs, renames
+the seed recipes' slugs (withdrawn rows keep theirs) and rewrites recipe ids in
+`lab_articles.meta`. 0020 renames `recipe_slug` in comments, proposals and
+community photos. Both take their slug list from `data/former-slugs.json`, are
+one transaction each, and change nothing when run again.
+
+**The release works in either database state**, so this is the one change here
+with no ordering hazard. It reads ids in both shapes, the recipe page and its
+OG image resolve a slug in either spelling and redirect to the one content
+holds, and every community read matches both spellings. 0020 lands on merge;
+the content file whenever the owner runs it, before or after.
+
+After the release is merged and deployed:
+
+```bash
+npm run supabase:migrations -- --target content --dry-run   # should list 20261024000000 alone
+npm run supabase:migrations -- --target content --apply
+npm run library:sync -- --target content                    # prints the plan
+npm run library:sync -- --target content --apply
+```
+
+`library:sync` refuses while the content ids and the seed's disagree in shape
+and says to apply the content migration first, so run it after, never before.
 
 ### The content project's lineage
 

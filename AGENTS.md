@@ -251,7 +251,7 @@ data/               recipes.seed.json (generated — never hand-edit)
 The catalogue is three libraries in one table: the ten Picture Profile recipes
 kept from sonycolorlab, ColorLab's own originals (`src/lib/originals/pp.ts`
 and `cl.ts`, both formats), and Creative Look recipes imported from a scrape of
-Sony's Alpha Recipes microsite. The originals share the `SCL-CL-` sequence with
+Sony's Alpha Recipes microsite. The originals share the `CL-` sequence with
 the scrape, so `emit-seed` passes their ids to the importer as reserved. The
 first and last come from **untrusted input parsed against `constants.ts`** —
 `LEGACY_CORRECTIONS` and `SCRAPE_CORRECTIONS` record every fix by name and
@@ -305,9 +305,21 @@ Do not write App Router code from memory. Read the relevant file first:
   Never translated. A temperature word must agree with the recipe's tone
   (Warm, Golden, Amber ⇒ warm; Cool ⇒ cool; Mono, Sepia ⇒ mono), names and
   word sets are unique; `names.test.ts` and `emit-seed` refuse anything else.
-  The legacy and Sony Asia rows take their names from `RECIPE_NAMES`; ids and
-  slugs did not change, and search reads the slug, so a former name ("mojave
-  sun") and an original's place ("da lat") still find the recipe.
+  The legacy and Sony Asia rows take their names from `RECIPE_NAMES`.
+- **Ids and slugs follow the code.** The id is `PP-048` (`RECIPE_ID_RE`), the
+  slug `slugFor(name)`, `pp-048-soft-clean-portrait`. URLs carry slugs, so the
+  old `SCL-` prefix had no SEO weight to keep. Every slug a seed recipe was
+  published under is in `data/former-slugs.json` (written by `seed:emit`, never
+  hand-edited); changing a slug means re-emitting it and a paired migration on
+  each plane, and `migration-roots.test.ts` fails until both carry the map.
+  Code never assumes the content plane has been migrated: ids are read through
+  `RECIPE_ID_TRANSITION_RE` / `recipeIdKey`; the recipe page, its OG image and
+  `/api/tweak` find a slug through `resolveRecipeSlug()` (308 from a former
+  slug to the current one, 307 the other way, never a static redirect in
+  `next.config.ts`); and every control-plane read keyed by `recipe_slug` uses
+  `.in('recipe_slug', slugAliases(slug))`, permanently — a row written while
+  the planes disagreed keeps its spelling. Search indexes both spellings, so a
+  former name ("mojave sun") and an original's place ("da lat") still find it.
 - **No recipe carries a photograph.** Pictures come only from readers: Google
   sign-in, an image URL, `community_photos` on the control plane, shown in the
   recipe's grid and lightbox. There is no primary photograph, no admin upload
@@ -601,7 +613,9 @@ Also: `<details>` is not valid inside `<dl>`, and heading levels must not skip
 The old site addressed recipes by **query parameter** (`/?id=scl-001`), not by
 path — that is the shape of every link already shared in Facebook groups. The
 redirect map in `next.config.ts` matches on the query param and is generated from
-`legacyId` in the seed. A path-based map would catch nothing, silently.
+`legacyId` in the seed. A path-based map would catch nothing, silently. Its
+destinations are current slugs; on a content plane that still holds the former
+one, the recipe route resolves it.
 
 ## Working style
 

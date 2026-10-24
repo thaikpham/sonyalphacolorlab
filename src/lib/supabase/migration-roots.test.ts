@@ -1,7 +1,9 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { PGlite } from '@electric-sql/pglite';
 import { beforeAll, describe, expect, it } from 'vitest';
+import type { Recipe } from '@/lib/camera/schema';
 import { PRODUCT_COLUMNS } from '@/lib/cameras/row';
+import { toRow } from '@/lib/recipes/row';
 
 /**
  * Two migration roots, two databases, and the boundary between them.
@@ -181,6 +183,26 @@ async function shape(db: PGlite): Promise<string[]> {
   return result.rows.map((r) => r.line);
 }
 
+const CONTROL_ONLY = [
+  'proposal_votes',
+  'recipe_proposals',
+  'recipe_comments',
+  'community_photos',
+  'admin_emails',
+];
+
+/**
+ * The live content project as it stood before the reconcile, not today's
+ * roots: control 0001–0016 with the control-only tables dropped by hand and
+ * content 0003 pasted into the SQL editor.
+ */
+async function liveLineage(): Promise<PGlite> {
+  const db = await freshDatabase(CONTROL_ROOT, (f) => f.split('_')[0] <= '0016');
+  await db.exec(`drop table ${CONTROL_ONLY.join(', ')} cascade`);
+  await db.exec(readFileSync(`${CONTENT_ROOT}/0003_lab_article_kind_and_meta.sql`, 'utf8'));
+  return db;
+}
+
 let content: PGlite;
 let control: PGlite;
 
@@ -221,12 +243,12 @@ describe('the content root', () => {
   it('keeps the recipe child cascades', async () => {
     await content.exec(`
       insert into recipes (id, slug, name, format, wb_mode, wb_kelvin, settings, published)
-      values ('SCL-PP-001', 'cascade-probe', 'Cascade probe', 'pp', 'kelvin', 5600, '{}'::jsonb, true);
+      values ('PP-001', 'cascade-probe', 'Cascade probe', 'pp', 'kelvin', 5600, '{}'::jsonb, true);
       insert into recipe_translations (recipe_id, locale, description)
-      values ('SCL-PP-001', 'en', 'A description.');
+      values ('PP-001', 'en', 'A description.');
       insert into recipe_images (recipe_id, storage_path, sort)
-      values ('SCL-PP-001', 'SCL-PP-001/1.jpg', 0);
-      delete from recipes where id = 'SCL-PP-001';
+      values ('PP-001', 'PP-001/1.jpg', 0);
+      delete from recipes where id = 'PP-001';
     `);
     const left = await content.query<{ n: number }>(
       `select (select count(*) from recipe_translations)
@@ -307,22 +329,6 @@ describe('the content reconcile, on the lineage the live content project came fr
      no-op on a database this root built. */
   const RECONCILE = '20261006000000_reconcile_control_lineage.sql';
   const sql = () => readFileSync(`${CONTENT_ROOT}/${RECONCILE}`, 'utf8');
-  const CONTROL_ONLY = [
-    'proposal_votes',
-    'recipe_proposals',
-    'recipe_comments',
-    'community_photos',
-    'admin_emails',
-  ];
-
-  /** The live project as it stood before the reconcile, not today's roots. */
-  async function liveLineage(): Promise<PGlite> {
-    const db = await freshDatabase(CONTROL_ROOT, (f) => f.split('_')[0] <= '0016');
-    await db.exec(`drop table ${CONTROL_ONLY.join(', ')} cascade`);
-    await db.exec(readFileSync(`${CONTENT_ROOT}/0003_lab_article_kind_and_meta.sql`, 'utf8'));
-    return db;
-  }
-
   /** This root up to, and not including, the reconcile. */
   const contentRoot = () => freshDatabase(CONTENT_ROOT, (f) => f < RECONCILE);
 
@@ -622,4 +628,229 @@ describe('the three buckets', () => {
     expect(all).not.toMatch(/bucket_id = 'recipe-uploads'/);
     expect(all).not.toMatch(/update storage\.buckets[\s\S]{0,200}recipe-uploads/);
   });
+});
+
+describe('the recipe code-id migration (S5)', () => {
+  /* The content project today: SCL- ids, the slugs each recipe was first
+     published under, translations and images keyed by id, the withdrawn
+     Picture Profiles unpublished beside them, and articles that link recipes
+     by id. The migration renames all of it in one transaction. */
+  const CODE_IDS = '20261024000000_recipe_code_ids.sql';
+  const sql = () => readFileSync(`${CONTENT_ROOT}/${CODE_IDS}`, 'utf8');
+
+  const FORMER_SLUGS = JSON.parse(readFileSync('data/former-slugs.json', 'utf8')) as Record<string, string>;
+  const seed = JSON.parse(readFileSync('data/recipes.seed.json', 'utf8')) as (Recipe & {
+    legacyId: string | null;
+  })[];
+  const formerOf = new Map(Object.entries(FORMER_SLUGS).map(([former, current]) => [current, former]));
+
+  /** A withdrawn row: not in the seed, so its slug is not in the map (S4). */
+  const WITHDRAWN = { id: 'SCL-PP-003', slug: 'withdrawn-probe', legacyId: 'scl-003' };
+
+  const RELATED_BEFORE = [
+    { kind: 'recipe', id: 'SCL-PP-048' },
+    { kind: 'product', id: 'ilce-7m4' },
+    { kind: 'recipe', id: 'CL-013' },
+    { kind: 'knowledge', id: 'scl-pp-048-notes' },
+    { kind: 'recipe', id: 'SCL-CL-013' },
+  ];
+  const RELATED_AFTER = [
+    { kind: 'recipe', id: 'PP-048' },
+    { kind: 'product', id: 'ilce-7m4' },
+    { kind: 'recipe', id: 'CL-013' },
+    { kind: 'knowledge', id: 'scl-pp-048-notes' },
+    { kind: 'recipe', id: 'CL-013' },
+  ];
+
+  async function insertRecipe(db: PGlite, row: Record<string, unknown>) {
+    const cols = Object.keys(row);
+    await db.query(
+      `insert into recipes (${cols.join(', ')}) values (${cols.map((_c, i) => `$${i + 1}`).join(', ')})`,
+      Object.values(row),
+    );
+  }
+
+  /** This root up to, and not including, the migration, holding today's rows. */
+  async function contentBefore(): Promise<PGlite> {
+    const db = await freshDatabase(CONTENT_ROOT, (f) => f < CODE_IDS);
+    for (const r of seed) {
+      await insertRecipe(db, { ...toRow(r, r.legacyId), id: `SCL-${r.id}`, slug: formerOf.get(r.slug) });
+      await db.query(
+        `insert into recipe_translations (recipe_id, locale, description) values ($1, 'en', 'A description.')`,
+        [`SCL-${r.id}`],
+      );
+    }
+    await insertRecipe(db, {
+      ...toRow(seed[0], WITHDRAWN.legacyId),
+      id: WITHDRAWN.id,
+      slug: WITHDRAWN.slug,
+      published: false,
+    });
+    await db.exec(`
+      insert into recipe_translations (recipe_id, locale, description) values ('${WITHDRAWN.id}', 'vi', 'Mô tả.');
+      insert into recipe_images (recipe_id, storage_path, sort) values ('SCL-PP-048', 'SCL-PP-048/1.jpg', 0);
+      insert into recipe_images (recipe_id, storage_path, sort) values ('SCL-CL-013', 'SCL-CL-013/1.jpg', 0);
+    `);
+    await db.query(
+      `insert into lab_articles (id, topic, level, archetype, title, meta)
+       values ('code-id-probe', 'setup', 'mid', 'recipe', 'Code id probe', $1),
+              ('code-id-untouched', 'setup', 'mid', 'explainer', 'Untouched', $2)`,
+      [{ related: RELATED_BEFORE, authorName: 'Editor' }, { related: [{ kind: 'product', id: 'ilce-7m4' }] }],
+    );
+    return db;
+  }
+
+  /** Every row the migration may touch, in a stable order, timestamps included. */
+  async function rows(db: PGlite) {
+    const q = async (text: string) => (await db.query(text)).rows;
+    return {
+      recipes: await q(`select id, slug, published, updated_at from recipes order by id`),
+      translations: await q(`select recipe_id, locale, updated_at from recipe_translations order by recipe_id, locale`),
+      images: await q(`select recipe_id, storage_path from recipe_images order by recipe_id`),
+      articles: await q(`select id, meta, updated_at from lab_articles order by id`),
+    };
+  }
+
+  let migrated: PGlite;
+  beforeAll(async () => {
+    migrated = await contentBefore();
+    await migrated.exec(sql());
+  }, 60_000);
+
+  it('is the newest content migration, versioned so the control root cannot claim it', () => {
+    const version = CODE_IDS.split('_')[0];
+    expect(version).toMatch(/^\d{14}$/);
+    expect(files(CONTENT_ROOT).at(-1)).toBe(CODE_IDS);
+    expect(files(CONTROL_ROOT).map((f) => f.split('_')[0])).not.toContain(version);
+  });
+
+  it('renames every id, the withdrawn row included, and translations and images follow', async () => {
+    const ids = (await migrated.query<{ id: string }>(`select id from recipes order by id`)).rows.map((r) => r.id);
+    expect(ids).toEqual([...seed.map((r) => r.id), 'PP-003'].sort());
+
+    const t = await migrated.query<{ recipe_id: string }>(`select recipe_id from recipe_translations order by recipe_id`);
+    expect(t.rows.map((r) => r.recipe_id)).toEqual(ids);
+
+    /* The key follows; the path is a Storage object name, not a reference. */
+    const i = await migrated.query(`select recipe_id, storage_path from recipe_images order by recipe_id`);
+    expect(i.rows).toEqual([
+      { recipe_id: 'CL-013', storage_path: 'SCL-CL-013/1.jpg' },
+      { recipe_id: 'PP-048', storage_path: 'SCL-PP-048/1.jpg' },
+    ]);
+  });
+
+  it('gives every seed recipe its current slug and leaves a withdrawn row its own', async () => {
+    const q = await migrated.query<{ id: string; slug: string }>(`select id, slug from recipes`);
+    const slugById = new Map(q.rows.map((r) => [r.id, r.slug]));
+    for (const r of seed) expect(slugById.get(r.id), r.id).toBe(r.slug);
+    expect(slugById.get('PP-003')).toBe(WITHDRAWN.slug);
+  });
+
+  it('keeps the child keys cascading on delete, and now on update', async () => {
+    const q = await migrated.query<{ def: string }>(
+      `select conrelid::regclass::text || ' ' || pg_get_constraintdef(oid) as def from pg_constraint
+        where contype = 'f' and confrelid = 'public.recipes'::regclass order by 1`,
+    );
+    expect(q.rows.map((r) => r.def)).toEqual([
+      'recipe_images FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON UPDATE CASCADE ON DELETE CASCADE',
+      'recipe_translations FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON UPDATE CASCADE ON DELETE CASCADE',
+    ]);
+  });
+
+  it('rewrites recipe links in article metadata, and only those', async () => {
+    const q = await migrated.query(`select id, meta from lab_articles order by id`);
+    expect(q.rows).toEqual([
+      { id: 'code-id-probe', meta: { related: RELATED_AFTER, authorName: 'Editor' } },
+      { id: 'code-id-untouched', meta: { related: [{ kind: 'product', id: 'ilce-7m4' }] } },
+    ]);
+  });
+
+  it.each([
+    ['an SCL- id', 'SCL-PP-990', 'recipes_id_check'],
+    ['an id that is not a code', 'PP-99', 'recipes_id_check'],
+    ['an id whose code disagrees with the format', 'CL-990', 'recipes_id_matches_format'],
+  ])('refuses %s afterwards', async (_label, id, constraint) => {
+    const pp = seed.find((r) => r.format === 'pp')!;
+    const row = { ...toRow(pp, null), id, slug: `refuse-probe-${id.toLowerCase()}` };
+    await expect(insertRecipe(migrated, row)).rejects.toThrow(constraint);
+  });
+
+  it('changes nothing the second time it runs', async () => {
+    const db = await contentBefore();
+    await db.exec(sql());
+    const [onceRows, onceShape] = [await rows(db), await shape(db)];
+    await db.exec(sql());
+    expect(await rows(db)).toEqual(onceRows);
+    expect(await shape(db)).toEqual(onceShape);
+  }, 60_000);
+
+  it('leaves the project exactly as it was when it cannot finish', async () => {
+    /* A current slug another row already holds stops the file on the unique
+       key, after the ids were renamed. The file is one transaction, so
+       nothing it did before that point survives. */
+    const db = await contentBefore();
+    await insertRecipe(db, {
+      ...toRow(seed[0], null),
+      id: 'SCL-PP-990',
+      slug: seed.find((r) => r.id === 'PP-048')!.slug,
+      published: false,
+    });
+    const [beforeRows, beforeShape] = [await rows(db), await shape(db)];
+    await expect(db.exec(sql())).rejects.toThrow(/recipes_slug_key/);
+    expect(await rows(db)).toEqual(beforeRows);
+    expect(await shape(db)).toEqual(beforeShape);
+  }, 60_000);
+
+  it('brings the live lineage to exactly the shape this root builds', async () => {
+    /* The live project came from the control root and the reconcile gave it
+       this root's shape. This file must keep the two the same: the keys it
+       replaces are found by what they reference, whatever either lineage
+       named them. */
+    const lineage = await liveLineage();
+    for (const file of files(CONTENT_ROOT).filter((f) => f >= '20261006000000')) {
+      await lineage.exec(readFileSync(`${CONTENT_ROOT}/${file}`, 'utf8'));
+    }
+    expect(await shape(lineage)).toEqual(await shape(await freshDatabase(CONTENT_ROOT)));
+  }, 60_000);
+
+  it('refuses the control plane before changing anything', async () => {
+    const text = sql();
+    const firstChange = text.search(/^\s*(create|revoke|grant|insert|comment|alter|drop|update)\b/m);
+    expect(text.indexOf('control-plane tables')).toBeGreaterThan(-1);
+    expect(text.indexOf('control-plane tables')).toBeLessThan(firstChange);
+
+    const before = await shape(control);
+    await expect(control.exec(text)).rejects.toThrow(/control-plane tables/);
+    expect(await shape(control)).toEqual(before);
+  });
+});
+
+describe('the slug lists in both migrations', () => {
+  /* The content file and control 0020 rename slugs from the same list, written
+     into each as SQL. A re-emit that changes a slug changes
+     `data/former-slugs.json`, and this fails until both files follow, so the
+     two planes can never be migrated to different spellings. */
+  const FORMER_SLUGS = JSON.parse(readFileSync('data/former-slugs.json', 'utf8')) as Record<string, string>;
+
+  function pairs(path: string): [string, string][] {
+    const text = readFileSync(path, 'utf8');
+    const begin = text.indexOf('-- former-slugs:begin');
+    const end = text.indexOf('-- former-slugs:end');
+    expect(begin, `${path}: begin marker`).toBeGreaterThan(-1);
+    expect(end, `${path}: end marker`).toBeGreaterThan(begin);
+    const lines = text
+      .slice(text.indexOf('\n', begin) + 1, end)
+      .split('\n')
+      .filter((l) => l.trim());
+    const found = lines.map((l) => /^\s*\('([a-z0-9-]+)',\s*'([a-z0-9-]+)'\),?\s*$/.exec(l));
+    expect(found.every(Boolean), `${path}: every line is one pair`).toBe(true);
+    return found.map((m) => [m![1], m![2]]);
+  }
+
+  it.each([`${CONTENT_ROOT}/20261024000000_recipe_code_ids.sql`, `${CONTROL_ROOT}/0020_recipe_slugs_to_codes.sql`])(
+    '%s renames exactly data/former-slugs.json',
+    (path) => {
+      expect(pairs(path)).toEqual(Object.entries(FORMER_SLUGS));
+    },
+  );
 });
