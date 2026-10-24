@@ -7,9 +7,9 @@ Status: accepted · 2026-10-24
 A reader with an older body — an a7 III, an a6400, a ZV-1 — opens the
 catalogue and half of it is Creative Look recipes their camera has no menu
 for. Another reader picks an S-Cinetone Picture Profile and finds no
-S-Cinetone on their Gamma list. P4 of the 2026-10-23 handoff asks for
-"My camera": the reader names their camera once, and the catalogue stops
-showing recipes that camera cannot install.
+S-Cinetone on their Gamma list. "My camera" answers both: the reader
+names their camera once, and the catalogue stops showing recipes that
+camera cannot install.
 
 A wrong "cannot install" is worse than none. It hides a recipe that would
 have worked, and nothing tells the reader it was hidden. So the filter needs
