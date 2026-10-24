@@ -30,7 +30,7 @@
   "//vendor:uploads": "The second half of the /admin/colorlab image pipeline: pulls uploaded photographs out of the PRIVATE recipe-uploads bucket into public/recipes and rewrites data/images.seed.json. Readers are never served from Storage \u2014 that is what caused the 2026-09-11 egress incident. Commit the result and deploy.",
   "vendor:uploads": "tsx --env-file=.env.local scripts/vendor-recipe-uploads.ts",
     "design:baseline": "tsx scripts/design-baseline.ts",
-    "//test:screens": "The browser gates (e2e/): layout at 390/768/1440, axe, 44px targets, CLS/JS/LCP budgets, first-screen counts. Builds and starts a production server in seed mode on :3100 (playwright.config.ts). Ten minutes; CI runs it as its own job beside verify.",
+    "//test:screens": "The browser gates (e2e/): layout at 390/768/1440, axe, 44px targets, CLS/JS/LCP budgets, first-screen counts. Builds and starts a production server in seed mode on :3100 (playwright.config.ts). About 4 minutes locally (warm build cache); CI runs it as its own job beside verify.",
     "test:screens": "playwright test",
     "test:visual": "CL_VISUAL=1 playwright test e2e/visual.spec.ts",
     "verify:screens": "npm run verify && npm run test:screens",

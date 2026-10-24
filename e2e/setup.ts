@@ -15,9 +15,9 @@ export type Role = 'visitor';
 
 /**
  * Every template once, in English (bare path) and Vietnamese (`/vi`). A
- * `:name` segment is resolved from the sitemap by `resolve()`; a template
- * with no instance (offline, no knowledge page is published) is skipped and
- * said so. `/admin` and the edit route show the gate to a signed-out visitor.
+ * `:name` segment is resolved from the sitemap by `resolve()`; only
+ * `/learn/:knowledge` may have no instance (offline, no knowledge page is
+ * published), and it is skipped and said so — any other missing one throws. `/admin` and the edit route show the gate to a signed-out visitor.
  */
 const TEMPLATES = [
   '/', '/colorlab', '/colorlab?format=pp', '/recipe/:recipe',
@@ -54,16 +54,33 @@ const PREFIX: Record<string, string> = {
   ':recipe': '/recipe/', ':camera': '/cameras/', ':audio': '/audio/', ':article': '/vi/blog/', ':knowledge': '/vi/learn/',
 };
 let locs: string[] | null = null;
+/**
+ * The sitemap's paths. A sitemap that does not answer, or answers with no
+ * `<loc>`, throws: read as "no instances", it would skip every detail route
+ * and every walk would pass on the static pages alone.
+ */
 async function sitemap(page: Page): Promise<string[]> {
   if (locs) return locs;
-  const xml = await (await page.request.get('/sitemap.xml')).text();
-  locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => new URL(m[1]).pathname);
+  const res = await page.request.get('/sitemap.xml');
+  if (!res.ok()) throw new Error(`/sitemap.xml answered ${res.status()}`);
+  const found = [...(await res.text()).matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => new URL(m[1]).pathname);
+  if (!found.length) throw new Error('/sitemap.xml lists no <loc>');
+  locs = found;
   return locs;
 }
 
 /**
- * `/recipe/:recipe` → `/recipe/<smallest slug in the sitemap>`; null when the
- * sitemap has no page under that prefix (the caller skips and logs). Static
+ * The one placeholder allowed to have no instance: no knowledge page is
+ * published offline (the seed holds none), and `/learn` itself is walked.
+ * Every other template has seed instances, so a missing one is a broken
+ * sitemap or seed, not a route to skip.
+ */
+const MAY_BE_EMPTY = ':knowledge';
+
+/**
+ * `/recipe/:recipe` → `/recipe/<smallest slug in the sitemap>`. When the
+ * sitemap has no page under that prefix: null for `:knowledge` only (the
+ * caller skips and logs), and a throw for every other placeholder. Static
  * siblings (`/blog/setup`, `/learn/glossary`, and their `/vi/` counterparts,
  * both bilingual) are not instances. `/blog/:article` and `/vi/blog/:article`
  * (plus the edit route) resolve from the same `/vi/blog/<id>` sitemap entry —
@@ -84,7 +101,10 @@ export async function resolve(page: Page, path: string): Promise<string | null> 
   const hit = (await sitemap(page))
     .filter((p) => p.startsWith(prefix) && !skip.has(p))
     .sort()[0];
-  if (!hit) return null;
+  if (!hit) {
+    if (key === MAY_BE_EMPTY) return null;
+    throw new Error(`no instance of ${path} in the sitemap`);
+  }
   return path.replace(key, hit.slice(prefix.length));
 }
 

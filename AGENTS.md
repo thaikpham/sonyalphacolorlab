@@ -22,7 +22,7 @@ npm run typecheck      # tsc --noEmit
 npm run seed:emit      # regenerate data/*.seed.json (merges data/translations.vi.json)
 npm run push:supabase -- --target content   # add missing rows; never overwrites without --overwrite (needs a secret key)
 npm run supabase:health -- --target control # is a project actually answering?
-npm run test:screens   # browser gates (e2e/): fresh seed-mode build on :3100, ~10 min — CI runs it as its own job
+npm run test:screens   # browser gates (e2e/): fresh seed-mode build on :3100, about 4 minutes locally (warm build cache) — CI runs it as its own job
 npm run verify:screens # verify + test:screens, before a PR that touches the screen
 ```
 
@@ -533,3 +533,6 @@ redirect map in `next.config.ts` matches on the query param and is generated fro
   never pipe it inside an `&&` chain; the gates pin `timezoneId: 'UTC'`; a
   screenshot or a count from a stale build decides nothing — rebuild; when one
   browser gate fails, run the whole `test:screens` (specs share the server).
+  Counts are exact matches, so a drop you did not record is red too. After
+  `test:screens`, `.next/cache/fetch-cache` holds seed answers: clear it (or
+  rebuild) before trusting a local live `next start`.

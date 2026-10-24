@@ -1,9 +1,6 @@
 {
-  "//": "Measured 2026-10-23 on the seed build; counts may only go down. axe: one per violating node, keyed '<path> · phone' (390) or '<path> · desktop' (1440). targets: phone (390). layout: keyed like axe, '<path> · phone' (390), '· tablet' (768) or '· desktop' (1440). A route or width with no entry is held at 0. Re-measured 2026-10-24 after fixing the measurement, not raised: until then a seed build straight after a live one inherited the live data cache, and resolve() took the first sitemap entry, so the instance routes moved. The instances are now the smallest path per template on the seed build (alpine-cool, sony-dsc-rx100m7-e32, sony-inzone-buds); their entries are what that run printed. Every other entry is unchanged.",
-  "layout": {
-    "/cameras/sony-dsc-rx100m7-e32 · phone": 1,
-    "/vi/cameras/sony-dsc-rx100m7-e32 · phone": 1
-  },
+  "//": "Measured 2026-10-23 on the seed build; counts may only go down. axe: one per violating node, keyed '<path> · phone' (390) or '<path> · desktop' (1440). targets: phone (390). layout: keyed like axe, '<path> · phone' (390), '· tablet' (768) or '· desktop' (1440). A route or width with no entry is held at 0. Re-measured 2026-10-24 after fixing the measurement, not raised: until then a seed build straight after a live one inherited the live data cache, and resolve() took the first sitemap entry, so the instance routes moved. The instances are now the smallest path per template on the seed build (alpine-cool, sony-dsc-rx100m7-e32, sony-inzone-buds); their entries are what that run printed. Every other entry is unchanged. 2026-10-24: counts are matched exactly (e2e/budgets.ts), and the camera page's breadcrumb overflow at 390 was fixed rather than budgeted (min-w-0 + truncate, as on /audio/[id]), so layout holds every route at 0.",
+  "layout": {},
   "axe": {
     "/cameras · phone": 3,
     "/vi/cameras · phone": 3,

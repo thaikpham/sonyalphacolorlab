@@ -1,6 +1,8 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
+import { ROUTES } from '../../e2e/setup';
+
 /**
  * The browser gates' own wiring, pinned at the source. The gates run in CI
  * against a production build; a config that quietly reused a stale build, ran
@@ -99,11 +101,37 @@ describe('.scroll-table', () => {
   });
 });
 
-describe('e2e/layout.spec.ts', () => {
-  const src = read('e2e/layout.spec.ts');
+describe('e2e/checks.ts', () => {
+  const src = read('e2e/checks.ts');
   it('exempts only the sanctioned containers from the box rule, and nothing from the page rule', () => {
     expect(src).toMatch(/closest\(EXEMPT_SCROLL\)/);
     expect(src).toMatch(/doc\.scrollWidth > W \+ 1/);
+  });
+
+  /* One definition each: a spec that grew its own copy would be a checker the
+     probes in checkers.spec.ts never see. */
+  it('is the only home of the four checkers, and checkers.spec.ts probes all four', () => {
+    for (const fn of ['axe', 'overflow', 'small', 'inSight']) {
+      expect(src, fn).toMatch(new RegExp(`export async function ${fn}\\(`));
+    }
+    for (const spec of ['layout', 'targets', 'wcag', 'first-screen']) {
+      expect(read(`e2e/${spec}.spec.ts`), spec).not.toMatch(/async function (axe|overflow|small|inSight)\(|new AxeBuilder/);
+    }
+    const probes = read('e2e/checkers.spec.ts');
+    expect(probes).toMatch(/import \{ axe, inSight, overflow, small \} from '\.\/checks\.ts'/);
+    expect(probes).toMatch(/setContent/);
+  });
+});
+
+describe('e2e/budgets.ts', () => {
+  it('matches a count exactly and says which way it moved', () => {
+    const src = read('e2e/budgets.ts');
+    expect(src).toMatch(/return found\.length === budget;/);
+    expect(src).toMatch(/— fix it/);
+    expect(src).toMatch(/— lower e2e\/budgets\.json to \$\{found\.length\}/);
+    const first = read('e2e/first-screen.spec.ts');
+    expect(first).toMatch(/toBe\(BUDGET\.list\)/);
+    expect(first).toMatch(/toBe\(BUDGET\.detail\)/);
   });
 });
 
@@ -118,18 +146,51 @@ describe('e2e/budgets.json', () => {
       }
     }
   });
+
+  /* A key the walk never visits is a budget nothing checks: it outlives the
+     route or the instance it was measured on and reads as debt still owed.
+     The instance ids come from the sitemap at run time, so the key's id is
+     put back as the template's placeholder; and one template is walked with
+     one instance, so it may carry one id. */
+  it('names only routes the walk visits, at widths that kind measures', () => {
+    const WIDTHS: Record<string, string[] | null> = { axe: ['phone', 'desktop'], layout: ['phone', 'tablet', 'desktop'], targets: null };
+    const templates = ROUTES.visitor.map((t) => ({
+      t,
+      re: new RegExp(`^${t.replace(/[.?*+^$()[\]{}|\\]/g, '\\$&').replace(/:[a-z]+/g, '([^/?]+)')}$`),
+    }));
+    for (const [kind, widths] of Object.entries(WIDTHS)) {
+      const ids = new Map<string, Set<string>>();
+      for (const key of Object.keys(budgets[kind] ?? {})) {
+        let path = key;
+        if (widths) {
+          const m = /^(.*) · (\w+)$/.exec(key);
+          expect(m, `${kind} "${key}" has no " · <width>"`).not.toBeNull();
+          expect(widths, `${kind} "${key}"`).toContain(m![2]);
+          path = m![1];
+        } else expect(key, `${kind} "${key}" carries a width`).not.toMatch(/ · /);
+        const literal = ROUTES.visitor.includes(path);
+        const hit = templates.find(({ t, re }) => t.includes(':') && re.test(path));
+        expect(literal || !!hit, `${kind} "${key}": ${path} is not a walked route`).toBe(true);
+        if (!literal && hit) {
+          const generic = hit.t.replace(/^\/vi(?=\/)/, '');
+          ids.set(generic, (ids.get(generic) ?? new Set()).add(hit.re.exec(path)![1]));
+        }
+      }
+      for (const [t, set] of ids) expect([...set], `${kind} ${t} names more than one instance`).toHaveLength(1);
+    }
+  });
 });
 
 describe('e2e/wcag.spec.ts and targets.spec.ts', () => {
   it('fail on faults a page can hide, and read their budgets from one file', () => {
     const wcag = read('e2e/wcag.spec.ts');
     expect(wcag).toMatch(/watch\(page\)/);
-    expect(wcag).toMatch(/withTags\(TAGS\)/);
+    expect(read('e2e/checks.ts')).toMatch(/withTags\(AXE_TAGS\)/);
     expect(wcag).toMatch(/report\('axe'/);
     /* Per width, like axe: a phone-only overflow must not buy a desktop one. */
     expect(read('e2e/layout.spec.ts')).toMatch(/report\('layout', `\$\{path\} · \$\{size\.name\}`/);
     const targets = read('e2e/targets.spec.ts');
-    expect(targets).toMatch(/const MIN = 44/);
+    expect(read('e2e/checks.ts')).toMatch(/export const MIN_TARGET = 44/);
     expect(targets).toMatch(/report\('targets'/);
   });
 });
@@ -153,7 +214,7 @@ describe('e2e/perf.spec.ts', () => {
 describe('e2e/first-screen.spec.ts', () => {
   const src = read('e2e/first-screen.spec.ts');
   it('counts the parameter rows apart from the controls, and has measured budgets', () => {
-    expect(src).toMatch(/details\.param-row > summary/);
+    expect(read('e2e/checks.ts')).toMatch(/details\.param-row > summary/);
     /* 99 is the "measure me" value. */
     const budget = /const BUDGET = \{[^}]*\}/.exec(src)?.[0];
     expect(budget).toBeDefined();
@@ -197,8 +258,18 @@ describe('.github/workflows/ci.yml', () => {
     expect(wf).toMatch(/path: \.next\/cache\/turbopack$/m);
     expect(wf).not.toMatch(/path: \.next\/cache$/m);
     expect(wf).toMatch(/actions\/upload-artifact/);
-    /* `verify` already builds; the second build cost two minutes a run and
-       proved nothing new. */
+    /* `verify` already builds; a second build of the same tree proved
+       nothing new. */
     expect(wf.match(/run: npm run build/g) ?? []).toHaveLength(0);
+  });
+
+  /* A push to a branch with an open PR fires `push` and `pull_request`; the
+     gates are four minutes of one tree, so they run once, on the PR (and on
+     main). A hung server must not hold a runner for the default six hours. */
+  it('runs the screens job on pull requests and main only, with a timeout', () => {
+    const job = /\n  screens:\n([\s\S]*?)\n    steps:/.exec(wf)?.[1];
+    expect(job).toBeDefined();
+    expect(job).toMatch(/^    if: github\.event_name == 'pull_request' \|\| github\.ref == 'refs\/heads\/main'$/m);
+    expect(job).toMatch(/^    timeout-minutes: 20$/m);
   });
 });

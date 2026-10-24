@@ -71,8 +71,13 @@ jobs:
   # first-screen counts. Its own job so `verify` stays the two-minute gate a
   # developer runs on every change; this one is what a design change waits
   # for. One runner until a run passes eight minutes, then shard by file.
+  #
+  # Pull requests and main only: a push to a branch with an open PR fires both
+  # `push` and `pull_request`, and the gates would run twice on one tree.
   screens:
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: Checkout repository

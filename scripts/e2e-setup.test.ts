@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { resolve } from '../e2e/setup';
 
@@ -16,7 +16,9 @@ import { resolve } from '../e2e/setup';
  * instance must not depend on it.
  *
  * `setup.ts` caches the sitemap fetch in a module-level variable, so one fake
- * XML answers every case in this file — it is read once per process.
+ * XML answers every case in the first block — it is read once per process.
+ * The failure cases each load a fresh copy of the module (`vi.resetModules`)
+ * so their own sitemap is the one read.
  */
 const XML = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -31,9 +33,17 @@ const XML = `<?xml version="1.0" encoding="UTF-8"?>
   <url><loc>http://localhost:3100/vi/learn/glossary</loc></url>
 </urlset>`;
 
-const page = {
-  request: { get: async () => ({ text: async () => XML }) },
-} as unknown as Page;
+const fake = (xml: string, status = 200) =>
+  ({
+    request: { get: async () => ({ ok: () => status >= 200 && status < 300, status: () => status, text: async () => xml }) },
+  }) as unknown as Page;
+const page = fake(XML);
+
+/** `resolve` from a fresh copy of setup.ts, whose sitemap cache is empty. */
+async function freshResolve() {
+  vi.resetModules();
+  return (await import('../e2e/setup')).resolve;
+}
 
 describe('resolve()', () => {
   it('resolves a recipe id from its bare sitemap entry', async () => {
@@ -57,11 +67,30 @@ describe('resolve()', () => {
     expect(await resolve(page, '/vi/blog/:article/edit')).toBe('/vi/blog/x/edit');
   });
 
-  it('returns null when the sitemap has no instance under the prefix', async () => {
+  it('returns null for a knowledge page when none is published', async () => {
     expect(await resolve(page, '/learn/:knowledge')).toBeNull();
+    expect(await resolve(page, '/vi/learn/:knowledge')).toBeNull();
+  });
+
+  /* Any other template with no instance is a broken sitemap or seed: a null
+     there skipped the route and every walk passed without it. */
+  it('throws when a camera has no instance in the sitemap', async () => {
+    await expect(resolve(page, '/cameras/:camera')).rejects.toThrow('no instance of /cameras/:camera in the sitemap');
   });
 
   it('leaves a path with no placeholder unchanged', async () => {
     expect(await resolve(page, '/blog/setup')).toBe('/blog/setup');
+  });
+});
+
+describe('sitemap()', () => {
+  it('throws when the sitemap does not answer OK', async () => {
+    const resolveFresh = await freshResolve();
+    await expect(resolveFresh(fake('not found', 404), '/recipe/:recipe')).rejects.toThrow('/sitemap.xml answered 404');
+  });
+
+  it('throws when the sitemap lists no <loc>', async () => {
+    const resolveFresh = await freshResolve();
+    await expect(resolveFresh(fake('<urlset></urlset>'), '/recipe/:recipe')).rejects.toThrow('/sitemap.xml lists no <loc>');
   });
 });

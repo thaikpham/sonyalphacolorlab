@@ -1,20 +1,18 @@
-import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
-import { report } from './budgets.ts';
+import { budgetFor, report } from './budgets.ts';
+import { axe } from './checks.ts';
 import { ROUTES, ready, resolve, routeAssetHosts, watch } from './setup.ts';
 
 /*
  * Accessibility, by axe-core, on every screen at a phone and a desktop width:
- * no serious or critical violation of WCAG 2.1 A/AA beyond the route's
- * recorded count at that width (e2e/budgets.json, keyed `<path> · <width>`,
- * which only goes down). One line per violating node, so fixing one of four
- * low-contrast labels lowers the count. The same walk fails
+ * exactly the route's recorded count of serious or critical WCAG 2.1 A/AA
+ * violations at that width (e2e/budgets.json, keyed `<path> · <width>`, zero
+ * when absent, only ever lowered). One line per violating node, so fixing one
+ * of four low-contrast labels lowers the count. The same walk fails
  * on an uncaught error, a console error or a 5xx — a page that renders and
  * logs an error is not a page that works (FeestFinder's axe walk caught a
  * crash this way).
  */
-
-const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
 
 for (const [role, routes] of Object.entries(ROUTES) as [keyof typeof ROUTES, string[]][]) {
   for (const size of [{ name: 'phone', width: 390, height: 844 }, { name: 'desktop', width: 1440, height: 900 }]) {
@@ -26,14 +24,11 @@ for (const [role, routes] of Object.entries(ROUTES) as [keyof typeof ROUTES, str
       const over: string[] = [];
       for (const route of routes) {
         const path = await resolve(page, route);
-        if (!path) { console.log(`skip ${route}: no instance in the sitemap`); continue; }
+        if (!path) { console.log(`skip ${route}: no knowledge page is published`); continue; }
         await page.goto(path);
         await ready(page);
-        const { violations } = await new AxeBuilder({ page }).withTags(TAGS).analyze();
-        const found = violations
-          .filter((v) => v.impact === 'serious' || v.impact === 'critical')
-          .flatMap((v) => v.nodes.map((n) => `[${v.impact}] ${v.id} — ${v.help} (${n.target.join(' ')})`));
-        if (!report('axe', `${path} · ${size.name}`, found)) over.push(`${path}: ${found.length} over budget`);
+        const found = await axe(page);
+        if (!report('axe', `${path} · ${size.name}`, found)) over.push(`${path}: ${found.length}, recorded ${budgetFor('axe', `${path} · ${size.name}`)}`);
         const seen = faults();
         if (seen.length) over.push(`${path}: ${seen.join('; ')}`);
       }

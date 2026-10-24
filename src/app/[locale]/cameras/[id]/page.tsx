@@ -106,7 +106,7 @@ export default async function ProductDetailPage({
       <main className="flex-1 w-full max-w-[110rem] mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6 flex flex-col gap-5">
         {/* Top Breadcrumb & Navigation */}
         <div className="flex items-center justify-between gap-4 pb-3">
-          <div className="flex items-center gap-2 text-meta text-ink-muted">
+          <div className="flex min-w-0 items-center gap-2 text-meta text-ink-muted">
             {/* The crumb is labelled "ColorLab", so it goes to ColorLab —
                 `/` is the launcher now and would read as a broken trail. */}
             <Link href="/colorlab" className="hover:text-accent-400 transition-colors">
@@ -117,7 +117,7 @@ export default async function ProductDetailPage({
               {t('title')}
             </Link>
             <span className="text-ink-faint">/</span>
-            <span className="text-ink font-semibold">{product.name}</span>
+            <span className="min-w-0 truncate text-ink font-semibold">{product.name}</span>
           </div>
 
           <Link href="/cameras" className="btn-glass inline-flex items-center gap-1.5 shrink-0">

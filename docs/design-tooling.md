@@ -104,8 +104,8 @@ carries a complete aesthetic, and each contradicts this one at the root:
   motion. This system is one family, Noto Sans, self-hosted, four weights, no
   second face anywhere — §Type — and has exactly one animation, §Motion.
 - `industrial-brutalist-ui` specifies rigid grids, hard corners and analog
-  degradation. Radii here are 12 / 14 / 26 / 32 and `rounded-none` is audit
-  item 8.
+  degradation. Radii here are 12 / 14 / 26 / 32 and `rounded-none` is the
+  scanner's `hardCorner` rule (`src/design/floor.ts`).
 - `design-taste-frontend` says of itself: *not dashboards, not data tables, not
   multi-step product UI.* Most of this ecosystem is a spec table.
 
@@ -122,7 +122,7 @@ image generation. They are installed for completeness and will not work here.
 
 ```bash
 npm run verify        # lint → typecheck → test → build (two minutes)
-npm run test:screens  # layout, axe, targets, perf, first-screen (ten minutes, for anything on screen)
+npm run test:screens  # layout, axe, targets, perf, first-screen (about 4 minutes locally (warm build cache), for anything on screen)
 npm run test:visual   # opt-in, local baselines
 ```
 
