@@ -15,7 +15,7 @@ import { z } from 'zod';
  * and 0019 grants anon no `approved` column to filter with — naming it there
  * would turn every gallery read into "permission denied".
  *
- * Client-safe: the screen imports the type, the route the schema and mapper.
+ * Client-safe: the screen imports the type, the routes the schema and mappers.
  */
 
 /** The PATCH body: which photo, and whether readers see it. Nothing else. */
@@ -63,4 +63,31 @@ export function toModeratedPhoto(row: ModerationRow): ModeratedPhoto {
     approved: row.approved === true,
     createdAt: String(row.created_at),
   };
+}
+
+/**
+ * Proposals with every hidden gallery photo taken off them as a sample.
+ *
+ * A proposal's sample also joins the gallery, so one URL sits in two tables:
+ * `community_photos.image_url`, which moderation switches, and
+ * `recipe_proposals.sample_image_url`, which it does not. Hiding a photo must
+ * take it off the proposal card too, and filing a fresh proposal with a hidden
+ * URL must not put it back — so the proposals read matches by URL, whatever
+ * row the URL arrived on, and "Show again" restores it with no data change.
+ *
+ * `hidden` is the slug's hidden URLs, or `null` when they could not be read.
+ * Unknown fails closed: every sample is dropped, because serving one an editor
+ * hid is the failure this exists to prevent. Only a URL actually hidden is
+ * matched, never "absent from the visible gallery": a sample that never joined
+ * it (the cap was reached, or its insert failed) was never moderated.
+ */
+export function withoutHiddenSamples<T extends { sampleImageUrl: string | null }>(
+  items: readonly T[],
+  hidden: ReadonlySet<string> | null,
+): T[] {
+  return items.map((item) =>
+    item.sampleImageUrl !== null && (hidden === null || hidden.has(item.sampleImageUrl))
+      ? { ...item, sampleImageUrl: null }
+      : item,
+  );
 }
