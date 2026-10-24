@@ -9,7 +9,6 @@ import type { ClSettings, PpSettings, Recipe } from '@/lib/camera/schema';
 import type { UnreadableRecipe } from '@/lib/recipes/admin-types';
 import { PpFields, ClFields } from './settings-fields';
 import { WhiteBalanceFields } from './wb-fields';
-import { ImagePanel } from './image-panel';
 import {
   afterSave,
   committed,
@@ -105,7 +104,7 @@ export function RecipeAdmin() {
      message. It falls back to the generic failure for the call that raised it,
      and the code goes to the console for whoever is debugging. */
   const codeMessage = useCallback(
-    (code: string, fallback: 'loadFailed' | 'saveFailed' | 'uploadFailed' = 'saveFailed') => {
+    (code: string, fallback: 'loadFailed' | 'saveFailed' = 'saveFailed') => {
       if (t.has(`errors.${code}` as never)) return t(`errors.${code}` as never);
       console.warn('[recipeAdmin] unknown error code:', code);
       return t(`errors.${fallback}`);
@@ -538,11 +537,6 @@ export function RecipeAdmin() {
               value={draft.whiteBalance}
               onChange={(whiteBalance) => edit({ ...draft, whiteBalance })}
             />
-
-            {/* Keyed on the recipe id so switching recipes remounts it rather
-                than showing the previous recipe's photographs while the new
-                list loads. */}
-            <ImagePanel key={draft.id} recipeId={draft.id} />
 
             {draft.format === 'pp' ? (
               <PpFields

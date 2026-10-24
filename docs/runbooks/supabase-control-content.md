@@ -360,7 +360,8 @@ Growth in `orphaned` or `cleanup_failed` is a defect, not routine cleanup.
 
 ### What must produce zero image egress
 
-- Recipe photography — vendored into `public/recipes` at three WebP widths.
+- Recipe photography — there is none. The catalogue carries no photograph; a
+  recipe's pictures are readers' contributions, stored as their own URLs.
 - Article media — three immutable WebP variants, one-year cache lifetime, picked
   directly by the custom image loader. No `/_next/image`, no Supabase transform.
 
@@ -402,34 +403,17 @@ and the next request refuses, with no redeploy. The second factor is
 authentication; `admin_emails` is authorisation; they are kept apart so a single
 compromised credential is not sufficient on its own.
 
-### Publishing a recipe photograph
+### Recipe photographs
 
-`/admin/colorlab` uploads into the PRIVATE `recipe-uploads` bucket. That is the
-intake, not the origin: no reader is ever served from it, and the editor sees
-its own uploads through signed URLs that expire. A photograph reaches the site
-only when someone runs the vendor step and deploys the result.
+There are none to publish. Every vendored photograph under `public/recipes`,
+its manifest `data/images.seed.json`, the `/admin/colorlab` upload panel and the
+`vendor:images` / `vendor:uploads` scripts were removed on 2026-10-24: a
+recipe's pictures come only from readers, who sign in with Google and
+contribute an image URL (`community_photos`, control plane).
 
-```bash
-npm run vendor:uploads -- --target content --dry-run   # what would change
-npm run vendor:uploads -- --target content             # pull + rewrite manifest
-git add public/recipes data/images.seed.json
-git commit -m "content(recipes): add <what> photographs"
-```
-
-The script rebuilds `data/images.seed.json` from `recipe_images`, so ORDER and
-ALT come across in the same pass — reordering photographs in the admin reaches
-readers the same way adding one does.
-
-It **refuses to shrink the manifest** unless given `--allow-removals`. A shrink
-means either a deliberate removal or something worse — the wrong project, a
-half-finished import, `0002` not applied — and the resulting commit would look
-like a routine manifest update while dropping photographs from the live site.
-Read the list it prints before reaching for the flag.
-
-The admin screen shows `CHỜ DEPLOY` / `AWAITING DEPLOY` on every photograph that
-is not yet in the manifest, and a banner with this command while any are
-pending. If an editor reports that a photograph "did not upload", check that
-banner first: it almost certainly uploaded and is waiting for this step.
+The `recipe_images` table and the PRIVATE `recipe-uploads` bucket stay — their
+migrations are applied history and nothing reads them. Clearing their rows is a
+new 14-digit content migration, not an edit to an old one.
 
 **`recipe-uploads` must never become public.** `migration-roots.test.ts` asserts
 it across every migration in the content root, because a public intake bucket

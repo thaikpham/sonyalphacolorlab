@@ -26,9 +26,6 @@
     "check:supabase-env": "tsx scripts/check-supabase-env.ts",
     "tokens:emit": "tsx packages/colorlab-tokens/src/emit.ts",
     "fonts:vendor": "node scripts/vendor-fonts.mjs",
-    "vendor:images": "tsx scripts/vendor-recipe-images.ts",
-  "//vendor:uploads": "The second half of the /admin/colorlab image pipeline: pulls uploaded photographs out of the PRIVATE recipe-uploads bucket into public/recipes and rewrites data/images.seed.json. Readers are never served from Storage \u2014 that is what caused the 2026-09-11 egress incident. Commit the result and deploy.",
-  "vendor:uploads": "tsx --env-file=.env.local scripts/vendor-recipe-uploads.ts",
     "design:baseline": "tsx scripts/design-baseline.ts",
     "//test:screens": "The browser gates (e2e/): layout at 390/768/1440, axe, 44px targets, CLS/JS/LCP budgets, first-screen counts. Builds and starts a production server in seed mode on :3100 (playwright.config.ts). About 4 minutes locally (warm build cache); CI runs it as its own job beside verify.",
     "test:screens": "playwright test",
@@ -45,6 +42,8 @@
     "content:import": "tsx --env-file=.env.local scripts/supabase/import-content.ts",
     "content:verify": "tsx --env-file=.env.local scripts/supabase/verify-content.ts",
     "push:supabase": "tsx --env-file=.env.local scripts/push-supabase.ts",
+    "//library:sync": "Brings the content project's recipe library in line with the seed: withdrawn recipes unpublished (never deleted), names updated, ColorLab's unpublished originals refreshed whole, missing recipes inserted unpublished. Prints the plan; writes only with --apply. Rules: scripts/lib/library-plan.ts.",
+    "library:sync": "tsx --env-file=.env.local scripts/sync-library.ts",
     "push:lab": "tsx --env-file=.env.local scripts/push-lab-articles.ts",
     "pull:supabase": "tsx --env-file=.env.local scripts/pull-supabase.ts"
   },

@@ -292,6 +292,15 @@ describe('POST /api/proposals', () => {
     expect(db.calls).toHaveLength(0);
   });
 
+  it('answers 400 expiringImageHost to a Facebook CDN sample, and writes nothing', async () => {
+    const res = await proposals.POST(
+      post('/api/proposals', proposalBody({ sampleImageUrl: 'https://scontent.xx.fbcdn.net/a.jpg' })),
+    );
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ ok: false, error: 'expiringImageHost' });
+    expect(db.calls.filter((c) => c.op === 'insert')).toHaveLength(0);
+  });
+
   it('asks for the sample only when the sample is what is missing', async () => {
     const noSample = await proposals.POST(
       post('/api/proposals', proposalBody({ sampleImageUrl: undefined })),
@@ -500,6 +509,17 @@ describe('POST /api/community-photos', () => {
       post('/api/community-photos', { slug: PP.slug, imageUrl: 'http://cdn.example.com/a.jpg' }),
     );
     expect((await badImage.json()).error).toBe('invalidImageUrl');
+  });
+
+  /* A signed Facebook or Instagram link renders for a while and then leaves a
+     dead tile. Refused with its own code, so the reader is told why. */
+  it('answers 400 expiringImageHost to a Facebook CDN link, and inserts nothing', async () => {
+    const res = await photos.POST(
+      post('/api/community-photos', { slug: PP.slug, imageUrl: 'https://scontent.xx.fbcdn.net/a.jpg' }),
+    );
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ ok: false, error: 'expiringImageHost' });
+    expect(callsTo('community_photos', 'insert')).toHaveLength(0);
   });
 
   it('stores a valid photo with an origin marker, not an address', async () => {

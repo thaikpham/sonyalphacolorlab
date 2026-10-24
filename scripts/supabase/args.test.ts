@@ -33,7 +33,6 @@ describe('parseArgs', () => {
     ['--dry-run', 'dryRun'],
     ['--apply', 'apply'],
     ['--rollback', 'rollback'],
-    ['--allow-removals', 'allowRemovals'],
     ['--overwrite', 'overwrite'],
     ['--with-pilot-drafts', 'withPilotDrafts'],
   ] as const)('reads %s into %s and nothing else', (flag, key) => {
@@ -66,11 +65,6 @@ describe('parseArgs', () => {
       dryRun: false,
       apply: false,
       rollback: false,
-      /* `vendor:uploads` refuses to shrink the image manifest without this.
-         Off by default like every other switch here: the manifest decides
-         which photographs the site serves, and a quiet shrink would read as a
-         routine commit. */
-      allowRemovals: false,
       /* `push:supabase` inserts missing rows only unless told to replace:
          the database holds the admin's edits and the seed does not. */
       overwrite: false,

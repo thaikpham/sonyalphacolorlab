@@ -43,9 +43,11 @@ describe('search form', () => {
 
 describe('the header search modes (ADR 0003)', () => {
   it('posts each mode to the page that answers it', () => {
-    /* ColorLab to its own grid — not the launcher at `/` — the Wiki to its
+    /* ColorLab to the grid the reader is on — `/colorlab` or
+       `/colorlab/<situation>`, never the launcher at `/` — the Wiki to its
        catalogue, and the editorial pages to /search. */
-    expect(source).toMatch(/const base = isAll \? '\/search' : isWiki \? wikiBase : '\/colorlab'/);
+    expect(source).toMatch(/const base = isAll \? '\/search' : isWiki \? wikiBase : colorlabBase/);
+    expect(source).toMatch(/const colorlabBase = isCatalogueIndex && !isWiki \? pathname : '\/colorlab';/);
   });
 
   it('searches everything on the blog, /learn and /search', () => {

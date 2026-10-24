@@ -313,10 +313,12 @@ describe('migrations', () => {
   });
 
   it('stores AWB recipes with a null kelvin', async () => {
+    /* Filmic FJ C200: AWB with a B1 / G0.5 shift and no Kelvin. (It was
+       scl-030, withdrawn on 2026-10-23.) */
     const q = await db.query<{ wb_auto: string; wb_kelvin: number | null }>(
-      `select wb_auto, wb_kelvin from recipes where legacy_id = 'scl-030'`,
+      `select wb_auto, wb_kelvin from recipes where legacy_id = 'scl-044'`,
     );
-    expect(q.rows[0]).toEqual({ wb_auto: 'AWB (Priority White)', wb_kelvin: null });
+    expect(q.rows[0]).toEqual({ wb_auto: 'AWB', wb_kelvin: null });
   });
 
   // Each of these must be rejected by the database itself, not just by Zod.

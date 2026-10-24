@@ -31,16 +31,6 @@ export type ParsedArgs = {
   apply: boolean;
   rollback: boolean;
   /**
-   * Lets `vendor:uploads` rewrite the image manifest with FEWER entries.
-   *
-   * Without it a shrink is refused, because the manifest decides which
-   * photographs the site shows and the table it is rebuilt from is populated by
-   * something else. The wrong project, a half-finished import or an unapplied
-   * migration would all read as "these photographs were deleted", and the
-   * resulting commit would look like a routine manifest update.
-   */
-  allowRemovals: boolean;
-  /**
    * Lets `push:supabase` replace rows that already exist.
    *
    * Without it the push only inserts what is missing. Once the admin editors
@@ -75,7 +65,6 @@ const BOOLEAN_FLAGS = new Map<string, keyof ParsedArgs>([
   ['--dry-run', 'dryRun'],
   ['--apply', 'apply'],
   ['--rollback', 'rollback'],
-  ['--allow-removals', 'allowRemovals'],
   ['--overwrite', 'overwrite'],
   ['--with-pilot-drafts', 'withPilotDrafts'],
 ]);
@@ -99,7 +88,6 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
     dryRun: false,
     apply: false,
     rollback: false,
-    allowRemovals: false,
     overwrite: false,
     withPilotDrafts: false,
   };

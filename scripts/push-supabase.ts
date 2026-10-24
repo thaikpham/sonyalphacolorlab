@@ -35,7 +35,7 @@ import { requireTarget } from './supabase/args';
 import { recipeSchema } from '../src/lib/camera/schema';
 import { toRow } from '../src/lib/recipes/row';
 import type { SonyCamera } from '../src/lib/cameras/types';
-import { imageRow, productRow, type SeedImage } from './lib/seed-rows';
+import { productRow } from './lib/seed-rows';
 
 type SeedRecipe = { legacyId: string } & Record<string, unknown>;
 type SeedTranslation = { recipeId: string; locale: string; description: string };
@@ -44,7 +44,6 @@ const recipes = JSON.parse(readFileSync('data/recipes.seed.json', 'utf8')) as Se
 const translations = JSON.parse(
   readFileSync('data/translations.seed.json', 'utf8'),
 ) as SeedTranslation[];
-const images = JSON.parse(readFileSync('data/images.seed.json', 'utf8')) as SeedImage[];
 const cameras = JSON.parse(readFileSync('data/sony-cameras.seed.json', 'utf8')) as SonyCamera[];
 const audio = JSON.parse(readFileSync('data/sony-audio.seed.json', 'utf8')) as SonyCamera[];
 const allProducts = [...cameras, ...audio];
@@ -99,18 +98,9 @@ async function main() {
   if (translationError) throw new Error(`translations upsert: ${translationError.message}`);
   console.log(`✓ ${translationRows.length} translations ${verb}`);
 
-  // The photographs themselves are vendored into public/recipes by
-  // vendor:images and vendor:uploads; this records which recipe each one
-  // belongs to. `(recipe_id, sort)` is unique, so re-running updates rather
-  // than duplicating.
-  if (images.length > 0) {
-    const imageRows = images.map(imageRow);
-    const { error: imageError } = await db
-      .from('recipe_images')
-      .upsert(imageRows, { onConflict: 'recipe_id,sort', ...write });
-    if (imageError) throw new Error(`images upsert: ${imageError.message}`);
-    console.log(`✓ ${imageRows.length} image links ${verb}`);
-  }
+  /* No recipe photographs. The catalogue carries none any more — a recipe's
+     pictures are readers' contributions on the control plane — so nothing is
+     written to `recipe_images`, which stays as applied history. */
 
   // Keep the product catalogue in the same remote database as its admin editor.
   // Deleting a product must be an explicit administrative action, never an

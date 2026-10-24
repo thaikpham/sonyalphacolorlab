@@ -19,6 +19,14 @@ describe('sitemap', () => {
     expect(urls).toContain('/vi/cameras/sony-ilce-7m4-bq-ap2');
   });
 
+  it('lists a situation page only once it has enough recipes', () => {
+    /* `portrait` carries well over three recipes in the seed; `heritage` has
+       none until the new Picture Profiles are published. */
+    expect(urls).toContain('/colorlab/portrait');
+    expect(urls).toContain('/vi/colorlab/portrait');
+    expect(urls).not.toContain('/colorlab/heritage');
+  });
+
   it('lists the reference shelf', () => {
     expect(urls).toContain('/learn');
     expect(urls).toContain('/vi/learn/glossary');

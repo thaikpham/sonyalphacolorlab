@@ -2,10 +2,9 @@
  * Seed entry → content-project row, for `push:supabase`.
  *
  * Every column the seed can carry goes into the row. Highlights come back into
- * the seed through `pull:supabase` and alt text through `vendor:uploads`; a
- * builder that left them out rebuilt a project with camera pages on the
- * fallback bullets and photographs unlabelled, and `--overwrite` — which
- * replaces a row whole — blanked both on a live one.
+ * the seed through `pull:supabase`; a builder that left them out rebuilt a
+ * project with camera pages on the fallback bullets, and `--overwrite` — which
+ * replaces a row whole — blanked them on a live one.
  *
  * Out of the script so it can be tested: the script itself connects to a
  * project the moment it is imported.
@@ -13,17 +12,6 @@
 
 import { highlightsSchema, type Highlights } from '../../src/lib/cameras/highlights';
 import type { SonyCamera } from '../../src/lib/cameras/types';
-
-export type SeedImage = { recipeId: string; storagePath: string; sort: number; alt?: string };
-
-export function imageRow(i: SeedImage) {
-  return {
-    recipe_id: i.recipeId,
-    storage_path: i.storagePath,
-    sort: i.sort,
-    alt: i.alt ?? null,
-  };
-}
 
 /** Throws on highlights the reader would reject: the push validates before it writes. */
 export function productRow(p: SonyCamera) {

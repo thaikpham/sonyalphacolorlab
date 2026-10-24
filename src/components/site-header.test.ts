@@ -133,9 +133,49 @@ describe('the wiki search keeps the reader’s filters', () => {
     expect(hiddenInputs(html)).toEqual([]);
   });
 
-  it('still carries the ColorLab filters', () => {
-    const html = render('/colorlab?q=a&format=cl&look=FL&tag=portrait');
-    expect(hiddenInputs(html)).toEqual(['format=cl', 'look=FL', 'tag=portrait']);
+  it('carries the catalogue’s style, tone and colour system, never a legacy look or tag', () => {
+    const html = render('/colorlab?q=a&style=film&tone=warm&format=cl&look=FL&tag=portrait');
+    expect(hiddenInputs(html)).toEqual(['style=film', 'tone=warm', 'format=cl']);
+  });
+});
+
+describe('the catalogue search keeps the reader on their grid', () => {
+  it('submits a no-JS search to the situation page it is on', () => {
+    /* `/colorlab/portrait` is the same grid narrowed; a query typed there
+       narrows the portraits rather than leaving them. */
+    /* The form renders once the console is open, which a query does. */
+    expect(render('/colorlab/portrait?q=a&tone=cool')).toContain('action="/colorlab/portrait"');
+    expect(render('/colorlab/portrait?q=a', 'vi')).toContain('action="/vi/colorlab/portrait"');
+    expect(render('/recipe/mojave-sun?q=a')).toContain('action="/colorlab"');
+  });
+
+  it('pushes through the catalogue’s own builder, onto the current path', () => {
+    const updateFilters = slice('const updateFilters = useCallback(', 'const searchTimer');
+    const colorlab = updateFilters.slice(updateFilters.lastIndexOf('return;'));
+    expect(colorlab).toContain('colorlabSearch(searchParams, { q: newQ })');
+    expect(colorlab).toMatch(/router\.push\(qs \? `\$\{colorlabBase\}\?\$\{qs\}` : colorlabBase, \{ scroll: false \}\)/);
+    expect(source).toMatch(
+      /const colorlabBase = isCatalogueIndex && !isWiki \? pathname : '\/colorlab';/,
+    );
+  });
+
+  it('draws no Format, Look or Tag row — the catalogue browses in its own row (D1)', () => {
+    const html = render('/colorlab?q=a&style=film', 'vi');
+    const text = html.replace(/<[^>]+>/g, '\n').split('\n').map((s) => s.trim());
+    for (const literal of ['Format', 'Tags', 'Kiểu', 'Thẻ', 'Picture Profile', 'Creative Look']) {
+      expect(text, `"${literal}" is a console row`).not.toContain(literal);
+    }
+    expect(source).not.toMatch(/filterFormat|filterTags|filterAll|FALLBACK_TAGS|CREATIVE_LOOKS/);
+    /* With a query the console is open and offers to clear everything. */
+    expect(text).toContain(vi_.search.clearAll);
+  });
+
+  it('does not open the console for a style or tone alone — the browse row owns those', () => {
+    /* Otherwise a drawer holding nothing but "Clear all filters" dropped under
+       the bar on every situation page a reader narrowed. */
+    const html = render('/colorlab/portrait?style=film&tone=cool', 'vi');
+    expect(html).not.toContain(vi_.search.clearAll);
+    expect(html).toContain('grid-rows-[0fr]');
   });
 });
 
@@ -156,16 +196,6 @@ describe('the filter console reads in the reader’s language', () => {
     expect(tabs).not.toContain('Loa');
   });
 
-  it('labels the ColorLab rows and reset chips from the catalogue', () => {
-    const html = render('/colorlab?format=cl', 'vi');
-    const text = html.replace(/<[^>]+>/g, '\n').split('\n').map((s) => s.trim());
-    for (const literal of ['Format', 'Tags', 'All']) {
-      expect(text, `"${literal}" renders untranslated on /vi`).not.toContain(literal);
-    }
-    expect(text).toContain(vi_.search.filterFormat);
-    expect(text).toContain(vi_.search.filterTags);
-    expect(text.filter((s) => s === vi_.search.filterAll)).toHaveLength(3);
-  });
 });
 
 describe('live search stays where the reader is', () => {
@@ -174,7 +204,7 @@ describe('live search stays where the reader is', () => {
        /cameras/compare to /cameras?q=…: a pause after "moj" unmounted the page
        the reader was on, and threw away a comparison. */
     expect(source).toMatch(
-      /const isCatalogueIndex = pathname === '\/colorlab' \|\| pathname === wikiBase;/,
+      /const isCatalogueIndex =\s*pathname === '\/colorlab' \|\| pathname\.startsWith\('\/colorlab\/'\) \|\| pathname === wikiBase;/,
     );
     const queueSearch = slice('const queueSearch', 'useEffect(() => () =>');
     expect(queueSearch).toMatch(
@@ -219,7 +249,8 @@ describe('the language switch keeps the reader where they are', () => {
        empty /vi/search, and the compare page lost every id. */
     expect(hrefs(render('/search?q=a7c'))).toContain('/vi/search?q=a7c');
     expect(hrefs(render('/cameras?cat=lens&view=table'))).toContain('/vi/cameras?cat=lens&amp;view=table');
-    expect(hrefs(render('/colorlab?format=cl&look=FL', 'vi'))).toContain('/colorlab?format=cl&amp;look=FL');
+    expect(hrefs(render('/colorlab?style=film&tone=warm', 'vi'))).toContain('/colorlab?style=film&amp;tone=warm');
+    expect(hrefs(render('/colorlab/portrait?tone=cool'))).toContain('/vi/colorlab/portrait?tone=cool');
   });
 
   it('links a bare path to its bare translation', () => {

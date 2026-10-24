@@ -5,8 +5,59 @@
     "emptyAction": "Clear them",
     "emptyTail": "to see all {total}.",
     "title": "All recipes",
-    "metaDescription": "Browse White Balance Shift recipes for Sony Alpha, filter by tag, and dial the settings into your camera.",
+    "metaDescription": "Browse White Balance Shift recipes for Sony Alpha by shooting situation, and dial the settings into your camera.",
     "planeLabel": "White Balance Shift grid: {count, plural, one {# recipe} other {# recipes}}, {shifted} shifted away from neutral"
+  },
+  "browse": {
+    "title": "Colour recipes",
+    "bySituation": "By situation",
+    "system": "Colour system",
+    "situation": "Situation",
+    "style": "Style",
+    "tone": "Tone",
+    "clear": "Clear filters",
+    "filtersLabel": "Filters",
+    "metaDescription": "{situation} colour recipes for Sony Alpha: White Balance Shift paired with a Picture Profile or a Creative Look, ready to dial into the camera.",
+    "situations": {
+      "portrait": "Portrait",
+      "daily": "Everyday",
+      "street": "Street",
+      "travel": "Travel",
+      "landscape": "Landscape & nature",
+      "lifestyle": "Lifestyle & café",
+      "fashion": "Fashion",
+      "heritage": "Áo dài & Lunar New Year",
+      "night": "Night",
+      "livestream": "Livestream"
+    },
+    "styles": {
+      "natural": "Natural",
+      "range": "Dynamic range",
+      "vivid": "Vivid",
+      "film": "Film look"
+    },
+    "tones": {
+      "warm": "Warm",
+      "neutral": "Neutral",
+      "cool": "Cool",
+      "mono": "Black & white"
+    }
+  },
+  "palette": {
+    "label": "{tone}, {style} palette",
+    "note": "Derived from the settings, not a camera preview.",
+    "light": "Read under {kelvin}K light.",
+    "swatches": {
+      "highlight": "Highlight",
+      "mid": "Mid",
+      "shadow": "Shadow",
+      "red": "Red",
+      "skin": "Skin",
+      "yellow": "Yellow",
+      "foliage": "Leaf",
+      "sky": "Sky",
+      "blossom": "Pink"
+    }
   },
   "launcher": {
     "title": "Sony Alpha ecosystem",
@@ -44,7 +95,6 @@
     "galleryEmpty": "No sample photos for this recipe yet.",
     "zoomPhoto": "Zoom photo {index} of {title}",
     "zoom": "Zoom in",
-    "featuredShot": "Featured shot",
     "frame": "Frame #{index}",
     "photoBy": "Photo by:",
     "formTitle": "Contribute a new sample photo",
@@ -58,6 +108,7 @@
     "errUrlScheme": "The image URL must start with https://.",
     "errSocialScheme": "The social link must start with http:// or https://.",
     "errPreviewLoad": "Could not load an image from that URL. Please check the address.",
+    "errPreviewSmall": "The photo is smaller than 320 pixels wide.",
     "lightboxLabel": "Enlarged photo",
     "close": "Close",
     "prev": "Previous photo",
@@ -140,6 +191,7 @@
       "proposalNotFound": "That proposal no longer exists.",
       "photoLimitReached": "This recipe already has all the community photos it can hold.",
       "invalidImageUrl": "That image URL is not valid. It must start with https://",
+      "expiringImageHost": "Facebook and Instagram links expire. Use a link that stays up, such as Flickr or Google Photos.",
       "sampleUrlRequired": "A real sample photo URL is required.",
       "invalidSettings": "Those camera settings are not valid for this recipe.",
       "payloadTooLarge": "That request is too large to send.",
@@ -186,7 +238,7 @@
   },
   "search": {
     "label": "Search recipes",
-    "placeholder": "Search by name or tag…",
+    "placeholder": "Search by name or situation…",
     "wikiPlaceholder": "Search products, specs…",
     "clear": "Clear search",
     "clearAll": "Clear all filters",
@@ -207,10 +259,7 @@
       "article": "Article",
       "knowledge": "Reference"
     },
-    "partial": "Some sources could not be searched right now.",
-    "filterFormat": "Format",
-    "filterTags": "Tags",
-    "filterAll": "All"
+    "partial": "Some sources could not be searched right now."
   },
   "cameras": {
     "actionLabel": "Details & compare",
@@ -626,25 +675,6 @@
     "monoHint": "This Look is monochrome — the camera greys out Saturation, so the field is hidden.",
     "clAdjust": "Adjustments",
     "clSaturationHint": "Creative Look saturation is −9…+9, not the −32…+32 of a Picture Profile.",
-    "photos": "Photographs",
-    "photosHint": "Uploads go to a private bucket. Readers are served from public/recipes, which is why a new photograph appears at the next deploy and not before.",
-    "noPhotos": "No photographs yet.",
-    "working": "Working…",
-    "photoLive": "ON THE SITE",
-    "photoPending": "AWAITING DEPLOY",
-    "previewMissing": "File missing from Storage",
-    "altPlaceholder": "Describe the photograph for a screen reader",
-    "moveUp": "Move up",
-    "moveDown": "Move down",
-    "removePhoto": "Remove",
-    "uploadedPending": "Uploaded. You can see it here now; readers will see it after the next deploy.",
-    "uploadedLive": "Uploaded and live locally.",
-    "orderPending": "New order saved. It reaches the site at the next deploy.",
-    "removedPending": "Removed here. The site keeps showing it until the next deploy.",
-    "removedLive": "Removed.",
-    "removeLiveConfirm": "Remove this photograph? It is on the site now and will stay there until the next deploy — run the vendor command and deploy to finish the job.",
-    "removePendingConfirm": "Remove this photograph? It was never on the site, so nothing changes for readers.",
-    "pendingBanner": "{n, plural, one {# photograph is waiting. To put it on the site, run:} other {# photographs are waiting. To put them on the site, run:}}",
     "errors": {
       "notAdmin": "Your account does not have editor access.",
       "notConfigured": "The recipe store is not configured on this deployment.",
@@ -659,13 +689,6 @@
       "invalidRecipe": "Some values are outside what the camera accepts. The list below names each one.",
       "idSpaceExhausted": "All 999 ids for this format are used. Nothing was created.",
       "staleEdit": "This recipe was saved somewhere else since you opened it. Nothing was changed — reopen it to load the latest version, then edit again.",
-      "uploadFailed": "The photograph could not be uploaded.",
-      "noFile": "No file was attached.",
-      "tooLarge": "That file is over 4 MB.",
-      "dimensionsTooLarge": "That image is too large in pixels to process.",
-      "unsupportedType": "Only JPEG, PNG and WebP are accepted, and animated images are not.",
-      "slotsFull": "This recipe already has the maximum number of photographs.",
-      "recipeNotFound": "That recipe no longer exists.",
       "mfaRequired": "This session needs your authenticator code again. Nothing was changed — reload the page to finish signing in."
     }
   },

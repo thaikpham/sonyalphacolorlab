@@ -1,62 +1,31 @@
 import { describe, expect, it } from 'vitest';
-import { listRecipes, photosFirst } from './source';
+import recipesSeed from '../../../data/recipes.seed.json';
+import { listRecipes } from './source';
 
 /**
- * The grid draws a derived colour field when a recipe has no photograph, and
- * only 10 of the 83 recipes have one. Ordered by id that put a long run of
- * colour fields at the top of the default page, which reads as broken images
- * rather than as the deliberate fallback it is.
+ * The catalogue's order, offline.
  *
- * The ordering is tested as a pure function rather than through `listRecipes`:
- * with no Supabase configured, that reader returns the seed snapshot and its
- * image list comes from `data/images.seed.json` — so the assertion would be
- * about the seed's shape rather than about the ordering, and would pass without
- * proving anything.
+ * It used to be partitioned photographs-first (`photosFirst`), because a run
+ * of colour fields at the top of the grid read as broken images. No recipe
+ * carries a photograph any more, so there is nothing to partition on: the
+ * offline reader serves the seed in its own order, as the online one serves
+ * the table ordered by id. Deterministic either way — an unstable order would
+ * reshuffle the grid on every request with nothing about the data changed.
  */
-const view = (id: string, photos: number) => ({
-  id,
-  images: Array.from({ length: photos }, (_, i) => `${id}/${i}.jpg`),
-});
 
-describe('photosFirst', () => {
-  it('puts every photographed recipe ahead of every unphotographed one', () => {
-    const out = photosFirst([view('a', 0), view('b', 2), view('c', 0), view('d', 1)]);
-    expect(out.map((v) => v.id)).toEqual(['b', 'd', 'a', 'c']);
-  });
-
-  it('is a stable partition, so order inside each group is untouched', () => {
-    // Deterministic pages matter: an unstable sort would reshuffle the grid on
-    // every request even though nothing about the data changed.
-    const input = [view('a', 0), view('b', 1), view('c', 0), view('d', 1), view('e', 0)];
-    expect(photosFirst(input).map((v) => v.id)).toEqual(['b', 'd', 'a', 'c', 'e']);
-    expect(photosFirst(photosFirst(input)).map((v) => v.id)).toEqual(['b', 'd', 'a', 'c', 'e']);
-  });
-
-  it('loses nothing — it reorders, it does not filter', () => {
-    const input = [view('a', 0), view('b', 1), view('c', 0)];
-    expect(photosFirst(input)).toHaveLength(3);
-    expect(new Set(photosFirst(input).map((v) => v.id))).toEqual(new Set(['a', 'b', 'c']));
-  });
-
-  it('does not mutate its input', () => {
-    const input = [view('a', 0), view('b', 1)];
-    photosFirst(input);
-    expect(input.map((v) => v.id)).toEqual(['a', 'b']);
-  });
-
-  it('copes with every recipe having photos, or none of them', () => {
-    expect(photosFirst([view('a', 1), view('b', 1)]).map((v) => v.id)).toEqual(['a', 'b']);
-    expect(photosFirst([view('a', 0), view('b', 0)]).map((v) => v.id)).toEqual(['a', 'b']);
-    expect(photosFirst([])).toEqual([]);
-  });
-});
-
-describe('listRecipes still serves the whole catalogue', () => {
+describe('listRecipes serves the whole catalogue', () => {
   it('returns both libraries, with unique ids', async () => {
     const all = await listRecipes('en');
     expect(new Set(all.map((v) => v.id)).size).toBe(all.length);
     expect(all.some((v) => v.id.startsWith('SCL-PP-'))).toBe(true);
     expect(all.some((v) => v.id.startsWith('SCL-CL-'))).toBe(true);
+  });
+
+  it('keeps the seed’s own order, with nothing moved to the front', async () => {
+    const published = (recipesSeed as { id: string; published: boolean }[])
+      .filter((r) => r.published)
+      .map((r) => r.id);
+    expect((await listRecipes('en')).map((v) => v.id)).toEqual(published);
   });
 
   it('still honours a format filter', async () => {

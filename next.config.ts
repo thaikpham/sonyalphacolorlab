@@ -9,9 +9,9 @@ const withNextIntl = createNextIntlPlugin();
  *
  * The control project served images once and must not again: it is where Auth
  * lives, and 1.27 GB a day of image egress is what restricted it and took
- * sign-in down with the pictures. There is nothing to serve from it now — recipe
- * photography is vendored into `public/recipes`, and article media belongs to
- * the content project's `lab` bucket.
+ * sign-in down with the pictures. There is nothing to serve from it now — the
+ * catalogue carries no recipe photograph (readers' contributions are their own
+ * URLs), and article media belongs to the content project's `lab` bucket.
  */
 const contentStorageHost = process.env.NEXT_PUBLIC_CONTENT_SUPABASE_URL
   ? new URL(process.env.NEXT_PUBLIC_CONTENT_SUPABASE_URL).hostname

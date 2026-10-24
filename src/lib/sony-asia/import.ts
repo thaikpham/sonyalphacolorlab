@@ -298,9 +298,18 @@ export type Credit = {
 
 const SOURCE_URL = 'https://www.sony-asia.com/microsite/rmdc/creativelooks/alpha-recipes/';
 
+/**
+ * `reserved` names ids and slugs another source already holds — ColorLab's own
+ * Creative Look originals (`src/lib/originals/cl.ts`) share the `SCL-CL-`
+ * sequence. A newcomer the scrape has never seen takes the next number after
+ * every pin AND every reservation, so it can never be handed an original's id
+ * (emit-seed would refuse the duplicate, but only after the scrape had to be
+ * pinned by hand).
+ */
 export function importSonyAsia(
   csv: string,
   pinned: Record<string, PinnedId> = SONY_ASIA_IDS,
+  reserved: { readonly ids?: readonly string[]; readonly slugs?: readonly string[] } = {},
 ): ImportResult {
   const rows = parseCsv(csv);
   const skipped: ImportResult['skipped'] = [];
@@ -317,8 +326,9 @@ export function importSonyAsia(
   // Every pinned id and slug stays reserved, including those of a recipe the
   // page no longer shows: a URL that once meant one recipe never means another.
   const pins = Object.values(pinned);
-  const takenSlugs = new Set(pins.map((p) => p.slug));
-  let nextId = Math.max(0, ...pins.map((p) => Number(p.id.slice(ID_PREFIX.length)))) + 1;
+  const takenSlugs = new Set([...pins.map((p) => p.slug), ...(reserved.slugs ?? [])]);
+  const heldIds = [...pins.map((p) => p.id), ...(reserved.ids ?? [])].filter((id) => id.startsWith(ID_PREFIX));
+  let nextId = Math.max(0, ...heldIds.map((id) => Number(id.slice(ID_PREFIX.length)))) + 1;
 
   for (const row of rows) {
     // Production notes are appended to `data` after a run of newlines, and are

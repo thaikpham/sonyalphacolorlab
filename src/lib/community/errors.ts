@@ -35,6 +35,8 @@ export const COMMUNITY_ERRORS = {
   photoLimitReached: 409,
   /** A photo URL that is not an https:// address. */
   invalidImageUrl: 400,
+  /** A photo URL on a social CDN whose signed links expire (`image-hosts.ts`). */
+  expiringImageHost: 400,
   /** A proposal without the sample photograph that gives it evidence. */
   sampleUrlRequired: 400,
   /**

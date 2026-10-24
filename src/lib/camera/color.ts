@@ -23,11 +23,18 @@
 import { WB_SHIFT_AXIS } from './constants';
 import type { Recipe, WhiteBalance } from './schema';
 
-/** OKLCH hue of each colour phase, from the saturated sRGB primaries. */
-const CHANNEL_HUE = { R: 29, Y: 110, G: 142, C: 195, B: 264, M: 328 } as const;
+/**
+ * OKLCH hue of each colour phase, from the saturated sRGB primaries. Shared
+ * with `palette.ts`, which weights Color Depth by distance from these.
+ */
+export const CHANNEL_HUE: Readonly<Record<'R' | 'G' | 'B' | 'C' | 'M' | 'Y', number>> = {
+  R: 29, Y: 110, G: 142, C: 195, B: 264, M: 328,
+};
 
-/** OKLCH hue of each White Balance direction. */
-const WB_HUE = { amber: 65, blue: 264, green: 142, magenta: 328 } as const;
+/** OKLCH hue of each White Balance direction. Shared with `palette.ts`. */
+export const WB_HUE: Readonly<{ amber: number; blue: number; green: number; magenta: number }> = {
+  amber: 65, blue: 264, green: 142, magenta: 328,
+};
 
 /** Kelvin treated as neutral. */
 const NEUTRAL_K = 5500;
@@ -92,8 +99,11 @@ const polar = (hueDeg: number, magnitude: number): Vec => {
 
 const add = (a: Vec, b: Vec): Vec => [a[0] + b[0], a[1] + b[1]];
 
-/** Recipes shot in monochrome, where any hue would be a lie. */
-function monochromeOf(recipe: AccentInput): 'bw' | 'sepia' | null {
+/**
+ * Recipes shot in monochrome, where any hue would be a lie. Shared with
+ * `palette.ts`, so the accent and the palette agree on which recipes have none.
+ */
+export function monochromeOf(recipe: AccentInput): 'bw' | 'sepia' | null {
   if (recipe.format === 'cl') {
     if (recipe.settings.look === 'BW') return 'bw';
     if (recipe.settings.look === 'SE') return 'sepia';
@@ -244,18 +254,13 @@ export function accentCss(a: Accent): string {
   return `oklch(${(a.l * 100).toFixed(1)}% ${a.c} ${a.h})`;
 }
 
+type Oklch = { l: number; c: number; h: number };
+
 /**
- * OKLCH -> sRGB hex.
- *
- * Needed because not every renderer speaks `oklch()`. Satori — the engine
- * behind `next/og` ImageResponse — silently ignores it, which produces a share
- * card with no colour at all rather than an error. Anything generating an image
- * rather than a stylesheet must use this.
- *
- * Standard OKLab matrices (Björn Ottosson), then the sRGB transfer function.
- * Out-of-gamut values are clamped per channel.
+ * OKLCH -> linear sRGB, unclamped. Standard OKLab matrices (Björn Ottosson).
+ * A channel outside 0..1 is a colour sRGB cannot show.
  */
-export function accentHex(a: Accent): string {
+function oklchToLinearSrgb(a: Oklch): [number, number, number] {
   const hRad = (a.h * Math.PI) / 180;
   const oa = a.c * Math.cos(hRad);
   const ob = a.c * Math.sin(hRad);
@@ -268,12 +273,26 @@ export function accentHex(a: Accent): string {
   const m = m_ * m_ * m_;
   const s = s_ * s_ * s_;
 
-  const linear = [
+  return [
     4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
     -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
     -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s,
   ];
+}
 
+/**
+ * OKLCH -> sRGB hex.
+ *
+ * Needed because not every renderer speaks `oklch()`. Satori — the engine
+ * behind `next/og` ImageResponse — silently ignores it, which produces a share
+ * card with no colour at all rather than an error. Anything generating an image
+ * rather than a stylesheet must use this.
+ *
+ * Linear sRGB from the OKLab matrices, then the sRGB transfer function.
+ * Out-of-gamut values are clamped per channel; run `gamutMap` first wherever
+ * the hue has to survive.
+ */
+export function oklchToHex(a: Oklch): string {
   const channel = (v: number) => {
     const encoded = v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055;
     return Math.round(Math.min(1, Math.max(0, encoded)) * 255)
@@ -281,7 +300,37 @@ export function accentHex(a: Accent): string {
       .padStart(2, '0');
   };
 
-  return `#${linear.map(channel).join('')}`;
+  return `#${oklchToLinearSrgb(a).map(channel).join('')}`;
+}
+
+/** The accent's hex twin, for renderers without `oklch()`. */
+export function accentHex(a: Accent): string {
+  return oklchToHex(a);
+}
+
+/** Linear-channel slack, so a colour sitting on the gamut edge counts as inside. */
+const GAMUT_EPSILON = 1e-6;
+
+/** Whether sRGB can show this colour without clipping a channel. */
+export function inSrgb(a: Oklch): boolean {
+  return oklchToLinearSrgb(a).every((v) => v >= -GAMUT_EPSILON && v <= 1 + GAMUT_EPSILON);
+}
+
+/**
+ * Lowers chroma at fixed L and h until the colour is inside sRGB (binary
+ * search to 1e-4). Lightness and hue are what a reader compares between two
+ * swatches; clipping each channel instead would move both.
+ */
+export function gamutMap(a: Oklch): Oklch {
+  if (inSrgb(a)) return { l: a.l, c: a.c, h: a.h };
+  let lo = 0;
+  let hi = a.c;
+  while (hi - lo > 1e-4) {
+    const mid = (lo + hi) / 2;
+    if (inSrgb({ l: a.l, c: mid, h: a.h })) lo = mid;
+    else hi = mid;
+  }
+  return { l: a.l, c: lo, h: a.h };
 }
 
 /**

@@ -16,6 +16,7 @@ import type { Recipe } from '@/lib/camera/schema'
 import type { SonyCamera } from '@/lib/cameras/types'
 import { ARTICLES } from '@/lib/lab/articles'
 import type { Article } from '@/lib/lab/types'
+import { taxonomyFor } from '@/lib/recipes/taxonomy-assign'
 import {
   articleDoc,
   glossaryDocs,
@@ -58,6 +59,7 @@ export function seedCorpus(
       .map((r) =>
         recipeDoc({
           ...r,
+          ...taxonomyFor(r),
           look: r.format === 'cl' ? r.settings.look : undefined,
           wbLabel: formatWhiteBalance(r.whiteBalance),
           description: describe(r.id),

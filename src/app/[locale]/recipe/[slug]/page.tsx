@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { SiteHeader } from '@/components/site-header';
 import { RecipeGallery } from '@/components/recipe-gallery';
+import { RecipePalette } from '@/components/recipe-palette';
 import { RecipeStructuredData } from '@/components/structured-data';
 import { ClTable, PpTable } from '@/components/settings-table';
 import { RecipeCommunitySection } from '@/components/recipe-community-section';
@@ -15,6 +16,7 @@ import { routing, type Locale } from '@/i18n/routing';
 import { accentCss } from '@/lib/camera/color';
 import { CREATIVE_LOOKS } from '@/lib/camera/constants';
 import { getRecipe, listSlugs } from '@/lib/recipes/source';
+import { recipeTitle } from '@/lib/recipes/title';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
@@ -71,11 +73,29 @@ export default async function RecipePage({
   const { slug, locale } = await params;
   setRequestLocale(locale);
 
-  const [recipe, t] = await Promise.all([getRecipe(slug, locale), getTranslations('recipe')]);
+  const [recipe, t, tBrowse] = await Promise.all([
+    getRecipe(slug, locale),
+    getTranslations('recipe'),
+    getTranslations('browse'),
+  ]);
   if (!recipe) notFound();
 
   const accent = accentCss(recipe.accent);
-  const title = recipe.name.split(': ').slice(1).join(': ') || recipe.name;
+  const title = recipeTitle(recipe.name);
+  /* Where this recipe browses: its situations, its style and its tone, each
+     a link into the catalogue narrowed to that value. These replaced the tag
+     list — tags are provenance ("sri-lanka"), kept in the data for search and
+     no longer shown (D9). Not `.label`: "Phong cảnh & thiên nhiên" is four
+     words, and uppercase stops at three. */
+  const browseChips = [
+    ...recipe.situations.map((id) => ({
+      key: `situation:${id}`,
+      href: `/colorlab/${id}`,
+      label: tBrowse(`situations.${id}`),
+    })),
+    { key: 'style', href: `/colorlab?style=${recipe.style}`, label: tBrowse(`styles.${recipe.style}`) },
+    { key: 'tone', href: `/colorlab?tone=${recipe.tone}`, label: tBrowse(`tones.${recipe.tone}`) },
+  ];
   const look =
     recipe.format === 'cl' ? CREATIVE_LOOKS.find((l) => l.code === recipe.settings.look) : null;
   const shareUrl = `${SITE_URL}${
@@ -122,9 +142,15 @@ export default async function RecipePage({
             {/* Recipe Header & Description */}
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <span className="chip label text-ink">
-                  {recipe.id}
-                </span>
+                {/* The name carries the code now (`PP-048-Soft Clean
+                    Portrait`). A row still on the old `SCL-PP-048: Huế Silk`
+                    shape — until the library sync reaches production — keeps
+                    its code here, since its title drops it. */}
+                {recipe.name.includes(': ') && (
+                  <span className="chip label text-ink">
+                    {recipe.id}
+                  </span>
+                )}
                 {/* The code is uppercase on the camera; the Look's name is not,
                     and in `.label` "BW (Black & White)" ran to four words. */}
                 {look && (
@@ -147,27 +173,29 @@ export default async function RecipePage({
                 {recipe.description}
               </p>
 
-              {/* Recipe Tags & Share Actions */}
+              {/* The recipe's colour, read off its settings: the same nine
+                  swatches as its card, named, with the one accuracy line the
+                  palette needs (it is not a camera preview). */}
+              <div className="mt-6">
+                <RecipePalette palette={recipe.palette} tone={recipe.tone} style={recipe.style} variant="page" light={recipe.light} />
+              </div>
+
+              {/* Situations, style and tone, each a way back into the catalogue. */}
               <div className="mt-5 flex flex-wrap items-center justify-between gap-4 pt-4">
-                {recipe.tags.length > 0 && (
-                  <ul className="flex flex-wrap gap-2">
-                    {recipe.tags.map((tag) => (
-                      <li key={tag}>
-                        <Link
-                          href={`/colorlab?tag=${encodeURIComponent(tag)}`}
-                          className="chip chip-action label"
-                        >
-                          #{tag}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                <ul className="flex flex-wrap gap-2">
+                  {browseChips.map((chip) => (
+                    <li key={chip.key}>
+                      <Link href={chip.href} className="chip chip-action text-ink">
+                        {chip.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
 
             {/* Photographic Collage Gallery & User URL Contribution */}
-            <RecipeGallery slug={slug} images={recipe.images} title={title} />
+            <RecipeGallery slug={slug} title={title} />
 
             {/* AI Tweak Section */}
             <TweakPanel

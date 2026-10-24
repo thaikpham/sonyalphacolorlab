@@ -56,15 +56,10 @@ describe('the error catalogue', () => {
     const emitters = [
       'src/app/api/admin/recipes/route.ts',
       'src/app/api/admin/recipes/[id]/route.ts',
-      'src/app/api/admin/recipes/[id]/images/route.ts',
-      'src/app/api/admin/recipes/[id]/images/[imageId]/route.ts',
       'src/lib/recipes/admin-store.ts',
-      'src/lib/recipes/image-store.ts',
-      'src/lib/lab/image-process.ts',
       'src/lib/auth/admin-gate.ts',
       'src/lib/admin/content-freeze.ts',
       PATH,
-      'src/components/colorlab/admin/image-panel.tsx',
     ]
       .map((f) => readFileSync(f, 'utf8'))
       .join('\n');
@@ -145,7 +140,7 @@ describe('unsaved work is never dropped without asking', () => {
 });
 
 describe('the design rules, on this screen', () => {
-  const files = ['recipe-admin.tsx', 'fields.tsx', 'image-panel.tsx', 'wb-fields.tsx', 'settings-fields.tsx'].map(
+  const files = ['recipe-admin.tsx', 'fields.tsx', 'wb-fields.tsx', 'settings-fields.tsx'].map(
     (f) => [f, readFileSync(`src/components/colorlab/admin/${f}`, 'utf8')] as const,
   );
 
