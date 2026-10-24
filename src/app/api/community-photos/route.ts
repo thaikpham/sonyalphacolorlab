@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { checkRateLimit } from '@/lib/ai/rate-limit';
 import { hasContentConfig, hasControlConfig, controlAdmin, controlRead } from '@/lib/supabase/server';
 import { publishedRecipeExists } from '@/lib/recipes/existence';
+import { slugAliases } from '@/lib/recipes/slug-aliases';
 import { COMMUNITY_ERRORS, communityErrorBody, outageErrorCode } from '@/lib/community/errors';
 import { requireUser, UNAUTHENTICATED, type AuthedUser } from '@/lib/auth/require-user';
 import { MAX_PHOTOS_PER_RECIPE, clientKey } from '@/lib/community/gallery';
@@ -62,7 +63,8 @@ export async function GET(req: Request) {
     const { data, error } = await controlRead()
       .from('community_photos')
       .select(PHOTO_COLUMNS)
-      .eq('recipe_slug', parsed.data)
+      /* Every spelling the recipe's slug has had (`slug-aliases.ts`). */
+      .in('recipe_slug', slugAliases(parsed.data))
       .order('created_at', { ascending: false })
       .limit(MAX_PHOTOS_PER_RECIPE);
 
@@ -164,7 +166,8 @@ export async function POST(req: Request) {
     const { count, error: countError } = await db
       .from('community_photos')
       .select('id', { count: 'exact', head: true })
-      .eq('recipe_slug', body.slug);
+      /* The cap is the recipe's, whichever spelling its photos were sent under. */
+      .in('recipe_slug', slugAliases(body.slug));
     if (countError) throw new Error(countError.message);
 
     if ((count ?? 0) >= MAX_PHOTOS_PER_RECIPE) {

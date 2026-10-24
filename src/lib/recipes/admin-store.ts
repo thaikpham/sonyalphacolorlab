@@ -2,6 +2,7 @@ import 'server-only';
 import { contentAdmin } from '@/lib/supabase/server';
 import { recipeSchema, type Recipe } from '../camera/schema';
 import { fromRow, RECIPE_COLUMNS, toRow, type RecipeRow } from './row';
+import { slugAliases } from './slug-aliases';
 import type { RecipeRecord, UnreadableRecipe } from './admin-types';
 import {
   devGetRecipe,
@@ -201,6 +202,10 @@ export async function uniqueRecipeSlug(name: string, ownId?: string): Promise<st
   /* One loop, two backends, so the suffix rule cannot drift between local
      development and production. */
   const taken = async (slug: string): Promise<boolean> => {
+    /* Either spelling of a seed recipe's slug is that recipe's, in whichever
+       state the content plane is (`slug-aliases.ts`): a new recipe under one
+       would answer its links and inherit its comments. */
+    if (slugAliases(slug).length > 1) return true;
     if (isRecipeDevStore()) {
       const owner = devListRecipes().find((r) => r.recipe.slug === slug);
       return Boolean(owner) && owner?.recipe.id !== ownId;

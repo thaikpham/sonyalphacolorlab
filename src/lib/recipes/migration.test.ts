@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { PGlite } from '@electric-sql/pglite';
 import { beforeAll, describe, expect, it } from 'vitest';
+import { recipeIdKey } from './recipe-id';
 import { toRow } from './row';
 import { PHOTO_COLUMNS, PROPOSAL_COLUMNS } from '../community/columns';
 import type { Recipe } from '../camera/schema';
@@ -286,7 +287,11 @@ describe('migrations', () => {
   });
 
   it('accepts every seeded recipe, in both formats', async () => {
-    for (const r of seed) await insert(toRow(r, r.legacyId));
+    /* In the id shape this root stores. Its `recipes` table is applied
+       history and keeps the `SCL-` CHECK it was created with; the seed's code
+       shape (`PP-001`) is what the content root stores, and
+       `migration-roots.test.ts` loads it there. */
+    for (const r of seed) await insert({ ...toRow(r, r.legacyId), id: `SCL-${recipeIdKey(r.id)}` });
     const c = await db.query<{ n: number }>('select count(*)::int as n from recipes');
     // Derived, not hardcoded — the catalogue grows, and a stale literal here
     // fails for the wrong reason and teaches nothing.
@@ -350,7 +355,7 @@ describe('migrations', () => {
   // Each of these must be rejected by the database itself, not just by Zod.
   // The expected constraint name is asserted so a case cannot pass for the
   // wrong reason (e.g. tripping a unique index instead of the check it targets).
-  const base = () => ({ ...toRow(seed[0], null), legacy_id: null });
+  const base = () => ({ ...toRow(seed[0], null), id: `SCL-${recipeIdKey(seed[0].id)}`, legacy_id: null });
 
   it.each([
     ['an id that does not match the scheme', { id: 'scl-001' }, 'recipes_id_check'],

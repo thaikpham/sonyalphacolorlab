@@ -87,9 +87,9 @@ const product = (over: Partial<SonyCamera> & { id: string; name: string }): Sony
 
 const recipe = (over: Partial<RecipeView>): RecipeView =>
   ({
-    id: 'SCL-PP-001',
-    slug: 'scl-pp-001-mojave-sun',
-    name: 'SCL-PP-001: Mojave Sun',
+    id: 'PP-001',
+    slug: 'pp-001-vivid-nostalgia-film',
+    name: 'PP-001-Vivid Nostalgia Film',
     format: 'pp',
     wbLabel: '5600K',
     description: '',

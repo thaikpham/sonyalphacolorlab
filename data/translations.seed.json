@@ -1,901 +1,901 @@
 [
   {
-    "recipeId": "SCL-PP-001",
+    "recipeId": "PP-001",
     "locale": "en",
     "description": "A nostalgic, sun-drenched style that bathes scenes in the warm glow of golden hour.\nPerfect for travel and lifestyle, it recreates rich yellows and deep blues, evoking the feeling of an endless summer road trip."
   },
   {
-    "recipeId": "SCL-PP-002",
+    "recipeId": "PP-002",
     "locale": "en",
     "description": "A serene and subtle palette defined by rich jade tones and gentle skin colors.\nIdeal for contemplative portraits, street photography, and landscapes, creating a peaceful, painterly atmosphere."
   },
   {
-    "recipeId": "SCL-PP-009",
+    "recipeId": "PP-009",
     "locale": "en",
     "description": "A muted, low-saturation color profile with a distinctive cyan-teal cast in the shadows and mid-tones.\nIt creates a subtle, gentle, and slightly melancholic mood, perfect for street photography and urban exploration."
   },
   {
-    "recipeId": "SCL-PP-015",
+    "recipeId": "PP-015",
     "locale": "en",
     "description": "A neutral, slightly faded style with a subtle green-cyan tint in the shadows.\nIt evokes the feeling of looking through old family slide films, perfect for nostalgic portraits and everyday scenes."
   },
   {
-    "recipeId": "SCL-PP-025",
+    "recipeId": "PP-025",
     "locale": "en",
     "description": "A powerful, high-saturation cinematic style, distinct from Fuji emulations.\nIt utilizes a wide color space to produce deep, rich colors with a filmic gamma curve, well-suited for vivid visual storytelling."
   },
   {
-    "recipeId": "SCL-PP-027",
+    "recipeId": "PP-027",
     "locale": "en",
     "description": "A modern, clean cinematic style based on S-Cinetone.\nIt’s designed for daylight conditions, delivering beautiful skin tones, high saturation, and a professional, polished feel straight out of camera."
   },
   {
-    "recipeId": "SCL-PP-044",
+    "recipeId": "PP-044",
     "locale": "en",
     "description": "A filmic recipe that mimics FJ C200 film stock."
   },
   {
-    "recipeId": "SCL-PP-045",
+    "recipeId": "PP-045",
     "locale": "en",
     "description": "A color recipe for crystal-clear images, featuring rich colors on a neutral foundation. Specially designed for livestreaming, it renders Asian skin tones authentically and radiantly."
   },
   {
-    "recipeId": "SCL-PP-046",
+    "recipeId": "PP-046",
     "locale": "en",
     "description": "A color recipe for crystal-clear images, featuring rich colors on a neutral foundation. Specially designed for livestreaming, it renders Asian skin tones authentically and radiantly."
   },
   {
-    "recipeId": "SCL-PP-047",
+    "recipeId": "PP-047",
     "locale": "en",
     "description": "A color recipe for crystal-clear images, featuring rich colors on a neutral foundation. Specially designed for livestreaming, it renders Asian skin tones authentically and radiantly."
   },
   {
-    "recipeId": "SCL-PP-048",
+    "recipeId": "PP-048",
     "locale": "en",
     "description": "Soft S-Cinetone contrast with skin lifted a touch brighter and less flushed, while foliage and sky stay slightly deeper so the face separates from the background. Built for daylight portraits in open shade."
   },
   {
-    "recipeId": "SCL-PP-049",
+    "recipeId": "PP-049",
     "locale": "en",
     "description": "The camera’s own colour made a little cleaner: firmer blacks, a light knee that eases only the brightest highlights, and a small lift in saturation. A dependable everyday setting for daylight."
   },
   {
-    "recipeId": "SCL-PP-050",
+    "recipeId": "PP-050",
     "locale": "en",
     "description": "Broadcast-style colour on the ITU709 curve, the pairing Sony documents for it: fabrics stay true, whites stay clean and neutral, with a touch more texture. For fashion, lookbooks and product."
   },
   {
-    "recipeId": "SCL-PP-051",
+    "recipeId": "PP-051",
     "locale": "en",
     "description": "Cine1 with a gentle knee keeps both a bright sky and shaded ground in the frame, then saturation and deeper greens and blues bring the colour back so it looks finished, not flat. For backlit landscapes and mountain mornings."
   },
   {
-    "recipeId": "SCL-PP-052",
+    "recipeId": "PP-052",
     "locale": "en",
     "description": "For hard midday sun: shadows opened with Black Gamma, highlights rolled off early, and sky and water deepened so colour survives the glare. Straight out of camera, no grading."
   },
   {
-    "recipeId": "SCL-PP-053",
+    "recipeId": "PP-053",
     "locale": "en",
     "description": "Deliberately one of the flattest colour recipes here: an early, very gentle knee and opened shadows keep the sun’s glow and the foreground together, with warm white balance and extra saturation so it still reads as a sunset. Soft by design."
   },
   {
-    "recipeId": "SCL-PP-054",
+    "recipeId": "PP-054",
     "locale": "en",
     "description": "Fresh and clean: slightly cool whites, turquoise water and sky pushed deeper, sand and yellows kept bright. Made for beaches, pools and summer travel."
   },
   {
-    "recipeId": "SCL-PP-055",
+    "recipeId": "PP-055",
     "locale": "en",
     "description": "Rich greens that stay natural: deeper leaf greens, brighter yellow-greens and a small warm turn so rice fields glow instead of going emerald. For landscapes, gardens and countryside."
   },
   {
-    "recipeId": "SCL-PP-056",
+    "recipeId": "PP-056",
     "locale": "en",
     "description": "Saturated and warm for festivals, áo dài and Tết, with reds deepened rather than brightened so they keep texture instead of clipping. Golds stay bright."
   },
   {
-    "recipeId": "SCL-PP-057",
+    "recipeId": "PP-057",
     "locale": "en",
     "description": "For Tết portraits among apricot and peach blossom: yellow blossoms kept bright, pinks a little richer, skin lifted and a soft rosy warmth over the frame."
   },
   {
-    "recipeId": "SCL-PP-058",
+    "recipeId": "PP-058",
     "locale": "en",
     "description": "Lifted, matte blacks and cool pastel colour with a pale sky. Romantic and foggy; suits overcast portraits and misty hills."
   },
   {
-    "recipeId": "SCL-PP-059",
+    "recipeId": "PP-059",
     "locale": "en",
     "description": "Muted, warm nostalgia: low saturation, ochre yellows and olive greens deepened, blues faded. For old walls, overcast streets and quiet everyday moments."
   },
   {
-    "recipeId": "SCL-PP-060",
+    "recipeId": "PP-060",
     "locale": "en",
     "description": "Dense, slide-film punch: Cine3 contrast with deep blacks, every colour deepened a little and a warm turn in the hues. For street, markets and bold daylight scenes."
   },
   {
-    "recipeId": "SCL-PP-061",
+    "recipeId": "PP-061",
     "locale": "en",
     "description": "Designed for warm indoor bulbs (around 2700–3200K): it keeps the cosy warmth but stops skin and wood turning orange, and the knee starts early to hold the lamps. In daylight it renders strongly blue."
   },
   {
-    "recipeId": "SCL-PP-062",
+    "recipeId": "PP-062",
     "locale": "en",
     "description": "City night with clean cyan and blue accents, deep Cine4 blacks and signs rolled off by the knee. Made for street lamps and neon; in daylight it renders strongly blue."
   },
   {
-    "recipeId": "SCL-PP-063",
+    "recipeId": "PP-063",
     "locale": "en",
     "description": "For night markets and food stalls under mixed bulbs and LEDs: warm and lively, reds of lanterns and food deepened, yellows kept bright, bright lamps rolled off and noise kept quiet. In daylight it renders blue."
   },
   {
-    "recipeId": "SCL-PP-064",
+    "recipeId": "PP-064",
     "locale": "en",
     "description": "Street black and white with medium contrast and firm blacks, crisp, with a little extra detail kept in the shadows."
   },
   {
-    "recipeId": "SCL-PP-065",
+    "recipeId": "PP-065",
     "locale": "en",
     "description": "Soft black and white for portraits: Cine1’s gentle shadow contrast, smooth highlights, and detail eased on faces and bright areas."
   },
   {
-    "recipeId": "SCL-PP-066",
+    "recipeId": "PP-066",
     "locale": "en",
     "description": "For portraits in the last hour of sun: a warm glow over the frame, skin and golden light kept bright rather than muddy orange, and Cine2’s soft highlights holding the backlight."
   },
   {
-    "recipeId": "SCL-PP-067",
+    "recipeId": "PP-067",
     "locale": "en",
     "description": "Cool, airy and crisp: whites lean blue, shadows stay open, colour is held back and fine detail in mist, frost and cloud is kept. For winter hills and clean city architecture."
   },
   {
-    "recipeId": "SCL-PP-068",
+    "recipeId": "PP-068",
     "locale": "en",
     "description": "The boldest colour in the set: strong saturation on clean neutral whites, every hue deepened except yellow, which stays bright, and crisp edges. For painted walls, signage and street style."
   },
   {
-    "recipeId": "SCL-PP-069",
+    "recipeId": "PP-069",
     "locale": "en",
     "description": "Dramatic black and white: blacks pushed deep, whites left bright with a late knee, and strong edge detail. For alleys, hard sunlight and graphic street scenes."
   },
   {
-    "recipeId": "SCL-PP-070",
+    "recipeId": "PP-070",
     "locale": "en",
     "description": "Black and white for after dark: Cine4 keeps contrast in the darks while Black Gamma opens them, street lamps roll off, and noise is not sharpened."
   },
   {
-    "recipeId": "SCL-PP-071",
+    "recipeId": "PP-071",
     "locale": "en",
     "description": "A bleach-bypass mood: Cine4’s deep dark contrast, blacks pressed down by Black Level and a Narrow Black Gamma, and Saturation well below zero so colour turns silvery — the low saturation is the look, not a fault. Reds, blues and yellows are held a step denser so they do not wash out, and firm edge detail suits street and fashion."
   },
   {
-    "recipeId": "SCL-PP-072",
+    "recipeId": "PP-072",
     "locale": "en",
     "description": "Teal and orange in camera: an amber white balance warms skin, while Color Depth deepens green, cyan and blue, so foliage, skies and water sit deep and cool beside it. Red and yellow are lifted and paled a little so faces stay light, and Cine2 with an early, gentle knee keeps the highlights soft. For portraits and street scenes."
   },
   {
-    "recipeId": "SCL-PP-073",
+    "recipeId": "PP-073",
     "locale": "en",
     "description": "High key, clean and light: Black Level and Black Gamma lift the shadows, Cine2 keeps contrast low, and a knee from 80% rounds off white backgrounds without flattening them. Negative Color Depth on every hue pales colour slightly, and softened detail with Type4 keeps skin smooth and whites glossy. For studio, white walls and window light."
   },
   {
-    "recipeId": "SCL-PP-074",
+    "recipeId": "PP-074",
     "locale": "en",
     "description": "Low key and warm: Cine4 with a strongly negative Black Level and a Narrow Black Gamma sinks the shadows, while a late knee leaves the highlights bright. Greens, blues and magentas are deepened and reds and yellows kept a touch lighter, so skin stands out warm against a dark ground. For moody portraits and interiors lit by one window."
   },
   {
-    "recipeId": "SCL-PP-075",
+    "recipeId": "PP-075",
     "locale": "en",
     "description": "Warm pastel: Black Level and a Wide Black Gamma lift the shadows and mid-greys, Cine1 keeps contrast low, and Saturation below zero with negative Color Depth on red, yellow and magenta turns colour towards cream. A slightly warm white balance. For cafés, interiors, soft portraits and light fashion."
   },
   {
-    "recipeId": "SCL-PP-076",
+    "recipeId": "PP-076",
     "locale": "en",
     "description": "Blue hour, turned towards violet: a low Kelvin cools the frame and a magenta shift tips it violet, with blue and magenta deepened and yellow kept light so lamps stay clean. A gentle knee holds lit windows and the last light in the sky, and raised Crispening keeps noise out of the sharpening. For dusk over cities, water and hills; in daylight it renders strongly blue-violet."
   },
   {
-    "recipeId": "SCL-PP-077",
+    "recipeId": "PP-077",
     "locale": "en",
     "description": "Grey-day calm: a cool white balance, Black Level and a Wide Black Gamma open the shadows and mid-greys, and Saturation below zero quiets colour, while green, blue and cyan are deepened a step so they do not go grey. Movie gamma with Knee Auto. For overcast streets, rain and everyday walks."
   },
   {
-    "recipeId": "SCL-PP-078",
+    "recipeId": "PP-078",
     "locale": "en",
     "description": "Autumn colour: an amber white balance and strong Saturation, with reds and yellows deepened so leaves read rich rather than bright orange, and green lifted and paled a little so it steps back. Firm blacks and a light knee on the Still curve. For autumn landscapes, gardens and travel in warm light."
   },
   {
-    "recipeId": "SCL-PP-079",
+    "recipeId": "PP-079",
     "locale": "en",
     "description": "Food in daylight: S-Cinetone colour with a warm white balance and raised Saturation, reds and greens deepened a step so sauces and herbs look rich, and yellows kept bright. A gentle knee holds reflections on plates and glass, and Type4 B/W Balance favours white detail for a clean, glossy finish. For tables by a window and markets."
   },
   {
-    "recipeId": "SCL-PP-080",
+    "recipeId": "PP-080",
     "locale": "en",
     "description": "For HDR delivery and grading: HLG2 with the 709 colour mode records the wider range HLG is made for, so it is meant for an HDR screen; on an ordinary SDR screen straight out of camera it looks flat. Saturation is raised a little, green, blue and cyan deepened a step, and a knee at 95% eases only the very top. For landscapes and travel."
   },
   {
-    "recipeId": "SCL-PP-081",
+    "recipeId": "PP-081",
     "locale": "en",
     "description": "Not a look: the base Sony gives for PP8 — S-Log3 with S-Gamut3.Cine and Detail at −7, so no in-camera sharpening is baked in — with every other setting at zero, and Knee off as it is on S-Log. It records flat, low-contrast footage meant for grading or a LUT afterwards."
   },
   {
-    "recipeId": "SCL-PP-082",
+    "recipeId": "PP-082",
     "locale": "en",
     "description": "Rainy-season colour: a cool white balance with a blue shift and raised Saturation, cyan deepened most and then blue, so wet streets, umbrellas and grey skies keep their colour, and yellow lifted to stay bright. A Wide Black Gamma opens the shade a little, with Knee Auto on the Movie curve. For monsoon streets and travel on grey days."
   },
   {
-    "recipeId": "SCL-CL-001",
+    "recipeId": "CL-001",
     "locale": "en",
     "description": "Film (FL) Creative Look recipe by Raoul Rutnam, Sri Lanka, from Sony’s Alpha Recipes collection."
   },
   {
-    "recipeId": "SCL-CL-002",
+    "recipeId": "CL-002",
     "locale": "en",
     "description": "Film (FL) Creative Look recipe by Arantha Sirimanne, Sri Lanka, from Sony’s Alpha Recipes collection."
   },
   {
-    "recipeId": "SCL-CL-003",
+    "recipeId": "CL-003",
     "locale": "en",
     "description": "Vivid 2 (VV2) Creative Look recipe by Ravi Ranasinghe, Sri Lanka, from Sony’s Alpha Recipes collection. Shot with Creative Looks; crop and RGB adjusted in post."
   },
   {
-    "recipeId": "SCL-CL-004",
+    "recipeId": "CL-004",
     "locale": "en",
     "description": "Vivid 2 (VV2) Creative Look recipe by Sony Asia, Asia Pacific, from Sony’s Alpha Recipes collection."
   },
   {
-    "recipeId": "SCL-CL-005",
+    "recipeId": "CL-005",
     "locale": "en",
     "description": "Vivid 2 (VV2) Creative Look recipe by Jonpoon.jpg, Singapore, from Sony’s Alpha Recipes collection."
   },
   {
-    "recipeId": "SCL-CL-006",
+    "recipeId": "CL-006",
     "locale": "en",
     "description": "Vivid 2 (VV2) Creative Look recipe by Jonpoon.jpg, Singapore, from Sony’s Alpha Recipes collection."
   },
   {
-    "recipeId": "SCL-CL-007",
+    "recipeId": "CL-007",
     "locale": "en",
     "description": "Vivid (VV) Creative Look recipe by Khong ខុង, Cambodia, from Sony’s Alpha Recipes collection. Shot with Creative Looks; exposure and brightness adjusted in post."
   },
   {
-    "recipeId": "SCL-CL-008",
+    "recipeId": "CL-008",
     "locale": "en",
     "description": "Vivid (VV) Creative Look recipe by Filmreel, Cambodia, from Sony’s Alpha Recipes collection."
   },
   {
-    "recipeId": "SCL-CL-009",
+    "recipeId": "CL-009",
     "locale": "en",
     "description": "Standard (ST) Creative Look recipe by Sandeeshwara Perera, Sri Lanka, from Sony’s Alpha Recipes collection."
   },
   {
-    "recipeId": "SCL-CL-010",
+    "recipeId": "CL-010",
     "locale": "en",
     "description": "Standard (ST) Creative Look recipe by Ravi Ranasinghe, Sri Lanka, from Sony’s Alpha Recipes collection. Shot with Creative Looks; crop and RGB adjusted in post."
   },
   {
-    "recipeId": "SCL-CL-011",
+    "recipeId": "CL-011",
     "locale": "en",
     "description": "Standard (ST) Creative Look recipe by Khong ខុង, Cambodia, from Sony’s Alpha Recipes collection. Shot with Creative Looks; exposure and brightness adjusted in post."
   },
   {
-    "recipeId": "SCL-CL-012",
+    "recipeId": "CL-012",
     "locale": "en",
     "description": "Standard (ST) Creative Look recipe by Filmreel, Cambodia, from Sony’s Alpha Recipes collection."
   },
   {
-    "recipeId": "SCL-CL-013",
+    "recipeId": "CL-013",
     "locale": "en",
     "description": "Soft Highkey (SH) Creative Look recipe by Sony Asia, Asia Pacific, from Sony’s Alpha Recipes collection."
   },
   {
-    "recipeId": "SCL-CL-014",
+    "recipeId": "CL-014",
     "locale": "en",
     "description": "Soft Highkey (SH) Creative Look recipe by Jonpoon.jpg, Singapore, from Sony’s Alpha Recipes collection."
   },
   {
-    "recipeId": "SCL-CL-015",
+    "recipeId": "CL-015",
     "locale": "en",
     "description": "Soft Highkey (SH) Creative Look recipe by Puy, Cambodia, from Sony’s Alpha Recipes collection."
   },
   {
-    "recipeId": "SCL-CL-016",
+    "recipeId": "CL-016",
     "locale": "en",
     "description": "Soft Highkey (SH) Creative Look recipe by Jomnot, Cambodia, from Sony’s Alpha Recipes collection."
   },
   {
-    "recipeId": "SCL-CL-017",
+    "recipeId": "CL-017",
     "locale": "en",
     "description": "Sepia (SE) Creative Look recipe by Satheeshan Thiyagaraja, Sri Lanka, from Sony’s Alpha Recipes collection."
   },
   {
-    "recipeId": "SCL-CL-018",
+    "recipeId": "CL-018",
     "locale": "en",
     "description": "Sepia (SE) Creative Look recipe by Ravi Ranasinghe, Sri Lanka, from Sony’s Alpha Recipes collection. Shot with Creative Looks; crop and RGB adjusted in post."
   },
   {
-    "recipeId": "SCL-CL-019",
+    "recipeId": "CL-019",
     "locale": "en",
     "description": "Portrait (PT) Creative Look recipe by Sandeeshwara Perera, Sri Lanka, from Sony’s Alpha Recipes collection."
   },
   {
-    "recipeId": "SCL-CL-020",
+    "recipeId": "CL-020",
     "locale": "en",
     "description": "Instant (IN) Creative Look recipe by Eranga Siriwardhana, Sri Lanka, from Sony’s Alpha Recipes collection."
   },
   {
-    "recipeId": "SCL-CL-021",
+    "recipeId": "CL-021",
     "locale": "en",
     "description": "Instant (IN) Creative Look recipe by Sony Asia, Asia Pacific, from Sony’s Alpha Recipes collection."
   },
   {
-    "recipeId": "SCL-CL-022",
+    "recipeId": "CL-022",
     "locale": "en",
     "description": "Instant (IN) Creative Look recipe by Sony Asia, Asia Pacific, from Sony’s Alpha Recipes collection."
   },
   {
-    "recipeId": "SCL-CL-023",
+    "recipeId": "CL-023",
     "locale": "en",
     "description": "Instant (IN) Creative Look recipe by Jonpoon.jpg, Singapore, from Sony’s Alpha Recipes collection."
   },
   {
-    "recipeId": "SCL-CL-024",
+    "recipeId": "CL-024",
     "locale": "en",
     "description": "Instant (IN) Creative Look recipe by Check In Siemreap ដើរលេងសៀមរាប, Cambodia, from Sony’s Alpha Recipes collection."
   },
   {
-    "recipeId": "SCL-CL-025",
+    "recipeId": "CL-025",
     "locale": "en",
     "description": "Film (FL) Creative Look recipe by Sandeeshwara Perera, Sri Lanka, from Sony’s Alpha Recipes collection. Shot with Creative Looks; curves, contrast and shadows adjusted in post."
   },
   {
-    "recipeId": "SCL-CL-026",
+    "recipeId": "CL-026",
     "locale": "en",
     "description": "Film (FL) Creative Look recipe by Sandeeshwara Perera, Sri Lanka, from Sony’s Alpha Recipes collection."
   },
   {
-    "recipeId": "SCL-CL-027",
+    "recipeId": "CL-027",
     "locale": "en",
     "description": "Film (FL) Creative Look recipe by Sandeeshwara Perera, Sri Lanka, from Sony’s Alpha Recipes collection."
   },
   {
-    "recipeId": "SCL-CL-028",
+    "recipeId": "CL-028",
     "locale": "en",
     "description": "Film (FL) Creative Look recipe by Lahiru Rumesh, Sri Lanka, from Sony’s Alpha Recipes collection."
   },
   {
-    "recipeId": "SCL-CL-029",
+    "recipeId": "CL-029",
     "locale": "en",
     "description": "Film (FL) Creative Look recipe by Isuru Mudalige, Sri Lanka, from Sony’s Alpha Recipes collection."
   },
   {
-    "recipeId": "SCL-CL-030",
+    "recipeId": "CL-030",
     "locale": "en",
     "description": "Film (FL) Creative Look recipe by Sony Asia, Asia Pacific, from Sony’s Alpha Recipes collection."
   },
   {
-    "recipeId": "SCL-CL-031",
+    "recipeId": "CL-031",
     "locale": "en",
     "description": "Film (FL) Creative Look recipe by Sony Asia, Asia Pacific, from Sony’s Alpha Recipes collection."
   },
   {
-    "recipeId": "SCL-CL-032",
+    "recipeId": "CL-032",
     "locale": "en",
     "description": "Film (FL) Creative Look recipe by Jonpoon.jpg, Singapore, from Sony’s Alpha Recipes collection."
   },
   {
-    "recipeId": "SCL-CL-033",
+    "recipeId": "CL-033",
     "locale": "en",
     "description": "Film (FL) Creative Look recipe by Mardy Suong, Cambodia, from Sony’s Alpha Recipes collection."
   },
   {
-    "recipeId": "SCL-CL-034",
+    "recipeId": "CL-034",
     "locale": "en",
     "description": "Film (FL) Creative Look recipe by Mardy Suong, Cambodia, from Sony’s Alpha Recipes collection."
   },
   {
-    "recipeId": "SCL-CL-035",
+    "recipeId": "CL-035",
     "locale": "en",
     "description": "Film (FL) Creative Look recipe by Khong ខុង, Cambodia, from Sony’s Alpha Recipes collection."
   },
   {
-    "recipeId": "SCL-CL-036",
+    "recipeId": "CL-036",
     "locale": "en",
     "description": "Film (FL) Creative Look recipe by Hea Kimhong ហ៊ាន គីមហុង, Cambodia, from Sony’s Alpha Recipes collection."
   },
   {
-    "recipeId": "SCL-CL-037",
+    "recipeId": "CL-037",
     "locale": "en",
     "description": "Film (FL) Creative Look recipe by Filmreel, Cambodia, from Sony’s Alpha Recipes collection."
   },
   {
-    "recipeId": "SCL-CL-038",
+    "recipeId": "CL-038",
     "locale": "en",
     "description": "Hard black and white on the BW Look: Contrast well up and Shadows pulled down for deep blacks, Highlights eased a little so whites keep their texture, and Clarity with raised Sharpness for gritty edges. For street at night and hard light."
   },
   {
-    "recipeId": "SCL-CL-039",
+    "recipeId": "CL-039",
     "locale": "en",
     "description": "Soft black and white for portraits on the BW Look: lower Contrast, Shadows lifted and Highlights pulled back for an open, airy grey scale, a little Fade, and low Sharpness with no Clarity so skin stays smooth."
   },
   {
-    "recipeId": "SCL-CL-040",
+    "recipeId": "CL-040",
     "locale": "en",
     "description": "The NT Look with almost nothing added: a step of Contrast, Highlights eased so white products and fabrics keep their detail, moderate Sharpness and a little Clarity for texture, and Saturation left at zero. For product, catalogue and clothing shots that want restrained colour."
   },
   {
-    "recipeId": "SCL-CL-041",
+    "recipeId": "CL-041",
     "locale": "en",
     "description": "The PT Look warmed for golden light: an A2 amber shift with a touch of magenta keeps skin rosy rather than yellow, Highlights pulled well down to hold sunlit skin, and Shadows lifted with a little less Contrast for a soft finish. Low Sharpness, no Clarity. For portraits in late sun and window-lit rooms."
   },
   {
-    "recipeId": "SCL-CL-042",
+    "recipeId": "CL-042",
     "locale": "en",
     "description": "Soft Highkey taken cool: a blue shift on 5200K, lower Contrast and Saturation, Shadows lifted and some Fade for a pale, pastel finish, with low Sharpness and no Clarity to keep it soft. For bright portraits, fashion and white interiors."
   },
   {
-    "recipeId": "SCL-CL-043",
+    "recipeId": "CL-043",
     "locale": "en",
     "description": "The FL Look with a cool, matte finish: a strong Fade lifts the blacks into grey while Contrast stays up so the image keeps its shape, with Highlights pulled down, Shadows lifted, Saturation lowered and a blue shift. For cool street scenes and everyday moments."
   },
   {
-    "recipeId": "SCL-CL-044",
+    "recipeId": "CL-044",
     "locale": "en",
     "description": "The IN Look made warmer and softer: an A2 amber shift, lower Contrast with Highlights pulled down and Shadows lifted, some Fade and a little more Saturation, with low Sharpness. For cafés, home and everyday snapshots in daylight."
   },
   {
-    "recipeId": "SCL-CL-045",
+    "recipeId": "CL-045",
     "locale": "en",
     "description": "VV2 pushed for tropical light: more Contrast and Saturation, Highlights pulled down to hold bright skies and sand, Shadows a step darker and Clarity for punch, on a slightly warm white balance. For beaches, islands and bright travel days."
   },
   {
-    "recipeId": "SCL-PP-001",
+    "recipeId": "PP-001",
     "locale": "vi",
     "description": "Phong cách hoài niệm, ngập nắng, phủ lên khung hình ánh sáng ấm áp của Golden Hour.\nRất hợp cho ảnh du lịch và phong cách sống, tái hiện sắc vàng đậm và xanh lam sâu, gợi cảm giác một hành trình rong ruổi mùa hè bất tận."
   },
   {
-    "recipeId": "SCL-PP-002",
+    "recipeId": "PP-002",
     "locale": "vi",
     "description": "Bảng màu tĩnh lặng và tinh tế, nổi bật với sắc ngọc bích đậm và tông da dịu.\nLý tưởng cho chân dung trầm lắng, ảnh đường phố và phong cảnh, tạo bầu không khí yên bình như tranh vẽ."
   },
   {
-    "recipeId": "SCL-PP-009",
+    "recipeId": "PP-009",
     "locale": "vi",
     "description": "Profile màu trầm, bão hoà thấp với sắc cyan-teal đặc trưng ở vùng tối và trung gian.\nTạo tâm trạng nhẹ nhàng, hơi man mác — hợp ảnh đường phố và khám phá đô thị."
   },
   {
-    "recipeId": "SCL-PP-015",
+    "recipeId": "PP-015",
     "locale": "vi",
     "description": "Phong cách trung tính, hơi phai với sắc xanh lá pha cyan nhẹ ở vùng tối.\nGợi cảm giác xem lại phim slide của gia đình ngày xưa — hợp chân dung hoài niệm và cảnh đời thường."
   },
   {
-    "recipeId": "SCL-PP-025",
+    "recipeId": "PP-025",
     "locale": "vi",
     "description": "Phong cách điện ảnh mạnh mẽ, bão hoà cao, khác biệt với các bản mô phỏng Fuji.\nDùng không gian màu rộng để cho màu sâu và đậm cùng đường gamma chất phim — hợp kể chuyện bằng hình ảnh sống động."
   },
   {
-    "recipeId": "SCL-PP-027",
+    "recipeId": "PP-027",
     "locale": "vi",
     "description": "Phong cách điện ảnh hiện đại, sạch, dựa trên S-Cinetone.\nThiết kế cho điều kiện ánh sáng ban ngày, cho tông da đẹp, độ bão hoà cao và vẻ chuyên nghiệp ngay từ máy."
   },
   {
-    "recipeId": "SCL-PP-044",
+    "recipeId": "PP-044",
     "locale": "vi",
     "description": "Công thức chất phim, mô phỏng film stock FJ C200."
   },
   {
-    "recipeId": "SCL-PP-045",
+    "recipeId": "PP-045",
     "locale": "vi",
     "description": "Công thức màu cho hình ảnh trong trẻo, màu sắc đậm đà trên nền trung tính. Được thiết kế riêng cho livestream, thể hiện tông da người châu Á chân thực và rạng rỡ."
   },
   {
-    "recipeId": "SCL-PP-046",
+    "recipeId": "PP-046",
     "locale": "vi",
     "description": "Công thức màu cho hình ảnh trong trẻo, màu sắc đậm đà trên nền trung tính. Được thiết kế riêng cho livestream, thể hiện tông da người châu Á chân thực và rạng rỡ."
   },
   {
-    "recipeId": "SCL-PP-047",
+    "recipeId": "PP-047",
     "locale": "vi",
     "description": "Công thức màu cho hình ảnh trong trẻo, màu sắc đậm đà trên nền trung tính. Được thiết kế riêng cho livestream, thể hiện tông da người châu Á chân thực và rạng rỡ."
   },
   {
-    "recipeId": "SCL-PP-048",
+    "recipeId": "PP-048",
     "locale": "vi",
     "description": "Tương phản mềm của S-Cinetone, da được nâng sáng nhẹ và bớt ửng đỏ, trong khi lá cây và bầu trời đậm hơn một chút để khuôn mặt tách khỏi hậu cảnh. Dành cho chân dung ban ngày dưới bóng râm."
   },
   {
-    "recipeId": "SCL-PP-049",
+    "recipeId": "PP-049",
     "locale": "vi",
     "description": "Màu gốc của máy được làm sạch hơn một chút: vùng đen chắc hơn, knee nhẹ chỉ nén những vùng sáng nhất, độ bão hoà tăng nhẹ. Thiết lập đáng tin cậy cho ảnh đời thường ban ngày."
   },
   {
-    "recipeId": "SCL-PP-050",
+    "recipeId": "PP-050",
     "locale": "vi",
     "description": "Màu kiểu máy quay truyền hình trên đường ITU709, đúng cặp Sony khuyến nghị: vải giữ đúng màu, vùng trắng sạch và trung tính, chất liệu rõ hơn một chút. Dành cho thời trang, lookbook và sản phẩm."
   },
   {
-    "recipeId": "SCL-PP-051",
+    "recipeId": "PP-051",
     "locale": "vi",
     "description": "Cine1 kết hợp knee thoải giữ được cả bầu trời sáng lẫn mặt đất trong bóng, sau đó độ bão hoà cùng sắc xanh lá, xanh dương đậm hơn trả lại màu để ảnh trông hoàn chỉnh chứ không bệt. Dành cho phong cảnh ngược sáng và buổi sáng trên núi."
   },
   {
-    "recipeId": "SCL-PP-052",
+    "recipeId": "PP-052",
     "locale": "vi",
     "description": "Dành cho nắng gắt buổi trưa: Black Gamma mở vùng tối, vùng sáng được nén sớm, trời và nước đậm hơn để màu không bị nắng làm bạc. Dùng ngay từ máy, không cần hậu kỳ."
   },
   {
-    "recipeId": "SCL-PP-053",
+    "recipeId": "PP-053",
     "locale": "vi",
     "description": "Một trong những công thức màu phẳng nhất ở đây, có chủ ý: knee sớm và rất thoải cùng vùng tối được mở giữ được cả quầng nắng lẫn tiền cảnh, cân bằng trắng ấm và độ bão hoà cao để vẫn ra chất hoàng hôn. Mềm là có chủ ý."
   },
   {
-    "recipeId": "SCL-PP-054",
+    "recipeId": "PP-054",
     "locale": "vi",
     "description": "Tươi và sạch: vùng trắng hơi lạnh, nước biển và bầu trời xanh ngọc đậm hơn, cát và sắc vàng giữ sáng. Dành cho biển, hồ bơi và du lịch mùa hè."
   },
   {
-    "recipeId": "SCL-PP-055",
+    "recipeId": "PP-055",
     "locale": "vi",
     "description": "Sắc xanh lá đậm mà vẫn tự nhiên: lá xanh đậm hơn, xanh vàng sáng hơn, hơi ngả ấm để ruộng lúa sáng lên thay vì xanh ngọc lục bảo. Dành cho phong cảnh, vườn và miền quê."
   },
   {
-    "recipeId": "SCL-PP-056",
+    "recipeId": "PP-056",
     "locale": "vi",
     "description": "Rực và ấm cho lễ hội, áo dài và ngày Tết; sắc đỏ được làm đậm thay vì làm sáng để giữ chất liệu, không bị cháy màu. Sắc vàng vẫn sáng."
   },
   {
-    "recipeId": "SCL-PP-057",
+    "recipeId": "PP-057",
     "locale": "vi",
     "description": "Dành cho chân dung ngày Tết bên hoa mai, hoa đào: hoa mai vàng giữ sáng, sắc hồng đậm hơn một chút, da được nâng sáng và cả khung hình phủ chút ấm hồng nhẹ."
   },
   {
-    "recipeId": "SCL-PP-058",
+    "recipeId": "PP-058",
     "locale": "vi",
     "description": "Vùng đen nâng lên, mờ như phim, màu pastel hơi lạnh và bầu trời nhạt. Lãng mạn và mờ sương; hợp chân dung ngày âm u và đồi núi mù sương."
   },
   {
-    "recipeId": "SCL-PP-059",
+    "recipeId": "PP-059",
     "locale": "vi",
     "description": "Hoài niệm, trầm và ấm: độ bão hoà thấp, vàng đất và xanh ô liu đậm hơn, sắc xanh dương bạc đi. Dành cho tường cũ, phố ngày âm u và những khoảnh khắc đời thường tĩnh lặng."
   },
   {
-    "recipeId": "SCL-PP-060",
+    "recipeId": "PP-060",
     "locale": "vi",
     "description": "Đậm đặc như phim dương bản: tương phản Cine3 với vùng đen sâu, mọi sắc màu được làm đậm nhẹ, sắc độ hơi ngả ấm. Dành cho đường phố, chợ và cảnh ban ngày nhiều màu."
   },
   {
-    "recipeId": "SCL-PP-061",
+    "recipeId": "PP-061",
     "locale": "vi",
     "description": "Thiết kế cho đèn vàng trong nhà (khoảng 2700–3200K): giữ được sự ấm cúng nhưng không để da và gỗ ngả cam, knee bắt đầu sớm để giữ bóng đèn. Dùng ngoài trời ban ngày ảnh sẽ rất xanh."
   },
   {
-    "recipeId": "SCL-PP-062",
+    "recipeId": "PP-062",
     "locale": "vi",
     "description": "Đêm thành phố với điểm nhấn xanh lơ và xanh dương sạch, vùng đen Cine4 sâu, biển hiệu được knee nén lại. Dành cho đèn đường và đèn neon; dùng ban ngày ảnh sẽ rất xanh."
   },
   {
-    "recipeId": "SCL-PP-063",
+    "recipeId": "PP-063",
     "locale": "vi",
     "description": "Dành cho chợ đêm và hàng quán dưới đèn hỗn hợp: ấm và sống động, sắc đỏ của lồng đèn và món ăn đậm hơn, sắc vàng giữ sáng, bóng đèn được nén lại và hạt nhiễu được giữ yên. Dùng ban ngày ảnh sẽ ngả xanh."
   },
   {
-    "recipeId": "SCL-PP-064",
+    "recipeId": "PP-064",
     "locale": "vi",
     "description": "Đen trắng đường phố, tương phản vừa, vùng đen chắc, sắc nét, giữ thêm chút chi tiết ở vùng tối."
   },
   {
-    "recipeId": "SCL-PP-065",
+    "recipeId": "PP-065",
     "locale": "vi",
     "description": "Đen trắng mềm cho chân dung: tương phản vùng tối dịu của Cine1, vùng sáng mượt, giảm chi tiết trên khuôn mặt và vùng sáng."
   },
   {
-    "recipeId": "SCL-PP-066",
+    "recipeId": "PP-066",
     "locale": "vi",
     "description": "Dành cho chân dung giờ vàng: cả khung hình ấm lên, da và nắng vàng giữ sáng thay vì ngả cam đục, vùng sáng mềm của Cine2 giữ được nắng ngược."
   },
   {
-    "recipeId": "SCL-PP-067",
+    "recipeId": "PP-067",
     "locale": "vi",
     "description": "Lạnh, thoáng và sắc: vùng trắng ngả xanh, vùng tối được giữ mở, màu tiết chế, giữ chi tiết nhỏ trong sương, băng giá và mây. Dành cho đồi núi mùa đông và kiến trúc phố sạch sẽ."
   },
   {
-    "recipeId": "SCL-PP-068",
+    "recipeId": "PP-068",
     "locale": "vi",
     "description": "Màu mạnh nhất trong bộ: độ bão hoà cao trên nền trắng trung tính sạch, mọi sắc màu được làm đậm trừ sắc vàng vẫn giữ sáng, đường nét sắc. Dành cho tường sơn màu, biển hiệu và street style."
   },
   {
-    "recipeId": "SCL-PP-069",
+    "recipeId": "PP-069",
     "locale": "vi",
     "description": "Đen trắng kịch tính: vùng đen đẩy sâu, vùng trắng giữ sáng nhờ knee muộn, chi tiết đường nét mạnh. Dành cho hẻm nhỏ, nắng gắt và cảnh đường phố nhiều khối hình."
   },
   {
-    "recipeId": "SCL-PP-070",
+    "recipeId": "PP-070",
     "locale": "vi",
     "description": "Đen trắng cho ban đêm: Cine4 giữ tương phản vùng tối trong khi Black Gamma mở chúng ra, đèn đường được nén lại, hạt nhiễu không bị làm nét thêm."
   },
   {
-    "recipeId": "SCL-PP-071",
+    "recipeId": "PP-071",
     "locale": "vi",
     "description": "Chất bleach bypass: tương phản vùng tối sâu của Cine4, vùng đen được Black Level và Black Gamma Narrow ép xuống, độ bão hoà giảm mạnh để màu ngả bạc — màu nhạt là chủ ý, không phải lỗi. Sắc đỏ, xanh dương và vàng được giữ đậm hơn một nấc để không bị bệt, đường nét chắc, hợp đường phố và thời trang."
   },
   {
-    "recipeId": "SCL-PP-072",
+    "recipeId": "PP-072",
     "locale": "vi",
     "description": "Teal và cam ngay từ máy: cân bằng trắng ngả hổ phách làm ấm da, còn Color Depth làm đậm xanh lá, cyan và xanh dương để cây lá, bầu trời và mặt nước trầm và lạnh bên cạnh làn da. Sắc đỏ và vàng được nâng sáng, nhạt đi một chút để khuôn mặt vẫn sáng; Cine2 cùng knee sớm và thoải giữ vùng sáng mềm. Dành cho chân dung và cảnh đường phố."
   },
   {
-    "recipeId": "SCL-PP-073",
+    "recipeId": "PP-073",
     "locale": "vi",
     "description": "Tông sáng (high key), sạch và nhẹ: Black Level và Black Gamma nâng vùng tối, Cine2 giữ tương phản thấp, knee từ 80% nén mềm phông trắng mà không làm bệt. Color Depth âm trên mọi sắc làm màu nhạt đi đôi chút, chi tiết được làm dịu cùng Type4 giữ da mịn và vùng trắng bóng sạch. Dành cho studio, tường trắng và ánh sáng cửa sổ."
   },
   {
-    "recipeId": "SCL-PP-074",
+    "recipeId": "PP-074",
     "locale": "vi",
     "description": "Tông tối (low key) và ấm: Cine4 cùng Black Level âm mạnh và Black Gamma Narrow nhấn chìm vùng tối, trong khi knee muộn giữ vùng sáng sáng rõ. Xanh lá, xanh dương và magenta được làm đậm, đỏ và vàng giữ sáng hơn một chút để làn da nổi bật, ấm áp trên nền tối. Dành cho chân dung có chiều sâu và nội thất chỉ có một khung cửa sổ chiếu sáng."
   },
   {
-    "recipeId": "SCL-PP-075",
+    "recipeId": "PP-075",
     "locale": "vi",
     "description": "Pastel ấm: Black Level và Black Gamma Wide nâng vùng tối và vùng xám trung gian, Cine1 giữ tương phản thấp, độ bão hoà âm cùng Color Depth âm ở đỏ, vàng và magenta đưa màu về sắc kem. Cân bằng trắng hơi ấm. Dành cho quán cà phê, nội thất, chân dung mềm và thời trang nhẹ nhàng."
   },
   {
-    "recipeId": "SCL-PP-076",
+    "recipeId": "PP-076",
     "locale": "vi",
     "description": "Giờ xanh, ngả sang tím: nhiệt độ màu thấp làm lạnh khung hình và độ lệch magenta đẩy sang tím, xanh dương và magenta được làm đậm, sắc vàng giữ sáng để ánh đèn vẫn sạch. Knee thoải giữ được ô cửa sáng đèn và chút ánh sáng cuối trên trời, Crispening cao để hạt nhiễu không bị làm nét. Dành cho chạng vạng trên phố, mặt nước và đồi núi; dùng ban ngày ảnh sẽ rất xanh tím."
   },
   {
-    "recipeId": "SCL-PP-077",
+    "recipeId": "PP-077",
     "locale": "vi",
     "description": "Bình yên ngày âm u: cân bằng trắng lạnh, Black Level và Black Gamma Wide mở vùng tối và vùng xám trung gian, độ bão hoà âm làm màu lắng xuống, trong khi xanh lá, xanh dương và cyan được làm đậm một nấc để không bị xám. Gamma Movie với Knee Auto. Dành cho phố ngày âm u, ngày mưa và những buổi dạo đời thường."
   },
   {
-    "recipeId": "SCL-PP-078",
+    "recipeId": "PP-078",
     "locale": "vi",
     "description": "Màu mùa thu: cân bằng trắng ngả hổ phách và độ bão hoà cao, đỏ và vàng được làm đậm để lá cây trông đằm thay vì cam chói, xanh lá được nâng sáng và nhạt đi một chút để lùi về phía sau. Vùng đen chắc và knee nhẹ trên đường cong Still. Dành cho phong cảnh mùa thu, khu vườn và du lịch dưới nắng ấm."
   },
   {
-    "recipeId": "SCL-PP-079",
+    "recipeId": "PP-079",
     "locale": "vi",
     "description": "Món ăn dưới ánh sáng ban ngày: màu S-Cinetone với cân bằng trắng ấm và độ bão hoà tăng, đỏ và xanh lá được làm đậm một nấc để nước sốt và rau thơm trông đậm đà, sắc vàng giữ sáng. Knee thoải giữ được phản chiếu trên đĩa và ly, B/W Balance Type4 ưu tiên chi tiết vùng trắng cho bề mặt sạch, bóng. Dành cho bàn ăn cạnh cửa sổ và khu chợ."
   },
   {
-    "recipeId": "SCL-PP-080",
+    "recipeId": "PP-080",
     "locale": "vi",
     "description": "Dành cho xuất HDR và hậu kỳ: HLG2 với color mode 709 ghi lại dải sáng rộng mà HLG được tạo ra để thể hiện, nên cần xem trên màn hình HDR; trên màn hình SDR thông thường, ảnh lấy thẳng từ máy trông phẳng. Độ bão hoà tăng nhẹ, xanh lá, xanh dương và cyan đậm hơn một nấc, knee ở 95% chỉ nén phần sáng nhất. Dành cho phong cảnh và du lịch."
   },
   {
-    "recipeId": "SCL-PP-081",
+    "recipeId": "PP-081",
     "locale": "vi",
     "description": "Không phải một look: nền Sony đưa ra cho PP8 — S-Log3 với S-Gamut3.Cine và Detail −7, không có độ nét nào được làm sẵn trong máy — mọi thông số khác để 0, knee tắt như trên S-Log. Ghi lại hình phẳng, tương phản thấp, dành để chỉnh màu hoặc áp LUT về sau."
   },
   {
-    "recipeId": "SCL-PP-082",
+    "recipeId": "PP-082",
     "locale": "vi",
     "description": "Màu mùa mưa: cân bằng trắng lạnh với độ lệch xanh và độ bão hoà tăng, cyan được làm đậm nhất rồi đến xanh dương, để phố ướt, ô dù và bầu trời xám vẫn giữ màu, sắc vàng được nâng sáng. Black Gamma Wide mở nhẹ vùng bóng, Knee Auto trên đường cong Movie. Dành cho phố mùa mưa và du lịch ngày trời xám."
   },
   {
-    "recipeId": "SCL-CL-001",
+    "recipeId": "CL-001",
     "locale": "vi",
     "description": "Công thức Creative Look Film (FL) của Raoul Rutnam (Sri Lanka), thuộc bộ sưu tập Alpha Recipes của Sony."
   },
   {
-    "recipeId": "SCL-CL-002",
+    "recipeId": "CL-002",
     "locale": "vi",
     "description": "Công thức Creative Look Film (FL) của Arantha Sirimanne (Sri Lanka), thuộc bộ sưu tập Alpha Recipes của Sony."
   },
   {
-    "recipeId": "SCL-CL-003",
+    "recipeId": "CL-003",
     "locale": "vi",
     "description": "Công thức Creative Look Vivid 2 (VV2) của Ravi Ranasinghe (Sri Lanka), thuộc bộ sưu tập Alpha Recipes của Sony. Chụp bằng Creative Look; cắt khung và RGB được chỉnh thêm ở hậu kỳ."
   },
   {
-    "recipeId": "SCL-CL-004",
+    "recipeId": "CL-004",
     "locale": "vi",
     "description": "Công thức Creative Look Vivid 2 (VV2) của Sony Asia (châu Á – Thái Bình Dương), thuộc bộ sưu tập Alpha Recipes của Sony."
   },
   {
-    "recipeId": "SCL-CL-005",
+    "recipeId": "CL-005",
     "locale": "vi",
     "description": "Công thức Creative Look Vivid 2 (VV2) của Jonpoon.jpg (Singapore), thuộc bộ sưu tập Alpha Recipes của Sony."
   },
   {
-    "recipeId": "SCL-CL-006",
+    "recipeId": "CL-006",
     "locale": "vi",
     "description": "Công thức Creative Look Vivid 2 (VV2) của Jonpoon.jpg (Singapore), thuộc bộ sưu tập Alpha Recipes của Sony."
   },
   {
-    "recipeId": "SCL-CL-007",
+    "recipeId": "CL-007",
     "locale": "vi",
     "description": "Công thức Creative Look Vivid (VV) của Khong ខុង (Campuchia), thuộc bộ sưu tập Alpha Recipes của Sony. Chụp bằng Creative Look; phơi sáng và độ sáng được chỉnh thêm ở hậu kỳ."
   },
   {
-    "recipeId": "SCL-CL-008",
+    "recipeId": "CL-008",
     "locale": "vi",
     "description": "Công thức Creative Look Vivid (VV) của Filmreel (Campuchia), thuộc bộ sưu tập Alpha Recipes của Sony."
   },
   {
-    "recipeId": "SCL-CL-009",
+    "recipeId": "CL-009",
     "locale": "vi",
     "description": "Công thức Creative Look Standard (ST) của Sandeeshwara Perera (Sri Lanka), thuộc bộ sưu tập Alpha Recipes của Sony."
   },
   {
-    "recipeId": "SCL-CL-010",
+    "recipeId": "CL-010",
     "locale": "vi",
     "description": "Công thức Creative Look Standard (ST) của Ravi Ranasinghe (Sri Lanka), thuộc bộ sưu tập Alpha Recipes của Sony. Chụp bằng Creative Look; cắt khung và RGB được chỉnh thêm ở hậu kỳ."
   },
   {
-    "recipeId": "SCL-CL-011",
+    "recipeId": "CL-011",
     "locale": "vi",
     "description": "Công thức Creative Look Standard (ST) của Khong ខុង (Campuchia), thuộc bộ sưu tập Alpha Recipes của Sony. Chụp bằng Creative Look; phơi sáng và độ sáng được chỉnh thêm ở hậu kỳ."
   },
   {
-    "recipeId": "SCL-CL-012",
+    "recipeId": "CL-012",
     "locale": "vi",
     "description": "Công thức Creative Look Standard (ST) của Filmreel (Campuchia), thuộc bộ sưu tập Alpha Recipes của Sony."
   },
   {
-    "recipeId": "SCL-CL-013",
+    "recipeId": "CL-013",
     "locale": "vi",
     "description": "Công thức Creative Look Soft Highkey (SH) của Sony Asia (châu Á – Thái Bình Dương), thuộc bộ sưu tập Alpha Recipes của Sony."
   },
   {
-    "recipeId": "SCL-CL-014",
+    "recipeId": "CL-014",
     "locale": "vi",
     "description": "Công thức Creative Look Soft Highkey (SH) của Jonpoon.jpg (Singapore), thuộc bộ sưu tập Alpha Recipes của Sony."
   },
   {
-    "recipeId": "SCL-CL-015",
+    "recipeId": "CL-015",
     "locale": "vi",
     "description": "Công thức Creative Look Soft Highkey (SH) của Puy (Campuchia), thuộc bộ sưu tập Alpha Recipes của Sony."
   },
   {
-    "recipeId": "SCL-CL-016",
+    "recipeId": "CL-016",
     "locale": "vi",
     "description": "Công thức Creative Look Soft Highkey (SH) của Jomnot (Campuchia), thuộc bộ sưu tập Alpha Recipes của Sony."
   },
   {
-    "recipeId": "SCL-CL-017",
+    "recipeId": "CL-017",
     "locale": "vi",
     "description": "Công thức Creative Look Sepia (SE) của Satheeshan Thiyagaraja (Sri Lanka), thuộc bộ sưu tập Alpha Recipes của Sony."
   },
   {
-    "recipeId": "SCL-CL-018",
+    "recipeId": "CL-018",
     "locale": "vi",
     "description": "Công thức Creative Look Sepia (SE) của Ravi Ranasinghe (Sri Lanka), thuộc bộ sưu tập Alpha Recipes của Sony. Chụp bằng Creative Look; cắt khung và RGB được chỉnh thêm ở hậu kỳ."
   },
   {
-    "recipeId": "SCL-CL-019",
+    "recipeId": "CL-019",
     "locale": "vi",
     "description": "Công thức Creative Look Portrait (PT) của Sandeeshwara Perera (Sri Lanka), thuộc bộ sưu tập Alpha Recipes của Sony."
   },
   {
-    "recipeId": "SCL-CL-020",
+    "recipeId": "CL-020",
     "locale": "vi",
     "description": "Công thức Creative Look Instant (IN) của Eranga Siriwardhana (Sri Lanka), thuộc bộ sưu tập Alpha Recipes của Sony."
   },
   {
-    "recipeId": "SCL-CL-021",
+    "recipeId": "CL-021",
     "locale": "vi",
     "description": "Công thức Creative Look Instant (IN) của Sony Asia (châu Á – Thái Bình Dương), thuộc bộ sưu tập Alpha Recipes của Sony."
   },
   {
-    "recipeId": "SCL-CL-022",
+    "recipeId": "CL-022",
     "locale": "vi",
     "description": "Công thức Creative Look Instant (IN) của Sony Asia (châu Á – Thái Bình Dương), thuộc bộ sưu tập Alpha Recipes của Sony."
   },
   {
-    "recipeId": "SCL-CL-023",
+    "recipeId": "CL-023",
     "locale": "vi",
     "description": "Công thức Creative Look Instant (IN) của Jonpoon.jpg (Singapore), thuộc bộ sưu tập Alpha Recipes của Sony."
   },
   {
-    "recipeId": "SCL-CL-024",
+    "recipeId": "CL-024",
     "locale": "vi",
     "description": "Công thức Creative Look Instant (IN) của Check In Siemreap ដើរលេងសៀមរាប (Campuchia), thuộc bộ sưu tập Alpha Recipes của Sony."
   },
   {
-    "recipeId": "SCL-CL-025",
+    "recipeId": "CL-025",
     "locale": "vi",
     "description": "Công thức Creative Look Film (FL) của Sandeeshwara Perera (Sri Lanka), thuộc bộ sưu tập Alpha Recipes của Sony. Chụp bằng Creative Look; đường cong, tương phản và vùng tối được chỉnh thêm ở hậu kỳ."
   },
   {
-    "recipeId": "SCL-CL-026",
+    "recipeId": "CL-026",
     "locale": "vi",
     "description": "Công thức Creative Look Film (FL) của Sandeeshwara Perera (Sri Lanka), thuộc bộ sưu tập Alpha Recipes của Sony."
   },
   {
-    "recipeId": "SCL-CL-027",
+    "recipeId": "CL-027",
     "locale": "vi",
     "description": "Công thức Creative Look Film (FL) của Sandeeshwara Perera (Sri Lanka), thuộc bộ sưu tập Alpha Recipes của Sony."
   },
   {
-    "recipeId": "SCL-CL-028",
+    "recipeId": "CL-028",
     "locale": "vi",
     "description": "Công thức Creative Look Film (FL) của Lahiru Rumesh (Sri Lanka), thuộc bộ sưu tập Alpha Recipes của Sony."
   },
   {
-    "recipeId": "SCL-CL-029",
+    "recipeId": "CL-029",
     "locale": "vi",
     "description": "Công thức Creative Look Film (FL) của Isuru Mudalige (Sri Lanka), thuộc bộ sưu tập Alpha Recipes của Sony."
   },
   {
-    "recipeId": "SCL-CL-030",
+    "recipeId": "CL-030",
     "locale": "vi",
     "description": "Công thức Creative Look Film (FL) của Sony Asia (châu Á – Thái Bình Dương), thuộc bộ sưu tập Alpha Recipes của Sony."
   },
   {
-    "recipeId": "SCL-CL-031",
+    "recipeId": "CL-031",
     "locale": "vi",
     "description": "Công thức Creative Look Film (FL) của Sony Asia (châu Á – Thái Bình Dương), thuộc bộ sưu tập Alpha Recipes của Sony."
   },
   {
-    "recipeId": "SCL-CL-032",
+    "recipeId": "CL-032",
     "locale": "vi",
     "description": "Công thức Creative Look Film (FL) của Jonpoon.jpg (Singapore), thuộc bộ sưu tập Alpha Recipes của Sony."
   },
   {
-    "recipeId": "SCL-CL-033",
+    "recipeId": "CL-033",
     "locale": "vi",
     "description": "Công thức Creative Look Film (FL) của Mardy Suong (Campuchia), thuộc bộ sưu tập Alpha Recipes của Sony."
   },
   {
-    "recipeId": "SCL-CL-034",
+    "recipeId": "CL-034",
     "locale": "vi",
     "description": "Công thức Creative Look Film (FL) của Mardy Suong (Campuchia), thuộc bộ sưu tập Alpha Recipes của Sony."
   },
   {
-    "recipeId": "SCL-CL-035",
+    "recipeId": "CL-035",
     "locale": "vi",
     "description": "Công thức Creative Look Film (FL) của Khong ខុង (Campuchia), thuộc bộ sưu tập Alpha Recipes của Sony."
   },
   {
-    "recipeId": "SCL-CL-036",
+    "recipeId": "CL-036",
     "locale": "vi",
     "description": "Công thức Creative Look Film (FL) của Hea Kimhong ហ៊ាន គីមហុង (Campuchia), thuộc bộ sưu tập Alpha Recipes của Sony."
   },
   {
-    "recipeId": "SCL-CL-037",
+    "recipeId": "CL-037",
     "locale": "vi",
     "description": "Công thức Creative Look Film (FL) của Filmreel (Campuchia), thuộc bộ sưu tập Alpha Recipes của Sony."
   },
   {
-    "recipeId": "SCL-CL-038",
+    "recipeId": "CL-038",
     "locale": "vi",
     "description": "Đen trắng gắt trên Look BW: Contrast tăng mạnh và Shadows kéo xuống cho vùng đen sâu, Highlights hạ nhẹ để vùng trắng còn chất liệu, Clarity cùng Sharpness cao cho đường nét gai góc. Dành cho đường phố về đêm và ánh sáng gắt."
   },
   {
-    "recipeId": "SCL-CL-039",
+    "recipeId": "CL-039",
     "locale": "vi",
     "description": "Đen trắng mềm cho chân dung trên Look BW: Contrast thấp, Shadows nâng lên và Highlights kéo xuống cho thang xám mở và thoáng, thêm chút Fade, Sharpness thấp và không dùng Clarity để da luôn mịn."
   },
   {
-    "recipeId": "SCL-CL-040",
+    "recipeId": "CL-040",
     "locale": "vi",
     "description": "Look NT gần như giữ nguyên: Contrast tăng một nấc, Highlights hạ nhẹ để sản phẩm và vải màu trắng giữ được chi tiết, Sharpness vừa phải cùng chút Clarity cho chất liệu, Saturation để 0. Dành cho ảnh sản phẩm, catalogue và quần áo cần màu tiết chế."
   },
   {
-    "recipeId": "SCL-CL-041",
+    "recipeId": "CL-041",
     "locale": "vi",
     "description": "Look PT được làm ấm cho ánh nắng vàng: độ lệch A2 cùng chút magenta giữ da hồng hào thay vì vàng, Highlights kéo xuống nhiều để giữ làn da dưới nắng, Shadows nâng lên và Contrast giảm nhẹ cho cảm giác mềm. Sharpness thấp, không dùng Clarity. Dành cho chân dung lúc nắng chiều và trong phòng có ánh sáng cửa sổ."
   },
   {
-    "recipeId": "SCL-CL-042",
+    "recipeId": "CL-042",
     "locale": "vi",
     "description": "Soft Highkey theo hướng lạnh: độ lệch B trên nền 5200K, Contrast và Saturation thấp, Shadows nâng lên cùng chút Fade cho màu nhạt kiểu pastel, Sharpness thấp và không dùng Clarity để giữ độ mềm. Dành cho chân dung sáng, thời trang và nội thất trắng."
   },
   {
-    "recipeId": "SCL-CL-043",
+    "recipeId": "CL-043",
     "locale": "vi",
     "description": "Look FL với bề mặt mờ (matte) và lạnh: Fade mạnh nâng vùng đen thành xám trong khi Contrast vẫn cao để hình giữ khối, Highlights kéo xuống, Shadows nâng lên, Saturation giảm cùng độ lệch xanh. Dành cho cảnh đường phố tông lạnh và khoảnh khắc đời thường."
   },
   {
-    "recipeId": "SCL-CL-044",
+    "recipeId": "CL-044",
     "locale": "vi",
     "description": "Look IN ấm hơn và mềm hơn: độ lệch A2, Contrast thấp cùng Highlights kéo xuống và Shadows nâng lên, thêm chút Fade và Saturation, Sharpness thấp. Dành cho quán cà phê, ở nhà và ảnh chụp đời thường ban ngày."
   },
   {
-    "recipeId": "SCL-CL-045",
+    "recipeId": "CL-045",
     "locale": "vi",
     "description": "VV2 đẩy mạnh cho nắng nhiệt đới: Contrast và Saturation cao hơn, Highlights kéo xuống để giữ bầu trời sáng và bãi cát, Shadows tối hơn một nấc cùng Clarity cho độ đanh, trên cân bằng trắng hơi ấm. Dành cho biển, đảo và những ngày du lịch nhiều nắng."
   }

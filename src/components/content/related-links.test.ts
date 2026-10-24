@@ -15,7 +15,7 @@ const { refsUnavailable } = await import('./related-links');
  * down put the notice under an article whose links were all recipes.
  */
 
-const recipe: ContentRef = { kind: 'recipe', id: 'SCL-PP-001' };
+const recipe: ContentRef = { kind: 'recipe', id: 'PP-001' };
 const product: ContentRef = { kind: 'product', id: 'sony-ilce-7m4' };
 const page: ContentRef = { kind: 'knowledge', id: 'white-balance-shift' };
 

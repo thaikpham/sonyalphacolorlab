@@ -33,14 +33,14 @@ export const LEGACY_CORRECTIONS: Record<string, { path: string; from: unknown; t
 };
 
 /**
- * Legacy ids that do not fit the SCL-<FORMAT>-NNN scheme.
+ * Legacy ids that do not fit the scl-NNN scheme.
  * PROCOLOR-* is a distinct product line in the original dataset; these are
  * provisionally folded into the PP sequence. NEEDS CONFIRMATION.
  */
 export const ID_REMAP: Record<string, string> = {
-  'PROCOLOR-001': 'SCL-PP-045',
-  'PROCOLOR-002': 'SCL-PP-046',
-  'PROCOLOR-003': 'SCL-PP-047',
+  'PROCOLOR-001': 'PP-045',
+  'PROCOLOR-002': 'PP-046',
+  'PROCOLOR-003': 'PP-047',
 };
 
 // ---------------------------------------------------------------------------
@@ -91,12 +91,16 @@ export function toSlug(name: string): string {
     .replace(/^-+|-+$/g, '');
 }
 
-/** "scl-001" -> "SCL-PP-001" (all legacy recipes are Picture Profile). */
+/**
+ * "scl-001" -> "PP-001" (all legacy recipes are Picture Profile). The number
+ * is the one the old site shared; the `SCL-` prefix the catalogue carried
+ * until 2026-10-24 is gone (the ids follow the code, `PP-001-…`).
+ */
 export function toRecipeId(legacyId: string): string {
   if (ID_REMAP[legacyId]) return ID_REMAP[legacyId];
   const m = /^scl-(\d+)$/i.exec(legacyId);
   if (!m) throw new Error(`unmappable legacy id: ${legacyId}`);
-  return `SCL-PP-${m[1].padStart(3, '0')}`;
+  return `PP-${m[1].padStart(3, '0')}`;
 }
 
 // ---------------------------------------------------------------------------

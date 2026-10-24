@@ -18,8 +18,11 @@
  * one departure from Sony's pairing, by design and said so in each `intent`:
  * the curve's contrast under Still's hues.
  *
- * Names are `PP-NNN-Mood Words` (src/lib/recipes/names.ts); the slug keeps the
- * place each was first imagined for.
+ * Names are `PP-NNN-Mood Words` (src/lib/recipes/names.ts). The `slug` here
+ * is the one each was first published under, naming the place it was first
+ * imagined for; the seed's slug is `slugFor(name)` (2026-10-24), and
+ * scripts/emit-seed.ts records this one in data/former-slugs.json so its links
+ * and its place name still find the recipe.
  *
  * `published: false` on every one, deliberately (D8): the numbers are design
  * hypotheses until the owner has shot each on the a7 IV. Publishing is an
@@ -47,7 +50,7 @@ export type OriginalRecipe = {
 export const ORIGINAL_PP: readonly OriginalRecipe[] = [
   {
     recipe: {
-      id: 'SCL-PP-048',
+      id: 'PP-048',
       slug: 'hue-silk',
       name: 'PP-048-Soft Clean Portrait',
       whiteBalance: {
@@ -107,7 +110,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-PP-049',
+      id: 'PP-049',
       slug: 'clear-day',
       name: 'PP-049-Clean Natural Daylight',
       whiteBalance: {
@@ -161,7 +164,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-PP-050',
+      id: 'PP-050',
       slug: 'linen-editorial',
       name: 'PP-050-Neutral Crisp Studio',
       whiteBalance: {
@@ -219,7 +222,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-PP-051',
+      id: 'PP-051',
       slug: 'sa-pa-morning',
       name: 'PP-051-Range Soft Landscape',
       whiteBalance: {
@@ -279,7 +282,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-PP-052',
+      id: 'PP-052',
       slug: 'mekong-noon',
       name: 'PP-052-Range Bright Daylight',
       whiteBalance: {
@@ -339,7 +342,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-PP-053',
+      id: 'PP-053',
       slug: 'mui-ne-dusk',
       name: 'PP-053-Range Warm Dusk',
       whiteBalance: {
@@ -393,7 +396,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-PP-054',
+      id: 'PP-054',
       slug: 'phu-quoc-blue',
       name: 'PP-054-Cyan Vivid Coast',
       whiteBalance: {
@@ -453,7 +456,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-PP-055',
+      id: 'PP-055',
       slug: 'tam-coc-green',
       name: 'PP-055-Green Vivid Nature',
       whiteBalance: {
@@ -513,7 +516,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-PP-056',
+      id: 'PP-056',
       slug: 'hoi-an-lantern',
       name: 'PP-056-Warm Vivid Festival',
       whiteBalance: {
@@ -566,7 +569,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-PP-057',
+      id: 'PP-057',
       slug: 'tet-blossom',
       name: 'PP-057-Rosy Bright Portrait',
       whiteBalance: {
@@ -626,7 +629,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-PP-058',
+      id: 'PP-058',
       slug: 'da-lat-mist',
       name: 'PP-058-Cool Pastel Matte',
       whiteBalance: {
@@ -686,7 +689,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-PP-059',
+      id: 'PP-059',
       slug: 'ha-noi-winter',
       name: 'PP-059-Warm Muted Nostalgia',
       whiteBalance: {
@@ -744,7 +747,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-PP-060',
+      id: 'PP-060',
       slug: 'cho-lon-slide',
       name: 'PP-060-Warm Dense Slide',
       whiteBalance: {
@@ -804,7 +807,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-PP-061',
+      id: 'PP-061',
       slug: 'sai-gon-cafe',
       name: 'PP-061-Tungsten Soft Indoor',
       whiteBalance: {
@@ -857,7 +860,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-PP-062',
+      id: 'PP-062',
       slug: 'neon-night',
       name: 'PP-062-Cyan Deep Night',
       whiteBalance: {
@@ -917,7 +920,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-PP-063',
+      id: 'PP-063',
       slug: 'ben-thanh-night',
       name: 'PP-063-Warm Vivid Night',
       whiteBalance: {
@@ -971,7 +974,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-PP-064',
+      id: 'PP-064',
       slug: 'old-quarter-mono',
       name: 'PP-064-Mono Crisp Street',
       whiteBalance: {
@@ -1025,7 +1028,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-PP-065',
+      id: 'PP-065',
       slug: 'pearl-mono',
       name: 'PP-065-Mono Soft Portrait',
       whiteBalance: {
@@ -1079,7 +1082,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-PP-066',
+      id: 'PP-066',
       slug: 'ho-tay-golden',
       name: 'PP-066-Golden Soft Portrait',
       whiteBalance: {
@@ -1139,7 +1142,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-PP-067',
+      id: 'PP-067',
       slug: 'moc-chau-frost',
       name: 'PP-067-Cool Crisp Airy',
       whiteBalance: {
@@ -1199,7 +1202,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-PP-068',
+      id: 'PP-068',
       slug: 'vung-tau-pop',
       name: 'PP-068-Punchy Vivid Pop',
       whiteBalance: {
@@ -1259,7 +1262,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-PP-069',
+      id: 'PP-069',
       slug: 'hem-noir',
       name: 'PP-069-Mono Hard Noir',
       whiteBalance: {
@@ -1313,7 +1316,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-PP-070',
+      id: 'PP-070',
       slug: 'late-night-mono',
       name: 'PP-070-Mono Soft Night',
       whiteBalance: {
@@ -1367,7 +1370,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-PP-071',
+      id: 'PP-071',
       slug: 'silver-hard-muted',
       name: 'PP-071-Silver Hard Muted',
       whiteBalance: {
@@ -1427,7 +1430,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-PP-072',
+      id: 'PP-072',
       slug: 'teal-orange-cinema',
       name: 'PP-072-Teal Orange Cinema',
       whiteBalance: {
@@ -1487,7 +1490,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-PP-073',
+      id: 'PP-073',
       slug: 'bright-airy-studio',
       name: 'PP-073-Bright Airy Studio',
       whiteBalance: {
@@ -1541,7 +1544,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-PP-074',
+      id: 'PP-074',
       slug: 'dark-rich-velvet',
       name: 'PP-074-Dark Rich Velvet',
       whiteBalance: {
@@ -1601,7 +1604,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-PP-075',
+      id: 'PP-075',
       slug: 'warm-pastel-cream',
       name: 'PP-075-Warm Pastel Cream',
       whiteBalance: {
@@ -1661,7 +1664,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-PP-076',
+      id: 'PP-076',
       slug: 'violet-cool-dusk',
       name: 'PP-076-Violet Cool Dusk',
       whiteBalance: {
@@ -1721,7 +1724,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-PP-077',
+      id: 'PP-077',
       slug: 'cool-muted-overcast',
       name: 'PP-077-Cool Muted Overcast',
       whiteBalance: {
@@ -1779,7 +1782,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-PP-078',
+      id: 'PP-078',
       slug: 'amber-vivid-autumn',
       name: 'PP-078-Amber Vivid Autumn',
       whiteBalance: {
@@ -1839,7 +1842,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-PP-079',
+      id: 'PP-079',
       slug: 'warm-rich-table',
       name: 'PP-079-Warm Rich Table',
       whiteBalance: {
@@ -1899,7 +1902,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-PP-080',
+      id: 'PP-080',
       slug: 'range-hlg-daylight',
       name: 'PP-080-Range HLG Daylight',
       whiteBalance: {
@@ -1953,7 +1956,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-PP-081',
+      id: 'PP-081',
       slug: 'flat-log-base',
       name: 'PP-081-Flat Log Base',
       whiteBalance: {
@@ -2005,7 +2008,7 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-PP-082',
+      id: 'PP-082',
       slug: 'cyan-vivid-monsoon',
       name: 'PP-082-Cyan Vivid Monsoon',
       whiteBalance: {

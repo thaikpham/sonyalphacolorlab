@@ -2,14 +2,15 @@
  * Recipe names: `PP-NNN-Mood Words` for a Picture Profile, `CL-NNN-Mood Words`
  * for a Creative Look.
  *
- * The number is the recipe's own (`SCL-PP-048` → `PP-048`); the words are two
- * or three Title Case English words from the closed vocabulary below, saying
- * the tone and mood of the colour. No diacritics, no place, no photographer.
- * The whole string is the `name` column and, like every recipe name, is never
- * translated (Rule 3).
+ * The number is the recipe's own id (`PP-048`, `SCL-PP-048` before
+ * 2026-10-24); the words are two or three Title Case English words from the
+ * closed vocabulary below, saying the tone and mood of the colour. No
+ * diacritics, no place, no photographer. The whole string is the `name` column
+ * and, like every recipe name, is never translated (Rule 3).
  *
- * The place an original was imagined for, and every recipe's former name,
- * stay findable through the slug, which does not change.
+ * The slug is the name in kebab case (`slugFor`), so it is derived, never
+ * typed. The place an original was imagined for, and every recipe's former
+ * name, stay findable through its former slug (`data/former-slugs.json`).
  *
  * Client-safe: plain data, no JSON import, no server read.
  */
@@ -54,6 +55,19 @@ export const TONE_WORDS: Readonly<Record<ToneId, readonly string[]>> = {
   neutral: ['Neutral'],
 };
 
+/**
+ * The slug a name gives: `PP-048-Soft Clean Portrait` →
+ * `pp-048-soft-clean-portrait`. Names are ASCII by construction (the
+ * vocabulary above has no diacritics), so lower-casing and joining every run
+ * of anything else with one hyphen is the whole rule.
+ */
+export function slugFor(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
 export function parseRecipeName(
   name: string,
 ): { format: 'pp' | 'cl'; number: string; words: string[] } | null {
@@ -71,52 +85,52 @@ export function parseRecipeName(
  * `src/lib/originals/`.
  */
 export const RECIPE_NAMES: Readonly<Record<string, string>> = {
-  'SCL-PP-001': 'PP-001-Vivid Nostalgia Film',
-  'SCL-PP-002': 'PP-002-Jade Soft Film',
-  'SCL-PP-009': 'PP-009-Teal Muted Street',
-  'SCL-PP-015': 'PP-015-Warm Faded Slide',
-  'SCL-PP-025': 'PP-025-Vivid Deep Cinema',
-  'SCL-PP-027': 'PP-027-Vivid Daylight Cinema',
-  'SCL-PP-044': 'PP-044-Matte Vivid Film',
-  'SCL-PP-045': 'PP-045-Clean Neutral Stream',
-  'SCL-PP-046': 'PP-046-Clean Soft Stream',
-  'SCL-PP-047': 'PP-047-Range Neutral Stream',
+  'PP-001': 'PP-001-Vivid Nostalgia Film',
+  'PP-002': 'PP-002-Jade Soft Film',
+  'PP-009': 'PP-009-Teal Muted Street',
+  'PP-015': 'PP-015-Warm Faded Slide',
+  'PP-025': 'PP-025-Vivid Deep Cinema',
+  'PP-027': 'PP-027-Vivid Daylight Cinema',
+  'PP-044': 'PP-044-Matte Vivid Film',
+  'PP-045': 'PP-045-Clean Neutral Stream',
+  'PP-046': 'PP-046-Clean Soft Stream',
+  'PP-047': 'PP-047-Range Neutral Stream',
 
-  'SCL-CL-001': 'CL-001-Film Hard Faded',
-  'SCL-CL-002': 'CL-002-Film Warm Muted',
-  'SCL-CL-003': 'CL-003-Vivid Crisp Neutral',
-  'SCL-CL-004': 'CL-004-Vivid Soft Faded',
-  'SCL-CL-005': 'CL-005-Vivid Warm Crisp',
-  'SCL-CL-006': 'CL-006-Vivid Bright Crisp',
-  'SCL-CL-007': 'CL-007-Vivid Natural Daylight',
-  'SCL-CL-008': 'CL-008-Vivid Cool Natural',
-  'SCL-CL-009': 'CL-009-Flat Cool Standard',
-  'SCL-CL-010': 'CL-010-Soft Natural Standard',
-  'SCL-CL-011': 'CL-011-Natural Standard Daylight',
-  'SCL-CL-012': 'CL-012-Soft Warm Rich',
-  'SCL-CL-013': 'CL-013-Airy Warm Pastel',
-  'SCL-CL-014': 'CL-014-Airy Warm Rich',
-  'SCL-CL-015': 'CL-015-Airy Faded Soft',
-  'SCL-CL-016': 'CL-016-Airy Matte Natural',
-  'SCL-CL-017': 'CL-017-Sepia Soft Deep',
-  'SCL-CL-018': 'CL-018-Sepia Flat Crisp',
-  'SCL-CL-019': 'CL-019-Portrait Soft Warm',
-  'SCL-CL-020': 'CL-020-Instant Faded Natural',
-  'SCL-CL-021': 'CL-021-Instant Soft Violet',
-  'SCL-CL-022': 'CL-022-Instant Cool Soft',
-  'SCL-CL-023': 'CL-023-Instant Warm Faded',
-  'SCL-CL-024': 'CL-024-Instant Warm Punchy',
-  'SCL-CL-025': 'CL-025-Film Warm Bright',
-  'SCL-CL-026': 'CL-026-Film Warm Soft',
-  'SCL-CL-027': 'CL-027-Film Deep Muted',
-  'SCL-CL-028': 'CL-028-Film Warm Deep',
-  'SCL-CL-029': 'CL-029-Film Flat Rich',
-  'SCL-CL-030': 'CL-030-Film Soft Faded',
-  'SCL-CL-031': 'CL-031-Film Hard Muted',
-  'SCL-CL-032': 'CL-032-Film Warm Faded',
-  'SCL-CL-033': 'CL-033-Film Natural Daylight',
-  'SCL-CL-034': 'CL-034-Film Natural Neutral',
-  'SCL-CL-035': 'CL-035-Film Deep Crisp',
-  'SCL-CL-036': 'CL-036-Film Warm Natural',
-  'SCL-CL-037': 'CL-037-Film Soft Rich',
+  'CL-001': 'CL-001-Film Hard Faded',
+  'CL-002': 'CL-002-Film Warm Muted',
+  'CL-003': 'CL-003-Vivid Crisp Neutral',
+  'CL-004': 'CL-004-Vivid Soft Faded',
+  'CL-005': 'CL-005-Vivid Warm Crisp',
+  'CL-006': 'CL-006-Vivid Bright Crisp',
+  'CL-007': 'CL-007-Vivid Natural Daylight',
+  'CL-008': 'CL-008-Vivid Cool Natural',
+  'CL-009': 'CL-009-Flat Cool Standard',
+  'CL-010': 'CL-010-Soft Natural Standard',
+  'CL-011': 'CL-011-Natural Standard Daylight',
+  'CL-012': 'CL-012-Soft Warm Rich',
+  'CL-013': 'CL-013-Airy Warm Pastel',
+  'CL-014': 'CL-014-Airy Warm Rich',
+  'CL-015': 'CL-015-Airy Faded Soft',
+  'CL-016': 'CL-016-Airy Matte Natural',
+  'CL-017': 'CL-017-Sepia Soft Deep',
+  'CL-018': 'CL-018-Sepia Flat Crisp',
+  'CL-019': 'CL-019-Portrait Soft Warm',
+  'CL-020': 'CL-020-Instant Faded Natural',
+  'CL-021': 'CL-021-Instant Soft Violet',
+  'CL-022': 'CL-022-Instant Cool Soft',
+  'CL-023': 'CL-023-Instant Warm Faded',
+  'CL-024': 'CL-024-Instant Warm Punchy',
+  'CL-025': 'CL-025-Film Warm Bright',
+  'CL-026': 'CL-026-Film Warm Soft',
+  'CL-027': 'CL-027-Film Deep Muted',
+  'CL-028': 'CL-028-Film Warm Deep',
+  'CL-029': 'CL-029-Film Flat Rich',
+  'CL-030': 'CL-030-Film Soft Faded',
+  'CL-031': 'CL-031-Film Hard Muted',
+  'CL-032': 'CL-032-Film Warm Faded',
+  'CL-033': 'CL-033-Film Natural Daylight',
+  'CL-034': 'CL-034-Film Natural Neutral',
+  'CL-035': 'CL-035-Film Deep Crisp',
+  'CL-036': 'CL-036-Film Warm Natural',
+  'CL-037': 'CL-037-Film Soft Rich',
 };

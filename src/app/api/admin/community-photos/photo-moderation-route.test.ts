@@ -36,7 +36,7 @@ const db = {
 };
 const env = { control: true };
 
-const SLUG = 'soft-clean-portrait';
+const SLUG = 'pp-048-soft-clean-portrait';
 const ID = '6f1c1d2e-8a4b-4c3d-9e5f-0a1b2c3d4e5f';
 
 /* What the service role can read: every column, the address-shaped ones too.
@@ -91,6 +91,10 @@ function client() {
         },
         eq(column: string, value: unknown) {
           call!.filters.push([column, value]);
+          return builder;
+        },
+        in(column: string, values: unknown) {
+          call!.filters.push([column, values]);
           return builder;
         },
         order(column: string, options: unknown) {
@@ -221,8 +225,9 @@ describe('GET /api/admin/community-photos', () => {
     expect(call).toMatchObject({ client: 'controlAdmin', table: 'community_photos', op: 'select' });
     expect(call.columns).toBe(MODERATION_PHOTO_COLUMNS);
     /* The slug and nothing else — an `approved` filter here would hide the
-       rows this screen exists to show. */
-    expect(call.filters).toEqual([['recipe_slug', SLUG]]);
+       rows this screen exists to show. Both its spellings: a photo sent while
+       the planes disagreed on slugs is stored under the former one (S9). */
+    expect(call.filters).toEqual([['recipe_slug', [SLUG, 'hue-silk']]]);
     expect(call.order).toEqual(['created_at', { ascending: false }]);
     expect(call.limit).toBe(MODERATION_LIST_LIMIT);
   });

@@ -6,8 +6,10 @@
  *   - Sony's Alpha Recipes microsite   -> Creative Look recipes
  * and names every recipe `PP-NNN-Mood Words` / `CL-NNN-Mood Words`
  * (src/lib/recipes/names.ts): the originals carry theirs, the legacy and
- * Sony Asia rows take theirs from RECIPE_NAMES. Slugs stay derived from the
- * source name, so no URL changes.
+ * Sony Asia rows take theirs from RECIPE_NAMES. Every slug is then
+ * `slugFor(name)`, and the slug each source first published the recipe under
+ * goes to data/former-slugs.json (former → current), which is how an old link
+ * still reaches its recipe (`src/lib/recipes/slug-aliases.ts`).
  * Run with: npm run seed:emit
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -16,7 +18,7 @@ import legacyRecipes from '../src/lib/legacy/recipes.legacy.js';
 import { migrateAll } from '../src/lib/legacy/migrate';
 import { ORIGINAL_CL } from '../src/lib/originals/cl';
 import { ORIGINAL_PP, type OriginalRecipe } from '../src/lib/originals/pp';
-import { NAME_VOCABULARY, RECIPE_NAMES, parseRecipeName } from '../src/lib/recipes/names';
+import { NAME_VOCABULARY, RECIPE_NAMES, parseRecipeName, slugFor } from '../src/lib/recipes/names';
 import { importSonyAsia } from '../src/lib/sony-asia/import';
 import { SONY_ASIA_IDS } from '../src/lib/sony-asia/ids';
 
@@ -45,15 +47,15 @@ const validated = (list: readonly OriginalRecipe[]) =>
 const originals = validated(ORIGINAL_PP);
 const clOriginals = validated(ORIGINAL_CL);
 
-/* ColorLab's own Creative Looks share the SCL-CL- sequence: reserve their ids
+/* ColorLab's own Creative Looks share the CL- sequence: reserve their ids
    and slugs so a row the scrape has never seen is numbered after them. */
 const sony = importSonyAsia(readFileSync('data/sony-asia-creative-looks.csv', 'utf8'), SONY_ASIA_IDS, {
   ids: ORIGINAL_CL.map((o) => o.recipe.id),
   slugs: ORIGINAL_CL.map((o) => o.recipe.slug),
 });
 
-/* The legacy and Sony Asia rows keep their settings and their slug (derived
-   from the source name) and take their new name from RECIPE_NAMES. A row with
+/* The legacy and Sony Asia rows keep their settings and take their new name
+   from RECIPE_NAMES (their slug follows the name below). A row with
    no entry, or an entry no row uses, stops the emit: a recipe left on its old
    name would fail the syntax below anyway, and a stray entry is a typo. */
 const unusedNames = new Set(Object.keys(RECIPE_NAMES));
@@ -78,7 +80,16 @@ const clRows = [
   ...sony.recipes.map(({ images: _images, credit: _credit, ...recipe }) => renamed(recipe)),
   ...clOriginals.map(({ description: _description, ...recipe }) => recipe),
 ];
-const rows = [...ppRows, ...clRows];
+/* The slug follows the name (S2 of the 2026-10-24 id design). The one the
+   source published is kept as a former slug, so a link shared before still
+   lands — in either database state, see `slug-aliases.ts`. Recorded only
+   where it differs: a recipe born after the change has no former slug. */
+const formerSlugs: Record<string, string> = {};
+const rows = [...ppRows, ...clRows].map((r) => {
+  const slug = slugFor(r.name);
+  if (slug !== r.slug) formerSlugs[r.slug] = slug;
+  return { ...r, slug };
+});
 
 if (unusedNames.size) {
   console.error(`✗ RECIPE_NAMES names recipes the seed does not have: ${[...unusedNames].join(', ')}`);
@@ -98,6 +109,17 @@ for (const key of ['id', 'slug', 'name'] as const) {
       process.exit(1);
     }
     seen.add(r[key]);
+  }
+}
+
+/* A former slug is a second address for its own recipe and nothing else:
+   another recipe's current slug under that spelling would make an old link
+   land on the wrong colour. */
+const currentSlugs = new Set(rows.map((r) => r.slug));
+for (const [former, current] of Object.entries(formerSlugs)) {
+  if (currentSlugs.has(former)) {
+    console.error(`✗ former slug ${former} (now ${current}) is another recipe's current slug`);
+    process.exit(1);
   }
 }
 
@@ -161,6 +183,7 @@ const missingVi = rows.length - vi.length;
    recipe with no English text. */
 writeFileSync('data/recipes.seed.json', JSON.stringify(rows, null, 2) + '\n');
 writeFileSync('data/sony-asia-credits.json', JSON.stringify(credits, null, 2) + '\n');
+writeFileSync('data/former-slugs.json', JSON.stringify(formerSlugs, null, 2) + '\n');
 writeFileSync(
   'data/translations.seed.json',
   JSON.stringify([...translations, ...vi], null, 2) + '\n',
@@ -173,6 +196,7 @@ console.log(
     `${sony.recipes.length} Creative Look (Sony Asia) + ${clOriginals.length} Creative Look (originals)`,
 );
 console.log(`✓ ${sony.recipes.length} credits → data/sony-asia-credits.json`);
+console.log(`✓ ${Object.keys(formerSlugs).length} former slugs → data/former-slugs.json`);
 if (sony.duplicates) {
   console.log(`  ${sony.duplicates} duplicate carousel row(s) merged into their recipe`);
 }

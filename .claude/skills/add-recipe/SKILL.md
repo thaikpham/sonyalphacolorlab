@@ -44,11 +44,15 @@ Sequential within the format, zero-padded to three digits:
 ```bash
 node -e "const r=require('./data/recipes.seed.json');const f='PP';\
 const n=r.filter(x=>x.id.includes('-'+f+'-')).map(x=>+x.id.slice(-3));\
-console.log('next: SCL-'+f+'-'+String(Math.max(0,...n)+1).padStart(3,'0'))"
+console.log('next: '+f+'-'+String(Math.max(0,...n)+1).padStart(3,'0'))"
 ```
 
-- `name` is `"<ID>: <Title>"`, e.g. `SCL-CL-001: Saigon Dusk`.
-- `slug` is the title in kebab-case, no ID prefix. Must be unique.
+- `id` is `PP-NNN` / `CL-NNN` (no `SCL-` prefix since 2026-10-24).
+- `name` is `<ID>-<Mood Words>`, two or three words from `NAME_VOCABULARY`
+  in `src/lib/recipes/names.ts`, e.g. `CL-013-Airy Warm Pastel`.
+- `slug` is `slugFor(name)` — the name in kebab case, e.g.
+  `cl-013-airy-warm-pastel`. Never typed by hand; `names.test.ts` fails a
+  slug that is not.
 
 ## 4. Validate before writing anything
 

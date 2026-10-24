@@ -8,6 +8,7 @@ import {
   RECIPE_NAMES,
   TONE_WORDS,
   parseRecipeName,
+  slugFor,
 } from './names';
 import { paletteFor } from '../camera/palette';
 import { designedLightFor, taxonomyFor } from './taxonomy-assign';
@@ -84,7 +85,24 @@ describe('the name syntax', () => {
   });
 });
 
+describe('slugFor', () => {
+  it('is the name in kebab case', () => {
+    expect(slugFor('PP-048-Soft Clean Portrait')).toBe('pp-048-soft-clean-portrait');
+    expect(slugFor('CL-013-Airy Warm Pastel')).toBe('cl-013-airy-warm-pastel');
+    expect(slugFor('PP-080-Range HLG Daylight')).toBe('pp-080-range-hlg-daylight');
+  });
+});
+
 describe('every recipe in the seed', () => {
+  /* Derived, never typed (S2 of the 2026-10-24 id design): a slug that drifts
+     from its name is a second spelling nothing redirects. */
+  it('has the slug its name gives, and a code-shaped id', () => {
+    for (const r of seed) {
+      expect(r.slug, r.id).toBe(slugFor(r.name));
+      expect(r.id, r.id).toMatch(/^(PP|CL)-\d{3}$/);
+    }
+  });
+
   it('is named PP-NNN or CL-NNN after its own id and format', () => {
     for (const r of seed) {
       const parsed = parseRecipeName(r.name);

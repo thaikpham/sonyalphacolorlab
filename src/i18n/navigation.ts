@@ -6,5 +6,5 @@ import { routing } from './routing';
  * instead of next/link, or a Vietnamese visitor clicking a card lands back in
  * English.
  */
-export const { Link, redirect, usePathname, useRouter, getPathname } =
+export const { Link, redirect, permanentRedirect, usePathname, useRouter, getPathname } =
   createNavigation(routing);

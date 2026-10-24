@@ -45,7 +45,7 @@ describe('the proxy matcher', () => {
     expect(reachesProxy(path)).toBe(false);
   });
 
-  it.each(['/', '/vi', '/colorlab', '/vi/colorlab', '/recipe/mojave-sun', '/vi/recipe/mojave-sun', '/cameras/a7-iv', '/search'])(
+  it.each(['/', '/vi', '/colorlab', '/vi/colorlab', '/recipe/pp-001-vivid-nostalgia-film', '/vi/recipe/pp-001-vivid-nostalgia-film', '/cameras/a7-iv', '/search'])(
     'negotiates the locale for %s',
     (path) => {
       expect(reachesProxy(path)).toBe(true);
@@ -58,7 +58,7 @@ describe('the proxy matcher', () => {
        middleware, `as-needed` 307s that `/en/` away — a hop per scrape, and
        some scrapers do not follow it. Unmatched, it hits the route directly,
        where `[locale]` is already in the path. */
-    expect(reachesProxy('/en/recipe/mojave-sun/opengraph-image-1x2y3z')).toBe(false);
-    expect(reachesProxy('/vi/recipe/mojave-sun/opengraph-image-1x2y3z')).toBe(false);
+    expect(reachesProxy('/en/recipe/pp-001-vivid-nostalgia-film/opengraph-image-1x2y3z')).toBe(false);
+    expect(reachesProxy('/vi/recipe/pp-001-vivid-nostalgia-film/opengraph-image-1x2y3z')).toBe(false);
   });
 });

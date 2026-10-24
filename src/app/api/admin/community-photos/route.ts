@@ -3,6 +3,7 @@ import { adminGate } from '@/lib/auth/admin-gate';
 import { controlAdmin, hasControlConfig } from '@/lib/supabase/server';
 import { MODERATION_PHOTO_COLUMNS } from '@/lib/community/columns';
 import { recipeSlugSchema } from '@/lib/community/request';
+import { slugAliases } from '@/lib/recipes/slug-aliases';
 import {
   MODERATION_LIST_LIMIT,
   moderationPatchSchema,
@@ -49,7 +50,9 @@ export async function GET(request: Request) {
     const { data, error } = await controlAdmin()
       .from('community_photos')
       .select(MODERATION_PHOTO_COLUMNS)
-      .eq('recipe_slug', slug.data)
+      /* Every spelling the recipe's slug has had, so a photo sent while the
+         two planes disagreed is still here to moderate. */
+      .in('recipe_slug', slugAliases(slug.data))
       .order('created_at', { ascending: false })
       .limit(MODERATION_LIST_LIMIT);
     if (error) {
