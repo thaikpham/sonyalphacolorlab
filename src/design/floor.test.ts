@@ -9,8 +9,9 @@ import { FLOOR_PX, REPO_ROOT, RULES, scanRepo, scanSource, tally, totals, type B
 /**
  * The enforceable part of the design system.
  *
- * `DESIGN.md` carries eight audit greps and `/design-sync` runs them, but both
- * are things a person has to remember. Three of the nine rules are countable,
+ * `DESIGN.md` carried eight audit greps and `/design-sync` ran them, but both
+ * were things a person had to remember; the ten rules below replace them.
+ * Three of the design system's nine rules are countable,
  * and those three are the ones that had quietly spread to ~1,100 call sites
  * while every review passed: type under the 13px floor, a second font family,
  * and a Tailwind default palette colour in an OKLCH interface.
@@ -97,6 +98,22 @@ describe('design floor', () => {
       ['hover:ring', 'stroke'],
       ['outline', 'stroke'],
       ['not-focus-visible:ring-2', 'stroke'],
+      /* A bare side is 1px too, and `!` (either end) is the same stroke. */
+      ['border-t', 'stroke'],
+      ['border-x', 'stroke'],
+      ['border-s', 'stroke'],
+      ['hover:border-b', 'stroke'],
+      ['!border', 'stroke'],
+      ['border!', 'stroke'],
+      ['!border-t', 'stroke'],
+      ['border-l!', 'stroke'],
+      ['!border-t-2', 'stroke'],
+      ['border-b-2!', 'stroke'],
+      ['hover:!ring', 'stroke'],
+      /* A hard corner: off the 12 / 14 / 26 / 32 scale. */
+      ['rounded-none', 'hardCorner'],
+      ['rounded-t-none', 'hardCorner'],
+      ['md:!rounded-none', 'hardCorner'],
       /* `.glass` the deleted primitive, as a class and as a selector. */
       ['glass p-4', 'deletedVocab'],
       ['.glass { opacity: 1 }', 'deletedVocab'],
@@ -131,6 +148,15 @@ describe('design floor', () => {
       ["import { buildOutline } from '@/lib/lab/outline'", 'stroke'],
       ['{outline.map((entry) => entry)}', 'stroke'],
       ['"ring-offset-2"', 'stroke'],
+      ['"focus-visible:border-t"', 'stroke'],
+      ['"focus-visible:!border-b"', 'stroke'],
+      ['"border-t-0"', 'stroke'],
+      ['"border-collapse"', 'stroke'],
+      ['"border-separate border-spacing-2"', 'stroke'],
+      ['"border-none"', 'stroke'],
+      ['rounded-md', 'hardCorner'],
+      ['rounded-lg', 'hardCorner'],
+      ['"rounded-none-ish"', 'hardCorner'],
       /* An HTML entity is not a colour. */
       ['&#123;', 'hex'],
       /* One site, one rule: a sub-floor size is belowFloor's. */
@@ -147,6 +173,23 @@ describe('design floor', () => {
       ],
     ])('flags a duration of its own in %s', (source, file) => {
       expect(scanSource(source, file).map((v) => v.rule)).toEqual(['duration'])
+    })
+
+    it.each(['.x { border-radius: 0; }', '.x { border-radius: 0px }', '.x { border-top-left-radius:0 }', ':root { --radius: 0; }'])(
+      'flags a zero radius in a stylesheet: %s',
+      (source) => {
+        expect(scanSource(source, 'src/components/x.css').map((v) => v.rule)).toEqual(['hardCorner'])
+      },
+    )
+
+    it.each([
+      '.x { border-radius: 0.5rem; }',
+      '.x { border-radius: .5rem; }',
+      '.x { border-radius: var(--radius-md); }',
+      '.x { border-radius: 14px; }',
+      '.x { --radius-sm: 12px; }',
+    ])('does not flag a real radius in a stylesheet: %s', (source) => {
+      expect(scanSource(source, 'src/components/x.css').filter((v) => v.rule === 'hardCorner')).toEqual([])
     })
 
     it('does not read a CSS property or transition target as a bare stroke', () => {

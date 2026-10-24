@@ -7,8 +7,8 @@
  * number in it should have gone DOWN. If one went up, the change added a
  * violation of one of the rules in `RULES` (a sub-13px size, a second font
  * family, a palette colour, a hex, a stroke, deleted vocabulary, scrollbar
- * CSS, an arbitrary px value or a duration of its own), and the baseline is
- * being used to launder it rather than to record progress.
+ * CSS, an arbitrary px value, a duration of its own or a hard corner), and
+ * the baseline is being used to launder it rather than to record progress.
  *
  * That is the whole reason the check is an exact match rather than a ceiling —
  * a ceiling lets a fix in one file silently pay for a regression in another,
@@ -40,6 +40,7 @@ const LABELS: Readonly<Record<Rule, string>> = {
   scrollbarCss: 'scrollbar CSS',
   arbitraryPx: 'arbitrary [Npx]',
   duration: 'duration of its own',
+  hardCorner: 'hard corner',
 }
 
 const width = Math.max(...Object.values(LABELS).map((label) => label.length), 'files with violations'.length)

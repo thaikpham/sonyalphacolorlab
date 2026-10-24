@@ -24,11 +24,11 @@ Read, in this order, and hold the values in context for the rest of the session:
 
 ## 2. Audit
 
-Run `npx vitest run src/design` and read any failure: it is the nine rules
+Run `npx vitest run src/design` and read any failure: it is the ten rules
 `DESIGN.md` §Audit names (type below the floor, a second typeface, a Tailwind
 palette colour, a raw hex, a stroke outside `:focus-visible`, deleted
 vocabulary, scrollbar CSS outside `globals.css`, an arbitrary `[Npx]`, a
-duration of its own), checked against the recorded baseline in
+duration of its own, a hard corner), checked against the recorded baseline in
 `src/design/floor.baseline.json`. For each failure, record: file, line, the
 offending value, and the token that should replace it.
 

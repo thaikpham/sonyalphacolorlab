@@ -17,11 +17,12 @@
  *                red, yellow and green are Canon's, Nikon's and Fuji's
  *                signatures, which is a bad look on a Sony tool.
  *
- * Six more were DESIGN.md's audit greps, which only ran when someone
+ * Seven more were DESIGN.md's audit greps, which only ran when someone
  * remembered `/design-sync`: a raw hex in a component, a stroke doing
  * elevation's job, deleted vocabulary, scrollbar CSS outside globals.css, an
- * arbitrary pixel value in a class, and a duration of its own. The only
- * allowlists are the files and symbols DESIGN.md itself names.
+ * arbitrary pixel value in a class, a duration of its own, and a hard corner
+ * (`rounded-none`, a zero radius). Ten rules in all. The only allowlists are
+ * the files and symbols DESIGN.md itself names.
  *
  * This module only counts. `floor.test.ts` compares the counts to a recorded
  * baseline, which is what makes the rules enforceable before the ~950 existing
@@ -49,6 +50,7 @@ export type Rule =
   | 'scrollbarCss'
   | 'arbitraryPx'
   | 'duration'
+  | 'hardCorner'
 
 export const RULES: readonly Rule[] = [
   'belowFloor',
@@ -60,6 +62,7 @@ export const RULES: readonly Rule[] = [
   'scrollbarCss',
   'arbitraryPx',
   'duration',
+  'hardCorner',
 ]
 
 export interface Violation {
@@ -182,7 +185,7 @@ const PALETTE = new RegExp(
 )
 
 /**
- * The six rules that were DESIGN.md's audit greps, so `/design-sync` runs as a
+ * The seven rules that were DESIGN.md's audit greps, so `/design-sync` runs as a
  * test instead of as something a person remembers.
  *
  * `hex`: a colour written as a hex literal, in a component or a route. Scoped
@@ -214,14 +217,16 @@ const HEX_COMPONENTS = new Set(['GoogleMark'])
  * matches it, but the grep is the floor of the judgement, not the ceiling.
  *
  * The bare `border` / `ring` / `outline` class is a 1px stroke in Tailwind v4,
- * and the grep could not see it. It is read only as a whole class inside a
+ * and so is a bare side (`border-t`, `border-x`, `border-s`, …); the grep
+ * could see neither. Both are counted in their important forms too
+ * (`!border-t`, `border!`), which are the same stroke with a louder voice. It is read only as a whole class inside a
  * string literal, outside stylesheets: the same word is a CSS property or
  * transition target, an identifier (`const ring = box * 0.42`), and a module
  * path (`'@/lib/lab/outline'`).
  */
 const STROKE =
   /(?<![\w-])(?:border(?:-[trblxyse])?-(?!0(?![\d.]))\d+|border-(?:solid|white|black)|ring-(?!0(?![\d.]))\d+|outline-(?!0(?![\d.]))\d+)(?![\w-])/g
-const BARE_STROKE = /(?<=[\s"'`:])(?:border|ring|outline)(?=[\s"'`])/g
+const BARE_STROKE = /(?<=[\s"'`:!])(?:border(?:-[trblxyse])?|ring|outline)(?=!?[\s"'`])/g
 
 /** Which characters of `source` sit inside a quoted string (quotes excluded). */
 function stringMask(source: string): Uint8Array {
@@ -321,9 +326,19 @@ function insideReducedMotion(code: string, index: number): boolean {
 }
 
 /**
+ * A hard corner (DESIGN.md §Surfaces: radii are 12 / 14 / 26 / 32, and a 4px or
+ * square corner on a borderless translucent panel reads as a rendering
+ * fault). `rounded-none`, side forms included, in any file; a zero
+ * `border-radius` (or any `…radius:` property, `--radius: 0` too) in a
+ * stylesheet. The lookahead keeps `0.5rem` and `05px` from reading as zero.
+ */
+const HARD_CORNER_CLASS = /(?<![\w-])rounded(?:-[trblse]{1,2})?-none(?![\w-])/g
+const HARD_CORNER_CSS = /\bradius\s*:\s*0(?![.\d])/g
+
+/**
  * A test names what it forbids — `expect(page).not.toContain('eyebrow')`, an
  * `it('puts no eyebrow over …')` title — and puts nothing on a screen, so the
- * six audit rules do not read test files.
+ * seven audit rules do not read test files.
  */
 const TEST_FILE = /\.test\.tsx?$/
 
@@ -479,13 +494,14 @@ export function scanSource(source: string, file: string): Violation[] {
   ].sort((a, b) => a.line - b.line)
 }
 
-/** The six rules that were DESIGN.md's audit greps. */
+/** Tailwind v4's bare stroke classes, read only inside a string. */
 function bareStrokes(code: string, file: string): Violation[] {
   const inString = stringMask(code)
   const accept = strokeAccept(code)
   return collect(code, file, BARE_STROKE, 'stroke', (m) => inString[m.index] === 1 && accept(m))
 }
 
+/** The seven rules that were DESIGN.md's audit greps. */
 function auditRules(code: string, file: string): Violation[] {
   return [
     ...(HEX_SCOPE.test(file) && !HEX_FILES.test(file)
@@ -504,6 +520,8 @@ function auditRules(code: string, file: string): Violation[] {
     ...(file.endsWith('.css') && file !== SCROLLBAR_FILE
       ? collect(code, file, RAW_TRANSITION, 'duration', (m) => !insideReducedMotion(code, m.index))
       : []),
+    ...collect(code, file, HARD_CORNER_CLASS, 'hardCorner'),
+    ...(file.endsWith('.css') ? collect(code, file, HARD_CORNER_CSS, 'hardCorner') : []),
   ]
 }
 

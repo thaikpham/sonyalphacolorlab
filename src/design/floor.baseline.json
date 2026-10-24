@@ -8,7 +8,8 @@
     "deletedVocab": 0,
     "scrollbarCss": 0,
     "arbitraryPx": 4,
-    "duration": 0
+    "duration": 0,
+    "hardCorner": 0
   },
   "src/app/[locale]/recipe/[slug]/page.tsx": {
     "belowFloor": 0,
@@ -19,7 +20,8 @@
     "deletedVocab": 0,
     "scrollbarCss": 0,
     "arbitraryPx": 0,
-    "duration": 1
+    "duration": 1,
+    "hardCorner": 0
   },
   "src/app/fonts.test.ts": {
     "belowFloor": 0,
@@ -30,7 +32,8 @@
     "deletedVocab": 0,
     "scrollbarCss": 0,
     "arbitraryPx": 0,
-    "duration": 0
+    "duration": 0,
+    "hardCorner": 0
   },
   "src/components/admin/admin-editor.tsx": {
     "belowFloor": 0,
@@ -41,7 +44,8 @@
     "deletedVocab": 0,
     "scrollbarCss": 0,
     "arbitraryPx": 1,
-    "duration": 0
+    "duration": 0,
+    "hardCorner": 0
   },
   "src/components/camera-compare-view.tsx": {
     "belowFloor": 0,
@@ -52,7 +56,8 @@
     "deletedVocab": 0,
     "scrollbarCss": 0,
     "arbitraryPx": 4,
-    "duration": 0
+    "duration": 0,
+    "hardCorner": 0
   },
   "src/components/camera-wiki-view.tsx": {
     "belowFloor": 0,
@@ -63,7 +68,8 @@
     "deletedVocab": 0,
     "scrollbarCss": 0,
     "arbitraryPx": 20,
-    "duration": 0
+    "duration": 0,
+    "hardCorner": 0
   },
   "src/components/colorlab/admin/recipe-admin.test.ts": {
     "belowFloor": 0,
@@ -74,7 +80,8 @@
     "deletedVocab": 0,
     "scrollbarCss": 0,
     "arbitraryPx": 0,
-    "duration": 0
+    "duration": 0,
+    "hardCorner": 0
   },
   "src/components/lab/blocks.tsx": {
     "belowFloor": 0,
@@ -85,7 +92,8 @@
     "deletedVocab": 0,
     "scrollbarCss": 0,
     "arbitraryPx": 2,
-    "duration": 0
+    "duration": 0,
+    "hardCorner": 0
   },
   "src/components/lab/checklist.tsx": {
     "belowFloor": 0,
@@ -96,7 +104,8 @@
     "deletedVocab": 0,
     "scrollbarCss": 0,
     "arbitraryPx": 2,
-    "duration": 0
+    "duration": 0,
+    "hardCorner": 0
   },
   "src/components/lab/lab-feed.tsx": {
     "belowFloor": 0,
@@ -107,7 +116,8 @@
     "deletedVocab": 0,
     "scrollbarCss": 0,
     "arbitraryPx": 0,
-    "duration": 1
+    "duration": 1,
+    "hardCorner": 0
   },
   "src/components/lab/setup-guide.tsx": {
     "belowFloor": 0,
@@ -118,7 +128,8 @@
     "deletedVocab": 0,
     "scrollbarCss": 0,
     "arbitraryPx": 4,
-    "duration": 1
+    "duration": 1,
+    "hardCorner": 0
   },
   "src/components/language-toggle.tsx": {
     "belowFloor": 0,
@@ -129,7 +140,8 @@
     "deletedVocab": 0,
     "scrollbarCss": 0,
     "arbitraryPx": 1,
-    "duration": 0
+    "duration": 0,
+    "hardCorner": 0
   },
   "src/components/launcher-grid.tsx": {
     "belowFloor": 0,
@@ -140,7 +152,8 @@
     "deletedVocab": 0,
     "scrollbarCss": 0,
     "arbitraryPx": 2,
-    "duration": 0
+    "duration": 0,
+    "hardCorner": 0
   },
   "src/components/product-gallery-viewer.tsx": {
     "belowFloor": 0,
@@ -151,7 +164,8 @@
     "deletedVocab": 0,
     "scrollbarCss": 0,
     "arbitraryPx": 1,
-    "duration": 0
+    "duration": 0,
+    "hardCorner": 0
   },
   "src/components/recipe-card.tsx": {
     "belowFloor": 0,
@@ -162,7 +176,8 @@
     "deletedVocab": 0,
     "scrollbarCss": 0,
     "arbitraryPx": 6,
-    "duration": 1
+    "duration": 1,
+    "hardCorner": 0
   },
   "src/components/recipe-community-section.tsx": {
     "belowFloor": 0,
@@ -173,7 +188,8 @@
     "deletedVocab": 0,
     "scrollbarCss": 0,
     "arbitraryPx": 1,
-    "duration": 0
+    "duration": 0,
+    "hardCorner": 0
   },
   "src/components/recipe-gallery.tsx": {
     "belowFloor": 0,
@@ -184,7 +200,8 @@
     "deletedVocab": 0,
     "scrollbarCss": 0,
     "arbitraryPx": 4,
-    "duration": 9
+    "duration": 9,
+    "hardCorner": 0
   },
   "src/components/site-header.tsx": {
     "belowFloor": 0,
@@ -195,6 +212,7 @@
     "deletedVocab": 0,
     "scrollbarCss": 0,
     "arbitraryPx": 2,
-    "duration": 5
+    "duration": 5,
+    "hardCorner": 0
   }
 }

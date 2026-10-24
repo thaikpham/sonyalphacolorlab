@@ -160,12 +160,13 @@ the launcher stops being the signature — at which point delete it there too.
 ## Audit — run before every commit
 
 The eight greps that used to live here are `src/design/floor.test.ts` now,
-naming nine rules instead of eight: type below the 13px floor, a second
+naming ten rules instead of eight: type below the 13px floor, a second
 typeface, a Tailwind palette colour instead of a token, a raw hex in a
 component, a stroke outside `:focus-visible`, deleted vocabulary, scrollbar
-CSS outside `globals.css`, an arbitrary `[Npx]`, and a duration of its own.
+CSS outside `globals.css`, an arbitrary `[Npx]`, a duration of its own, and a
+hard corner (`rounded-none`, a zero radius in a stylesheet).
 `npm test` runs it on every commit, against a recorded baseline
-(`src/design/floor.baseline.json`) that may only go down; `npm run
+(`src/design/floor.baseline.json`) that is matched exactly and may only go down; `npm run
 design:baseline` records a drop once a fix lands. A grep someone forgot to run
 could not fail a build — a test that runs with the suite can.
 
