@@ -17,6 +17,7 @@
     "tone": "Tone",
     "clear": "Clear filters",
     "filtersLabel": "Filters",
+    "moreFor": "More for {situation}",
     "metaDescription": "{situation} colour recipes for Sony Alpha: White Balance Shift paired with a Picture Profile or a Creative Look, ready to dial into the camera.",
     "situations": {
       "portrait": "Portrait",
