@@ -6,7 +6,11 @@
 -- control plane's half, applied by the GitHub integration on merge. The two
 -- land at different times, and the release reads every community table
 -- through `slugAliases()` (src/lib/recipes/slug-aliases.ts), so a row is found
--- under either spelling before, between and after them (S7, S9).
+-- under either spelling before, between and after them (S7, S9). The code
+-- before that release matches by exact slug, so from this file landing until
+-- the release's deployment is live, seed recipes show no community rows:
+-- merge when the deploy can be watched through, and never instant-rollback
+-- past the release afterwards (docs/runbooks/supabase-control-content.md).
 --
 -- Every table here that carries `recipe_slug`: comments, proposals and
 -- community photos, hidden ones included. `proposal_votes` keys on the
@@ -16,7 +20,10 @@
 -- A photo URL may already sit under the new slug, sent while the two planes
 -- disagreed. `(recipe_slug, image_url)` is unique, so that row is not moved: it
 -- stays under the former slug, where `slugAliases()` still finds it, rather
--- than stop the migration.
+-- than stop the migration. The gallery reads both spellings, so one URL left
+-- under each would be shown by either: where an editor hid one of the pair,
+-- the other is hidden too, first. Hiding is the only moderation there is
+-- (src/lib/community/moderation.ts), and a twin left visible undoes it.
 --
 -- One transaction (the integration sends a file as one batch). Idempotent:
 -- only rows still under a former slug match. The slug list is
@@ -132,6 +139,15 @@ update recipe_proposals p
    set recipe_slug = m.current_slug
   from recipe_slug_moves m
  where p.recipe_slug = m.former_slug;
+
+update community_photos q
+   set approved = false
+  from recipe_slug_moves m, community_photos p
+ where ((q.recipe_slug = m.current_slug and p.recipe_slug = m.former_slug)
+     or (q.recipe_slug = m.former_slug and p.recipe_slug = m.current_slug))
+   and p.image_url = q.image_url
+   and not p.approved
+   and q.approved;
 
 update community_photos p
    set recipe_slug = m.current_slug

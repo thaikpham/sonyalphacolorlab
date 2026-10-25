@@ -244,20 +244,51 @@ the seed recipes' slugs (withdrawn rows keep theirs) and rewrites recipe ids in
 community photos. Both take their slug list from `data/former-slugs.json`, are
 one transaction each, and change nothing when run again.
 
-**The release works in either database state**, so this is the one change here
-with no ordering hazard. It reads ids in both shapes, the recipe page and its
-OG image resolve a slug in either spelling and redirect to the one content
-holds, and every community read matches both spellings. 0020 lands on merge;
-the content file whenever the owner runs it, before or after.
+**The release works in either database state; the code before it does not.**
+The release reads ids in both shapes, the recipe page and its OG image
+resolve a slug in either spelling and redirect to the one content holds, and
+every community read matches both spellings. The code live on `main` before
+it reads `SCL-` ids and matches community rows by exact slug. So the order is
+fixed, and only this order is safe:
 
-After the release is merged and deployed:
+1. **Merge.** The integration applies 0020 to control at once.
+2. **Wait until the production deployment of this release is live.** Vercel
+   builds separately from the migration check, so for the length of the build
+   and deploy the old code is still serving: comments, proposals and photos on
+   the seed recipes read empty, the old photo cap counts zero, and the old
+   gallery insert can bring a hidden photo back as a visible row. Keep that
+   window short — merge when you can watch the deploy through.
+3. **Apply `20261024000000`.** Never before step 2: the old code cannot read
+   a `PP-048` id or a `pp-048-…` slug.
+4. **Flush the catalogue cache** (below), run `library:sync`, and flush it
+   again.
+
+**After merging, never instant-rollback to a deployment from before this
+release.** Control already holds the new slugs, and an old deployment shows
+every seed recipe's community sections empty for as long as it serves —
+there is no end date. Roll forward with a fix instead.
 
 ```bash
+# only once the production deployment of this release is live
 npm run supabase:migrations -- --target content --dry-run   # should list 20261024000000 alone
 npm run supabase:migrations -- --target content --apply
+# flush the catalogue cache now (below), before library:sync
 npm run library:sync -- --target content                    # prints the plan
 npm run library:sync -- --target content --apply
+# flush the catalogue cache again
 ```
+
+**Flushing the catalogue cache.** Before the content migration,
+`/recipe/<new slug>` answers a temporary redirect to the former slug, and that
+answer is cached (ISR, tagged `catalogue`, `s-maxage=60` with
+stale-while-revalidate). Once the migration runs, `/recipe/<former slug>`
+regenerates to a permanent redirect forward while the cached one still points
+back: browsers loop (`ERR_TOO_MANY_REDIRECTS`) until that entry regenerates,
+and a former slug can be cached as a 404 for up to a minute. `library:sync`
+does not revalidate. Invalidate the tag at once instead: open any recipe in
+`/admin/colorlab` and save it (the save route calls
+`revalidateTag(CATALOGUE_TAG, IMMEDIATE)`), or redeploy the current production
+deployment.
 
 `library:sync` refuses while the content ids and the seed's disagree in shape
 and says to apply the content migration first, so run it after, never before.

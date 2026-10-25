@@ -315,13 +315,19 @@ describe('migrations', () => {
     ]);
     /* A photo sent between the two migrations is already under the new slug.
        Where its URL matches one under the former slug, the unique key keeps
-       the older row where it is, and `slugAliases()` still reads it there. */
+       the older row where it is, and `slugAliases()` still reads it there.
+       The gallery reads both spellings, so where an editor hid either of the
+       pair, both end hidden: a visible twin would show the hidden photo. */
     await db.query(
       `insert into community_photos (recipe_slug, image_url, author_name, approved)
        values ($1, 'https://cdn.example.com/slug-moved.jpg', 'Reader', true),
               ($1, 'https://cdn.example.com/slug-hidden.jpg', 'Reader', false),
               ($1, 'https://cdn.example.com/slug-both.jpg', 'Reader', true),
-              ($2, 'https://cdn.example.com/slug-both.jpg', 'Reader', true)`,
+              ($2, 'https://cdn.example.com/slug-both.jpg', 'Reader', true),
+              ($1, 'https://cdn.example.com/slug-hid-former.jpg', 'Reader', false),
+              ($2, 'https://cdn.example.com/slug-hid-former.jpg', 'Reader', true),
+              ($1, 'https://cdn.example.com/slug-hid-current.jpg', 'Reader', true),
+              ($2, 'https://cdn.example.com/slug-hid-current.jpg', 'Reader', false)`,
       [former, current],
     );
 
@@ -355,6 +361,10 @@ describe('migrations', () => {
     expect(once.photos).toEqual([
       { recipe_slug: former, image_url: 'https://cdn.example.com/slug-both.jpg', approved: true },
       { recipe_slug: current, image_url: 'https://cdn.example.com/slug-both.jpg', approved: true },
+      { recipe_slug: former, image_url: 'https://cdn.example.com/slug-hid-current.jpg', approved: false },
+      { recipe_slug: current, image_url: 'https://cdn.example.com/slug-hid-current.jpg', approved: false },
+      { recipe_slug: former, image_url: 'https://cdn.example.com/slug-hid-former.jpg', approved: false },
+      { recipe_slug: current, image_url: 'https://cdn.example.com/slug-hid-former.jpg', approved: false },
       { recipe_slug: current, image_url: 'https://cdn.example.com/slug-hidden.jpg', approved: false },
       { recipe_slug: current, image_url: 'https://cdn.example.com/slug-moved.jpg', approved: true },
     ]);

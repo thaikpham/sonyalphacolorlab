@@ -10,7 +10,8 @@
  * databases change at different times and neither time is known to the code:
  *
  * - the **content** plane's slugs change when the owner applies its migration
- *   by hand — before or after this code deploys;
+ *   by hand — after this code deploys, never before (the code it replaces
+ *   reads neither the new ids nor the new slugs);
  * - the **control** plane's `recipe_slug` columns change when the PR merges;
  * - and a comment, proposal or photo written while the two disagree is stored
  *   under whichever spelling the page was read with (S9).
@@ -18,7 +19,9 @@
  * So a route that looks a recipe up by slug tries every alias
  * (`slug-resolve.ts`), and every community read matches
  * `.in('recipe_slug', slugAliases(slug))`. Writes keep the slug the request
- * names.
+ * names — so the one key that spans a single spelling, the gallery's unique
+ * `(recipe_slug, image_url)`, is backed by a lookup across every spelling
+ * before each photo insert (`photoInGallery` in `community/gallery.ts`).
  *
  * Client-safe: one small JSON import and nothing else.
  */

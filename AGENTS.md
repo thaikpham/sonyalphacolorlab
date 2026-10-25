@@ -533,8 +533,10 @@ integration. Never connect one**: with this layout the only migrations folder it
 can read is the control root's, which is how control 0001–0016 ran on content
 and how control 0016 reached it mid-build on 2026-10-05. Apply a content
 migration by hand with `npm run supabase:migrations -- --target content
---apply`, before merging the code that reads it, and name it with a 14-digit
-timestamp: control owns the four-digit numbers. The control check does not gate
+--apply` — before merging code that needs its result, or after deploying code
+that must already tolerate it, as `20261024000000` must (the code before it
+cannot read the ids it writes) — and name it with a 14-digit timestamp:
+control owns the four-digit numbers. The control check does not gate
 Vercel. Steps are in the runbook.
 
 ## Who the caller is
