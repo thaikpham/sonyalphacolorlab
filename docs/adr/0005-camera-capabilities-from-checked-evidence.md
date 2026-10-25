@@ -6,6 +6,10 @@ Status: withdrawn · 2026-10-07 (accepted 2026-10-05, amended 2026-10-06)
 > judged unnecessary and removed, and with it everything below: the evidence,
 > its checks file, `npm run capabilities:check` and `src/lib/cameras/capabilities/`.
 > Kept as the record of what was tried.
+>
+> **2026-10-24:** the evidence method — not this ADR's purpose — is reused by
+> [ADR 0006](0006-my-camera-filter-from-checked-evidence.md) to filter recipes
+> by the reader's camera. This ADR stays withdrawn.
 
 > **Amended 2026-10-06.** The compatibility engine and its four verdicts are
 > removed: the recipe-page "Camera compatibility" section and the camera

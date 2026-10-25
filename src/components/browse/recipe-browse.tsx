@@ -2,6 +2,8 @@ import { getTranslations } from 'next-intl/server';
 import { RecipeCard } from '@/components/recipe-card';
 import { Link } from '@/i18n/navigation';
 import type { Locale } from '@/i18n/routing';
+import { getSonyCameras } from '@/lib/cameras/data';
+import { cameraOptions, installableFor, resolveMyCamera, type CameraOption, type MyCamera } from '@/lib/cameras/my-camera';
 import {
   browseFilters,
   facetCounts,
@@ -19,7 +21,11 @@ export type BrowseSearchParams = Record<string, string | string[] | undefined>;
 
 export type BrowseModel = {
   readonly filters: BrowseFilters;
-  /** The whole published catalogue, for the tiles. */
+  /** The reader's camera, from the cookie; `null` for none. */
+  readonly camera: MyCamera | null;
+  /** The catalogue's cameras, for the picker. */
+  readonly cameras: readonly CameraOption[];
+  /** The whole published catalogue the camera can install, for the tiles. */
   readonly all: readonly RecipeView[];
   /** What the filters leave. */
   readonly recipes: readonly RecipeView[];
@@ -36,8 +42,18 @@ export type BrowseModel = {
  * match, the four groups and the legacy `?look=`/`?tag=` of the previous
  * catalogue (one more release, then gone) all run here. `?format=` is not
  * legacy any more: it is the colour-system group, read by `browseFilters`.
+ *
+ * The reader's camera is the same: the cookie's raw value comes in as
+ * `cameraCookie` and narrows the catalogue here, before the text query, the
+ * groups and the counts — so every count on the page is what this camera can
+ * install. It is never in the URL and never in the cache key (ADR 0006).
  */
-export async function loadBrowse(locale: Locale, situation: SituationId | null, sp: BrowseSearchParams): Promise<BrowseModel> {
+export async function loadBrowse(
+  locale: Locale,
+  situation: SituationId | null,
+  sp: BrowseSearchParams,
+  cameraCookie: string | undefined,
+): Promise<BrowseModel> {
   const filters = browseFilters(situation, sp);
   const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
   const legacy = {
@@ -45,13 +61,18 @@ export async function loadBrowse(locale: Locale, situation: SituationId | null, 
     tag: one(sp.tag),
   };
 
-  const all = await listRecipes(locale);
+  const [catalogue, products] = await Promise.all([listRecipes(locale), getSonyCameras()]);
+  const cameras = cameraOptions(products);
+  const camera = resolveMyCamera(cameraCookie, cameras);
+  const all = installableFor(catalogue, camera);
   const narrowed = all
     .filter((r) => matchesLegacyFilters(r, legacy))
     .filter((r) => !filters.q || matchesQuery(r, filters.q));
 
   return {
     filters,
+    camera,
+    cameras,
     all,
     recipes: narrowed.filter((r) => matchesBrowse(r, filters)),
     facets: facetCounts(narrowed, filters),
@@ -67,7 +88,7 @@ export async function loadBrowse(locale: Locale, situation: SituationId | null, 
  * names its situation.
  */
 export async function RecipeBrowse({ model, title }: { model: BrowseModel; title: string }) {
-  const { filters, all, recipes, facets } = model;
+  const { filters, camera, cameras, all, recipes, facets } = model;
   const [t, tSearch, tBrowse] = await Promise.all([
     getTranslations('home'),
     getTranslations('search'),
@@ -91,7 +112,13 @@ export async function RecipeBrowse({ model, title }: { model: BrowseModel; title
         </h1>
       </div>
 
-      <BrowseFilterRow filters={filters} facets={facets} total={recipes.length} />
+      <BrowseFilterRow
+        filters={filters}
+        facets={facets}
+        total={recipes.length}
+        cameras={cameras}
+        camera={camera ? { choice: camera.choice, name: camera.name } : null}
+      />
 
       {landing ? <SituationTiles recipes={all} /> : null}
 
