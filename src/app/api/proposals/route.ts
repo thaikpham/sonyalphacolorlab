@@ -13,7 +13,7 @@ import { hasContentConfig } from '@/lib/supabase/server';
 import { publishedRecipeFormat } from '@/lib/recipes/existence';
 import { slugAliases } from '@/lib/recipes/slug-aliases';
 import { clSettingsSchema, ppSettingsSchema, whiteBalanceSchema } from '@/lib/camera/schema';
-import { MAX_PHOTOS_PER_RECIPE, clientKey } from '@/lib/community/gallery';
+import { MAX_PHOTOS_PER_RECIPE, clientKey, photoInGallery } from '@/lib/community/gallery';
 import {
   EXPIRING_IMAGE_HOST_ISSUE,
   httpsImageUrlSchema,
@@ -370,31 +370,38 @@ export async function POST(request: Request) {
      * Held to the same rules as `POST /api/community-photos`: the per-recipe
      * cap, the session's name as the credit (the old `name (title)` reached 253
      * characters against a CHECK of 100, so the insert failed and only the log
-     * knew), and an origin marker rather than the author's address in
-     * `submitted_by`. */
-    const { count, error: countError } = await db
-      .from('community_photos')
-      .select('id', { count: 'exact', head: true })
-      .in('recipe_slug', slugAliases(recipeSlug));
-    if (countError) {
-      logFallback('proposals/gallery', countError);
-    } else if ((count ?? 0) < MAX_PHOTOS_PER_RECIPE) {
-      const { error: photoError } = await db.from('community_photos').insert({
-        recipe_slug: recipeSlug,
-        image_url: sampleImageUrl,
-        author_name: user.name,
-        author_social: null,
-        submitted_by: clientKey(request),
-      });
-      // 23505 is unique_violation: this photo is already in the gallery.
-      if (photoError && photoError.code !== '23505') {
-        logFallback('proposals/gallery', photoError);
+     * knew), an origin marker rather than the author's address in
+     * `submitted_by`, and a URL already in the gallery under either spelling
+     * of the slug — an editor may have hidden it — left alone, as a 23505
+     * would leave it (`photoInGallery`: the unique key sees one spelling). */
+    const dup = await photoInGallery(db, recipeSlug, sampleImageUrl);
+    if (dup.error) {
+      logFallback('proposals/gallery', dup.error);
+    } else if (!dup.taken) {
+      const { count, error: countError } = await db
+        .from('community_photos')
+        .select('id', { count: 'exact', head: true })
+        .in('recipe_slug', slugAliases(recipeSlug));
+      if (countError) {
+        logFallback('proposals/gallery', countError);
+      } else if ((count ?? 0) < MAX_PHOTOS_PER_RECIPE) {
+        const { error: photoError } = await db.from('community_photos').insert({
+          recipe_slug: recipeSlug,
+          image_url: sampleImageUrl,
+          author_name: user.name,
+          author_social: null,
+          submitted_by: clientKey(request),
+        });
+        // 23505 is unique_violation: this photo is already in the gallery.
+        if (photoError && photoError.code !== '23505') {
+          logFallback('proposals/gallery', photoError);
+        }
       }
     }
 
     /* The poster's page draws this answer straight into the list, so it is
-       held to the GET's rule: a URL an editor hid (the gallery insert above
-       met it as a 23505) comes back with no sample, as it will on reload. */
+       held to the GET's rule: a URL an editor hid (the gallery step above
+       found it already there) comes back with no sample, as it will on reload. */
     const [savedProposal] = withoutHiddenSamples(
       [
         {

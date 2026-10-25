@@ -688,7 +688,19 @@ describe('community rows across the slug rename', () => {
       { recipe_slug: PP.slug, image_url: 'https://cdn.example.com/after.jpg', approved: true },
     ];
     db.answer = (call) => {
-      if (call.table !== 'community_photos' || call.op !== 'select') return undefined;
+      if (call.table !== 'community_photos') return undefined;
+      if (call.op === 'insert') {
+        const { recipe_slug, image_url } = call.payload as Row;
+        /* Exactly Postgres's unique (recipe_slug, image_url): one spelling,
+           never its alias. Comparing across aliases here would make the fake
+           stricter than the database and hide the bypass these tests pin. */
+        if (gallery.some((r) => r.recipe_slug === recipe_slug && r.image_url === image_url)) {
+          return { data: null, error: { code: '23505', message: 'duplicate key' } };
+        }
+        gallery.push({ recipe_slug, image_url, approved: true });
+        return { data: { id: 'photo-new' }, error: null };
+      }
+      if (call.op !== 'select') return undefined;
       const rows = gallery.filter((r) => among(r, call.filters));
       if (call.options?.head) return { data: null, error: null, count: rows.length };
       return { data: rows, error: null };
@@ -724,10 +736,56 @@ describe('community rows across the slug rename', () => {
       post('/api/community-photos', { slug: FORMER, imageUrl: 'https://cdn.example.com/third.jpg' }),
     );
     expect(res.status).toBe(200);
-    const [count] = callsTo('community_photos', 'select');
+    const [count] = callsTo('community_photos', 'select').filter((c) => c.options?.head);
     expect(count.filters).toEqual([['recipe_slug', [FORMER, PP.slug]]]);
     const [insert] = callsTo('community_photos', 'insert');
     expect(insert.payload).toMatchObject({ recipe_slug: FORMER });
+  });
+
+  /* Moderation is `approved = false`, and only the duplicate keeps a hidden
+     link hidden. Sent again under the recipe's other spelling, the unique
+     key does not fire, and the alias read would show the fresh row. */
+  const HIDDEN = 'https://cdn.example.com/hidden.jpg';
+
+  it.each([
+    ['current', 'former', () => PP.slug, () => FORMER],
+    ['former', 'current', () => FORMER, () => PP.slug],
+  ])('keeps a photo hidden under the %s slug hidden when it is sent again under the %s one', async (_a, _b, hiddenUnder, sentUnder) => {
+    gallery.push({ recipe_slug: hiddenUnder(), image_url: HIDDEN, approved: false });
+    const res = await photos.POST(post('/api/community-photos', { slug: sentUnder(), imageUrl: HIDDEN }));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ ok: true, saved: true, duplicate: true });
+    expect(callsTo('community_photos', 'insert')).toHaveLength(0);
+    expect(gallery.filter((r) => r.image_url === HIDDEN)).toEqual([
+      { recipe_slug: hiddenUnder(), image_url: HIDDEN, approved: false },
+    ]);
+    const [lookup] = callsTo('community_photos', 'select');
+    expect(lookup.filters).toEqual([
+      ['recipe_slug', slugAliases(sentUnder())],
+      ['image_url', HIDDEN],
+    ]);
+  });
+
+  it('keeps a proposal sample hidden under one spelling out of the gallery when filed under the other', async () => {
+    gallery.push({ recipe_slug: PP.slug, image_url: HIDDEN, approved: false });
+    const res = await proposals.POST(
+      post('/api/proposals', proposalBody({ recipeSlug: FORMER, sampleImageUrl: HIDDEN })),
+    );
+    expect(res.status).toBe(200);
+    expect(callsTo('community_photos', 'insert')).toHaveLength(0);
+    expect(gallery.filter((r) => r.image_url === HIDDEN)).toHaveLength(1);
+    expect((await res.json()).proposal.sampleImageUrl).toBeNull();
+  });
+
+  it('answers saveFailed, and inserts nothing, when the duplicate lookup fails', async () => {
+    const answer = db.answer;
+    db.answer = (call, terminal) =>
+      call.table === 'community_photos' && call.op === 'select' && !call.options?.head
+        ? { data: null, error: { message: 'boom' } }
+        : answer(call, terminal);
+    const res = await photos.POST(post('/api/community-photos', { slug: FORMER, imageUrl: HIDDEN }));
+    expect(res.status).toBe(500);
+    expect(callsTo('community_photos', 'insert')).toHaveLength(0);
   });
 
   it('refuses a photo once the two spellings together hold the cap', async () => {
