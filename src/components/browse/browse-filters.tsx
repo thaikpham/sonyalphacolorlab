@@ -1,9 +1,11 @@
 import { getTranslations } from 'next-intl/server';
 import { CHIP_IDLE, CHIP_SELECTED } from '@/components/chip-styles';
 import { Link } from '@/i18n/navigation';
+import type { CameraOption } from '@/lib/cameras/my-camera';
 import { FORMAT_LABELS, RECIPE_FORMATS } from '@/lib/camera/constants';
 import { browseHref, hasBrowseFilters, type BrowseFilters, type Facets } from '@/lib/recipes/browse';
 import { SITUATIONS, STYLES, TONES } from '@/lib/recipes/taxonomy';
+import { CameraPicker } from './camera-picker';
 
 /**
  * The quick-filter row: Colour system · Situation · Style · Tone, as links.
@@ -26,9 +28,29 @@ import { SITUATIONS, STYLES, TONES } from '@/lib/recipes/taxonomy';
  *
  * Under 48rem each group is one silently scrolling row (`.filter-scroll`), so
  * four groups cost four lines on a phone rather than a screen of chips.
+ *
+ * Above them, the reader's camera (ADR 0006). It is not a filter and not a
+ * link: it is a preference kept in a cookie, so it has no address, "Clear
+ * filters" leaves it alone, and the counts below already reflect it.
  */
-export async function BrowseFilterRow({ filters, facets, total }: { filters: BrowseFilters; facets: Facets; total: number }) {
-  const [t, tHome] = await Promise.all([getTranslations('browse'), getTranslations('home')]);
+export async function BrowseFilterRow({
+  filters,
+  facets,
+  total,
+  cameras,
+  camera,
+}: {
+  filters: BrowseFilters;
+  facets: Facets;
+  total: number;
+  cameras: readonly CameraOption[];
+  camera: { readonly choice: string; readonly name: string | null } | null;
+}) {
+  const [t, tHome, tCamera] = await Promise.all([
+    getTranslations('browse'),
+    getTranslations('home'),
+    getTranslations('myCamera'),
+  ]);
 
   const groups = [
     {
@@ -67,6 +89,11 @@ export async function BrowseFilterRow({ filters, facets, total }: { filters: Bro
 
   return (
     <nav aria-label={t('filtersLabel')} className="flex flex-col gap-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
+        <span className="label shrink-0 sm:w-32 sm:leading-11">{tCamera('label')}</span>
+        <CameraPicker options={cameras} current={camera} />
+      </div>
+
       {groups.map((g) => {
         const chips = g.ids
           .filter((id) => g.counts[id] > 0 || g.selected === id)

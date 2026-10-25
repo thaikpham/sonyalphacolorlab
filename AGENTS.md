@@ -361,8 +361,8 @@ Profile or Creative Look, was added on 2026-10-24). The rules:
   sit above the route that refuses (`next-boundaries.test.ts`).
 - **Filter in the page after one unfiltered `listRecipes(locale)`.** Nothing
   new goes into the `catalogueCache` key. The browse row is a server component
-  of `<Link>`s with facet counts; only the header's search box is client code,
-  and it builds its URL with `colorlabSearch()` so a typed query keeps the
+  of `<Link>`s with facet counts; only the header's search box and the camera
+  picker are client code, and the search box builds its URL with `colorlabSearch()` so a typed query keeps the
   chosen colour system, style and tone and the current pathname.
 - **Tags stay in the data for search and are not shown (D9).** `?look=` and
   `?tag=` are still honoured by `matchesLegacyFilters` for one release, then
@@ -371,6 +371,32 @@ Profile or Creative Look, was added on 2026-10-24). The rules:
   and `recipeDoc`, so "cafe", "chân dung", "phim" and "đen trắng" are tag hits
   in one engine; new eval queries are labelled from the manifest, never from
   the ranker's output.
+
+## My camera
+
+A reader names their camera once and the catalogue stops showing what it
+cannot install (ADR 0006). The rules:
+
+- **Cookie, never URL.** `colorlab-camera` holds a model code (`ILCE-7M3`) or
+  `older-creative-style`, written only by the `chooseMyCamera` Server
+  Function. A shared link must not apply the sender's camera, so it is not in
+  the path, the query string or the `catalogueCache` key: the browse pages read
+  `cookies()` and filter after the one unfiltered `listRecipes(locale)`, counts
+  included. The recipe page stays prerendered — its warning line is a client
+  island that looks the browser's cookie up in `cameraWarnings()`, computed at
+  build — which is why the cookie is not `httpOnly`. Never call `cookies()`
+  there.
+- **Evidence only.** What a body lacks comes from `installability()` over the
+  checked Help Guide claims in `src/lib/cameras/capabilities/`, never from a
+  table typed here. A list counts only when complete; Creative Style means no
+  Creative Look (the owner's rule, in `installable.ts` alone); the generic
+  older camera hides Creative Look and only *warns* about what no checked
+  Creative Style body has (S-Cinetone, 709tone).
+- **No data shows all.** An unknown, malformed or uncatalogued value is no
+  camera, and a catalogue camera without checked claims hides nothing.
+- **`npm run capabilities:check` is the gate.** Adding a body means adding its
+  sources to `evidence.ts` and running it; a claim the live page no longer
+  confirms drops out, and the recipes it hid come back.
 
 ## Design
 

@@ -43,6 +43,15 @@
       "mono": "Black & white"
     }
   },
+  "myCamera": {
+    "label": "Camera",
+    "choose": "Choose camera",
+    "older": "Other older camera (Creative Style menu)",
+    "unknown": "Unknown / skip",
+    "olderSubject": "An older camera",
+    "lacks": "{camera} has no {label}",
+    "mayLack": "{camera} may have no {label}"
+  },
   "palette": {
     "label": "{tone}, {style} palette",
     "note": "Derived from the settings, not a camera preview.",
