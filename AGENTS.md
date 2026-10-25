@@ -308,10 +308,15 @@ Do not write App Router code from memory. Read the relevant file first:
   The legacy and Sony Asia rows take their names from `RECIPE_NAMES`.
 - **Ids and slugs follow the code.** The id is `PP-048` (`RECIPE_ID_RE`), the
   slug `slugFor(name)`, `pp-048-soft-clean-portrait`. URLs carry slugs, so the
-  old `SCL-` prefix had no SEO weight to keep. Every slug a seed recipe was
-  published under is in `data/former-slugs.json` (written by `seed:emit`, never
-  hand-edited); changing a slug means re-emitting it and a paired migration on
-  each plane, and `migration-roots.test.ts` fails until both carry the map.
+  old `SCL-` prefix had no SEO weight to keep. The slugs the seed recipes had
+  before 2026-10-24 are frozen in `data/slug-moves/2026-10-24.json` with the
+  two migrations that rename them (`SLUG_MOVES` in `slug-moves.ts`);
+  `data/former-slugs.json` is the union of the batches, written by `seed:emit`,
+  never hand-edited. A recipe born after has no former slug, whatever its
+  source spells. Renaming a moved recipe is a new batch — a frozen list, a
+  migration per plane carrying exactly it, an entry in `SLUG_MOVES` —
+  `seed:emit` refuses it until then, and `migration-roots.test.ts` checks each
+  batch against its own two files.
   Code never assumes the content plane has been migrated: ids are read through
   `RECIPE_ID_TRANSITION_RE` / `recipeIdKey`; the recipe page, its OG image and
   `/api/tweak` find a slug through `resolveRecipeSlug()` (308 from a former

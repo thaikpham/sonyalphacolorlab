@@ -7,9 +7,10 @@
  * and names every recipe `PP-NNN-Mood Words` / `CL-NNN-Mood Words`
  * (src/lib/recipes/names.ts): the originals carry theirs, the legacy and
  * Sony Asia rows take theirs from RECIPE_NAMES. Every slug is then
- * `slugFor(name)`, and the slug each source first published the recipe under
- * goes to data/former-slugs.json (former → current), which is how an old link
- * still reaches its recipe (`src/lib/recipes/slug-aliases.ts`).
+ * `slugFor(name)`. data/former-slugs.json (former → current), which is how an
+ * old link still reaches its recipe (`src/lib/recipes/slug-aliases.ts`), is
+ * the frozen record of every slug move (`src/lib/recipes/slug-moves.ts`),
+ * never recomputed from the sources.
  * Run with: npm run seed:emit
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -19,6 +20,7 @@ import { migrateAll } from '../src/lib/legacy/migrate';
 import { ORIGINAL_CL } from '../src/lib/originals/cl';
 import { ORIGINAL_PP, type OriginalRecipe } from '../src/lib/originals/pp';
 import { NAME_VOCABULARY, RECIPE_NAMES, parseRecipeName, slugFor } from '../src/lib/recipes/names';
+import { formerSlugsFor } from '../src/lib/recipes/slug-moves';
 import { importSonyAsia } from '../src/lib/sony-asia/import';
 import { SONY_ASIA_IDS } from '../src/lib/sony-asia/ids';
 
@@ -80,16 +82,19 @@ const clRows = [
   ...sony.recipes.map(({ images: _images, credit: _credit, ...recipe }) => renamed(recipe)),
   ...clOriginals.map(({ description: _description, ...recipe }) => recipe),
 ];
-/* The slug follows the name (S2 of the 2026-10-24 id design). The one the
-   source published is kept as a former slug, so a link shared before still
-   lands — in either database state, see `slug-aliases.ts`. Recorded only
-   where it differs: a recipe born after the change has no former slug. */
-const formerSlugs: Record<string, string> = {};
-const rows = [...ppRows, ...clRows].map((r) => {
-  const slug = slugFor(r.name);
-  if (slug !== r.slug) formerSlugs[r.slug] = slug;
-  return { ...r, slug };
-});
+/* The slug follows the name (S2 of the 2026-10-24 id design). Former slugs
+   are not read off the sources: they are the frozen record of the 2026-10-24
+   move, which both planes' migrations carry pair for pair. A recipe born
+   after it has no former slug even when its source spells one — a new Sony
+   Asia row arrives as `fl-…-4`, a slug no database ever held — and a recipe
+   whose slug already moved cannot move again without a new pair of
+   migrations (`slug-moves.ts`). */
+const rows = [...ppRows, ...clRows].map((r) => ({ ...r, slug: slugFor(r.name) }));
+const { formerSlugs, problems: slugMoveProblems } = formerSlugsFor(rows);
+if (slugMoveProblems.length) {
+  for (const p of slugMoveProblems) console.error(`✗ ${p}`);
+  process.exit(1);
+}
 
 if (unusedNames.size) {
   console.error(`✗ RECIPE_NAMES names recipes the seed does not have: ${[...unusedNames].join(', ')}`);

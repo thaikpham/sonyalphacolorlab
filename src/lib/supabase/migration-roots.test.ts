@@ -4,6 +4,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import type { Recipe } from '@/lib/camera/schema';
 import { PRODUCT_COLUMNS } from '@/lib/cameras/row';
 import { toRow } from '@/lib/recipes/row';
+import { SLUG_MOVES, formerSlugsFor } from '@/lib/recipes/slug-moves';
 
 /**
  * Two migration roots, two databases, and the boundary between them.
@@ -826,10 +827,12 @@ describe('the recipe code-id migration (S5)', () => {
 });
 
 describe('the slug lists in both migrations', () => {
-  /* The content file and control 0020 rename slugs from the same list, written
-     into each as SQL. A re-emit that changes a slug changes
-     `data/former-slugs.json`, and this fails until both files follow, so the
-     two planes can never be migrated to different spellings. */
+  /* Each slug move is a pair of migrations, one per plane, and they rename
+     from the same list written into each as SQL. The list is frozen in
+     `data/slug-moves/` when the pair is written: applied migrations are
+     history, so a later re-emit must never be able to change what they are
+     asked to match. `data/former-slugs.json`, which the alias lookups read, is
+     the union of the batches and nothing else. */
   const FORMER_SLUGS = JSON.parse(readFileSync('data/former-slugs.json', 'utf8')) as Record<string, string>;
 
   function pairs(path: string): [string, string][] {
@@ -847,10 +850,16 @@ describe('the slug lists in both migrations', () => {
     return found.map((m) => [m![1], m![2]]);
   }
 
-  it.each([`${CONTENT_ROOT}/20261024000000_recipe_code_ids.sql`, `${CONTROL_ROOT}/0020_recipe_slugs_to_codes.sql`])(
-    '%s renames exactly data/former-slugs.json',
-    (path) => {
-      expect(pairs(path)).toEqual(Object.entries(FORMER_SLUGS));
-    },
-  );
+  it.each(
+    SLUG_MOVES.flatMap((b) => [
+      [b.date, `${CONTENT_ROOT}/${b.content}`, b.moves] as const,
+      [b.date, `${CONTROL_ROOT}/${b.control}`, b.moves] as const,
+    ]),
+  )('the %s move: %s renames exactly its frozen list', (_date, path, moves) => {
+    expect(pairs(path)).toEqual(Object.entries(moves));
+  });
+
+  it('writes data/former-slugs.json as the union of the moves, and nothing else', () => {
+    expect(FORMER_SLUGS).toEqual(formerSlugsFor([]).formerSlugs);
+  });
 });

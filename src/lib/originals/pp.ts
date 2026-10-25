@@ -20,9 +20,9 @@
  *
  * Names are `PP-NNN-Mood Words` (src/lib/recipes/names.ts). The `slug` here
  * is the one each was first published under, naming the place it was first
- * imagined for; the seed's slug is `slugFor(name)` (2026-10-24), and
- * scripts/emit-seed.ts records this one in data/former-slugs.json so its links
- * and its place name still find the recipe.
+ * imagined for; the seed's slug is `slugFor(name)` (2026-10-24), and this one
+ * is frozen in data/slug-moves/2026-10-24.json so its links and its place name
+ * still find the recipe.
  *
  * `published: false` on every one, deliberately (D8): the numbers are design
  * hypotheses until the owner has shot each on the a7 IV. Publishing is an
