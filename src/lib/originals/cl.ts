@@ -25,7 +25,7 @@ import type { OriginalRecipe } from './pp';
 export const ORIGINAL_CL: readonly OriginalRecipe[] = [
   {
     recipe: {
-      id: 'SCL-CL-038',
+      id: 'CL-038',
       slug: 'mono-deep-noir',
       name: 'CL-038-Mono Deep Noir',
       whiteBalance: {
@@ -56,7 +56,7 @@ export const ORIGINAL_CL: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-CL-039',
+      id: 'CL-039',
       slug: 'mono-airy-portrait',
       name: 'CL-039-Mono Airy Portrait',
       whiteBalance: {
@@ -86,7 +86,7 @@ export const ORIGINAL_CL: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-CL-040',
+      id: 'CL-040',
       slug: 'neutral-clean-product',
       name: 'CL-040-Neutral Clean Product',
       whiteBalance: {
@@ -118,7 +118,7 @@ export const ORIGINAL_CL: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-CL-041',
+      id: 'CL-041',
       slug: 'portrait-golden-daylight',
       name: 'CL-041-Portrait Golden Daylight',
       whiteBalance: {
@@ -160,7 +160,7 @@ export const ORIGINAL_CL: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-CL-042',
+      id: 'CL-042',
       slug: 'airy-cool-pastel',
       name: 'CL-042-Airy Cool Pastel',
       whiteBalance: {
@@ -198,7 +198,7 @@ export const ORIGINAL_CL: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-CL-043',
+      id: 'CL-043',
       slug: 'film-matte-cool',
       name: 'CL-043-Film Matte Cool',
       whiteBalance: {
@@ -236,7 +236,7 @@ export const ORIGINAL_CL: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-CL-044',
+      id: 'CL-044',
       slug: 'instant-amber-soft',
       name: 'CL-044-Instant Amber Soft',
       whiteBalance: {
@@ -274,7 +274,7 @@ export const ORIGINAL_CL: readonly OriginalRecipe[] = [
   },
   {
     recipe: {
-      id: 'SCL-CL-045',
+      id: 'CL-045',
       slug: 'vivid-tropical-punchy',
       name: 'CL-045-Vivid Tropical Punchy',
       whiteBalance: {

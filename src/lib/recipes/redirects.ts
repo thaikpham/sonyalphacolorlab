@@ -7,12 +7,11 @@ import { readFileSync } from 'node:fs';
  * "withdrawn: matches a licensed third-party collection", and a public
  * repository is the last place to keep their numbers.
  *
- * Kept here, beside the map that reads it, so the share links that still
- * carry these ids keep answering. The destination follows the replacement
- * the moment the seed says it is published (P6); until then it is the
- * catalogue.
+ * Written in the slugs the originals were first published under; the
+ * replacement's current slug is read through `data/former-slugs.json` below,
+ * so the table never has to be retyped when slugs follow the names.
  */
-export const RETIRED_LEGACY_IDS: Readonly<Record<string, string | null>> = {
+const RETIRED_REPLACED_BY: Readonly<Record<string, string | null>> = {
   'scl-003': 'neon-night',
   'scl-004': 'cho-lon-slide',
   'scl-005': 'da-lat-mist',
@@ -51,9 +50,34 @@ export const RETIRED_LEGACY_IDS: Readonly<Record<string, string | null>> = {
   'scl-043': 'tam-coc-green',
 };
 
-/** The withdrawn recipes' catalogue ids, for the content-plane script. */
+/** Former slug → current slug, as `seed:emit` writes it. */
+const FORMER_SLUGS = JSON.parse(readFileSync('data/former-slugs.json', 'utf8')) as Record<string, string>;
+
+/**
+ * The same table with each replacement at its current slug.
+ *
+ * Kept here, beside the map that reads it, so the share links that still
+ * carry these ids keep answering. The destination follows the replacement
+ * the moment the seed says it is published (P6); until then it is the
+ * catalogue. A replacement slug the map does not know is a stale table and
+ * throws at load, rather than sending a link to a slug no recipe has.
+ */
+export const RETIRED_LEGACY_IDS: Readonly<Record<string, string | null>> = Object.fromEntries(
+  Object.entries(RETIRED_REPLACED_BY).map(([legacyId, former]) => {
+    if (former === null) return [legacyId, null];
+    const current = FORMER_SLUGS[former];
+    if (!current) throw new Error(`RETIRED_REPLACED_BY: ${legacyId} names ${former}, which data/former-slugs.json does not map`);
+    return [legacyId, current];
+  }),
+);
+
+/**
+ * The withdrawn recipes' catalogue ids, for the content-plane script: the
+ * legacy number in the code shape (`scl-003` → `PP-003`), like every other
+ * row once the content migration has run (S4).
+ */
 export const RETIRED_RECIPE_IDS: readonly string[] = Object.keys(RETIRED_LEGACY_IDS).map(
-  (legacyId) => `SCL-PP-${legacyId.slice(4)}`,
+  (legacyId) => `PP-${legacyId.slice(4)}`,
 );
 
 /**
@@ -69,6 +93,10 @@ export const RETIRED_RECIPE_IDS: readonly string[] = Object.keys(RETIRED_LEGACY_
  *
  * These only fire for traffic that reaches this app, so at cutover the old
  * hostname must resolve here (or carry an equivalent rule at the CDN).
+ *
+ * Each destination is the seed's current slug. A content project that has
+ * not had its slug migration yet still holds the former one, and the recipe
+ * route resolves that (`slug-resolve.ts`), so a `?id=` link lands either way.
  *
  * A withdrawn id redirects too, and TEMPORARILY (307) while its destination is
  * the catalogue: a 308 is cached by the browser for good, and the destination

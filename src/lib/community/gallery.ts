@@ -1,5 +1,8 @@
 import 'server-only';
 
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { slugAliases } from '@/lib/recipes/slug-aliases';
+
 /**
  * What both gallery write paths share.
  *
@@ -22,3 +25,36 @@ export const clientKey = (req: Request) =>
   req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
   req.headers.get('x-real-ip') ??
   'local';
+
+/**
+ * Whether this URL is already in the recipe's gallery, hidden or not, under
+ * any spelling of its slug.
+ *
+ * Moderation is `approved = false` and nothing else, so what keeps a hidden
+ * link hidden is that sending it again is a duplicate rather than a fresh,
+ * visible row. The unique key `(recipe_slug, image_url)` used to be enough.
+ * It is not since slugs follow the names: reads match every spelling
+ * (`slugAliases`), writes keep the one the request named, and a hidden row
+ * under `pp-001-vivid-nostalgia-film` raises no 23505 for the same URL sent
+ * under `mojave-sun`. So both write paths ask here first, across every
+ * spelling, and treat a hit exactly as they treat a 23505.
+ *
+ * `error` is the read's own failure, returned rather than thrown so each
+ * caller keeps its existing failure path. Two submissions racing under the
+ * two spellings can still both land; the window is one round trip, and the
+ * key still catches every race under one spelling.
+ */
+export async function photoInGallery(
+  db: SupabaseClient,
+  slug: string,
+  imageUrl: string,
+): Promise<{ taken: boolean; error: { message: string } | null }> {
+  const { data, error } = await db
+    .from('community_photos')
+    .select('id')
+    .in('recipe_slug', slugAliases(slug))
+    .eq('image_url', imageUrl)
+    .limit(1);
+  if (error) return { taken: false, error };
+  return { taken: (data ?? []).length > 0, error: null };
+}

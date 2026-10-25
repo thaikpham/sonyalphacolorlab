@@ -20,6 +20,7 @@ import { truncateOnWord } from '@/lib/lab/outline'
 import type { Article, Block } from '@/lib/lab/types'
 import { buildGlossary } from '@/lib/learn/glossary'
 import { recipeIdAliases } from '@/lib/recipes/recipe-id'
+import { slugAliases } from '@/lib/recipes/slug-aliases'
 import { taxonomyTerms, type RecipeTaxonomy } from '@/lib/recipes/taxonomy'
 import { squash } from './text'
 import type { SearchKind } from './types'
@@ -113,17 +114,18 @@ export function recipeDoc(r: RecipeForSearch, locale: Locale): SearchDoc {
       squash(code),
       squash(bare),
       squash(r.name),
-      squash(r.slug),
+      ...slugAliases(r.slug).map(squash),
     ].filter(Boolean),
     aliases: [],
     titleText: r.name,
     summary: r.description,
     tags: [
-      /* The slug never changes, so it carries the name a reader learnt first
-         ("Mojave Sun", "Raoul Rutnam") and the place an original was imagined
-         for ("Đà Lạt"), now that the name itself is a mood. As a tag, a typo
-         of it still reaches the recipe through the near-miss tier. */
-      r.slug.replace(/-/g, ' '),
+      /* Both spellings of the slug, whichever the row is stored under: the
+         current one follows the name, and the former one carries the name a
+         reader learnt first ("Mojave Sun", "Raoul Rutnam") and the place an
+         original was imagined for ("Đà Lạt"). As a tag, a typo of it still
+         reaches the recipe through the near-miss tier. */
+      ...slugAliases(r.slug).map((s) => s.replace(/-/g, ' ')),
       ...r.tags.map((t) => t.replace(/-/g, ' ')),
       ...inherited,
       formatLabel,

@@ -1,0 +1,25 @@
+# Recipe ids and slugs follow the code — design
+
+Date: 2026-10-24. Sub-project 3 of the PP library colour and naming work
+(`2026-10-24-pp-library-colour-and-naming-design.md`, decision D1: the owner chose
+to change ids and slugs in the database too; D4: after names are live, with the
+owner applying the migrations).
+
+## Decisions
+
+| # | Question | Decision |
+|---|---|---|
+| S1 | Id shape | `PP-NNN` / `CL-NNN`. The number never changes: `SCL-PP-048` becomes `PP-048`. `RECIPE_ID_RE` becomes `^(PP|CL)-\d{3}$`, the shape the content root's new CHECK stores (sql-drift pins it per root: the control root's legacy `recipes` table is applied history and keeps its `SCL-` CHECK). Reading stays tolerant through `RECIPE_ID_TRANSITION_RE` and `recipeIdKey`, so the code never depends on whether the migration has run. This supersedes the 2026-07-28 decision to keep `SCL-` for SEO: URLs carry slugs, not ids, so the id itself has no SEO weight. |
+| S2 | Slug shape | The name in kebab case: `PP-048-Soft Clean Portrait` → `pp-048-soft-clean-portrait`. Derived, never typed: `slugFor(name)` in `names.ts`, and `names.test.ts` pins every seed slug to it. Vietnamese diacritics never occur (names are English from the closed vocabulary). |
+| S3 | Old links | Every former slug of a seed recipe still reaches its recipe. The map is `data/former-slugs.json` (old → new), emitted by `seed:emit`, never hand-edited. The redirect is resolved **in the recipe route, not in `next.config.ts`**: a slug that misses is looked up in the map in both directions, and the route redirects to whichever spelling the database holds — permanently (308) only from a former slug to its current one, temporarily (307) the other way. The reverse direction is the unmigrated database: a browser that cached it as a 308 would loop once the migration sends the former slug forward again. A static redirect would send every card link to a slug that does not exist yet if the code lands before the migration. The OG image route resolves the same way. The `?id=scl-NNN` map follows automatically (legacyId → current slug, then the route's fallback). `RETIRED_LEGACY_IDS` values point at the replacements' new slugs. Search keeps finding a recipe by its former slug and former name. |
+| S4 | Withdrawn rows | The 36 withdrawn legacy rows stay unpublished on content. Their ids lose the prefix like every other row (one rule, so the CHECK can be strict); their slugs do not change (they are not in the seed and their links already redirect by legacy id). |
+| S5 | Content plane | One hand-applied migration, 14-digit timestamp: FKs from `recipe_translations` and `recipe_images` to `recipes(id)` become `on update cascade`; the two id CHECKs are replaced; `update recipes set id = regexp_replace(id, '^SCL-', '')`; slugs of seed recipes updated from an explicit old→new VALUES list; `lab_articles.meta` recipe ids rewritten the same way. Idempotent: running it twice changes nothing. Proved against PGlite in `migration-roots.test.ts`. |
+| S6 | Control plane | One four-digit migration that rewrites `recipe_slug` in every community table that has it (comments, proposals, photos, and any other) from the same old→new list. Applied automatically when the PR merges (Supabase GitHub integration). Proved against PGlite in `migration.test.ts`. |
+| S7 | Order | The live code before the bridge rejects any id without `SCL-`, so the bridge (merged first) makes every id reader accept both shapes and every id lookup compare through `recipeIdKey`. This release keeps that tolerance and is **safe to merge before or after the content migration**: ids are read in both shapes; slugs resolve through S3 in both directions; community reads on the control plane match `slugAliases(slug)` (the slug, its former and its new spelling), so comments, proposals and photos stay visible while the control migration (applied on merge) and the content migration (applied by hand) land at different times. The same aliases guard the writes: the content-plane existence probes behind a comment, proposal or photo accept either spelling, the per-recipe photo cap counts both, and the admin slug allocator never issues either spelling of a seed recipe's slug to a new recipe. `library:sync` refuses to run while the database and the seed disagree on id shape, and says to apply the content migration first. The owner's steps after everything is merged: apply the content migration, then run `library:sync`. |
+| S8 | New recipes | The seed, the originals, the Sony Asia importer and `emit-seed` issue and reserve the code shape. `nextRecipeId` keeps reading the shape off the rows (`nextIdAmong`), so the admin editor is right before and after the migration. |
+| S9 | Writes during the gap | A comment, proposal or photo written while the two planes disagree is stored under the slug the page was read with. `slugAliases()` stays in every community read permanently, so such a row is found under either spelling; no second control migration is needed. |
+
+## Out of scope
+
+Renaming withdrawn slugs, deleting `recipe_images` rows or the private bucket, and any
+change to the recipe numbering.

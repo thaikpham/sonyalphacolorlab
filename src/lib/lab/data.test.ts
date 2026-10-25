@@ -85,11 +85,11 @@ describe('articleFromPublicRow', () => {
     const mapped = articleFromPublicRow({
       ...ROW,
       meta: {
-        related: [{ kind: 'recipe', id: 'SCL-PP-001' }, { kind: 'recipe', id: '<script>' }],
+        related: [{ kind: 'recipe', id: 'PP-001' }, { kind: 'recipe', id: '<script>' }],
         authorName: 'editor@example.com',
       },
     });
-    expect(mapped?.meta.related).toEqual([{ kind: 'recipe', id: 'SCL-PP-001' }]);
+    expect(mapped?.meta.related).toEqual([{ kind: 'recipe', id: 'PP-001' }]);
     expect(mapped?.meta.authorName).toBeNull();
   });
 });

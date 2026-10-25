@@ -285,7 +285,7 @@ export function recipeKey(settings: Record<string, unknown>, wb: WhiteBalance, p
   return `${photographer} · ${String(settings.look)} ${params} · ${formatWhiteBalance(wb)}`;
 }
 
-const ID_PREFIX = 'SCL-CL-';
+const ID_PREFIX = 'CL-';
 const idOf = (n: number) => `${ID_PREFIX}${String(n).padStart(3, '0')}`;
 
 export type Credit = {
@@ -300,7 +300,7 @@ const SOURCE_URL = 'https://www.sony-asia.com/microsite/rmdc/creativelooks/alpha
 
 /**
  * `reserved` names ids and slugs another source already holds — ColorLab's own
- * Creative Look originals (`src/lib/originals/cl.ts`) share the `SCL-CL-`
+ * Creative Look originals (`src/lib/originals/cl.ts`) share the `CL-`
  * sequence. A newcomer the scrape has never seen takes the next number after
  * every pin AND every reservation, so it can never be handed an original's id
  * (emit-seed would refuse the duplicate, but only after the scrape had to be

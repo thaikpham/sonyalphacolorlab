@@ -18,6 +18,9 @@
  * without `--overwrite`, and `--overwrite` replaces rows whole, undoing every
  * edit an administrator made since the seed.
  *
+ * It refuses to plan while the project's ids are in another shape than the
+ * seed's (`SCL-PP-001` against `PP-001`): apply the content migration first.
+ *
  * The target is required and has no default.
  */
 
@@ -28,7 +31,7 @@ import { ORIGINAL_PP } from '../src/lib/originals/pp';
 import { RETIRED_RECIPE_IDS } from '../src/lib/recipes/redirects';
 import { toRow } from '../src/lib/recipes/row';
 import { adminClient } from './lib/db';
-import { planLibrarySync, type PlanExistingRow } from './lib/library-plan';
+import { idShapeMismatch, planLibrarySync, type PlanExistingRow } from './lib/library-plan';
 import { requireTarget } from './supabase/args';
 
 type SeedRecipe = Record<string, unknown> & { legacyId?: string | null };
@@ -56,6 +59,14 @@ async function main() {
   const { data, error } = await db.from('recipes').select('id, slug, name, published');
   if (error) throw new Error(`recipes read: ${error.message}`);
   const existing = (data ?? []) as PlanExistingRow[];
+
+  /* Before planning: across the id rename every seed recipe would read as
+     missing, and the plan would insert the whole library a second time. */
+  const mismatch = idShapeMismatch(
+    seed.map(({ recipe }) => recipe.id),
+    existing.map((r) => r.id),
+  );
+  if (mismatch) throw new Error(mismatch);
 
   const plan = planLibrarySync(
     seed.map(({ recipe }) => ({ id: recipe.id, slug: recipe.slug, name: recipe.name })),

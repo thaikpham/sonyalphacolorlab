@@ -17,7 +17,9 @@ import { designedLightFor, taxonomyFor } from './taxonomy-assign';
  */
 
 const recipes: Recipe[] = (seed as unknown[]).map((r) => recipeSchema.parse(r));
-const renamed = (r: Recipe): Recipe => ({ ...r, id: recipeIdKey(r.id) });
+/* The seed is code-shaped; this is the same row as an unmigrated content
+   project still stores it. */
+const unmigrated = (r: Recipe): Recipe => ({ ...r, id: `SCL-${recipeIdKey(r.id)}` });
 
 describe('recipeIdKey', () => {
   it('gives the code shape for either spelling', () => {
@@ -31,16 +33,16 @@ describe('recipeIdKey', () => {
 describe('the taxonomy manifest across the rename', () => {
   it('assigns every seed recipe the same situations, style and tone in both id shapes', () => {
     for (const r of recipes) {
-      expect(taxonomyFor(renamed(r)), r.id).toEqual(taxonomyFor(r));
+      expect(taxonomyFor(unmigrated(r)), r.id).toEqual(taxonomyFor(r));
     }
   });
 
   it('keeps the designed light of every seed recipe', () => {
     for (const r of recipes) {
-      expect(designedLightFor(recipeIdKey(r.id)), r.id).toBe(designedLightFor(r.id));
+      expect(designedLightFor(unmigrated(r).id), r.id).toBe(designedLightFor(r.id));
     }
     /* The manifest does name some lights, so the loop above is not vacuous. */
-    expect(recipes.some((r) => designedLightFor(recipeIdKey(r.id)) !== null)).toBe(true);
+    expect(recipes.some((r) => designedLightFor(unmigrated(r).id) !== null)).toBe(true);
   });
 });
 
@@ -82,11 +84,11 @@ describe('related links across the rename', () => {
 });
 
 describe('search across the rename', () => {
-  const pp009 = recipes.find((r) => r.id === 'SCL-PP-009');
+  const pp009 = recipes.find((r) => r.id === 'PP-009');
 
   it('finds a recipe by either code, whichever shape it is stored in', () => {
     expect(pp009).toBeDefined();
-    for (const r of [pp009!, renamed(pp009!)]) {
+    for (const r of [pp009!, unmigrated(pp009!)]) {
       expect(matchesQuery(r, 'SCL-PP-009'), r.id).toBe(true);
       expect(matchesQuery(r, 'PP-009'), r.id).toBe(true);
       expect(matchesQuery(r, 'scl pp 009'), r.id).toBe(true);
@@ -96,7 +98,7 @@ describe('search across the rename', () => {
   it('makes both codes exact hits in the search index', () => {
     const doc = (r: Recipe) =>
       recipeDoc({ ...r, wbLabel: '', description: '', look: r.format === 'cl' ? r.settings.look : undefined }, 'en');
-    for (const r of [pp009!, renamed(pp009!)]) {
+    for (const r of [pp009!, unmigrated(pp009!)]) {
       expect(doc(r).exact).toEqual(expect.arrayContaining(['pp009', 'sclpp009']));
     }
   });

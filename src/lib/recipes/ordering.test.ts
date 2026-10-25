@@ -17,8 +17,8 @@ describe('listRecipes serves the whole catalogue', () => {
   it('returns both libraries, with unique ids', async () => {
     const all = await listRecipes('en');
     expect(new Set(all.map((v) => v.id)).size).toBe(all.length);
-    expect(all.some((v) => v.id.startsWith('SCL-PP-'))).toBe(true);
-    expect(all.some((v) => v.id.startsWith('SCL-CL-'))).toBe(true);
+    expect(all.some((v) => v.id.startsWith('PP-'))).toBe(true);
+    expect(all.some((v) => v.id.startsWith('CL-'))).toBe(true);
   });
 
   it('keeps the seed’s own order, with nothing moved to the front', async () => {
@@ -31,6 +31,6 @@ describe('listRecipes serves the whole catalogue', () => {
   it('still honours a format filter', async () => {
     const cl = await listRecipes('en', { format: 'cl' });
     expect(cl.length).toBeGreaterThan(0);
-    expect(cl.every((v) => v.id.startsWith('SCL-CL-'))).toBe(true);
+    expect(cl.every((v) => v.id.startsWith('CL-'))).toBe(true);
   });
 });

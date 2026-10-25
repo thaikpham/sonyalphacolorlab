@@ -6,6 +6,9 @@
  * writes it only with `--apply`. Kept apart from the script so every rule below
  * is a unit test rather than a production write.
  *
+ * Before any rule, `idShapeMismatch`: a project whose ids are not yet in the
+ * seed's shape is not planned at all (apply the content migration first).
+ *
  * The rules, in the order they win:
  *
  * - A **withdrawn** id that is still published is unpublished, and nothing else
@@ -52,6 +55,44 @@ export type LibraryPlan = {
   /** Seed slugs the project gives to another id. Non-empty means stop. */
   readonly conflicts: readonly { readonly id: string; readonly slug: string; readonly heldBy: string }[];
 };
+
+const LEGACY_ID = /^SCL-/;
+
+/**
+ * Why `library:sync` must not plan at all, or null when it may.
+ *
+ * The seed's ids lost their `SCL-` prefix on 2026-10-24 (`PP-001`), and so did
+ * its slugs their old spelling; the content project changes both only when the
+ * owner applies its migration by hand. Planned across that gap, every seed
+ * recipe would be "missing" — an insert of 90 duplicates under new ids and
+ * slugs, beside the rows that are the same recipes. So any disagreement on id
+ * shape, either way round, stops the run before a plan is printed.
+ */
+export function idShapeMismatch(
+  seedIds: readonly string[],
+  existingIds: readonly string[],
+): string | null {
+  const seedCode = seedIds.some((id) => !LEGACY_ID.test(id));
+  const seedLegacy = seedIds.some((id) => LEGACY_ID.test(id));
+  const held = existingIds.filter((id) => LEGACY_ID.test(id));
+  if (seedCode && held.length > 0) {
+    return (
+      `The content project still holds ${held.length} SCL- id(s) (${held.slice(0, 3).join(', ')}` +
+      `${held.length > 3 ? ', …' : ''}) and the seed's ids are code-shaped (PP-001). ` +
+      'Apply the content migration first (npm run supabase:migrations -- --target content --apply), ' +
+      'then run library:sync again. Nothing was planned or written.'
+    );
+  }
+  const code = existingIds.filter((id) => !LEGACY_ID.test(id));
+  if (seedLegacy && code.length > 0) {
+    return (
+      `The seed's ids are SCL- shaped but the content project holds ${code.length} code-shaped id(s) ` +
+      `(${code.slice(0, 3).join(', ')}${code.length > 3 ? ', …' : ''}). Re-run npm run seed:emit from ` +
+      'the current tree, then library:sync. Nothing was planned or written.'
+    );
+  }
+  return null;
+}
 
 export function planLibrarySync(
   seed: readonly PlanSeedRecipe[],

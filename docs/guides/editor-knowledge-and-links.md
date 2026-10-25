@@ -36,7 +36,7 @@ Nằm trong khung **Liên kết và nguồn**, dưới phần thông tin chung.
 Chọn loại (Công thức, Sản phẩm, Bài blog, Trang kiến thức) rồi gõ **mã** —
 ô gợi ý liệt kê mã có thật:
 
-- Công thức: mã dạng `SCL-PP-001` (không phải tên hay slug).
+- Công thức: mã dạng `PP-001` (không phải tên hay slug; mã cũ `SCL-PP-001` vẫn được nhận).
 - Sản phẩm: mã trong danh mục, ví dụ `sony-ilce-7m4-bq-ap2`.
 - Bài/trang: mã trong URL, ví dụ `iso-auto-min-ss`.
 

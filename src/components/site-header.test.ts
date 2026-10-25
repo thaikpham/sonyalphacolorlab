@@ -146,7 +146,7 @@ describe('the catalogue search keeps the reader on their grid', () => {
     /* The form renders once the console is open, which a query does. */
     expect(render('/colorlab/portrait?q=a&tone=cool')).toContain('action="/colorlab/portrait"');
     expect(render('/colorlab/portrait?q=a', 'vi')).toContain('action="/vi/colorlab/portrait"');
-    expect(render('/recipe/mojave-sun?q=a')).toContain('action="/colorlab"');
+    expect(render('/recipe/pp-001-vivid-nostalgia-film?q=a')).toContain('action="/colorlab"');
   });
 
   it('pushes through the catalogue’s own builder, onto the current path', () => {
@@ -254,14 +254,14 @@ describe('the language switch keeps the reader where they are', () => {
   });
 
   it('links a bare path to its bare translation', () => {
-    expect(hrefs(render('/recipe/mojave-sun'))).toContain('/vi/recipe/mojave-sun');
+    expect(hrefs(render('/recipe/pp-001-vivid-nostalgia-film'))).toContain('/vi/recipe/pp-001-vivid-nostalgia-film');
   });
 });
 
 describe('the bar’s own links stay in the app', () => {
   it('sends the ColorLab wordmark to the recipe grid, not the launcher', () => {
     /* The blog and wiki marks link to their own index; `/` is the launcher. */
-    expect(hrefs(render('/recipe/mojave-sun'))[0]).toBe('/colorlab');
+    expect(hrefs(render('/recipe/pp-001-vivid-nostalgia-film'))[0]).toBe('/colorlab');
     expect(source).not.toContain('href="/"');
   });
 

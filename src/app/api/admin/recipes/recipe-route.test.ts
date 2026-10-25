@@ -33,7 +33,7 @@ const calls = {
   update: vi.fn(async (..._args: unknown[]): Promise<string | null> => V2),
   insert: vi.fn(async (..._args: unknown[]): Promise<'inserted' | 'taken'> => 'inserted'),
   unpublish: vi.fn(async (_id: string): Promise<string | null> => V2),
-  nextId: vi.fn(async (_format: string) => 'SCL-PP-900'),
+  nextId: vi.fn(async (_format: string) => 'PP-900'),
   slug: vi.fn(async (_name: string) => 'mojave-sun-2'),
 };
 
@@ -67,7 +67,7 @@ vi.mock('@/lib/recipes/admin-store', async () => {
     listRecipeRecords: async () => [],
     listRecipeRows: async () => ({
       records: [],
-      unreadable: [{ id: 'SCL-PP-998', published: true, error: 'settings: Required' }],
+      unreadable: [{ id: 'PP-998', published: true, error: 'settings: Required' }],
     }),
   };
 });
@@ -96,7 +96,7 @@ describe('GET /api/admin/recipes', () => {
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({
       recipes: [],
-      unreadable: [{ id: 'SCL-PP-998', published: true, error: 'settings: Required' }],
+      unreadable: [{ id: 'PP-998', published: true, error: 'settings: Required' }],
     });
   });
 });
@@ -104,12 +104,12 @@ describe('GET /api/admin/recipes', () => {
 describe('POST /api/admin/recipes', () => {
   it('creates a draft with a server-assigned id and slug, whatever the body says', async () => {
     const res = await list.POST(
-      json('POST', { ...PP, id: 'SCL-PP-001', slug: 'evil', published: true }),
+      json('POST', { ...PP, id: 'PP-001', slug: 'evil', published: true }),
     );
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ ok: true, id: 'SCL-PP-900', slug: 'mojave-sun-2' });
+    expect(await res.json()).toEqual({ ok: true, id: 'PP-900', slug: 'mojave-sun-2' });
     const [written] = calls.insert.mock.calls[0] as [Record<string, unknown>];
-    expect(written).toMatchObject({ id: 'SCL-PP-900', slug: 'mojave-sun-2', published: false });
+    expect(written).toMatchObject({ id: 'PP-900', slug: 'mojave-sun-2', published: false });
   });
 
   it('stores the name it validated: trimmed and capped', async () => {
@@ -132,13 +132,13 @@ describe('POST /api/admin/recipes', () => {
     /* Two tabs creating at once read the same max+1. The second insert hit
        23505 and the editor got "Could not save" with nothing to retry. */
     calls.insert.mockResolvedValueOnce('taken');
-    calls.nextId.mockResolvedValueOnce('SCL-PP-900').mockResolvedValueOnce('SCL-PP-901');
+    calls.nextId.mockResolvedValueOnce('PP-900').mockResolvedValueOnce('PP-901');
     const res = await list.POST(json('POST', PP));
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ ok: true, id: 'SCL-PP-901', slug: 'mojave-sun-2' });
+    expect(await res.json()).toEqual({ ok: true, id: 'PP-901', slug: 'mojave-sun-2' });
     expect(calls.insert).toHaveBeenCalledTimes(2);
     const [written] = calls.insert.mock.calls[1] as [Record<string, unknown>];
-    expect(written.id).toBe('SCL-PP-901');
+    expect(written.id).toBe('PP-901');
   });
 
   it('stops allocating after a bounded number of collisions', async () => {
@@ -195,7 +195,7 @@ describe('PATCH /api/admin/recipes/[id]', () => {
 });
 
 describe('a save made against an old version', () => {
-  /* A tab that opened SCL-PP-010 while it was published, and saved a typo
+  /* A tab that opened PP-010 while it was published, and saved a typo
      fix after another tab had unpublished it, put it back on the site — and
      both tabs said "Saved". The product route closed this hole first. */
 

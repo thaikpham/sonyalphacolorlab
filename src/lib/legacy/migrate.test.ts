@@ -23,10 +23,10 @@ describe('legacy migration', () => {
     expect(new Set(ok.map((r) => r.recipe.slug)).size).toBe(KEPT);
   });
 
-  it('maps ids into the SCL-PP-NNN scheme', () => {
-    expect(toRecipeId('scl-001')).toBe('SCL-PP-001');
-    expect(toRecipeId('scl-44')).toBe('SCL-PP-044');
-    expect(toRecipeId('PROCOLOR-001')).toBe('SCL-PP-045');
+  it('maps ids into the PP-NNN scheme', () => {
+    expect(toRecipeId('scl-001')).toBe('PP-001');
+    expect(toRecipeId('scl-44')).toBe('PP-044');
+    expect(toRecipeId('PROCOLOR-001')).toBe('PP-045');
   });
 
   it('derives slugs from the display name', () => {
@@ -35,8 +35,8 @@ describe('legacy migration', () => {
   });
 
   it('renumbers the name to match the new id', () => {
-    const first = ok.find((r) => r.recipe.id === 'SCL-PP-001')!;
-    expect(first.recipe.name).toBe('SCL-PP-001: Mojave Sun');
+    const first = ok.find((r) => r.recipe.id === 'PP-001')!;
+    expect(first.recipe.name).toBe('PP-001: Mojave Sun');
   });
 
   it('applies only the corrections that are documented', () => {

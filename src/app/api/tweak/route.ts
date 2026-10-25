@@ -3,7 +3,8 @@ import { z } from 'zod';
 import { checkDailyBudget, checkRateLimit } from '@/lib/ai/rate-limit';
 import { tweakRecipe } from '@/lib/ai/tweak';
 import { TWEAK_REQUEST_MAX, TWEAK_REQUEST_MIN } from '@/lib/ai/tweak-form';
-import { getRecipe } from '@/lib/recipes/source';
+import { resolveRecipeSlug } from '@/lib/recipes/slug-resolve';
+import type { RecipeView } from '@/lib/recipes/source';
 import { tweakErrorBody } from '@/lib/ai/errors';
 import { ContentUnavailableError, ControlUnavailableError } from '@/lib/supabase/errors';
 import { requireUser } from '@/lib/auth/require-user';
@@ -66,9 +67,11 @@ export async function POST(req: Request) {
   /* An unreachable content project throws rather than answering "no such
      recipe" — see `contentOrOfflineSeed`. Left uncaught it was a bare 500, and
      the panel's `res.json()` failed on the empty body. */
-  let recipe: Awaited<ReturnType<typeof getRecipe>>;
+  let recipe: RecipeView | null;
   try {
-    recipe = await getRecipe(input.slug, input.locale);
+    /* Through the resolver, so a panel opened under one spelling of the slug
+       still answers after the content migration renames it. */
+    recipe = (await resolveRecipeSlug(input.slug, input.locale))?.recipe ?? null;
   } catch (e) {
     if (!(e instanceof ContentUnavailableError)) throw e;
     console.error('[tweak]', e.message);

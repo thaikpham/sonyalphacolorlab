@@ -65,10 +65,10 @@ describe('accent invariants', () => {
       if (!found) throw new Error(`recipe not in catalogue: ${id}`);
       return accentFor(found);
     };
-    // Same A7 amber shift, 3700K beside 3600K; Jade (SCL-PP-002) pushes G to
-    // +7 and must not land on the same hue as Vintage Slide (SCL-PP-015),
+    // Same A7 amber shift, 3700K beside 3600K; Jade (PP-002) pushes G to
+    // +7 and must not land on the same hue as Vintage Slide (PP-015),
     // whose Color Depth leans elsewhere.
-    const gap = Math.abs(at('SCL-PP-002').h - at('SCL-PP-015').h);
+    const gap = Math.abs(at('PP-002').h - at('PP-015').h);
     expect(Math.min(gap, 360 - gap)).toBeGreaterThan(30);
   });
 

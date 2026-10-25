@@ -12,6 +12,7 @@ import {
 } from '../camera/constants';
 import { recipeSchema } from '../camera/schema';
 import { ORIGINAL_CL } from '../originals/cl';
+import { formerSlugOf } from '../recipes/slug-aliases';
 
 /**
  * The scrape is a third-party HTML export of a marketing page: inconsistent
@@ -55,7 +56,7 @@ describe('imported recipes', () => {
     const ids = new Set<string>();
     for (const r of result.recipes) {
       expect(r.format).toBe('cl');
-      expect(r.id).toMatch(/^SCL-CL-\d{3}$/);
+      expect(r.id).toMatch(/^CL-\d{3}$/);
       expect(slugs.has(r.slug), `duplicate slug ${r.slug}`).toBe(false);
       expect(ids.has(r.id), `duplicate id ${r.id}`).toBe(false);
       slugs.add(r.slug);
@@ -235,7 +236,11 @@ describe('stable ids', () => {
     /* ColorLab's own Creative Looks share the seed and the id sequence but not
        the importer: they are numbered after its pins. */
     const ours = new Set(ORIGINAL_CL.map((o) => o.recipe.id));
-    const shipped = seed.filter((r) => r.format === 'cl' && !ours.has(r.id)).map((r) => [r.id, r.slug]);
+    /* The seed's slug follows the name; the importer's is the one the recipe
+       was first published under, which the seed keeps as its former slug. */
+    const shipped = seed
+      .filter((r) => r.format === 'cl' && !ours.has(r.id))
+      .map((r) => [r.id, formerSlugOf(r.slug) ?? r.slug]);
     expect(result.recipes.map((r) => [r.id, r.slug])).toEqual(shipped);
   });
 
@@ -261,20 +266,20 @@ describe('stable ids', () => {
     // The newcomer takes the next free id and a slug no pinned recipe holds.
     expect(after.unpinned).toHaveLength(1);
     const added = after.recipes.find((r) => !result.recipes.some((b) => b.id === r.id))!;
-    expect(added.id).toBe('SCL-CL-038');
+    expect(added.id).toBe('CL-038');
     expect(added.slug).toBe('fl-sandeeshwara-perera-4');
-    expect(added.name).toBe('SCL-CL-038: Film · Sandeeshwara Perera 4');
+    expect(added.name).toBe('CL-038: Film · Sandeeshwara Perera 4');
   });
 
   it('never hands out a retired id or slug again', () => {
-    const retired = { ...SONY_ASIA_IDS, 'retired recipe': { id: 'SCL-CL-090', slug: 'st-test' } };
+    const retired = { ...SONY_ASIA_IDS, 'retired recipe': { id: 'CL-090', slug: 'st-test' } };
     const { recipes } = importSonyAsia(csvOf(`${ST}, WB AWB`), retired);
-    expect(recipes[0]?.id).toBe('SCL-CL-091');
+    expect(recipes[0]?.id).toBe('CL-091');
     expect(recipes[0]?.slug).toBe('st-test-2');
   });
 
   it('steps past the ids and slugs ColorLab’s own Creative Looks hold', () => {
-    /* The originals share the SCL-CL- sequence. emit-seed passes them as
+    /* The originals share the CL- sequence. emit-seed passes them as
        `reserved`, so a newcomer the scrape has never seen cannot be handed
        CL-038 — the number Mono Deep Noir already holds. */
     const reserved = {
@@ -283,7 +288,7 @@ describe('stable ids', () => {
     };
     const last = Math.max(...reserved.ids.map((id) => Number(id.slice(-3))));
     const { recipes } = importSonyAsia(csvOf(`${ST}, WB AWB`), SONY_ASIA_IDS, reserved);
-    expect(recipes[0]?.id).toBe(`SCL-CL-${String(last + 1).padStart(3, '0')}`);
+    expect(recipes[0]?.id).toBe(`CL-${String(last + 1).padStart(3, '0')}`);
     expect(reserved.slugs).not.toContain(recipes[0]?.slug);
 
     /* And a reserved slug the newcomer would otherwise take is stepped past:

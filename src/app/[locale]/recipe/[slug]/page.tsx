@@ -13,14 +13,16 @@ import { TweakPanel } from '@/components/tweak-panel';
 import { WbShiftPlane } from '@/components/wb-shift-plane';
 import { FormattedWb, WbTable } from '@/components/wb-table';
 import { MyCameraWarning } from '@/components/my-camera-warning';
-import { Link } from '@/i18n/navigation';
+import { Link, permanentRedirect, redirect } from '@/i18n/navigation';
 import { routing, type Locale } from '@/i18n/routing';
 import { accentCss } from '@/lib/camera/color';
 import { CREATIVE_LOOKS } from '@/lib/camera/constants';
 import { getSonyCameras } from '@/lib/cameras/data';
 import { cameraOptions, cameraWarnings } from '@/lib/cameras/my-camera';
 import { colorlabPath, moreForSituation } from '@/lib/recipes/browse';
-import { getRecipe, listRecipes, listSlugs } from '@/lib/recipes/source';
+import { listRecipes, listSlugs } from '@/lib/recipes/source';
+import { isPermanentMove } from '@/lib/recipes/slug-aliases';
+import { resolveRecipeSlug } from '@/lib/recipes/slug-resolve';
 import { SITUATIONS, type SituationId } from '@/lib/recipes/taxonomy';
 import { recipeTitle } from '@/lib/recipes/title';
 
@@ -28,6 +30,8 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
 const OG_LOCALES: Record<Locale, string> = { en: 'en_US', vi: 'vi_VN' };
 
+/* What the database holds, in whichever spelling it holds it. Any other
+   spelling still renders on demand — and redirects, below. */
 export async function generateStaticParams() {
   return (await listSlugs()).map((slug) => ({ slug }));
 }
@@ -37,9 +41,12 @@ export async function generateMetadata({
 }: {
   params: Promise<{ slug: string; locale: Locale }>;
 }): Promise<Metadata> {
-  const { slug, locale } = await params;
-  const recipe = await getRecipe(slug, locale);
-  if (!recipe) return {};
+  const { slug: requested, locale } = await params;
+  const resolved = await resolveRecipeSlug(requested, locale);
+  if (!resolved) return {};
+  /* The page redirects a former or not-yet-migrated spelling; the canonical
+     is the one it redirects to. */
+  const { recipe, slug } = resolved;
 
   const path = locale === routing.defaultLocale ? `/recipe/${slug}` : `/${locale}/recipe/${slug}`;
 
@@ -76,11 +83,11 @@ export default async function RecipePage({
 }: {
   params: Promise<{ slug: string; locale: Locale }>;
 }) {
-  const { slug, locale } = await params;
+  const { slug: requested, locale } = await params;
   setRequestLocale(locale);
 
-  const [recipe, catalogue, t, tBrowse, products] = await Promise.all([
-    getRecipe(slug, locale),
+  const [resolved, catalogue, t, tBrowse, products] = await Promise.all([
+    resolveRecipeSlug(requested, locale),
     /* The same unfiltered read the browse makes — one cache entry per locale,
        nothing new in its key — for the row of other recipes at the foot. */
     listRecipes(locale),
@@ -88,7 +95,17 @@ export default async function RecipePage({
     getTranslations('browse'),
     getSonyCameras(),
   ]);
-  if (!recipe) notFound();
+  if (!resolved) notFound();
+  const { recipe, slug } = resolved;
+  /* A slug the recipe had, or will have once the content migration runs,
+     lands on the one the catalogue holds now. Permanent only from a former
+     slug to the current one: the reverse is the unmigrated database, and a
+     cached 308 that way would loop once the migration turns it round. */
+  if (slug !== requested) {
+    const to = { href: `/recipe/${slug}`, locale };
+    if (isPermanentMove(requested, slug)) permanentRedirect(to);
+    redirect(to);
+  }
 
   /* What each camera choice has to say about this recipe, worked out here so
      the page stays prerendered: the cookie is read in the browser, by the

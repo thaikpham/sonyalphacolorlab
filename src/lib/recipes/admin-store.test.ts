@@ -236,9 +236,18 @@ describe('creating', () => {
   it('throws when the slug check could not read, rather than calling the slug free', async () => {
     /* `error` was discarded, so a failed read reported every slug as free. */
     answer.result = { data: null, error: { message: 'restricted', status: 402 } };
-    await expect(uniqueRecipeSlug('Mojave Sun')).rejects.toThrow(/restricted/);
+    await expect(uniqueRecipeSlug('Golden Hour')).rejects.toThrow(/restricted/);
     answer.result = { data: null, error: null };
-    await expect(uniqueRecipeSlug('Mojave Sun')).resolves.toBe('mojave-sun');
+    await expect(uniqueRecipeSlug('Golden Hour')).resolves.toBe('golden-hour');
+  });
+
+  it('never hands out either spelling of a seed recipe’s slug, in either database state', async () => {
+    /* `mojave-sun` is PP-001's former slug and `pp-001-vivid-nostalgia-film`
+       its current one; the database holds only one of them at a time, and a
+       new recipe under the other would answer PP-001's links. */
+    answer.result = { data: null, error: null };
+    await expect(uniqueRecipeSlug('Mojave Sun')).resolves.toBe('mojave-sun-2');
+    await expect(uniqueRecipeSlug('PP-001-Vivid Nostalgia Film')).resolves.toBe('pp-001-vivid-nostalgia-film-2');
   });
 });
 

@@ -169,18 +169,19 @@ export const clSettingsSchema = z
 // Recipe
 // ---------------------------------------------------------------------------
 
-/** `SCL-PP-001` / `SCL-CL-042` — the shape the content plane's CHECK stores today. */
-export const RECIPE_ID_RE = /^SCL-(PP|CL)-\d{3}$/;
+/**
+ * `PP-001` / `CL-042` — the shape the content plane's CHECK stores once
+ * `20261024000000_recipe_code_ids.sql` has run, and the shape the seed, the
+ * originals and the importers issue. `sql-drift.test.ts` pins it to that CHECK.
+ */
+export const RECIPE_ID_RE = /^(PP|CL)-\d{3}$/;
 
 /**
- * Either shape: the stored `SCL-PP-001` or the code `PP-001` the ids are moving
- * to (2026-10-24, sub-project 3). Everything that READS an id accepts both, so
- * this code keeps working across the hand-applied content migration that
- * renames them. The order is not free: code that predates this pattern throws
- * on a `PP-001` row, so the migration waits until every deployment reading the
- * content project, previews included, carries it. The release that ships the
- * new ids makes `RECIPE_ID_RE` the code shape and deletes this. Group 1 is the
- * format code.
+ * Either shape: the code `PP-001`, or the `SCL-PP-001` the content plane holds
+ * until its migration is applied by hand (S1, S7). Everything that READS an id
+ * accepts both, so a deployment never depends on whether that migration has
+ * run, and stays tolerant after it: a stale link or a rollback copy still
+ * carries the old shape. Group 1 is the format code.
  */
 export const RECIPE_ID_TRANSITION_RE = /^(?:SCL-)?(PP|CL)-\d{3}$/;
 

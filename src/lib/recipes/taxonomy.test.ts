@@ -36,9 +36,9 @@ const messages = Object.fromEntries(
 const fold = (s: string) => removeAccents(s).toLowerCase();
 
 const pp = (over: Partial<Extract<Recipe, { format: 'pp' }>['settings']> = {}, wb: Recipe['whiteBalance'] = { mode: 'kelvin', kelvin: 5500 }): Recipe => ({
-  id: 'SCL-PP-999',
+  id: 'PP-999',
   slug: 'x',
-  name: 'SCL-PP-999: X',
+  name: 'PP-999-Soft Film',
   format: 'pp',
   whiteBalance: wb,
   tags: [],
@@ -58,9 +58,9 @@ const pp = (over: Partial<Extract<Recipe, { format: 'pp' }>['settings']> = {}, w
 });
 
 const cl = (look: Extract<Recipe, { format: 'cl' }>['settings']['look'], over: Partial<Extract<Recipe, { format: 'cl' }>['settings']> = {}): Recipe => ({
-  id: 'SCL-CL-999',
+  id: 'CL-999',
   slug: 'x',
-  name: 'SCL-CL-999: X',
+  name: 'CL-999-Soft Film',
   format: 'cl',
   whiteBalance: { mode: 'auto', auto: 'AWB' },
   tags: [],
@@ -220,12 +220,12 @@ describe('the manifest', () => {
   });
 
   it('overrides the derivation where it speaks, and only there', () => {
-    const edited = taxonomyFor(seed.find((r) => r.id === 'SCL-PP-001')!);
+    const edited = taxonomyFor(seed.find((r) => r.id === 'PP-001')!);
     expect(edited).toEqual({ situations: ['travel', 'lifestyle'], style: 'film', tone: 'warm' });
     /* 002 leaves tone to the white balance: 3700K with A7 is warm. */
-    expect(taxonomyFor(seed.find((r) => r.id === 'SCL-PP-002')!).tone).toBe('warm');
+    expect(taxonomyFor(seed.find((r) => r.id === 'PP-002')!).tone).toBe('warm');
     /* A Creative Look has no entry and browses by its Look. */
-    const look = taxonomyFor(seed.find((r) => r.id === 'SCL-CL-003')!);
+    const look = taxonomyFor(seed.find((r) => r.id === 'CL-003')!);
     expect(look).toEqual({ situations: ['travel', 'landscape'], style: 'vivid', tone: 'neutral' });
   });
 });

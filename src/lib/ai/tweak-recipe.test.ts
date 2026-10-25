@@ -52,7 +52,7 @@ vi.mock('@anthropic-ai/sdk', () => {
 
 const { tweakRecipe } = await import('./tweak');
 
-const recipe = (seed as unknown as RecipeView[]).find((r) => r.slug === 'mojave-sun')!;
+const recipe = (seed as unknown as RecipeView[]).find((r) => r.slug === 'pp-001-vivid-nostalgia-film')!;
 
 const answer = (value: unknown, stop_reason = 'end_turn'): Reply => ({
   stop_reason,

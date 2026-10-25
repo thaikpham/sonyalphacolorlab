@@ -15,11 +15,12 @@ import { ContentUnavailableError } from '@/lib/supabase/errors';
  */
 
 const query = {
-  slug: '' as string,
+  slugs: [] as readonly string[],
   columns: '' as string,
   published: undefined as unknown,
+  limit: undefined as number | undefined,
   result: {
-    data: null as { id: string } | { format: string } | null,
+    data: null as { id: string }[] | { format: string }[] | null,
     error: null as { message: string } | null,
   },
 };
@@ -37,12 +38,19 @@ vi.mock('@/lib/supabase/server', () => ({
           query.columns = columns;
           return builder;
         },
+        in: (column: string, values: readonly string[]) => {
+          expect(column).toBe('slug');
+          query.slugs = values;
+          return builder;
+        },
         eq: (column: string, value: unknown) => {
-          if (column === 'slug') query.slug = value as string;
           if (column === 'published') query.published = value;
           return builder;
         },
-        maybeSingle: async () => query.result,
+        limit: async (n: number) => {
+          query.limit = n;
+          return query.result;
+        },
       };
       return builder;
     },
@@ -61,7 +69,8 @@ vi.mock('@/lib/supabase/server', () => ({
 }));
 
 beforeEach(() => {
-  query.slug = '';
+  query.slugs = [];
+  query.limit = undefined;
   query.columns = '';
   query.published = undefined;
   query.result = { data: null, error: null };
@@ -69,13 +78,27 @@ beforeEach(() => {
 
 describe('publishedRecipeExists', () => {
   it('is true for a published recipe', async () => {
-    query.result = { data: { id: 'r1' }, error: null };
-    await expect(publishedRecipeExists('daylight-cinema')).resolves.toBe(true);
-    expect(query.slug).toBe('daylight-cinema');
+    query.result = { data: [{ id: 'r1' }], error: null };
+    await expect(publishedRecipeExists('pp-027-vivid-daylight-cinema')).resolves.toBe(true);
     expect(query.columns).toBe('id');
+    expect(query.limit).toBe(1);
+  });
+
+  /* The content plane's slugs change when the owner applies its migration,
+     at a time the code cannot know: a page read under either spelling must
+     still be writable (S9). */
+  it('asks for every spelling the slug has had, in both directions', async () => {
+    await publishedRecipeExists('daylight-cinema');
+    expect(query.slugs).toEqual(['daylight-cinema', 'pp-027-vivid-daylight-cinema']);
+    await publishedRecipeExists('pp-027-vivid-daylight-cinema');
+    expect(query.slugs).toEqual(['pp-027-vivid-daylight-cinema', 'daylight-cinema']);
+    await publishedRecipeExists('never-existed');
+    expect(query.slugs).toEqual(['never-existed']);
   });
 
   it('is false when no row matches', async () => {
+    await expect(publishedRecipeExists('never-existed')).resolves.toBe(false);
+    query.result = { data: [], error: null };
     await expect(publishedRecipeExists('never-existed')).resolves.toBe(false);
   });
 
@@ -102,10 +125,11 @@ describe('publishedRecipeFormat', () => {
      a Picture Profile proposal on a Creative Look recipe is Rule 2 broken in a
      jsonb column — so its existence probe has to say which format it found. */
   it('names the format of a published recipe, reading only that column', async () => {
-    query.result = { data: { format: 'cl' }, error: null };
+    query.result = { data: [{ format: 'cl' }], error: null };
     await expect(publishedRecipeFormat('fl-raoul-rutnam')).resolves.toBe('cl');
     expect(query.columns).toBe('format');
     expect(query.published).toBe(true);
+    expect(query.slugs).toEqual(['fl-raoul-rutnam', 'cl-001-film-hard-faded']);
   });
 
   it('is null when no published row matches', async () => {
@@ -118,7 +142,7 @@ describe('publishedRecipeFormat', () => {
   });
 
   it('refuses a format it does not know instead of passing it on', async () => {
-    query.result = { data: { format: 'raw' }, error: null };
+    query.result = { data: [{ format: 'raw' }], error: null };
     await expect(publishedRecipeFormat('x')).rejects.toBeInstanceOf(ContentUnavailableError);
   });
 });
