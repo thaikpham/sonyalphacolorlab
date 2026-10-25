@@ -43,7 +43,7 @@ Sequential within the format, zero-padded to three digits:
 
 ```bash
 node -e "const r=require('./data/recipes.seed.json');const f='PP';\
-const n=r.filter(x=>x.id.includes('-'+f+'-')).map(x=>+x.id.slice(-3));\
+const n=r.filter(x=>x.id.replace(/^SCL-/,'').startsWith(f+'-')).map(x=>+x.id.slice(-3));\
 console.log('next: '+f+'-'+String(Math.max(0,...n)+1).padStart(3,'0'))"
 ```
 
