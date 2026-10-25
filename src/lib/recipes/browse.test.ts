@@ -7,11 +7,14 @@ import {
   colorlabSearch,
   facetCounts,
   hasBrowseFilters,
+  MORE_FOR_SITUATION_LIMIT,
   matchesBrowse,
+  moreForSituation,
   parseFormat,
   situationCounts,
   visibleSituations,
   type Browsable,
+  type Relatable,
 } from './browse';
 
 const r = (
@@ -174,5 +177,67 @@ describe('matching and counting', () => {
     expect(situationCounts(CATALOGUE)).toMatchObject({ portrait: 3, street: 2, daily: 2, travel: 1, night: 1, heritage: 0 });
     expect(visibleSituations(CATALOGUE)).toEqual(['portrait']);
     expect(visibleSituations([...CATALOGUE, r(['street'], 'film', 'warm')])).toEqual(['portrait', 'street']);
+  });
+});
+
+describe('more for the same situation', () => {
+  const rel = (
+    id: string,
+    situations: Relatable['situations'],
+    style: Relatable['style'] = 'natural',
+    tone: Relatable['tone'] = 'neutral',
+    published = true,
+  ): Relatable => ({ id, situations, style, tone, published });
+  const ids = (m: ReturnType<typeof moreForSituation>) => m?.recipes.map((x) => x.id);
+
+  const self = rel('PP-001', ['portrait', 'daily'], 'film', 'warm');
+
+  it('reads the first situation, and leaves out the recipe itself and every other situation', () => {
+    const more = moreForSituation(self, [
+      self,
+      rel('PP-002', ['street']),
+      rel('PP-003', ['daily', 'portrait']),
+      rel('PP-004', ['travel', 'daily']),
+    ]);
+    expect(more?.situation).toBe('portrait');
+    /* PP-004 shares `daily`, a secondary situation, and not the primary. */
+    expect(ids(more)).toEqual(['PP-003']);
+  });
+
+  it('leaves out an unpublished recipe', () => {
+    expect(ids(moreForSituation(self, [rel('PP-002', ['portrait'], 'natural', 'neutral', false), rel('PP-003', ['portrait'])]))).toEqual([
+      'PP-003',
+    ]);
+  });
+
+  it('shows six at most', () => {
+    const many = Array.from({ length: 10 }, (_, i) => rel(`CL-0${10 + i}`, ['portrait']));
+    expect(MORE_FOR_SITUATION_LIMIT).toBe(6);
+    expect(ids(moreForSituation(self, many))).toEqual(many.slice(0, 6).map((x) => x.id));
+    expect(ids(moreForSituation(self, many, 2))).toEqual(['CL-010', 'CL-011']);
+  });
+
+  it('puts the recipes sharing more of its situations, style and tone first, then keeps catalogue order', () => {
+    const catalogue = [
+      rel('PP-010', ['portrait']), // 1: the situation only
+      rel('PP-011', ['portrait'], 'film'), // 2: and the style
+      rel('PP-012', ['portrait'], 'vivid', 'warm'), // 2: and the tone
+      rel('PP-013', ['portrait', 'daily'], 'film', 'warm'), // 4: everything
+      rel('PP-014', ['portrait', 'daily']), // 2: both situations
+      rel('PP-015', ['portrait']), // 1
+    ];
+    expect(ids(moreForSituation(self, catalogue))).toEqual(['PP-013', 'PP-011', 'PP-012', 'PP-014', 'PP-010', 'PP-015']);
+    /* The same answer however often it is asked, and the input is not touched. */
+    const before = catalogue.map((x) => x.id);
+    expect(ids(moreForSituation(self, catalogue))).toEqual(ids(moreForSituation(self, catalogue)));
+    expect(catalogue.map((x) => x.id)).toEqual(before);
+  });
+
+  it('is null — no empty row — when nothing else shares the situation, or the recipe has none', () => {
+    expect(moreForSituation(self, [self, rel('PP-002', ['street', 'daily'])])).toBeNull();
+    expect(moreForSituation(self, [])).toBeNull();
+    expect(moreForSituation(self, [self])).toBeNull();
+    expect(moreForSituation(rel('PP-020', []), [rel('PP-021', ['portrait'])])).toBeNull();
+    expect(moreForSituation(self, [rel('PP-002', ['portrait'])], 0)).toBeNull();
   });
 });
