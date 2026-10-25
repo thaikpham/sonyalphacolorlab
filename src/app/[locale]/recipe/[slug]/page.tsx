@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { SiteHeader } from '@/components/site-header';
 import { RecipeGallery } from '@/components/recipe-gallery';
 import { RecipePalette } from '@/components/recipe-palette';
+import { RecipeCard } from '@/components/recipe-card';
 import { RecipeStructuredData } from '@/components/structured-data';
 import { ClTable, PpTable } from '@/components/settings-table';
 import { RecipeCommunitySection } from '@/components/recipe-community-section';
@@ -18,7 +19,9 @@ import { accentCss } from '@/lib/camera/color';
 import { CREATIVE_LOOKS } from '@/lib/camera/constants';
 import { getSonyCameras } from '@/lib/cameras/data';
 import { cameraOptions, cameraWarnings } from '@/lib/cameras/my-camera';
-import { getRecipe, listSlugs } from '@/lib/recipes/source';
+import { colorlabPath, moreForSituation } from '@/lib/recipes/browse';
+import { getRecipe, listRecipes, listSlugs } from '@/lib/recipes/source';
+import { SITUATIONS, type SituationId } from '@/lib/recipes/taxonomy';
 import { recipeTitle } from '@/lib/recipes/title';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
@@ -76,8 +79,11 @@ export default async function RecipePage({
   const { slug, locale } = await params;
   setRequestLocale(locale);
 
-  const [recipe, t, tBrowse, products] = await Promise.all([
+  const [recipe, catalogue, t, tBrowse, products] = await Promise.all([
     getRecipe(slug, locale),
+    /* The same unfiltered read the browse makes — one cache entry per locale,
+       nothing new in its key — for the row of other recipes at the foot. */
+    listRecipes(locale),
     getTranslations('recipe'),
     getTranslations('browse'),
     getSonyCameras(),
@@ -105,6 +111,12 @@ export default async function RecipePage({
     { key: 'style', href: `/colorlab?style=${recipe.style}`, label: tBrowse(`styles.${recipe.style}`) },
     { key: 'tone', href: `/colorlab?tone=${recipe.tone}`, label: tBrowse(`tones.${recipe.tone}`) },
   ];
+  /* Other recipes for this one's primary situation, or nothing at all — the
+     row is left out rather than shown empty. */
+  const more = moreForSituation(recipe, catalogue);
+  const situationLabels = Object.fromEntries(
+    SITUATIONS.map((id) => [id, tBrowse(`situations.${id}`)]),
+  ) as Record<SituationId, string>;
   const look =
     recipe.format === 'cl' ? CREATIVE_LOOKS.find((l) => l.code === recipe.settings.look) : null;
   const shareUrl = `${SITE_URL}${
@@ -278,6 +290,35 @@ export default async function RecipePage({
             <RecipeLearnMore recipeId={recipe.id} format={recipe.format} locale={locale} />
           </div>
         </div>
+
+        {/* Other recipes for the primary situation, as the browse draws them.
+            The heading is the way into that situation's page, so the row
+            needs no "see all" line. An h2 over the cards' h3s. */}
+        {more ? (
+          <section aria-labelledby="more-for-situation" className="mt-16 flex flex-col gap-4">
+            <h2 id="more-for-situation" className="text-title-3 font-semibold text-ink">
+              <Link
+                href={colorlabPath(more.situation)}
+                className="inline-flex min-h-[var(--layout-touch-target)] items-center gap-2 transition-colors hover:text-accent-400"
+              >
+                {tBrowse('moreFor', { situation: situationLabels[more.situation] })}
+                <svg className="h-4 w-4 shrink-0 fill-current" viewBox="0 0 16 16" aria-hidden="true">
+                  <path d="M5.47 2.97a.75.75 0 0 1 1.06 0l4.5 4.5a.75.75 0 0 1 0 1.06l-4.5 4.5a.75.75 0 0 1-1.06-1.06L9.44 8 5.47 4.03a.75.75 0 0 1 0-1.06Z" />
+                </svg>
+              </Link>
+            </h2>
+            <ul className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
+              {more.recipes.map((r) => (
+                /* `grid` stretches the card to the row's height: a name
+                   that wraps to three lines no longer leaves its neighbour
+                   short. */
+                <li key={r.id} className="grid">
+                  <RecipeCard recipe={r} situationLabels={situationLabels} />
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
       </main>
     </div>
   );
