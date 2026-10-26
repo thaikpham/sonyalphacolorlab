@@ -11,6 +11,8 @@ import type { Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { ADMIN_LOCALE } from '../src/lib/admin/locale';
+
 export type Role = 'visitor';
 
 /**
@@ -111,6 +113,34 @@ export async function resolve(page: Page, path: string): Promise<string | null> 
     throw new Error(`no instance of ${path} in the sitemap`);
   }
   return path.replace(key, hit.slice(prefix.length));
+}
+
+/**
+ * The locale a first-time visitor is served at `path`: `vi` under the `/vi`
+ * segment (the whole segment: `/video` is English), `en` at every bare path
+ * (`localePrefix: 'as-needed'`, src/i18n/routing.ts). `/admin` is outside
+ * `[locale]` and names its own language (src/lib/admin/locale.ts).
+ */
+export function localeOf(path: string): 'en' | 'vi' {
+  if (/^\/admin(\/|$|\?)/.test(path)) return ADMIN_LOCALE;
+  return /^\/vi(\/|$|\?)/.test(path) ? 'vi' : 'en';
+}
+
+/**
+ * Go to `path` as a first-time visitor in that path's locale. next-intl sets
+ * a `NEXT_LOCALE` cookie on a `/vi` visit, and within the same browser
+ * context a later bare path then renders Vietnamese — so until 2026-10-26
+ * most "English" measurements in a walk were of the Vietnamese page. The
+ * cookies go first, and the document's `lang` is checked, so a walk can no
+ * longer measure one locale under the other's name.
+ */
+export async function visit(page: Page, path: string, options?: Parameters<Page['goto']>[1]) {
+  await page.context().clearCookies();
+  const res = await page.goto(path, options);
+  const want = localeOf(path);
+  const lang = await page.evaluate(() => document.documentElement.lang);
+  if (lang !== want) throw new Error(`${path}: rendered lang="${lang}", expected "${want}"`);
+  return res;
 }
 
 /** The page has settled: the network is quiet and the fonts are in. */

@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { budgetFor, report } from './budgets.ts';
 import { axe } from './checks.ts';
-import { ROUTES, ready, resolve, routeAssetHosts, watch } from './setup.ts';
+import { ROUTES, ready, resolve, routeAssetHosts, visit, watch } from './setup.ts';
 
 /*
  * Accessibility, by axe-core, on every screen at a phone and a desktop width:
@@ -25,7 +25,7 @@ for (const [role, routes] of Object.entries(ROUTES) as [keyof typeof ROUTES, str
       for (const route of routes) {
         const path = await resolve(page, route);
         if (!path) { console.log(`skip ${route}: no knowledge page is published`); continue; }
-        await page.goto(path);
+        await visit(page, path);
         await ready(page);
         const found = await axe(page);
         if (!report('axe', `${path} · ${size.name}`, found)) over.push(`${path}: ${found.length}, recorded ${budgetFor('axe', `${path} · ${size.name}`)}`);

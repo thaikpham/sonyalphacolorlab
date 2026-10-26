@@ -1,6 +1,6 @@
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { gzipSync } from 'node:zlib';
-import { resolve, routeAssetHosts } from './setup.ts';
+import { resolve, routeAssetHosts, visit } from './setup.ts';
 
 /*
  * Performance budgets on a phone with a slow CPU (4×) and 4G (9 Mbps,
@@ -27,10 +27,18 @@ const LCP_MAX = 2500;
  * library colour): `/colorlab` and `/vi/colorlab` boot 176 KB (the console's
  * Format, Look and Tag rows left the header), so both are lowered 184 -> 176;
  * `/recipe/clearcast-pro` (alpine-cool was withdrawn) 189 KB, inside 190.
+ *
+ * Re-measured 2026-10-26 after merging main 415f9ff (recipe code ids, My
+ * camera, photo moderation, same-situation row), every screen loaded as a
+ * first visit in its own locale (`visit()`): `/colorlab` and `/vi/colorlab`
+ * boot 185 KB, 176 -> 185, main's debt — the "Choose camera" picker is a
+ * client island in the browse filter row (ADR 0006, camera-picker.tsx). `/colorlab/:situation` and
+ * `/vi/colorlab/:situation` are new here (instance `daily`), 178 KB.
+ * `/recipe/cl-001-film-hard-faded` (slugs come from the name now) 190 KB.
  */
 const SCREENS: [string, number][] = [
-  ['/', 174], ['/colorlab', 176], ['/recipe/:recipe', 190], ['/cameras', 250], ['/cameras/:camera', 177],
-  ['/audio', 250], ['/blog', 247], ['/blog/:article', 180], ['/learn', 247], ['/vi/colorlab', 176],
+  ['/', 174], ['/colorlab', 185], ['/colorlab/:situation', 178], ['/recipe/:recipe', 190], ['/cameras', 250], ['/cameras/:camera', 177],
+  ['/audio', 250], ['/blog', 247], ['/blog/:article', 180], ['/learn', 247], ['/vi/colorlab', 185], ['/vi/colorlab/:situation', 178],
 ];
 
 async function phone(browser: Browser) {
@@ -66,7 +74,7 @@ type Vitals = { cls: number; what: string[]; lcp: number };
 
 /** CLS with the elements that moved, and the LCP time, for one load (observers from `phone()`). */
 async function load(page: Page, path: string): Promise<Vitals> {
-  await page.goto(path, { waitUntil: 'load' });
+  await visit(page, path, { waitUntil: 'load' });
   await page.waitForLoadState('networkidle', { timeout: 15_000 }).catch(() => {});
   await page.waitForTimeout(1500);
   return page.evaluate(() => (window as unknown as { __v: Vitals }).__v);

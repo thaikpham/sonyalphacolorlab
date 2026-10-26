@@ -65,6 +65,20 @@ describe('e2e/setup.ts', () => {
   it('walks both locales', () => {
     expect(src).toMatch(/'\/vi\$\{|`\/vi\$\{/);
   });
+
+  /* A bare `page.goto` in a walk carries the previous route's NEXT_LOCALE
+     cookie, so an English path after a `/vi` one rendered Vietnamese and was
+     budgeted as English (found 2026-10-26). `visit()` clears the cookies and
+     checks `<html lang>`. checkers.spec.ts uses `setContent` and walks nothing. */
+  it('walks every screen as a first visit in its own locale', () => {
+    expect(src).toMatch(/await page\.context\(\)\.clearCookies\(\);/);
+    expect(src).toMatch(/document\.documentElement\.lang/);
+    for (const spec of ['layout', 'wcag', 'targets', 'perf', 'first-screen', 'visual']) {
+      const body = read(`e2e/${spec}.spec.ts`);
+      expect(body, spec).not.toMatch(/page\.goto\(/);
+      expect(body, spec).toMatch(/await visit\(page, /);
+    }
+  });
 });
 
 describe('package.json', () => {

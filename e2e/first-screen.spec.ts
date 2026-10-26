@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { inSight } from './checks.ts';
-import { SCREENS, ready, resolve, routeAssetHosts } from './setup.ts';
+import { SCREENS, ready, resolve, routeAssetHosts, visit } from './setup.ts';
 
 /*
  * The newcomer's first screen (design-kit's "tinh gọn" gate): on a phone,
@@ -39,12 +39,21 @@ test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true
  * 14 -> 9 on the same date: the PP refresh withdrew `alpine-cool`, so the
  * instance is now `clearcast-pro`, whose first screen shows four taxonomy
  * links (situation, style, tone) where alpine-cool showed nine tags.
+ *
+ * `list` re-measured 2026-10-26 after merging main 415f9ff (recipe code ids,
+ * My camera, photo moderation, same-situation row): 22 -> 23, main's debt —
+ * the "Choose camera" picker (ADR 0006, browse-filters.tsx) is in sight on the browse
+ * page. Measured in English now: until this date `visit()` did not exist and
+ * a walk could inherit a `/vi` visit's NEXT_LOCALE cookie. `detail` stays 9
+ * on the new instance, `cl-001-film-hard-faded` (PR #24 named slugs after the
+ * recipe), whose first screen shows the same frame, "All recipes" and four
+ * taxonomy links (two situations, a style, a tone).
  */
-const BUDGET = { list: 22, detail: 9 };
+const BUDGET = { list: 23, detail: 9 };
 
 test('the first screens ask little: the list and a recipe page stay within their budgets', async ({ page }) => {
   await routeAssetHosts(page);
-  await page.goto(SCREENS.list);
+  await visit(page, SCREENS.list);
   await ready(page);
   const list = await inSight(page);
   console.log(`list ${list.controls}: ${list.names.join(' | ')}`);
@@ -52,7 +61,7 @@ test('the first screens ask little: the list and a recipe page stay within their
 
   const detail = await resolve(page, SCREENS.detail);
   if (!detail) throw new Error('no recipe in the sitemap');
-  await page.goto(detail);
+  await visit(page, detail);
   await ready(page);
   const d = await inSight(page);
   console.log(`detail ${d.controls} controls + ${d.rows} parameter rows: ${d.names.join(' | ')}`);
@@ -62,6 +71,7 @@ test('the first screens ask little: the list and a recipe page stay within their
   // Measured 2026-10-23 (7.08 screens, mojave-sun); re-measured 2026-10-24 on alpine-cool, which printed 6.3 —
   // toFixed(1) hides up to 0.05, so the cap is the next tenth. AGENTS.md calls this a reading layout, so the cap
   // is the measurement, only down. Re-measured 2026-10-24 after merging main a3ef537 (situations, PP refresh,
-  // library colour) on clearcast-pro, which printed 6.2: lowered 6.4 -> 6.3.
-  expect(screens).toBeLessThanOrEqual(6.3);
+  // library colour) on clearcast-pro, which printed 6.2: lowered 6.4 -> 6.3. Re-measured 2026-10-26 after merging
+  // main 415f9ff on cl-001-film-hard-faded (slugs come from the name now), which printed 6.1: lowered 6.3 -> 6.2.
+  expect(screens).toBeLessThanOrEqual(6.2);
 });

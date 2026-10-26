@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
 import { describe, expect, it, vi } from 'vitest';
 
-import { resolve } from '../e2e/setup';
+import { localeOf, resolve } from '../e2e/setup';
 
 /**
  * `resolve()`'s own regression case: articles and knowledge pages are
@@ -105,5 +105,27 @@ describe('sitemap()', () => {
   it('throws when the sitemap lists no <loc>', async () => {
     const resolveFresh = await freshResolve();
     await expect(resolveFresh(fake('<urlset></urlset>'), '/recipe/:recipe')).rejects.toThrow('/sitemap.xml lists no <loc>');
+  });
+});
+
+/* The locale a first-time visitor is served at each path (`visit()` asserts
+   it against `<html lang>`). next-intl's `NEXT_LOCALE` cookie, set by a `/vi`
+   visit, otherwise renders a later bare path in Vietnamese within the same
+   browser context, and every "English" measurement after it was of the
+   Vietnamese page. `/video` is not under `/vi`: the prefix is a whole
+   segment. `/admin` sits outside `[locale]` and names its own language. */
+describe('localeOf()', () => {
+  it.each([
+    ['/vi', 'vi'],
+    ['/vi/blog', 'vi'],
+    ['/vi?x=1', 'vi'],
+    ['/vi/colorlab?format=pp', 'vi'],
+    ['/video', 'en'],
+    ['/', 'en'],
+    ['/blog', 'en'],
+    ['/search?q=vi', 'en'],
+    ['/admin', 'vi'],
+  ])('%s renders %s', (path, want) => {
+    expect(localeOf(path)).toBe(want);
   });
 });

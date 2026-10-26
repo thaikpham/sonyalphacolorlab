@@ -1,5 +1,5 @@
 {
-  "//": "Measured 2026-10-23 on the seed build; counts may only go down. axe: one per violating node, keyed '<path> · phone' (390) or '<path> · desktop' (1440). targets: phone (390). layout: keyed like axe, '<path> · phone' (390), '· tablet' (768) or '· desktop' (1440). A route or width with no entry is held at 0. Re-measured 2026-10-24 after fixing the measurement, not raised: until then a seed build straight after a live one inherited the live data cache, and resolve() took the first sitemap entry, so the instance routes moved. The instances are now the smallest path per template on the seed build (alpine-cool, sony-dsc-rx100m7-e32, sony-inzone-buds); their entries are what that run printed. Every other entry is unchanged. 2026-10-24: counts are matched exactly (e2e/budgets.ts), and the camera page's breadcrumb overflow at 390 was fixed rather than budgeted (min-w-0 + truncate, as on /audio/[id]), so layout holds every route at 0. Re-measured 2026-10-24 after merging main a3ef537 (situations, PP refresh, library colour): the PP refresh withdrew alpine-cool, so the recipe instance is now clearcast-pro (its axe 1 and targets 2 are the counts alpine-cool carried, moved to the new key, not raised); /colorlab?format=pp no longer opens the header search, so its two small targets (the open search's close button, 29x39, and 'clear all filters', 118x22) are gone (lowered 2 -> 0) and the closed search trigger renders instead, with the label-content-name-mismatch at 1440 that /colorlab already carried (0 -> 1, main's debt); /colorlab/:situation is new (instance daily) and carries the same header node at 1440 (1).",
+  "//": "Measured 2026-10-23 on the seed build; counts may only go down. axe: one per violating node, keyed '<path> · phone' (390) or '<path> · desktop' (1440). targets: phone (390). layout: keyed like axe, '<path> · phone' (390), '· tablet' (768) or '· desktop' (1440). A route or width with no entry is held at 0. Re-measured 2026-10-24 after fixing the measurement, not raised: until then a seed build straight after a live one inherited the live data cache, and resolve() took the first sitemap entry, so the instance routes moved. The instances are now the smallest path per template on the seed build (alpine-cool, sony-dsc-rx100m7-e32, sony-inzone-buds); their entries are what that run printed. Every other entry is unchanged. 2026-10-24: counts are matched exactly (e2e/budgets.ts), and the camera page's breadcrumb overflow at 390 was fixed rather than budgeted (min-w-0 + truncate, as on /audio/[id]), so layout holds every route at 0. Re-measured 2026-10-24 after merging main a3ef537 (situations, PP refresh, library colour): the PP refresh withdrew alpine-cool, so the recipe instance is now clearcast-pro (its axe 1 and targets 2 are the counts alpine-cool carried, moved to the new key, not raised); /colorlab?format=pp no longer opens the header search, so its two small targets (the open search's close button, 29x39, and 'clear all filters', 118x22) are gone (lowered 2 -> 0) and the closed search trigger renders instead, with the label-content-name-mismatch at 1440 that /colorlab already carried (0 -> 1, main's debt); /colorlab/:situation is new (instance daily) and carries the same header node at 1440 (1). Re-measured 2026-10-26 after merging main 415f9ff (recipe code ids, My camera, photo moderation, same-situation row), with every route now walked as a first visit in its own locale (e2e/setup.ts visit(): until then a /vi visit set NEXT_LOCALE and the bare paths after it rendered Vietnamese): every English count measured in English equals the number it carried, so none moves; the recipe instance is now cl-001-film-hard-faded (slugs come from the name since PR #24), and its axe 1 at 1440 and targets 2 are the counts clearcast-pro carried, moved to the new key, not raised.",
   "layout": {},
   "axe": {
     "/cameras · phone": 3,
@@ -22,8 +22,8 @@
     "/vi/colorlab?format=pp · desktop": 1,
     "/colorlab/daily · desktop": 1,
     "/vi/colorlab/daily · desktop": 1,
-    "/recipe/clearcast-pro · desktop": 1,
-    "/vi/recipe/clearcast-pro · desktop": 1,
+    "/recipe/cl-001-film-hard-faded · desktop": 1,
+    "/vi/recipe/cl-001-film-hard-faded · desktop": 1,
     "/cameras · desktop": 4,
     "/vi/cameras · desktop": 4,
     "/cameras/sony-dsc-rx100m7-e32 · desktop": 4,
@@ -50,8 +50,8 @@
     "/vi/search?q=sony · desktop": 1
   },
   "targets": {
-    "/recipe/clearcast-pro": 2,
-    "/vi/recipe/clearcast-pro": 2,
+    "/recipe/cl-001-film-hard-faded": 2,
+    "/vi/recipe/cl-001-film-hard-faded": 2,
     "/cameras": 206,
     "/vi/cameras": 206,
     "/cameras/sony-dsc-rx100m7-e32": 1,

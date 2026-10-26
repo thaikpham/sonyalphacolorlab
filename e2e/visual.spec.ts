@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { SCREENS, ready, resolve, routeAssetHosts } from './setup.ts';
+import { SCREENS, ready, resolve, routeAssetHosts, visit } from './setup.ts';
 
 /*
  * The main screens as pictures, at a phone, a tablet and a desktop width, plus
@@ -24,7 +24,7 @@ for (const size of SIZES) {
       await routeAssetHosts(page);
       const path = await resolve(page, template);
       test.skip(!path, `no instance of ${template} in the sitemap`);
-      await page.goto(path!);
+      await visit(page, path!);
       await ready(page);
       await expect(page).toHaveScreenshot(name(template, size.name), { fullPage: true, animations: 'disabled', caret: 'hide', maxDiffPixelRatio: 0.01 });
       // Regions where 1 % of a page is a whole changed element.
