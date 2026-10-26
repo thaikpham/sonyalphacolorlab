@@ -46,8 +46,12 @@ export default async function LauncherPage({
     /* `100dvh`, never `100vh` — mobile browser chrome makes `vh` overshoot and
        would push the bottom row under the address bar. `overflow-y-auto` so a
        short landscape phone can still reach the fourth tile rather than having
-       it clipped. */
-    <main className="launcher-stage flex min-h-[100dvh] w-full flex-col items-center justify-center overflow-y-auto inset-safe py-12">
+       it clipped. `overflow-x-hidden` because `overflow-y-auto` alone makes x
+       `auto` too, and each tile's glow is a rotating square: at some angles its
+       corners reach past the edge, and at 768 the stage scrolled sideways by
+       2px for part of the 18s turn (layout gate, 2026-10-24). The glow was
+       already clipped there; now it cannot be scrolled to. */
+    <main className="launcher-stage flex min-h-[100dvh] w-full flex-col items-center justify-center overflow-x-hidden overflow-y-auto inset-safe py-12">
       {/* The tiles are the page. No visible title, no tagline and no divider —
           the four icons say what this is faster than a heading does.
           `sr-only`, not deleted: a page with four `h2`s and no `h1` fails axe,

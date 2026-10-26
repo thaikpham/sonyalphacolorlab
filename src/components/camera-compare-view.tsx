@@ -437,8 +437,9 @@ export function CameraCompareView({ initialCameras, selectedIds }: CameraCompare
             a bounded panel floating over the page, but here it would stop the
             table handing the scroll back to the page at its last row. Keep the
             containment on x only, where it stops a sideways swipe becoming
-            browser back-navigation. */}
-        <div className="overflow-x-auto overscroll-x-contain max-h-[75dvh]">
+            browser back-navigation. That is `.scroll-table`, the named
+            exception the layout gate accepts. */}
+        <div className="scroll-table max-h-[75dvh]">
           <table className="w-full text-left table-fixed border-separate border-spacing-0">
             <colgroup>
               <col className="w-[15rem] min-w-[11rem]" />

@@ -106,14 +106,17 @@ export default async function ProductDetailPage({
       <main className="flex-1 w-full max-w-[110rem] mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6 flex flex-col gap-5">
         {/* Top Breadcrumb & Navigation */}
         <div className="flex items-center justify-between gap-4 pb-3">
-          <div className="flex items-center gap-2 text-meta text-ink-muted">
+          <div className="flex min-w-0 items-center gap-2 text-meta text-ink-muted">
             {/* The crumb is labelled "ColorLab", so it goes to ColorLab —
                 `/` is the launcher now and would read as a broken trail. */}
             <Link href="/colorlab" className="hover:text-accent-400 transition-colors">
               ColorLab
             </Link>
-            <span className="text-ink-faint">/</span>
-            <Link href="/cameras" className="hover:text-accent-400 transition-colors">
+            {/* Below sm the catalogue crumb is the back button beside it, and both
+                will not fit at 390 without pushing the button off screen or
+                squeezing the product's name to nothing. */}
+            <span className="hidden sm:inline text-ink-faint">/</span>
+            <Link href="/cameras" className="hidden sm:inline hover:text-accent-400 transition-colors">
               {t('title')}
             </Link>
             <span className="text-ink-faint">/</span>

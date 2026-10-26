@@ -63,12 +63,15 @@ export default async function AudioProductPage({
       {/* A reading layout, like the camera product route — not the browse grid. */}
       <main className="flex-1 w-full max-w-[86rem] mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6 flex flex-col gap-5">
         <div className="flex items-center justify-between gap-4 pb-3">
-          <div className="flex items-center gap-2 text-meta text-ink-muted">
+          <div className="flex min-w-0 items-center gap-2 text-meta text-ink-muted">
             <Link href="/colorlab" className="hover:text-accent-400 transition-colors">
               ColorLab
             </Link>
-            <span className="text-ink-faint">/</span>
-            <Link href="/audio" className="hover:text-accent-400 transition-colors">
+            {/* Below sm the catalogue crumb is the back button beside it, and both
+                will not fit at 390 without pushing the button off screen or
+                squeezing the product's name to nothing. */}
+            <span className="hidden sm:inline text-ink-faint">/</span>
+            <Link href="/audio" className="hidden sm:inline hover:text-accent-400 transition-colors">
               {t('audioTitle')}
             </Link>
             <span className="text-ink-faint">/</span>

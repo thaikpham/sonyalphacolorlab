@@ -68,3 +68,9 @@ next-env.d.ts
 # The Supabase CLI's linked-project state. Ambient, inherited, and exactly the
 # kind of implicit target `scripts/supabase/push-migrations.ts` refuses to read.
 /supabase/.temp/
+
+# Playwright: traces, reports and local visual baselines (per machine; CI
+# compares a PR with its base instead — .github/workflows/visual.yml).
+/test-results/
+/playwright-report/
+/e2e/**/*-snapshots/

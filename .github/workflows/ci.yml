@@ -16,6 +16,9 @@ on:
       - '**'
   pull_request:
 
+permissions:
+  contents: read
+
 # A second push to the same branch makes the first run irrelevant.
 concurrency:
   group: ci-${{ github.ref }}
@@ -59,9 +62,64 @@ jobs:
             exit 1
           fi
 
-      # lint + typecheck + test.
+      # lint + typecheck + test + build.
       - name: Verify
         run: npm run verify
 
-      - name: Build
-        run: npm run build
+  # The browser gates (e2e/): a fresh production build in seed mode, then
+  # layout at three widths, axe, 44px targets, CLS/JS/LCP budgets and the
+  # first-screen counts. Its own job so `verify` stays the two-minute gate a
+  # developer runs on every change; this one is what a design change waits
+  # for. One runner until a run passes eight minutes, then shard by file.
+  #
+  # Pull requests and main only: a push to a branch with an open PR fires both
+  # `push` and `pull_request`, and the gates would run twice on one tree.
+  screens:
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # The Chromium that matches the Playwright version in the lockfile.
+      - name: Install browsers
+        run: npx playwright install --with-deps chromium
+
+      # Turbopack's compiler cache, kept between runs: a run rebuilds only what
+      # changed. Only that folder. `.next/cache/fetch-cache` beside it holds the
+      # data cache (every `unstable_cache` answer), and a build reads what it
+      # finds there instead of calling the read, so a restored copy would hand
+      # this build a past run's catalogue. The Playwright web server deletes
+      # it before building anyway (playwright.config.ts); not caching it keeps
+      # the cache honest about what it holds.
+      - name: Next build cache
+        uses: actions/cache@v4
+        with:
+          path: .next/cache/turbopack
+          key: next-build-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('src/**', 'messages/**', 'packages/**', 'next.config.ts') }}
+          restore-keys: |
+            next-build-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
+
+      - name: Screens
+        run: npm run test:screens
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+
+      - name: Keep the traces of failed tests
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-screens
+          path: test-results/
+          retention-days: 7

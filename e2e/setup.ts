@@ -1,0 +1,183 @@
+/**
+ * What this project fills in for design-kit's gates (layout, wcag, targets,
+ * perf, first-screen, visual). The specs import only from here.
+ *
+ * One role. Readers sign in with Google and administrators type their own
+ * credentials plus a code from their authenticator on the control project, so
+ * nothing can be signed in from a seed; the gates walk the public site in
+ * both locales and the admin's signed-out screens (the gate itself).
+ */
+import type { Page } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+import { ADMIN_LOCALE } from '../src/lib/admin/locale';
+
+export type Role = 'visitor';
+
+/**
+ * Every template once, in English (bare path) and Vietnamese (`/vi`). A
+ * `:name` segment is resolved from the sitemap by `resolve()`; only
+ * `/learn/:knowledge` may have no instance (offline, no knowledge page is
+ * published), and it is skipped and said so — any other missing one throws. `/admin` and the edit route show the gate to a signed-out visitor.
+ */
+const TEMPLATES = [
+  '/', '/colorlab', '/colorlab?format=pp', '/colorlab/:situation', '/recipe/:recipe',
+  '/cameras', '/cameras/:camera', '/cameras/compare', '/audio', '/audio/:audio',
+  '/blog', '/blog/:article', '/blog/setup', '/blog/:article/edit',
+  '/learn', '/learn/glossary', '/learn/:knowledge',
+  '/search?q=sony', '/admin',
+];
+export const ROUTES: Record<Role, string[]> = {
+  visitor: TEMPLATES.flatMap((t) => (t.startsWith('/admin') ? [t] : [t, `/vi${t === '/' ? '' : t}`])),
+};
+
+/** The list and the detail page for the first-screen budget; the screens the visual check shoots. */
+export const SCREENS = {
+  list: '/colorlab',
+  detail: '/recipe/:recipe',
+  visual: ['/', '/colorlab', '/recipe/:recipe', '/cameras', '/cameras/:camera', '/blog', '/blog/:article', '/learn', '/vi/colorlab'],
+};
+
+/** Containers DESIGN.md §Scrollbars lets scroll sideways. Nothing else may. */
+export const EXEMPT_SCROLL = '.scroll-silent, .filter-scroll, .scroll-area, .scroll-table';
+
+/**
+ * The sitemap prefix to search and strip for each placeholder. Recipes,
+ * cameras and audio are listed bilingually (a bare-path and a `/vi/` entry
+ * per instance), so the bare prefix finds one. An article or knowledge page
+ * is authored Vietnamese-bodied on both locales (ADR 0004) and indexed ONLY
+ * at its Vietnamese canonical URL — the English route renders the same
+ * article under English chrome, not a translation of it — so those two
+ * search the `/vi/...` prefix even though the id they find is spliced back
+ * into whichever prefix the calling template already carries.
+ *
+ * `/colorlab/` lists only situation pages (`visibleSituations` in
+ * src/app/sitemap.ts, bilingual): the catalogue itself is `/colorlab` with no
+ * trailing segment, and its filtered views are query strings the sitemap
+ * leaves out, so nothing else under the prefix needs skipping.
+ */
+const PREFIX: Record<string, string> = {
+  ':situation': '/colorlab/', ':recipe': '/recipe/', ':camera': '/cameras/', ':audio': '/audio/', ':article': '/vi/blog/', ':knowledge': '/vi/learn/',
+};
+let locs: string[] | null = null;
+/**
+ * The sitemap's paths. A sitemap that does not answer, or answers with no
+ * `<loc>`, throws: read as "no instances", it would skip every detail route
+ * and every walk would pass on the static pages alone.
+ */
+async function sitemap(page: Page): Promise<string[]> {
+  if (locs) return locs;
+  const res = await page.request.get('/sitemap.xml');
+  if (!res.ok()) throw new Error(`/sitemap.xml answered ${res.status()}`);
+  const found = [...(await res.text()).matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => new URL(m[1]).pathname);
+  if (!found.length) throw new Error('/sitemap.xml lists no <loc>');
+  locs = found;
+  return locs;
+}
+
+/**
+ * The one placeholder allowed to have no instance: no knowledge page is
+ * published offline (the seed holds none), and `/learn` itself is walked.
+ * Every other template has seed instances, so a missing one is a broken
+ * sitemap or seed, not a route to skip.
+ */
+const MAY_BE_EMPTY = ':knowledge';
+
+/**
+ * `/recipe/:recipe` → `/recipe/<smallest slug in the sitemap>`. When the
+ * sitemap has no page under that prefix: null for `:knowledge` only (the
+ * caller skips and logs), and a throw for every other placeholder. Static
+ * siblings (`/blog/setup`, `/learn/glossary`, and their `/vi/` counterparts,
+ * both bilingual) are not instances. `/blog/:article` and `/vi/blog/:article`
+ * (plus the edit route) resolve from the same `/vi/blog/<id>` sitemap entry —
+ * only the id moves, so the English template keeps the English prefix.
+ */
+export async function resolve(page: Page, path: string): Promise<string | null> {
+  const key = Object.keys(PREFIX).find((k) => path.includes(k));
+  if (!key) return path;
+  const prefix = PREFIX[key];
+  const skip = new Set(['/blog/setup', '/vi/blog/setup', '/blog/admin', '/vi/blog/admin', '/learn/glossary', '/vi/learn/glossary']);
+  /* The smallest path, not the first listed. The sitemap's order is the data
+     source's: the seed file's row order offline, and whatever an unordered
+     select returned online. "First" moved to another recipe, camera and
+     headphone when a build read the live table (2026-10-24), and every budget
+     keyed by a concrete path then named a route the gates no longer walked.
+     Sorting ties the instance to the ids alone. No id is named here on
+     purpose (ci.test.ts): the sitemap decides which ones exist. */
+  const hit = (await sitemap(page))
+    .filter((p) => p.startsWith(prefix) && !skip.has(p))
+    .sort()[0];
+  if (!hit) {
+    if (key === MAY_BE_EMPTY) return null;
+    throw new Error(`no instance of ${path} in the sitemap`);
+  }
+  return path.replace(key, hit.slice(prefix.length));
+}
+
+/**
+ * The locale a first-time visitor is served at `path`: `vi` under the `/vi`
+ * segment (the whole segment: `/video` is English), `en` at every bare path
+ * (`localePrefix: 'as-needed'`, src/i18n/routing.ts). `/admin` is outside
+ * `[locale]` and names its own language (src/lib/admin/locale.ts).
+ */
+export function localeOf(path: string): 'en' | 'vi' {
+  if (/^\/admin(\/|$|\?)/.test(path)) return ADMIN_LOCALE;
+  return /^\/vi(\/|$|\?)/.test(path) ? 'vi' : 'en';
+}
+
+/**
+ * Go to `path` as a first-time visitor in that path's locale. next-intl sets
+ * a `NEXT_LOCALE` cookie on a `/vi` visit, and within the same browser
+ * context a later bare path then renders Vietnamese — so until 2026-10-26
+ * most "English" measurements in a walk were of the Vietnamese page. The
+ * cookies go first, and the document's `lang` is checked, so a walk can no
+ * longer measure one locale under the other's name.
+ */
+export async function visit(page: Page, path: string, options?: Parameters<Page['goto']>[1]) {
+  await page.context().clearCookies();
+  const res = await page.goto(path, options);
+  const want = localeOf(path);
+  const lang = await page.evaluate(() => document.documentElement.lang);
+  if (lang !== want) throw new Error(`${path}: rendered lang="${lang}", expected "${want}"`);
+  return res;
+}
+
+/** The page has settled: the network is quiet and the fonts are in. */
+export async function ready(page: Page) {
+  await page.waitForLoadState('networkidle', { timeout: 5_000 }).catch(() => {});
+  await page.evaluate(() => document.fonts.ready).catch(() => {});
+}
+
+/**
+ * Faults a walk should fail on even when the page looks fine: an uncaught
+ * error, a console error, a server answer of 500 or more. Call before the
+ * first `goto`; the returned function lists what was seen so far.
+ */
+export function watch(page: Page): () => string[] {
+  const seen: string[] = [];
+  page.on('pageerror', (e) => seen.push(`pageerror: ${e.message.slice(0, 160)}`));
+  page.on('console', (m) => {
+    if (m.type() === 'error') seen.push(`console: ${m.text().slice(0, 160)}`);
+  });
+  page.on('response', (r) => {
+    if (r.status() >= 500) seen.push(`${r.status()} ${new URL(r.url()).pathname}`);
+  });
+  return () => seen.splice(0);
+}
+
+/**
+ * The catalogue's photographs live on three hosts outside this repo. The
+ * runner's network must not decide a layout shift or an LCP, so every request
+ * to them answers with one local picture.
+ */
+// Not `import.meta.dirname`: Playwright's test loader requires this module as
+// CJS, where `import.meta` throws a hard SyntaxError before any test runs.
+// Every spec and script already assumes cwd is the repo root (e.g.
+// ci.test.ts's `existsSync('e2e/fixtures/photo.webp')`), so this does too.
+const PHOTO = readFileSync(join(process.cwd(), 'e2e', 'fixtures', 'photo.webp'));
+export async function routeAssetHosts(page: Page) {
+  await page.route(/https:\/\/(static\.bhphoto\.com|sony\.scene7\.com|www\.sony\.com\.vn)\//, (route) =>
+    route.fulfill({ status: 200, contentType: 'image/webp', body: PHOTO }),
+  );
+}

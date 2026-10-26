@@ -27,6 +27,10 @@
     "tokens:emit": "tsx packages/colorlab-tokens/src/emit.ts",
     "fonts:vendor": "node scripts/vendor-fonts.mjs",
     "design:baseline": "tsx scripts/design-baseline.ts",
+    "//test:screens": "The browser gates (e2e/): layout at 390/768/1440, axe, 44px targets, CLS/JS/LCP budgets, first-screen counts. Builds and starts a production server in seed mode on :3100 (playwright.config.ts). About 4 minutes locally (warm build cache); CI runs it as its own job beside verify.",
+    "test:screens": "playwright test",
+    "test:visual": "CL_VISUAL=1 playwright test e2e/visual.spec.ts",
+    "verify:screens": "npm run verify && npm run test:screens",
     "search:eval": "tsx scripts/search-eval.ts",
     "//capabilities:check": "Fetches the Help Guide topics src/lib/cameras/capabilities/evidence.ts cites and writes data/camera-evidence.checks.json \u2014 the only writer of that file. Needs the network, so it is not part of verify; behind a proxy run it with NODE_USE_ENV_PROXY=1.",
     "capabilities:check": "tsx scripts/check-camera-evidence.ts",
@@ -57,7 +61,9 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@electric-sql/pglite": "^0.5.4",
+    "@playwright/test": "^1.64.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^26.2.0",
     "@types/react": "^19",

@@ -4,13 +4,14 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import { TEXT } from '../../packages/colorlab-tokens/src/tokens'
-import { FLOOR_PX, REPO_ROOT, scanRepo, scanSource, tally, totals } from './floor'
+import { FLOOR_PX, REPO_ROOT, RULES, scanRepo, scanSource, tally, totals, type Baseline } from './floor'
 
 /**
  * The enforceable part of the design system.
  *
- * `DESIGN.md` carries eight audit greps and `/design-sync` runs them, but both
- * are things a person has to remember. Three of the nine rules are countable,
+ * `DESIGN.md` carried eight audit greps and `/design-sync` ran them, but both
+ * were things a person had to remember; the ten rules below replace them.
+ * Three of the design system's nine rules are countable,
  * and those three are the ones that had quietly spread to ~1,100 call sites
  * while every review passed: type under the 13px floor, a second font family,
  * and a Tailwind default palette colour in an OKLCH interface.
@@ -28,7 +29,7 @@ import { FLOOR_PX, REPO_ROOT, scanRepo, scanSource, tally, totals } from './floo
  */
 const BASELINE = JSON.parse(
   readFileSync(join(REPO_ROOT, 'src/design/floor.baseline.json'), 'utf8'),
-) as Record<string, { belowFloor: number; mono: number; palette: number }>
+) as Baseline
 
 describe('design floor', () => {
   const current = tally(scanRepo())
@@ -44,9 +45,7 @@ describe('design floor', () => {
   it('has not regressed on the totals', () => {
     const now = totals(current)
     const then = totals(BASELINE)
-    expect(now.belowFloor).toBeLessThanOrEqual(then.belowFloor)
-    expect(now.mono).toBeLessThanOrEqual(then.mono)
-    expect(now.palette).toBeLessThanOrEqual(then.palette)
+    for (const rule of RULES) expect(now[rule], rule).toBeLessThanOrEqual(then[rule])
   })
 
   /**
@@ -78,9 +77,220 @@ describe('design floor', () => {
       ['font-family: ui-monospace', 'mono'],
       ['font-family: monospace', 'mono'],
       ["font-family: 'Noto Sans Mono'", 'mono'],
+      /* The six rules that used to be DESIGN.md's greps. */
+      ['#8A9CFF', 'hex'],
+      ['color: #fff', 'hex'],
+      ['border-t-2', 'stroke'],
+      ['ring-2', 'stroke'],
+      ['outline-1', 'stroke'],
+      ['border-solid', 'stroke'],
+      ['className="eyebrow"', 'deletedVocab'],
+      ['var(--font-display)', 'deletedVocab'],
+      ['animate-radar-sweep', 'deletedVocab'],
+      ['::-webkit-scrollbar { display: none }', 'scrollbarCss'],
+      ['scrollbar-width: none', 'scrollbarCss'],
+      ['h-[38px]', 'arbitraryPx'],
+      ['text-[15px]', 'arbitraryPx'],
+      ['duration-200', 'duration'],
+      ['duration-[250ms]', 'duration'],
+      /* Tailwind v4's bare stroke classes are 1px, and DESIGN.md's grep could not see them. */
+      ['border', 'stroke'],
+      ['hover:ring', 'stroke'],
+      ['outline', 'stroke'],
+      ['not-focus-visible:ring-2', 'stroke'],
+      /* A bare side is 1px too, and `!` (either end) is the same stroke. */
+      ['border-t', 'stroke'],
+      ['border-x', 'stroke'],
+      ['border-s', 'stroke'],
+      ['hover:border-b', 'stroke'],
+      ['!border', 'stroke'],
+      ['border!', 'stroke'],
+      ['!border-t', 'stroke'],
+      ['border-l!', 'stroke'],
+      ['!border-t-2', 'stroke'],
+      ['border-b-2!', 'stroke'],
+      ['hover:!ring', 'stroke'],
+      /* A hard corner: off the 12 / 14 / 26 / 32 scale. */
+      ['rounded-none', 'hardCorner'],
+      ['rounded-t-none', 'hardCorner'],
+      ['md:!rounded-none', 'hardCorner'],
+      /* `.glass` the deleted primitive, as a class and as a selector. */
+      ['glass p-4', 'deletedVocab'],
+      ['.glass { opacity: 1 }', 'deletedVocab'],
+      /* A sentence in the next string does not excuse the class in its own. */
+      ['glass", "mist, rain and fog.', 'deletedVocab'],
     ])('flags %s as %s', (snippet, rule) => {
-      const found = scanSource(`const c = "flex ${snippet} items-center"`, 'probe.tsx')
+      // `hex` is scoped to src/components and src/app, so the probe lives there.
+      const found = scanSource(`const c = "flex ${snippet} items-center"`, 'src/components/x.tsx')
       expect(found.map((v) => v.rule)).toContain(rule)
+    })
+
+    /* A raw `transition` with a time is a stylesheet shape; the scanner reads
+       it in `.css` files, where `duration-*` classes do not occur. */
+    it('flags a transition with a time of its own in a stylesheet', () => {
+      const found = scanSource('.x { transition: opacity 0.18s ease; }', 'src/components/x.css')
+      expect(found.map((v) => v.rule)).toEqual(['duration'])
+    })
+
+    it.each([
+      ['focus-visible:ring-2', 'stroke'],
+      ['btn-glass', 'deletedVocab'],
+      ['bg-glass-raised', 'deletedVocab'],
+      ['var(--color-glass)', 'deletedVocab'],
+      /* The English word in a recipe's prose, not the deleted class: a
+         string holding a comma or a full stop is a sentence, never a class
+         list (src/lib/originals/pp.ts, merged from main 2026-10-24). */
+      ["intent: 'cool, airy and crisp — winter hills, mist, glass and concrete'", 'deletedVocab'],
+      ["description: 'A gentle knee holds reflections on plates and glass. For tables by a window.'", 'deletedVocab'],
+      ['scroll-silent', 'scrollbarCss'],
+      ['scroll-area', 'scrollbarCss'],
+      ['#about', 'hex'],
+      ['duration-(--motion)', 'duration'],
+      /* A zero width removes a stroke; it does not draw one. */
+      ['border-0', 'stroke'],
+      ['"focus-visible:outline"', 'stroke'],
+      ["style={{ border: 'none' }}", 'stroke'],
+      ['props.outline', 'stroke'],
+      ['const ring = box * 0.42', 'stroke'],
+      ["import { buildOutline } from '@/lib/lab/outline'", 'stroke'],
+      ['{outline.map((entry) => entry)}', 'stroke'],
+      ['"ring-offset-2"', 'stroke'],
+      ['"focus-visible:border-t"', 'stroke'],
+      ['"focus-visible:!border-b"', 'stroke'],
+      ['"border-t-0"', 'stroke'],
+      ['"border-collapse"', 'stroke'],
+      ['"border-separate border-spacing-2"', 'stroke'],
+      ['"border-none"', 'stroke'],
+      ['rounded-md', 'hardCorner'],
+      ['rounded-lg', 'hardCorner'],
+      ['"rounded-none-ish"', 'hardCorner'],
+      /* An HTML entity is not a colour. */
+      ['&#123;', 'hex'],
+      /* One site, one rule: a sub-floor size is belowFloor's. */
+      ['text-[10px]', 'arbitraryPx'],
+    ])('does not count %s as %s', (sample, rule) => {
+      expect(scanSource(sample, 'src/components/x.tsx').filter((v) => v.rule === rule)).toEqual([])
+    })
+
+    it.each([
+      ['.x { animation: spin 1s linear infinite; }', 'src/components/x.css'],
+      [
+        '@media (prefers-reduced-motion: no-preference) {\n  .x { transition: opacity 200ms; }\n}',
+        'packages/colorlab-tokens/src/primitives.css',
+      ],
+    ])('flags a duration of its own in %s', (source, file) => {
+      expect(scanSource(source, file).map((v) => v.rule)).toEqual(['duration'])
+    })
+
+    it.each(['.x { border-radius: 0; }', '.x { border-radius: 0px }', '.x { border-top-left-radius:0 }', ':root { --radius: 0; }'])(
+      'flags a zero radius in a stylesheet: %s',
+      (source) => {
+        expect(scanSource(source, 'src/components/x.css').map((v) => v.rule)).toEqual(['hardCorner'])
+      },
+    )
+
+    it.each([
+      '.x { border-radius: 0.5rem; }',
+      '.x { border-radius: .5rem; }',
+      '.x { border-radius: var(--radius-md); }',
+      '.x { border-radius: 14px; }',
+      '.x { --radius-sm: 12px; }',
+    ])('does not flag a real radius in a stylesheet: %s', (source) => {
+      expect(scanSource(source, 'src/components/x.css').filter((v) => v.rule === 'hardCorner')).toEqual([])
+    })
+
+    it('does not read a CSS property or transition target as a bare stroke', () => {
+      const source = '.x { border: 3px solid transparent; transition: border 0.2s; }'
+      expect(scanSource(source, 'src/app/globals.css').filter((v) => v.rule === 'stroke')).toEqual([])
+    })
+
+    /* `comment:` blanking is the token source's alone. Anywhere else a
+       `comment: '` would swallow real code up to the next quote. */
+    it('reads the code after a comment: inside a line comment', () => {
+      const source = "// reviewer's comment: 'needs work\nconst c = \"text-xs border-2\"\nconst d = 'y'"
+      expect(scanSource(source, 'src/components/x.tsx').map((v) => v.rule).sort()).toEqual([
+        'belowFloor',
+        'stroke',
+      ])
+    })
+
+    it('reads a comment: key in a component', () => {
+      const found = scanSource("const o = { comment: 'text-xs', cls: 'text-xs' }", 'src/components/x.tsx')
+      expect(found.map((v) => v.rule)).toEqual(['belowFloor', 'belowFloor'])
+    })
+
+    it('counts glass as an object key in a component', () => {
+      const found = scanSource('cond({ glass: open })', 'src/components/x.tsx')
+      expect(found.map((v) => v.rule)).toEqual(['deletedVocab'])
+    })
+
+    it.each(['src/components/icon.tsx', 'src/app/apple-icon.tsx'])(
+      'counts a hex in %s (not a file DESIGN.md names)',
+      (file) => {
+        expect(scanSource('fill="#07080B"', file).map((v) => v.rule)).toEqual(['hex'])
+      },
+    )
+
+    it('counts a stroke beside a focus-visible one on the same line', () => {
+      const found = scanSource('"border-2 focus-visible:ring-2"', 'src/components/x.tsx')
+      expect(found.filter((v) => v.rule === 'stroke').map((v) => v.text)).toEqual(['border-2'])
+    })
+
+    it.each([
+      ['src/app/icon.tsx', '#07080B', 'hex'],
+      ['src/app/opengraph-image.tsx', '#07080B', 'hex'],
+      ['src/app/manifest.ts', '#07080B', 'hex'],
+      ['src/components/auth-context.tsx', 'themeColor: "#07080B"', 'hex'],
+      [
+        'src/components/auth-context.tsx',
+        'export function GoogleMark() {\n  return <path fill="#4285F4" />\n}',
+        'hex',
+      ],
+      ['src/app/globals.css', '::-webkit-scrollbar { width: 6px }', 'scrollbarCss'],
+      ['src/app/globals.css', 'transition: opacity 0.18s ease', 'duration'],
+      ['src/lib/camera/color.ts', '#8A9CFF', 'hex'],
+      ['src/app/[locale]/recipe/[slug]/opengraph-image.tsx', '#07080B', 'hex'],
+      [
+        'packages/colorlab-tokens/src/primitives.css',
+        '@media (prefers-reduced-motion: reduce) {\n  * { transition-duration: 0.01ms !important; }\n}',
+        'duration',
+      ],
+      ['packages/colorlab-tokens/src/tokens.ts', "tokens: {\n  glass: 'oklch(100% 0 0 / 0.05)',\n}", 'deletedVocab'],
+      ['src/app/recipe-page.test.ts', "it('puts no eyebrow over the heading', () => {})", 'deletedVocab'],
+    ])('does not count %s in %s (DESIGN.md names the exception)', (file, sample, rule) => {
+      expect(scanSource(sample, file).filter((v) => v.rule === rule)).toEqual([])
+    })
+
+    it('still counts a transition after the reduced-motion block closes', () => {
+      const source =
+        '@media (prefers-reduced-motion: reduce) {\n  * { transition-duration: 0.01ms; }\n}\n' +
+        '.x { transition: opacity 200ms; }'
+      const found = scanSource(source, 'packages/colorlab-tokens/src/primitives.css')
+      expect(found.map((v) => [v.rule, v.line])).toEqual([['duration', 4]])
+    })
+
+    /* `TokenGroup.comment` is the token source's documentation, emitted as a
+       CSS comment. It names the sizes, families and words the rules ban. */
+    it('ignores the pattern inside a comment: property', () => {
+      const source =
+        "export const TEXT = {\n  comment:\n    'fails on text-[9px] and --font-mono\\n' +\n" +
+        "    'and the three glass layers.',\n  tokens: { meta: '0.8125rem' },\n}"
+      expect(scanSource(source, 'packages/colorlab-tokens/src/tokens.ts')).toEqual([])
+    })
+
+    it('reads the code after a comment: property', () => {
+      const source = "const g = {\n  comment: 'about text-xs',\n  cls: 'text-xs',\n}"
+      expect(scanSource(source, 'packages/colorlab-tokens/src/tokens.ts').map((v) => [v.rule, v.line])).toEqual([
+        ['belowFloor', 3],
+      ])
+    })
+
+    it('counts a hex in the component after GoogleMark', () => {
+      const source =
+        'export function GoogleMark() {\n  return <path fill="#4285F4" />\n}\n' +
+        'export function Other() {\n  return <path fill="#123456" />\n}'
+      const found = scanSource(source, 'src/components/auth-context.tsx')
+      expect(found.filter((v) => v.rule === 'hex').map((v) => v.text)).toEqual(['#123456'])
     })
 
     it.each([

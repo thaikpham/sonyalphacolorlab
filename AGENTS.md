@@ -22,6 +22,8 @@ npm run typecheck      # tsc --noEmit
 npm run seed:emit      # regenerate data/*.seed.json (merges data/translations.vi.json)
 npm run push:supabase -- --target content   # add missing rows; never overwrites without --overwrite (needs a secret key)
 npm run supabase:health -- --target control # is a project actually answering?
+npm run test:screens   # browser gates (e2e/): fresh seed-mode build on :3100, about 4 minutes locally (warm build cache) — CI runs it as its own job
+npm run verify:screens # verify + test:screens, before a PR that touches the screen
 ```
 
 Supabase is optional: with no credentials the app reads `data/*.seed.json`, so it
@@ -663,3 +665,14 @@ one, the recipe route resolves it.
   found only when an unrelated `npm run verify` went from 0 lint errors to
   1,228. Check `git status` when a workflow returns, before believing its
   report.
+- **Gates measure; budgets only go down.** `e2e/budgets.json`, the numbers in
+  `e2e/perf.spec.ts` and `e2e/first-screen.spec.ts`, and
+  `src/design/floor.baseline.json` are measurements with a date. Lower one in
+  the same PR as the fix; never raise one; a gate that blocks a good change is
+  fixed in that PR with the reason. Check `echo $?` after `npm run lint` and
+  never pipe it inside an `&&` chain; the gates pin `timezoneId: 'UTC'`; a
+  screenshot or a count from a stale build decides nothing — rebuild; when one
+  browser gate fails, run the whole `test:screens` (specs share the server).
+  Counts are exact matches, so a drop you did not record is red too. After
+  `test:screens`, `.next/cache/fetch-cache` holds seed answers: clear it (or
+  rebuild) before trusting a local live `next start`.

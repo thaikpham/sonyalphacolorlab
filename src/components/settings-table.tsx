@@ -122,7 +122,7 @@ export function ParamRow({
   }
 
   return (
-    <details className={`group ${ROW_BOX}`}>
+    <details className={`param-row group ${ROW_BOX}`}>
       <summary className={`${ROW_TRACKS} cursor-pointer list-none marker:content-none`}>
         <span className="flex items-baseline gap-1.5">
           <span
