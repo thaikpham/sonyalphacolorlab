@@ -67,12 +67,15 @@ export default async function AudioProductPage({
             <Link href="/colorlab" className="hover:text-accent-400 transition-colors">
               ColorLab
             </Link>
-            <span className="text-ink-faint">/</span>
-            <Link href="/audio" className="hover:text-accent-400 transition-colors">
+            {/* Below sm the catalogue crumb is the back button beside it, and both
+                will not fit at 390 without pushing the button off screen or
+                squeezing the product's name to nothing. */}
+            <span className="hidden sm:inline text-ink-faint">/</span>
+            <Link href="/audio" className="hidden sm:inline hover:text-accent-400 transition-colors">
               {t('audioTitle')}
             </Link>
             <span className="text-ink-faint">/</span>
-            <span className="min-w-0 truncate text-ink font-semibold">{product.name}</span>
+            <span className="text-ink font-semibold">{product.name}</span>
           </div>
 
           <Link href="/audio" className="btn-glass inline-flex items-center gap-1.5 shrink-0">
