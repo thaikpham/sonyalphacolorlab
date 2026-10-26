@@ -304,7 +304,7 @@ describe('white balance summary', () => {
   });
 
   it('keeps a neutral amber–blue reading from denying the tint it then adds', () => {
-    // SCL-CL-021 and Mojave Sun: "not from the white balance", then a magenta
+    // CL-021 and Mojave Sun: "not from the white balance", then a magenta
     // tint that IS the white balance.
     for (const shift of [
       { ab: { axis: 'B', amount: 2.5 }, gm: { axis: 'M', amount: 5 } },

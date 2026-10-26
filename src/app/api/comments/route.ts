@@ -7,6 +7,7 @@ import { readJsonBody } from '@/lib/community/request';
 import { COMMENT_COLUMNS } from '@/lib/community/columns';
 import { hasContentConfig } from '@/lib/supabase/server';
 import { publishedRecipeExists } from '@/lib/recipes/existence';
+import { slugAliases } from '@/lib/recipes/slug-aliases';
 
 /**
  * PostgREST rejects with a plain object, not an Error, so `String(err)` gave
@@ -44,7 +45,7 @@ export type CommentItem = {
 const memoryComments: CommentItem[] = [
   {
     id: 'seed-comment-1',
-    recipeSlug: 'daylight-cinema',
+    recipeSlug: 'pp-027-vivid-daylight-cinema',
     authorName: 'Minh Tuấn',
     authorAvatar: 'https://ui-avatars.com/api/?name=Minh+Tuan&background=0D8ABC&color=fff',
     content: 'Công thức này chụp phố chiều nắng vàng rất mượt! Mình tăng Shift A lên 1 nấc nữa thấy tông da sáng ấm hẳn.',
@@ -52,7 +53,7 @@ const memoryComments: CommentItem[] = [
   },
   {
     id: 'seed-comment-2',
-    recipeSlug: 'daylight-cinema',
+    recipeSlug: 'pp-027-vivid-daylight-cinema',
     authorName: 'Hải Yến',
     authorAvatar: 'https://ui-avatars.com/api/?name=Hai+Yen&background=E91E63&color=fff',
     content: 'Skintone chụp chân dung lên mượt và tự nhiên lắm. Cảm ơn tác giả nhiều!',
@@ -69,7 +70,8 @@ export async function GET(request: Request) {
   }
 
   if (!hasControlConfig()) {
-    const filtered = memoryComments.filter((c) => c.recipeSlug === slug);
+    const aliases = slugAliases(slug);
+    const filtered = memoryComments.filter((c) => aliases.includes(c.recipeSlug));
     return NextResponse.json({ comments: filtered, source: 'memory' });
   }
 
@@ -80,7 +82,9 @@ export async function GET(request: Request) {
          endpoint is public and unauthenticated. */
       .from('recipe_comments')
       .select(COMMENT_COLUMNS)
-      .eq('recipe_slug', slug)
+      /* Every spelling the recipe's slug has had: the two planes migrate at
+         different times, and a comment keeps the slug it was written under. */
+      .in('recipe_slug', slugAliases(slug))
       .order('created_at', { ascending: false })
       .limit(COMMENT_LIST_LIMIT);
 

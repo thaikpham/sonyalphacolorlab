@@ -49,7 +49,7 @@ vi.mock('@/lib/ai/tweak', () => ({ tweakRecipe }));
 const { POST } = await import('./tweak/route');
 const { resetRateLimits } = await import('@/lib/ai/rate-limit');
 
-const BODY = { slug: 'mojave-sun', request: 'warmer please', locale: 'en' };
+const BODY = { slug: 'pp-001-vivid-nostalgia-film', request: 'warmer please', locale: 'en' };
 
 const post = (as: string | null = 'reader@example.com', body: unknown = BODY) =>
   POST(
@@ -66,7 +66,7 @@ const post = (as: string | null = 'reader@example.com', body: unknown = BODY) =>
 beforeEach(() => {
   resetRateLimits();
   tweakRecipe.mockClear();
-  state.recipe = { slug: 'mojave-sun' };
+  state.recipe = { slug: 'pp-001-vivid-nostalgia-film' };
   state.recipeThrows = null;
   state.controlDown = false;
   vi.unstubAllEnvs();

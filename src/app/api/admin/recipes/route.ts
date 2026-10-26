@@ -19,7 +19,7 @@ import {
  * Until now the only thing in the repository that could write a recipe was
  * `scripts/push-supabase.ts`, run from a laptop with a secret key. The app
  * itself had no `/api/admin/recipes`, no admin read that could see a draft,
- * and no allocator for the `SCL-PP-###` id space.
+ * and no allocator for the `PP-###` id space.
  *
  * Gated by `adminGate(request)` on both verbs, before the body is parsed and
  * before any content client is opened, so an unauthorised request costs

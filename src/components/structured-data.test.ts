@@ -16,7 +16,7 @@ vi.mock('next-intl/server', () => ({ getTranslations: async () => (key: string) 
 const { RecipeStructuredData, SiteStructuredData } = await import('./structured-data');
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
-const recipe = (seed as unknown as RecipeView[]).find((r) => r.slug === 'mojave-sun')!;
+const recipe = (seed as unknown as RecipeView[]).find((r) => r.slug === 'pp-001-vivid-nostalgia-film')!;
 
 /** Every `<script type="application/ld+json">` body, parsed. */
 const blocks = (html: string) =>

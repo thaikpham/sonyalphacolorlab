@@ -3,9 +3,10 @@ import { z } from 'zod';
 import { checkRateLimit } from '@/lib/ai/rate-limit';
 import { hasContentConfig, hasControlConfig, controlAdmin, controlRead } from '@/lib/supabase/server';
 import { publishedRecipeExists } from '@/lib/recipes/existence';
+import { slugAliases } from '@/lib/recipes/slug-aliases';
 import { COMMUNITY_ERRORS, communityErrorBody, outageErrorCode } from '@/lib/community/errors';
 import { requireUser, UNAUTHENTICATED, type AuthedUser } from '@/lib/auth/require-user';
-import { MAX_PHOTOS_PER_RECIPE, clientKey } from '@/lib/community/gallery';
+import { MAX_PHOTOS_PER_RECIPE, clientKey, photoInGallery } from '@/lib/community/gallery';
 import {
   EXPIRING_IMAGE_HOST_ISSUE,
   httpsImageUrlSchema,
@@ -62,7 +63,8 @@ export async function GET(req: Request) {
     const { data, error } = await controlRead()
       .from('community_photos')
       .select(PHOTO_COLUMNS)
-      .eq('recipe_slug', parsed.data)
+      /* Every spelling the recipe's slug has had (`slug-aliases.ts`). */
+      .in('recipe_slug', slugAliases(parsed.data))
       .order('created_at', { ascending: false })
       .limit(MAX_PHOTOS_PER_RECIPE);
 
@@ -161,10 +163,20 @@ export async function POST(req: Request) {
   try {
     const db = controlAdmin();
 
+    /* Already here, hidden or not, under either spelling of the slug: the
+       answer a 23505 gets. The unique key alone no longer catches a hidden
+       link sent again under the recipe's other slug (`photoInGallery`). */
+    const dup = await photoInGallery(db, body.slug, body.imageUrl);
+    if (dup.error) throw new Error(dup.error.message);
+    if (dup.taken) {
+      return NextResponse.json({ ok: true, saved: true, duplicate: true });
+    }
+
     const { count, error: countError } = await db
       .from('community_photos')
       .select('id', { count: 'exact', head: true })
-      .eq('recipe_slug', body.slug);
+      /* The cap is the recipe's, whichever spelling its photos were sent under. */
+      .in('recipe_slug', slugAliases(body.slug));
     if (countError) throw new Error(countError.message);
 
     if ((count ?? 0) >= MAX_PHOTOS_PER_RECIPE) {

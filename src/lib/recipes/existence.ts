@@ -1,6 +1,7 @@
 import 'server-only';
 import { contentRead } from '@/lib/supabase/server';
 import { ContentUnavailableError } from '@/lib/supabase/errors';
+import { slugAliases } from './slug-aliases';
 
 /**
  * Does a published recipe with this slug exist — asked of the content plane.
@@ -23,26 +24,29 @@ import { ContentUnavailableError } from '@/lib/supabase/errors';
  * recipe had been deleted.
  *
  * Slugs are immutable for exactly this reason; see the design note on hard
- * deletion being blocked while operational rows still reference one.
+ * deletion being blocked while operational rows still reference one. The one
+ * change they had — following the name, 2026-10-24 — keeps every former
+ * spelling live: the probe asks for any of `slugAliases(slug)`, so a page read
+ * under either spelling can be written to while the planes disagree (S9).
  */
 export async function publishedRecipeExists(slug: string): Promise<boolean> {
   const { data, error } = await contentRead()
     .from('recipes')
     .select('id')
-    .eq('slug', slug)
+    .in('slug', slugAliases(slug))
     .eq('published', true)
-    .maybeSingle();
+    .limit(1);
 
   if (error) {
     console.error('[content] recipes.exists failed:', error.message);
     throw new ContentUnavailableError('recipes.exists');
   }
-  return data !== null;
+  return Array.isArray(data) && data.length > 0;
 }
 
 /**
  * The same probe, answering with the recipe's format instead of a boolean —
- * `null` when no published recipe has that slug.
+ * `null` when no published recipe has that slug under any spelling.
  *
  * A proposal's settings are validated against the format of the recipe they
  * propose to change: Picture Profile and Creative Look are mutually exclusive
@@ -54,16 +58,17 @@ export async function publishedRecipeFormat(slug: string): Promise<'pp' | 'cl' |
   const { data, error } = await contentRead()
     .from('recipes')
     .select('format')
-    .eq('slug', slug)
+    .in('slug', slugAliases(slug))
     .eq('published', true)
-    .maybeSingle();
+    .limit(1);
 
   if (error) {
     console.error('[content] recipes.format failed:', error.message);
     throw new ContentUnavailableError('recipes.format');
   }
-  if (data === null) return null;
-  const format = (data as { format?: unknown }).format;
+  const row = Array.isArray(data) ? data[0] : undefined;
+  if (row === undefined) return null;
+  const format = (row as { format?: unknown }).format;
   if (format === 'pp' || format === 'cl') return format;
   /* A value outside the enum is not a recipe this code can validate against,
      and guessing a format would accept settings for the wrong one. */

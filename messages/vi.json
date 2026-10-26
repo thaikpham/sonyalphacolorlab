@@ -17,6 +17,7 @@
     "tone": "Tông",
     "clear": "Xoá bộ lọc",
     "filtersLabel": "Bộ lọc",
+    "moreFor": "Công thức {situation} khác",
     "metaDescription": "Công thức màu {situation} cho Sony Alpha: White Balance Shift đi cùng Picture Profile hoặc Creative Look, áp dụng thẳng vào máy ảnh.",
     "situations": {
       "portrait": "Chân dung",
@@ -42,6 +43,15 @@
       "cool": "Lạnh",
       "mono": "Đen trắng"
     }
+  },
+  "myCamera": {
+    "label": "Máy ảnh",
+    "choose": "Chọn máy",
+    "older": "Máy đời cũ khác (menu Creative Style)",
+    "unknown": "Không rõ / bỏ qua",
+    "olderSubject": "Máy đời cũ",
+    "lacks": "{camera} không có {label}",
+    "mayLack": "{camera} có thể không có {label}"
   },
   "palette": {
     "label": "Bảng màu {tone}, {style}",
@@ -690,6 +700,24 @@
       "idSpaceExhausted": "Đã dùng hết 999 mã cho định dạng này. Chưa có gì được tạo.",
       "staleEdit": "Công thức này vừa được lưu ở nơi khác. Chưa có gì thay đổi — mở lại công thức để tải bản mới nhất rồi sửa tiếp.",
       "mfaRequired": "Phiên này cần nhập lại mã authenticator. Chưa có gì thay đổi — hãy tải lại trang để hoàn tất đăng nhập."
+    },
+    "photos": {
+      "title": "Ảnh cộng đồng",
+      "count": "{n, plural, other {# ảnh}}",
+      "hiddenCount": "{n} đang ẩn",
+      "hint": "Ẩn sẽ gỡ ảnh khỏi trang công thức ngay lập tức. Không có gì bị xoá, nên có thể hiện lại.",
+      "loading": "Đang tải…",
+      "empty": "Công thức này chưa có ảnh cộng đồng.",
+      "alt": "Ảnh cộng đồng",
+      "imageFailed": "Ảnh không tải được",
+      "visible": "Đang hiện",
+      "hidden": "Đã ẩn",
+      "hide": "Ẩn",
+      "show": "Hiện lại",
+      "errors": {
+        "notConfigured": "Ảnh cộng đồng chưa được cấu hình trên bản triển khai này.",
+        "notFound": "Ảnh này không còn nữa."
+      }
     }
   },
   "loading": {

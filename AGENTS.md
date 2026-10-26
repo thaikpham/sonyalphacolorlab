@@ -253,7 +253,7 @@ data/               recipes.seed.json (generated — never hand-edit)
 The catalogue is three libraries in one table: the ten Picture Profile recipes
 kept from sonycolorlab, ColorLab's own originals (`src/lib/originals/pp.ts`
 and `cl.ts`, both formats), and Creative Look recipes imported from a scrape of
-Sony's Alpha Recipes microsite. The originals share the `SCL-CL-` sequence with
+Sony's Alpha Recipes microsite. The originals share the `CL-` sequence with
 the scrape, so `emit-seed` passes their ids to the importer as reserved. The
 first and last come from **untrusted input parsed against `constants.ts`** —
 `LEGACY_CORRECTIONS` and `SCRAPE_CORRECTIONS` record every fix by name and
@@ -307,9 +307,26 @@ Do not write App Router code from memory. Read the relevant file first:
   Never translated. A temperature word must agree with the recipe's tone
   (Warm, Golden, Amber ⇒ warm; Cool ⇒ cool; Mono, Sepia ⇒ mono), names and
   word sets are unique; `names.test.ts` and `emit-seed` refuse anything else.
-  The legacy and Sony Asia rows take their names from `RECIPE_NAMES`; ids and
-  slugs did not change, and search reads the slug, so a former name ("mojave
-  sun") and an original's place ("da lat") still find the recipe.
+  The legacy and Sony Asia rows take their names from `RECIPE_NAMES`.
+- **Ids and slugs follow the code.** The id is `PP-048` (`RECIPE_ID_RE`), the
+  slug `slugFor(name)`, `pp-048-soft-clean-portrait`. URLs carry slugs, so the
+  old `SCL-` prefix had no SEO weight to keep. The slugs the seed recipes had
+  before 2026-10-24 are frozen in `data/slug-moves/2026-10-24.json` with the
+  two migrations that rename them (`SLUG_MOVES` in `slug-moves.ts`);
+  `data/former-slugs.json` is the union of the batches, written by `seed:emit`,
+  never hand-edited. A recipe born after has no former slug, whatever its
+  source spells. Renaming a moved recipe is a new batch — a frozen list, a
+  migration per plane carrying exactly it, an entry in `SLUG_MOVES` —
+  `seed:emit` refuses it until then, and `migration-roots.test.ts` checks each
+  batch against its own two files.
+  Code never assumes the content plane has been migrated: ids are read through
+  `RECIPE_ID_TRANSITION_RE` / `recipeIdKey`; the recipe page, its OG image and
+  `/api/tweak` find a slug through `resolveRecipeSlug()` (308 from a former
+  slug to the current one, 307 the other way, never a static redirect in
+  `next.config.ts`); and every control-plane read keyed by `recipe_slug` uses
+  `.in('recipe_slug', slugAliases(slug))`, permanently — a row written while
+  the planes disagreed keeps its spelling. Search indexes both spellings, so a
+  former name ("mojave sun") and an original's place ("da lat") still find it.
 - **No recipe carries a photograph.** Pictures come only from readers: Google
   sign-in, an image URL, `community_photos` on the control plane, shown in the
   recipe's grid and lightbox. There is no primary photograph, no admin upload
@@ -317,6 +334,14 @@ Do not write App Router code from memory. Read the relevant file first:
   `recipe-uploads` bucket remain only because migrations are history. A
   contribution must decode at ≥ 320px wide before it can be sent, and signed
   social-CDN links that expire (`EXPIRING_IMAGE_HOSTS`) are refused.
+  Moderation lives in `/admin/colorlab` through `/api/admin/community-photos`
+  (`adminGate()`, then `controlAdmin()`): hiding sets `approved = false` and
+  never deletes; the public read stays on `controlRead()` and leaves the filter
+  to RLS, because anon is granted no `approved` column to filter with. A
+  proposal's sample is the same URL in a second table, so `/api/proposals`
+  drops any sample that matches a hidden row (`withoutHiddenSamples`, read with
+  `controlAdmin()`, unknown fails closed). Anything new that draws a reader's
+  URL must do the same.
 - **The thumbnail is the palette.** `paletteFor()` (`src/lib/camera/palette.ts`)
   grades nine swatches — a neutral ramp and six hues — from the recipe's own
   settings in Sony's documented directions. It is a reading of the settings,
@@ -355,8 +380,8 @@ Profile or Creative Look, was added on 2026-10-24). The rules:
   sit above the route that refuses (`next-boundaries.test.ts`).
 - **Filter in the page after one unfiltered `listRecipes(locale)`.** Nothing
   new goes into the `catalogueCache` key. The browse row is a server component
-  of `<Link>`s with facet counts; only the header's search box is client code,
-  and it builds its URL with `colorlabSearch()` so a typed query keeps the
+  of `<Link>`s with facet counts; only the header's search box and the camera
+  picker are client code, and the search box builds its URL with `colorlabSearch()` so a typed query keeps the
   chosen colour system, style and tone and the current pathname.
 - **Tags stay in the data for search and are not shown (D9).** `?look=` and
   `?tag=` are still honoured by `matchesLegacyFilters` for one release, then
@@ -365,6 +390,32 @@ Profile or Creative Look, was added on 2026-10-24). The rules:
   and `recipeDoc`, so "cafe", "chân dung", "phim" and "đen trắng" are tag hits
   in one engine; new eval queries are labelled from the manifest, never from
   the ranker's output.
+
+## My camera
+
+A reader names their camera once and the catalogue stops showing what it
+cannot install (ADR 0006). The rules:
+
+- **Cookie, never URL.** `colorlab-camera` holds a model code (`ILCE-7M3`) or
+  `older-creative-style`, written only by the `chooseMyCamera` Server
+  Function. A shared link must not apply the sender's camera, so it is not in
+  the path, the query string or the `catalogueCache` key: the browse pages read
+  `cookies()` and filter after the one unfiltered `listRecipes(locale)`, counts
+  included. The recipe page stays prerendered — its warning line is a client
+  island that looks the browser's cookie up in `cameraWarnings()`, computed at
+  build — which is why the cookie is not `httpOnly`. Never call `cookies()`
+  there.
+- **Evidence only.** What a body lacks comes from `installability()` over the
+  checked Help Guide claims in `src/lib/cameras/capabilities/`, never from a
+  table typed here. A list counts only when complete; Creative Style means no
+  Creative Look (the owner's rule, in `installable.ts` alone); the generic
+  older camera hides Creative Look and only *warns* about what no checked
+  Creative Style body has (S-Cinetone, 709tone).
+- **No data shows all.** An unknown, malformed or uncatalogued value is no
+  camera, and a catalogue camera without checked claims hides nothing.
+- **`npm run capabilities:check` is the gate.** Adding a body means adding its
+  sources to `evidence.ts` and running it; a claim the live page no longer
+  confirms drops out, and the recipes it hid come back.
 
 ## Design
 
@@ -489,8 +540,10 @@ integration. Never connect one**: with this layout the only migrations folder it
 can read is the control root's, which is how control 0001–0016 ran on content
 and how control 0016 reached it mid-build on 2026-10-05. Apply a content
 migration by hand with `npm run supabase:migrations -- --target content
---apply`, before merging the code that reads it, and name it with a 14-digit
-timestamp: control owns the four-digit numbers. The control check does not gate
+--apply` — before merging code that needs its result, or after deploying code
+that must already tolerate it, as `20261024000000` must (the code before it
+cannot read the ids it writes) — and name it with a 14-digit timestamp:
+control owns the four-digit numbers. The control check does not gate
 Vercel. Steps are in the runbook.
 
 ## Who the caller is
@@ -595,7 +648,9 @@ Also: `<details>` is not valid inside `<dl>`, and heading levels must not skip
 The old site addressed recipes by **query parameter** (`/?id=scl-001`), not by
 path — that is the shape of every link already shared in Facebook groups. The
 redirect map in `next.config.ts` matches on the query param and is generated from
-`legacyId` in the seed. A path-based map would catch nothing, silently.
+`legacyId` in the seed. A path-based map would catch nothing, silently. Its
+destinations are current slugs; on a content plane that still holds the former
+one, the recipe route resolves it.
 
 ## Working style
 

@@ -17,6 +17,7 @@
     "tone": "Tone",
     "clear": "Clear filters",
     "filtersLabel": "Filters",
+    "moreFor": "More for {situation}",
     "metaDescription": "{situation} colour recipes for Sony Alpha: White Balance Shift paired with a Picture Profile or a Creative Look, ready to dial into the camera.",
     "situations": {
       "portrait": "Portrait",
@@ -42,6 +43,15 @@
       "cool": "Cool",
       "mono": "Black & white"
     }
+  },
+  "myCamera": {
+    "label": "Camera",
+    "choose": "Choose camera",
+    "older": "Other older camera (Creative Style menu)",
+    "unknown": "Unknown / skip",
+    "olderSubject": "An older camera",
+    "lacks": "{camera} has no {label}",
+    "mayLack": "{camera} may have no {label}"
   },
   "palette": {
     "label": "{tone}, {style} palette",
@@ -690,6 +700,24 @@
       "idSpaceExhausted": "All 999 ids for this format are used. Nothing was created.",
       "staleEdit": "This recipe was saved somewhere else since you opened it. Nothing was changed — reopen it to load the latest version, then edit again.",
       "mfaRequired": "This session needs your authenticator code again. Nothing was changed — reload the page to finish signing in."
+    },
+    "photos": {
+      "title": "Community photos",
+      "count": "{n, plural, one {# photo} other {# photos}}",
+      "hiddenCount": "{n} hidden",
+      "hint": "Hiding takes a photo off the recipe page at once. Nothing is deleted, so it can be shown again.",
+      "loading": "Loading…",
+      "empty": "No community photos on this recipe.",
+      "alt": "Community photo",
+      "imageFailed": "The image did not load",
+      "visible": "Visible",
+      "hidden": "Hidden",
+      "hide": "Hide",
+      "show": "Show again",
+      "errors": {
+        "notConfigured": "Community photos are not configured on this deployment.",
+        "notFound": "That photo no longer exists."
+      }
     }
   },
   "loading": {

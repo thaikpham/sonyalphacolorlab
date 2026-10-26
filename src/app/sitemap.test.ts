@@ -40,7 +40,7 @@ describe('sitemap', () => {
   });
 
   it('declares both locales for a bilingual page', () => {
-    const recipe = entries.find((e) => e.url.endsWith('/recipe/mojave-sun'));
+    const recipe = entries.find((e) => e.url.endsWith('/recipe/pp-001-vivid-nostalgia-film'));
     expect(Object.keys(recipe?.alternates?.languages ?? {})).toEqual(['en', 'vi']);
   });
 

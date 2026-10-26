@@ -24,8 +24,8 @@ const page = (id: string, kind: Article['kind'], meta: Partial<ArticleMeta> = {}
 })
 
 const recipes = [
-  { id: 'SCL-PP-001', slug: 'mojave-sun', name: 'SCL-PP-001: Mojave Sun', format: 'pp' as const, wbLabel: '5600K, A2' },
-  { id: 'SCL-CL-001', slug: 'film-look', name: 'SCL-CL-001: Film Look', format: 'cl' as const, wbLabel: 'AWB', look: 'FL' },
+  { id: 'PP-001', slug: 'pp-001-vivid-nostalgia-film', name: 'PP-001-Vivid Nostalgia Film', format: 'pp' as const, wbLabel: '5600K, A2' },
+  { id: 'CL-001', slug: 'cl-001-film-hard-faded', name: 'CL-001-Film Hard Faded', format: 'cl' as const, wbLabel: 'AWB', look: 'FL' },
 ]
 const products = [
   { id: 'sony-ilce-7m4-bq-ap2', name: '7 IV', fullName: 'Sony 7 IV (ILCE-7M4/BQ AP2)', sku: 'ILCE-7M4/BQ AP2', category: 'camera' },
@@ -39,8 +39,8 @@ describe('resolveRefs', () => {
   it('renders each kind at its own route', () => {
     const links = resolveRefs(
       [
-        { kind: 'recipe', id: 'SCL-PP-001' },
-        { kind: 'recipe', id: 'SCL-CL-001' },
+        { kind: 'recipe', id: 'PP-001' },
+        { kind: 'recipe', id: 'CL-001' },
         { kind: 'product', id: 'sony-ilce-7m4-bq-ap2' },
         { kind: 'product', id: 'sony-wh-1000xm6' },
         { kind: 'knowledge', id: 'wb-shift' },
@@ -49,8 +49,8 @@ describe('resolveRefs', () => {
       universe,
     )
     expect(links.map((l) => l.href)).toEqual([
-      '/recipe/mojave-sun',
-      '/recipe/film-look',
+      '/recipe/pp-001-vivid-nostalgia-film',
+      '/recipe/cl-001-film-hard-faded',
       '/cameras/sony-ilce-7m4-bq-ap2',
       '/audio/sony-wh-1000xm6',
       '/learn/wb-shift',
@@ -72,7 +72,7 @@ describe('resolveRefs', () => {
     const links = resolveRefs(
       [
         { kind: 'article', id: 'unpublished-draft' },
-        { kind: 'recipe', id: 'SCL-PP-099' },
+        { kind: 'recipe', id: 'PP-099' },
         { kind: 'product', id: 'sony-not-a-product' },
       ],
       universe,
@@ -89,13 +89,13 @@ describe('resolveRefs', () => {
   it('keeps authored order and drops repeats', () => {
     const links = resolveRefs(
       [
-        { kind: 'recipe', id: 'SCL-CL-001' },
-        { kind: 'recipe', id: 'SCL-PP-001' },
-        { kind: 'recipe', id: 'SCL-CL-001' },
+        { kind: 'recipe', id: 'CL-001' },
+        { kind: 'recipe', id: 'PP-001' },
+        { kind: 'recipe', id: 'CL-001' },
       ],
       universe,
     )
-    expect(links.map((l) => l.id)).toEqual(['SCL-CL-001', 'SCL-PP-001'])
+    expect(links.map((l) => l.id)).toEqual(['CL-001', 'PP-001'])
   })
 
   it('resolves prerequisites of either page kind', () => {
@@ -107,13 +107,13 @@ describe('resolveRefs', () => {
 })
 
 describe('reverse links', () => {
-  const a = page('a', 'article', { related: [{ kind: 'recipe', id: 'SCL-PP-001' }] })
+  const a = page('a', 'article', { related: [{ kind: 'recipe', id: 'PP-001' }] })
   const b = page('b', 'knowledge', { related: [{ kind: 'product', id: 'sony-ilce-7m4-bq-ap2' }] })
 
   it('finds the pages that name a target', () => {
-    expect(entriesReferencing({ kind: 'recipe', id: 'SCL-PP-001' }, [a, b])).toEqual([a])
+    expect(entriesReferencing({ kind: 'recipe', id: 'PP-001' }, [a, b])).toEqual([a])
     expect(entriesReferencing({ kind: 'product', id: 'sony-ilce-7m4-bq-ap2' }, [a, b])).toEqual([b])
-    expect(entriesReferencing({ kind: 'recipe', id: 'SCL-PP-002' }, [a, b])).toEqual([])
+    expect(entriesReferencing({ kind: 'recipe', id: 'PP-002' }, [a, b])).toEqual([])
   })
 
   it('orders knowledge pages by how much of the recipe they explain', () => {
@@ -129,7 +129,7 @@ describe('reverse links', () => {
 
 describe('unknownRefs', () => {
   const known = {
-    recipes: new Set(['SCL-PP-001']),
+    recipes: new Set(['PP-001']),
     products: new Set(['sony-ilce-7m4-bq-ap2']),
     pages: new Map<string, 'article' | 'knowledge'>([
       ['draft-page', 'knowledge'],
@@ -142,9 +142,9 @@ describe('unknownRefs', () => {
       unknownRefs(
         {
           related: [
-            { kind: 'recipe', id: 'SCL-PP-001' },
+            { kind: 'recipe', id: 'PP-001' },
             { kind: 'knowledge', id: 'draft-page' },
-            { kind: 'recipe', id: 'SCL-PP-404' },
+            { kind: 'recipe', id: 'PP-404' },
             { kind: 'article', id: 'draft-page' },
           ],
           prerequisites: ['iso-auto-min-ss', 'missing'],
@@ -152,7 +152,7 @@ describe('unknownRefs', () => {
         known,
       ),
     ).toEqual([
-      { kind: 'recipe', id: 'SCL-PP-404' },
+      { kind: 'recipe', id: 'PP-404' },
       { kind: 'article', id: 'draft-page' },
       { kind: 'article', id: 'missing' },
     ])

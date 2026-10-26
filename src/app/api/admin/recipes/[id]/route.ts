@@ -4,7 +4,7 @@ import { adminGate } from '@/lib/auth/admin-gate';
 import { CONTENT_ADMIN_FROZEN, contentAdminWritesFrozen } from '@/lib/admin/content-freeze';
 import { hasContentConfig } from '@/lib/supabase/server';
 import { CATALOGUE_TAG, IMMEDIATE } from '@/lib/catalogue-cache';
-import { RECIPE_ID_RE } from '@/lib/camera/schema';
+import { RECIPE_ID_TRANSITION_RE } from '@/lib/camera/schema';
 import { isRecipeDevStore } from '@/lib/recipes/dev-store';
 import {
   getRecipeRecord,
@@ -38,7 +38,7 @@ import {
 type Params = { params: Promise<{ id: string }> };
 
 function badId(id: string): boolean {
-  return !RECIPE_ID_RE.test(id);
+  return !RECIPE_ID_TRANSITION_RE.test(id);
 }
 
 export async function GET(request: Request, { params }: Params) {

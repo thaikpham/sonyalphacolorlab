@@ -30,6 +30,7 @@ const ADMIN_ROUTES = [
   'src/app/api/admin/content-refs/route.ts',
   'src/app/api/admin/recipes/route.ts',
   'src/app/api/admin/recipes/[id]/route.ts',
+  'src/app/api/admin/community-photos/route.ts',
 ];
 
 const WRITE_ROUTES = ADMIN_ROUTES.filter((p) => !p.endsWith('session/route.ts'));
@@ -72,13 +73,16 @@ describe('the admin route inventory', () => {
  * Body parsing is the cheap one to get wrong and the expensive one to leave
  * open: `request.formData()` on the upload route buffers megabytes from an
  * anonymous caller, and the Anthropic call on the translate route spends money.
- * Opening a content client before the gate is worse than wasteful — it puts a
- * service credential in the call stack of an unauthenticated request.
+ * Opening a service client before the gate is worse than wasteful — it puts a
+ * service credential in the call stack of an unauthenticated request. That
+ * holds for the control plane's too: photo moderation writes with it, and it
+ * bypasses RLS on every table that holds an address.
  */
 const GUARDED_WORK = [
   /request\.json\(\)/,
   /request\.formData\(\)/,
   /contentAdmin\(\)/,
+  /controlAdmin\(\)/,
   /callAnthropic|translateFeatures\(/,
   /\.storage\b/,
 ];

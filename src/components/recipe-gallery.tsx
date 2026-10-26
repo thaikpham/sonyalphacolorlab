@@ -239,6 +239,8 @@ export function RecipeGallery({ slug, title }: RecipeGalleryProps) {
   // Pull community photos & credits shared by other people from Supabase
   useEffect(() => {
     const controller = new AbortController();
+    /* This device's own shares as the request leaves — see the prune below. */
+    const askedWith = getLocalPhotos(slug);
     /* An outage is a 503 whose body is an error, not a list: the gallery
        settles empty rather than waiting for an answer that will not come. */
     fetch(`/api/community-photos?slug=${encodeURIComponent(slug)}`, { signal: controller.signal })
@@ -246,7 +248,18 @@ export function RecipeGallery({ slug, title }: RecipeGalleryProps) {
       .then((data) => {
         setLoadedSlug(slug);
         if (data?.ok && Array.isArray(data.photos)) {
-          setRemotePhotos(data.photos.filter((p: unknown): p is string => typeof p === 'string'));
+          const served: string[] = data.photos.filter((p: unknown): p is string => typeof p === 'string');
+          setRemotePhotos(served);
+          /* A photo a moderator has hidden is no longer served, but the
+             contributor's device kept its own copy in localStorage and went
+             on showing it. Forget the ones a live answer left out. Only those
+             already stored when the request left: one shared since may have
+             been inserted after the server read. Never offline, where the
+             server serves nothing and this list is all there is. */
+          if (data.source === 'supabase') {
+            const gone = new Set(askedWith.filter((p) => !served.includes(p)));
+            if (gone.size) setLocalPhotos(slug, getLocalPhotos(slug).filter((p) => !gone.has(p)));
+          }
         }
         if (data?.ok && Array.isArray(data.credits)) {
           const map: Record<string, PhotoCredit> = {};

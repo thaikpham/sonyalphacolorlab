@@ -2,6 +2,7 @@ import 'server-only';
 import { contentAdmin } from '@/lib/supabase/server';
 import { recipeSchema, type Recipe } from '../camera/schema';
 import { fromRow, RECIPE_COLUMNS, toRow, type RecipeRow } from './row';
+import { slugAliases } from './slug-aliases';
 import type { RecipeRecord, UnreadableRecipe } from './admin-types';
 import {
   devGetRecipe,
@@ -120,7 +121,8 @@ export async function getRecipeRecord(id: string): Promise<RecipeRecord | null> 
 // ---------------------------------------------------------------------------
 
 /**
- * The next free `SCL-PP-###` / `SCL-CL-###`.
+ * The next free `SCL-PP-###` / `SCL-CL-###`, or `PP-###` / `CL-###` once the
+ * table holds the code shape.
  *
  * Ids are sequential per format and three digits wide, which caps each format
  * at 999 — a real ceiling rather than a theoretical one, so it is reported
@@ -133,19 +135,36 @@ export async function getRecipeRecord(id: string): Promise<RecipeRecord | null> 
  * recipe would answer that URL with the wrong colour science.
  */
 export async function nextRecipeId(format: 'pp' | 'cl'): Promise<string> {
-  const prefix = `SCL-${format.toUpperCase()}-`;
+  const code = format.toUpperCase();
   const ids = isRecipeDevStore() ? devRecipeIds() : await allIds();
+  return nextIdAmong(code, ids);
+}
 
+/**
+ * Numbers across both id shapes, so the same number is never issued twice
+ * while the table is mid-migration, and answers in the shape the table
+ * already uses: the CHECK accepts exactly one shape at a time, and the rows
+ * say which. The shape is read across both formats, because a format with no
+ * rows of its own still sits under the same CHECK.
+ */
+export function nextIdAmong(code: string, ids: readonly string[]): string {
+  const sameFormat = new RegExp(`^(?:SCL-)?${code}-(\\d{3})$`);
   let highest = 0;
   for (const id of ids) {
-    if (!id.startsWith(prefix)) continue;
-    const n = Number(id.slice(prefix.length));
-    if (Number.isInteger(n) && n > highest) highest = n;
+    const m = sameFormat.exec(id);
+    if (!m) continue;
+    const n = Number(m[1]);
+    if (n > highest) highest = n;
   }
 
   const next = highest + 1;
   if (next > 999) throw new Error('idSpaceExhausted');
-  return `${prefix}${String(next).padStart(3, '0')}`;
+  /* The migration renames every row in one transaction, so one code-shaped id
+     in either format means the CHECK has moved; with none, the stored shape
+     still holds. */
+  const codeShape = ids.some((id) => /^(PP|CL)-\d{3}$/.test(id));
+  const prefix = codeShape ? '' : 'SCL-';
+  return `${prefix}${code}-${String(next).padStart(3, '0')}`;
 }
 
 async function allIds(): Promise<string[]> {
@@ -183,6 +202,10 @@ export async function uniqueRecipeSlug(name: string, ownId?: string): Promise<st
   /* One loop, two backends, so the suffix rule cannot drift between local
      development and production. */
   const taken = async (slug: string): Promise<boolean> => {
+    /* Either spelling of a seed recipe's slug is that recipe's, in whichever
+       state the content plane is (`slug-aliases.ts`): a new recipe under one
+       would answer its links and inherit its comments. */
+    if (slugAliases(slug).length > 1) return true;
     if (isRecipeDevStore()) {
       const owner = devListRecipes().find((r) => r.recipe.slug === slug);
       return Boolean(owner) && owner?.recipe.id !== ownId;

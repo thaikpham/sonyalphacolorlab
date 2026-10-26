@@ -90,11 +90,11 @@ describe('the recipe dev store', () => {
     const count = (recipesSeed as unknown[]).length;
 
     expect(devStore.devInsertRecipe({ ...taken, recipe: { ...taken.recipe, name: 'Other' } })).toBe(false);
-    const sameSlug = { ...taken.recipe, id: 'SCL-PP-998' } as RecipeRecord['recipe'];
+    const sameSlug = { ...taken.recipe, id: 'PP-998' } as RecipeRecord['recipe'];
     expect(devStore.devInsertRecipe({ ...taken, recipe: sameSlug })).toBe(false);
     expect(devStore.devGetRecipe(taken.recipe.id)?.recipe.name).toBe(taken.recipe.name);
 
-    const fresh = { ...taken.recipe, id: 'SCL-PP-998', slug: 'brand-new' } as RecipeRecord['recipe'];
+    const fresh = { ...taken.recipe, id: 'PP-998', slug: 'brand-new' } as RecipeRecord['recipe'];
     expect(devStore.devInsertRecipe({ ...taken, recipe: fresh })).toBe(true);
     expect(devStore.devListRecipes()).toHaveLength(count + 1);
   });

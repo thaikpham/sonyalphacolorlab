@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
+import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { bilingualAlternates } from '@/i18n/alternates';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { loadBrowse, RecipeBrowse, type BrowseSearchParams } from '@/components/browse/recipe-browse';
 import { SiteHeader } from '@/components/site-header';
+import { MY_CAMERA_COOKIE } from '@/lib/cameras/my-camera-cookie';
 import { routing, type Locale } from '@/i18n/routing';
 import { parseSituation, SITUATIONS } from '@/lib/recipes/taxonomy';
 
@@ -54,7 +56,7 @@ export default async function SituationPage({
 
   const [t, model] = await Promise.all([
     getTranslations('browse'),
-    loadBrowse(locale, situation, await searchParams),
+    loadBrowse(locale, situation, await searchParams, (await cookies()).get(MY_CAMERA_COOKIE)?.value),
   ]);
 
   return (

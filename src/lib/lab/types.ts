@@ -195,7 +195,7 @@ export type KnowledgeSection = 'fundamentals' | 'sony-color' | 'workflows'
 export type ContentRefKind = 'recipe' | 'product' | 'article' | 'knowledge'
 
 /**
- * A link to another entity, by its real primary key — `SCL-PP-001`,
+ * A link to another entity, by its real primary key — `PP-001`,
  * `sony-ilce-7m4-bq-ap2`, an article id. Never a title and never a URL: a URL
  * bakes a route shape into the row, and a title changes.
  */

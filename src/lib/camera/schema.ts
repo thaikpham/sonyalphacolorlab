@@ -169,14 +169,28 @@ export const clSettingsSchema = z
 // Recipe
 // ---------------------------------------------------------------------------
 
-/** `SCL-PP-001` / `SCL-CL-042` — the prefix is retained for SEO continuity. */
-export const RECIPE_ID_RE = /^SCL-(PP|CL)-\d{3}$/;
+/**
+ * `PP-001` / `CL-042` — the shape the content plane's CHECK stores once
+ * `20261024000000_recipe_code_ids.sql` has run, and the shape the seed, the
+ * originals and the importers issue. `sql-drift.test.ts` pins it to that CHECK.
+ */
+export const RECIPE_ID_RE = /^(PP|CL)-\d{3}$/;
+
+/**
+ * Either shape: the code `PP-001`, or the `SCL-PP-001` the content plane holds
+ * until its migration is applied by hand (S1, S7). Everything that READS an id
+ * accepts both, so a deployment never depends on whether that migration has
+ * run, and stays tolerant after it: a stale link or a rollback copy still
+ * carries the old shape. Group 1 is the format code.
+ */
+export const RECIPE_ID_TRANSITION_RE = /^(?:SCL-)?(PP|CL)-\d{3}$/;
+
 
 /** A recipe tag: lower-case, digits and dashes. Also what a `?tag=` filter must be. */
 export const RECIPE_TAG_RE = /^[a-z0-9-]+$/;
 
 const baseRecipe = {
-  id: z.string().regex(RECIPE_ID_RE, 'id must look like SCL-PP-001 or SCL-CL-001'),
+  id: z.string().regex(RECIPE_ID_TRANSITION_RE, 'id must look like PP-001 or SCL-PP-001'),
   slug: z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'slug must be kebab-case'),
   /** Display title, e.g. "SCL-PP-001: Mojave Sun". Never translated. */
   name: z.string().min(1),
@@ -192,11 +206,11 @@ export const recipeSchema = z
   ])
   .superRefine((v, ctx) => {
     const expected = v.format === 'pp' ? 'PP' : 'CL';
-    if (!v.id.includes(`-${expected}-`)) {
+    if (RECIPE_ID_TRANSITION_RE.exec(v.id)?.[1] !== expected) {
       ctx.addIssue({
         code: 'custom',
         path: ['id'],
-        message: `id segment must match format: expected SCL-${expected}-…`,
+        message: `id segment must match format: expected ${expected}-…`,
       });
     }
   });

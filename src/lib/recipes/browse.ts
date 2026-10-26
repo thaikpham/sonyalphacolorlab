@@ -184,3 +184,42 @@ export function visibleSituations<T extends RecipeTaxonomy>(recipes: readonly T[
 }
 
 export const isSituation = (v: unknown): v is SituationId => parseSituation(v) !== null;
+
+/* --------------------------------------------------------------------- */
+/* More for the same situation                                            */
+/* --------------------------------------------------------------------- */
+
+/** The most recipes the row under a recipe page shows. */
+export const MORE_FOR_SITUATION_LIMIT = 6;
+
+export type Relatable = RecipeTaxonomy & { readonly id: string; readonly published?: boolean };
+
+/**
+ * Other recipes for a recipe's primary situation — its first — or `null` when
+ * there is nothing to show, so the page renders no empty row.
+ *
+ * Read from the catalogue the page already has, never a query of its own. The
+ * recipe itself and anything unpublished are left out. The more of the
+ * recipe's chips another shares — its situations, its style, its tone — the
+ * earlier it comes; a tie keeps catalogue order, so the row is the same on
+ * every build.
+ */
+export function moreForSituation<T extends Relatable>(
+  recipe: Relatable,
+  catalogue: readonly T[],
+  limit: number = MORE_FOR_SITUATION_LIMIT,
+): { readonly situation: SituationId; readonly recipes: T[] } | null {
+  const situation = recipe.situations[0];
+  if (!situation) return null;
+  const shared = (r: Relatable) =>
+    r.situations.filter((s) => recipe.situations.includes(s)).length +
+    (r.style === recipe.style ? 1 : 0) +
+    (r.tone === recipe.tone ? 1 : 0);
+  const recipes = catalogue
+    .map((r, order) => ({ r, order, score: shared(r) }))
+    .filter(({ r }) => r.id !== recipe.id && r.published !== false && r.situations.includes(situation))
+    .sort((a, b) => b.score - a.score || a.order - b.order)
+    .slice(0, Math.max(0, limit))
+    .map(({ r }) => r);
+  return recipes.length > 0 ? { situation, recipes } : null;
+}

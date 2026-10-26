@@ -3,6 +3,7 @@ import {
   getRecipeRecord,
   insertRecipeRecord,
   listRecipeRows,
+  nextIdAmong,
   normaliseRecipe,
   slugifyRecipe,
   uniqueRecipeSlug,
@@ -235,9 +236,18 @@ describe('creating', () => {
   it('throws when the slug check could not read, rather than calling the slug free', async () => {
     /* `error` was discarded, so a failed read reported every slug as free. */
     answer.result = { data: null, error: { message: 'restricted', status: 402 } };
-    await expect(uniqueRecipeSlug('Mojave Sun')).rejects.toThrow(/restricted/);
+    await expect(uniqueRecipeSlug('Golden Hour')).rejects.toThrow(/restricted/);
     answer.result = { data: null, error: null };
-    await expect(uniqueRecipeSlug('Mojave Sun')).resolves.toBe('mojave-sun');
+    await expect(uniqueRecipeSlug('Golden Hour')).resolves.toBe('golden-hour');
+  });
+
+  it('never hands out either spelling of a seed recipe’s slug, in either database state', async () => {
+    /* `mojave-sun` is PP-001's former slug and `pp-001-vivid-nostalgia-film`
+       its current one; the database holds only one of them at a time, and a
+       new recipe under the other would answer PP-001's links. */
+    answer.result = { data: null, error: null };
+    await expect(uniqueRecipeSlug('Mojave Sun')).resolves.toBe('mojave-sun-2');
+    await expect(uniqueRecipeSlug('PP-001-Vivid Nostalgia Film')).resolves.toBe('pp-001-vivid-nostalgia-film-2');
   });
 });
 
@@ -269,5 +279,39 @@ describe('the shipped catalogue', () => {
       const parsed = recipeSchema.safeParse(row);
       expect(parsed.success, JSON.stringify((row as { id?: string }).id)).toBe(true);
     }
+  });
+});
+
+/*
+ * The id allocator across the move from `SCL-PP-001` to `PP-001`. The content
+ * migration renames every row in one transaction and swaps the CHECK with it,
+ * so the rows themselves say which shape the next insert must use.
+ */
+describe('nextIdAmong', () => {
+  it('issues the stored shape while every row still has it', () => {
+    expect(nextIdAmong('PP', ['SCL-PP-001', 'SCL-PP-082', 'SCL-CL-045'])).toBe('SCL-PP-083');
+    expect(nextIdAmong('CL', ['SCL-PP-001', 'SCL-PP-082', 'SCL-CL-045'])).toBe('SCL-CL-046');
+  });
+
+  it('issues the code shape once the rows have it', () => {
+    expect(nextIdAmong('PP', ['PP-001', 'PP-082', 'CL-045'])).toBe('PP-083');
+    expect(nextIdAmong('CL', ['PP-001', 'PP-082', 'CL-045'])).toBe('CL-046');
+  });
+
+  it('never reissues a number held under the other shape', () => {
+    expect(nextIdAmong('PP', ['SCL-PP-090', 'PP-012'])).toBe('PP-091');
+  });
+
+  it('starts at 001 in the stored shape when a format has no rows', () => {
+    expect(nextIdAmong('CL', ['SCL-PP-001'])).toBe('SCL-CL-001');
+  });
+
+  it('reads the shape across both formats once the CHECK has moved', () => {
+    expect(nextIdAmong('CL', ['PP-001'])).toBe('CL-001');
+  });
+
+  it('ignores ids of other shapes and refuses past 999', () => {
+    expect(nextIdAmong('PP', ['scl-001', 'PROCOLOR-001', 'SCL-PP-007'])).toBe('SCL-PP-008');
+    expect(() => nextIdAmong('PP', ['PP-999'])).toThrow('idSpaceExhausted');
   });
 });

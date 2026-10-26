@@ -47,8 +47,10 @@ describe('/colorlab and /colorlab/[situation]', () => {
   it('are one browse: the same component, the heading the only difference', () => {
     expect(index).toMatch(/<RecipeBrowse model=\{model\} title=\{tBrowse\('title'\)\} \/>/);
     expect(situation).toMatch(/<RecipeBrowse model=\{model\} title=\{t\(`situations\.\$\{situation\}`\)\} \/>/);
-    expect(index).toContain('loadBrowse(locale, null, await searchParams)');
-    expect(situation).toContain('loadBrowse(locale, situation, await searchParams)');
+    expect(index).toContain('loadBrowse(locale, null, await searchParams, (await cookies()).get(MY_CAMERA_COOKIE)?.value)');
+    expect(situation).toContain(
+      'loadBrowse(locale, situation, await searchParams, (await cookies()).get(MY_CAMERA_COOKIE)?.value)',
+    );
   });
 
   it('refuses an unknown situation with a real 404, and enumerates the known ones', () => {

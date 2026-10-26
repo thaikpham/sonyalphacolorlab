@@ -1,8 +1,9 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { PGlite } from '@electric-sql/pglite';
 import { beforeAll, describe, expect, it } from 'vitest';
+import { recipeIdKey } from './recipe-id';
 import { toRow } from './row';
-import { PROPOSAL_COLUMNS } from '../community/columns';
+import { PHOTO_COLUMNS, PROPOSAL_COLUMNS } from '../community/columns';
 import type { Recipe } from '../camera/schema';
 
 /**
@@ -188,6 +189,32 @@ describe('migrations', () => {
     }
   });
 
+  it.each(['anon', 'authenticated'])('never serves %s a photo a moderator has hidden', async (role) => {
+    /* `/admin/colorlab` hides a photo by setting `approved = false` on the
+       service role. The public GET adds no filter of its own — it cannot:
+       0019 grants anon no `approved` column, so naming it there would be
+       "permission denied" for every gallery. 0002's policy is the filter, and
+       this is its proof, in the exact shape the route sends. */
+    await db.query(
+      `insert into community_photos (recipe_slug, image_url, author_name, approved)
+       values ('hidden-probe', 'https://cdn.example.com/shown.jpg', 'Reader', true),
+              ('hidden-probe', 'https://cdn.example.com/hidden.jpg', 'Reader', false)
+       on conflict do nothing`,
+    );
+    await db.exec(`set role ${role}`);
+    try {
+      const q = await db.query<{ image_url: string }>(
+        `select ${PHOTO_COLUMNS} from community_photos
+          where recipe_slug = $1 order by created_at desc limit 40`,
+        ['hidden-probe'],
+      );
+      expect(q.rows.map((r) => r.image_url)).toEqual(['https://cdn.example.com/shown.jpg']);
+      await expect(db.query('select approved from community_photos')).rejects.toThrow(/permission denied/);
+    } finally {
+      await db.exec('reset role');
+    }
+  });
+
   it('keeps a proposal sample photo, https only, readable by anon', async () => {
     const readable = await db.query<{ column_name: string }>(
       `select column_name from information_schema.column_privileges
@@ -259,8 +286,99 @@ describe('migrations', () => {
     expect(readable.rows).toHaveLength(0);
   });
 
+  it("moves community rows to their recipe's current slug, and only once", async () => {
+    /* 0020 already ran in beforeAll, on empty tables. Rows written under the
+       former spellings, as production holds them, are moved by running it
+       again here, which is also the proof that a second run is harmless. */
+    const file = MIGRATIONS.find((f) => f.startsWith('0020_'));
+    expect(file).toBe('0020_recipe_slugs_to_codes.sql');
+    const sql = readFileSync(`supabase/migrations/${file}`, 'utf8');
+    const FORMER = JSON.parse(readFileSync('data/former-slugs.json', 'utf8')) as Record<string, string>;
+    const [former, current] = ['hue-silk', FORMER['hue-silk']];
+    const [otherFormer, otherCurrent] = ['sh-sony-asia', FORMER['sh-sony-asia']];
+    expect([current, otherCurrent]).toEqual(['pp-048-soft-clean-portrait', 'cl-013-airy-warm-pastel']);
+
+    await db.query(
+      `insert into recipe_comments (recipe_slug, author_name, author_email, content)
+       values ($1, 'Reader', 'reader@example.com', 'Before'),
+              ($2, 'Reader', 'reader@example.com', 'Other'),
+              ('slug-probe-unmapped', 'Reader', 'reader@example.com', 'Unmapped')`,
+      [former, otherFormer],
+    );
+    const proposal = await db.query<{ id: string }>(
+      `insert into recipe_proposals (recipe_slug, title, author_name, author_email, settings, white_balance)
+       values ($1, 'slug-probe', 'Reader', 'reader@example.com', '{}', '{}') returning id`,
+      [former],
+    );
+    await db.query(`insert into proposal_votes (proposal_id, user_email) values ($1, 'voter@example.com')`, [
+      proposal.rows[0].id,
+    ]);
+    /* A photo sent between the two migrations is already under the new slug.
+       Where its URL matches one under the former slug, the unique key keeps
+       the older row where it is, and `slugAliases()` still reads it there.
+       The gallery reads both spellings, so where an editor hid either of the
+       pair, both end hidden: a visible twin would show the hidden photo. */
+    await db.query(
+      `insert into community_photos (recipe_slug, image_url, author_name, approved)
+       values ($1, 'https://cdn.example.com/slug-moved.jpg', 'Reader', true),
+              ($1, 'https://cdn.example.com/slug-hidden.jpg', 'Reader', false),
+              ($1, 'https://cdn.example.com/slug-both.jpg', 'Reader', true),
+              ($2, 'https://cdn.example.com/slug-both.jpg', 'Reader', true),
+              ($1, 'https://cdn.example.com/slug-hid-former.jpg', 'Reader', false),
+              ($2, 'https://cdn.example.com/slug-hid-former.jpg', 'Reader', true),
+              ($1, 'https://cdn.example.com/slug-hid-current.jpg', 'Reader', true),
+              ($2, 'https://cdn.example.com/slug-hid-current.jpg', 'Reader', false)`,
+      [former, current],
+    );
+
+    const state = async () => ({
+      comments: (
+        await db.query(
+          `select recipe_slug, content from recipe_comments
+            where content in ('Before', 'Other', 'Unmapped') order by content`,
+        )
+      ).rows,
+      proposals: (await db.query(`select id, recipe_slug from recipe_proposals where title = 'slug-probe'`)).rows,
+      votes: (await db.query(`select proposal_id from proposal_votes where user_email = 'voter@example.com'`)).rows,
+      photos: (
+        await db.query(
+          `select recipe_slug, image_url, approved from community_photos
+            where recipe_slug in ($1, $2) order by image_url, recipe_slug`,
+          [former, current],
+        )
+      ).rows,
+    });
+
+    await db.exec(sql);
+    const once = await state();
+    expect(once.comments).toEqual([
+      { recipe_slug: current, content: 'Before' },
+      { recipe_slug: otherCurrent, content: 'Other' },
+      { recipe_slug: 'slug-probe-unmapped', content: 'Unmapped' },
+    ]);
+    expect(once.proposals).toEqual([{ id: proposal.rows[0].id, recipe_slug: current }]);
+    expect(once.votes).toEqual([{ proposal_id: proposal.rows[0].id }]);
+    expect(once.photos).toEqual([
+      { recipe_slug: former, image_url: 'https://cdn.example.com/slug-both.jpg', approved: true },
+      { recipe_slug: current, image_url: 'https://cdn.example.com/slug-both.jpg', approved: true },
+      { recipe_slug: former, image_url: 'https://cdn.example.com/slug-hid-current.jpg', approved: false },
+      { recipe_slug: current, image_url: 'https://cdn.example.com/slug-hid-current.jpg', approved: false },
+      { recipe_slug: former, image_url: 'https://cdn.example.com/slug-hid-former.jpg', approved: false },
+      { recipe_slug: current, image_url: 'https://cdn.example.com/slug-hid-former.jpg', approved: false },
+      { recipe_slug: current, image_url: 'https://cdn.example.com/slug-hidden.jpg', approved: false },
+      { recipe_slug: current, image_url: 'https://cdn.example.com/slug-moved.jpg', approved: true },
+    ]);
+
+    await db.exec(sql);
+    expect(await state()).toEqual(once);
+  });
+
   it('accepts every seeded recipe, in both formats', async () => {
-    for (const r of seed) await insert(toRow(r, r.legacyId));
+    /* In the id shape this root stores. Its `recipes` table is applied
+       history and keeps the `SCL-` CHECK it was created with; the seed's code
+       shape (`PP-001`) is what the content root stores, and
+       `migration-roots.test.ts` loads it there. */
+    for (const r of seed) await insert({ ...toRow(r, r.legacyId), id: `SCL-${recipeIdKey(r.id)}` });
     const c = await db.query<{ n: number }>('select count(*)::int as n from recipes');
     // Derived, not hardcoded — the catalogue grows, and a stale literal here
     // fails for the wrong reason and teaches nothing.
@@ -324,7 +442,7 @@ describe('migrations', () => {
   // Each of these must be rejected by the database itself, not just by Zod.
   // The expected constraint name is asserted so a case cannot pass for the
   // wrong reason (e.g. tripping a unique index instead of the check it targets).
-  const base = () => ({ ...toRow(seed[0], null), legacy_id: null });
+  const base = () => ({ ...toRow(seed[0], null), id: `SCL-${recipeIdKey(seed[0].id)}`, legacy_id: null });
 
   it.each([
     ['an id that does not match the scheme', { id: 'scl-001' }, 'recipes_id_check'],

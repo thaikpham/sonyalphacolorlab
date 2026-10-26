@@ -2,7 +2,8 @@ import { ImageResponse } from 'next/og';
 import { accentHex } from '@/lib/camera/color';
 import { CREATIVE_LOOKS } from '@/lib/camera/constants';
 import type { Locale } from '@/i18n/routing';
-import { getRecipe, listSlugs } from '@/lib/recipes/source';
+import { listSlugs } from '@/lib/recipes/source';
+import { resolveRecipeSlug } from '@/lib/recipes/slug-resolve';
 import { recipeTitle } from '@/lib/recipes/title';
 
 export const size = { width: 1200, height: 630 };
@@ -34,7 +35,9 @@ export default async function OgImage({
   params: Promise<{ slug: string; locale: Locale }>;
 }) {
   const { slug, locale } = await params;
-  const recipe = await getRecipe(slug, locale);
+  /* Resolved like the page: a card asked for under a former spelling, or
+     under the new one before the content migration, still draws the recipe. */
+  const recipe = (await resolveRecipeSlug(slug, locale))?.recipe ?? null;
 
   if (!recipe) {
     return new ImageResponse(

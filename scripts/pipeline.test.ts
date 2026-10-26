@@ -18,7 +18,7 @@ describe('emit-seed.ts', () => {
   it('writes every file after the last check', () => {
     const lastCheck = src.lastIndexOf('throw new Error');
     const writes = [...src.matchAll(/writeFileSync\(/g)].map((m) => m.index);
-    expect(writes).toHaveLength(3);
+    expect(writes).toHaveLength(4);
     for (const at of writes) expect(at).toBeGreaterThan(lastCheck);
   });
 });

@@ -1,7 +1,7 @@
 [
   {
-    "id": "SCL-PP-001",
-    "slug": "mojave-sun",
+    "id": "PP-001",
+    "slug": "pp-001-vivid-nostalgia-film",
     "name": "PP-001-Vivid Nostalgia Film",
     "whiteBalance": {
       "mode": "kelvin",
@@ -64,8 +64,8 @@
     "legacyId": "scl-001"
   },
   {
-    "id": "SCL-PP-002",
-    "slug": "kyoto-jade",
+    "id": "PP-002",
+    "slug": "pp-002-jade-soft-film",
     "name": "PP-002-Jade Soft Film",
     "whiteBalance": {
       "mode": "kelvin",
@@ -128,8 +128,8 @@
     "legacyId": "scl-002"
   },
   {
-    "id": "SCL-PP-009",
-    "slug": "urban-teal",
+    "id": "PP-009",
+    "slug": "pp-009-teal-muted-street",
     "name": "PP-009-Teal Muted Street",
     "whiteBalance": {
       "mode": "kelvin",
@@ -193,8 +193,8 @@
     "legacyId": "scl-009"
   },
   {
-    "id": "SCL-PP-015",
-    "slug": "vintage-slide",
+    "id": "PP-015",
+    "slug": "pp-015-warm-faded-slide",
     "name": "PP-015-Warm Faded Slide",
     "whiteBalance": {
       "mode": "kelvin",
@@ -256,8 +256,8 @@
     "legacyId": "scl-015"
   },
   {
-    "id": "SCL-PP-025",
-    "slug": "saturated-cinema",
+    "id": "PP-025",
+    "slug": "pp-025-vivid-deep-cinema",
     "name": "PP-025-Vivid Deep Cinema",
     "whiteBalance": {
       "mode": "kelvin",
@@ -319,8 +319,8 @@
     "legacyId": "scl-025"
   },
   {
-    "id": "SCL-PP-027",
-    "slug": "daylight-cinema",
+    "id": "PP-027",
+    "slug": "pp-027-vivid-daylight-cinema",
     "name": "PP-027-Vivid Daylight Cinema",
     "whiteBalance": {
       "mode": "kelvin",
@@ -385,8 +385,8 @@
     "legacyId": "scl-027"
   },
   {
-    "id": "SCL-PP-044",
-    "slug": "filmic-fj-c200",
+    "id": "PP-044",
+    "slug": "pp-044-matte-vivid-film",
     "name": "PP-044-Matte Vivid Film",
     "whiteBalance": {
       "mode": "auto",
@@ -445,8 +445,8 @@
     "legacyId": "scl-044"
   },
   {
-    "id": "SCL-PP-045",
-    "slug": "clearcast-pro",
+    "id": "PP-045",
+    "slug": "pp-045-clean-neutral-stream",
     "name": "PP-045-Clean Neutral Stream",
     "whiteBalance": {
       "mode": "auto",
@@ -508,8 +508,8 @@
     "legacyId": "PROCOLOR-001"
   },
   {
-    "id": "SCL-PP-046",
-    "slug": "clearcast-pro-2",
+    "id": "PP-046",
+    "slug": "pp-046-clean-soft-stream",
     "name": "PP-046-Clean Soft Stream",
     "whiteBalance": {
       "mode": "auto",
@@ -571,8 +571,8 @@
     "legacyId": "PROCOLOR-002"
   },
   {
-    "id": "SCL-PP-047",
-    "slug": "extra-dr-stream-109",
+    "id": "PP-047",
+    "slug": "pp-047-range-neutral-stream",
     "name": "PP-047-Range Neutral Stream",
     "whiteBalance": {
       "mode": "auto",
@@ -636,8 +636,8 @@
     "legacyId": "PROCOLOR-003"
   },
   {
-    "id": "SCL-PP-048",
-    "slug": "hue-silk",
+    "id": "PP-048",
+    "slug": "pp-048-soft-clean-portrait",
     "name": "PP-048-Soft Clean Portrait",
     "whiteBalance": {
       "mode": "kelvin",
@@ -693,8 +693,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-PP-049",
-    "slug": "clear-day",
+    "id": "PP-049",
+    "slug": "pp-049-clean-natural-daylight",
     "name": "PP-049-Clean Natural Daylight",
     "whiteBalance": {
       "mode": "kelvin",
@@ -744,8 +744,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-PP-050",
-    "slug": "linen-editorial",
+    "id": "PP-050",
+    "slug": "pp-050-neutral-crisp-studio",
     "name": "PP-050-Neutral Crisp Studio",
     "whiteBalance": {
       "mode": "kelvin",
@@ -799,8 +799,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-PP-051",
-    "slug": "sa-pa-morning",
+    "id": "PP-051",
+    "slug": "pp-051-range-soft-landscape",
     "name": "PP-051-Range Soft Landscape",
     "whiteBalance": {
       "mode": "kelvin",
@@ -856,8 +856,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-PP-052",
-    "slug": "mekong-noon",
+    "id": "PP-052",
+    "slug": "pp-052-range-bright-daylight",
     "name": "PP-052-Range Bright Daylight",
     "whiteBalance": {
       "mode": "kelvin",
@@ -913,8 +913,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-PP-053",
-    "slug": "mui-ne-dusk",
+    "id": "PP-053",
+    "slug": "pp-053-range-warm-dusk",
     "name": "PP-053-Range Warm Dusk",
     "whiteBalance": {
       "mode": "kelvin",
@@ -964,8 +964,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-PP-054",
-    "slug": "phu-quoc-blue",
+    "id": "PP-054",
+    "slug": "pp-054-cyan-vivid-coast",
     "name": "PP-054-Cyan Vivid Coast",
     "whiteBalance": {
       "mode": "kelvin",
@@ -1021,8 +1021,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-PP-055",
-    "slug": "tam-coc-green",
+    "id": "PP-055",
+    "slug": "pp-055-green-vivid-nature",
     "name": "PP-055-Green Vivid Nature",
     "whiteBalance": {
       "mode": "kelvin",
@@ -1078,8 +1078,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-PP-056",
-    "slug": "hoi-an-lantern",
+    "id": "PP-056",
+    "slug": "pp-056-warm-vivid-festival",
     "name": "PP-056-Warm Vivid Festival",
     "whiteBalance": {
       "mode": "kelvin",
@@ -1128,8 +1128,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-PP-057",
-    "slug": "tet-blossom",
+    "id": "PP-057",
+    "slug": "pp-057-rosy-bright-portrait",
     "name": "PP-057-Rosy Bright Portrait",
     "whiteBalance": {
       "mode": "kelvin",
@@ -1185,8 +1185,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-PP-058",
-    "slug": "da-lat-mist",
+    "id": "PP-058",
+    "slug": "pp-058-cool-pastel-matte",
     "name": "PP-058-Cool Pastel Matte",
     "whiteBalance": {
       "mode": "kelvin",
@@ -1242,8 +1242,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-PP-059",
-    "slug": "ha-noi-winter",
+    "id": "PP-059",
+    "slug": "pp-059-warm-muted-nostalgia",
     "name": "PP-059-Warm Muted Nostalgia",
     "whiteBalance": {
       "mode": "kelvin",
@@ -1297,8 +1297,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-PP-060",
-    "slug": "cho-lon-slide",
+    "id": "PP-060",
+    "slug": "pp-060-warm-dense-slide",
     "name": "PP-060-Warm Dense Slide",
     "whiteBalance": {
       "mode": "kelvin",
@@ -1354,8 +1354,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-PP-061",
-    "slug": "sai-gon-cafe",
+    "id": "PP-061",
+    "slug": "pp-061-tungsten-soft-indoor",
     "name": "PP-061-Tungsten Soft Indoor",
     "whiteBalance": {
       "mode": "kelvin",
@@ -1404,8 +1404,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-PP-062",
-    "slug": "neon-night",
+    "id": "PP-062",
+    "slug": "pp-062-cyan-deep-night",
     "name": "PP-062-Cyan Deep Night",
     "whiteBalance": {
       "mode": "kelvin",
@@ -1461,8 +1461,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-PP-063",
-    "slug": "ben-thanh-night",
+    "id": "PP-063",
+    "slug": "pp-063-warm-vivid-night",
     "name": "PP-063-Warm Vivid Night",
     "whiteBalance": {
       "mode": "kelvin",
@@ -1512,8 +1512,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-PP-064",
-    "slug": "old-quarter-mono",
+    "id": "PP-064",
+    "slug": "pp-064-mono-crisp-street",
     "name": "PP-064-Mono Crisp Street",
     "whiteBalance": {
       "mode": "kelvin",
@@ -1563,8 +1563,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-PP-065",
-    "slug": "pearl-mono",
+    "id": "PP-065",
+    "slug": "pp-065-mono-soft-portrait",
     "name": "PP-065-Mono Soft Portrait",
     "whiteBalance": {
       "mode": "kelvin",
@@ -1614,8 +1614,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-PP-066",
-    "slug": "ho-tay-golden",
+    "id": "PP-066",
+    "slug": "pp-066-golden-soft-portrait",
     "name": "PP-066-Golden Soft Portrait",
     "whiteBalance": {
       "mode": "kelvin",
@@ -1671,8 +1671,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-PP-067",
-    "slug": "moc-chau-frost",
+    "id": "PP-067",
+    "slug": "pp-067-cool-crisp-airy",
     "name": "PP-067-Cool Crisp Airy",
     "whiteBalance": {
       "mode": "kelvin",
@@ -1728,8 +1728,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-PP-068",
-    "slug": "vung-tau-pop",
+    "id": "PP-068",
+    "slug": "pp-068-punchy-vivid-pop",
     "name": "PP-068-Punchy Vivid Pop",
     "whiteBalance": {
       "mode": "kelvin",
@@ -1785,8 +1785,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-PP-069",
-    "slug": "hem-noir",
+    "id": "PP-069",
+    "slug": "pp-069-mono-hard-noir",
     "name": "PP-069-Mono Hard Noir",
     "whiteBalance": {
       "mode": "kelvin",
@@ -1836,8 +1836,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-PP-070",
-    "slug": "late-night-mono",
+    "id": "PP-070",
+    "slug": "pp-070-mono-soft-night",
     "name": "PP-070-Mono Soft Night",
     "whiteBalance": {
       "mode": "kelvin",
@@ -1887,8 +1887,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-PP-071",
-    "slug": "silver-hard-muted",
+    "id": "PP-071",
+    "slug": "pp-071-silver-hard-muted",
     "name": "PP-071-Silver Hard Muted",
     "whiteBalance": {
       "mode": "kelvin",
@@ -1944,8 +1944,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-PP-072",
-    "slug": "teal-orange-cinema",
+    "id": "PP-072",
+    "slug": "pp-072-teal-orange-cinema",
     "name": "PP-072-Teal Orange Cinema",
     "whiteBalance": {
       "mode": "kelvin",
@@ -2001,8 +2001,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-PP-073",
-    "slug": "bright-airy-studio",
+    "id": "PP-073",
+    "slug": "pp-073-bright-airy-studio",
     "name": "PP-073-Bright Airy Studio",
     "whiteBalance": {
       "mode": "kelvin",
@@ -2052,8 +2052,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-PP-074",
-    "slug": "dark-rich-velvet",
+    "id": "PP-074",
+    "slug": "pp-074-dark-rich-velvet",
     "name": "PP-074-Dark Rich Velvet",
     "whiteBalance": {
       "mode": "kelvin",
@@ -2109,8 +2109,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-PP-075",
-    "slug": "warm-pastel-cream",
+    "id": "PP-075",
+    "slug": "pp-075-warm-pastel-cream",
     "name": "PP-075-Warm Pastel Cream",
     "whiteBalance": {
       "mode": "kelvin",
@@ -2166,8 +2166,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-PP-076",
-    "slug": "violet-cool-dusk",
+    "id": "PP-076",
+    "slug": "pp-076-violet-cool-dusk",
     "name": "PP-076-Violet Cool Dusk",
     "whiteBalance": {
       "mode": "kelvin",
@@ -2223,8 +2223,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-PP-077",
-    "slug": "cool-muted-overcast",
+    "id": "PP-077",
+    "slug": "pp-077-cool-muted-overcast",
     "name": "PP-077-Cool Muted Overcast",
     "whiteBalance": {
       "mode": "kelvin",
@@ -2278,8 +2278,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-PP-078",
-    "slug": "amber-vivid-autumn",
+    "id": "PP-078",
+    "slug": "pp-078-amber-vivid-autumn",
     "name": "PP-078-Amber Vivid Autumn",
     "whiteBalance": {
       "mode": "kelvin",
@@ -2335,8 +2335,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-PP-079",
-    "slug": "warm-rich-table",
+    "id": "PP-079",
+    "slug": "pp-079-warm-rich-table",
     "name": "PP-079-Warm Rich Table",
     "whiteBalance": {
       "mode": "kelvin",
@@ -2392,8 +2392,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-PP-080",
-    "slug": "range-hlg-daylight",
+    "id": "PP-080",
+    "slug": "pp-080-range-hlg-daylight",
     "name": "PP-080-Range HLG Daylight",
     "whiteBalance": {
       "mode": "kelvin",
@@ -2443,8 +2443,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-PP-081",
-    "slug": "flat-log-base",
+    "id": "PP-081",
+    "slug": "pp-081-flat-log-base",
     "name": "PP-081-Flat Log Base",
     "whiteBalance": {
       "mode": "kelvin",
@@ -2492,8 +2492,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-PP-082",
-    "slug": "cyan-vivid-monsoon",
+    "id": "PP-082",
+    "slug": "pp-082-cyan-vivid-monsoon",
     "name": "PP-082-Cyan Vivid Monsoon",
     "whiteBalance": {
       "mode": "kelvin",
@@ -2547,8 +2547,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-CL-001",
-    "slug": "fl-raoul-rutnam",
+    "id": "CL-001",
+    "slug": "cl-001-film-hard-faded",
     "name": "CL-001-Film Hard Faded",
     "whiteBalance": {
       "mode": "auto",
@@ -2574,8 +2574,8 @@
     }
   },
   {
-    "id": "SCL-CL-002",
-    "slug": "fl-arantha-sirimanne",
+    "id": "CL-002",
+    "slug": "cl-002-film-warm-muted",
     "name": "CL-002-Film Warm Muted",
     "whiteBalance": {
       "mode": "preset",
@@ -2611,8 +2611,8 @@
     }
   },
   {
-    "id": "SCL-CL-003",
-    "slug": "vv2-ravi-ranasinghe",
+    "id": "CL-003",
+    "slug": "cl-003-vivid-crisp-neutral",
     "name": "CL-003-Vivid Crisp Neutral",
     "whiteBalance": {
       "mode": "auto",
@@ -2638,8 +2638,8 @@
     }
   },
   {
-    "id": "SCL-CL-004",
-    "slug": "vv2-sony-asia",
+    "id": "CL-004",
+    "slug": "cl-004-vivid-soft-faded",
     "name": "CL-004-Vivid Soft Faded",
     "whiteBalance": {
       "mode": "kelvin",
@@ -2665,8 +2665,8 @@
     }
   },
   {
-    "id": "SCL-CL-005",
-    "slug": "vv2-jonpoon-jpg",
+    "id": "CL-005",
+    "slug": "cl-005-vivid-warm-crisp",
     "name": "CL-005-Vivid Warm Crisp",
     "whiteBalance": {
       "mode": "auto",
@@ -2702,8 +2702,8 @@
     }
   },
   {
-    "id": "SCL-CL-006",
-    "slug": "vv2-jonpoon-jpg-2",
+    "id": "CL-006",
+    "slug": "cl-006-vivid-bright-crisp",
     "name": "CL-006-Vivid Bright Crisp",
     "whiteBalance": {
       "mode": "preset",
@@ -2729,8 +2729,8 @@
     }
   },
   {
-    "id": "SCL-CL-007",
-    "slug": "vv-khong",
+    "id": "CL-007",
+    "slug": "cl-007-vivid-natural-daylight",
     "name": "CL-007-Vivid Natural Daylight",
     "whiteBalance": {
       "mode": "preset",
@@ -2756,8 +2756,8 @@
     }
   },
   {
-    "id": "SCL-CL-008",
-    "slug": "vv-filmreel",
+    "id": "CL-008",
+    "slug": "cl-008-vivid-cool-natural",
     "name": "CL-008-Vivid Cool Natural",
     "whiteBalance": {
       "mode": "kelvin",
@@ -2783,8 +2783,8 @@
     }
   },
   {
-    "id": "SCL-CL-009",
-    "slug": "st-sandeeshwara-perera",
+    "id": "CL-009",
+    "slug": "cl-009-flat-cool-standard",
     "name": "CL-009-Flat Cool Standard",
     "whiteBalance": {
       "mode": "kelvin",
@@ -2820,8 +2820,8 @@
     }
   },
   {
-    "id": "SCL-CL-010",
-    "slug": "st-ravi-ranasinghe",
+    "id": "CL-010",
+    "slug": "cl-010-soft-natural-standard",
     "name": "CL-010-Soft Natural Standard",
     "whiteBalance": {
       "mode": "auto",
@@ -2847,8 +2847,8 @@
     }
   },
   {
-    "id": "SCL-CL-011",
-    "slug": "st-khong",
+    "id": "CL-011",
+    "slug": "cl-011-natural-standard-daylight",
     "name": "CL-011-Natural Standard Daylight",
     "whiteBalance": {
       "mode": "preset",
@@ -2874,8 +2874,8 @@
     }
   },
   {
-    "id": "SCL-CL-012",
-    "slug": "st-filmreel",
+    "id": "CL-012",
+    "slug": "cl-012-soft-warm-rich",
     "name": "CL-012-Soft Warm Rich",
     "whiteBalance": {
       "mode": "kelvin",
@@ -2901,8 +2901,8 @@
     }
   },
   {
-    "id": "SCL-CL-013",
-    "slug": "sh-sony-asia",
+    "id": "CL-013",
+    "slug": "cl-013-airy-warm-pastel",
     "name": "CL-013-Airy Warm Pastel",
     "whiteBalance": {
       "mode": "kelvin",
@@ -2938,8 +2938,8 @@
     }
   },
   {
-    "id": "SCL-CL-014",
-    "slug": "sh-jonpoon-jpg",
+    "id": "CL-014",
+    "slug": "cl-014-airy-warm-rich",
     "name": "CL-014-Airy Warm Rich",
     "whiteBalance": {
       "mode": "kelvin",
@@ -2975,8 +2975,8 @@
     }
   },
   {
-    "id": "SCL-CL-015",
-    "slug": "sh-puy",
+    "id": "CL-015",
+    "slug": "cl-015-airy-faded-soft",
     "name": "CL-015-Airy Faded Soft",
     "whiteBalance": {
       "mode": "auto",
@@ -3002,8 +3002,8 @@
     }
   },
   {
-    "id": "SCL-CL-016",
-    "slug": "sh-jomnot",
+    "id": "CL-016",
+    "slug": "cl-016-airy-matte-natural",
     "name": "CL-016-Airy Matte Natural",
     "whiteBalance": {
       "mode": "auto",
@@ -3029,8 +3029,8 @@
     }
   },
   {
-    "id": "SCL-CL-017",
-    "slug": "se-satheeshan-thiyagaraja",
+    "id": "CL-017",
+    "slug": "cl-017-sepia-soft-deep",
     "name": "CL-017-Sepia Soft Deep",
     "whiteBalance": {
       "mode": "auto",
@@ -3056,8 +3056,8 @@
     }
   },
   {
-    "id": "SCL-CL-018",
-    "slug": "se-ravi-ranasinghe",
+    "id": "CL-018",
+    "slug": "cl-018-sepia-flat-crisp",
     "name": "CL-018-Sepia Flat Crisp",
     "whiteBalance": {
       "mode": "auto",
@@ -3083,8 +3083,8 @@
     }
   },
   {
-    "id": "SCL-CL-019",
-    "slug": "pt-sandeeshwara-perera",
+    "id": "CL-019",
+    "slug": "cl-019-portrait-soft-warm",
     "name": "CL-019-Portrait Soft Warm",
     "whiteBalance": {
       "mode": "kelvin",
@@ -3120,8 +3120,8 @@
     }
   },
   {
-    "id": "SCL-CL-020",
-    "slug": "in-eranga-siriwardhana",
+    "id": "CL-020",
+    "slug": "cl-020-instant-faded-natural",
     "name": "CL-020-Instant Faded Natural",
     "whiteBalance": {
       "mode": "auto",
@@ -3147,8 +3147,8 @@
     }
   },
   {
-    "id": "SCL-CL-021",
-    "slug": "in-sony-asia",
+    "id": "CL-021",
+    "slug": "cl-021-instant-soft-violet",
     "name": "CL-021-Instant Soft Violet",
     "whiteBalance": {
       "mode": "kelvin",
@@ -3184,8 +3184,8 @@
     }
   },
   {
-    "id": "SCL-CL-022",
-    "slug": "in-sony-asia-2",
+    "id": "CL-022",
+    "slug": "cl-022-instant-cool-soft",
     "name": "CL-022-Instant Cool Soft",
     "whiteBalance": {
       "mode": "kelvin",
@@ -3221,8 +3221,8 @@
     }
   },
   {
-    "id": "SCL-CL-023",
-    "slug": "in-jonpoon-jpg",
+    "id": "CL-023",
+    "slug": "cl-023-instant-warm-faded",
     "name": "CL-023-Instant Warm Faded",
     "whiteBalance": {
       "mode": "auto",
@@ -3258,8 +3258,8 @@
     }
   },
   {
-    "id": "SCL-CL-024",
-    "slug": "in-check-in-siemreap",
+    "id": "CL-024",
+    "slug": "cl-024-instant-warm-punchy",
     "name": "CL-024-Instant Warm Punchy",
     "whiteBalance": {
       "mode": "kelvin",
@@ -3295,8 +3295,8 @@
     }
   },
   {
-    "id": "SCL-CL-025",
-    "slug": "fl-sandeeshwara-perera",
+    "id": "CL-025",
+    "slug": "cl-025-film-warm-bright",
     "name": "CL-025-Film Warm Bright",
     "whiteBalance": {
       "mode": "kelvin",
@@ -3332,8 +3332,8 @@
     }
   },
   {
-    "id": "SCL-CL-026",
-    "slug": "fl-sandeeshwara-perera-2",
+    "id": "CL-026",
+    "slug": "cl-026-film-warm-soft",
     "name": "CL-026-Film Warm Soft",
     "whiteBalance": {
       "mode": "kelvin",
@@ -3369,8 +3369,8 @@
     }
   },
   {
-    "id": "SCL-CL-027",
-    "slug": "fl-sandeeshwara-perera-3",
+    "id": "CL-027",
+    "slug": "cl-027-film-deep-muted",
     "name": "CL-027-Film Deep Muted",
     "whiteBalance": {
       "mode": "kelvin",
@@ -3406,8 +3406,8 @@
     }
   },
   {
-    "id": "SCL-CL-028",
-    "slug": "fl-lahiru-rumesh",
+    "id": "CL-028",
+    "slug": "cl-028-film-warm-deep",
     "name": "CL-028-Film Warm Deep",
     "whiteBalance": {
       "mode": "kelvin",
@@ -3443,8 +3443,8 @@
     }
   },
   {
-    "id": "SCL-CL-029",
-    "slug": "fl-isuru-mudalige",
+    "id": "CL-029",
+    "slug": "cl-029-film-flat-rich",
     "name": "CL-029-Film Flat Rich",
     "whiteBalance": {
       "mode": "auto",
@@ -3470,8 +3470,8 @@
     }
   },
   {
-    "id": "SCL-CL-030",
-    "slug": "fl-sony-asia",
+    "id": "CL-030",
+    "slug": "cl-030-film-soft-faded",
     "name": "CL-030-Film Soft Faded",
     "whiteBalance": {
       "mode": "kelvin",
@@ -3497,8 +3497,8 @@
     }
   },
   {
-    "id": "SCL-CL-031",
-    "slug": "fl-sony-asia-2",
+    "id": "CL-031",
+    "slug": "cl-031-film-hard-muted",
     "name": "CL-031-Film Hard Muted",
     "whiteBalance": {
       "mode": "kelvin",
@@ -3534,8 +3534,8 @@
     }
   },
   {
-    "id": "SCL-CL-032",
-    "slug": "fl-jonpoon-jpg",
+    "id": "CL-032",
+    "slug": "cl-032-film-warm-faded",
     "name": "CL-032-Film Warm Faded",
     "whiteBalance": {
       "mode": "kelvin",
@@ -3571,8 +3571,8 @@
     }
   },
   {
-    "id": "SCL-CL-033",
-    "slug": "fl-mardy-suong",
+    "id": "CL-033",
+    "slug": "cl-033-film-natural-daylight",
     "name": "CL-033-Film Natural Daylight",
     "whiteBalance": {
       "mode": "preset",
@@ -3598,8 +3598,8 @@
     }
   },
   {
-    "id": "SCL-CL-034",
-    "slug": "fl-mardy-suong-2",
+    "id": "CL-034",
+    "slug": "cl-034-film-natural-neutral",
     "name": "CL-034-Film Natural Neutral",
     "whiteBalance": {
       "mode": "auto",
@@ -3625,8 +3625,8 @@
     }
   },
   {
-    "id": "SCL-CL-035",
-    "slug": "fl-khong",
+    "id": "CL-035",
+    "slug": "cl-035-film-deep-crisp",
     "name": "CL-035-Film Deep Crisp",
     "whiteBalance": {
       "mode": "auto",
@@ -3652,8 +3652,8 @@
     }
   },
   {
-    "id": "SCL-CL-036",
-    "slug": "fl-hea-kimhong",
+    "id": "CL-036",
+    "slug": "cl-036-film-warm-natural",
     "name": "CL-036-Film Warm Natural",
     "whiteBalance": {
       "mode": "kelvin",
@@ -3689,8 +3689,8 @@
     }
   },
   {
-    "id": "SCL-CL-037",
-    "slug": "fl-filmreel",
+    "id": "CL-037",
+    "slug": "cl-037-film-soft-rich",
     "name": "CL-037-Film Soft Rich",
     "whiteBalance": {
       "mode": "kelvin",
@@ -3716,8 +3716,8 @@
     }
   },
   {
-    "id": "SCL-CL-038",
-    "slug": "mono-deep-noir",
+    "id": "CL-038",
+    "slug": "cl-038-mono-deep-noir",
     "name": "CL-038-Mono Deep Noir",
     "whiteBalance": {
       "mode": "kelvin",
@@ -3744,8 +3744,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-CL-039",
-    "slug": "mono-airy-portrait",
+    "id": "CL-039",
+    "slug": "cl-039-mono-airy-portrait",
     "name": "CL-039-Mono Airy Portrait",
     "whiteBalance": {
       "mode": "kelvin",
@@ -3771,8 +3771,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-CL-040",
-    "slug": "neutral-clean-product",
+    "id": "CL-040",
+    "slug": "cl-040-neutral-clean-product",
     "name": "CL-040-Neutral Clean Product",
     "whiteBalance": {
       "mode": "kelvin",
@@ -3800,8 +3800,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-CL-041",
-    "slug": "portrait-golden-daylight",
+    "id": "CL-041",
+    "slug": "cl-041-portrait-golden-daylight",
     "name": "CL-041-Portrait Golden Daylight",
     "whiteBalance": {
       "mode": "kelvin",
@@ -3839,8 +3839,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-CL-042",
-    "slug": "airy-cool-pastel",
+    "id": "CL-042",
+    "slug": "cl-042-airy-cool-pastel",
     "name": "CL-042-Airy Cool Pastel",
     "whiteBalance": {
       "mode": "kelvin",
@@ -3874,8 +3874,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-CL-043",
-    "slug": "film-matte-cool",
+    "id": "CL-043",
+    "slug": "cl-043-film-matte-cool",
     "name": "CL-043-Film Matte Cool",
     "whiteBalance": {
       "mode": "kelvin",
@@ -3909,8 +3909,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-CL-044",
-    "slug": "instant-amber-soft",
+    "id": "CL-044",
+    "slug": "cl-044-instant-amber-soft",
     "name": "CL-044-Instant Amber Soft",
     "whiteBalance": {
       "mode": "kelvin",
@@ -3944,8 +3944,8 @@
     "legacyId": null
   },
   {
-    "id": "SCL-CL-045",
-    "slug": "vivid-tropical-punchy",
+    "id": "CL-045",
+    "slug": "cl-045-vivid-tropical-punchy",
     "name": "CL-045-Vivid Tropical Punchy",
     "whiteBalance": {
       "mode": "kelvin",

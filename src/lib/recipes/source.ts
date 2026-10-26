@@ -30,6 +30,8 @@ import { contentRead } from '../supabase/server';
 import { contentOrOfflineSeed } from '../supabase/content-source';
 import { fromRow, RECIPE_COLUMNS, type RecipeRow } from './row';
 import { devListRecipes, isRecipeDevStore } from './dev-store';
+import { recipeIdAliases } from './recipe-id';
+import { slugAliases } from './slug-aliases';
 import { designedLightFor, taxonomyFor } from './taxonomy-assign';
 import { taxonomyTerms, type RecipeTaxonomy } from './taxonomy';
 
@@ -127,10 +129,11 @@ function toView(
  * "chan dung", "phim", "đen trắng" — which is how the tags stopped being shown
  * without the search losing a word (D9).
  *
- * And to its slug, which never changes: the name is a mood now
- * (`PP-009-Teal Muted Street`), so the slug is what still answers to the name a
- * reader learnt first ("mojave sun") and to the place an original was imagined
- * for ("da lat").
+ * And to both spellings of its slug, whichever the row is stored under: the
+ * name is a mood now (`PP-009-Teal Muted Street`) and the slug follows it, so
+ * the former slug (`data/former-slugs.json`) is what still answers to the name
+ * a reader learnt first ("mojave sun") and to the place an original was
+ * imagined for ("da lat").
  */
 const norm = (s: string) => removeAccents(s).toLowerCase();
 
@@ -141,7 +144,16 @@ export const matchesQuery = (r: Recipe & Partial<RecipeTaxonomy>, q: string) => 
     r.situations && r.style && r.tone
       ? taxonomyTerms({ situations: r.situations, style: r.style, tone: r.tone })
       : [];
-  const haystack = norm([r.name, r.id, r.slug.replace(/-/g, ' '), ...r.tags, ...inherited].join(' '));
+  /* Both id spellings: `PP-009` and the `SCL-PP-009` readers knew for years. */
+  const haystack = norm(
+    [
+      r.name,
+      ...recipeIdAliases(r.id),
+      ...slugAliases(r.slug).map((s) => s.replace(/-/g, ' ')),
+      ...r.tags,
+      ...inherited,
+    ].join(' '),
+  );
   // Every whitespace-separated term must appear.
   return needle.split(/\s+/).every((term) => haystack.includes(term));
 };

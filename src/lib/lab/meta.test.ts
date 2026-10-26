@@ -22,19 +22,19 @@ describe('parseMeta', () => {
   it('keeps well-formed references by real id and drops the rest', () => {
     const { meta, dropped } = parseMeta({
       related: [
-        { kind: 'recipe', id: 'SCL-PP-001' },
-        { kind: 'recipe', id: 'mojave-sun' }, // a slug, not the recipe's id
+        { kind: 'recipe', id: 'PP-001' },
+        { kind: 'recipe', id: 'pp-001-vivid-nostalgia-film' }, // a slug, not the recipe's id
         { kind: 'product', id: 'sony-ilce-7m4-bq-ap2' },
         { kind: 'article', id: 'iso-auto-min-ss' },
         { kind: 'knowledge', id: 'white-balance-shift' },
         { kind: 'article', id: 'https://evil.test/x' },
         { kind: 'video', id: 'x' },
-        { kind: 'recipe', id: 'SCL-PP-001' }, // duplicate
-        'SCL-PP-002',
+        { kind: 'recipe', id: 'PP-001' }, // duplicate
+        'PP-002',
       ],
     })
     expect(meta.related).toEqual([
-      { kind: 'recipe', id: 'SCL-PP-001' },
+      { kind: 'recipe', id: 'PP-001' },
       { kind: 'product', id: 'sony-ilce-7m4-bq-ap2' },
       { kind: 'article', id: 'iso-auto-min-ss' },
       { kind: 'knowledge', id: 'white-balance-shift' },
@@ -44,15 +44,15 @@ describe('parseMeta', () => {
 
   it('rebuilds each reference, so a stray key never survives', () => {
     const { meta } = parseMeta({
-      related: [{ kind: 'recipe', id: 'SCL-CL-003', onclick: 'alert(1)' }],
+      related: [{ kind: 'recipe', id: 'CL-003', onclick: 'alert(1)' }],
     })
-    expect(meta.related[0]).toEqual({ kind: 'recipe', id: 'SCL-CL-003' })
+    expect(meta.related[0]).toEqual({ kind: 'recipe', id: 'CL-003' })
   })
 
   it('bounds every list', () => {
     const many = Array.from({ length: META_LIMITS.related + 5 }, (_, i) => ({
       kind: 'recipe',
-      id: `SCL-PP-${String(i + 1).padStart(3, '0')}`,
+      id: `PP-${String(i + 1).padStart(3, '0')}`,
     }))
     const { meta, dropped } = parseMeta({ related: many })
     expect(meta.related).toHaveLength(META_LIMITS.related)

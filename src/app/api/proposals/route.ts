@@ -11,8 +11,9 @@ import {
 } from '@/lib/community/errors';
 import { hasContentConfig } from '@/lib/supabase/server';
 import { publishedRecipeFormat } from '@/lib/recipes/existence';
+import { slugAliases } from '@/lib/recipes/slug-aliases';
 import { clSettingsSchema, ppSettingsSchema, whiteBalanceSchema } from '@/lib/camera/schema';
-import { MAX_PHOTOS_PER_RECIPE, clientKey } from '@/lib/community/gallery';
+import { MAX_PHOTOS_PER_RECIPE, clientKey, photoInGallery } from '@/lib/community/gallery';
 import {
   EXPIRING_IMAGE_HOST_ISSUE,
   httpsImageUrlSchema,
@@ -21,6 +22,7 @@ import {
 } from '@/lib/community/request';
 /* One list for the read and the insert's return, so the two cannot drift. */
 import { PROPOSAL_COLUMNS } from '@/lib/community/columns';
+import { MODERATION_LIST_LIMIT, withoutHiddenSamples } from '@/lib/community/moderation';
 
 /**
  * PostgREST rejects with a plain object, not an Error, so `String(err)` gave
@@ -40,6 +42,47 @@ function logFallback(where: string, err: unknown) {
 
 /** Proposals are ranked by votes; nobody reads past the first hundred. */
 const PROPOSAL_LIST_LIMIT = 100;
+
+/**
+ * The recipe's hidden gallery photos, by URL — or `null` when that is unknown.
+ *
+ * A proposal's sample is the same URL as a gallery photo, and moderation hides
+ * the gallery row only, so every sample this route sends is checked against
+ * this first (`withoutHiddenSamples`).
+ *
+ * The service role, because nothing else can answer: anon sees approved rows
+ * only (RLS) and holds no grant on `approved`. Asking anon for the *visible*
+ * set instead would also blank samples that never joined the gallery — the
+ * cap was reached, or the insert failed — which no editor ever hid. Only
+ * `image_url` is named, so nothing else of the row leaves the database.
+ *
+ * Never fails the list: an error, returned or thrown, is "unknown", and so is
+ * a read that fills its bound, since it may have stopped short of a hidden
+ * row. Unknown fails closed downstream.
+ */
+async function hiddenPhotoUrls(slug: string): Promise<ReadonlySet<string> | null> {
+  try {
+    const { data, error } = await controlAdmin()
+      .from('community_photos')
+      .select('image_url')
+      .in('recipe_slug', slugAliases(slug))
+      .eq('approved', false)
+      .limit(MODERATION_LIST_LIMIT);
+    if (error) {
+      logFallback('proposals/hidden-photos', error);
+      return null;
+    }
+    const rows = (data ?? []) as { image_url: string }[];
+    if (rows.length >= MODERATION_LIST_LIMIT) {
+      console.error(`[proposals/hidden-photos] ${slug} has ${rows.length}+ hidden photos; dropping every sample`);
+      return null;
+    }
+    return new Set(rows.map((r) => r.image_url));
+  } catch (err) {
+    logFallback('proposals/hidden-photos', err);
+    return null;
+  }
+}
 
 /**
  * The proposal payload, checked before anything is written.
@@ -98,7 +141,7 @@ export type ProposalItem = {
 const memoryProposals: ProposalItem[] = [
   {
     id: 'seed-prop-1',
-    recipeSlug: 'daylight-cinema',
+    recipeSlug: 'pp-027-vivid-daylight-cinema',
     title: 'Biến thể Ấm Áp Hoàng Hôn (Golden Hour Tone)',
     authorName: 'Hoàng Nhiếp Ảnh',
     authorAvatar: 'https://ui-avatars.com/api/?name=Hoang+Photo&background=FF9800&color=fff',
@@ -119,7 +162,7 @@ const memoryProposals: ProposalItem[] = [
   },
   {
     id: 'seed-prop-2',
-    recipeSlug: 'daylight-cinema',
+    recipeSlug: 'pp-027-vivid-daylight-cinema',
     title: 'Biến thể Cine Nhật Bản (Soft Film Mood)',
     authorName: 'Linh Trần',
     authorAvatar: 'https://ui-avatars.com/api/?name=Linh+Tran&background=9C27B0&color=fff',
@@ -169,7 +212,8 @@ export async function GET(request: Request) {
   }
 
   if (!hasControlConfig()) {
-    const filtered = memoryProposals.filter((p) => p.recipeSlug === slug);
+    const aliases = slugAliases(slug);
+    const filtered = memoryProposals.filter((p) => aliases.includes(p.recipeSlug));
     return NextResponse.json({ proposals: filtered, voteStateUnknown: false, source: 'memory' });
   }
 
@@ -177,11 +221,18 @@ export async function GET(request: Request) {
     const { data: proposalRows, error } = await controlRead()
       .from('recipe_proposals')
       .select(PROPOSAL_COLUMNS)
-      .eq('recipe_slug', slug)
+      /* Every spelling the recipe's slug has had (`slug-aliases.ts`). */
+      .in('recipe_slug', slugAliases(slug))
       .order('vote_count', { ascending: false })
       .limit(PROPOSAL_LIST_LIMIT);
 
     if (error) throw error;
+
+    /* Started now and awaited below, beside the vote read. It never rejects:
+       a failure is `null`, which drops every sample rather than the list. */
+    const hiddenRead = (proposalRows || []).some((p) => p.sample_image_url)
+      ? hiddenPhotoUrls(slug)
+      : Promise.resolve(new Set<string>());
 
     /* Only ever resolve the *viewer's* own vote.
        This used to return every voter's email address to every browser, so
@@ -211,7 +262,7 @@ export async function GET(request: Request) {
       }
     }
 
-    const proposals: ProposalItem[] = (proposalRows || []).map((row) => ({
+    const rows: ProposalItem[] = (proposalRows || []).map((row) => ({
       id: row.id,
       recipeSlug: row.recipe_slug,
       title: row.title,
@@ -224,6 +275,8 @@ export async function GET(request: Request) {
       hasVoted: votedByViewer.has(row.id),
       createdAt: row.created_at,
     }));
+    /* A photo hidden in /admin/colorlab leaves the proposal cards with it. */
+    const proposals = withoutHiddenSamples(rows, await hiddenRead);
 
     return NextResponse.json({ proposals, voteStateUnknown, source: 'supabase' });
   } catch (err) {
@@ -317,41 +370,56 @@ export async function POST(request: Request) {
      * Held to the same rules as `POST /api/community-photos`: the per-recipe
      * cap, the session's name as the credit (the old `name (title)` reached 253
      * characters against a CHECK of 100, so the insert failed and only the log
-     * knew), and an origin marker rather than the author's address in
-     * `submitted_by`. */
-    const { count, error: countError } = await db
-      .from('community_photos')
-      .select('id', { count: 'exact', head: true })
-      .eq('recipe_slug', recipeSlug);
-    if (countError) {
-      logFallback('proposals/gallery', countError);
-    } else if ((count ?? 0) < MAX_PHOTOS_PER_RECIPE) {
-      const { error: photoError } = await db.from('community_photos').insert({
-        recipe_slug: recipeSlug,
-        image_url: sampleImageUrl,
-        author_name: user.name,
-        author_social: null,
-        submitted_by: clientKey(request),
-      });
-      // 23505 is unique_violation: this photo is already in the gallery.
-      if (photoError && photoError.code !== '23505') {
-        logFallback('proposals/gallery', photoError);
+     * knew), an origin marker rather than the author's address in
+     * `submitted_by`, and a URL already in the gallery under either spelling
+     * of the slug — an editor may have hidden it — left alone, as a 23505
+     * would leave it (`photoInGallery`: the unique key sees one spelling). */
+    const dup = await photoInGallery(db, recipeSlug, sampleImageUrl);
+    if (dup.error) {
+      logFallback('proposals/gallery', dup.error);
+    } else if (!dup.taken) {
+      const { count, error: countError } = await db
+        .from('community_photos')
+        .select('id', { count: 'exact', head: true })
+        .in('recipe_slug', slugAliases(recipeSlug));
+      if (countError) {
+        logFallback('proposals/gallery', countError);
+      } else if ((count ?? 0) < MAX_PHOTOS_PER_RECIPE) {
+        const { error: photoError } = await db.from('community_photos').insert({
+          recipe_slug: recipeSlug,
+          image_url: sampleImageUrl,
+          author_name: user.name,
+          author_social: null,
+          submitted_by: clientKey(request),
+        });
+        // 23505 is unique_violation: this photo is already in the gallery.
+        if (photoError && photoError.code !== '23505') {
+          logFallback('proposals/gallery', photoError);
+        }
       }
     }
 
-    const savedProposal: ProposalItem = {
-      id: data.id,
-      recipeSlug: data.recipe_slug,
-      title: data.title,
-      authorName: data.author_name,
-      authorAvatar: data.author_avatar,
-      sampleImageUrl: data.sample_image_url ?? null,
-      settings: data.settings,
-      whiteBalance: data.white_balance,
-      voteCount: data.vote_count,
-      hasVoted: false,
-      createdAt: data.created_at,
-    };
+    /* The poster's page draws this answer straight into the list, so it is
+       held to the GET's rule: a URL an editor hid (the gallery step above
+       found it already there) comes back with no sample, as it will on reload. */
+    const [savedProposal] = withoutHiddenSamples(
+      [
+        {
+          id: data.id,
+          recipeSlug: data.recipe_slug,
+          title: data.title,
+          authorName: data.author_name,
+          authorAvatar: data.author_avatar,
+          sampleImageUrl: data.sample_image_url ?? null,
+          settings: data.settings,
+          whiteBalance: data.white_balance,
+          voteCount: data.vote_count,
+          hasVoted: false,
+          createdAt: data.created_at,
+        } satisfies ProposalItem,
+      ],
+      await hiddenPhotoUrls(recipeSlug),
+    );
 
     return NextResponse.json({ proposal: savedProposal, source: 'supabase' });
   } catch (err) {

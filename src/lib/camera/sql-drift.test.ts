@@ -32,7 +32,15 @@ import { RECIPE_ID_RE } from './schema';
  * about privileges; this file is only about values.
  */
 
-const ROOTS = ['supabase/migrations', 'supabase/content/migrations'] as const;
+const CONTROL_ROOT = 'supabase/migrations';
+const CONTENT_ROOT = 'supabase/content/migrations';
+const ROOTS = [CONTROL_ROOT, CONTENT_ROOT] as const;
+
+/** The id shape each root's `recipes` CHECK must store; see the last case. */
+const ID_CHECK: Record<(typeof ROOTS)[number], RegExp> = {
+  [CONTENT_ROOT]: RECIPE_ID_RE,
+  [CONTROL_ROOT]: /^SCL-(PP|CL)-\d{3}$/,
+};
 
 async function build(root: string): Promise<PGlite> {
   const db = new PGlite();
@@ -128,7 +136,19 @@ describe.each(ROOTS)('SQL / constants drift in %s', (root) => {
     expect(listed(await check(`recipes_wb_shift_${axis}_axis_check`))).toEqual([...letters]);
   });
 
-  it('id check matches the app-side id pattern', async () => {
-    expect(await check('recipes_id_check')).toContain(`'${RECIPE_ID_RE.source.replace('\\d', '[0-9]')}'`);
+  it('id check stores the shape its root is meant to store', async () => {
+    /* Per root. The content root is where recipes are written, so its latest
+       CHECK is the app's id pattern. The control root's `recipes` is applied
+       history — the rollback copy, created with the SCL- CHECK in 0001 — and
+       rewriting an applied migration is the one thing a history exists to
+       prevent, so it keeps that shape and is pinned to it here. */
+    const pattern = /'([^']*)'/.exec(await check('recipes_id_check'))?.[1];
+    expect(pattern).toBe(ID_CHECK[root].source.replace('\\d', '[0-9]'));
+  });
+
+  it('id format check uses the same prefix as the id check', async () => {
+    const def = await check('recipes_id_matches_format');
+    expect(def).toContain('upper((format)::text)');
+    expect(def.includes("'SCL-'")).toBe(root === CONTROL_ROOT);
   });
 });

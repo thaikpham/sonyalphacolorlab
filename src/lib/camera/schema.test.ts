@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { clSettingsSchema, ppSettingsSchema, recipeSchema, whiteBalanceSchema } from './schema';
+import {
+  clSettingsSchema,
+  ppSettingsSchema,
+  RECIPE_ID_RE,
+  RECIPE_ID_TRANSITION_RE,
+  recipeSchema,
+  whiteBalanceSchema,
+} from './schema';
 import { formatClValue, formatWhiteBalance, parseWhiteBalance } from './format';
 import {
   CL_MONOCHROME_LOOKS,
@@ -134,28 +141,49 @@ describe('creative look', () => {
 });
 
 describe('recipe', () => {
-  const base = { slug: 'mojave-sun', name: 'SCL-PP-001: Mojave Sun', whiteBalance: wb, tags: ['warm'], published: true };
+  const base = { slug: 'pp-001-vivid-nostalgia-film', name: 'PP-001-Vivid Nostalgia Film', whiteBalance: wb, tags: ['warm'], published: true };
 
   it('accepts both formats', () => {
-    expect(recipeSchema.safeParse({ ...base, id: 'SCL-PP-001', format: 'pp', settings: validPp }).success).toBe(true);
+    expect(recipeSchema.safeParse({ ...base, id: 'PP-001', format: 'pp', settings: validPp }).success).toBe(true);
     expect(
-      recipeSchema.safeParse({ ...base, id: 'SCL-CL-001', slug: 'x', name: 'y', format: 'cl', settings: validCl }).success,
+      recipeSchema.safeParse({ ...base, id: 'CL-001', slug: 'x', name: 'y', format: 'cl', settings: validCl }).success,
+    ).toBe(true);
+    /* A row the content migration has not reached yet still reads. */
+    expect(recipeSchema.safeParse({ ...base, id: 'SCL-PP-001', format: 'pp', settings: validPp }).success).toBe(true);
+  });
+
+  it('accepts the code shape the ids are moving to, in both formats', () => {
+    expect(recipeSchema.safeParse({ ...base, id: 'PP-001', format: 'pp', settings: validPp }).success).toBe(true);
+    expect(
+      recipeSchema.safeParse({ ...base, id: 'CL-045', slug: 'x', name: 'y', format: 'cl', settings: validCl }).success,
     ).toBe(true);
   });
 
   it('rejects an id whose segment disagrees with the format', () => {
     expect(recipeSchema.safeParse({ ...base, id: 'SCL-CL-001', format: 'pp', settings: validPp }).success).toBe(false);
+    expect(recipeSchema.safeParse({ ...base, id: 'CL-001', format: 'pp', settings: validPp }).success).toBe(false);
+    expect(
+      recipeSchema.safeParse({ ...base, id: 'PP-001', slug: 'x', name: 'y', format: 'cl', settings: validCl }).success,
+    ).toBe(false);
+  });
+
+  it('keeps RECIPE_ID_RE to the code shape the CHECK enforces, and reading tolerant', () => {
+    expect(RECIPE_ID_RE.test('PP-001')).toBe(true);
+    expect(RECIPE_ID_RE.test('CL-042')).toBe(true);
+    expect(RECIPE_ID_RE.test('SCL-PP-001')).toBe(false);
+    expect(RECIPE_ID_TRANSITION_RE.test('PP-001')).toBe(true);
+    expect(RECIPE_ID_TRANSITION_RE.test('SCL-PP-001')).toBe(true);
   });
 
   it('rejects legacy ids that predate the two-format split', () => {
-    for (const id of ['scl-001', 'SCL-44', 'PROCOLOR-001']) {
+    for (const id of ['scl-001', 'SCL-44', 'PROCOLOR-001', 'pp-001', 'PP-1000', 'XSCL-PP-001', 'SCL-PP-01', 'SCL--PP-001']) {
       expect(recipeSchema.safeParse({ ...base, id, format: 'pp', settings: validPp }).success).toBe(false);
     }
   });
 
   it('rejects a recipe carrying both formats of settings', () => {
     // PP and Creative Look are mutually exclusive on the camera.
-    const both = { ...base, id: 'SCL-PP-001', format: 'pp', settings: { ...validPp, ...validCl } };
+    const both = { ...base, id: 'PP-001', format: 'pp', settings: { ...validPp, ...validCl } };
     expect(recipeSchema.safeParse(both).success).toBe(false);
   });
 });

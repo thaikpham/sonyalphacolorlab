@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { SiteHeader } from '@/components/site-header';
 import { RecipeGallery } from '@/components/recipe-gallery';
 import { RecipePalette } from '@/components/recipe-palette';
+import { RecipeCard } from '@/components/recipe-card';
 import { RecipeStructuredData } from '@/components/structured-data';
 import { ClTable, PpTable } from '@/components/settings-table';
 import { RecipeCommunitySection } from '@/components/recipe-community-section';
@@ -11,17 +12,26 @@ import { RecipeLearnMore } from '@/components/content/reverse-links';
 import { TweakPanel } from '@/components/tweak-panel';
 import { WbShiftPlane } from '@/components/wb-shift-plane';
 import { FormattedWb, WbTable } from '@/components/wb-table';
-import { Link } from '@/i18n/navigation';
+import { MyCameraWarning } from '@/components/my-camera-warning';
+import { Link, permanentRedirect, redirect } from '@/i18n/navigation';
 import { routing, type Locale } from '@/i18n/routing';
 import { accentCss } from '@/lib/camera/color';
 import { CREATIVE_LOOKS } from '@/lib/camera/constants';
-import { getRecipe, listSlugs } from '@/lib/recipes/source';
+import { getSonyCameras } from '@/lib/cameras/data';
+import { cameraOptions, cameraWarnings } from '@/lib/cameras/my-camera';
+import { colorlabPath, moreForSituation } from '@/lib/recipes/browse';
+import { listRecipes, listSlugs } from '@/lib/recipes/source';
+import { isPermanentMove } from '@/lib/recipes/slug-aliases';
+import { resolveRecipeSlug } from '@/lib/recipes/slug-resolve';
+import { SITUATIONS, type SituationId } from '@/lib/recipes/taxonomy';
 import { recipeTitle } from '@/lib/recipes/title';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
 const OG_LOCALES: Record<Locale, string> = { en: 'en_US', vi: 'vi_VN' };
 
+/* What the database holds, in whichever spelling it holds it. Any other
+   spelling still renders on demand — and redirects, below. */
 export async function generateStaticParams() {
   return (await listSlugs()).map((slug) => ({ slug }));
 }
@@ -31,9 +41,12 @@ export async function generateMetadata({
 }: {
   params: Promise<{ slug: string; locale: Locale }>;
 }): Promise<Metadata> {
-  const { slug, locale } = await params;
-  const recipe = await getRecipe(slug, locale);
-  if (!recipe) return {};
+  const { slug: requested, locale } = await params;
+  const resolved = await resolveRecipeSlug(requested, locale);
+  if (!resolved) return {};
+  /* The page redirects a former or not-yet-migrated spelling; the canonical
+     is the one it redirects to. */
+  const { recipe, slug } = resolved;
 
   const path = locale === routing.defaultLocale ? `/recipe/${slug}` : `/${locale}/recipe/${slug}`;
 
@@ -70,15 +83,34 @@ export default async function RecipePage({
 }: {
   params: Promise<{ slug: string; locale: Locale }>;
 }) {
-  const { slug, locale } = await params;
+  const { slug: requested, locale } = await params;
   setRequestLocale(locale);
 
-  const [recipe, t, tBrowse] = await Promise.all([
-    getRecipe(slug, locale),
+  const [resolved, catalogue, t, tBrowse, products] = await Promise.all([
+    resolveRecipeSlug(requested, locale),
+    /* The same unfiltered read the browse makes — one cache entry per locale,
+       nothing new in its key — for the row of other recipes at the foot. */
+    listRecipes(locale),
     getTranslations('recipe'),
     getTranslations('browse'),
+    getSonyCameras(),
   ]);
-  if (!recipe) notFound();
+  if (!resolved) notFound();
+  const { recipe, slug } = resolved;
+  /* A slug the recipe had, or will have once the content migration runs,
+     lands on the one the catalogue holds now. Permanent only from a former
+     slug to the current one: the reverse is the unmigrated database, and a
+     cached 308 that way would loop once the migration turns it round. */
+  if (slug !== requested) {
+    const to = { href: `/recipe/${slug}`, locale };
+    if (isPermanentMove(requested, slug)) permanentRedirect(to);
+    redirect(to);
+  }
+
+  /* What each camera choice has to say about this recipe, worked out here so
+     the page stays prerendered: the cookie is read in the browser, by the
+     island, never by this render (ADR 0006). */
+  const warnings = cameraWarnings(recipe, cameraOptions(products));
 
   const accent = accentCss(recipe.accent);
   const title = recipeTitle(recipe.name);
@@ -96,6 +128,12 @@ export default async function RecipePage({
     { key: 'style', href: `/colorlab?style=${recipe.style}`, label: tBrowse(`styles.${recipe.style}`) },
     { key: 'tone', href: `/colorlab?tone=${recipe.tone}`, label: tBrowse(`tones.${recipe.tone}`) },
   ];
+  /* Other recipes for this one's primary situation, or nothing at all — the
+     row is left out rather than shown empty. */
+  const more = moreForSituation(recipe, catalogue);
+  const situationLabels = Object.fromEntries(
+    SITUATIONS.map((id) => [id, tBrowse(`situations.${id}`)]),
+  ) as Record<SituationId, string>;
   const look =
     recipe.format === 'cl' ? CREATIVE_LOOKS.find((l) => l.code === recipe.settings.look) : null;
   const shareUrl = `${SITE_URL}${
@@ -172,6 +210,13 @@ export default async function RecipePage({
               <p className="mt-4 whitespace-pre-line leading-relaxed text-ink-muted text-body sm:text-body-lg">
                 {recipe.description}
               </p>
+
+              {/* The reader's camera, when it cannot install this recipe or
+                  may not: an accuracy line, one per reason. Empty until the
+                  browser has read the cookie, and then usually still empty. */}
+              <div className="mt-4 empty:hidden">
+                <MyCameraWarning warnings={warnings} />
+              </div>
 
               {/* The recipe's colour, read off its settings: the same nine
                   swatches as its card, named, with the one accuracy line the
@@ -262,6 +307,35 @@ export default async function RecipePage({
             <RecipeLearnMore recipeId={recipe.id} format={recipe.format} locale={locale} />
           </div>
         </div>
+
+        {/* Other recipes for the primary situation, as the browse draws them.
+            The heading is the way into that situation's page, so the row
+            needs no "see all" line. An h2 over the cards' h3s. */}
+        {more ? (
+          <section aria-labelledby="more-for-situation" className="mt-16 flex flex-col gap-4">
+            <h2 id="more-for-situation" className="text-title-3 font-semibold text-ink">
+              <Link
+                href={colorlabPath(more.situation)}
+                className="inline-flex min-h-[var(--layout-touch-target)] items-center gap-2 transition-colors hover:text-accent-400"
+              >
+                {tBrowse('moreFor', { situation: situationLabels[more.situation] })}
+                <svg className="h-4 w-4 shrink-0 fill-current" viewBox="0 0 16 16" aria-hidden="true">
+                  <path d="M5.47 2.97a.75.75 0 0 1 1.06 0l4.5 4.5a.75.75 0 0 1 0 1.06l-4.5 4.5a.75.75 0 0 1-1.06-1.06L9.44 8 5.47 4.03a.75.75 0 0 1 0-1.06Z" />
+                </svg>
+              </Link>
+            </h2>
+            <ul className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
+              {more.recipes.map((r) => (
+                /* `grid` stretches the card to the row's height: a name
+                   that wraps to three lines no longer leaves its neighbour
+                   short. */
+                <li key={r.id} className="grid">
+                  <RecipeCard recipe={r} situationLabels={situationLabels} />
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
       </main>
     </div>
   );
