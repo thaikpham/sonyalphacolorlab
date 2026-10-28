@@ -24,8 +24,9 @@ browser through two value imports:
 1. **Zod-free leaf modules.** Constants and regexes client code needs move to
    modules that import no zod; the schema modules re-export them so no server
    caller changes. `RECIPE_ID_RE`, `RECIPE_ID_TRANSITION_RE`, `RECIPE_TAG_RE`
-   → `src/lib/camera/ids.ts`; the search limits and kind/scope lists →
-   `src/lib/search/limits.ts`. Any further path the guard (2) finds is fixed
+   → `src/lib/camera/ids.ts`; the search request schema moves the other way,
+   out of `src/lib/search/types.ts` into `src/lib/search/request.ts`, so
+   `types.ts` (limits, kinds, scopes) is zod-free. Any further path the guard (2) finds is fixed
    the same way.
 2. **Guard.** `src/app/client-bundle.test.ts` walks the static import graph
    (value imports only; `import type` and `export type` erase) from every file
