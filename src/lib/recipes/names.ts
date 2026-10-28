@@ -155,6 +155,9 @@ function measure(p: Palette): Measure {
  */
 const delta = (a: number, b: number) => Math.round((a - b) * 1e6) / 1e6;
 
+/** The step a swatch's chroma is floored to in `palette.ts`'s `finish()`. */
+const CHROMA_STEP = 1e-4;
+
 /** No cast under any light: Auto publishes no Kelvin and there is no shift. */
 const NO_CAST = { mode: 'auto', auto: WB_AUTO_MODES[0] } as const;
 
@@ -359,7 +362,9 @@ function colourReading(r: NameInput, m: Measure, scale: Scale): Candidate {
     paletteFor({ ...referenceInput(r.format), whiteBalance: r.whiteBalance }, { light: designedLight(r) }),
   );
   const d = delta(m.chroma, reference.chroma);
-  const f = graded(d, scale.reach.chroma);
+  /* Each swatch's chroma is floored to 0.0001 (`palette.ts`), so a mean that
+     moved by less than one of those steps moved by rounding, not by a dial. */
+  const f = Math.abs(d) < CHROMA_STEP ? 0 : graded(d, scale.reach.chroma);
   return { word: COLOUR_BY_GRADE(f), salience: Math.abs(f), from: `chroma ${signed(d)}` };
 }
 
