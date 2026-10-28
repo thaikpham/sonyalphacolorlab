@@ -125,29 +125,25 @@ export async function RecipeBrowse({ model, title }: { model: BrowseModel; title
       {recipes.length === 0 ? (
         /* `break-words`: the query is echoed below, and a pasted URL is one
            unbreakable token that pushed a phone-width page sideways. */
-        <p className="py-20 text-center text-ink-muted break-words">
-          {t('emptyTitle')}{' '}
+        <div className="flex flex-col items-center gap-6 py-20 text-center break-words">
+          <p className="text-ink-muted">{t('emptyTitle')}</p>
           {/* Clears every filter, which means this page with no query — not
               `/`, which is now the launcher and would drop the reader out of
               the app they are searching in. */}
-          <Link href="/colorlab" className="text-ink underline underline-offset-4">
+          <Link href="/colorlab" className="btn-glass">
             {t('emptyAction')}
-          </Link>{' '}
-          {t('emptyTail', { total: all.length })}
+          </Link>
           {/* A query no recipe answers may still be answered elsewhere on
               the site — "ISO Auto" is an article, "a7cii" a camera. */}
           {filters.q ? (
-            <>
-              {' '}
-              <Link
-                href={{ pathname: '/search', query: { q: filters.q } }}
-                className="text-accent-400 underline underline-offset-4"
-              >
-                {tSearch('searchEverything', { query: filters.q })}
-              </Link>
-            </>
+            <Link
+              href={{ pathname: '/search', query: { q: filters.q } }}
+              className="text-accent-400 underline underline-offset-4"
+            >
+              {tSearch('searchEverything', { query: filters.q })}
+            </Link>
           ) : null}
-        </p>
+        </div>
       ) : (
         <section aria-labelledby="browse-grid" className="flex flex-col gap-4">
           {landing ? (
