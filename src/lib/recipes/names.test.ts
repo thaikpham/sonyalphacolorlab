@@ -36,7 +36,7 @@ import {
   slugFor,
 } from './names';
 import { SITUATION_SYNONYMS, TONES } from './taxonomy';
-import { TAXONOMY_MANIFEST, designedLightFor, taxonomyFor } from './taxonomy-assign';
+import { TAXONOMY_MANIFEST, designedLightFor, editorialToneFor, taxonomyFor } from './taxonomy-assign';
 
 const seed = recipesSeed as unknown as Recipe[];
 const byId = new Map(seed.map((r) => [r.id, r]));
@@ -529,13 +529,15 @@ describe('every recipe in the seed', () => {
      would be a contradiction on screen. The mid swatch carries the
      white-balance cast purest; its projection on the amber axis (hue 65)
      must lean the way the name does, under the light the recipe is built for. */
-  it('names a temperature only when its palette leans that way', () => {
+  it('names a temperature only when its palette leans that way, unless an editor set the tone', () => {
     const AMBER = 65;
     for (const r of seed) {
       const w = wordsOf(r.name);
       const warm = TONE_WORDS.warm.includes(w[0]);
       const cool = TONE_WORDS.cool.includes(w[0]);
       if (!warm && !cool) continue;
+      /* The editor's side stands: pinned by the next test. */
+      if (editorialToneFor(r.id)) continue;
       const mid = paletteFor(r, { light: designedLightFor(r.id) ?? undefined }).find((s) => s.id === 'mid')!;
       const lean = mid.c * Math.cos(((mid.h - AMBER) * Math.PI) / 180);
       if (warm) expect(lean, `${r.id} "${r.name}" names warm, its palette leans ${lean.toFixed(3)}`).toBeGreaterThan(0.005);
@@ -543,11 +545,27 @@ describe('every recipe in the seed', () => {
     }
   });
 
-  /* Where an editor has set the tone in data/recipe-taxonomy.json, the
-     editor's word stands and the name may read otherwise (the editor reads
-     the scene; the name reads the palette) — those are reported, not pinned.
-     Where the tone is read off the White Balance alone, the two must agree,
-     except for the Creative Looks listed here, whose Look and dials move the
+  /* Where an editor set the tone in data/recipe-taxonomy.json, the name says
+     that side: the editor set it because the photographs disagree with the
+     White Balance arithmetic (the shift step's mired value is fitted, not
+     published), and a name reading Neutral beside a Warm chip and a
+     golden-hour description reads as a mistake. The palette only chooses how
+     strongly: Golden over Warm, Icy over Cool. */
+  it('says the side an editor set, where one is set', () => {
+    let checked = 0;
+    for (const r of seed) {
+      const tone = editorialToneFor(r.id);
+      if (!tone || tone === 'mono') continue;
+      checked++;
+      const first = wordsOf(r.name)[0];
+      const allowed = tone === 'neutral' ? ['Neutral'] : TONE_WORDS[tone];
+      expect(allowed, `${r.id} "${r.name}": editor set ${tone}`).toContain(first);
+    }
+    expect(checked).toBeGreaterThan(0);
+  });
+
+  /* Where the tone is read off the White Balance alone, the name and the
+     browse tone agree, except for the Creative Looks listed here, whose Look and dials move the
      palette's cast where the White Balance cannot see: Instant lays its own
      warm cast over AWB (CL-020); Film's lower chroma and Saturation −2 take
      Cloudy A1.5 back inside one shift step of neutral (CL-002). A new

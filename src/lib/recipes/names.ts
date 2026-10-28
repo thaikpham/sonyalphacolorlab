@@ -53,7 +53,7 @@ import { DAYLIGHT_K, PALETTE_WEIGHTS, REFERENCE, SWATCH_IDS, paletteFor, type Pa
 import type { ClSettings, PpSettings } from '../camera/schema';
 import { recipeIdKey } from './recipe-id';
 import type { ToneId } from './taxonomy';
-import { designedLightFor } from './taxonomy-assign';
+import { designedLightFor, editorialToneFor } from './taxonomy-assign';
 
 /** What a name is read from: the palette's input, plus the id for its number and designed light. */
 export type NameInput = AccentInput & { readonly id: string };
@@ -308,13 +308,21 @@ function castOf(palette: Palette): { warmth: number; tint: number } {
 const bandFor = (amount: number | undefined) => (amount ? MIRED_PER_SHIFT_STEP : NEUTRAL_MIRED_BAND);
 
 /**
- * Slot 1. Mono or Sepia for a monochrome recipe; otherwise the amber–blue
- * grade, unless the green–magenta lean is larger by more than its own
- * neutral band — then Rosy or Mint.
+ * Slot 1. Mono or Sepia for a monochrome recipe. Where an editor set the
+ * recipe's tone in the manifest, that side wins — it was set because the
+ * photographs disagree with the White Balance arithmetic, and a name that
+ * says Neutral beside a Warm chip and a golden-hour description reads as a
+ * mistake — and the palette only chooses how strongly to say it. Otherwise
+ * the amber–blue grade, unless the green–magenta lean is larger by more than
+ * its own neutral band — then Rosy or Mint.
  */
 function temperature(r: NameInput, cast: { warmth: number; tint: number }): string {
   const mono = monochromeOf(r);
   if (mono) return mono === 'bw' ? 'Mono' : 'Sepia';
+  const editorial = editorialToneFor(r.id);
+  if (editorial === 'neutral') return 'Neutral';
+  if (editorial === 'warm') return gradeWarmth(cast.warmth) === 'strong-warm' ? 'Golden' : 'Warm';
+  if (editorial === 'cool') return gradeWarmth(cast.warmth) === 'strong-cool' ? 'Icy' : 'Cool';
   const shift = r.whiteBalance.shift;
   const margin = Math.abs(cast.tint) - Math.abs(cast.warmth);
   if (margin >= bandFor(shift?.gm?.amount)) return cast.tint > 0 ? 'Rosy' : 'Mint';

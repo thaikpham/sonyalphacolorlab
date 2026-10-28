@@ -42,8 +42,8 @@ export const EVAL_QUERIES: readonly EvalQuery[] = [
      only published recipe holding all three (data/recipes.seed.json). The
      names it carried before 2026-10-28 are not here: the owner dropped them,
      and search does not index them (R4 of the names design). */
-  { q: 'PP-001-Neutral Rosy Rich', locale: 'vi', type: 'exact', relevant: ['PP-001'], top1: 'PP-001' },
-  { q: 'Warm Deep Muted', locale: 'en', type: 'exact', relevant: ['CL-036'], top1: 'CL-036' },
+  { q: 'PP-001-Warm Rosy Rich', locale: 'vi', type: 'exact', relevant: ['PP-001'], top1: 'PP-001' },
+  { q: 'Warm Deep Muted', locale: 'en', type: 'exact', relevant: ['PP-025'], top1: 'PP-025' },
   { q: 'SCL-CL-017', locale: 'vi', type: 'exact', relevant: ['CL-017'], top1: 'CL-017' },
   { q: 'scl pp 009', locale: 'vi', type: 'exact', relevant: ['PP-009'], top1: 'PP-009' },
   /* The slug, as a reader pastes it from a link: the code. */
