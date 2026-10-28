@@ -70,6 +70,9 @@ House style, on top of those rules:
   question, answered by one `p` that stands alone. `h` has no level field, and
   `h` straight after `h` is a `repeatedBlock` with an empty précis — so no
   separate "Câu hỏi thường gặp" heading above them.
+  Each question costs two blocks of the article's budget in
+  `validateArticleShape`, so put most of them on a knowledge page and keep an
+  article to two or three.
 - `menu` for an old/new menu pair; both paths start `MENU` and use ` → `.
 - An article closes with a `checklist`; a knowledge page needs none.
 - No `figure` blocks: a picture is an uploaded asset, added from the page's

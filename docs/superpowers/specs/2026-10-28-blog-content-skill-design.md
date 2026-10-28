@@ -40,9 +40,13 @@ matters. Steps:
    - `tldr` first, then a `p` that opens with the definition ("X là …") in
      40–60 words;
    - every section a `h` whose following block gives the outline its précis;
-   - quick facts as a `table` (2 columns, 4–6 rows) when the topic has them;
-   - "Câu hỏi thường gặp" as a section: one `h` per question (level 3),
-     each answered by one `p` that stands alone — 3–5 questions people search;
+   - quick facts as a `table` (its head is three cells, `TableBlock`) when the
+     topic has them;
+   - FAQ: 3–5 questions people search, each its own `h` phrased as the
+     question and answered by one `p` that stands alone — no separate FAQ
+     heading (`h` has no level, and `h` after `h` is a `repeatedBlock`); most
+     of them on knowledge pages, two or three in an article, whose block
+     budget is `validateArticleShape`'s;
    - `menu` blocks for old/new menu pairs, terms as printed on the camera;
    - an article closes with a `checklist` (a knowledge page needs none);
    - `meta`: `related` and `prerequisites` by real id, `concepts` from
