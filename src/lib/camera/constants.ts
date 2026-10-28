@@ -122,12 +122,35 @@ export const PP_GAMMA = [
   'HLG', 'HLG1', 'HLG2', 'HLG3',
 ] as const;
 
+/**
+ * The S-Log and HLG families of `PP_GAMMA`, filtered from it rather than
+ * retyped, so a gamma added to either family joins by its name. The palette
+ * flattens both (`PALETTE_WEIGHTS.gamma`) and the recipe name calls them Flat.
+ */
+export const PP_FLAT_GAMMA: readonly (typeof PP_GAMMA)[number][] = PP_GAMMA.filter(
+  (g) => g.startsWith('S-Log') || g.startsWith('HLG'),
+);
+
 export const PP_COLOR_MODE = [
   'Movie', 'Still', 'S-Cinetone', 'Cinema', 'Pro',
   '709tone', 'ITU709 Matrix', 'Black & White',
   'S-Gamut', 'S-Gamut3', 'S-Gamut3.Cine',
   'BT.2020', '709',
 ] as const;
+
+/**
+ * The Gamma / Color Mode pair the guide gives as the camera's rendering
+ * without a Picture Profile, for still images (TP0000909109, re-read
+ * 2026-10-28): Gamma [Still] "Standard gamma curve for still images"; Color
+ * Mode [Still] "Color tones for [Still] gamma curve (standard color
+ * reproduction for still images when Picture Profile is not used)". The page
+ * marks no option "default"; [Movie] / [Movie] is the same statement for
+ * movies. The recipe name measures a Picture Profile against this pair.
+ */
+export const PP_STANDARD_STILL = { gamma: 'Still', colorMode: 'Still' } as const satisfies {
+  gamma: (typeof PP_GAMMA)[number];
+  colorMode: (typeof PP_COLOR_MODE)[number];
+};
 
 export const PP_BLACK_GAMMA_RANGE = ['Narrow', 'Middle', 'Wide'] as const;
 export const PP_KNEE_MODE = ['Auto', 'Manual'] as const;

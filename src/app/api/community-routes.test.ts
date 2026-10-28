@@ -9,7 +9,7 @@ import type { Recipe } from '@/lib/camera/schema';
 import { MAX_PHOTOS_PER_RECIPE } from '@/lib/community/gallery';
 import { PHOTO_COLUMNS } from '@/lib/community/columns';
 import { MODERATION_LIST_LIMIT } from '@/lib/community/moderation';
-import { formerSlugOf, slugAliases } from '@/lib/recipes/slug-aliases';
+import { slugAliases, slugHistory } from '@/lib/recipes/slug-aliases';
 
 import * as comments from './comments/route';
 import * as photos from './community-photos/route';
@@ -665,14 +665,16 @@ describe('GET /api/community-photos', () => {
 });
 
 /**
- * Slugs follow the names since 2026-10-24, and the two planes change at
- * different times: the control migration on merge, the content one by hand.
- * A row written while they disagree keeps the slug its page was read with
- * (S9), so every read asks for both spellings and every write keeps the one
+ * A seed recipe's slug has had three spellings (the first one, the code and
+ * name of 2026-10-24, the code alone since 2026-10-28), and the two planes
+ * change at different times: the control migration on merge, the content one
+ * by hand. A row written while they disagree keeps the slug its page was read
+ * with, so every read asks for every spelling and every write keeps the one
  * the request named.
  */
-describe('community rows across the slug rename', () => {
-  const FORMER = formerSlugOf(PP.slug)!;
+describe('community rows across the slug renames', () => {
+  const [FORMER, MIDDLE] = slugHistory(PP.slug);
+  const EVERY = [FORMER, PP.slug, MIDDLE];
   type Row = { recipe_slug: string; image_url: string; approved: boolean };
   let gallery: Row[];
 
@@ -685,6 +687,7 @@ describe('community rows across the slug rename', () => {
   beforeEach(() => {
     gallery = [
       { recipe_slug: FORMER, image_url: 'https://cdn.example.com/before.jpg', approved: true },
+      { recipe_slug: MIDDLE, image_url: 'https://cdn.example.com/between.jpg', approved: true },
       { recipe_slug: PP.slug, image_url: 'https://cdn.example.com/after.jpg', approved: true },
     ];
     db.answer = (call) => {
@@ -707,37 +710,40 @@ describe('community rows across the slug rename', () => {
     };
   });
 
-  it('has a former spelling to test with', () => {
-    expect(FORMER).toBeTruthy();
-    expect(FORMER).not.toBe(PP.slug);
+  it('has three spellings to test with, the code slug newest', () => {
+    expect(new Set(EVERY).size).toBe(3);
+    expect(PP.slug).toBe(PP.id.toLowerCase());
+    expect(slugHistory(PP.slug)).toEqual([FORMER, MIDDLE, PP.slug]);
   });
 
   it.each([
-    ['the current slug', () => PP.slug],
-    ['the former slug', () => FORMER],
-  ])('shows the photos sent under either spelling when asked by %s', async (_label, slug) => {
+    ['the code slug', () => PP.slug],
+    ['the 2026-10-24 slug', () => MIDDLE],
+    ['the first slug', () => FORMER],
+  ])('shows the photos sent under every spelling when asked by %s', async (_label, slug) => {
     const res = await photos.GET(get(`/api/community-photos?slug=${slug()}`));
     expect((await res.json()).photos.sort()).toEqual([
       'https://cdn.example.com/after.jpg',
       'https://cdn.example.com/before.jpg',
+      'https://cdn.example.com/between.jpg',
     ]);
   });
 
-  it('asks comments and proposals for both spellings too', async () => {
+  it('asks comments and proposals for every spelling too', async () => {
     await comments.GET(get(`/api/comments?slug=${FORMER}`));
     await proposals.GET(get(`/api/proposals?slug=${FORMER}`));
     for (const table of ['recipe_comments', 'recipe_proposals']) {
-      expect(callsTo(table, 'select')[0].filters, table).toContainEqual(['recipe_slug', [FORMER, PP.slug]]);
+      expect(callsTo(table, 'select')[0].filters, table).toContainEqual(['recipe_slug', EVERY]);
     }
   });
 
-  it('counts the cap across both spellings, and writes under the slug the request named', async () => {
+  it('counts the cap across every spelling, and writes under the slug the request named', async () => {
     const res = await photos.POST(
       post('/api/community-photos', { slug: FORMER, imageUrl: 'https://cdn.example.com/third.jpg' }),
     );
     expect(res.status).toBe(200);
     const [count] = callsTo('community_photos', 'select').filter((c) => c.options?.head);
-    expect(count.filters).toEqual([['recipe_slug', [FORMER, PP.slug]]]);
+    expect(count.filters).toEqual([['recipe_slug', EVERY]]);
     const [insert] = callsTo('community_photos', 'insert');
     expect(insert.payload).toMatchObject({ recipe_slug: FORMER });
   });
@@ -748,8 +754,10 @@ describe('community rows across the slug rename', () => {
   const HIDDEN = 'https://cdn.example.com/hidden.jpg';
 
   it.each([
-    ['current', 'former', () => PP.slug, () => FORMER],
-    ['former', 'current', () => FORMER, () => PP.slug],
+    ['code', 'first', () => PP.slug, () => FORMER],
+    ['first', 'code', () => FORMER, () => PP.slug],
+    ['2026-10-24', 'code', () => MIDDLE, () => PP.slug],
+    ['code', '2026-10-24', () => PP.slug, () => MIDDLE],
   ])('keeps a photo hidden under the %s slug hidden when it is sent again under the %s one', async (_a, _b, hiddenUnder, sentUnder) => {
     gallery.push({ recipe_slug: hiddenUnder(), image_url: HIDDEN, approved: false });
     const res = await photos.POST(post('/api/community-photos', { slug: sentUnder(), imageUrl: HIDDEN }));
@@ -788,9 +796,9 @@ describe('community rows across the slug rename', () => {
     expect(callsTo('community_photos', 'insert')).toHaveLength(0);
   });
 
-  it('refuses a photo once the two spellings together hold the cap', async () => {
+  it('refuses a photo once the spellings together hold the cap', async () => {
     gallery = Array.from({ length: MAX_PHOTOS_PER_RECIPE }, (_, i) => ({
-      recipe_slug: i % 2 ? FORMER : PP.slug,
+      recipe_slug: EVERY[i % 3],
       image_url: `https://cdn.example.com/${i}.jpg`,
       approved: true,
     }));

@@ -2,7 +2,9 @@ import 'server-only';
 import { contentAdmin } from '@/lib/supabase/server';
 import { recipeSchema, type Recipe } from '../camera/schema';
 import { fromRow, RECIPE_COLUMNS, toRow, type RecipeRow } from './row';
-import { slugAliases } from './slug-aliases';
+import { nameAmong, type NameAmong } from './names';
+import { recipeIdKey } from './recipe-id';
+import { RETIRED_RECIPE_IDS } from './retired';
 import type { RecipeRecord, UnreadableRecipe } from './admin-types';
 import {
   devGetRecipe,
@@ -173,7 +175,11 @@ async function allIds(): Promise<string[]> {
   return (data as { id: string }[]).map((r) => r.id);
 }
 
-/** Kebab-case, diacritics folded, so a Vietnamese name still yields a URL. */
+/**
+ * Kebab-case, diacritics folded. No longer where a slug comes from — a slug
+ * is the code (`slugFor`), fixed at creation — but still the folding the
+ * editor's tag box mirrors (`normaliseTag`, pinned in recipe-draft.test.ts).
+ */
 export function slugifyRecipe(input: string): string {
   return input
     .normalize('NFD')
@@ -187,45 +193,37 @@ export function slugifyRecipe(input: string): string {
     .replace(/-+$/g, '');
 }
 
+/** The withdrawn Picture Profiles, in either id shape: stored, unpublished, never named among. */
+const WITHDRAWN = new Set(RETIRED_RECIPE_IDS.map(recipeIdKey));
+
 /**
- * A slug nothing else owns.
+ * The name /admin writes for a recipe: computed from the recipe's own
+ * validated settings (R3 of the 2026-10-28 names design). Nobody types a
+ * name, so nothing in a request body can set one; a create and every save
+ * recompute it.
  *
- * `slug` is unique in SQL, so a collision is an error either way; resolving it
- * here means an editor naming a second recipe "Golden Hour" gets
- * `golden-hour-2` instead of a save that fails and asks them to invent a
- * different name. Bounded, then a timestamp: a loop with no ceiling against a
- * database is a way to hang a request.
+ * Named among the stored rows minus the withdrawn ids (`RETIRED_RECIPE_IDS`),
+ * drafts included, with every other row's stored name held fixed
+ * (`nameAmong`): a save writes one row, so it may not take words another row
+ * holds and leave that row holding them too. The withdrawn Picture Profiles
+ * are left out because they are unpublished but still stored with their
+ * settings, and `seed:emit` and `library:sync` never name against them — with
+ * them in, re-saving a seed recipe with no dial changed could rename it away
+ * from the name the next `library:sync` writes back. With the store equal to
+ * the seed, an unchanged recipe keeps its seed name.
+ *
+ * `ok: false` when every honest name for these settings is held by a row
+ * that does not read alike: the save is refused, never given a duplicate.
  */
-export async function uniqueRecipeSlug(name: string, ownId?: string): Promise<string> {
-  const base = slugifyRecipe(name) || `cong-thuc-${Date.now().toString(36)}`;
-
-  /* One loop, two backends, so the suffix rule cannot drift between local
-     development and production. */
-  const taken = async (slug: string): Promise<boolean> => {
-    /* Either spelling of a seed recipe's slug is that recipe's, in whichever
-       state the content plane is (`slug-aliases.ts`): a new recipe under one
-       would answer its links and inherit its comments. */
-    if (slugAliases(slug).length > 1) return true;
-    if (isRecipeDevStore()) {
-      const owner = devListRecipes().find((r) => r.recipe.slug === slug);
-      return Boolean(owner) && owner?.recipe.id !== ownId;
-    }
-    const { data, error } = await contentAdmin()
-      .from('recipes')
-      .select('id')
-      .eq('slug', slug)
-      .maybeSingle();
-    /* A read that failed has not said the slug is free. Discarding `error`
-       did, and the insert then failed on the unique key instead. */
-    if (error) throw new Error(error.message);
-    return Boolean(data) && (data as { id: string } | null)?.id !== ownId;
-  };
-
-  for (let n = 1; n <= 20; n += 1) {
-    const candidate = n === 1 ? base : `${base}-${n}`;
-    if (!(await taken(candidate))) return candidate;
-  }
-  return `${base}-${Date.now().toString(36)}`;
+export async function computedRecipeName(recipe: Recipe): Promise<NameAmong> {
+  const { records } = await listRecipeRows();
+  const self = recipeIdKey(recipe.id);
+  return nameAmong(
+    recipe,
+    records
+      .map((r) => r.recipe)
+      .filter((r) => recipeIdKey(r.id) !== self && !WITHDRAWN.has(recipeIdKey(r.id))),
+  );
 }
 
 // ---------------------------------------------------------------------------

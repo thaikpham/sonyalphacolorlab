@@ -3,6 +3,8 @@ import { PGlite } from '@electric-sql/pglite';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { recipeIdKey } from './recipe-id';
 import { toRow } from './row';
+import { slugAliases } from './slug-aliases';
+import { SLUG_MOVES } from './slug-moves';
 import { PHOTO_COLUMNS, PROPOSAL_COLUMNS } from '../community/columns';
 import type { Recipe } from '../camera/schema';
 
@@ -293,7 +295,9 @@ describe('migrations', () => {
     const file = MIGRATIONS.find((f) => f.startsWith('0020_'));
     expect(file).toBe('0020_recipe_slugs_to_codes.sql');
     const sql = readFileSync(`supabase/migrations/${file}`, 'utf8');
-    const FORMER = JSON.parse(readFileSync('data/former-slugs.json', 'utf8')) as Record<string, string>;
+    /* 0020's own list, frozen with it: `data/former-slugs.json` maps to the
+       code slugs since 2026-10-28. */
+    const FORMER = SLUG_MOVES[0].moves;
     const [former, current] = ['hue-silk', FORMER['hue-silk']];
     const [otherFormer, otherCurrent] = ['sh-sony-asia', FORMER['sh-sony-asia']];
     expect([current, otherCurrent]).toEqual(['pp-048-soft-clean-portrait', 'cl-013-airy-warm-pastel']);
@@ -368,6 +372,161 @@ describe('migrations', () => {
       { recipe_slug: current, image_url: 'https://cdn.example.com/slug-hidden.jpg', approved: false },
       { recipe_slug: current, image_url: 'https://cdn.example.com/slug-moved.jpg', approved: true },
     ]);
+
+    await db.exec(sql);
+    expect(await state()).toEqual(once);
+  });
+
+  it('moves community rows from both earlier spellings to the code slug, and only once', async () => {
+    /* 0021 already ran in beforeAll, on empty tables; running it again here
+       on rows production may hold is the proof, and so is a third run. The
+       rows sit under the first slug (written while the content plane still
+       held it, or a photo 0020 left behind) and under the 2026-10-24 one. */
+    const file = MIGRATIONS.find((f) => f.startsWith('0021_'));
+    expect(file).toBe('0021_recipe_slugs_to_code_only.sql');
+    expect(MIGRATIONS.at(-1)).toBe(file);
+    const sql = readFileSync(`supabase/migrations/${file}`, 'utf8');
+    const [OCT24, OCT28] = SLUG_MOVES;
+    const first = 'clear-day';
+    const middle = OCT24.moves[first];
+    const code = OCT28.moves[middle];
+    expect([middle, code]).toEqual(['pp-049-clean-natural-daylight', 'pp-049']);
+    const otherMiddle = OCT24.moves['sh-puy'];
+    const otherCode = OCT28.moves[otherMiddle];
+    expect(otherCode).toBe('cl-015');
+
+    await db.query(
+      `insert into recipe_comments (recipe_slug, author_name, author_email, content)
+       values ($1, 'Reader', 'reader@example.com', 'code-probe-first'),
+              ($2, 'Reader', 'reader@example.com', 'code-probe-middle'),
+              ($3, 'Reader', 'reader@example.com', 'code-probe-code'),
+              ($4, 'Reader', 'reader@example.com', 'code-probe-other'),
+              ('slug-probe-unmapped', 'Reader', 'reader@example.com', 'code-probe-unmapped')`,
+      [first, middle, code, otherMiddle],
+    );
+    const proposals = await db.query<{ id: string }>(
+      `insert into recipe_proposals (recipe_slug, title, author_name, author_email, settings, white_balance)
+       values ($1, 'code-probe', 'Reader', 'reader@example.com', '{}', '{}'),
+              ($2, 'code-probe', 'Reader', 'reader@example.com', '{}', '{}') returning id`,
+      [first, middle],
+    );
+    await db.query(`insert into proposal_votes (proposal_id, user_email) values ($1, 'code-voter@example.com')`, [
+      proposals.rows[0].id,
+    ]);
+
+    /* One URL per case, under the spellings named; `h` marks a hidden row. */
+    const url = (name: string) => `https://cdn.example.com/code-${name}.jpg`;
+    const photos: [string, string, boolean][] = [
+      [first, url('first-only'), true],
+      [middle, url('middle-only'), true],
+      [first, url('first-hidden'), false],
+      /* The two earlier spellings: the newer moves, the older stays. */
+      [first, url('first-and-middle'), true],
+      [middle, url('first-and-middle'), true],
+      /* Already under the code slug: neither earlier row moves. */
+      [middle, url('middle-and-code'), true],
+      [code, url('middle-and-code'), true],
+      [first, url('all-three'), true],
+      [middle, url('all-three'), true],
+      [code, url('all-three'), true],
+      /* A hidden row anywhere in a set hides the whole set. */
+      [first, url('hid-first'), false],
+      [middle, url('hid-first'), true],
+      [middle, url('hid-middle'), false],
+      [code, url('hid-middle'), true],
+      [first, url('hid-code'), true],
+      [code, url('hid-code'), false],
+      [first, url('hid-first-of-three'), false],
+      [middle, url('hid-first-of-three'), true],
+      [code, url('hid-first-of-three'), true],
+      /* Another recipe's spelling with the same URL is not a twin. */
+      [otherMiddle, url('hid-middle'), true],
+    ];
+    for (const [slug, image, approved] of photos) {
+      await db.query(
+        `insert into community_photos (recipe_slug, image_url, author_name, approved) values ($1, $2, 'Reader', $3)`,
+        [slug, image, approved],
+      );
+    }
+
+    const state = async () => ({
+      comments: (
+        await db.query(
+          `select recipe_slug, content from recipe_comments where content like 'code-probe-%' order by content`,
+        )
+      ).rows,
+      proposals: (
+        await db.query(`select id, recipe_slug from recipe_proposals where title = 'code-probe' order by id`)
+      ).rows,
+      votes: (await db.query(`select proposal_id from proposal_votes where user_email = 'code-voter@example.com'`))
+        .rows,
+      photos: (
+        await db.query<{ recipe_slug: string; image_url: string; approved: boolean }>(
+          `select recipe_slug, image_url, approved from community_photos
+            where image_url like 'https://cdn.example.com/code-%' order by image_url, recipe_slug`,
+        )
+      ).rows,
+    });
+
+    await db.exec(sql);
+    const once = await state();
+    expect(once.comments).toEqual([
+      { recipe_slug: code, content: 'code-probe-code' },
+      { recipe_slug: code, content: 'code-probe-first' },
+      { recipe_slug: code, content: 'code-probe-middle' },
+      { recipe_slug: otherCode, content: 'code-probe-other' },
+      { recipe_slug: 'slug-probe-unmapped', content: 'code-probe-unmapped' },
+    ]);
+    expect((once.proposals as { recipe_slug: string }[]).map((p) => p.recipe_slug)).toEqual([code, code]);
+    expect(once.votes).toEqual([{ proposal_id: proposals.rows[0].id }]);
+
+    /* Sorted here, by code unit, so the expectation does not lean on the
+       database's collation. */
+    const by = (name: string) =>
+      once.photos
+        .filter((p) => p.image_url === url(name))
+        .map((p) => [p.recipe_slug, p.approved] as const)
+        .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+    expect(by('first-only')).toEqual([[code, true]]);
+    expect(by('middle-only')).toEqual([[code, true]]);
+    expect(by('first-hidden')).toEqual([[code, false]]);
+    expect(by('first-and-middle')).toEqual([
+      [first, true],
+      [code, true],
+    ]);
+    expect(by('middle-and-code')).toEqual([
+      [code, true],
+      [middle, true],
+    ]);
+    expect(by('all-three')).toEqual([
+      [first, true],
+      [code, true],
+      [middle, true],
+    ]);
+    expect(by('hid-first')).toEqual([
+      [first, false],
+      [code, false],
+    ]);
+    /* The other recipe's row keeps its URL visible and moves to its own code. */
+    expect(by('hid-middle')).toEqual([
+      [otherCode, true],
+      [code, false],
+      [middle, false],
+    ]);
+    expect(by('hid-code')).toEqual([
+      [first, false],
+      [code, false],
+    ]);
+    expect(by('hid-first-of-three')).toEqual([
+      [first, false],
+      [code, false],
+      [middle, false],
+    ]);
+    /* Whatever stayed behind is under a spelling `slugAliases` still reads. */
+    for (const p of once.photos) {
+      if (p.recipe_slug === otherCode) continue;
+      expect(slugAliases(code), p.image_url).toContain(p.recipe_slug);
+    }
 
     await db.exec(sql);
     expect(await state()).toEqual(once);

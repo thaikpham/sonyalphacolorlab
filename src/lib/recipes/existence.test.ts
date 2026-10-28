@@ -84,14 +84,16 @@ describe('publishedRecipeExists', () => {
     expect(query.limit).toBe(1);
   });
 
-  /* The content plane's slugs change when the owner applies its migration,
-     at a time the code cannot know: a page read under either spelling must
-     still be writable (S9). */
-  it('asks for every spelling the slug has had, in both directions', async () => {
+  /* The content plane's slugs change when the owner applies each migration,
+     at a time the code cannot know: a page read under any spelling must
+     still be writable. */
+  it('asks for every spelling the slug has had, in every direction', async () => {
     await publishedRecipeExists('daylight-cinema');
-    expect(query.slugs).toEqual(['daylight-cinema', 'pp-027-vivid-daylight-cinema']);
+    expect(query.slugs).toEqual(['daylight-cinema', 'pp-027', 'pp-027-vivid-daylight-cinema']);
     await publishedRecipeExists('pp-027-vivid-daylight-cinema');
-    expect(query.slugs).toEqual(['pp-027-vivid-daylight-cinema', 'daylight-cinema']);
+    expect(query.slugs).toEqual(['pp-027-vivid-daylight-cinema', 'pp-027', 'daylight-cinema']);
+    await publishedRecipeExists('pp-027');
+    expect(query.slugs).toEqual(['pp-027', 'pp-027-vivid-daylight-cinema', 'daylight-cinema']);
     await publishedRecipeExists('never-existed');
     expect(query.slugs).toEqual(['never-existed']);
   });
@@ -129,7 +131,7 @@ describe('publishedRecipeFormat', () => {
     await expect(publishedRecipeFormat('fl-raoul-rutnam')).resolves.toBe('cl');
     expect(query.columns).toBe('format');
     expect(query.published).toBe(true);
-    expect(query.slugs).toEqual(['fl-raoul-rutnam', 'cl-001-film-hard-faded']);
+    expect(query.slugs).toEqual(['fl-raoul-rutnam', 'cl-001', 'cl-001-film-hard-faded']);
   });
 
   it('is null when no published row matches', async () => {

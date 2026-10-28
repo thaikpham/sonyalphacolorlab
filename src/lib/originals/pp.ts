@@ -18,11 +18,12 @@
  * one departure from Sony's pairing, by design and said so in each `intent`:
  * the curve's contrast under Still's hues.
  *
- * Names are `PP-NNN-Mood Words` (src/lib/recipes/names.ts). The `slug` here
- * is the one each was first published under, naming the place it was first
- * imagined for; the seed's slug is `slugFor(name)` (2026-10-24), and this one
- * is frozen in data/slug-moves/2026-10-24.json so its links and its place name
- * still find the recipe.
+ * No name here: `scripts/emit-seed.ts` computes each from the settings
+ * (`nameFor` in src/lib/recipes/names.ts, 2026-10-28). The `slug` here is the
+ * one each was first published under, naming the place it was first imagined
+ * for; the seed's slug is the code (`pp-048`, `slugFor`), and this one is the
+ * oldest spelling in data/slug-moves/, so its links and its place name still
+ * find the recipe.
  *
  * `published: false` on every one, deliberately (D8): the numbers are design
  * hypotheses until the owner has shot each on the a7 IV. Publishing is an
@@ -39,8 +40,14 @@
 
 import type { Recipe } from '../camera/schema';
 
+/** Omit over each member of the union, so `format` still decides `settings`. */
+type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
+
+/** A recipe as an originals file states it: everything but the name, which is computed. */
+export type UnnamedRecipe = DistributiveOmit<Recipe, 'name'>;
+
 export type OriginalRecipe = {
-  readonly recipe: Recipe;
+  readonly recipe: UnnamedRecipe;
   /** The brief the numbers were cooked to. */
   readonly intent: string;
   /** English description, the seed's `en` translation. */
@@ -52,7 +59,6 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'PP-048',
       slug: 'hue-silk',
-      name: 'PP-048-Soft Clean Portrait',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5300,
@@ -112,7 +118,6 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'PP-049',
       slug: 'clear-day',
-      name: 'PP-049-Clean Natural Daylight',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5500
@@ -166,7 +171,6 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'PP-050',
       slug: 'linen-editorial',
-      name: 'PP-050-Neutral Crisp Studio',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5600,
@@ -224,7 +228,6 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'PP-051',
       slug: 'sa-pa-morning',
-      name: 'PP-051-Range Soft Landscape',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5600,
@@ -284,7 +287,6 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'PP-052',
       slug: 'mekong-noon',
-      name: 'PP-052-Range Bright Daylight',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5400,
@@ -344,7 +346,6 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'PP-053',
       slug: 'mui-ne-dusk',
-      name: 'PP-053-Range Warm Dusk',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 6200
@@ -398,7 +399,6 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'PP-054',
       slug: 'phu-quoc-blue',
-      name: 'PP-054-Cyan Vivid Coast',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5200,
@@ -458,7 +458,6 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'PP-055',
       slug: 'tam-coc-green',
-      name: 'PP-055-Green Vivid Nature',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5800,
@@ -518,7 +517,6 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'PP-056',
       slug: 'hoi-an-lantern',
-      name: 'PP-056-Warm Vivid Festival',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 6000
@@ -571,7 +569,6 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'PP-057',
       slug: 'tet-blossom',
-      name: 'PP-057-Rosy Bright Portrait',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 6000,
@@ -631,7 +628,6 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'PP-058',
       slug: 'da-lat-mist',
-      name: 'PP-058-Cool Pastel Matte',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5200,
@@ -691,7 +687,6 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'PP-059',
       slug: 'ha-noi-winter',
-      name: 'PP-059-Warm Muted Nostalgia',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 6000,
@@ -749,7 +744,6 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'PP-060',
       slug: 'cho-lon-slide',
-      name: 'PP-060-Warm Dense Slide',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5000,
@@ -809,7 +803,6 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'PP-061',
       slug: 'sai-gon-cafe',
-      name: 'PP-061-Tungsten Soft Indoor',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 3400
@@ -862,7 +855,6 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'PP-062',
       slug: 'neon-night',
-      name: 'PP-062-Cyan Deep Night',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 3800,
@@ -922,7 +914,6 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'PP-063',
       slug: 'ben-thanh-night',
-      name: 'PP-063-Warm Vivid Night',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 4000
@@ -976,7 +967,6 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'PP-064',
       slug: 'old-quarter-mono',
-      name: 'PP-064-Mono Crisp Street',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5500
@@ -1030,7 +1020,6 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'PP-065',
       slug: 'pearl-mono',
-      name: 'PP-065-Mono Soft Portrait',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5500
@@ -1084,7 +1073,6 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'PP-066',
       slug: 'ho-tay-golden',
-      name: 'PP-066-Golden Soft Portrait',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 6000,
@@ -1144,7 +1132,6 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'PP-067',
       slug: 'moc-chau-frost',
-      name: 'PP-067-Cool Crisp Airy',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 4600,
@@ -1204,7 +1191,6 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'PP-068',
       slug: 'vung-tau-pop',
-      name: 'PP-068-Punchy Vivid Pop',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5400,
@@ -1264,7 +1250,6 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'PP-069',
       slug: 'hem-noir',
-      name: 'PP-069-Mono Hard Noir',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 7500
@@ -1318,7 +1303,6 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'PP-070',
       slug: 'late-night-mono',
-      name: 'PP-070-Mono Soft Night',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 4000
@@ -1372,7 +1356,6 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'PP-071',
       slug: 'silver-hard-muted',
-      name: 'PP-071-Silver Hard Muted',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5500,
@@ -1432,7 +1415,6 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'PP-072',
       slug: 'teal-orange-cinema',
-      name: 'PP-072-Teal Orange Cinema',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5600,
@@ -1492,7 +1474,6 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'PP-073',
       slug: 'bright-airy-studio',
-      name: 'PP-073-Bright Airy Studio',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5500
@@ -1546,7 +1527,6 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'PP-074',
       slug: 'dark-rich-velvet',
-      name: 'PP-074-Dark Rich Velvet',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5800,
@@ -1606,7 +1586,6 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'PP-075',
       slug: 'warm-pastel-cream',
-      name: 'PP-075-Warm Pastel Cream',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 6200,
@@ -1666,7 +1645,6 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'PP-076',
       slug: 'violet-cool-dusk',
-      name: 'PP-076-Violet Cool Dusk',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 4200,
@@ -1726,7 +1704,6 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'PP-077',
       slug: 'cool-muted-overcast',
-      name: 'PP-077-Cool Muted Overcast',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5000,
@@ -1784,7 +1761,6 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'PP-078',
       slug: 'amber-vivid-autumn',
-      name: 'PP-078-Amber Vivid Autumn',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 6000,
@@ -1844,7 +1820,6 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'PP-079',
       slug: 'warm-rich-table',
-      name: 'PP-079-Warm Rich Table',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5800,
@@ -1904,7 +1879,6 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'PP-080',
       slug: 'range-hlg-daylight',
-      name: 'PP-080-Range HLG Daylight',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5500
@@ -1958,7 +1932,6 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'PP-081',
       slug: 'flat-log-base',
-      name: 'PP-081-Flat Log Base',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5500
@@ -2010,7 +1983,6 @@ export const ORIGINAL_PP: readonly OriginalRecipe[] = [
     recipe: {
       id: 'PP-082',
       slug: 'cyan-vivid-monsoon',
-      name: 'PP-082-Cyan Vivid Monsoon',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 4800,

@@ -4,8 +4,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useAdminSession } from '@/components/admin-ui/session';
 import { FIELD, FIELD_SM } from '@/components/admin-ui/controls';
-import { CREATIVE_LOOK_CODES, PP_RANGES, CL_RANGES, WB_KELVIN } from '@/lib/camera/constants';
-import type { ClSettings, PpSettings, Recipe } from '@/lib/camera/schema';
+import { WB_KELVIN } from '@/lib/camera/constants';
+import { DEFAULT_CL_SETTINGS, DEFAULT_PP_SETTINGS } from '@/lib/camera/defaults';
+import type { Recipe } from '@/lib/camera/schema';
 import type { UnreadableRecipe } from '@/lib/recipes/admin-types';
 import { PhotoModeration } from './photo-moderation';
 import { PpFields, ClFields } from './settings-fields';
@@ -27,9 +28,12 @@ import {
  * key — so a typo in a colour value meant editing JSON and re-running a
  * migration script.
  *
- * Two things here differ from the other two admin screens, both on purpose:
+ * Three things here differ from the other two admin screens, all on purpose:
  *
- * - **The slug is fixed at creation.** It is shown, never edited. The control
+ * - **Nobody types the name.** The server computes it from the settings on
+ *   every create and save (`computedRecipeName`), so the field is a
+ *   read-only display of what the last save produced.
+ * - **The slug is the code, fixed at creation.** It is shown, never edited. The control
  *   plane's `recipe_comments`, `recipe_proposals`, `proposal_votes` and
  *   `community_photos` reference `recipe_slug` as a plain string across a
  *   project and organisation boundary no foreign key spans, so a rename
@@ -42,38 +46,6 @@ import {
  * components — Rule 1, and the server re-validates all of it through
  * `recipeSchema` anyway, because a form is a convenience and never a check.
  */
-
-const DEFAULT_PP: PpSettings = {
-  blackLevel: 0,
-  gamma: 'Cine1',
-  blackGamma: { range: 'Middle', level: 0 },
-  knee: { mode: 'Auto' },
-  colorMode: 'Pro',
-  saturation: 0,
-  colorPhase: 0,
-  colorDepth: { R: 0, G: 0, B: 0, C: 0, M: 0, Y: 0 },
-  detail: {
-    level: 0,
-    mode: 'Auto',
-    vhBalance: 0,
-    bwBalance: 'Type3',
-    limit: PP_RANGES.detailLimit.min,
-    crispening: PP_RANGES.detailCrispening.min,
-    hiLightDetail: PP_RANGES.detailHiLightDetail.min,
-  },
-};
-
-const DEFAULT_CL: ClSettings = {
-  look: CREATIVE_LOOK_CODES[0],
-  contrast: 0,
-  highlights: 0,
-  shadows: 0,
-  fade: CL_RANGES.fade.min,
-  saturation: 0,
-  sharpness: CL_RANGES.sharpness.min,
-  sharpnessRange: CL_RANGES.sharpnessRange.min,
-  clarity: CL_RANGES.clarity.min,
-};
 
 export function RecipeAdmin() {
   const t = useTranslations('recipeAdmin');
@@ -98,7 +70,6 @@ export function RecipeAdmin() {
   const [status, setStatus] = useState<{ kind: 'ok' | 'err'; msg: string } | null>(null);
   const [issues, setIssues] = useState<readonly string[]>([]);
   const [query, setQuery] = useState('');
-  const [newName, setNewName] = useState('');
   const [newFormat, setNewFormat] = useState<'pp' | 'cl'>('pp');
 
   /* An unknown code is never shown raw — a camelCase identifier is not a
@@ -210,11 +181,6 @@ export function RecipeAdmin() {
     setEditing((cur) => (cur && cur.stored.recipe.id === next.id ? { ...cur, draft: next } : cur));
 
   const create = async () => {
-    const name = newName.trim();
-    if (!name) {
-      setStatus({ kind: 'err', msg: codeMessage('nameRequired') });
-      return;
-    }
     /* Creating opens the new recipe, which replaces the draft — the same loss
        `open()` asks about, and it used to happen without a word. */
     if (isDirty(editing) && !window.confirm(t('discardConfirm'))) return;
@@ -224,11 +190,10 @@ export function RecipeAdmin() {
         method: 'POST',
         headers: authed(),
         body: JSON.stringify({
-          name,
           format: newFormat,
           whiteBalance: { mode: 'kelvin', kelvin: WB_KELVIN.min },
           tags: [],
-          settings: newFormat === 'pp' ? DEFAULT_PP : DEFAULT_CL,
+          settings: newFormat === 'pp' ? DEFAULT_PP_SETTINGS : DEFAULT_CL_SETTINGS,
         }),
       });
       const data = (await res.json()) as { ok?: boolean; id?: string; error?: string };
@@ -236,7 +201,6 @@ export function RecipeAdmin() {
         setStatus({ kind: 'err', msg: codeMessage(data.error ?? 'saveFailed', 'saveFailed') });
         return;
       }
-      setNewName('');
       setEditing(null);
       setIssues([]);
       await reload();
@@ -336,12 +300,6 @@ export function RecipeAdmin() {
       <aside className="flex grow basis-[clamp(16rem,20vw,22rem)] flex-col gap-4 self-start lg:sticky lg:top-6 lg:grow-0">
         <div className="flex flex-col gap-2 surface-raised p-4 rounded-md">
           <span className="label text-ink-muted">{t('newRecipe')}</span>
-          <input
-            className={FIELD_SM}
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            placeholder={t('newNamePlaceholder')}
-          />
           <div className="flex gap-2">
             {(['pp', 'cl'] as const).map((f) => (
               <button
@@ -365,8 +323,7 @@ export function RecipeAdmin() {
             {busy === 'creating' ? t('creating') : t('createBtn')}
           </button>
           {/* Said before the button is pressed, not after: the id is allocated
-              by the server and the slug is derived from this name, and both are
-              permanent. */}
+              by the server, the slug is that code, and both are permanent. */}
           <p className="meta">{t('createNote')}</p>
         </div>
 
@@ -495,11 +452,12 @@ export function RecipeAdmin() {
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="flex flex-col gap-1.5">
                 <span className="label text-ink-muted">{t('name')}</span>
-                <input
-                  className={FIELD}
-                  value={draft.name}
-                  onChange={(e) => edit({ ...draft, name: e.target.value })}
-                />
+                {/* Read-only: the server names the recipe from its settings
+                    on every save, and ignores a name in the body. */}
+                <input className={FIELD} value={draft.name} readOnly aria-describedby="recipe-name-computed" />
+                <span id="recipe-name-computed" className="meta">
+                  {t('nameComputed')}
+                </span>
               </label>
               <label className="flex flex-col gap-1.5">
                 <span className="label text-ink-muted">{t('tags')}</span>

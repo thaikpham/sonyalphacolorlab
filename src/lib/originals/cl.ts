@@ -6,8 +6,8 @@
  * Help Guide description of each Look and adjustment, never from memory.
  *
  * Same shape and same rules as src/lib/originals/pp.ts: `published: false`
- * until shot on the a7 IV (D8), names `CL-NNN-Mood Words`
- * (src/lib/recipes/names.ts), Vietnamese prose in data/translations.vi.json,
+ * until shot on the a7 IV (D8), names computed from the settings
+ * (`nameFor` in src/lib/recipes/names.ts), Vietnamese prose in data/translations.vi.json,
  * situations, style and tone in data/recipe-taxonomy.json. Each was checked
  * for distance from every Sony Asia recipe of the same Look.
  *
@@ -27,7 +27,6 @@ export const ORIGINAL_CL: readonly OriginalRecipe[] = [
     recipe: {
       id: 'CL-038',
       slug: 'mono-deep-noir',
-      name: 'CL-038-Mono Deep Noir',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5500
@@ -58,7 +57,6 @@ export const ORIGINAL_CL: readonly OriginalRecipe[] = [
     recipe: {
       id: 'CL-039',
       slug: 'mono-airy-portrait',
-      name: 'CL-039-Mono Airy Portrait',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5500
@@ -88,7 +86,6 @@ export const ORIGINAL_CL: readonly OriginalRecipe[] = [
     recipe: {
       id: 'CL-040',
       slug: 'neutral-clean-product',
-      name: 'CL-040-Neutral Clean Product',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5500
@@ -120,7 +117,6 @@ export const ORIGINAL_CL: readonly OriginalRecipe[] = [
     recipe: {
       id: 'CL-041',
       slug: 'portrait-golden-daylight',
-      name: 'CL-041-Portrait Golden Daylight',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5600,
@@ -162,7 +158,6 @@ export const ORIGINAL_CL: readonly OriginalRecipe[] = [
     recipe: {
       id: 'CL-042',
       slug: 'airy-cool-pastel',
-      name: 'CL-042-Airy Cool Pastel',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5200,
@@ -200,7 +195,6 @@ export const ORIGINAL_CL: readonly OriginalRecipe[] = [
     recipe: {
       id: 'CL-043',
       slug: 'film-matte-cool',
-      name: 'CL-043-Film Matte Cool',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5200,
@@ -238,7 +232,6 @@ export const ORIGINAL_CL: readonly OriginalRecipe[] = [
     recipe: {
       id: 'CL-044',
       slug: 'instant-amber-soft',
-      name: 'CL-044-Instant Amber Soft',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5800,
@@ -276,7 +269,6 @@ export const ORIGINAL_CL: readonly OriginalRecipe[] = [
     recipe: {
       id: 'CL-045',
       slug: 'vivid-tropical-punchy',
-      name: 'CL-045-Vivid Tropical Punchy',
       whiteBalance: {
         mode: 'kelvin',
         kelvin: 5800,

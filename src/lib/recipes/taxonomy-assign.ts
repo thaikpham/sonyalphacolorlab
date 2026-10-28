@@ -70,6 +70,16 @@ function fromManifest(id: string): Partial<RecipeTaxonomy> {
 }
 
 /**
+ * The tone an editor set for this recipe in the manifest, or null when the
+ * manifest leaves it to the settings. An editor sets one where the photographs
+ * contradict what the White Balance arithmetic predicts — the shift step's
+ * mired value is fitted, not published — so it outranks that estimate.
+ */
+export function editorialToneFor(id: string): RecipeTaxonomy['tone'] | null {
+  return fromManifest(id).tone ?? null;
+}
+
+/**
  * The light the recipe is built for, from the manifest, or null for daylight.
  * Outside the camera's own Kelvin range it is ignored: no recipe is built for
  * a light the camera cannot be set to.

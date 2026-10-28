@@ -1,60 +1,14 @@
 import { readFileSync } from 'node:fs';
 
-/**
- * The Picture Profiles withdrawn on 2026-10-23 — each legacy id and the slug
- * of the original cooked to the same purpose, or null where nothing replaces
- * it (three experiments). Ids only, no settings: the reason they are gone is
- * "withdrawn: matches a licensed third-party collection", and a public
- * repository is the last place to keep their numbers.
- *
- * Written in the slugs the originals were first published under; the
- * replacement's current slug is read through `data/former-slugs.json` below,
- * so the table never has to be retyped when slugs follow the names.
- */
-const RETIRED_REPLACED_BY: Readonly<Record<string, string | null>> = {
-  'scl-003': 'neon-night',
-  'scl-004': 'cho-lon-slide',
-  'scl-005': 'da-lat-mist',
-  'scl-006': 'da-lat-mist',
-  'scl-007': 'cho-lon-slide',
-  'scl-008': 'clear-day',
-  'scl-010': 'ha-noi-winter',
-  'scl-011': 'neon-night',
-  'scl-012': 'ho-tay-golden',
-  'scl-013': 'mekong-noon',
-  'scl-014': 'tam-coc-green',
-  'scl-016': 'clear-day',
-  'scl-017': 'hue-silk',
-  'scl-018': 'vung-tau-pop',
-  'scl-019': 'vung-tau-pop',
-  'scl-020': 'ha-noi-winter',
-  'scl-021': 'da-lat-mist',
-  'scl-022': 'linen-editorial',
-  'scl-023': 'moc-chau-frost',
-  'scl-024': 'moc-chau-frost',
-  'scl-026': 'mui-ne-dusk',
-  'scl-028': 'hoi-an-lantern',
-  'scl-029': 'sai-gon-cafe',
-  'scl-030': 'old-quarter-mono',
-  'scl-031': 'hem-noir',
-  'scl-032': 'hem-noir',
-  'scl-033': 'pearl-mono',
-  'scl-034': 'old-quarter-mono',
-  'scl-035': 'old-quarter-mono',
-  'scl-036': 'hem-noir',
-  'scl-037': 'late-night-mono',
-  'scl-038': 'pearl-mono',
-  'scl-039': null,
-  'scl-040': null,
-  'scl-041': null,
-  'scl-043': 'tam-coc-green',
-};
+import { RETIRED_REPLACED_BY } from './retired';
 
-/** Former slug → current slug, as `seed:emit` writes it. */
+export { RETIRED_RECIPE_IDS } from './retired';
+
+/** Every earlier spelling → the code slug, as `seed:emit` writes it. */
 const FORMER_SLUGS = JSON.parse(readFileSync('data/former-slugs.json', 'utf8')) as Record<string, string>;
 
 /**
- * The same table with each replacement at its current slug.
+ * The same table with each replacement at its code slug.
  *
  * Kept here, beside the map that reads it, so the share links that still
  * carry these ids keep answering. The destination follows the replacement
@@ -72,15 +26,6 @@ export const RETIRED_LEGACY_IDS: Readonly<Record<string, string | null>> = Objec
 );
 
 /**
- * The withdrawn recipes' catalogue ids, for the content-plane script: the
- * legacy number in the code shape (`scl-003` → `PP-003`), like every other
- * row once the content migration has run (S4).
- */
-export const RETIRED_RECIPE_IDS: readonly string[] = Object.keys(RETIRED_LEGACY_IDS).map(
-  (legacyId) => `PP-${legacyId.slice(4)}`,
-);
-
-/**
  * Legacy redirects.
  *
  * sonycolorlab.app was a single-page app that addressed recipes with a **query
@@ -94,9 +39,10 @@ export const RETIRED_RECIPE_IDS: readonly string[] = Object.keys(RETIRED_LEGACY_
  * These only fire for traffic that reaches this app, so at cutover the old
  * hostname must resolve here (or carry an equivalent rule at the CDN).
  *
- * Each destination is the seed's current slug. A content project that has
- * not had its slug migration yet still holds the former one, and the recipe
- * route resolves that (`slug-resolve.ts`), so a `?id=` link lands either way.
+ * Each destination is the seed's slug, the recipe's code (`/recipe/pp-001`).
+ * A content project that has not had its slug migrations yet still holds an
+ * earlier spelling, and the recipe route resolves that (`slug-resolve.ts`), so
+ * a `?id=` link lands in every state.
  *
  * A withdrawn id redirects too, and TEMPORARILY (307) while its destination is
  * the catalogue: a 308 is cached by the browser for good, and the destination

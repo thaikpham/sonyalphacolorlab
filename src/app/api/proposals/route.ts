@@ -141,7 +141,7 @@ export type ProposalItem = {
 const memoryProposals: ProposalItem[] = [
   {
     id: 'seed-prop-1',
-    recipeSlug: 'pp-027-vivid-daylight-cinema',
+    recipeSlug: 'pp-027',
     title: 'Biến thể Ấm Áp Hoàng Hôn (Golden Hour Tone)',
     authorName: 'Hoàng Nhiếp Ảnh',
     authorAvatar: 'https://ui-avatars.com/api/?name=Hoang+Photo&background=FF9800&color=fff',
@@ -162,7 +162,7 @@ const memoryProposals: ProposalItem[] = [
   },
   {
     id: 'seed-prop-2',
-    recipeSlug: 'pp-027-vivid-daylight-cinema',
+    recipeSlug: 'pp-027',
     title: 'Biến thể Cine Nhật Bản (Soft Film Mood)',
     authorName: 'Linh Trần',
     authorAvatar: 'https://ui-avatars.com/api/?name=Linh+Tran&background=9C27B0&color=fff',

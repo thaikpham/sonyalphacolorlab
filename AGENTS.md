@@ -273,9 +273,10 @@ owner has shot each on the a7 IV (D8) and publishes it in `/admin/colorlab`.
 seed — withdrawn recipes unpublished, names updated, unpublished originals
 refreshed whole, missing recipes inserted unpublished, a published recipe's
 settings never touched — and prints its plan before writing (rules:
-`scripts/lib/library-plan.ts`). It writes in the id shape content holds, so it
-may run before the content migration, which renames those rows later; a
-project holding both shapes is refused.
+`scripts/lib/library-plan.ts`). It writes in the id shape and the slug
+spelling content holds, so it may run before or after each content migration,
+which renames those rows later; a project holding both id shapes, two
+spellings of one recipe, or recipes at different slug generations is refused.
 
 `npm run seed:emit` prints the skips. Read them — they are the to-do list for
 whatever the source failed to publish.
@@ -303,32 +304,40 @@ Do not write App Router code from memory. Read the relevant file first:
 
 ## Names, palette, pictures
 
-- **A recipe's name is its code and mood**: `PP-048-Soft Clean Portrait`,
-  `CL-013-Airy Warm Pastel` — format, the id's three-digit number, two or
-  three words from the closed `NAME_VOCABULARY` in `src/lib/recipes/names.ts`.
-  Never translated. A temperature word must agree with the recipe's tone
-  (Warm, Golden, Amber ⇒ warm; Cool ⇒ cool; Mono, Sepia ⇒ mono), names and
-  word sets are unique; `names.test.ts` and `emit-seed` refuse anything else.
-  The legacy and Sony Asia rows take their names from `RECIPE_NAMES`.
-- **Ids and slugs follow the code.** The id is `PP-048` (`RECIPE_ID_RE`), the
-  slug `slugFor(name)`, `pp-048-soft-clean-portrait`. URLs carry slugs, so the
-  old `SCL-` prefix had no SEO weight to keep. The slugs the seed recipes had
-  before 2026-10-24 are frozen in `data/slug-moves/2026-10-24.json` with the
-  two migrations that rename them (`SLUG_MOVES` in `slug-moves.ts`);
-  `data/former-slugs.json` is the union of the batches, written by `seed:emit`,
-  never hand-edited. A recipe born after has no former slug, whatever its
-  source spells. Renaming a moved recipe is a new batch — a frozen list, a
-  migration per plane carrying exactly it, an entry in `SLUG_MOVES` —
-  `seed:emit` refuses it until then, and `migration-roots.test.ts` checks each
-  batch against its own two files.
+- **A recipe's name is computed, never typed** (2026-10-28):
+  `nameFor()` in `src/lib/recipes/names.ts` reads the recipe's rendered
+  palette (`paletteFor`, so White Balance, every dial, gamma, colour mode and
+  a Look's own base) into `PP-001-Neutral Soft Rich` — format, the id's
+  number, then exactly three words: temperature (the mid swatch,
+  `gradeWarmth`), tonality (the neutral ramp), colour (the hues' chroma;
+  detail for mono), each against a same-format reference (`PP_STANDARD_STILL`,
+  ST) on the palette's own reach. A clash replaces the least salient slot
+  with another honest reading; the words are unique except where two recipes
+  render alike. No word names a place, a situation, a Look code, a stock, a
+  brand or a person. Never translated. `seed:emit` and `/admin` write it;
+  nothing reads a typed name. To change a name, change the settings or the
+  reading, not the string.
+- **The slug is the code** (2026-10-28): `slugFor(id)`, `pp-048`, so a
+  name can change without moving a URL. The id is `PP-048` (`RECIPE_ID_RE`).
+  A seed recipe has had three spellings — its first slug (`hue-silk`), the
+  2026-10-24 code-and-name (`pp-048-soft-clean-portrait`), the code — each move
+  frozen in `data/slug-moves/<date>.json` with the two migrations that carry
+  it (`SLUG_MOVES` in `slug-moves.ts`, histories from `slugHistories`).
+  `data/former-slugs.json` maps every earlier spelling to the code, written by
+  `seed:emit`, never hand-edited; a recipe born after has no former slug.
+  Applied migrations are never edited: a move is a new batch, a migration per
+  plane carrying exactly it, an entry in `SLUG_MOVES`, and
+  `migration-roots.test.ts` checks each batch against its own two files.
   Code never assumes the content plane has been migrated: ids are read through
   `RECIPE_ID_TRANSITION_RE` / `recipeIdKey`; the recipe page, its OG image and
-  `/api/tweak` find a slug through `resolveRecipeSlug()` (308 from a former
-  slug to the current one, 307 the other way, never a static redirect in
-  `next.config.ts`); and every control-plane read keyed by `recipe_slug` uses
-  `.in('recipe_slug', slugAliases(slug))`, permanently — a row written while
-  the planes disagreed keeps its spelling. Search indexes both spellings, so a
-  former name ("mojave sun") and an original's place ("da lat") still find it.
+  `/api/tweak` find a slug through `resolveRecipeSlug()` (308 from an older
+  spelling to a newer one, 307 the other way, never a static redirect in
+  `next.config.ts`); every control-plane read keyed by `recipe_slug` uses
+  `.in('recipe_slug', slugAliases(slug))`, permanently, with every spelling;
+  and `library:sync` writes whichever spelling the project holds. Search
+  indexes none of the earlier spellings — the code, the current name and the
+  taxonomy only — so a former name ("mojave sun") finds nothing; the old link
+  still resolves.
 - **No recipe carries a photograph.** Pictures come only from readers: Google
   sign-in, an image URL, `community_photos` on the control plane, shown in the
   recipe's grid and lightbox. There is no primary photograph, no admin upload
@@ -651,8 +660,8 @@ The old site addressed recipes by **query parameter** (`/?id=scl-001`), not by
 path — that is the shape of every link already shared in Facebook groups. The
 redirect map in `next.config.ts` matches on the query param and is generated from
 `legacyId` in the seed. A path-based map would catch nothing, silently. Its
-destinations are current slugs; on a content plane that still holds the former
-one, the recipe route resolves it.
+destinations are code slugs (`/recipe/pp-001`); on a content plane that still
+holds an earlier spelling, the recipe route resolves it.
 
 ## Working style
 

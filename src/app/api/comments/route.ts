@@ -45,7 +45,7 @@ export type CommentItem = {
 const memoryComments: CommentItem[] = [
   {
     id: 'seed-comment-1',
-    recipeSlug: 'pp-027-vivid-daylight-cinema',
+    recipeSlug: 'pp-027',
     authorName: 'Minh Tuấn',
     authorAvatar: 'https://ui-avatars.com/api/?name=Minh+Tuan&background=0D8ABC&color=fff',
     content: 'Công thức này chụp phố chiều nắng vàng rất mượt! Mình tăng Shift A lên 1 nấc nữa thấy tông da sáng ấm hẳn.',
@@ -53,7 +53,7 @@ const memoryComments: CommentItem[] = [
   },
   {
     id: 'seed-comment-2',
-    recipeSlug: 'pp-027-vivid-daylight-cinema',
+    recipeSlug: 'pp-027',
     authorName: 'Hải Yến',
     authorAvatar: 'https://ui-avatars.com/api/?name=Hai+Yen&background=E91E63&color=fff',
     content: 'Skintone chụp chân dung lên mượt và tự nhiên lắm. Cảm ơn tác giả nhiều!',

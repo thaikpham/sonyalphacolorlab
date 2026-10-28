@@ -10,8 +10,9 @@ import {
   listRecipeRows,
   nextRecipeId,
   normaliseRecipe,
-  uniqueRecipeSlug,
+  computedRecipeName,
 } from '@/lib/recipes/admin-store';
+import { slugFor } from '@/lib/recipes/names';
 
 /**
  * The recipe list, and recipe creation — the write path ColorLab never had.
@@ -82,20 +83,15 @@ export async function POST(request: Request) {
   const format = body.format === 'cl' ? 'cl' : body.format === 'pp' ? 'pp' : null;
   if (!format) return NextResponse.json({ error: 'formatRequired' }, { status: 400 });
 
-  const name = typeof body.name === 'string' ? body.name.trim().slice(0, 200) : '';
-  if (!name) return NextResponse.json({ error: 'nameRequired' }, { status: 400 });
-
-  /* Allocation is max+1 and a slug lookup, read before the insert, so two
-     creates from two tabs can be handed the same id or slug. The unique key
-     is what decides, and losing to it means "allocate again", not "could not
-     save". Bounded: each loss costs one more read, and a loop with no ceiling
-     against a database is a way to hang a request. */
+  /* Allocation is max+1, read before the insert, so two creates from two tabs
+     can be handed the same id — and with it the same slug, which is the code.
+     The unique key is what decides, and losing to it means "allocate again",
+     not "could not save". Bounded: each loss costs one more read, and a loop
+     with no ceiling against a database is a way to hang a request. */
   for (let attempt = 0; attempt < CREATE_ATTEMPTS; attempt += 1) {
     let id: string;
-    let slug: string;
     try {
       id = await nextRecipeId(format);
-      slug = await uniqueRecipeSlug(name);
     } catch (err) {
       if (err instanceof Error && err.message === 'idSpaceExhausted') {
         /* 999 per format is the table's CHECK constraint, not an arbitrary
@@ -108,20 +104,29 @@ export async function POST(request: Request) {
 
     /* A new recipe is always created as a draft, whatever the body asked for.
        Publishing is a second, deliberate action taken against a form the
-       editor can see — and the slug is fixed at creation, because the control
-       plane's community rows reference it as a plain string across a project
-       boundary no foreign key spans. */
-    /* `name` is the trimmed, capped value checked above. Spreading `body`
-       alone validated that and stored the raw one — a 5,000-character name in
-       full. */
-    const write = normaliseRecipe(id, { ...body, name, slug, published: false });
+       editor can see. The slug is the code (`slugFor`), fixed at creation,
+       because the control plane's community rows reference it as a plain
+       string across a project boundary no foreign key spans. The name is
+       never the body's: it is computed below from the validated settings and
+       the rest of the library, and the id stands in for it until then. */
+    const slug = slugFor(id);
+    const write = normaliseRecipe(id, { ...body, name: id, slug, published: false });
     if (!write.ok) {
       return NextResponse.json({ error: 'invalidRecipe', issues: write.issues }, { status: 400 });
     }
 
     let inserted: 'inserted' | 'taken';
     try {
-      inserted = await insertRecipeRecord(write.recipe);
+      const named = await computedRecipeName(write.recipe);
+      /* Every honest name these settings can carry is held by a recipe that
+         looks different: refused rather than stored as a duplicate. */
+      if (!named.ok) {
+        return NextResponse.json(
+          { error: 'nameTaken', issues: [`name: every honest name for these settings is held (${named.heldBy.join(', ')})`] },
+          { status: 409 },
+        );
+      }
+      inserted = await insertRecipeRecord({ ...write.recipe, name: named.name });
     } catch (err) {
       console.error('[admin/recipes] insert failed:', err);
       return NextResponse.json({ error: 'saveFailed' }, { status: 502 });

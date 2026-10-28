@@ -153,6 +153,14 @@ export function wbBalance(wb: WhiteBalance): WbBalance {
   return { kelvin, shift, warmth: kelvin + shift, tint };
 }
 
+/**
+ * Inside this many mireds of neutral a Kelvin reads neutral (`gradeWarmth`).
+ * A figure that carries a WB shift is graded with `MIRED_PER_SHIFT_STEP`
+ * instead — the summary's and the browse tone's rule, since the step size is
+ * fitted, not published.
+ */
+export const NEUTRAL_MIRED_BAND = 12;
+
 /** Where the amber–blue axis lands, graded. Input is mireds; positive is warm. */
 export type Warmth = 'strong-warm' | 'warm' | 'neutral' | 'cool' | 'strong-cool';
 
@@ -167,7 +175,7 @@ export type Warmth = 'strong-warm' | 'warm' | 'neutral' | 'cool' | 'strong-cool'
  * drawn in (`getKelvinHexColor`) both read it, so they cannot drift apart.
  */
 export function gradeWarmth(mired: number): Warmth {
-  if (Math.abs(mired) < 12) return 'neutral';
+  if (Math.abs(mired) < NEUTRAL_MIRED_BAND) return 'neutral';
   if (mired >= 55) return 'strong-warm';
   if (mired > 0) return 'warm';
   if (mired <= -80) return 'strong-cool';

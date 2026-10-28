@@ -33,9 +33,9 @@ export const clientKey = (req: Request) =>
  * Moderation is `approved = false` and nothing else, so what keeps a hidden
  * link hidden is that sending it again is a duplicate rather than a fresh,
  * visible row. The unique key `(recipe_slug, image_url)` used to be enough.
- * It is not since slugs follow the names: reads match every spelling
+ * It is not since slugs moved: reads match every spelling
  * (`slugAliases`), writes keep the one the request named, and a hidden row
- * under `pp-001-vivid-nostalgia-film` raises no 23505 for the same URL sent
+ * under `pp-001` raises no 23505 for the same URL sent
  * under `mojave-sun`. So both write paths ask here first, across every
  * spelling, and treat a hit exactly as they treat a 23505.
  *

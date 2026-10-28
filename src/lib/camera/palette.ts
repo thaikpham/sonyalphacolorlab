@@ -289,6 +289,22 @@ function applyTone(state: State, tone: Tone, mid: number) {
   each(state, (lab) => scaleChroma(lab, tone.chroma));
 }
 
+/**
+ * How hard a Manual Knee compresses the highlights, 0..1: how far the point
+ * sits below `fullPoint`, over `pointSpan`, times how gentle the slope is
+ * (slope max is off). 0 for Knee Auto. Shared with the recipe name's
+ * tonality word (`names.ts`), so the name and the palette read one knee.
+ */
+export function kneeCompression(s: PpSettings): number {
+  if (s.knee.mode !== 'Manual') return 0;
+  const w = PALETTE_WEIGHTS.knee;
+  const slope = PP_RANGES.kneeManualSlope;
+  return (
+    clamp((w.fullPoint - s.knee.point) / w.pointSpan, 0, 1) *
+    ((slope.max - s.knee.slope) / (slope.max - slope.min))
+  );
+}
+
 function ppTone(state: State, s: PpSettings) {
   const w = PALETTE_WEIGHTS;
 
@@ -306,10 +322,7 @@ function ppTone(state: State, s: PpSettings) {
   if (range === 'Wide') lift(state, DARK_HUES, w.blackGamma.wideDarkHueShare * shadowLift);
 
   if (s.knee.mode === 'Manual') {
-    const slope = PP_RANGES.kneeManualSlope;
-    const compression =
-      clamp((w.knee.fullPoint - s.knee.point) / w.knee.pointSpan, 0, 1) *
-      ((slope.max - s.knee.slope) / (slope.max - slope.min));
+    const compression = kneeCompression(s);
     state.highlight.L += w.knee.highlight * compression;
     state.yellow.L += w.knee.yellow * compression;
   } else if ((PP_KNEE_AUTO_GAMMA as readonly string[]).includes(s.gamma)) {

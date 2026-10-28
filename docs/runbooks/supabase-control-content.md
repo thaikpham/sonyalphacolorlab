@@ -60,11 +60,12 @@ as the admin left it.
 Community rows reference a recipe by `recipe_slug`, a plain string. Postgres
 cannot enforce that across databases, so:
 
-- **a slug changes only by a paired migration**, one per plane, from
-  `data/former-slugs.json`. Renaming one anywhere else orphans every comment on
-  it. Community reads match `slugAliases(slug)` — the slug and its other
-  spelling — permanently, so a row written while the two planes disagreed is
-  still found.
+- **a slug changes only by a paired migration**, one per plane, from a frozen
+  batch in `data/slug-moves/`. Renaming one anywhere else orphans every comment
+  on it. Since 2026-10-28 the slug is the recipe's code (`pp-048`) and a name
+  change moves nothing. Community reads match `slugAliases(slug)` — every
+  spelling the recipe has had — permanently, so a row written while the two
+  planes disagreed is still found.
 - the server calls `publishedRecipeExists()` against the content plane before
   writing a comment, proposal or photo.
 - a recipe may be unpublished; hard deletion is blocked while operational rows
@@ -234,8 +235,10 @@ the migration stops on the primary key. Check for that before merging:
 select lower(email), count(*) from admin_emails group by 1 having count(*) > 1;
 ```
 
-**Pending: recipe code ids — `20261024000000_recipe_code_ids.sql` (content)
-and `0020_recipe_slugs_to_codes.sql` (control).** Ids lose the prefix
+**Applied: recipe code ids — `20261024000000_recipe_code_ids.sql` (content)
+and `0020_recipe_slugs_to_codes.sql` (control).** Both are in production;
+what follows is kept as the record of how, and both files are history now —
+never edit them. Ids lose the prefix
 (`SCL-PP-048` → `PP-048`) and slugs become the name in kebab case (`hue-silk`
 → `pp-048-soft-clean-portrait`). The content file renames every recipe id,
 cascades it to translations and images, replaces the two id CHECKs, renames
@@ -292,11 +295,77 @@ does not revalidate. Invalidate the tag at once instead: open any recipe in
 `revalidateTag(CATALOGUE_TAG, IMMEDIATE)`), or redeploy the current production
 deployment.
 
-`library:sync` writes in the id shape the content project holds, so it may run
-before the migration. On `SCL-` ids it unpublishes, renames and inserts as
-`SCL-PP-048` at the former slug (`hue-silk`) under the new name, and the
-migration renames those rows afterwards with every other. It refuses a project
-holding both shapes. Either way it does not revalidate: flush the cache after it.
+`library:sync` writes in the id shape and the slug spelling the content
+project holds, so it may run before or after each migration. On `SCL-` ids it
+unpublishes, renames and inserts as `SCL-PP-048` at the first slug
+(`hue-silk`) under the new name, and the migration renames those rows
+afterwards with every other; on the 2026-10-24 slugs it writes
+`pp-048-soft-clean-portrait`, which `20261028000000` renames. It refuses a
+project holding both id shapes, two spellings of one recipe, or recipes at
+different slug generations. Either way it does not revalidate: flush the cache
+after it.
+
+**Pending: recipe code slugs — `20261028000000_recipe_code_slugs.sql`
+(content) and `0021_recipe_slugs_to_code_only.sql` (control).** Slugs become
+the code alone (`pp-048-soft-clean-portrait` → `pp-048`), and the names are
+computed from the settings (`PP-048-Neutral Soft Rich`), so from now on a name
+can change without moving any URL. The content file renames the seed
+recipes' slugs only — ids, names, settings and the withdrawn rows' slugs stay
+— and refuses a project that still holds `SCL-` ids. 0021 moves `recipe_slug`
+in comments, proposals and community photos from **both** earlier spellings
+(`hue-silk` and `pp-048-soft-clean-portrait`) to `pp-048`; a photo whose URL is
+already under the code slug stays where it is, and a hidden twin hides the
+whole set, as in 0020. Each file is one transaction and changes nothing when
+run again; their lists are `data/slug-moves/2026-10-28.json` (and, for 0021,
+the 2026-10-24 batch it composes with).
+
+Unlike the code-id move, the code live before this release already reads
+every community table through `slugAliases()` and resolves a recipe slug
+across spellings — but it knows only two spellings, and the code slug is not
+one of them. So the order still matters:
+
+1. **Merge.** The integration applies 0021 to control at once. Run the
+   `schema_migrations` query above first and confirm every row matches a file
+   prefix, so the push cannot refuse. Between the merge and step 2, the
+   old deployment finds no community rows for the seed recipes (they are under
+   `pp-048` now, a spelling it does not know); merge when you can watch the
+   deploy through.
+2. **Wait until the production deployment of this release is live.** It
+   reads all three spellings, links to the code slugs, and resolves a code
+   slug to the 2026-10-24 one content still holds (a temporary 307).
+3. **Apply `20261028000000` by hand.** Never before step 2: the old code
+   cannot find a recipe at `pp-048`.
+
+   ```bash
+   npm run supabase:migrations -- --target content --dry-run   # should list 20261028000000 alone
+   npm run supabase:migrations -- --target content --apply
+   ```
+
+   Or, in the content project's SQL editor (check the project name first),
+   paste the file between `begin;` and `commit;` and record it in the same
+   execution:
+
+   ```sql
+   insert into supabase_migrations.schema_migrations (version, name, statements)
+   values ('20261028000000', 'recipe_code_slugs', null)
+   on conflict (version) do nothing;
+   ```
+
+4. **Rename.** `npm run library:sync -- --target content` prints the plan:
+   on today's project, rename 47 (the published recipes, names only), refresh
+   the 43 unpublished originals, nothing to insert or unpublish, no
+   conflicts. It reads which spelling content holds and writes in it, so it is
+   the same plan before step 3 or after; it refuses a project holding two
+   spellings of one recipe. Then `--apply`.
+5. **Flush the catalogue cache** (below): save any recipe in
+   `/admin/colorlab`, or wait a minute and request each recipe URL once. Until
+   then a cached `/recipe/pp-048` may still answer the redirect back to the
+   2026-10-24 slug, which now redirects forward: a loop until the entry
+   regenerates.
+
+**After merging, never instant-rollback to a deployment from before this
+release.** Control holds the code slugs, which the old code cannot match.
+Roll forward with a fix instead.
 
 ### The content project's lineage
 

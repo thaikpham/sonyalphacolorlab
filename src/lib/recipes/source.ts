@@ -31,7 +31,7 @@ import { contentOrOfflineSeed } from '../supabase/content-source';
 import { fromRow, RECIPE_COLUMNS, type RecipeRow } from './row';
 import { devListRecipes, isRecipeDevStore } from './dev-store';
 import { recipeIdAliases } from './recipe-id';
-import { slugAliases } from './slug-aliases';
+import { slugFor } from './names';
 import { designedLightFor, taxonomyFor } from './taxonomy-assign';
 import { taxonomyTerms, type RecipeTaxonomy } from './taxonomy';
 
@@ -120,20 +120,19 @@ function toView(
  *
  * Deliberately not over descriptions: those are prose and every recipe mentions
  * colour words, so including them makes almost any query match almost anything.
- * Diacritics are stripped so "mojave" finds a Vietnamese reader's query too —
- * with the search engine's own fold, which also maps `đ`: NFD leaves it whole,
- * so "da lat" could not find "Đà Lạt".
+ * Diacritics are stripped, with the search engine's own fold, which also maps
+ * `đ`: NFD leaves it whole, so "den trang" could not find "đen trắng".
  *
  * A recipe that carries its taxonomy (a `RecipeView`) also answers to every
  * synonym of its situations, style and tone in both languages — "cafe",
  * "chan dung", "phim", "đen trắng" — which is how the tags stopped being shown
  * without the search losing a word (D9).
  *
- * And to both spellings of its slug, whichever the row is stored under: the
- * name is a mood now (`PP-009-Teal Muted Street`) and the slug follows it, so
- * the former slug (`data/former-slugs.json`) is what still answers to the name
- * a reader learnt first ("mojave sun") and to the place an original was
- * imagined for ("da lat").
+ * And to its code as a slug (`pp-009`), never to an earlier one: the name is
+ * read off the settings now (`nameFor`) and the owner dropped
+ * every name a recipe had before, so "mojave sun" finds nothing (R4 of the
+ * 2026-10-28 names design). An old link still reaches the recipe; that is
+ * `resolveRecipeSlug`'s job, not search's.
  */
 const norm = (s: string) => removeAccents(s).toLowerCase();
 
@@ -149,7 +148,7 @@ export const matchesQuery = (r: Recipe & Partial<RecipeTaxonomy>, q: string) => 
     [
       r.name,
       ...recipeIdAliases(r.id),
-      ...slugAliases(r.slug).map((s) => s.replace(/-/g, ' ')),
+      slugFor(r.id).replace(/-/g, ' '),
       ...r.tags,
       ...inherited,
     ].join(' '),

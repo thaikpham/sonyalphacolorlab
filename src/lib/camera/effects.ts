@@ -29,7 +29,7 @@ export type EffectAxis = 'contrast' | 'color' | 'detail';
 export type Effect = { axis: EffectAxis; en: string; vi: string };
 
 /** -2 strong down · -1 mild down · 0 neutral · +1 mild up · +2 strong up */
-type Step = -2 | -1 | 0 | 1 | 2;
+export type Step = -2 | -1 | 0 | 1 | 2;
 
 /**
  * Where a value sits in its range: −1..1 around 0 for a signed range, 0..1
@@ -50,6 +50,17 @@ export function fraction(value: number, range: Range): number {
 }
 
 /**
+ * A signed fraction (−1..1) as a graded step: 0 only at 0, strong past 55%.
+ * The signed half of `step()`, for a reading that combines two fractions
+ * (the recipe name's colour word: Saturation with mean Color Depth).
+ */
+export function stepOfFraction(f: number): Step {
+  if (f === 0) return 0;
+  const strong = Math.abs(f) >= 0.55;
+  return f > 0 ? (strong ? 2 : 1) : strong ? -2 : -1;
+}
+
+/**
  * Where a value sits in its own range, as a graded step.
  * "Strong" is past 55% of the distance to the bound, which keeps the wording
  * honest for both a ±7 scale and a ±32 one.
@@ -57,13 +68,8 @@ export function fraction(value: number, range: Range): number {
  * A signed range reads `fraction()` directly. An unsigned one is graded
  * around its midpoint, not its minimum, so it keeps its own arithmetic.
  */
-function step(value: number, range: Range): Step {
-  if (range.min < 0 && range.max > 0) {
-    const f = fraction(value, range);
-    if (f === 0) return 0;
-    const strong = Math.abs(f) >= 0.55;
-    return f > 0 ? (strong ? 2 : 1) : strong ? -2 : -1;
-  }
+export function step(value: number, range: Range): Step {
+  if (range.min < 0 && range.max > 0) return stepOfFraction(fraction(value, range));
   const pivot = range.min < 0 ? 0 : (range.min + range.max) / 2;
   if (value === pivot) return 0;
   const span = value > pivot ? range.max - pivot : pivot - range.min;
@@ -82,7 +88,7 @@ function step(value: number, range: Range): Step {
  * up adds some. Grading them around the midpoint (`step()`) sent the whole low
  * half of each range to the minimum's wording: Fade 3 read "No fade".
  */
-function stepFromMin(value: number, range: Range): Step {
+export function stepFromMin(value: number, range: Range): Step {
   if (value <= range.min) return 0;
   const span = range.max - range.min;
   if (span === 0) return 0;

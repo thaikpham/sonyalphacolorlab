@@ -5,7 +5,8 @@ import { ORIGINAL_CL } from '../../src/lib/originals/cl';
 import { ORIGINAL_PP } from '../../src/lib/originals/pp';
 import { recipeIdKey } from '../../src/lib/recipes/recipe-id';
 import { RETIRED_RECIPE_IDS } from '../../src/lib/recipes/redirects';
-import { currentSlugOf, formerSlugOf } from '../../src/lib/recipes/slug-aliases';
+import { slugHistory } from '../../src/lib/recipes/slug-aliases';
+import { SLUG_MOVES, slugAtState } from '../../src/lib/recipes/slug-moves';
 import {
   insertRows,
   planForProject,
@@ -14,6 +15,7 @@ import {
   seedInStoredShape,
   storedShape,
   storedSlug,
+  storedSlugState,
   translationRows,
   type PlanExistingRow,
   type PlanSeedRecipe,
@@ -190,17 +192,25 @@ const SLUG_CHECK = /^[a-z0-9]+(-[a-z0-9]+)*$/;
  */
 const PRODUCTION: readonly PlanExistingRow[] = [
   ...KEPT.map(({ recipe }) => {
-    const former = formerSlugOf(recipe.slug)!;
+    const former = slugHistory(recipe.slug)[0];
     return row(`SCL-${recipe.id}`, former, `SCL-${recipe.id}: ${titled(former)}`, true);
   }),
   ...RETIRED_RECIPE_IDS.map((id) => row(`SCL-${id}`, `withdrawn-${id.toLowerCase()}`, `SCL-${id}: Withdrawn`, true)),
 ];
 
-/** What the content migration does to a row: the id loses SCL-, a former slug moves when its number agrees. */
+const [OCT24, OCT28] = SLUG_MOVES;
+
+/** What 20261024000000 does to a row: the id loses SCL-, a first slug moves when its number agrees. */
 const migrate = (r: PlanExistingRow): PlanExistingRow => {
   const id = recipeIdKey(r.id);
-  const current = currentSlugOf(r.slug);
+  const current = OCT24.moves[r.slug];
   return { ...r, id, slug: current && current.slice(0, 6).toUpperCase() === id ? current : r.slug };
+};
+
+/** What 20261028000000 does to a row: a 2026-10-24 slug moves to the code when the id is that code. */
+const migrateSlugs = (r: PlanExistingRow): PlanExistingRow => {
+  const code = OCT28.moves[r.slug];
+  return code && code.toUpperCase() === r.id ? { ...r, slug: code } : r;
 };
 
 /** A plan applied to a fixture, as the script's writes would leave it. */
@@ -232,8 +242,9 @@ describe('library:sync against the content project before the code-id migration'
     expect(PRODUCTION[0]).toEqual(row('SCL-PP-001', 'mojave-sun', 'SCL-PP-001: Mojave Sun', true));
   });
 
-  it('writes in the SCL- shape', () => {
+  it('writes in the SCL- shape, at the first slugs', () => {
     expect(shape).toBe('legacy');
+    expect(planned).toHaveProperty('slugState', 0);
   });
 
   it('plans exactly: unpublish 36, rename 47, insert 43, refresh 0, conflicts 0', () => {
@@ -255,7 +266,7 @@ describe('library:sync against the content project before the code-id migration'
     expect(rows.map((r) => r.id).sort()).toEqual([...ORIGINALS].map((id) => `SCL-${id}`).sort());
     for (const r of rows) {
       const seedRecipe = SEED.find(({ recipe }) => recipe.id === recipeIdKey(r.id))!.recipe;
-      expect(r.slug, r.id).toBe(formerSlugOf(seedRecipe.slug));
+      expect(r.slug, r.id).toBe(slugHistory(seedRecipe.slug)[0]);
       expect(r.name, r.id).toBe(seedRecipe.name);
       expect(r.published, r.id).toBe(false);
     }
@@ -286,18 +297,18 @@ describe('library:sync against the content project before the code-id migration'
     expect(refreshFields({ ...orig, published: true } as Recipe).published).toBe(false);
   });
 
-  it('stores a recipe with no former slug under its own slug, in either shape', () => {
-    expect(storedSlug('cl-046-film-test', 'legacy')).toBe('cl-046-film-test');
-    expect(storedSlug('cl-046-film-test', 'code')).toBe('cl-046-film-test');
+  it('stores a recipe with no former slug under its own slug, in every slug state', () => {
+    for (const n of [0, 1, 2]) expect(storedSlug('cl-046', n)).toBe('cl-046');
+    expect([0, 1, 2].map((n) => storedSlug('pp-001', n))).toEqual(['mojave-sun', 'pp-001-vivid-nostalgia-film', 'pp-001']);
   });
 
   it('inserts a recipe born after the move under SCL- and its own slug', () => {
     const template = SEED.find(({ recipe }) => ORIGINALS.has(recipe.id) && recipe.format === 'cl')!;
     const born = {
       ...template,
-      recipe: { ...template.recipe, id: 'CL-046', slug: 'cl-046-film-test', name: 'CL-046-Film Test' } as Recipe,
+      recipe: { ...template.recipe, id: 'CL-046', slug: 'cl-046', name: 'CL-046-Warm Soft Rich' } as Recipe,
     };
-    expect(formerSlugOf(born.recipe.slug)).toBeNull();
+    expect(slugHistory(born.recipe.slug)).toEqual(['cl-046']);
     expect(SEED.some(({ recipe }) => recipe.id === 'CL-046' || recipe.name === born.recipe.name)).toBe(false);
     const p = planForProject(
       { ...SYNC_SEED, recipes: [...SYNC_SEED.recipes, born], originals: [...SYNC_SEED.originals, 'CL-046'] },
@@ -307,17 +318,18 @@ describe('library:sync against the content project before the code-id migration'
     expect(p.plan.insert).toContain('SCL-CL-046');
     expect(p.plan.conflicts).toEqual([]);
     const r = insertRows(p.plan, p.stored).find((x) => x.id === 'SCL-CL-046')!;
-    expect(r.slug).toBe('cl-046-film-test');
+    expect(r.slug).toBe('cl-046');
     expect(r.id).toMatch(OLD_ID_CHECK);
     expect(r.slug).toMatch(SLUG_CHECK);
   });
 
-  it('inserts rows the later migration renames: each id is the number its former slug moves to', () => {
+  it('inserts rows the later migration renames: each id is the number its first slug moves to', () => {
     for (const r of insertRows(plan, stored)) {
-      const current = currentSlugOf(r.slug);
-      expect(current, r.id).not.toBeNull();
-      expect(recipeIdKey(r.id), r.id).toBe(current!.slice(0, 6).toUpperCase());
-      expect(current, r.id).toBe(SEED.find(({ recipe }) => recipe.id === recipeIdKey(r.id))!.recipe.slug);
+      const current = OCT24.moves[r.slug];
+      expect(current, r.id).toBeTruthy();
+      expect(recipeIdKey(r.id), r.id).toBe(current.slice(0, 6).toUpperCase());
+      const seedSlug = SEED.find(({ recipe }) => recipe.id === recipeIdKey(r.id))!.recipe.slug;
+      expect(current, r.id).toBe(slugAtState(seedSlug, 1));
     }
   });
 
@@ -350,6 +362,7 @@ describe('library:sync against the content project before the code-id migration'
     const next = planForProject(SYNC_SEED, after);
     if ('refusal' in next) throw new Error(next.refusal);
     expect(next.shape).toBe('code');
+    expect(next.slugState).toBe(1);
     expect(next.plan).toEqual({ unpublish: [], rename: [], refresh: [...ORIGINALS], insert: [], conflicts: [] });
   });
 
@@ -387,12 +400,130 @@ describe('library:sync against the content project after the code-id migration',
     expect(planned.plan.rename.map((r) => r.id).sort()).toEqual(KEPT.map(({ recipe }) => recipe.id).sort());
     expect(planned.plan.refresh).toEqual([]);
     expect(planned.plan.conflicts).toEqual([]);
+    expect(planned.slugState).toBe(1);
     const rows = insertRows(planned.plan, planned.stored);
     expect(rows.map((r) => r.id).sort()).toEqual([...ORIGINALS].sort());
     for (const r of rows) {
-      expect(r.slug).toBe(SEED.find(({ recipe }) => recipe.id === r.id)!.recipe.slug);
+      expect(r.slug).toBe(slugAtState(SEED.find(({ recipe }) => recipe.id === r.id)!.recipe.slug, 1));
     }
     for (const t of translationRows(planned.stored, planned.plan.insert)) expect(t.recipe_id).toMatch(/^(PP|CL)-\d{3}$/);
+  });
+});
+
+/**
+ * The content project today (2026-10-28): 20261024000000 applied, so code ids
+ * and every seed recipe at its 2026-10-24 slug, under the names main's seed
+ * gave them — the name of the day was the slug, in Title Case (`HLG` the one
+ * acronym) — 47 published, the 43 originals unpublished, the 36 withdrawn
+ * Picture Profiles unpublished beside them. 126 rows.
+ */
+const mainName = (slug: string) =>
+  `${slug.slice(0, 6).toUpperCase()}-${titled(slug.slice(7)).replace(/\bHlg\b/, 'HLG')}`;
+const TODAY: readonly PlanExistingRow[] = [
+  ...SEED.map(({ recipe }) => {
+    const slug = slugAtState(recipe.slug, 1);
+    return row(recipe.id, slug, mainName(slug), recipe.published);
+  }),
+  ...RETIRED_RECIPE_IDS.map((id) => row(id, `withdrawn-${id.toLowerCase()}`, `SCL-${id}: Withdrawn`, false)),
+];
+
+describe('library:sync against the content project today, before and after the code-slug migration', () => {
+  const states = [
+    ['before 20261028000000', TODAY, 1],
+    ['after 20261028000000', TODAY.map(migrateSlugs), 2],
+  ] as const;
+
+  it('is the production fixture: 126 rows, 47 published, every seed recipe at its 2026-10-24 slug', () => {
+    expect(TODAY).toHaveLength(126);
+    expect(TODAY.filter((r) => r.published)).toHaveLength(47);
+    expect(TODAY[0]).toEqual(row('PP-001', 'pp-001-vivid-nostalgia-film', 'PP-001-Vivid Nostalgia Film', true));
+    expect(TODAY.find((r) => r.id === 'PP-080')?.name).toBe('PP-080-Range HLG Daylight');
+    /* The published ones are exactly the kept recipes, the originals all drafts. */
+    expect(TODAY.filter((r) => r.published).map((r) => r.id).sort()).toEqual(KEPT.map(({ recipe }) => recipe.id).sort());
+    /* 20261028000000 moves every seed row and nothing else. */
+    const after = TODAY.map(migrateSlugs);
+    for (const { recipe } of SEED) expect(after.find((r) => r.id === recipe.id)?.slug, recipe.id).toBe(recipe.slug);
+    expect(after.filter((r) => r.slug.startsWith('withdrawn-'))).toHaveLength(36);
+  });
+
+  it.each(states)('%s: plans rename 47 (names only), refresh 43, nothing else, 0 conflicts', (_label, rows, slugState) => {
+    const planned = planForProject(SYNC_SEED, rows);
+    if ('refusal' in planned) throw new Error(planned.refusal);
+    expect(planned.shape).toBe('code');
+    expect(planned.slugState).toBe(slugState);
+    expect(planned.plan.unpublish).toEqual([]);
+    expect(planned.plan.insert).toEqual([]);
+    expect(planned.plan.conflicts).toEqual([]);
+    expect([...planned.plan.refresh].sort()).toEqual([...ORIGINALS].sort());
+    expect(planned.plan.rename).toHaveLength(47);
+    for (const r of planned.plan.rename) {
+      const slug = rows.find((x) => x.id === r.id)!.slug;
+      expect(r.from, r.id).toBe(mainName(slugAtState(slug, 1)));
+      expect(r.to, r.id).toBe(nameOf.get(r.id));
+      /* The write is guarded on the slug the project holds, whatever it is. */
+      expect(planned.stored.recipes.find(({ recipe }) => recipe.id === r.id)!.recipe.slug, r.id).toBe(slug);
+    }
+    expect(planned.plan.rename).toContainEqual({ id: 'PP-001', from: 'PP-001-Vivid Nostalgia Film', to: nameOf.get('PP-001') });
+  });
+
+  it('leaves the seed as it is once the project holds the code slugs', () => {
+    const planned = planForProject(SYNC_SEED, TODAY.map(migrateSlugs));
+    if ('refusal' in planned) throw new Error(planned.refusal);
+    expect(planned.stored).toBe(SYNC_SEED);
+  });
+
+  it.each([
+    ['names first, then the migration', (rows: readonly PlanExistingRow[]) => applied(rows, SYNC_SEED).map(migrateSlugs)],
+    ['the migration first, then names', (rows: readonly PlanExistingRow[]) => applied(rows.map(migrateSlugs), SYNC_SEED)],
+  ])('ends with nothing left to rename: %s', (_label, run) => {
+    const next = planForProject(SYNC_SEED, run(TODAY));
+    if ('refusal' in next) throw new Error(next.refusal);
+    expect(next.slugState).toBe(2);
+    expect(next.plan).toEqual({ unpublish: [], rename: [], refresh: [...ORIGINALS], insert: [], conflicts: [] });
+  });
+
+  it('inserts a missing seed recipe under the spelling the project holds', () => {
+    for (const [, rows, slugState] of states) {
+      const p = planForProject(SYNC_SEED, rows.filter((r) => r.id !== 'PP-001'));
+      if ('refusal' in p) throw new Error(p.refusal);
+      expect(p.plan.insert).toEqual(['PP-001']);
+      const [r] = insertRows(p.plan, p.stored);
+      expect(r.slug).toBe(slugAtState('pp-001', slugState));
+      expect(r.published).toBe(false);
+    }
+  });
+
+  it('refuses a project holding two spellings of one recipe', () => {
+    const twice = planForProject(SYNC_SEED, [...TODAY, row('PP-990', 'pp-001', 'PP-990-Editor Draft', false)]);
+    expect(twice).toEqual({
+      refusal: expect.stringMatching(/two spellings of 1 recipe\(s\): PP-001 \(pp-001-vivid-nostalgia-film, pp-001\)/),
+    });
+  });
+
+  it('refuses a project whose recipes sit at different slug generations', () => {
+    const half = TODAY.map((r) => (r.id === 'PP-001' ? migrateSlugs(r) : r));
+    expect(planForProject(SYNC_SEED, half)).toEqual({ refusal: expect.stringMatching(/different slug generations/) });
+  });
+});
+
+describe('storedSlugState', () => {
+  const recipes = SEED.map(({ recipe }) => recipe);
+
+  it('is the seed’s own state for a project holding none of it', () => {
+    expect(storedSlugState(recipes, [])).toEqual({ state: SLUG_MOVES.length });
+    expect(storedSlugState(recipes, [row('PP-003', 'withdrawn-pp-003', 'x', false)])).toEqual({ state: 2 });
+  });
+
+  it('reads each state off the rows a recipe’s own id holds', () => {
+    for (const n of [0, 1, 2]) {
+      const rows = recipes.map((r) => row(n === 0 ? `SCL-${r.id}` : r.id, slugAtState(r.slug, n), r.name, true));
+      expect(storedSlugState(recipes, rows), String(n)).toEqual({ state: n });
+    }
+  });
+
+  it('takes no evidence from another id holding a spelling, leaving the conflict to the plan', () => {
+    const rows = [...TODAY, row('PP-990', 'mojave-sun', 'PP-990-Editor Draft', false)].filter((r) => r.id !== 'PP-001');
+    expect(storedSlugState(recipes, rows)).toEqual({ state: 1 });
   });
 });
 
@@ -418,7 +549,9 @@ describe('sync-library.ts', () => {
     expect(code).not.toMatch(/(?<![.\w])(seed|translations|originals|RETIRED_RECIPE_IDS)\b|toRow\(/);
   });
 
-  it('says which shape it writes', () => {
+  it('says which shape and which slug spelling it writes', () => {
     expect(script).toMatch(/content holds SCL- ids: writing in that shape; the id migration renames them later/);
+    expect(script).toContain('writing in that spelling; ');
+    expect(script).toContain('${SLUG_MOVES[slugState].content} renames them later');
   });
 });

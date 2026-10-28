@@ -6,7 +6,7 @@ import { PRODUCT_COLUMNS } from '@/lib/cameras/row';
 import { ORIGINAL_CL } from '@/lib/originals/cl';
 import { ORIGINAL_PP } from '@/lib/originals/pp';
 import { toRow } from '@/lib/recipes/row';
-import { SLUG_MOVES, formerSlugsFor } from '@/lib/recipes/slug-moves';
+import { SLUG_MOVES, formerSlugsFor, recipeIdOfSlug } from '@/lib/recipes/slug-moves';
 import {
   insertRows,
   planForProject,
@@ -647,11 +647,14 @@ describe('the recipe code-id migration (S5)', () => {
   const CODE_IDS = '20261024000000_recipe_code_ids.sql';
   const sql = () => readFileSync(`${CONTENT_ROOT}/${CODE_IDS}`, 'utf8');
 
-  const FORMER_SLUGS = JSON.parse(readFileSync('data/former-slugs.json', 'utf8')) as Record<string, string>;
   const seed = JSON.parse(readFileSync('data/recipes.seed.json', 'utf8')) as (Recipe & {
     legacyId: string | null;
   })[];
-  const formerOf = new Map(Object.entries(FORMER_SLUGS).map(([former, current]) => [current, former]));
+  /* This migration's own list, frozen with it (`data/slug-moves/2026-10-24.json`),
+     by recipe id: the first slug each held, and the one this file gives it. */
+  const [OCT24] = SLUG_MOVES;
+  const formerOf = new Map(Object.entries(OCT24.moves).map(([former, current]) => [recipeIdOfSlug(current)!, former]));
+  const oct24Of = new Map(Object.values(OCT24.moves).map((current) => [recipeIdOfSlug(current)!, current]));
 
   /** A withdrawn row: not in the seed, so its slug is not in the map (S4). */
   const WITHDRAWN = { id: 'SCL-PP-003', slug: 'withdrawn-probe', legacyId: 'scl-003' };
@@ -683,7 +686,7 @@ describe('the recipe code-id migration (S5)', () => {
   async function contentBefore(): Promise<PGlite> {
     const db = await freshDatabase(CONTENT_ROOT, (f) => f < CODE_IDS);
     for (const r of seed) {
-      await insertRecipe(db, { ...toRow(r, r.legacyId), id: `SCL-${r.id}`, slug: formerOf.get(r.slug) });
+      await insertRecipe(db, { ...toRow(r, r.legacyId), id: `SCL-${r.id}`, slug: formerOf.get(r.id) });
       await db.query(
         `insert into recipe_translations (recipe_id, locale, description) values ($1, 'en', 'A description.')`,
         [`SCL-${r.id}`],
@@ -726,10 +729,10 @@ describe('the recipe code-id migration (S5)', () => {
     await migrated.exec(sql());
   }, 60_000);
 
-  it('is the newest content migration, versioned so the control root cannot claim it', () => {
+  it('is versioned so the control root cannot claim it, and only the next slug move follows it', () => {
     const version = CODE_IDS.split('_')[0];
     expect(version).toMatch(/^\d{14}$/);
-    expect(files(CONTENT_ROOT).at(-1)).toBe(CODE_IDS);
+    expect(files(CONTENT_ROOT).filter((f) => f > CODE_IDS)).toEqual(['20261028000000_recipe_code_slugs.sql']);
     expect(files(CONTROL_ROOT).map((f) => f.split('_')[0])).not.toContain(version);
   });
 
@@ -748,10 +751,10 @@ describe('the recipe code-id migration (S5)', () => {
     ]);
   });
 
-  it('gives every seed recipe its current slug and leaves a withdrawn row its own', async () => {
+  it('gives every seed recipe its 2026-10-24 slug and leaves a withdrawn row its own', async () => {
     const q = await migrated.query<{ id: string; slug: string }>(`select id, slug from recipes`);
     const slugById = new Map(q.rows.map((r) => [r.id, r.slug]));
-    for (const r of seed) expect(slugById.get(r.id), r.id).toBe(r.slug);
+    for (const r of seed) expect(slugById.get(r.id), r.id).toBe(oct24Of.get(r.id));
     expect(slugById.get('PP-003')).toBe(WITHDRAWN.slug);
   });
 
@@ -791,7 +794,7 @@ describe('the recipe code-id migration (S5)', () => {
     const originals = [...ORIGINAL_PP, ...ORIGINAL_CL].map((o) => o.recipe.id);
     const db = await freshDatabase(CONTENT_ROOT, (f) => f < CODE_IDS);
     for (const r of seed.filter((s) => !originals.includes(s.id))) {
-      await insertRecipe(db, { ...toRow(r, r.legacyId), id: `SCL-${r.id}`, slug: formerOf.get(r.slug) });
+      await insertRecipe(db, { ...toRow(r, r.legacyId), id: `SCL-${r.id}`, slug: formerOf.get(r.id) });
     }
     const existing = (await db.query<PlanExistingRow>(`select id, slug, name, published from recipes`)).rows;
     const planned = planForProject(
@@ -805,6 +808,7 @@ describe('the recipe code-id migration (S5)', () => {
     );
     if ('refusal' in planned) throw new Error(planned.refusal);
     expect(planned.shape).toBe('legacy');
+    expect(planned.slugState).toBe(0);
     expect(planned.plan.insert).toHaveLength(originals.length);
     for (const row of insertRows(planned.plan, planned.stored)) await insertRecipe(db, row);
     for (const t of translationRows(planned.stored, planned.plan.insert)) {
@@ -819,7 +823,7 @@ describe('the recipe code-id migration (S5)', () => {
     const q = await db.query<{ id: string; slug: string; published: boolean }>(`select id, slug, published from recipes`);
     const byId = new Map(q.rows.map((r) => [r.id, r]));
     for (const id of originals) {
-      expect(byId.get(id)?.slug, id).toBe(seed.find((r) => r.id === id)!.slug);
+      expect(byId.get(id)?.slug, id).toBe(oct24Of.get(id));
       expect(byId.get(id)?.published, id).toBe(false);
     }
     const t = await db.query<{ recipe_id: string }>(`select distinct recipe_id from recipe_translations`);
@@ -843,7 +847,7 @@ describe('the recipe code-id migration (S5)', () => {
     await insertRecipe(db, {
       ...toRow(seed[0], null),
       id: 'SCL-PP-990',
-      slug: seed.find((r) => r.id === 'PP-048')!.slug,
+      slug: oct24Of.get('PP-048'),
       published: false,
     });
     const [beforeRows, beforeShape] = [await rows(db), await shape(db)];
@@ -876,6 +880,148 @@ describe('the recipe code-id migration (S5)', () => {
   });
 });
 
+describe('the recipe code-slug migration (S2 of 2026-10-28)', () => {
+  /* The content project today: 20261024000000 applied, so code ids and every
+     seed recipe at its 2026-10-24 slug, the withdrawn Picture Profiles
+     unpublished beside them. This file moves the seed's slugs to the code and
+     touches nothing else. */
+  const CODE_IDS = '20261024000000_recipe_code_ids.sql';
+  const CODE_SLUGS = '20261028000000_recipe_code_slugs.sql';
+  const sql = () => readFileSync(`${CONTENT_ROOT}/${CODE_SLUGS}`, 'utf8');
+  const seed = JSON.parse(readFileSync('data/recipes.seed.json', 'utf8')) as (Recipe & {
+    legacyId: string | null;
+  })[];
+  const [OCT24, OCT28] = SLUG_MOVES;
+  const firstOf = new Map(Object.entries(OCT24.moves).map(([first, middle]) => [recipeIdOfSlug(middle)!, first]));
+  const middleOf = new Map(Object.keys(OCT28.moves).map((middle) => [recipeIdOfSlug(middle)!, middle]));
+  const WITHDRAWN = { id: 'PP-003', slug: 'withdrawn-probe', legacyId: 'scl-003' };
+
+  async function insertRecipe(db: PGlite, row: Record<string, unknown>) {
+    const cols = Object.keys(row);
+    await db.query(
+      `insert into recipes (${cols.join(', ')}) values (${cols.map((_c, i) => `$${i + 1}`).join(', ')})`,
+      Object.values(row),
+    );
+  }
+
+  /** The content root through 20261024000000, holding production's rows of today. */
+  async function contentToday(): Promise<PGlite> {
+    const db = await freshDatabase(CONTENT_ROOT, (f) => f < CODE_SLUGS);
+    for (const r of seed) {
+      await insertRecipe(db, { ...toRow(r, r.legacyId), slug: middleOf.get(r.id) });
+      await db.query(
+        `insert into recipe_translations (recipe_id, locale, description) values ($1, 'en', 'A description.')`,
+        [r.id],
+      );
+    }
+    await insertRecipe(db, {
+      ...toRow(seed[0], WITHDRAWN.legacyId),
+      id: WITHDRAWN.id,
+      slug: WITHDRAWN.slug,
+      published: false,
+    });
+    return db;
+  }
+
+  /** Every row the migration may touch, in a stable order, timestamps included. */
+  async function rows(db: PGlite) {
+    const q = async (text: string) => (await db.query(text)).rows;
+    return {
+      recipes: await q(`select id, slug, name, published, settings, updated_at from recipes order by id`),
+      translations: await q(`select recipe_id, locale, description, updated_at from recipe_translations order by recipe_id, locale`),
+    };
+  }
+
+  let before: Awaited<ReturnType<typeof rows>>;
+  let migrated: PGlite;
+  beforeAll(async () => {
+    migrated = await contentToday();
+    before = await rows(migrated);
+    await migrated.exec(sql());
+  }, 60_000);
+
+  it('is the newest content migration, versioned so the control root cannot claim it', () => {
+    const version = CODE_SLUGS.split('_')[0];
+    expect(version).toMatch(/^\d{14}$/);
+    expect(files(CONTENT_ROOT).at(-1)).toBe(CODE_SLUGS);
+    expect(files(CONTROL_ROOT).map((f) => f.split('_')[0])).not.toContain(version);
+  });
+
+  it('gives every seed recipe its code as its slug, and leaves a withdrawn row its own', async () => {
+    const q = await migrated.query<{ id: string; slug: string }>(`select id, slug from recipes`);
+    const slugById = new Map(q.rows.map((r) => [r.id, r.slug]));
+    for (const r of seed) expect(slugById.get(r.id), r.id).toBe(r.slug);
+    for (const r of seed) expect(r.slug, r.id).toBe(r.id.toLowerCase());
+    expect(slugById.get(WITHDRAWN.id)).toBe(WITHDRAWN.slug);
+  });
+
+  it('changes slugs only: ids, names, settings, publication and translations stay', async () => {
+    const after = await rows(migrated);
+    const strip = (r: unknown) => ({ ...(r as Record<string, unknown>), slug: undefined, updated_at: undefined });
+    expect(after.recipes.map(strip)).toEqual(before.recipes.map(strip));
+    expect(after.translations).toEqual(before.translations);
+  });
+
+  it('follows 20261024000000 from the project as it was before both', async () => {
+    /* SCL- ids at the first slugs; the two files in order land on the code. */
+    const db = await freshDatabase(CONTENT_ROOT, (f) => f < CODE_IDS);
+    for (const r of seed) {
+      await insertRecipe(db, { ...toRow(r, r.legacyId), id: `SCL-${r.id}`, slug: firstOf.get(r.id) });
+    }
+    await db.exec(readFileSync(`${CONTENT_ROOT}/${CODE_IDS}`, 'utf8'));
+    await db.exec(sql());
+    const q = await db.query<{ id: string; slug: string }>(`select id, slug from recipes`);
+    const slugById = new Map(q.rows.map((r) => [r.id, r.slug]));
+    for (const r of seed) expect(slugById.get(r.id), r.id).toBe(r.slug);
+  }, 60_000);
+
+  it('refuses a project 20261024000000 has not reached, before changing anything', async () => {
+    const db = await freshDatabase(CONTENT_ROOT, (f) => f < CODE_IDS);
+    await insertRecipe(db, { ...toRow(seed[0], seed[0].legacyId), id: `SCL-${seed[0].id}`, slug: firstOf.get(seed[0].id) });
+    const was = await rows(db);
+    await expect(db.exec(sql())).rejects.toThrow(/apply 20261024000000_recipe_code_ids\.sql first/);
+    expect(await rows(db)).toEqual(was);
+  }, 60_000);
+
+  it('changes nothing the second time it runs', async () => {
+    const db = await contentToday();
+    await db.exec(sql());
+    const [onceRows, onceShape] = [await rows(db), await shape(db)];
+    await db.exec(sql());
+    expect(await rows(db)).toEqual(onceRows);
+    expect(await shape(db)).toEqual(onceShape);
+  }, 60_000);
+
+  it('leaves the project exactly as it was when it cannot finish', async () => {
+    /* A code slug another row already holds stops the file on the unique key. */
+    const db = await contentToday();
+    await insertRecipe(db, { ...toRow(seed[0], null), id: 'PP-990', slug: 'pp-048', published: false });
+    const [beforeRows, beforeShape] = [await rows(db), await shape(db)];
+    await expect(db.exec(sql())).rejects.toThrow(/recipes_slug_key/);
+    expect(await rows(db)).toEqual(beforeRows);
+    expect(await shape(db)).toEqual(beforeShape);
+  }, 60_000);
+
+  it('never moves a row whose id is not the code its new slug names', async () => {
+    const db = await freshDatabase(CONTENT_ROOT, (f) => f < CODE_SLUGS);
+    await insertRecipe(db, { ...toRow(seed[0], null), id: 'PP-990', slug: middleOf.get('PP-048'), published: false });
+    await db.exec(sql());
+    const q = await db.query<{ slug: string }>(`select slug from recipes where id = 'PP-990'`);
+    expect(q.rows).toEqual([{ slug: middleOf.get('PP-048') }]);
+  }, 60_000);
+
+  it('refuses the control plane before changing anything', async () => {
+    const text = sql();
+    const firstChange = text.search(/^\s*(create|revoke|grant|insert|comment|alter|drop|update)\b/m);
+    expect(text.indexOf('control-plane tables')).toBeGreaterThan(-1);
+    expect(text.indexOf('control-plane tables')).toBeLessThan(firstChange);
+
+    const was = await shape(control);
+    await expect(control.exec(text)).rejects.toThrow(/control-plane tables/);
+    expect(await shape(control)).toEqual(was);
+  });
+});
+
 describe('the slug lists in both migrations', () => {
   /* Each slug move is a pair of migrations, one per plane, and they rename
      from the same list written into each as SQL. The list is frozen in
@@ -885,10 +1031,10 @@ describe('the slug lists in both migrations', () => {
      the union of the batches and nothing else. */
   const FORMER_SLUGS = JSON.parse(readFileSync('data/former-slugs.json', 'utf8')) as Record<string, string>;
 
-  function pairs(path: string): [string, string][] {
+  function pairs(path: string, marker = 'former-slugs'): [string, string][] {
     const text = readFileSync(path, 'utf8');
-    const begin = text.indexOf('-- former-slugs:begin');
-    const end = text.indexOf('-- former-slugs:end');
+    const begin = text.indexOf(`-- ${marker}:begin`);
+    const end = text.indexOf(`-- ${marker}:end`);
     expect(begin, `${path}: begin marker`).toBeGreaterThan(-1);
     expect(end, `${path}: end marker`).toBeGreaterThan(begin);
     const lines = text
@@ -909,7 +1055,24 @@ describe('the slug lists in both migrations', () => {
     expect(pairs(path)).toEqual(Object.entries(moves));
   });
 
-  it('writes data/former-slugs.json as the union of the moves, and nothing else', () => {
+  /* A control file after the first also moves rows still under a spelling
+     from before its batch — a row written while the content plane held it,
+     or a photo an earlier file left beside its twin — so it carries the
+     earlier batch too, and composes the two in SQL. */
+  it.each(
+    SLUG_MOVES.slice(1).map((b, i) => [b.date, `${CONTROL_ROOT}/${b.control}`, SLUG_MOVES.slice(0, i + 1)] as const),
+  )('the %s move: %s reaches the earlier spellings through the earlier batch', (_date, path, earlier) => {
+    expect(earlier).toHaveLength(1);
+    expect(pairs(path, 'earlier-slugs')).toEqual(earlier.flatMap((b) => Object.entries(b.moves)));
+  });
+
+  it('writes data/former-slugs.json as every earlier spelling mapped to the newest, and nothing else', () => {
     expect(FORMER_SLUGS).toEqual(formerSlugsFor([]).formerSlugs);
+    const [OCT24, OCT28] = SLUG_MOVES;
+    for (const [first, middle] of Object.entries(OCT24.moves)) {
+      expect(FORMER_SLUGS[first], first).toBe(OCT28.moves[middle]);
+      expect(FORMER_SLUGS[middle], middle).toBe(OCT28.moves[middle]);
+    }
+    expect(Object.keys(FORMER_SLUGS)).toHaveLength(Object.keys(OCT24.moves).length * 2);
   });
 });

@@ -97,9 +97,9 @@ export default async function RecipePage({
   ]);
   if (!resolved) notFound();
   const { recipe, slug } = resolved;
-  /* A slug the recipe had, or will have once the content migration runs,
-     lands on the one the catalogue holds now. Permanent only from a former
-     slug to the current one: the reverse is the unmigrated database, and a
+  /* A slug the recipe had, or will have once a content migration runs,
+     lands on the one the catalogue holds now. Permanent only from an older
+     spelling to a newer one: the reverse is an unmigrated database, and a
      cached 308 that way would loop once the migration turns it round. */
   if (slug !== requested) {
     const to = { href: `/recipe/${slug}`, locale };

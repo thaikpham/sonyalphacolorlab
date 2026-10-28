@@ -16,6 +16,13 @@ import { ORIGINAL_PP, type OriginalRecipe } from './pp';
 const ALL: readonly OriginalRecipe[] = [...ORIGINAL_PP, ...ORIGINAL_CL];
 const vi = JSON.parse(readFileSync('data/translations.vi.json', 'utf8')) as Record<string, string>;
 
+/* An original carries no name (emit-seed computes it); the seed's stands in
+   wherever a whole Recipe is needed. */
+const seedNames = new Map(
+  (JSON.parse(readFileSync('data/recipes.seed.json', 'utf8')) as { id: string; name: string }[]).map((r) => [r.id, r.name]),
+);
+const named = (o: OriginalRecipe): Recipe => ({ ...o.recipe, name: seedNames.get(o.recipe.id) ?? '' }) as Recipe;
+
 const ppOf = (o: OriginalRecipe): PpSettings | null =>
   o.recipe.format === 'pp' ? o.recipe.settings : null;
 
@@ -43,11 +50,11 @@ const range = (from: number, to: number) => Array.from({ length: to - from + 1 }
 describe('the originals', () => {
   it('parse with recipeSchema, each in its own format', () => {
     for (const o of ORIGINAL_PP) {
-      expect(recipeSchema.safeParse(o.recipe).success, o.recipe.id).toBe(true);
+      expect(recipeSchema.safeParse(named(o)).success, o.recipe.id).toBe(true);
       expect(o.recipe.format, o.recipe.id).toBe('pp');
     }
     for (const o of ORIGINAL_CL) {
-      expect(recipeSchema.safeParse(o.recipe).success, o.recipe.id).toBe(true);
+      expect(recipeSchema.safeParse(named(o)).success, o.recipe.id).toBe(true);
       expect(o.recipe.format, o.recipe.id).toBe('cl');
     }
   });
@@ -85,7 +92,7 @@ describe('the originals', () => {
     for (const o of ORIGINAL_PP) {
       const s = ppOf(o)!;
       expect(Math.abs(s.colorPhase), o.recipe.id).toBeLessThanOrEqual(2);
-      if (taxonomyFor(o.recipe).situations.includes('portrait') || o.recipe.tags.includes('portrait')) {
+      if (taxonomyFor(named(o)).situations.includes('portrait') || o.recipe.tags.includes('portrait')) {
         expect(s.colorPhase, `${o.recipe.id} is a portrait recipe`).toBe(0);
       }
     }
@@ -132,7 +139,7 @@ describe('the originals', () => {
   it('describe a Creative Look with Creative Look settings only', () => {
     /* A stray Picture Profile key is a schema error, not a dropped field. */
     for (const o of ORIGINAL_CL) {
-      const withPp = { ...o.recipe, settings: { ...o.recipe.settings, blackLevel: 0 } } as unknown as Recipe;
+      const withPp = { ...named(o), settings: { ...o.recipe.settings, blackLevel: 0 } } as unknown as Recipe;
       expect(recipeSchema.safeParse(withPp).success, o.recipe.id).toBe(false);
     }
   });

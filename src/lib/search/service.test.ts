@@ -88,8 +88,8 @@ const product = (over: Partial<SonyCamera> & { id: string; name: string }): Sony
 const recipe = (over: Partial<RecipeView>): RecipeView =>
   ({
     id: 'PP-001',
-    slug: 'pp-001-vivid-nostalgia-film',
-    name: 'PP-001-Vivid Nostalgia Film',
+    slug: 'pp-001',
+    name: 'PP-001-Neutral Soft Rich',
     format: 'pp',
     wbLabel: '5600K',
     description: '',
@@ -220,7 +220,7 @@ describe('a recipe hit', () => {
     /* The name is never translated, so the title stays English; the
        description is the locale's. */
     state.recipes = [recipe({ description: 'Tông ấm của sa mạc lúc hoàng hôn.' })]
-    const [hit] = (await searchIn('mojave', 'vi', 'recipes')).hits
+    const [hit] = (await searchIn('soft rich', 'vi', 'recipes')).hits
     expect(hit).toMatchObject({ contentLanguage: 'en', snippetLanguage: 'vi' })
     expect(hit.snippet).toBe('Tông ấm của sa mạc lúc hoàng hôn.')
   })
