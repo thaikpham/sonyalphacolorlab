@@ -1,6 +1,7 @@
 import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
 import { legacyRedirects } from './src/lib/recipes/redirects';
+import { SECURITY_HEADERS } from './src/lib/security-headers';
 
 const withNextIntl = createNextIntlPlugin();
 
@@ -79,6 +80,9 @@ const nextConfig: NextConfig = {
   // Query-param redirects from sonycolorlab.app — see `src/lib/recipes/redirects.ts`.
   async redirects() {
     return legacyRedirects();
+  },
+  async headers() {
+    return [{ source: '/:path*', headers: [...SECURITY_HEADERS] }];
   },
 };
 
