@@ -80,6 +80,30 @@ function renderBlock(
   }
 }
 
+/** The article's sections, numbered, each with its précis — the rail's list
+    from lg up, the folded list under the dek below it. */
+function OutlineList({ outline }: { outline: ReturnType<typeof buildOutline> }) {
+  return (
+    <ul lang={ARTICLE_LANG} className="mt-1">
+      {outline.map((entry) => (
+        <li key={entry.id}>
+          <hr className="seam" />
+          <a
+            href={`#${entry.id}`}
+            className="flex min-h-[var(--layout-touch-target)] gap-2.5 rounded-sm px-2 py-3 transition-colors hover:bg-glass"
+          >
+            <span className="text-label font-bold tabular-nums text-accent-400">{entry.n}</span>
+            <span className="min-w-0">
+              <span className="block text-body-sm font-semibold leading-[1.35] text-ink">{entry.text}</span>
+              {entry.precis ? <span className="meta mt-1 block leading-[1.45]">{entry.precis}</span> : null}
+            </span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
 export async function ArticleView({ article }: { article: Article }) {
   const [t, tl, locale] = await Promise.all([
     getTranslations('lab'),
@@ -96,22 +120,16 @@ export async function ArticleView({ article }: { article: Article }) {
   const section = article.meta.section
 
   return (
-    /* `wrap-reverse` is deliberate and is the handoff's call: when the viewport
-       is too narrow for two columns the rail moves ABOVE the article rather
-       than below it, so a phone reader gets the summary and the contents
-       before four screens of body copy instead of after them.
-
-       `items-end`, not `items-start`, and that is not a typo. `wrap-reverse`
-       swaps cross-start and cross-end, so `flex-start` resolves to the visual
-       BOTTOM of the line — the handoff's spec pairs `wrap-reverse` with
-       `align-items:flex-start` and lands the rail 1,464px down the page,
-       level with the end of the article and below the fold on every screen.
-       Under `wrap-reverse` the visual top is `flex-end`. */
-    <div className="flex flex-wrap-reverse items-end gap-y-8 gap-x-[clamp(2rem,3.5vw,4rem)]">
+    /* One column below `lg`: the article alone, with its outline folded
+       under the dek, so a phone reader meets the title first and the
+       contents one tap away rather than a screen of outline above the h1.
+       Two columns from `lg`: the rail beside the text, sticky. The switch is
+       the breakpoint, not wherever the two columns stop fitting. */
+    <div className="flex flex-col lg:flex-row lg:items-start gap-y-8 gap-x-[clamp(2rem,3.5vw,4rem)]">
       {/* 46rem is the measure, not a layout width: at the 18px body it holds
           roughly 70 characters of Vietnamese a line, which is where long
           technical prose stops costing the reader their place. */}
-      <article className="lab-article min-w-0 max-w-[46rem] flex-1 basis-[32.5rem]">
+      <article className="lab-article min-w-0 max-w-[46rem] lg:flex-1 lg:basis-[32.5rem]">
         {knowledge ? (
           /* Learn › section. The section is the hub's own anchor, so the
              trail is two links a reader can actually take. */
@@ -183,6 +201,25 @@ export async function ArticleView({ article }: { article: Article }) {
           <p className="mt-4 text-title-3 font-normal leading-[1.5] text-ink-muted [text-wrap:pretty]">
             {article.dek}
           </p>
+          {/* Below `lg`, where the rail is hidden: "read first" open, and the
+              outline folded behind its label. Navigation in the reader's UI
+              language, so `lang` goes back to the page's. */}
+          {prerequisites.length > 0 || outline.length > 0 ? (
+            <nav aria-label={t('railLabel')} lang={locale} className="mt-8 flex flex-col gap-5 lg:hidden">
+              {prerequisites.length > 0 ? (
+                <RelatedLinks links={prerequisites} heading={tl('readFirst')} lang={ARTICLE_LANG} />
+              ) : null}
+              {outline.length > 0 ? (
+                <details className="group">
+                  <summary className="label flex min-h-[var(--layout-touch-target)] cursor-pointer list-none items-center justify-between gap-2 [&::-webkit-details-marker]:hidden">
+                    {knowledge ? tl('inThisPage') : t('inThisArticle')}
+                    <span aria-hidden className="text-ink-faint group-open:rotate-180">▾</span>
+                  </summary>
+                  <OutlineList outline={outline} />
+                </details>
+              ) : null}
+            </nav>
+          ) : null}
           <hr className="seam mt-8 mb-8" />
 
           {article.blocks.map((block, i) => renderBlock(block, i, article.id, labels, ordinals[i]))}
@@ -211,19 +248,17 @@ export async function ArticleView({ article }: { article: Article }) {
         </footer>
       </article>
 
-      {/* `self-end` is the visual TOP here — see the container above. `top-6`
-          matches the article column's own top edge, so the two columns start
-          on the same line rather than the rail hanging a gap below it.
-          `grow` until `lg`, where the two-column layout takes over: once the
-          rail is on its own line it should fill it, not sit in a 240px
-          gutter with the rest of a phone screen empty beside it. */}
+      {/* The rail, from `lg` only; below it the phone block under the dek
+          does its job. `top-6` matches the article column's own top edge, so
+          the two columns start on the same line rather than the rail hanging
+          a gap below it. */}
       <nav
         aria-label={t('railLabel')}
-        className="flex grow basis-[clamp(15rem,19vw,20rem)] flex-col gap-5 self-end lg:sticky lg:top-6 lg:grow-0"
+        className="hidden lg:flex lg:sticky lg:top-6 shrink-0 basis-[clamp(15rem,19vw,20rem)] flex-col gap-5"
       >
         {/* In the rail, above the contents: it is navigation, not part of
-            what the author wrote, and below `lg` the rail sits above the
-            body — so a phone reader still meets it before the first block. */}
+            what the author wrote. The rail is the lg+ home of "read first";
+            the phone block under the dek is the other. */}
         {prerequisites.length > 0 ? (
           <RelatedLinks links={prerequisites} heading={tl('readFirst')} lang={ARTICLE_LANG} />
         ) : null}
@@ -231,29 +266,7 @@ export async function ArticleView({ article }: { article: Article }) {
         {outline.length > 0 ? (
           <div>
             <p className="label">{knowledge ? tl('inThisPage') : t('inThisArticle')}</p>
-            <ul lang={ARTICLE_LANG} className="mt-1">
-              {outline.map((entry) => (
-                <li key={entry.id}>
-                  <hr className="seam" />
-                  <a
-                    href={`#${entry.id}`}
-                    className="flex min-h-[var(--layout-touch-target)] gap-2.5 rounded-sm px-2 py-3 transition-colors hover:bg-glass"
-                  >
-                    <span className="text-label font-bold tabular-nums text-accent-400">
-                      {entry.n}
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block text-body-sm font-semibold leading-[1.35] text-ink">
-                        {entry.text}
-                      </span>
-                      {entry.precis ? (
-                        <span className="meta mt-1 block leading-[1.45]">{entry.precis}</span>
-                      ) : null}
-                    </span>
-                  </a>
-                </li>
-              ))}
-            </ul>
+            <OutlineList outline={outline} />
           </div>
         ) : null}
       </nav>

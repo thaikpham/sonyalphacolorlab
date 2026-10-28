@@ -999,9 +999,10 @@ export function RecipeCommunitySection({
                 : 'text-ink-muted hover:text-ink'
             }`}
           >
-            {/* A count only for a list that has loaded. Proposals load when
-                their tab opens, so this read "(0)" on every page. */}
-            {commentsLoaded ? t('tabComments', { count: comments.length }) : t('tabCommentsPlain')}
+            {/* A count only for a list that has loaded and holds something.
+                Proposals load when their tab opens, so this read "(0)" on
+                every page; and "(0)" on a loaded empty list counts nothing. */}
+            {commentsLoaded && comments.length > 0 ? t('tabComments', { count: comments.length }) : t('tabCommentsPlain')}
           </button>
 
           <button
@@ -1014,7 +1015,7 @@ export function RecipeCommunitySection({
                 : 'text-ink-muted hover:text-ink'
             }`}
           >
-            {proposalsLoaded
+            {proposalsLoaded && proposals.length > 0
               ? t('tabProposals', { count: proposals.length })
               : t('tabProposalsPlain')}
           </button>

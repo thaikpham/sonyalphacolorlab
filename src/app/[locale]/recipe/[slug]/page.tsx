@@ -170,13 +170,22 @@ export default async function RecipePage({
           </Link>
         </nav>
 
-        {/* Full-Bleed 2-Column Grid (Header + Collage Gallery on Left vs WB + Parameters on Right) */}
+        {/* Full-Bleed Grid of three parts: hero, settings, participation.
+            Source order is reading order on a phone, so the settings — the
+            reason to open a recipe — come straight after the hero, before the
+            gallery, AI and community. From lg the parts go back into two
+            columns by explicit lines: hero over participation on the left,
+            settings across both rows on the right. `auto 1fr` sends any height
+            the spanning column adds to the second row, so no gap opens between
+            the hero and the gallery. */}
         {/* Half and half at lg, 7/5 from xl. At 1024px a 5/12 column with
             gap-12 is about 342px inside its card, and ParamRow's fixed 9rem +
-            8.5rem tracks left its effect text about 6px — rule 4's collapse. */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 xl:gap-12 items-start">
-          {/* Left Column: Header Info + Photographic Collage Gallery */}
-          <div className="lg:col-span-6 xl:col-span-7 flex flex-col gap-8">
+            8.5rem tracks left its effect text about 6px — rule 4's collapse.
+            The row gap stays 2rem: it is what separates the hero from the
+            gallery, the gap the old left column's own stack gave. */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 lg:grid-rows-[auto_1fr] gap-8 xl:gap-x-12 items-start">
+          {/* Hero: Header Info, palette and the ways back into the catalogue */}
+          <div data-part="hero" className="lg:col-span-6 xl:col-span-7 lg:col-start-1 lg:row-start-1 flex flex-col gap-8">
             {/* Recipe Header & Description */}
             <div>
               <div className="flex items-center gap-3 mb-2">
@@ -238,30 +247,12 @@ export default async function RecipePage({
                 </ul>
               </div>
             </div>
-
-            {/* Photographic Collage Gallery & User URL Contribution */}
-            <RecipeGallery slug={slug} title={title} />
-
-            {/* AI Tweak Section */}
-            <TweakPanel
-              slug={slug}
-              locale={locale}
-              format={recipe.format}
-              currentWb={recipe.whiteBalance}
-              currentSettings={recipe.settings}
-            />
-
-            {/* Community Comments, Proposals & Heart Voting */}
-            <RecipeCommunitySection
-              recipeSlug={slug}
-              recipeFormat={recipe.format}
-              currentSettings={recipe.settings}
-              currentWb={recipe.whiteBalance}
-            />
           </div>
 
-          {/* Right Column: White Balance (Top) + Exact Camera Settings Tables */}
-          <div className="lg:col-span-6 xl:col-span-5 lg:sticky lg:top-24 flex flex-col gap-6">
+          {/* Settings: White Balance (Top) + Exact Camera Settings Tables.
+              Second in source order, first after the hero on a phone; the
+              sticky right column across both rows from lg. */}
+          <div data-part="settings" className="lg:col-span-6 xl:col-span-5 lg:col-start-7 xl:col-start-8 lg:row-start-1 lg:row-span-2 lg:sticky lg:top-24 flex flex-col gap-6">
             {/* White Balance Core Engine (Top of Parameters Column) */}
             {/* p-5 matches ParamBlock deliberately. This card and the parameter
                 tables stack in one column, so a different padding put every WB
@@ -305,6 +296,29 @@ export default async function RecipePage({
                 recipe — computed from the published pages, never authored
                 here (ADR 0002). */}
             <RecipeLearnMore recipeId={recipe.id} format={recipe.format} locale={locale} />
+          </div>
+
+          {/* Participation: gallery, AI and community, under the hero from lg */}
+          <div data-part="participation" className="lg:col-span-6 xl:col-span-7 lg:col-start-1 lg:row-start-2 flex flex-col gap-8">
+            {/* Photographic Collage Gallery & User URL Contribution */}
+            <RecipeGallery slug={slug} title={title} />
+
+            {/* AI Tweak Section */}
+            <TweakPanel
+              slug={slug}
+              locale={locale}
+              format={recipe.format}
+              currentWb={recipe.whiteBalance}
+              currentSettings={recipe.settings}
+            />
+
+            {/* Community Comments, Proposals & Heart Voting */}
+            <RecipeCommunitySection
+              recipeSlug={slug}
+              recipeFormat={recipe.format}
+              currentSettings={recipe.settings}
+              currentWb={recipe.whiteBalance}
+            />
           </div>
         </div>
 

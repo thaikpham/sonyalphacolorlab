@@ -73,7 +73,9 @@ describe('/colorlab and /colorlab/[situation]', () => {
   /* The empty state echoes the query. A pasted URL is one unbreakable token,
      and at 375px it pushed the page sideways. */
   it('wraps an echoed query instead of widening the page', () => {
-    expect(browse).toMatch(/<p className="[^"]*\bbreak-words\b[^"]*">\s*\{t\('emptyTitle'\)\}/);
+    /* On the empty state's wrapper since 2026-10-28, which holds the title,
+       the button and the echoed query alike. */
+    expect(browse).toMatch(/<div className="[^"]*\bbreak-words\b[^"]*">\s*<p className="[^"]*">\{t\('emptyTitle'\)\}/);
   });
 
   it('keeps one h1 and steps to h2 before any h3', () => {

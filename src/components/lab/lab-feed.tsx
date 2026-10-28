@@ -280,11 +280,6 @@ export async function LabFeed({
                   ? t('stageEmptyTitle')
                   : t('emptyTitle')}
               </h2>
-              <p className="mt-3 text-body text-ink-muted">
-                {stageIndex >= 0 && count(filter.level, 'all') === 0
-                  ? t('stageEmptyBody')
-                  : t('emptyBody')}
-              </p>
               <Link href="/blog" className="btn-glass mt-6">
                 {t('emptyCta')}
               </Link>

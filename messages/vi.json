@@ -1,9 +1,8 @@
 {
   "home": {
     "resultCount": "{count, plural, other {# công thức}}",
-    "emptyTitle": "Chưa có công thức nào khớp bộ lọc này.",
+    "emptyTitle": "Không có công thức nào khớp bộ lọc.",
     "emptyAction": "Xoá bộ lọc",
-    "emptyTail": "để xem cả {total} công thức.",
     "title": "Tất cả công thức",
     "metaDescription": "Xem các công thức White Balance Shift cho Sony Alpha theo tình huống chụp và áp dụng thiết lập vào máy ảnh của bạn.",
     "planeLabel": "Lưới White Balance Shift: {count, plural, other {# công thức}}, {shifted} công thức lệch khỏi trung tính"
@@ -242,7 +241,7 @@
   },
   "error": {
     "title": "Đã có lỗi xảy ra.",
-    "body": "Lỗi từ phía chúng tôi, không phải bạn. Hãy thử lại — nếu lỗi còn lặp lại, bạn vẫn có thể vào danh mục từ trang chủ.",
+    "body": "Lỗi từ phía chúng tôi, không phải bạn.",
     "action": "Thử lại",
     "ref": "Mã lỗi"
   },
@@ -759,7 +758,6 @@
     "pinnedDek": "Tám cài đặt cần đổi trước buổi chụp đầu tiên, kèm đường dẫn menu cho cả hai đời máy và một bảng tổng hợp để tra lại.",
     "pinnedCta": "Mở công cụ 8 bước",
     "emptyTitle": "Chưa có bài viết nào phù hợp",
-    "emptyBody": "Không có bài viết nào thuộc chủ đề và trình độ bạn đang chọn. Bỏ bớt một bộ lọc để xem thêm.",
     "emptyCta": "Xoá bộ lọc",
     "backToFeed": "Tất cả bài viết",
     "railLabel": "Tóm tắt và mục lục bài viết",
@@ -886,7 +884,6 @@
     "skillsLabel": "Kỹ năng ở chặng này",
     "clearFilter": "Xoá lọc",
     "stageEmptyTitle": "Chặng này đang được biên soạn",
-    "stageEmptyBody": "Các kỹ năng của chặng đã có trong lộ trình; bài viết sẽ được bổ sung dần. Trong lúc chờ, hãy xem các chặng khác.",
     "stageLabel": "Chặng {n}",
     "learnLink": "Kiến thức"
   },

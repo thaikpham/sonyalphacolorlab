@@ -1,9 +1,8 @@
 {
   "home": {
     "resultCount": "{count, plural, one {# recipe} other {# recipes}}",
-    "emptyTitle": "No recipes match those filters yet.",
-    "emptyAction": "Clear them",
-    "emptyTail": "to see all {total}.",
+    "emptyTitle": "No recipes match these filters.",
+    "emptyAction": "Clear filters",
     "title": "All recipes",
     "metaDescription": "Browse White Balance Shift recipes for Sony Alpha by shooting situation, and dial the settings into your camera.",
     "planeLabel": "White Balance Shift grid: {count, plural, one {# recipe} other {# recipes}}, {shifted} shifted away from neutral"
@@ -242,7 +241,7 @@
   },
   "error": {
     "title": "Something broke.",
-    "body": "That’s on us, not you. Try again — if it keeps happening, the catalogue is still reachable from the home page.",
+    "body": "That’s on us, not you.",
     "action": "Try again",
     "ref": "Ref"
   },
@@ -759,7 +758,6 @@
     "pinnedDek": "Eight settings to change before your first shoot, with menu paths for both camera generations and a recap table for quick reference.",
     "pinnedCta": "Open the 8-step tool",
     "emptyTitle": "No articles match",
-    "emptyBody": "No articles match the topic and level you’ve selected. Remove a filter to see more.",
     "emptyCta": "Clear filters",
     "backToFeed": "All articles",
     "railLabel": "Article summary and contents",
@@ -886,7 +884,6 @@
     "skillsLabel": "Skills at this stage",
     "clearFilter": "Clear filter",
     "stageEmptyTitle": "This stage is being written",
-    "stageEmptyBody": "Its skills are already mapped in the path; articles will follow. Meanwhile, browse the other stages.",
     "stageLabel": "Stage {n}",
     "learnLink": "Learn"
   },
