@@ -674,10 +674,21 @@ export function RecipeCommunitySection({
     setIsSubmittingProp(true);
     setProposalError(null);
     try {
-      /* The settings are checked against the recipe's own format schema by
-         the route, which answers `invalidSettings` through the refusal path
-         below. Not here: the schema is zod, and zod stays on the server
-         (src/design/client-graph.test.ts). */
+      /* Checked against the recipe's own format schema before it is sent — the
+         same strict check the route makes. Loaded on submit, so the schema is
+         not in the page bundle of every reader who never proposes anything. */
+      const { clSettingsSchema, ppSettingsSchema, whiteBalanceSchema } = await import(
+        '@/lib/camera/schema'
+      );
+      const settingsSchema = recipeFormat === 'pp' ? ppSettingsSchema : clSettingsSchema;
+      if (
+        !settingsSchema.safeParse(editSettings).success ||
+        !whiteBalanceSchema.safeParse(editWb).success
+      ) {
+        setProposalError('invalidSettings');
+        return;
+      }
+
       const res = await fetch('/api/proposals', {
         method: 'POST',
         headers: authedJson(),

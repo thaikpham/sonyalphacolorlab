@@ -24,7 +24,7 @@ function fixture(files: Record<string, string>) {
 }
 
 describe('importsOf', () => {
-  it('keeps value imports and re-exports, drops type-only ones', () => {
+  it('keeps static value imports and re-exports, drops type-only and dynamic ones', () => {
     const src = [
       "import { a } from './a'",
       "import type { B } from './b'",
@@ -39,11 +39,19 @@ describe('importsOf', () => {
       'export type Alias = { a: 1 }',
       "import { after } from './after-type-alias'",
     ].join('\n')
-    expect(importsOf(src).sort()).toEqual(['./a', './after-type-alias', './e', './g', './lazy', './multi', './side-effect', './star'])
+    expect(importsOf(src).sort()).toEqual(['./a', './after-type-alias', './e', './g', './multi', './side-effect', './star'])
   })
 })
 
 describe('clientChains', () => {
+  it('does not follow a dynamic import: its chunk loads on demand, not with the page', () => {
+    const root = fixture({
+      'src/form.tsx': "'use client'\nasync function submit() {\n  const { schema } = await import('./schema')\n}\n",
+      'src/schema.ts': "import { z } from 'zod'\nexport const schema = z.string()\n",
+    })
+    expect(clientChains(root, ['zod'])).toEqual([])
+  })
+
   it('finds zod through an @/ alias and a relative hop, and names the chain', () => {
     const root = fixture({
       'src/components/view.tsx': "'use client'\nimport { MAX } from '@/lib/types'\n",

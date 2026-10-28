@@ -6,7 +6,10 @@ import { dirname, join, relative } from 'node:path'
  * files go. A client component's value imports are what Turbopack puts in its
  * chunk; `import type` and `export type` erase, and so does an import whose
  * every name is marked `type`. Bare specifiers end the walk: only the ones
- * asked about are reported.
+ * asked about are reported. A dynamic `import()` is not followed: it is its
+ * own chunk, fetched when the code runs, which is the right way for a client
+ * to reach a server library on a rare path (the proposal form's settings check
+ * loads the recipe schema on submit, not with the page).
  */
 const EXTENSIONS = ['.ts', '.tsx', '/index.ts', '/index.tsx']
 
@@ -25,7 +28,6 @@ export function importsOf(source: string): string[] {
     out.push(m[4])
   }
   for (const m of source.matchAll(/(?:^|\n)\s*import\s*['"]([^'"]+)['"]/g)) out.push(m[1])
-  for (const m of source.matchAll(/\bimport\(\s*['"]([^'"]+)['"]\s*\)/g)) out.push(m[1])
   return [...new Set(out)]
 }
 
