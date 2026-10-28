@@ -3,8 +3,16 @@ import { PGlite } from '@electric-sql/pglite';
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { Recipe } from '@/lib/camera/schema';
 import { PRODUCT_COLUMNS } from '@/lib/cameras/row';
+import { ORIGINAL_CL } from '@/lib/originals/cl';
+import { ORIGINAL_PP } from '@/lib/originals/pp';
 import { toRow } from '@/lib/recipes/row';
 import { SLUG_MOVES, formerSlugsFor } from '@/lib/recipes/slug-moves';
+import {
+  insertRows,
+  planForProject,
+  translationRows,
+  type PlanExistingRow,
+} from '../../../scripts/lib/library-plan';
 
 /**
  * Two migration roots, two databases, and the boundary between them.
@@ -775,6 +783,48 @@ describe('the recipe code-id migration (S5)', () => {
     const row = { ...toRow(pp, null), id, slug: `refuse-probe-${id.toLowerCase()}` };
     await expect(insertRecipe(migrated, row)).rejects.toThrow(constraint);
   });
+
+  it('renames what library:sync inserted before it ran, like every other row', async () => {
+    /* Production before the migration: the published seed recipes in the SCL-
+       shape, none of the originals. The sync inserts those in the shape it
+       finds, through the old CHECKs; the migration must then rename them. */
+    const originals = [...ORIGINAL_PP, ...ORIGINAL_CL].map((o) => o.recipe.id);
+    const db = await freshDatabase(CONTENT_ROOT, (f) => f < CODE_IDS);
+    for (const r of seed.filter((s) => !originals.includes(s.id))) {
+      await insertRecipe(db, { ...toRow(r, r.legacyId), id: `SCL-${r.id}`, slug: formerOf.get(r.slug) });
+    }
+    const existing = (await db.query<PlanExistingRow>(`select id, slug, name, published from recipes`)).rows;
+    const planned = planForProject(
+      {
+        recipes: seed.map((r) => ({ recipe: r, legacyId: r.legacyId })),
+        translations: JSON.parse(readFileSync('data/translations.seed.json', 'utf8')),
+        retired: [],
+        originals,
+      },
+      existing,
+    );
+    if ('refusal' in planned) throw new Error(planned.refusal);
+    expect(planned.shape).toBe('legacy');
+    expect(planned.plan.insert).toHaveLength(originals.length);
+    for (const row of insertRows(planned.plan, planned.stored)) await insertRecipe(db, row);
+    for (const t of translationRows(planned.stored, planned.plan.insert)) {
+      await db.query(`insert into recipe_translations (recipe_id, locale, description) values ($1, $2, $3)`, [
+        t.recipe_id,
+        t.locale,
+        t.description,
+      ]);
+    }
+
+    await db.exec(sql());
+    const q = await db.query<{ id: string; slug: string; published: boolean }>(`select id, slug, published from recipes`);
+    const byId = new Map(q.rows.map((r) => [r.id, r]));
+    for (const id of originals) {
+      expect(byId.get(id)?.slug, id).toBe(seed.find((r) => r.id === id)!.slug);
+      expect(byId.get(id)?.published, id).toBe(false);
+    }
+    const t = await db.query<{ recipe_id: string }>(`select distinct recipe_id from recipe_translations`);
+    expect(t.rows.map((r) => r.recipe_id).sort()).toEqual([...originals].sort());
+  }, 60_000);
 
   it('changes nothing the second time it runs', async () => {
     const db = await contentBefore();

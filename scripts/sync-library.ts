@@ -18,20 +18,28 @@
  * without `--overwrite`, and `--overwrite` replaces rows whole, undoing every
  * edit an administrator made since the seed.
  *
- * It refuses to plan while the project's ids are in another shape than the
- * seed's (`SCL-PP-001` against `PP-001`): apply the content migration first.
+ * It writes in the id shape the project holds. Until the content migration
+ * runs that is `SCL-PP-048` at its former slug `hue-silk`, under the new name,
+ * and the migration renames those rows later with every other; after it, the
+ * seed's own `PP-048` at `pp-048-soft-clean-portrait`. A project holding both
+ * shapes is refused before anything is planned.
  *
  * The target is required and has no default.
  */
 
 import { readFileSync } from 'node:fs';
-import { recipeSchema, type Recipe } from '../src/lib/camera/schema';
+import { recipeSchema } from '../src/lib/camera/schema';
 import { ORIGINAL_CL } from '../src/lib/originals/cl';
 import { ORIGINAL_PP } from '../src/lib/originals/pp';
 import { RETIRED_RECIPE_IDS } from '../src/lib/recipes/redirects';
-import { toRow } from '../src/lib/recipes/row';
 import { adminClient } from './lib/db';
-import { idShapeMismatch, planLibrarySync, type PlanExistingRow } from './lib/library-plan';
+import {
+  insertRows,
+  planForProject,
+  refreshFields,
+  translationRows,
+  type PlanExistingRow,
+} from './lib/library-plan';
 import { requireTarget } from './supabase/args';
 
 type SeedRecipe = Record<string, unknown> & { legacyId?: string | null };
@@ -54,29 +62,27 @@ async function main() {
     return { recipe: parsed.data, legacyId: (r.legacyId as string | null | undefined) ?? null };
   });
   const translations = JSON.parse(readFileSync('data/translations.seed.json', 'utf8')) as SeedTranslation[];
-  const originals = new Set([...ORIGINAL_PP, ...ORIGINAL_CL].map((o) => o.recipe.id));
+  const originals = [...ORIGINAL_PP, ...ORIGINAL_CL].map((o) => o.recipe.id);
 
   const { data, error } = await db.from('recipes').select('id, slug, name, published');
   if (error) throw new Error(`recipes read: ${error.message}`);
   const existing = (data ?? []) as PlanExistingRow[];
 
-  /* Before planning: across the id rename every seed recipe would read as
-     missing, and the plan would insert the whole library a second time. */
-  const mismatch = idShapeMismatch(
-    seed.map(({ recipe }) => recipe.id),
-    existing.map((r) => r.id),
-  );
-  if (mismatch) throw new Error(mismatch);
-
-  const plan = planLibrarySync(
-    seed.map(({ recipe }) => ({ id: recipe.id, slug: recipe.slug, name: recipe.name })),
-    existing,
-    RETIRED_RECIPE_IDS,
-    originals,
-  );
+  /* The seed goes into the project's id shape before it is planned: compared
+     across the rename, every seed recipe would read as missing and the plan
+     would insert the whole library a second time. From here on every id and
+     slug is the stored one. */
+  const planned = planForProject({ recipes: seed, translations, retired: RETIRED_RECIPE_IDS, originals }, existing);
+  if ('refusal' in planned) throw new Error(planned.refusal);
+  const { shape, stored, plan } = planned;
 
   const published = existing.filter((r) => r.published).length;
   console.log(`· ${existing.length} recipes on the content project, ${published} published`);
+  console.log(
+    shape === 'legacy'
+      ? '· content holds SCL- ids: writing in that shape; the id migration renames them later'
+      : "· content holds code-shaped ids: writing in the seed's shape",
+  );
   console.log(`\nUnpublish ${plan.unpublish.length} withdrawn`);
   for (const id of plan.unpublish) console.log(`   ${id}`);
   console.log(`\nRename ${plan.rename.length}`);
@@ -95,11 +101,8 @@ async function main() {
     return;
   }
 
-  const byId = new Map(seed.map((s) => [s.recipe.id, s]));
-  const translationsFor = (ids: readonly string[]) =>
-    translations
-      .filter((t) => ids.includes(t.recipeId))
-      .map((t) => ({ recipe_id: t.recipeId, locale: t.locale, description: t.description }));
+  const byId = new Map(stored.recipes.map((s) => [s.recipe.id, s]));
+  const translationsFor = (ids: readonly string[]) => translationRows(stored, ids);
   const stamp = new Date().toISOString();
 
   for (const id of plan.unpublish) {
@@ -123,17 +126,16 @@ async function main() {
   console.log(`✓ ${plan.rename.length} renamed`);
 
   /* Whole row from the seed, kept unpublished, and only while it still is and
-     still has the seed's slug: an original the owner published between the
-     plan and this write is left alone. Its translations follow only the rows
-     the update actually matched, so a published one keeps the descriptions its
-     editor gave it too. */
+     still has the slug the plan matched: an original the owner published
+     between the plan and this write is left alone. Its translations follow
+     only the rows the update actually matched, so a published one keeps the
+     descriptions its editor gave it too. */
   const refreshed: string[] = [];
   for (const id of plan.refresh) {
     const { recipe } = byId.get(id)!;
-    const { id: _id, slug: _slug, legacy_id: _legacy, ...rest } = toRow({ ...recipe, published: false } as Recipe, null);
     const { data: hit, error: e } = await db
       .from('recipes')
-      .update({ ...rest, published: false, updated_at: stamp })
+      .update({ ...refreshFields(recipe), updated_at: stamp })
       .eq('id', id)
       .eq('slug', recipe.slug)
       .eq('published', false)
@@ -150,11 +152,7 @@ async function main() {
   console.log(`✓ ${refreshed.length} of ${plan.refresh.length} originals refreshed`);
 
   if (plan.insert.length > 0) {
-    const rows = plan.insert.map((id) => {
-      const { recipe, legacyId } = byId.get(id)!;
-      return toRow({ ...recipe, published: false } as Recipe, legacyId);
-    });
-    const { error: e } = await db.from('recipes').insert(rows);
+    const { error: e } = await db.from('recipes').insert(insertRows(plan, stored));
     if (e) throw new Error(`insert: ${e.message}`);
     const { error: te } = await db
       .from('recipe_translations')

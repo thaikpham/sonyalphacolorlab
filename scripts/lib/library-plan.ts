@@ -6,8 +6,10 @@
  * writes it only with `--apply`. Kept apart from the script so every rule below
  * is a unit test rather than a production write.
  *
- * Before any rule, `idShapeMismatch`: a project whose ids are not yet in the
- * seed's shape is not planned at all (apply the content migration first).
+ * Before any rule, `storedShape` reads which id shape the project holds and
+ * `seedInStoredShape` puts the seed in it: until the content migration runs
+ * that is `SCL-PP-048` at `hue-silk`, which the migration later renames with
+ * every other row. A project holding both shapes is not planned at all.
  *
  * The rules, in the order they win:
  *
@@ -29,6 +31,11 @@
  *   that differs from the seed is updated. A published recipe's colour science
  *   is never changed by a script.
  */
+
+import type { Recipe } from '../../src/lib/camera/schema';
+import { recipeIdKey } from '../../src/lib/recipes/recipe-id';
+import { toRow, type RecipeRow } from '../../src/lib/recipes/row';
+import { formerSlugOf } from '../../src/lib/recipes/slug-aliases';
 
 export type PlanSeedRecipe = {
   readonly id: string;
@@ -59,39 +66,94 @@ export type LibraryPlan = {
 const LEGACY_ID = /^SCL-/;
 
 /**
- * Why `library:sync` must not plan at all, or null when it may.
- *
- * The seed's ids lost their `SCL-` prefix on 2026-10-24 (`PP-001`), and so did
- * its slugs their old spelling; the content project changes both only when the
- * owner applies its migration by hand. Planned across that gap, every seed
- * recipe would be "missing" — an insert of 90 duplicates under new ids and
- * slugs, beside the rows that are the same recipes. So any disagreement on id
- * shape, either way round, stops the run before a plan is printed.
+ * The id shape the content project holds: `legacy` (`SCL-PP-001` at
+ * `mojave-sun`) until the owner applies the code-id migration by hand, `code`
+ * (`PP-001` at `pp-001-vivid-nostalgia-film`), the seed's own, after it.
  */
-export function idShapeMismatch(
+export type StoredShape = 'legacy' | 'code';
+
+const sample = (ids: readonly string[]) => `${ids.slice(0, 3).join(', ')}${ids.length > 3 ? ', …' : ''}`;
+
+/**
+ * Which shape `library:sync` writes in, read off the rows the project holds,
+ * or why it must not write at all.
+ *
+ * Every id `SCL-` shaped is `legacy`: the sync writes that shape and the
+ * content migration renames those rows with the rest, so the sync need not
+ * wait for it. Every id code-shaped, or no rows, is `code`. Both at once is a
+ * project nobody should write into. So is a code-shaped project against a seed
+ * still in the `SCL-` shape: every recipe would read as missing, and the plan
+ * would insert the library a second time beside itself.
+ */
+export function storedShape(
   seedIds: readonly string[],
   existingIds: readonly string[],
-): string | null {
-  const seedCode = seedIds.some((id) => !LEGACY_ID.test(id));
-  const seedLegacy = seedIds.some((id) => LEGACY_ID.test(id));
-  const held = existingIds.filter((id) => LEGACY_ID.test(id));
-  if (seedCode && held.length > 0) {
-    return (
-      `The content project still holds ${held.length} SCL- id(s) (${held.slice(0, 3).join(', ')}` +
-      `${held.length > 3 ? ', …' : ''}) and the seed's ids are code-shaped (PP-001). ` +
-      'Apply the content migration first (npm run supabase:migrations -- --target content --apply), ' +
-      'then run library:sync again. Nothing was planned or written.'
-    );
-  }
+): { readonly shape: StoredShape } | { readonly refusal: string } {
+  const legacy = existingIds.filter((id) => LEGACY_ID.test(id));
   const code = existingIds.filter((id) => !LEGACY_ID.test(id));
-  if (seedLegacy && code.length > 0) {
-    return (
-      `The seed's ids are SCL- shaped but the content project holds ${code.length} code-shaped id(s) ` +
-      `(${code.slice(0, 3).join(', ')}${code.length > 3 ? ', …' : ''}). Re-run npm run seed:emit from ` +
-      'the current tree, then library:sync. Nothing was planned or written.'
-    );
+  if (legacy.length > 0 && code.length > 0) {
+    return {
+      refusal:
+        `The content project holds ids in both shapes: ${legacy.length} SCL- (${sample(legacy)}) and ` +
+        `${code.length} code-shaped (${sample(code)}). Bring it to one shape before library:sync ` +
+        'writes into it. Nothing was planned or written.',
+    };
   }
-  return null;
+  if (code.length > 0 && seedIds.some((id) => LEGACY_ID.test(id))) {
+    return {
+      refusal:
+        `The seed's ids are SCL- shaped but the content project holds ${code.length} code-shaped id(s) ` +
+        `(${sample(code)}). Re-run npm run seed:emit from the current tree, then library:sync. ` +
+        'Nothing was planned or written.',
+    };
+  }
+  return { shape: legacy.length > 0 ? 'legacy' : 'code' };
+}
+
+/** A seed id as the project stores it: `PP-048` is `SCL-PP-048` in the legacy shape. */
+export const storedId = (id: string, shape: StoredShape): string =>
+  shape === 'legacy' ? `SCL-${recipeIdKey(id)}` : id;
+
+/**
+ * A seed slug as the project stores it. In the legacy shape that is the slug
+ * the recipe moved from (`pp-048-soft-clean-portrait` → `hue-silk`), the one
+ * the content migration renames; a recipe born after the move has none and is
+ * stored under its own, which the migration leaves as it is.
+ */
+export const storedSlug = (slug: string, shape: StoredShape): string =>
+  shape === 'legacy' ? (formerSlugOf(slug) ?? slug) : slug;
+
+type Keyed = { readonly id: string; readonly slug: string };
+
+export type SyncSeed<R extends Keyed> = {
+  readonly recipes: readonly { readonly recipe: R; readonly legacyId: string | null }[];
+  readonly translations: readonly { readonly recipeId: string; readonly locale: string; readonly description: string }[];
+  /** Withdrawn ids, `RETIRED_RECIPE_IDS`. */
+  readonly retired: readonly string[];
+  /** Ids of ColorLab's own originals, `ORIGINAL_PP` and `ORIGINAL_CL`. */
+  readonly originals: readonly string[];
+};
+
+/**
+ * The seed in the project's shape, before anything is planned from it.
+ *
+ * Only ids and slugs change. The name stays the `PP-NNN` / `CL-NNN` one: that
+ * is what production should show on either side of the migration. Translations
+ * and withdrawn ids follow the id, so the plan, its conflict checks and every
+ * write guarded by what it matched all compare stored values. In the code shape
+ * this is the identity.
+ */
+export function seedInStoredShape<R extends Keyed>(seed: SyncSeed<R>, shape: StoredShape): SyncSeed<R> {
+  if (shape === 'code') return seed;
+  return {
+    recipes: seed.recipes.map((s) => ({
+      ...s,
+      recipe: { ...s.recipe, id: storedId(s.recipe.id, shape), slug: storedSlug(s.recipe.slug, shape) },
+    })),
+    translations: seed.translations.map((t) => ({ ...t, recipeId: storedId(t.recipeId, shape) })),
+    retired: seed.retired.map((id) => storedId(id, shape)),
+    originals: seed.originals.map((id) => storedId(id, shape)),
+  };
 }
 
 export function planLibrarySync(
@@ -135,4 +197,53 @@ export function planLibrarySync(
   }
 
   return { unpublish, rename, refresh, insert, conflicts };
+}
+
+/**
+ * What the script plans from: the project's shape, the seed in it, and the plan
+ * over that — or the refusal. Every id and slug in `stored` and `plan` is the
+ * one the project holds, which is what each write is guarded on.
+ */
+export function planForProject<R extends Keyed & { readonly name: string }>(
+  seed: SyncSeed<R>,
+  existing: readonly PlanExistingRow[],
+): { readonly refusal: string } | { readonly shape: StoredShape; readonly stored: SyncSeed<R>; readonly plan: LibraryPlan } {
+  const read = storedShape(
+    seed.recipes.map(({ recipe }) => recipe.id),
+    existing.map((r) => r.id),
+  );
+  if ('refusal' in read) return read;
+  const stored = seedInStoredShape(seed, read.shape);
+  const plan = planLibrarySync(
+    stored.recipes.map(({ recipe }) => ({ id: recipe.id, slug: recipe.slug, name: recipe.name })),
+    existing,
+    stored.retired,
+    new Set(stored.originals),
+  );
+  return { shape: read.shape, stored, plan };
+}
+
+/** The rows an insert writes: each stored recipe whole, unpublished whatever the seed says. */
+export function insertRows(plan: LibraryPlan, stored: SyncSeed<Recipe>): RecipeRow[] {
+  const byId = new Map(stored.recipes.map((s) => [s.recipe.id, s]));
+  return plan.insert.map((id) => {
+    const { recipe, legacyId } = byId.get(id)!;
+    return toRow({ ...recipe, published: false } as Recipe, legacyId);
+  });
+}
+
+/** What a refresh sets: the stored recipe's row without its keys, kept unpublished. */
+export function refreshFields(recipe: Recipe): Omit<RecipeRow, 'id' | 'slug' | 'legacy_id'> {
+  const { id: _id, slug: _slug, legacy_id: _legacy, ...rest } = toRow({ ...recipe, published: false } as Recipe, null);
+  return { ...rest, published: false };
+}
+
+/** Translation rows for these stored ids, keyed by the stored id. */
+export function translationRows(
+  stored: SyncSeed<Keyed>,
+  ids: readonly string[],
+): { recipe_id: string; locale: string; description: string }[] {
+  return stored.translations
+    .filter((t) => ids.includes(t.recipeId))
+    .map((t) => ({ recipe_id: t.recipeId, locale: t.locale, description: t.description }));
 }

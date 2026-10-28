@@ -260,8 +260,8 @@ fixed, and only this order is safe:
    window short — merge when you can watch the deploy through.
 3. **Apply `20261024000000`.** Never before step 2: the old code cannot read
    a `PP-048` id or a `pp-048-…` slug.
-4. **Flush the catalogue cache** (below), run `library:sync`, and flush it
-   again.
+4. **Flush the catalogue cache** (below). If `library:sync` has not run yet,
+   or the seed changed since it did, run it and flush again.
 
 **After merging, never instant-rollback to a deployment from before this
 release.** Control already holds the new slugs, and an old deployment shows
@@ -269,13 +269,15 @@ every seed recipe's community sections empty for as long as it serves —
 there is no end date. Roll forward with a fix instead.
 
 ```bash
+# any time, before or after the migration: it writes the shape content holds
+npm run library:sync -- --target content                    # prints the plan and the shape
+npm run library:sync -- --target content --apply
+# flush the catalogue cache (below)
+
 # only once the production deployment of this release is live
 npm run supabase:migrations -- --target content --dry-run   # should list 20261024000000 alone
 npm run supabase:migrations -- --target content --apply
-# flush the catalogue cache now (below), before library:sync
-npm run library:sync -- --target content                    # prints the plan
-npm run library:sync -- --target content --apply
-# flush the catalogue cache again
+# flush the catalogue cache now (below)
 ```
 
 **Flushing the catalogue cache.** Before the content migration,
@@ -290,8 +292,11 @@ does not revalidate. Invalidate the tag at once instead: open any recipe in
 `revalidateTag(CATALOGUE_TAG, IMMEDIATE)`), or redeploy the current production
 deployment.
 
-`library:sync` refuses while the content ids and the seed's disagree in shape
-and says to apply the content migration first, so run it after, never before.
+`library:sync` writes in the id shape the content project holds, so it may run
+before the migration. On `SCL-` ids it unpublishes, renames and inserts as
+`SCL-PP-048` at the former slug (`hue-silk`) under the new name, and the
+migration renames those rows afterwards with every other. It refuses a project
+holding both shapes. Either way it does not revalidate: flush the cache after it.
 
 ### The content project's lineage
 
