@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { CORE_SPEC_KEYS, SEPARATOR } from './highlights-draft';
 
 /**
  * What a camera page shows a buyer instead of the raw feature bullets and the
@@ -8,15 +9,13 @@ import { z } from 'zod';
  * broken one. See docs/superpowers/specs/2026-10-07-camera-highlights-sales-talk-design.md.
  */
 
-export const CORE_SPEC_KEYS = [
-  'sensor', 'autofocus', 'burst', 'video', 'stabilization', 'screen', 'battery', 'weight',
-] as const;
-export type CoreSpecKey = (typeof CORE_SPEC_KEYS)[number];
-
-/** The editor's text form: one point per line, `Title :: body`. Declared here,
-    ahead of the schema, so both the schema's refinement and the draft helpers
-    below read from one literal rather than two copies of "::" drifting apart. */
-const SEPARATOR = ' :: ';
+export {
+  CORE_SPEC_KEYS,
+  draftToHighlights,
+  highlightsToDraft,
+  type CoreSpecKey,
+  type HighlightsDraft,
+} from './highlights-draft';
 
 /* A title or body with a `\r`/`\n` inside it is schema-valid but cannot
    round-trip through the editor's one-point-per-line text form: joining
@@ -67,37 +66,4 @@ export function parseHighlights(value: unknown, id?: string): Highlights | null 
 export function highlightsFor(h: Highlights | null | undefined, locale: string): HighlightsSide | null {
   if (!h) return null;
   return locale === 'vi' ? h.vi : h.en;
-}
-
-export type HighlightsDraft = Record<'en' | 'vi', { points: string; specs: Record<CoreSpecKey, string> }>;
-
-const emptySpecs = (): Record<CoreSpecKey, string> =>
-  Object.fromEntries(CORE_SPEC_KEYS.map((k) => [k, ''])) as Record<CoreSpecKey, string>;
-
-export function highlightsToDraft(h: Highlights | null): HighlightsDraft {
-  const side = (s: HighlightsSide | undefined) => {
-    const specs = emptySpecs();
-    for (const row of s?.keySpecs ?? []) specs[row.key] = row.value;
-    return { points: (s?.points ?? []).map((p) => `${p.title}${SEPARATOR}${p.body}`).join('\n'), specs };
-  };
-  return { en: side(h?.en), vi: side(h?.vi) };
-}
-
-export function draftToHighlights(d: HighlightsDraft): unknown | null {
-  const side = (s: HighlightsDraft['en']) => ({
-    points: s.points
-      .split('\n')
-      .map((line) => line.trim())
-      .filter(Boolean)
-      .map((line) => {
-        const at = line.indexOf(SEPARATOR.trim());
-        return at === -1
-          ? { title: line, body: '' }
-          : { title: line.slice(0, at).trim(), body: line.slice(at + SEPARATOR.trim().length).trim() };
-      }),
-    keySpecs: CORE_SPEC_KEYS.filter((k) => s.specs[k].trim()).map((k) => ({ key: k, value: s.specs[k].trim() })),
-  });
-  const out = { en: side(d.en), vi: side(d.vi) };
-  const empty = (s: ReturnType<typeof side>) => s.points.length === 0 && s.keySpecs.length === 0;
-  return empty(out.en) && empty(out.vi) ? null : out;
 }

@@ -9,7 +9,7 @@ import { SPEC_ROWS, type SonyCamera } from '@/lib/cameras/types';
 import { getSpecMeta } from '@/lib/cameras/spec-meta';
 import { subCategoryLabel } from '@/lib/cameras/display';
 import { formatPriceVnd, subCategory1Choices, subCategory2Choices } from '@/lib/cameras/taxonomy';
-import { CORE_SPEC_KEYS, type HighlightsDraft } from '@/lib/cameras/highlights';
+import { CORE_SPEC_KEYS, type HighlightsDraft } from '@/lib/cameras/highlights-draft';
 import { categoriesFor, type ProductCategoryId } from '@/lib/admin/category-roles';
 import {
   afterSave,

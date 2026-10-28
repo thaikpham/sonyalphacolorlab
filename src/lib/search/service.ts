@@ -13,10 +13,10 @@ import {
   type SearchDoc,
 } from './documents'
 import { prepare, rank } from './rank'
+import type { ParsedSearchRequest } from './request'
 import {
   MAX_OFFSET,
   SCOPE_KINDS,
-  type ParsedSearchRequest,
   type SearchHit,
   type SearchKind,
   type SearchResponse,

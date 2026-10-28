@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { searchContent } from '@/lib/search/service'
-import { searchRequestSchema } from '@/lib/search/types'
+import { searchRequestSchema } from '@/lib/search/request'
 
 /**
  * `GET /api/search?q&locale&scope&limit&cursor` — the unified search (ADR 0003).

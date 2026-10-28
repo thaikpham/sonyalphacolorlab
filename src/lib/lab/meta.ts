@@ -13,7 +13,7 @@
  * web page cannot become one field.
  */
 
-import { RECIPE_ID_TRANSITION_RE } from '@/lib/camera/schema'
+import { RECIPE_ID_TRANSITION_RE } from '@/lib/camera/ids'
 import { isConceptKey, type ConceptKey } from '@/lib/content/concepts'
 import type {
   ArticleKind,
