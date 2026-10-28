@@ -50,6 +50,15 @@ the seam) a phone-only block (`lg:hidden`) renders:
 The outline markup is one component used by both places, so they cannot
 drift. Server-rendered; no client JS. At `lg` and up nothing changes.
 
+The container today is `flex-wrap-reverse`: the rail jumps above the article
+whenever the two columns stop fitting (about 800 px), not at a breakpoint.
+That becomes an explicit switch at `lg`: one column below it (`flex-col`, the
+phone block under the dek, the rail hidden), the two columns of today from
+`lg` up (`lg:flex-row`, rail sticky). Between about 800 and 1023 px — a
+landscape tablet — the reader therefore gets the folded outline instead of a
+narrow rail beside the text; at 768 and below the outline was already above
+the article, so phones and portrait tablets only gain.
+
 ## 3. Copy (EN and VI, `messages/*.json`)
 
 | Key | Now | After |
