@@ -23,7 +23,9 @@ describe('the settings column', () => {
     expect(page).toContain('lg:col-span-6 xl:col-span-7');
     expect(page).toContain('lg:col-span-6 xl:col-span-5');
     expect(page).not.toMatch(/lg:col-span-[57]\b(?! xl)/);
-    expect(page).toContain('lg:gap-8 xl:gap-12');
+    /* Column gap only from xl: the grid's ROW gap is now what separates
+       the hero from the gallery below it, and that stayed 2rem. */
+    expect(page).toContain('gap-8 xl:gap-x-12');
   });
 
   /* Beside a 16rem plane, `1fr` was about 62px at 1024px and the readout is a
@@ -33,6 +35,36 @@ describe('the settings column', () => {
     expect(page).toContain('sm:grid-cols-[16rem_1fr] lg:grid-cols-1 2xl:grid-cols-[16rem_1fr]');
     expect(page).toMatch(/<div className="min-w-0">\s*<FormattedWb/);
     expect(wbTable).toMatch(/inline-flex flex-wrap items-center/);
+  });
+});
+
+describe('the order a phone reads', () => {
+  /* On a phone the grid is one column, so source order is reading order.
+     It was hero → gallery → AI → community → white balance → settings: the
+     settings, the reason to open a recipe, started on screen 3 of 6. */
+  it('puts the settings straight after the hero, before the gallery, AI and community', () => {
+    const at = (part: string) => page.indexOf(`data-part="${part}"`);
+    expect(at('hero')).toBeGreaterThan(-1);
+    expect(at('settings')).toBeGreaterThan(at('hero'));
+    expect(at('participation')).toBeGreaterThan(at('settings'));
+    for (const tag of ['<RecipeGallery', '<TweakPanel', '<RecipeCommunitySection']) {
+      expect(page.indexOf(tag)).toBeGreaterThan(at('participation'));
+    }
+    expect(page.indexOf('<WbShiftPlane')).toBeGreaterThan(at('settings'));
+    expect(page.indexOf('<WbShiftPlane')).toBeLessThan(at('participation'));
+  });
+
+  /* Desktop keeps its two columns: hero over participation on the left,
+     settings on the right across both rows. `auto 1fr` sends any height the
+     spanning column adds to the second row, under the participation block,
+     so no gap opens between the hero and the gallery. */
+  it('places the three parts back into the desktop columns', () => {
+    expect(page).toContain('lg:grid-rows-[auto_1fr]');
+    expect(page).toMatch(/data-part="hero"\s+className="[^"]*lg:col-start-1 lg:row-start-1\b/);
+    expect(page).toMatch(/data-part="participation"\s+className="[^"]*lg:col-start-1 lg:row-start-2\b/);
+    expect(page).toMatch(
+      /data-part="settings"\s+className="[^"]*lg:col-start-7 xl:col-start-8 lg:row-start-1 lg:row-span-2 lg:sticky lg:top-24/,
+    );
   });
 });
 
