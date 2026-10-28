@@ -28,7 +28,7 @@ browser through two value imports:
    out of `src/lib/search/types.ts` into `src/lib/search/request.ts`, so
    `types.ts` (limits, kinds, scopes) is zod-free. Any further path the guard (2) finds is fixed
    the same way.
-2. **Guard.** `src/app/client-bundle.test.ts` walks the static import graph
+2. **Guard.** `src/design/client-graph.test.ts` (walker in `client-graph.ts`) walks the static import graph
    (value imports only; `import type` and `export type` erase) from every file
    whose first statement is `'use client'`, resolving `@/` and relative
    specifiers, and fails naming the chain when it reaches `zod`. Probed with a
