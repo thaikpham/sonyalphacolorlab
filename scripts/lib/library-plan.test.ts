@@ -1,6 +1,23 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { idShapeMismatch, planLibrarySync, type PlanExistingRow, type PlanSeedRecipe } from './library-plan';
+import { recipeSchema, type Recipe } from '../../src/lib/camera/schema';
+import { ORIGINAL_CL } from '../../src/lib/originals/cl';
+import { ORIGINAL_PP } from '../../src/lib/originals/pp';
+import { recipeIdKey } from '../../src/lib/recipes/recipe-id';
+import { RETIRED_RECIPE_IDS } from '../../src/lib/recipes/redirects';
+import { currentSlugOf, formerSlugOf } from '../../src/lib/recipes/slug-aliases';
+import {
+  insertRows,
+  planForProject,
+  planLibrarySync,
+  refreshFields,
+  seedInStoredShape,
+  storedShape,
+  translationRows,
+  type PlanExistingRow,
+  type PlanSeedRecipe,
+  type SyncSeed,
+} from './library-plan';
 
 const seed = (id: string, slug: string, name: string): PlanSeedRecipe => ({ id, slug, name });
 const row = (id: string, slug: string, name: string, published: boolean): PlanExistingRow => ({
@@ -121,30 +138,243 @@ describe('planLibrarySync', () => {
   });
 });
 
-describe('idShapeMismatch', () => {
-  it('stops the sync while the content project still holds SCL- ids', () => {
-    const why = idShapeMismatch(['PP-001', 'CL-001'], ['SCL-PP-001', 'SCL-PP-003', 'SCL-CL-001', 'SCL-CL-002']);
-    expect(why).toMatch(/still holds 4 SCL- id\(s\) \(SCL-PP-001, SCL-PP-003, SCL-CL-001, …\)/);
-    expect(why).toMatch(/Apply the content migration first/);
+describe('storedShape', () => {
+  it('reads SCL- ids as the legacy shape, so the sync writes before the migration', () => {
+    expect(storedShape(['PP-001', 'CL-001'], ['SCL-PP-001', 'SCL-PP-003', 'SCL-CL-001'])).toEqual({ shape: 'legacy' });
   });
 
-  it('stops on one stray SCL- id among migrated rows', () => {
-    expect(idShapeMismatch(['PP-001'], ['PP-001', 'SCL-PP-090'])).toMatch(/1 SCL- id\(s\) \(SCL-PP-090\)/);
+  it('reads code-shaped ids, or an empty project, as the seed shape', () => {
+    expect(storedShape(['PP-001', 'CL-045'], ['PP-001', 'PP-003', 'CL-045'])).toEqual({ shape: 'code' });
+    expect(storedShape(['PP-001'], [])).toEqual({ shape: 'code' });
   });
 
-  it('stops the other way round too: a stale seed against a migrated project', () => {
-    expect(idShapeMismatch(['SCL-PP-001'], ['PP-001'])).toMatch(/seed:emit/);
+  it('refuses a project holding both shapes', () => {
+    const read = storedShape(['PP-001'], ['SCL-PP-001', 'SCL-PP-003', 'SCL-CL-001', 'SCL-CL-002', 'PP-090']);
+    expect(read).toHaveProperty('refusal');
+    const why = 'refusal' in read ? read.refusal : '';
+    expect(why).toMatch(/both shapes: 4 SCL- \(SCL-PP-001, SCL-PP-003, SCL-CL-001, …\) and 1 code-shaped \(PP-090\)/);
+    expect(why).toMatch(/Nothing was planned or written/);
   });
 
-  it('lets the sync plan when both are in one shape, or the project is empty', () => {
-    expect(idShapeMismatch(['PP-001', 'CL-045'], ['PP-001', 'PP-003', 'CL-045'])).toBeNull();
-    expect(idShapeMismatch(['PP-001'], [])).toBeNull();
+  it('refuses a stale SCL- seed against a migrated project', () => {
+    const read = storedShape(['SCL-PP-001'], ['PP-001']);
+    expect('refusal' in read && read.refusal).toMatch(/seed:emit/);
+  });
+});
+
+/* The seed exactly as the script reads it. */
+const SEED = (
+  JSON.parse(readFileSync('data/recipes.seed.json', 'utf8')) as (Record<string, unknown> & { legacyId?: string | null })[]
+).map((r) => ({ recipe: recipeSchema.parse(r), legacyId: r.legacyId ?? null }));
+const SYNC_SEED: SyncSeed<Recipe> = {
+  recipes: SEED,
+  translations: JSON.parse(readFileSync('data/translations.seed.json', 'utf8')) as SyncSeed<Recipe>['translations'],
+  retired: RETIRED_RECIPE_IDS,
+  originals: [...ORIGINAL_PP, ...ORIGINAL_CL].map((o) => o.recipe.id),
+};
+const ORIGINALS = new Set(SYNC_SEED.originals);
+const KEPT = SEED.filter(({ recipe }) => !ORIGINALS.has(recipe.id));
+const nameOf = new Map(SEED.map(({ recipe }) => [recipe.id, recipe.name]));
+const titled = (slug: string) => slug.replace(/(^|-)([a-z])/g, (_m, sep: string, c: string) => `${sep ? ' ' : ''}${c.toUpperCase()}`);
+
+/* What the old content CHECKs admit (supabase/content/migrations/0001_content_baseline.sql). */
+const OLD_ID_CHECK = /^SCL-(PP|CL)-[0-9]{3}$/;
+const SLUG_CHECK = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+
+/**
+ * The content project as it is before the code-id migration: the 47 published
+ * seed recipes (10 kept legacy Picture Profiles, 37 Sony Asia Creative Looks)
+ * under SCL- ids, their former slugs and their old names, and the 36 withdrawn
+ * Picture Profiles still published. None of the 43 originals.
+ */
+const PRODUCTION: readonly PlanExistingRow[] = [
+  ...KEPT.map(({ recipe }) => {
+    const former = formerSlugOf(recipe.slug)!;
+    return row(`SCL-${recipe.id}`, former, `SCL-${recipe.id}: ${titled(former)}`, true);
+  }),
+  ...RETIRED_RECIPE_IDS.map((id) => row(`SCL-${id}`, `withdrawn-${id.toLowerCase()}`, `SCL-${id}: Withdrawn`, true)),
+];
+
+/** What the content migration does to a row: the id loses SCL-, a former slug moves when its number agrees. */
+const migrate = (r: PlanExistingRow): PlanExistingRow => {
+  const id = recipeIdKey(r.id);
+  const current = currentSlugOf(r.slug);
+  return { ...r, id, slug: current && current.slice(0, 6).toUpperCase() === id ? current : r.slug };
+};
+
+/** A plan applied to a fixture, as the script's writes would leave it. */
+function applied(existing: readonly PlanExistingRow[], seed: SyncSeed<Recipe>): PlanExistingRow[] {
+  const planned = planForProject(seed, existing);
+  if ('refusal' in planned) throw new Error(planned.refusal);
+  const { plan, stored } = planned;
+  const renamed = new Map(plan.rename.map((r) => [r.id, r.to]));
+  return [
+    ...existing.map((r) => ({
+      ...r,
+      name: renamed.get(r.id) ?? r.name,
+      published: plan.unpublish.includes(r.id) ? false : r.published,
+    })),
+    ...insertRows(plan, stored).map((r) => row(r.id, r.slug, r.name, r.published)),
+  ];
+}
+
+describe('library:sync against the content project before the code-id migration', () => {
+  const planned = planForProject(SYNC_SEED, PRODUCTION);
+  if ('refusal' in planned) throw new Error(planned.refusal);
+  const { shape, stored, plan } = planned;
+
+  it('is the production fixture: 47 kept, 36 withdrawn, 43 originals missing', () => {
+    expect(KEPT).toHaveLength(47);
+    expect(RETIRED_RECIPE_IDS).toHaveLength(36);
+    expect(ORIGINALS.size).toBe(43);
+    expect(PRODUCTION).toHaveLength(83);
+    expect(PRODUCTION[0]).toEqual(row('SCL-PP-001', 'mojave-sun', 'SCL-PP-001: Mojave Sun', true));
   });
 
-  it('is what the script asks before it plans', () => {
-    const script = readFileSync('scripts/sync-library.ts', 'utf8');
-    const guard = script.indexOf('idShapeMismatch(');
-    expect(guard).toBeGreaterThan(-1);
-    expect(guard).toBeLessThan(script.indexOf('planLibrarySync('));
+  it('writes in the SCL- shape', () => {
+    expect(shape).toBe('legacy');
+  });
+
+  it('plans exactly: unpublish 36, rename 47, insert 43, refresh 0, conflicts 0', () => {
+    expect(plan.unpublish).toEqual(RETIRED_RECIPE_IDS.map((id) => `SCL-${id}`));
+    expect(plan.rename).toHaveLength(47);
+    expect(plan.insert).toHaveLength(43);
+    expect(plan.refresh).toEqual([]);
+    expect(plan.conflicts).toEqual([]);
+  });
+
+  it("renames the 47 under their SCL- ids, to the seed's new names", () => {
+    expect(plan.rename.map((r) => r.id).sort()).toEqual(KEPT.map(({ recipe }) => `SCL-${recipe.id}`).sort());
+    for (const r of plan.rename) expect(r.to, r.id).toBe(nameOf.get(recipeIdKey(r.id)));
+    expect(plan.rename).toContainEqual({ id: 'SCL-PP-001', from: 'SCL-PP-001: Mojave Sun', to: nameOf.get('PP-001') });
+  });
+
+  it('inserts the 43 originals under SCL- ids and their former slugs, unpublished, under the new names', () => {
+    const rows = insertRows(plan, stored);
+    expect(rows.map((r) => r.id).sort()).toEqual([...ORIGINALS].map((id) => `SCL-${id}`).sort());
+    for (const r of rows) {
+      const seedRecipe = SEED.find(({ recipe }) => recipe.id === recipeIdKey(r.id))!.recipe;
+      expect(r.slug, r.id).toBe(formerSlugOf(seedRecipe.slug));
+      expect(r.name, r.id).toBe(seedRecipe.name);
+      expect(r.published, r.id).toBe(false);
+    }
+  });
+
+  it('inserts rows the old content CHECKs admit', () => {
+    for (const r of insertRows(plan, stored)) {
+      expect(r.id, r.id).toMatch(OLD_ID_CHECK);
+      expect(r.id.startsWith(`SCL-${r.format.toUpperCase()}-`), r.id).toBe(true);
+      expect(r.slug, r.id).toMatch(SLUG_CHECK);
+    }
+  });
+
+  it('inserts rows the later migration renames: each id is the number its former slug moves to', () => {
+    for (const r of insertRows(plan, stored)) {
+      const current = currentSlugOf(r.slug);
+      expect(current, r.id).not.toBeNull();
+      expect(recipeIdKey(r.id), r.id).toBe(current!.slice(0, 6).toUpperCase());
+      expect(current, r.id).toBe(SEED.find(({ recipe }) => recipe.id === recipeIdKey(r.id))!.recipe.slug);
+    }
+  });
+
+  it('writes translations under the SCL- ids', () => {
+    const rows = translationRows(stored, plan.insert);
+    expect(rows).toHaveLength(86);
+    for (const t of rows) expect(t.recipe_id).toMatch(OLD_ID_CHECK);
+    expect(new Set(rows.map((t) => t.recipe_id))).toEqual(new Set(plan.insert));
+  });
+
+  it('refreshes the originals in place the second time, in the same shape, and does nothing else', () => {
+    const second = planForProject(SYNC_SEED, applied(PRODUCTION, SYNC_SEED));
+    if ('refusal' in second) throw new Error(second.refusal);
+    expect(second.shape).toBe('legacy');
+    expect(second.plan).toEqual({
+      unpublish: [],
+      rename: [],
+      refresh: [...ORIGINALS].map((id) => `SCL-${id}`),
+      insert: [],
+      conflicts: [],
+    });
+    const fields = refreshFields(second.stored.recipes.find(({ recipe }) => recipe.id === 'SCL-PP-048')!.recipe);
+    expect(fields).not.toHaveProperty('id');
+    expect(fields).not.toHaveProperty('slug');
+    expect(fields.published).toBe(false);
+  });
+
+  it('after the migration plans in the code shape with nothing to insert or rename', () => {
+    const after = applied(PRODUCTION, SYNC_SEED).map(migrate);
+    const next = planForProject(SYNC_SEED, after);
+    if ('refusal' in next) throw new Error(next.refusal);
+    expect(next.shape).toBe('code');
+    expect(next.plan).toEqual({ unpublish: [], rename: [], refresh: [...ORIGINALS], insert: [], conflicts: [] });
+  });
+
+  it('stops on a former slug or an id another recipe holds, before any write', () => {
+    const clash = planForProject(SYNC_SEED, [
+      ...PRODUCTION,
+      row('SCL-PP-090', 'hue-silk', 'SCL-PP-090: Editor Draft', false),
+      row('SCL-PP-071', 'editor-draft', 'SCL-PP-071: Editor Draft', false),
+    ]);
+    if ('refusal' in clash) throw new Error(clash.refusal);
+    expect(clash.plan.conflicts).toEqual([
+      { id: 'SCL-PP-048', slug: 'hue-silk', heldBy: 'SCL-PP-090' },
+      { id: 'SCL-PP-071', slug: 'silver-hard-muted', heldBy: 'SCL-PP-071 (as editor-draft)' },
+    ]);
+  });
+
+  it('refuses a project holding both shapes', () => {
+    const mixed = planForProject(SYNC_SEED, [...PRODUCTION, row('PP-048', 'pp-048-soft-clean-portrait', 'x', false)]);
+    expect(mixed).toEqual({ refusal: expect.stringMatching(/both shapes: 83 SCL- .* and 1 code-shaped \(PP-048\)/) });
+  });
+});
+
+describe('library:sync against the content project after the code-id migration', () => {
+  const MIGRATED = PRODUCTION.map(migrate);
+
+  it('leaves the seed as it is', () => {
+    expect(seedInStoredShape(SYNC_SEED, 'code')).toBe(SYNC_SEED);
+  });
+
+  it('plans as before: code ids and slugs throughout', () => {
+    const planned = planForProject(SYNC_SEED, MIGRATED);
+    if ('refusal' in planned) throw new Error(planned.refusal);
+    expect(planned.shape).toBe('code');
+    expect(planned.plan.unpublish).toEqual(RETIRED_RECIPE_IDS);
+    expect(planned.plan.rename.map((r) => r.id).sort()).toEqual(KEPT.map(({ recipe }) => recipe.id).sort());
+    expect(planned.plan.refresh).toEqual([]);
+    expect(planned.plan.conflicts).toEqual([]);
+    const rows = insertRows(planned.plan, planned.stored);
+    expect(rows.map((r) => r.id).sort()).toEqual([...ORIGINALS].sort());
+    for (const r of rows) {
+      expect(r.slug).toBe(SEED.find(({ recipe }) => recipe.id === r.id)!.recipe.slug);
+    }
+    for (const t of translationRows(planned.stored, planned.plan.insert)) expect(t.recipe_id).toMatch(/^(PP|CL)-\d{3}$/);
+  });
+});
+
+describe('sync-library.ts', () => {
+  const script = readFileSync('scripts/sync-library.ts', 'utf8');
+  const planAt = script.indexOf('planForProject(');
+
+  it('plans only through planForProject, so the shape is read before anything else', () => {
+    expect(planAt).toBeGreaterThan(-1);
+    expect(script).not.toMatch(/planLibrarySync\(|storedShape\(/);
+  });
+
+  /* After the plan every id and slug must be the stored one: the raw seed,
+     its translations or the code-shaped withdrawn ids would write or guard
+     on the other shape. */
+  it('writes from the stored seed alone after planning', () => {
+    const after = script.slice(planAt + 'planForProject('.length);
+    const code = after
+      .slice(after.indexOf(');'))
+      .replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '')
+      .replace(/`[^`]*`|'[^']*'|"[^"]*"/g, "''");
+    expect(code).toMatch(/insertRows\(plan, stored\)/);
+    expect(code).not.toMatch(/(?<![.\w])(seed|translations|originals|RETIRED_RECIPE_IDS)\b|toRow\(/);
+  });
+
+  it('says which shape it writes', () => {
+    expect(script).toMatch(/content holds SCL- ids: writing in that shape; the id migration renames them later/);
   });
 });

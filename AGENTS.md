@@ -273,7 +273,9 @@ owner has shot each on the a7 IV (D8) and publishes it in `/admin/colorlab`.
 seed — withdrawn recipes unpublished, names updated, unpublished originals
 refreshed whole, missing recipes inserted unpublished, a published recipe's
 settings never touched — and prints its plan before writing (rules:
-`scripts/lib/library-plan.ts`).
+`scripts/lib/library-plan.ts`). It writes in the id shape content holds, so it
+may run before the content migration, which renames those rows later; a
+project holding both shapes is refused.
 
 `npm run seed:emit` prints the skips. Read them — they are the to-do list for
 whatever the source failed to publish.
