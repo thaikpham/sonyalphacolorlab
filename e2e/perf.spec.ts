@@ -35,10 +35,14 @@ const LCP_MAX = 2500;
  * client island in the browse filter row (ADR 0006, camera-picker.tsx). `/colorlab/:situation` and
  * `/vi/colorlab/:situation` are new here (instance `daily`), 178 KB.
  * `/recipe/cl-001-film-hard-faded` (slugs come from the name now) 190 KB.
+ *
+ * Re-measured 2026-10-28 after zod left the client bundle (src/design/
+ * client-graph.test.ts): /cameras 186, /audio 186, /blog 183, /learn 183 KB,
+ * from 250/250/247/247 — zod was 63 KB gz of each.
  */
 const SCREENS: [string, number][] = [
-  ['/', 174], ['/colorlab', 185], ['/colorlab/:situation', 178], ['/recipe/:recipe', 190], ['/cameras', 250], ['/cameras/:camera', 177],
-  ['/audio', 250], ['/blog', 247], ['/blog/:article', 180], ['/learn', 247], ['/vi/colorlab', 185], ['/vi/colorlab/:situation', 178],
+  ['/', 174], ['/colorlab', 185], ['/colorlab/:situation', 178], ['/recipe/:recipe', 190], ['/cameras', 186], ['/cameras/:camera', 177],
+  ['/audio', 186], ['/blog', 183], ['/blog/:article', 180], ['/learn', 183], ['/vi/colorlab', 185], ['/vi/colorlab/:situation', 178],
 ];
 
 async function phone(browser: Browser) {
