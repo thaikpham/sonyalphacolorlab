@@ -11,9 +11,8 @@ import {
 import {
   draftToHighlights,
   highlightsToDraft,
-  parseHighlights,
   type HighlightsDraft,
-} from '@/lib/cameras/highlights';
+} from '@/lib/cameras/highlights-draft';
 
 /**
  * The product editor's draft, and what a save sends from it.
@@ -98,7 +97,10 @@ export function fieldsOf(p: SonyCamera): DraftFields {
     specKind,
     specs,
     source: p.specs?.specsSource ?? '',
-    hl: highlightsToDraft(parseHighlights(p.highlights)),
+    /* Already parsed: every product the editor opens or re-reads after a
+       save came through `productFromRow`, which runs `parseHighlights` on the
+       server. Parsing again here was what put zod in the admin bundle. */
+    hl: highlightsToDraft(p.highlights ?? null),
   };
 }
 

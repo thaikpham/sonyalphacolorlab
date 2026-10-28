@@ -5,10 +5,10 @@ import { EMPTY_META } from '@/lib/lab/meta'
 import type { Article } from '@/lib/lab/types'
 import type { RecipeView } from '@/lib/recipes/source'
 import { glossaryDocs, snippetFor } from './documents'
+import { searchRequestSchema } from './request'
 import {
   emptyState,
   MAX_OFFSET,
-  searchRequestSchema,
   type SearchHit,
   type SearchKind,
   type SearchScope,

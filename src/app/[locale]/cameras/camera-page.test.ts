@@ -14,7 +14,11 @@ describe('the highlights editor', () => {
   it('edits highlights for cameras only and sends them with the save', () => {
     expect(editor).toContain("selected.category === 'camera'");
     expect(draft).toContain('draftToHighlights(d.hl)');
-    expect(draft).toContain('highlightsToDraft(parseHighlights(p.highlights))');
+    /* Parsed once, on the server (`productFromRow`); the editor is a client
+       component and must not carry the schema (src/design/client-graph.test.ts). */
+    expect(draft).toContain('highlightsToDraft(p.highlights ?? null)');
+    expect(readFileSync('src/app/api/admin/products/[id]/route.ts', 'utf8')).toContain('productFromRow');
+    expect(readFileSync('src/lib/cameras/row.ts', 'utf8')).toContain('highlights: parseHighlights(row.highlights, row.id)');
   });
 
   it('sends highlights only when the editor actually changed them', () => {

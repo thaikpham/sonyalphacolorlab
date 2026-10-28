@@ -467,18 +467,22 @@ describe('the section’s handlers', () => {
     expect(source).toContain('{proposalError && <CommunityAlert code={proposalError} />}');
   });
 
-  it('refuses a non-https sample and an invalid draft before anything is sent', () => {
+  it('refuses a non-https sample before anything is sent', () => {
     const send = createProposal.indexOf("fetch('/api/proposals'");
     expect(send).toBeGreaterThan(-1);
 
     const https = "if (!sampleImageUrl.startsWith('https://')) {";
     expect(createProposal.indexOf(https)).toBeLessThan(send);
     expect(exit(createProposal, https)).toContain("setProposalError('invalidImageUrl')");
+  });
 
-    const schema = '!settingsSchema.safeParse(editSettings).success ||';
-    expect(createProposal.indexOf(schema)).toBeLessThan(send);
-    expect(createProposal).toContain('!whiteBalanceSchema.safeParse(editWb).success');
-    expect(exit(createProposal, schema)).toContain("setProposalError('invalidSettings')");
+  it('leaves the settings check to the route, so the schema stays on the server', () => {
+    /* The route answers `invalidSettings`, which the refusal path shows
+       (above); importing the schema here, even lazily, shipped zod. */
+    expect(source).not.toMatch(/import\(\s*'@\/lib\/camera\/schema'/);
+    expect(readFileSync('src/app/api/proposals/route.ts', 'utf8')).toContain(
+      "communityErrorBody('invalidSettings')",
+    );
   });
 
   it('sends no vote while the vote state is unknown or one is already in flight', () => {
