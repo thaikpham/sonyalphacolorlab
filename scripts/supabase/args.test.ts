@@ -83,6 +83,13 @@ describe('parseArgs', () => {
     expect(() => parseArgs(argv)).toThrow(ArgumentError);
   });
 
+  it('reads --pack as a slug, once', () => {
+    expect(parseArgs(['--target', 'content', '--pack', 'iso-co-ban']).pack).toBe('iso-co-ban');
+    expect(() => parseArgs(['--pack', 'Not A Slug'])).toThrow(ArgumentError);
+    expect(() => parseArgs(['--pack'])).toThrow(ArgumentError);
+    expect(() => parseArgs(['--pack', 'a', '--pack', 'b'])).toThrow(ArgumentError);
+  });
+
   it('rejects --dry-run with --apply', () => {
     /* Not a contradiction a script can resolve by picking one: whichever it
        picked would be a surprise, and one of the two surprises writes. */
@@ -132,6 +139,14 @@ describe('requireTarget', () => {
   it('passes the flags the script does implement', () => {
     const { args } = requireTarget(['--target', 'content', '--overwrite'], ['--overwrite']);
     expect(args.overwrite).toBe(true);
+  });
+
+  /* `--pack` takes a value, so its value must not be read as a flag the
+     script does not implement. */
+  it('passes --pack and its value to a script that implements it', () => {
+    const { args } = requireTarget(['--target', 'content', '--pack', 'iso-co-ban', '--dry-run'], ['--pack', '--dry-run']);
+    expect(args.pack).toBe('iso-co-ban');
+    expect(() => requireTarget(['--target', 'content', '--pack', 'iso-co-ban'])).toThrow(/--pack/);
   });
 });
 

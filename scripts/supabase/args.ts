@@ -44,6 +44,11 @@ export type ParsedArgs = {
    * drafts. Off by default so the script still does exactly what it did.
    */
   withPilotDrafts: boolean;
+  /**
+   * `push:lab --pack <name>` also inserts that content pack
+   * (`src/lib/lab/packs/`), as drafts. A slug, given at most once.
+   */
+  pack?: string;
 };
 
 export class ArgumentError extends Error {
@@ -98,6 +103,17 @@ export function parseArgs(argv: readonly string[]): ParsedArgs {
     const booleanKey = BOOLEAN_FLAGS.get(flag);
     if (booleanKey) {
       (parsed[booleanKey] as boolean) = true;
+      continue;
+    }
+
+    if (flag === '--pack') {
+      const value = argv[i + 1];
+      i += 1;
+      if (!value || !/^[a-z0-9-]+$/.test(value)) {
+        throw new ArgumentError('--pack must be a pack name: lower-case letters, digits and dashes.');
+      }
+      if (parsed.pack !== undefined) throw new ArgumentError(`--pack is given twice, as ${parsed.pack} and ${value}.`);
+      parsed.pack = value;
       continue;
     }
 
@@ -158,7 +174,7 @@ function refuseUnimplemented(
 ): void {
   for (let i = 0; i < argv.length; i += 1) {
     const flag = argv[i];
-    if (VALUE_FLAGS.has(flag)) i += 1;
+    if (VALUE_FLAGS.has(flag) || flag === '--pack') i += 1;
     if (!required.includes(flag) && !allow.includes(flag)) {
       throw new ArgumentError(`${flag} is not supported by this script.`);
     }

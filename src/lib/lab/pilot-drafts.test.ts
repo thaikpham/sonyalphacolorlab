@@ -54,16 +54,18 @@ describe('the pilot pages', () => {
 
   it('never reaches the reading path', () => {
     /* `data.ts` serves the store or the compiled ARTICLES — never this file.
-       Only the development store and the push script may import it. */
+       Only the development store and the push script may import it; the
+       push script takes its list from `scripts/lib/lab-candidates.ts`. */
     for (const path of ['src/lib/lab/data.ts', 'src/lib/lab/articles.ts', 'src/app/sitemap.ts']) {
       expect(readFileSync(path, 'utf8')).not.toContain('pilot-drafts')
     }
     expect(readFileSync('src/lib/lab/dev-store.ts', 'utf8')).toMatch(
       /PILOT_DRAFTS\.map\(\(a\) => \(\{ \.\.\.a, status: 'draft' as const/,
     )
-    expect(readFileSync('scripts/push-lab-articles.ts', 'utf8')).toMatch(
-      /PILOT_DRAFTS\.map\(\(a\) => \(\{ article: a, status: 'draft' as const \}\)\)/,
+    expect(readFileSync('scripts/lib/lab-candidates.ts', 'utf8')).toMatch(
+      /PILOT_DRAFTS\.map\(\(article\) => \(\{ article, status: 'draft' as const \}\)\)/,
     )
+    expect(readFileSync('scripts/push-lab-articles.ts', 'utf8')).toContain('labCandidates(')
   })
 })
 
