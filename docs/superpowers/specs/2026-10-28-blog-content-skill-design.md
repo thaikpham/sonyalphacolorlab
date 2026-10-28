@@ -92,8 +92,8 @@ Pure parts (`sourceFromHtml`, `parseOembed`, `readUrls`) live in
   unique within the pack and absent from `known.ids` (ARTICLES, PILOT_DRAFTS,
   other packs, RESERVED_IDS); every `related` ref and every `prerequisites`
   id exists in `known` (recipes and products from `data/*.seed.json`,
-  articles/knowledge from ARTICLES, PILOT_DRAFTS and all packs); every source
-  has `checkedAt`; no figure block.
+  articles/knowledge from ARTICLES, PILOT_DRAFTS and all packs); every page
+  cites at least one source and every source has `checkedAt`; no figure block.
 - `packs.test.ts`: `packProblems` over every entry of `PACKS` is `[]`; and
   probes over a fixture pack prove each rule fires (a page failing publish
   rules, a duplicate id, an unknown ref, an undated source, a figure).
