@@ -12,7 +12,7 @@ import {
 } from '../camera/constants';
 import { recipeSchema } from '../camera/schema';
 import { ORIGINAL_CL } from '../originals/cl';
-import { formerSlugOf } from '../recipes/slug-aliases';
+import { slugHistory } from '../recipes/slug-aliases';
 
 /**
  * The scrape is a third-party HTML export of a marketing page: inconsistent
@@ -236,11 +236,11 @@ describe('stable ids', () => {
     /* ColorLab's own Creative Looks share the seed and the id sequence but not
        the importer: they are numbered after its pins. */
     const ours = new Set(ORIGINAL_CL.map((o) => o.recipe.id));
-    /* The seed's slug follows the name; the importer's is the one the recipe
-       was first published under, which the seed keeps as its former slug. */
+    /* The seed's slug is the code; the importer's is the one the recipe was
+       first published under, the oldest spelling in its slug history. */
     const shipped = seed
       .filter((r) => r.format === 'cl' && !ours.has(r.id))
-      .map((r) => [r.id, formerSlugOf(r.slug) ?? r.slug]);
+      .map((r) => [r.id, slugHistory(r.slug)[0]]);
     expect(result.recipes.map((r) => [r.id, r.slug])).toEqual(shipped);
   });
 

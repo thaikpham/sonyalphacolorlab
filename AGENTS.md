@@ -273,9 +273,10 @@ owner has shot each on the a7 IV (D8) and publishes it in `/admin/colorlab`.
 seed — withdrawn recipes unpublished, names updated, unpublished originals
 refreshed whole, missing recipes inserted unpublished, a published recipe's
 settings never touched — and prints its plan before writing (rules:
-`scripts/lib/library-plan.ts`). It writes in the id shape content holds, so it
-may run before the content migration, which renames those rows later; a
-project holding both shapes is refused.
+`scripts/lib/library-plan.ts`). It writes in the id shape and the slug
+spelling content holds, so it may run before or after each content migration,
+which renames those rows later; a project holding both id shapes, two
+spellings of one recipe, or recipes at different slug generations is refused.
 
 `npm run seed:emit` prints the skips. Read them — they are the to-do list for
 whatever the source failed to publish.
@@ -313,27 +314,26 @@ Do not write App Router code from memory. Read the relevant file first:
   situation, a Look code, a stock or a brand. Never translated. `seed:emit`
   writes it and `names.test.ts` pins every seed name to it; to change a name,
   change the settings or the reading, not the string.
-- **Ids and slugs follow the code.** The id is `PP-048` (`RECIPE_ID_RE`), the
-  slug the one it moved to on 2026-10-24, `pp-048-soft-clean-portrait`
-  (`currentSlugOf`; `slugFor(name)` only for a recipe in no batch), so a
-  computed name moves no URL. URLs carry slugs, so the
-  old `SCL-` prefix had no SEO weight to keep. The slugs the seed recipes had
-  before 2026-10-24 are frozen in `data/slug-moves/2026-10-24.json` with the
-  two migrations that rename them (`SLUG_MOVES` in `slug-moves.ts`);
-  `data/former-slugs.json` is the union of the batches, written by `seed:emit`,
-  never hand-edited. A recipe born after has no former slug, whatever its
-  source spells. Moving a slug again is a new batch — a frozen list, a
-  migration per plane carrying exactly it, an entry in `SLUG_MOVES` —
-  `seed:emit` refuses it until then, and `migration-roots.test.ts` checks each
-  batch against its own two files.
+- **The slug is the code** (2026-10-28): `slugFor(id)`, `pp-048`, so a
+  name can change without moving a URL. The id is `PP-048` (`RECIPE_ID_RE`).
+  A seed recipe has had three spellings — its first slug (`hue-silk`), the
+  2026-10-24 code-and-name (`pp-048-soft-clean-portrait`), the code — each move
+  frozen in `data/slug-moves/<date>.json` with the two migrations that carry
+  it (`SLUG_MOVES` in `slug-moves.ts`, histories from `slugHistories`).
+  `data/former-slugs.json` maps every earlier spelling to the code, written by
+  `seed:emit`, never hand-edited; a recipe born after has no former slug.
+  Applied migrations are never edited: a move is a new batch, a migration per
+  plane carrying exactly it, an entry in `SLUG_MOVES`, and
+  `migration-roots.test.ts` checks each batch against its own two files.
   Code never assumes the content plane has been migrated: ids are read through
   `RECIPE_ID_TRANSITION_RE` / `recipeIdKey`; the recipe page, its OG image and
-  `/api/tweak` find a slug through `resolveRecipeSlug()` (308 from a former
-  slug to the current one, 307 the other way, never a static redirect in
-  `next.config.ts`); and every control-plane read keyed by `recipe_slug` uses
-  `.in('recipe_slug', slugAliases(slug))`, permanently — a row written while
-  the planes disagreed keeps its spelling. Search indexes both spellings, so a
-  former name ("mojave sun") and an original's place ("da lat") still find it.
+  `/api/tweak` find a slug through `resolveRecipeSlug()` (308 from an older
+  spelling to a newer one, 307 the other way, never a static redirect in
+  `next.config.ts`); every control-plane read keyed by `recipe_slug` uses
+  `.in('recipe_slug', slugAliases(slug))`, permanently, with every spelling;
+  and `library:sync` writes whichever spelling the project holds. Search
+  indexes every spelling, so a former name ("mojave sun") and an original's
+  place ("da lat") still find it.
 - **No recipe carries a photograph.** Pictures come only from readers: Google
   sign-in, an image URL, `community_photos` on the control plane, shown in the
   recipe's grid and lightbox. There is no primary photograph, no admin upload
@@ -656,8 +656,8 @@ The old site addressed recipes by **query parameter** (`/?id=scl-001`), not by
 path — that is the shape of every link already shared in Facebook groups. The
 redirect map in `next.config.ts` matches on the query param and is generated from
 `legacyId` in the seed. A path-based map would catch nothing, silently. Its
-destinations are current slugs; on a content plane that still holds the former
-one, the recipe route resolves it.
+destinations are code slugs (`/recipe/pp-001`); on a content plane that still
+holds an earlier spelling, the recipe route resolves it.
 
 ## Working style
 

@@ -51,10 +51,9 @@ console.log('next: '+f+'-'+String(Math.max(0,...n)+1).padStart(3,'0'))"
 - `name` is never written by hand: `npm run seed:emit` computes it from the
   White Balance and settings (`nameFor` in `src/lib/recipes/names.ts`), e.g.
   `CL-013-Golden Faded Natural`. An originals entry has no `name` field.
-- `slug` is `slugFor(name)` for a new recipe, e.g.
-  `cl-046-golden-faded-natural`; a recipe whose slug already moved keeps it
-  (`currentSlugOf`). Never typed by hand; `names.test.ts` fails a slug that
-  is not.
+- `slug` is the code, lowercased: `slugFor(id)`, e.g. `cl-046`. Never typed
+  by hand and never derived from the name, so a later rename moves no URL;
+  `names.test.ts` fails a slug that is not.
 
 ## 4. Validate before writing anything
 

@@ -36,7 +36,7 @@ const db = {
 };
 const env = { control: true };
 
-const SLUG = 'pp-048-soft-clean-portrait';
+const SLUG = 'pp-048';
 const ID = '6f1c1d2e-8a4b-4c3d-9e5f-0a1b2c3d4e5f';
 
 /* What the service role can read: every column, the address-shaped ones too.
@@ -225,9 +225,9 @@ describe('GET /api/admin/community-photos', () => {
     expect(call).toMatchObject({ client: 'controlAdmin', table: 'community_photos', op: 'select' });
     expect(call.columns).toBe(MODERATION_PHOTO_COLUMNS);
     /* The slug and nothing else — an `approved` filter here would hide the
-       rows this screen exists to show. Both its spellings: a photo sent while
-       the planes disagreed on slugs is stored under the former one (S9). */
-    expect(call.filters).toEqual([['recipe_slug', [SLUG, 'hue-silk']]]);
+       rows this screen exists to show. Every spelling: a photo sent while
+       the planes disagreed on slugs is stored under the one read. */
+    expect(call.filters).toEqual([['recipe_slug', [SLUG, 'pp-048-soft-clean-portrait', 'hue-silk']]]);
     expect(call.order).toEqual(['created_at', { ascending: false }]);
     expect(call.limit).toBe(MODERATION_LIST_LIMIT);
   });

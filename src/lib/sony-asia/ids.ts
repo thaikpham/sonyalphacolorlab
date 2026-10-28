@@ -6,10 +6,10 @@
  * the id, and `push:supabase` never overwrites a row it already has. Ids lost
  * their `SCL-` prefix on 2026-10-24 and kept their number (`SCL-CL-013` →
  * `CL-013`). The slug here is the one each recipe was first published under;
- * the seed's slug moved on the same day, and the rows here on
- * that day have this one frozen in `data/slug-moves/2026-10-24.json`, so its
- * links still land. A row added after was never published under the slug
- * here, and has no former slug. Numbering by row order meant one skipped
+ * the seed's slug is the code since 2026-10-28 (`cl-013`), and the rows here
+ * on 2026-10-24 have this one frozen as the oldest spelling in
+ * `data/slug-moves/`, so its links still land. A row added after was never
+ * published under the slug here, and has no former slug. Numbering by row order meant one skipped
  * row becoming importable shifted every later id — and the hand-written
  * Vietnamese prose then named the wrong photographer on all of them.
  *

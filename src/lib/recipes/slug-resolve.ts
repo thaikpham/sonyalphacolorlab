@@ -10,15 +10,16 @@ export type ResolvedRecipe = {
 
 /**
  * The published recipe a requested slug means, under whichever spelling the
- * catalogue holds it: the slug itself, else its former or its current
- * spelling (`slugAliases`). Null when none is a published recipe.
+ * catalogue holds it: the slug itself, else any other spelling it has had
+ * (`slugAliases`, newest first). Null when none is a published recipe.
  *
- * This is how the recipe route and its share card work in both states of the
- * content plane. Before its migration it holds `mojave-sun`, and a link to
- * `pp-001-vivid-nostalgia-film` (a card on a migrated page, the `?id=` map)
- * finds it through the reverse direction; after, the reverse. The slug asked
- * for is tried first, so a slug the catalogue holds costs one read, and
- * `getRecipe` is cached per request and per catalogue tag either way.
+ * This is how the recipe route, its share card and `/api/tweak` work in every
+ * state of the content plane. Today it holds `pp-001-vivid-nostalgia-film`,
+ * and a link to `pp-001` (a card on a migrated page, the `?id=` map) or to
+ * `mojave-sun` (a link shared years ago) finds it; after 20261028000000 it
+ * holds `pp-001`, and both older spellings find that. The slug asked for is
+ * tried first, so a slug the catalogue holds costs one read, and `getRecipe`
+ * is cached per request and per catalogue tag either way.
  */
 export async function resolveRecipeSlug(slug: string, locale: Locale): Promise<ResolvedRecipe | null> {
   for (const candidate of slugAliases(slug)) {

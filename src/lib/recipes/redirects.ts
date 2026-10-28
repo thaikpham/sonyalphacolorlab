@@ -8,8 +8,8 @@ import { readFileSync } from 'node:fs';
  * repository is the last place to keep their numbers.
  *
  * Written in the slugs the originals were first published under; the
- * replacement's current slug is read through `data/former-slugs.json` below,
- * so the table never has to be retyped when slugs follow the names.
+ * replacement's code slug (`pp-058`) is read through `data/former-slugs.json`
+ * below, so the table is never retyped when a slug moves.
  */
 const RETIRED_REPLACED_BY: Readonly<Record<string, string | null>> = {
   'scl-003': 'neon-night',
@@ -50,11 +50,11 @@ const RETIRED_REPLACED_BY: Readonly<Record<string, string | null>> = {
   'scl-043': 'tam-coc-green',
 };
 
-/** Former slug → current slug, as `seed:emit` writes it. */
+/** Every earlier spelling → the code slug, as `seed:emit` writes it. */
 const FORMER_SLUGS = JSON.parse(readFileSync('data/former-slugs.json', 'utf8')) as Record<string, string>;
 
 /**
- * The same table with each replacement at its current slug.
+ * The same table with each replacement at its code slug.
  *
  * Kept here, beside the map that reads it, so the share links that still
  * carry these ids keep answering. The destination follows the replacement
@@ -94,9 +94,10 @@ export const RETIRED_RECIPE_IDS: readonly string[] = Object.keys(RETIRED_LEGACY_
  * These only fire for traffic that reaches this app, so at cutover the old
  * hostname must resolve here (or carry an equivalent rule at the CDN).
  *
- * Each destination is the seed's current slug. A content project that has
- * not had its slug migration yet still holds the former one, and the recipe
- * route resolves that (`slug-resolve.ts`), so a `?id=` link lands either way.
+ * Each destination is the seed's slug, the recipe's code (`/recipe/pp-001`).
+ * A content project that has not had its slug migrations yet still holds an
+ * earlier spelling, and the recipe route resolves that (`slug-resolve.ts`), so
+ * a `?id=` link lands in every state.
  *
  * A withdrawn id redirects too, and TEMPORARILY (307) while its destination is
  * the catalogue: a 308 is cached by the browser for good, and the destination

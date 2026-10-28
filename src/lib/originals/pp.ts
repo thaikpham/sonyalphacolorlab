@@ -21,9 +21,9 @@
  * No name here: `scripts/emit-seed.ts` computes each from the settings
  * (`nameFor` in src/lib/recipes/names.ts, 2026-10-28). The `slug` here is the
  * one each was first published under, naming the place it was first imagined
- * for; the seed's slug moved on 2026-10-24, and this one is frozen in
- * data/slug-moves/2026-10-24.json so its links and its place name still find
- * the recipe.
+ * for; the seed's slug is the code (`pp-048`, `slugFor`), and this one is the
+ * oldest spelling in data/slug-moves/, so its links and its place name still
+ * find the recipe.
  *
  * `published: false` on every one, deliberately (D8): the numbers are design
  * hypotheses until the owner has shot each on the a7 IV. Publishing is an

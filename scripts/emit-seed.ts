@@ -6,12 +6,11 @@
  *   - Sony's Alpha Recipes microsite   -> Creative Look recipes
  * and names every recipe from its own settings, `nameFor` in
  * src/lib/recipes/names.ts (`PP-001-Warm Deep Vivid`): nobody types a name.
- * A recipe whose slug moved keeps the slug it moved to (`currentSlugOf`), so a
- * name changes no URL; a recipe in no batch takes `slugFor(name)`.
- * data/former-slugs.json (former → current), which is how an
- * old link still reaches its recipe (`src/lib/recipes/slug-aliases.ts`), is
- * the frozen record of every slug move (`src/lib/recipes/slug-moves.ts`),
- * never recomputed from the sources.
+ * Every slug is the recipe's code, `slugFor(id)` (`pp-001`), so a name changes
+ * no URL. data/former-slugs.json (every earlier spelling → the code slug) is
+ * written from the frozen record of every slug move
+ * (`src/lib/recipes/slug-moves.ts`), never recomputed from the sources; the
+ * alias lookups (`src/lib/recipes/slug-aliases.ts`) read the same batches.
  * Run with: npm run seed:emit
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -21,7 +20,7 @@ import { migrateAll } from '../src/lib/legacy/migrate';
 import { ORIGINAL_CL } from '../src/lib/originals/cl';
 import { ORIGINAL_PP, type OriginalRecipe } from '../src/lib/originals/pp';
 import { NAME_VOCABULARY, namesFor, parseRecipeName, slugFor } from '../src/lib/recipes/names';
-import { currentSlugOf, formerSlugsFor } from '../src/lib/recipes/slug-moves';
+import { formerSlugsFor } from '../src/lib/recipes/slug-moves';
 import { importSonyAsia } from '../src/lib/sony-asia/import';
 import { SONY_ASIA_IDS } from '../src/lib/sony-asia/ids';
 
@@ -73,9 +72,8 @@ const clRows = [
 /* Every name is computed from the settings (N1 of the 2026-10-28 names
    design), over the whole catalogue at once so the tie-break sees every
    earlier recipe; whatever the sources called a recipe is discarded. The slug
-   does not follow the name: a recipe whose slug moved keeps the slug it moved
-   to, the one both planes hold, and only a recipe in no batch takes
-   `slugFor(name)`. Former slugs are not read off the sources: they are the
+   does not follow the name: it is the code, `slugFor(id)` (S1 of the same
+   design). Former slugs are not read off the sources: they are the
    frozen record of each move, which both planes' migrations carry pair for
    pair. A recipe born after a move has no former slug even when its source
    spells one — a new Sony Asia row arrives as `fl-…-4`, a slug no database
@@ -84,7 +82,7 @@ const clRows = [
 const names = namesFor([...ppRows, ...clRows]);
 const rows = [...ppRows, ...clRows].map((r) => {
   const name = names.get(r.id)!;
-  return { ...r, name, slug: currentSlugOf(r.id) ?? slugFor(name) };
+  return { ...r, name, slug: slugFor(r.id) };
 });
 const { formerSlugs, problems: slugMoveProblems } = formerSlugsFor(rows);
 if (slugMoveProblems.length) {

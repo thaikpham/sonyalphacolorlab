@@ -126,6 +126,26 @@ a recipe in no batch takes `slugFor(name)`. Task B replaces this with the code.
 | S4 | Legacy links | The `?id=` map and `RETIRED_LEGACY_IDS` point at code slugs, derived through the map. |
 | S5 | Docs | AGENTS.md "Names, palette, pictures" says names are computed and the slug is the code. The runbook gets the owner's steps: merge (0021 applies), wait for the deploy, apply `20261028000000` by hand, `library:sync -- --target content --apply` for the names, flush the catalogue cache. |
 
+## How task B carries it out
+
+- **Histories, not pairs.** `slugHistories()` (`slug-moves.ts`) chains the frozen
+  batches into each recipe's spellings, oldest first, each with the database
+  state it is held from (batches applied: 0 `hue-silk`, 1
+  `pp-048-soft-clean-portrait`, 2 `pp-048`). `slugAliases`, `isPermanentMove`
+  and `library:sync` all read it, so a third move would need no reader changed.
+- **`library:sync` reads a slug state as well as an id shape.**
+  `storedSlugState` takes the newest state every row the seed's own ids hold
+  agrees with, writes each seed recipe at `slugAtState(slug, state)`, and
+  refuses a project holding two spellings of one recipe, or recipes at
+  different states.
+- **0021 composes two lists.** Its `former-slugs` block is the 2026-10-28 batch,
+  pair for pair; an `earlier-slugs` block is the 2026-10-24 batch, joined in SQL
+  so first-slug rows reach the code too. The 2026-10-24 spelling moves first,
+  so where both earlier spellings hold one photo URL, the older row stays.
+- **20261028000000 refuses `SCL-` ids**, on top of the control-plane guard: run
+  before 20261024000000 it would match nothing, be recorded as applied, and
+  leave the slugs behind for good.
+
 ## Out of scope
 
 Retuning any palette magnitude, changing `data/recipe-taxonomy.json`, and any change to

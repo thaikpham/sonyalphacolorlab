@@ -22,8 +22,8 @@
     "/vi/colorlab?format=pp · desktop": 1,
     "/colorlab/daily · desktop": 1,
     "/vi/colorlab/daily · desktop": 1,
-    "/recipe/cl-001-film-hard-faded · desktop": 1,
-    "/vi/recipe/cl-001-film-hard-faded · desktop": 1,
+    "/recipe/cl-001 · desktop": 1,
+    "/vi/recipe/cl-001 · desktop": 1,
     "/cameras · desktop": 4,
     "/vi/cameras · desktop": 4,
     "/cameras/sony-dsc-rx100m7-e32 · desktop": 4,
@@ -50,8 +50,8 @@
     "/vi/search?q=sony · desktop": 1
   },
   "targets": {
-    "/recipe/cl-001-film-hard-faded": 2,
-    "/vi/recipe/cl-001-film-hard-faded": 2,
+    "/recipe/cl-001": 2,
+    "/vi/recipe/cl-001": 2,
     "/cameras": 206,
     "/vi/cameras": 206,
     "/cameras/sony-dsc-rx100m7-e32": 1,

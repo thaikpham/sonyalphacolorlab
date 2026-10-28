@@ -6,10 +6,14 @@
  * writes it only with `--apply`. Kept apart from the script so every rule below
  * is a unit test rather than a production write.
  *
- * Before any rule, `storedShape` reads which id shape the project holds and
- * `seedInStoredShape` puts the seed in it: until the content migration runs
- * that is `SCL-PP-048` at `hue-silk`, which the migration later renames with
- * every other row. A project holding both shapes is not planned at all.
+ * Before any rule, `storedShape` reads which id shape the project holds,
+ * `storedSlugState` which generation of slugs, and `seedInStoredShape` puts the
+ * seed in both. A slug has had three spellings (`hue-silk`, then
+ * `pp-048-soft-clean-portrait` on 2026-10-24, then `pp-048` on 2026-10-28,
+ * `slug-moves.ts`) and each content migration renames the rows it finds, so
+ * the sync writes the spelling the project holds and runs before, between or
+ * after them. A project holding both id shapes, two spellings of one recipe,
+ * or recipes at different generations is not planned at all.
  *
  * The rules, in the order they win:
  *
@@ -35,7 +39,7 @@
 import type { Recipe } from '../../src/lib/camera/schema';
 import { recipeIdKey } from '../../src/lib/recipes/recipe-id';
 import { toRow, type RecipeRow } from '../../src/lib/recipes/row';
-import { formerSlugOf } from '../../src/lib/recipes/slug-aliases';
+import { SLUG_MOVES, recordedHistories, slugAtState } from '../../src/lib/recipes/slug-moves';
 
 export type PlanSeedRecipe = {
   readonly id: string;
@@ -115,13 +119,67 @@ export const storedId = (id: string, shape: StoredShape): string =>
   shape === 'legacy' ? `SCL-${recipeIdKey(id)}` : id;
 
 /**
- * A seed slug as the project stores it. In the legacy shape that is the slug
- * the recipe moved from (`pp-048-soft-clean-portrait` → `hue-silk`), the one
- * the content migration renames; a recipe born after the move has none and is
- * stored under its own, which the migration leaves as it is.
+ * Which generation of slugs the content project holds, read off the rows it
+ * holds for the seed's own recipes: the number of slug moves its migrations
+ * have applied (`SLUG_MOVES`), 0 for `hue-silk`, 1 for
+ * `pp-048-soft-clean-portrait`, 2 for `pp-048`, the seed's own.
+ *
+ * A row counts for the recipe its id names (either id shape) and only when
+ * its slug is a spelling of that recipe; an editor's row that happens to hold
+ * a spelling is a conflict for the plan to report, not evidence. The state is
+ * the newest every such row agrees with, so a project holding none of the
+ * seed is in the seed's own. Refused, before anything is planned: a project
+ * where two rows hold two spellings of one recipe — a migration half-applied,
+ * or a recipe inserted twice — and one whose recipes sit at different
+ * generations, which no migration leaves behind.
  */
-export const storedSlug = (slug: string, shape: StoredShape): string =>
-  shape === 'legacy' ? (formerSlugOf(slug) ?? slug) : slug;
+export function storedSlugState(
+  seed: readonly Keyed[],
+  existing: readonly Keyed[],
+  batches: number = SLUG_MOVES.length,
+): { readonly state: number } | { readonly refusal: string } {
+  const histories = recordedHistories();
+  let states = Array.from({ length: batches + 1 }, (_v, n) => n);
+  const twice: string[] = [];
+  const disagree: string[] = [];
+  for (const r of seed) {
+    const history = histories.get(r.slug);
+    if (!history) continue;
+    const spellings = new Set(history.map((s) => s.slug));
+    const held = [...new Set(existing.filter((e) => spellings.has(e.slug)).map((e) => e.slug))];
+    if (held.length > 1) {
+      twice.push(`${recipeIdKey(r.id)} (${held.join(', ')})`);
+      continue;
+    }
+    const own = existing.find((e) => spellings.has(e.slug) && recipeIdKey(e.id) === recipeIdKey(r.id));
+    if (!own) continue;
+    const fits = states.filter((n) => slugAtState(r.slug, n, histories) === own.slug);
+    if (fits.length === 0) disagree.push(`${recipeIdKey(r.id)} at ${own.slug}`);
+    else states = fits;
+  }
+  if (twice.length > 0) {
+    return {
+      refusal:
+        `The content project holds two spellings of ${twice.length} recipe(s): ${sample(twice)}. ` +
+        'Keep one row per recipe before library:sync writes into it. Nothing was planned or written.',
+    };
+  }
+  if (disagree.length > 0) {
+    return {
+      refusal:
+        `The content project holds recipes at different slug generations: ${sample(disagree)} disagree with ` +
+        'the rest. Finish the slug migration before library:sync writes into it. Nothing was planned or written.',
+    };
+  }
+  return { state: states[states.length - 1] };
+}
+
+/**
+ * A seed slug as a project at slug state `state` stores it: `pp-048` is
+ * `hue-silk` at 0 and `pp-048-soft-clean-portrait` at 1, the slug each content
+ * migration renames. A recipe in no move is its own slug in every state.
+ */
+export const storedSlug = (slug: string, state: number): string => slugAtState(slug, state);
 
 type Keyed = { readonly id: string; readonly slug: string };
 
@@ -137,18 +195,22 @@ export type SyncSeed<R extends Keyed> = {
 /**
  * The seed in the project's shape, before anything is planned from it.
  *
- * Only ids and slugs change. The name stays the `PP-NNN` / `CL-NNN` one: that
- * is what production should show on either side of the migration. Translations
- * and withdrawn ids follow the id, so the plan, its conflict checks and every
- * write guarded by what it matched all compare stored values. In the code shape
- * this is the identity.
+ * Only ids and slugs change. The name stays the seed's: that is what
+ * production should show on either side of every migration. Translations and
+ * withdrawn ids follow the id, so the plan, its conflict checks and every write
+ * guarded by what it matched all compare stored values. In the code shape at
+ * the newest slug state this is the identity.
  */
-export function seedInStoredShape<R extends Keyed>(seed: SyncSeed<R>, shape: StoredShape): SyncSeed<R> {
-  if (shape === 'code') return seed;
+export function seedInStoredShape<R extends Keyed>(
+  seed: SyncSeed<R>,
+  shape: StoredShape,
+  slugState: number = SLUG_MOVES.length,
+): SyncSeed<R> {
+  if (shape === 'code' && slugState === SLUG_MOVES.length) return seed;
   return {
     recipes: seed.recipes.map((s) => ({
       ...s,
-      recipe: { ...s.recipe, id: storedId(s.recipe.id, shape), slug: storedSlug(s.recipe.slug, shape) },
+      recipe: { ...s.recipe, id: storedId(s.recipe.id, shape), slug: storedSlug(s.recipe.slug, slugState) },
     })),
     translations: seed.translations.map((t) => ({ ...t, recipeId: storedId(t.recipeId, shape) })),
     retired: seed.retired.map((id) => storedId(id, shape)),
@@ -200,27 +262,40 @@ export function planLibrarySync(
 }
 
 /**
- * What the script plans from: the project's shape, the seed in it, and the plan
- * over that — or the refusal. Every id and slug in `stored` and `plan` is the
- * one the project holds, which is what each write is guarded on.
+ * What the script plans from: the project's id shape and slug state, the seed
+ * in them, and the plan over that — or the refusal. Every id and slug in
+ * `stored` and `plan` is the one the project holds, which is what each write is
+ * guarded on.
  */
 export function planForProject<R extends Keyed & { readonly name: string }>(
   seed: SyncSeed<R>,
   existing: readonly PlanExistingRow[],
-): { readonly refusal: string } | { readonly shape: StoredShape; readonly stored: SyncSeed<R>; readonly plan: LibraryPlan } {
+):
+  | { readonly refusal: string }
+  | {
+      readonly shape: StoredShape;
+      readonly slugState: number;
+      readonly stored: SyncSeed<R>;
+      readonly plan: LibraryPlan;
+    } {
   const read = storedShape(
     seed.recipes.map(({ recipe }) => recipe.id),
     existing.map((r) => r.id),
   );
   if ('refusal' in read) return read;
-  const stored = seedInStoredShape(seed, read.shape);
+  const slugs = storedSlugState(
+    seed.recipes.map(({ recipe }) => recipe),
+    existing,
+  );
+  if ('refusal' in slugs) return slugs;
+  const stored = seedInStoredShape(seed, read.shape, slugs.state);
   const plan = planLibrarySync(
     stored.recipes.map(({ recipe }) => ({ id: recipe.id, slug: recipe.slug, name: recipe.name })),
     existing,
     stored.retired,
     new Set(stored.originals),
   );
-  return { shape: read.shape, stored, plan };
+  return { shape: read.shape, slugState: slugs.state, stored, plan };
 }
 
 /** The rows an insert writes: each stored recipe whole, unpublished whatever the seed says. */

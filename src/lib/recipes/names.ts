@@ -38,6 +38,7 @@ import {
 } from '../camera/color';
 import { fraction, step, stepFromMin, stepOfFraction, type Step } from '../camera/effects';
 import { PALETTE_WEIGHTS, kneeCompression, paletteFor } from '../camera/palette';
+import { recipeIdKey } from './recipe-id';
 import type { ToneId } from './taxonomy';
 import { designedLightFor } from './taxonomy-assign';
 
@@ -94,16 +95,13 @@ export const TONE_WORDS: Readonly<Record<ToneId, readonly string[]>> = {
 };
 
 /**
- * The slug a name gives: `PP-048-Soft Clean Portrait` →
- * `pp-048-soft-clean-portrait`. Names are ASCII by construction, so
- * lower-casing and joining every run of anything else with one hyphen is the
- * whole rule.
+ * A recipe's slug: its code, lowercased — `PP-048` → `pp-048` (S1 of the
+ * 2026-10-28 design). Never the name: names are computed from the settings
+ * and may change whenever a grading does, and a URL must not move with them.
+ * Either id shape gives the same slug (`SCL-PP-048` too).
  */
-export function slugFor(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+export function slugFor(id: string): string {
+  return recipeIdKey(id).toLowerCase();
 }
 
 export function parseRecipeName(

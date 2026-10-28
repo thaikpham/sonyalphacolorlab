@@ -18,11 +18,14 @@
  * without `--overwrite`, and `--overwrite` replaces rows whole, undoing every
  * edit an administrator made since the seed.
  *
- * It writes in the id shape the project holds. Until the content migration
- * runs that is `SCL-PP-048` at its former slug `hue-silk`, under the new name,
- * and the migration renames those rows later with every other; after it, the
- * seed's own `PP-048` at `pp-048-soft-clean-portrait`. A project holding both
- * shapes is refused before anything is planned.
+ * It writes in the id shape and the slug spelling the project holds, so it
+ * runs before, between or after the content migrations that rename them, and
+ * each migration renames what it wrote with every other row: `SCL-PP-048` at
+ * `hue-silk` before 20261024000000, `PP-048` at `pp-048-soft-clean-portrait`
+ * between it and 20261028000000, the seed's own `PP-048` at `pp-048` after.
+ * Names are the seed's in every state. A project holding both id shapes, two
+ * spellings of one recipe, or recipes at different slug generations is
+ * refused before anything is planned.
  *
  * The target is required and has no default.
  */
@@ -32,6 +35,7 @@ import { recipeSchema } from '../src/lib/camera/schema';
 import { ORIGINAL_CL } from '../src/lib/originals/cl';
 import { ORIGINAL_PP } from '../src/lib/originals/pp';
 import { RETIRED_RECIPE_IDS } from '../src/lib/recipes/redirects';
+import { SLUG_MOVES } from '../src/lib/recipes/slug-moves';
 import { adminClient } from './lib/db';
 import {
   insertRows,
@@ -74,7 +78,7 @@ async function main() {
      slug is the stored one. */
   const planned = planForProject({ recipes: seed, translations, retired: RETIRED_RECIPE_IDS, originals }, existing);
   if ('refusal' in planned) throw new Error(planned.refusal);
-  const { shape, stored, plan } = planned;
+  const { shape, slugState, stored, plan } = planned;
 
   const published = existing.filter((r) => r.published).length;
   console.log(`· ${existing.length} recipes on the content project, ${published} published`);
@@ -82,6 +86,12 @@ async function main() {
     shape === 'legacy'
       ? '· content holds SCL- ids: writing in that shape; the id migration renames them later'
       : "· content holds code-shaped ids: writing in the seed's shape",
+  );
+  console.log(
+    slugState === SLUG_MOVES.length
+      ? "· content holds the seed's slugs (the code alone)"
+      : `· content holds the slugs of before the ${SLUG_MOVES[slugState].date} move: writing in that spelling; ` +
+          `${SLUG_MOVES[slugState].content} renames them later`,
   );
   console.log(`\nUnpublish ${plan.unpublish.length} withdrawn`);
   for (const id of plan.unpublish) console.log(`   ${id}`);

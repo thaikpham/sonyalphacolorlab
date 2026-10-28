@@ -9,19 +9,23 @@ import { ORIGINAL_CL } from '../originals/cl';
 import { ORIGINAL_PP } from '../originals/pp';
 import { recipeDoc } from '../search/documents';
 import { SONY_ASIA_IDS } from '../sony-asia/ids';
-import { currentSlugOf, formerSlugOf, isPermanentMove, slugAliases } from './slug-aliases';
+import { isPermanentMove, newestSlugOf, slugAliases, slugHistory } from './slug-aliases';
+import { SLUG_MOVES } from './slug-moves';
 import { matchesQuery } from './source';
 
 /**
- * The former-slug map and what reads it.
+ * The slug histories and what reads them.
  *
- * Slugs follow the names since 2026-10-24. The content plane changes its slugs
- * when the owner applies the migration by hand, so every slug lookup has to
- * answer the same in both states: the map in both directions.
+ * Every seed recipe's slug has had three spellings: the one it was first
+ * published under, the code and name of 2026-10-24, and the code alone since
+ * 2026-10-28. The content plane changes its slugs when the owner applies each
+ * migration by hand, so every slug lookup has to answer the same in every
+ * state: any spelling finds the others.
  */
 
 const seed: Recipe[] = (recipesSeed as unknown[]).map((r) => recipeSchema.parse(r));
 const map = formerSlugs as Record<string, string>;
+const [OCT24, OCT28] = SLUG_MOVES;
 
 /** The slug each source published the recipe under, by id. */
 const sourceSlug = new Map<string, string>([
@@ -30,21 +34,32 @@ const sourceSlug = new Map<string, string>([
   ...[...ORIGINAL_PP, ...ORIGINAL_CL].map((o) => [o.recipe.id, o.recipe.slug] as const),
 ]);
 
+/** Each seed recipe's three spellings, oldest first, from the frozen batches alone. */
+const spellings = seed.map((r) => {
+  const first = sourceSlug.get(r.id)!;
+  return { id: r.id, first, oct24: OCT24.moves[first], code: r.slug };
+});
+
 describe('data/former-slugs.json', () => {
-  it('maps exactly the seed recipes whose slug changed, each from its source slug to its current one', () => {
-    const changed = seed.filter((r) => sourceSlug.get(r.id) !== r.slug);
-    expect(changed.length).toBeGreaterThan(0);
+  it('maps every earlier spelling of each seed recipe to its code slug, and nothing else', () => {
     for (const r of seed) expect(sourceSlug.has(r.id), `${r.id} has no source`).toBe(true);
-    expect(Object.keys(map).sort()).toEqual(changed.map((r) => sourceSlug.get(r.id)!).sort());
-    for (const r of changed) expect(map[sourceSlug.get(r.id)!], r.id).toBe(r.slug);
+    const expected: Record<string, string> = {};
+    for (const s of spellings) {
+      expect(s.oct24, `${s.id} moved on 2026-10-24`).toBeTruthy();
+      expect(OCT28.moves[s.oct24], s.id).toBe(s.code);
+      expected[s.first] = s.code;
+      expected[s.oct24] = s.code;
+    }
+    expect(map).toEqual(expected);
   });
 
-  it('never names a current slug as a former one, and gives each recipe one former slug', () => {
+  it('never names a current slug as a former one, and points only at code slugs', () => {
     const current = new Set(seed.map((r) => r.slug));
     for (const former of Object.keys(map)) expect(current.has(former), former).toBe(false);
-    const targets = Object.values(map);
-    expect(new Set(targets).size).toBe(targets.length);
-    for (const t of targets) expect(current.has(t), t).toBe(true);
+    for (const t of Object.values(map)) {
+      expect(current.has(t), t).toBe(true);
+      expect(t).toMatch(/^(pp|cl)-\d{3}$/);
+    }
   });
 
   it('is what emit-seed writes, not a hand-kept file', () => {
@@ -52,49 +67,82 @@ describe('data/former-slugs.json', () => {
   });
 });
 
-describe('slugAliases', () => {
-  it('answers with the slug as asked, then its other spelling, in both directions', () => {
-    expect(slugAliases('mojave-sun')).toEqual(['mojave-sun', 'pp-001-vivid-nostalgia-film']);
-    expect(slugAliases('pp-001-vivid-nostalgia-film')).toEqual(['pp-001-vivid-nostalgia-film', 'mojave-sun']);
-    expect(currentSlugOf('hue-silk')).toBe('pp-048-soft-clean-portrait');
-    expect(formerSlugOf('pp-048-soft-clean-portrait')).toBe('hue-silk');
+describe('slugHistory', () => {
+  it('gives every seed recipe its three spellings, oldest first, from any of them', () => {
+    for (const s of spellings) {
+      const history = [s.first, s.oct24, s.code];
+      for (const slug of history) expect(slugHistory(slug), `${s.id} ${slug}`).toEqual(history);
+      expect(newestSlugOf(s.first), s.id).toBe(s.code);
+    }
+    expect(slugHistory('mojave-sun')).toEqual(['mojave-sun', 'pp-001-vivid-nostalgia-film', 'pp-001']);
   });
 
-  it('is only the slug itself when the map does not know it', () => {
+  it('is only the slug itself when no batch knows it', () => {
+    expect(slugHistory('editor-draft')).toEqual(['editor-draft']);
+    expect(newestSlugOf('editor-draft')).toBe('editor-draft');
+  });
+});
+
+describe('slugAliases', () => {
+  it('answers with the slug as asked, then every other spelling, newest first', () => {
+    expect(slugAliases('mojave-sun')).toEqual(['mojave-sun', 'pp-001', 'pp-001-vivid-nostalgia-film']);
+    expect(slugAliases('pp-001-vivid-nostalgia-film')).toEqual(['pp-001-vivid-nostalgia-film', 'pp-001', 'mojave-sun']);
+    expect(slugAliases('pp-001')).toEqual(['pp-001', 'pp-001-vivid-nostalgia-film', 'mojave-sun']);
+  });
+
+  it('covers all three spellings of every seed recipe, from each of them', () => {
+    for (const s of spellings) {
+      for (const slug of [s.first, s.oct24, s.code]) {
+        const aliases = slugAliases(slug);
+        expect(aliases[0], s.id).toBe(slug);
+        expect([...aliases].sort(), `${s.id} ${slug}`).toEqual([s.first, s.oct24, s.code].sort());
+      }
+    }
+  });
+
+  it('is only the slug itself when no batch knows it', () => {
     expect(slugAliases('editor-draft')).toEqual(['editor-draft']);
-    expect(currentSlugOf('editor-draft')).toBeNull();
-    expect(formerSlugOf('editor-draft')).toBeNull();
   });
 });
 
 describe('isPermanentMove', () => {
-  it('is permanent only from a former slug to its current one', () => {
-    expect(isPermanentMove('mojave-sun', 'pp-001-vivid-nostalgia-film')).toBe(true);
+  it('is permanent only from an older spelling of one recipe to a newer one', () => {
+    for (const s of spellings) {
+      const history = [s.first, s.oct24, s.code];
+      history.forEach((from, i) =>
+        history.forEach((to, j) => expect(isPermanentMove(from, to), `${from} -> ${to}`).toBe(i < j)),
+      );
+    }
     /* The unmigrated database, sent back temporarily: a cached 308 this way
-       would loop once the migration sends the former slug forward. */
-    expect(isPermanentMove('pp-001-vivid-nostalgia-film', 'mojave-sun')).toBe(false);
-    expect(isPermanentMove('mojave-sun', 'pp-002-jade-soft-film')).toBe(false);
+       would loop once the migration sends the older slug forward. */
+    expect(isPermanentMove('pp-001', 'pp-001-vivid-nostalgia-film')).toBe(false);
+    expect(isPermanentMove('mojave-sun', 'pp-002')).toBe(false);
+    expect(isPermanentMove('editor-draft', 'pp-001')).toBe(false);
   });
 });
 
-describe('search by a former slug', () => {
+describe('search by an earlier slug', () => {
   const pp001 = seed.find((r) => r.id === 'PP-001')!;
   /* The same row in each state of the content plane. */
-  const states = [pp001, { ...pp001, id: 'SCL-PP-001', slug: 'mojave-sun' }];
+  const states = [
+    pp001,
+    { ...pp001, slug: 'pp-001-vivid-nostalgia-film' },
+    { ...pp001, id: 'SCL-PP-001', slug: 'mojave-sun' },
+  ];
 
-  it('finds the recipe by the name it was first published under, in either state', () => {
+  it('finds the recipe by the name it was first published under and by its code, in every state', () => {
     for (const r of states) {
       expect(matchesQuery(r, 'mojave sun'), r.slug).toBe(true);
       expect(matchesQuery(r, 'vivid nostalgia'), r.slug).toBe(true);
-      expect(matchesQuery(r, 'pp-001-vivid-nostalgia-film'.replace(/-/g, ' ')), r.slug).toBe(true);
+      expect(matchesQuery(r, 'pp 001'), r.slug).toBe(true);
     }
   });
 
-  it('makes both slugs exact hits and the former one a tag', () => {
+  it('makes every spelling an exact hit and the earlier ones tags', () => {
     for (const r of states) {
       const doc = recipeDoc({ ...r, wbLabel: '', description: '' }, 'en');
-      expect(doc.exact, r.slug).toEqual(expect.arrayContaining(['mojavesun', 'pp001vividnostalgiafilm']));
-      expect(doc.tags, r.slug).toContain('mojave sun');
+      expect(doc.exact, r.slug).toEqual(expect.arrayContaining(['mojavesun', 'pp001vividnostalgiafilm', 'pp001']));
+      expect(doc.tags, r.slug).toEqual(expect.arrayContaining(['mojave sun', 'pp 001 vivid nostalgia film']));
     }
   });
 });

@@ -129,11 +129,11 @@ function toView(
  * "chan dung", "phim", "đen trắng" — which is how the tags stopped being shown
  * without the search losing a word (D9).
  *
- * And to both spellings of its slug, whichever the row is stored under: the
- * name is read off the settings now (`PP-009-Warm Deep Muted`), so the
- * former slug (`data/former-slugs.json`) is what still answers to the name
- * a reader learnt first ("mojave sun") and to the place an original was
- * imagined for ("da lat").
+ * And to every spelling of its slug, whichever the row is stored under
+ * (`slugAliases`): the name is read off the settings now
+ * (`PP-009-Warm Deep Muted`) and the slug is the code, so the earlier slugs
+ * are what still answer to the name a reader learnt first ("mojave sun") and
+ * to the place an original was imagined for ("da lat").
  */
 const norm = (s: string) => removeAccents(s).toLowerCase();
 

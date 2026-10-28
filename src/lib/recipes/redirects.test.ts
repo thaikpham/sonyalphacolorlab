@@ -38,16 +38,19 @@ describe('legacy redirects', () => {
     for (const id of RETIRED_RECIPE_IDS) expect(ids.has(id), `${id} is still in the seed`).toBe(false);
   });
 
-  /* The replacements' slugs follow their names since 2026-10-24; the table
-     is written in the slugs they were first published under and read through
-     the former-slug map, so a destination is never a retyped string. */
-  it('points every withdrawn id at its replacement’s current slug, through the former-slug map', () => {
+  /* The replacements' slugs moved twice (2026-10-24, then to the code on
+     2026-10-28); the table is written in the slugs they were first published
+     under and read through the former-slug map, so a destination is never a
+     retyped string. */
+  it('points every withdrawn id at its replacement’s code slug, through the former-slug map', () => {
     const formerSlugs = JSON.parse(readFileSync('data/former-slugs.json', 'utf8')) as Record<string, string>;
     const current = new Set(Object.values(formerSlugs));
     for (const [legacyId, slug] of Object.entries(RETIRED_LEGACY_IDS)) {
       if (slug !== null) expect(current.has(slug), `${legacyId} -> ${slug}`).toBe(true);
     }
     expect(Object.values(RETIRED_LEGACY_IDS).filter((s) => s !== null).length).toBeGreaterThan(0);
+    for (const slug of Object.values(RETIRED_LEGACY_IDS)) if (slug !== null) expect(slug).toMatch(/^pp-\d{3}$/);
+    expect(RETIRED_LEGACY_IDS['scl-017']).toBe('pp-048');
     for (const id of RETIRED_RECIPE_IDS) expect(id).toMatch(/^PP-\d{3}$/);
   });
 
@@ -80,6 +83,8 @@ describe('legacy redirects', () => {
          widen it to catch, or miss, other ids. */
       expect(r.legacyId, 'regex metacharacter in a legacy id').not.toMatch(/[.*+?^${}()|[\]\\]/);
       expect(published.has(r.slug), `${r.legacyId} -> ${r.slug} is not a published recipe`).toBe(true);
+      /* The code, so a recipe renamed from its settings keeps its link. */
+      expect(rule.destination).toBe(`/recipe/${r.id.toLowerCase()}`);
     }
   });
 

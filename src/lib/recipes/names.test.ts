@@ -20,7 +20,6 @@ import {
   readName,
   slugFor,
 } from './names';
-import { currentSlugOf } from './slug-moves';
 import { SITUATION_SYNONYMS, TONES } from './taxonomy';
 import { TAXONOMY_MANIFEST, designedLightFor, taxonomyFor } from './taxonomy-assign';
 
@@ -109,9 +108,10 @@ describe('the name syntax', () => {
 });
 
 describe('slugFor', () => {
-  it('is the name in kebab case', () => {
-    expect(slugFor('PP-048-Soft Clean Portrait')).toBe('pp-048-soft-clean-portrait');
-    expect(slugFor('CL-007-Neutral Even Natural Crisp')).toBe('cl-007-neutral-even-natural-crisp');
+  it('is the code, lowercased, in either id shape', () => {
+    expect(slugFor('PP-048')).toBe('pp-048');
+    expect(slugFor('CL-007')).toBe('cl-007');
+    expect(slugFor('SCL-CL-045')).toBe('cl-045');
   });
 });
 
@@ -261,8 +261,8 @@ describe('every recipe in the seed', () => {
     expect(new Set(seed.map((r) => r.name)).size).toBe(seed.length);
   });
 
-  it('keeps the slug it moved to, so a name moves no URL', () => {
-    for (const r of seed) expect(r.slug, r.id).toBe(currentSlugOf(r.id) ?? slugFor(r.name));
+  it('gives every recipe its code as its slug, so a name moves no URL', () => {
+    for (const r of seed) expect(r.slug, r.id).toBe(slugFor(r.id));
   });
 
   it('says temperature, tonality, colour in that order', () => {

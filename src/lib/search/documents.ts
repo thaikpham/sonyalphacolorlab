@@ -120,11 +120,12 @@ export function recipeDoc(r: RecipeForSearch, locale: Locale): SearchDoc {
     titleText: r.name,
     summary: r.description,
     tags: [
-      /* Both spellings of the slug, whichever the row is stored under: the
-         current one follows the name, and the former one carries the name a
-         reader learnt first ("Mojave Sun", "Raoul Rutnam") and the place an
-         original was imagined for ("Đà Lạt"). As a tag, a typo of it still
-         reaches the recipe through the near-miss tier. */
+      /* Every spelling of the slug, whichever the row is stored under: the
+         code (`pp-001`), the code and name of 2026-10-24, and the first one,
+         which carries the name a reader learnt first ("Mojave Sun", "Raoul
+         Rutnam") and the place an original was imagined for ("Đà Lạt"). As a
+         tag, a typo of one still reaches the recipe through the near-miss
+         tier. */
       ...slugAliases(r.slug).map((s) => s.replace(/-/g, ' ')),
       ...r.tags.map((t) => t.replace(/-/g, ' ')),
       ...inherited,
