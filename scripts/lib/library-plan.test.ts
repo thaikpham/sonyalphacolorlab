@@ -13,6 +13,7 @@ import {
   refreshFields,
   seedInStoredShape,
   storedShape,
+  storedSlug,
   translationRows,
   type PlanExistingRow,
   type PlanSeedRecipe,
@@ -266,6 +267,49 @@ describe('library:sync against the content project before the code-id migration'
       expect(r.id.startsWith(`SCL-${r.format.toUpperCase()}-`), r.id).toBe(true);
       expect(r.slug, r.id).toMatch(SLUG_CHECK);
     }
+  });
+
+  /* Every original already ships published: false, so only a recipe the
+     seed publishes shows whether the insert overrides it. */
+  it('inserts a published seed recipe the project lacks unpublished', () => {
+    const missing = PRODUCTION.filter((r) => r.id !== 'SCL-PP-001');
+    const p = planForProject(SYNC_SEED, missing);
+    if ('refusal' in p) throw new Error(p.refusal);
+    expect(p.plan.insert).toContain('SCL-PP-001');
+    const r = insertRows(p.plan, p.stored).find((x) => x.id === 'SCL-PP-001')!;
+    expect(SEED.find(({ recipe }) => recipe.id === 'PP-001')!.recipe.published).toBe(true);
+    expect(r.published).toBe(false);
+  });
+
+  it('refreshes a recipe unpublished even when it says published', () => {
+    const orig = stored.recipes.find(({ recipe }) => recipe.id === 'SCL-PP-048')!.recipe;
+    expect(refreshFields({ ...orig, published: true } as Recipe).published).toBe(false);
+  });
+
+  it('stores a recipe with no former slug under its own slug, in either shape', () => {
+    expect(storedSlug('cl-046-film-test', 'legacy')).toBe('cl-046-film-test');
+    expect(storedSlug('cl-046-film-test', 'code')).toBe('cl-046-film-test');
+  });
+
+  it('inserts a recipe born after the move under SCL- and its own slug', () => {
+    const template = SEED.find(({ recipe }) => ORIGINALS.has(recipe.id) && recipe.format === 'cl')!;
+    const born = {
+      ...template,
+      recipe: { ...template.recipe, id: 'CL-046', slug: 'cl-046-film-test', name: 'CL-046-Film Test' } as Recipe,
+    };
+    expect(formerSlugOf(born.recipe.slug)).toBeNull();
+    expect(SEED.some(({ recipe }) => recipe.id === 'CL-046' || recipe.name === born.recipe.name)).toBe(false);
+    const p = planForProject(
+      { ...SYNC_SEED, recipes: [...SYNC_SEED.recipes, born], originals: [...SYNC_SEED.originals, 'CL-046'] },
+      PRODUCTION,
+    );
+    if ('refusal' in p) throw new Error(p.refusal);
+    expect(p.plan.insert).toContain('SCL-CL-046');
+    expect(p.plan.conflicts).toEqual([]);
+    const r = insertRows(p.plan, p.stored).find((x) => x.id === 'SCL-CL-046')!;
+    expect(r.slug).toBe('cl-046-film-test');
+    expect(r.id).toMatch(OLD_ID_CHECK);
+    expect(r.slug).toMatch(SLUG_CHECK);
   });
 
   it('inserts rows the later migration renames: each id is the number its former slug moves to', () => {
