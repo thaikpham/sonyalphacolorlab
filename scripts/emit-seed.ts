@@ -5,7 +5,7 @@
  *                                         eight Creative Looks
  *   - Sony's Alpha Recipes microsite   -> Creative Look recipes
  * and names every recipe from its own settings, `nameFor` in
- * src/lib/recipes/names.ts (`PP-001-Warm Deep Vivid`): nobody types a name.
+ * src/lib/recipes/names.ts (`PP-001-Neutral Soft Rich`): nobody types a name.
  * Every slug is the recipe's code, `slugFor(id)` (`pp-001`), so a name changes
  * no URL. data/former-slugs.json (every earlier spelling → the code slug) is
  * written from the frozen record of every slug move
@@ -19,7 +19,7 @@ import legacyRecipes from '../src/lib/legacy/recipes.legacy.js';
 import { migrateAll } from '../src/lib/legacy/migrate';
 import { ORIGINAL_CL } from '../src/lib/originals/cl';
 import { ORIGINAL_PP, type OriginalRecipe } from '../src/lib/originals/pp';
-import { NAME_VOCABULARY, namesFor, parseRecipeName, slugFor } from '../src/lib/recipes/names';
+import { NAME_VOCABULARY, namesFor, parseRecipeName, readNames, readsAlike, slugFor } from '../src/lib/recipes/names';
 import { formerSlugsFor } from '../src/lib/recipes/slug-moves';
 import { importSonyAsia } from '../src/lib/sony-asia/import';
 import { SONY_ASIA_IDS } from '../src/lib/sony-asia/ids';
@@ -80,6 +80,20 @@ const clRows = [
    ever held — and a slug moves again only with a new pair of migrations
    (`slug-moves.ts`). */
 const names = namesFor([...ppRows, ...clRows]);
+/* A tie is reported, and allowed only where the two recipes render the same
+   palette with the same detail: then no honest word can tell them apart. */
+{
+  const byId = new Map([...ppRows, ...clRows].map((r) => [r.id, r]));
+  for (const n of readNames([...ppRows, ...clRows])) {
+    if (!n.tiedWith) continue;
+    const alike = readsAlike(byId.get(n.id)!, byId.get(n.tiedWith)!);
+    console[alike ? 'log' : 'error'](
+      `${alike ? '·' : '✗'} ${n.id} reads as ${n.tiedWith}: "${n.words.join(' ')}"` +
+        (alike ? ' — the same palette and detail' : ' — their palettes differ; the reading needs a word'),
+    );
+    if (!alike) process.exit(1);
+  }
+}
 const rows = [...ppRows, ...clRows].map((r) => {
   const name = names.get(r.id)!;
   return { ...r, name, slug: slugFor(r.id) };
@@ -118,7 +132,7 @@ for (const [former, current] of Object.entries(formerSlugs)) {
 }
 
 /* Every name in the one syntax: the recipe's own format and number, then
-   three or four words from the closed vocabulary. */
+   exactly three words from the closed vocabulary. */
 for (const r of rows) {
   const parsed = parseRecipeName(r.name);
   const stray = parsed?.words.filter((w) => !NAME_VOCABULARY.has(w)) ?? [];

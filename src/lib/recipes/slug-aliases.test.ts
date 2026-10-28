@@ -10,6 +10,7 @@ import { ORIGINAL_PP } from '../originals/pp';
 import { recipeDoc } from '../search/documents';
 import { SONY_ASIA_IDS } from '../sony-asia/ids';
 import { isPermanentMove, newestSlugOf, slugAliases, slugHistory } from './slug-aliases';
+import { parseRecipeName } from './names';
 import { SLUG_MOVES } from './slug-moves';
 import { matchesQuery } from './source';
 
@@ -121,7 +122,7 @@ describe('isPermanentMove', () => {
   });
 });
 
-describe('search by an earlier slug', () => {
+describe('search, which knows no earlier spelling', () => {
   const pp001 = seed.find((r) => r.id === 'PP-001')!;
   /* The same row in each state of the content plane. */
   const states = [
@@ -129,20 +130,46 @@ describe('search by an earlier slug', () => {
     { ...pp001, slug: 'pp-001-vivid-nostalgia-film' },
     { ...pp001, id: 'SCL-PP-001', slug: 'mojave-sun' },
   ];
+  /* R4 of the 2026-10-28 names design: the owner dropped every former name,
+     so neither an earlier slug nor the name it carried finds the recipe — in
+     any state, whatever slug the row is stored under. Its links still
+     resolve (`resolveRecipeSlug`, above); search is not how they do. */
+  const words = parseRecipeName(pp001.name)!.words.join(' ').toLowerCase();
 
-  it('finds the recipe by the name it was first published under and by its code, in every state', () => {
+  it('finds the recipe by its code and its current words, never by a former name, in every state', () => {
     for (const r of states) {
-      expect(matchesQuery(r, 'mojave sun'), r.slug).toBe(true);
-      expect(matchesQuery(r, 'vivid nostalgia'), r.slug).toBe(true);
       expect(matchesQuery(r, 'pp 001'), r.slug).toBe(true);
+      expect(matchesQuery(r, 'pp-001'), r.slug).toBe(true);
+      expect(matchesQuery(r, words), r.slug).toBe(true);
+      expect(matchesQuery(r, 'mojave sun'), r.slug).toBe(false);
+      expect(matchesQuery(r, 'vivid nostalgia'), r.slug).toBe(false);
     }
   });
 
-  it('makes every spelling an exact hit and the earlier ones tags', () => {
+  it('indexes the code slug and nothing a recipe was called before', () => {
     for (const r of states) {
       const doc = recipeDoc({ ...r, wbLabel: '', description: '' }, 'en');
-      expect(doc.exact, r.slug).toEqual(expect.arrayContaining(['mojavesun', 'pp001vividnostalgiafilm', 'pp001']));
-      expect(doc.tags, r.slug).toEqual(expect.arrayContaining(['mojave sun', 'pp 001 vivid nostalgia film']));
+      expect(doc.exact, r.slug).toEqual(expect.arrayContaining(['pp001']));
+      expect(doc.tags, r.slug).toContain('pp 001');
+      const indexed = [...doc.exact, ...doc.tags, ...doc.aliases, doc.titleText].join(' ').toLowerCase();
+      expect(indexed, r.slug).not.toMatch(/mojave|nostalgia/);
+    }
+  });
+
+  it('indexes no word of any earlier spelling of any seed recipe that its current name does not hold', () => {
+    const fold = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+    for (const r of seed) {
+      const doc = recipeDoc({ ...r, wbLabel: '', description: '', tags: [] }, 'en');
+      const indexed = new Set(
+        [...doc.exact, ...doc.tags, ...doc.aliases, doc.titleText].flatMap((t) => fold(t).split(' ')),
+      );
+      const current = new Set(fold(`${r.name} ${r.slug}`).split(' '));
+      for (const earlier of slugAliases(r.slug).filter((s) => s !== r.slug)) {
+        for (const w of fold(earlier).split(' ')) {
+          if (current.has(w) || /^\d+$/.test(w)) continue;
+          expect(indexed.has(w), `${r.id} still indexes "${w}" from ${earlier}`).toBe(false);
+        }
+      }
     }
   });
 });

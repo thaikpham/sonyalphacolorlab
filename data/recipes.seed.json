@@ -2,7 +2,7 @@
   {
     "id": "PP-001",
     "slug": "pp-001",
-    "name": "PP-001-Neutral Matte Vivid",
+    "name": "PP-001-Neutral Soft Rich",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 7000,
@@ -130,7 +130,7 @@
   {
     "id": "PP-009",
     "slug": "pp-009",
-    "name": "PP-009-Warm Deep Muted",
+    "name": "PP-009-Warm Deep Dark",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 4000,
@@ -195,7 +195,7 @@
   {
     "id": "PP-015",
     "slug": "pp-015",
-    "name": "PP-015-Warm Deep Vivid",
+    "name": "PP-015-Warm Soft Vivid",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 3600,
@@ -258,7 +258,7 @@
   {
     "id": "PP-025",
     "slug": "pp-025",
-    "name": "PP-025-Warm Deep Vivid Dark",
+    "name": "PP-025-Warm Deep Punchy",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 4000,
@@ -387,7 +387,7 @@
   {
     "id": "PP-044",
     "slug": "pp-044",
-    "name": "PP-044-Neutral Matte Vivid Gentle",
+    "name": "PP-044-Neutral Gentle Muted",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB",
@@ -447,7 +447,7 @@
   {
     "id": "PP-045",
     "slug": "pp-045",
-    "name": "PP-045-Neutral Deep Rich",
+    "name": "PP-045-Neutral Deep Dark",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB",
@@ -573,7 +573,7 @@
   {
     "id": "PP-047",
     "slug": "pp-047",
-    "name": "PP-047-Cool Deep Rich Dark",
+    "name": "PP-047-Cool Deep Vivid",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB",
@@ -638,7 +638,7 @@
   {
     "id": "PP-048",
     "slug": "pp-048",
-    "name": "PP-048-Neutral Soft Rich",
+    "name": "PP-048-Neutral Dark Muted",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5300,
@@ -695,7 +695,7 @@
   {
     "id": "PP-049",
     "slug": "pp-049",
-    "name": "PP-049-Neutral Deep Rich Dark",
+    "name": "PP-049-Neutral Deep Rich",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5500
@@ -746,7 +746,7 @@
   {
     "id": "PP-050",
     "slug": "pp-050",
-    "name": "PP-050-Neutral Matte Rich",
+    "name": "PP-050-Neutral Crisp Rich",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5600,
@@ -801,7 +801,7 @@
   {
     "id": "PP-051",
     "slug": "pp-051",
-    "name": "PP-051-Neutral Matte Rich Crisp",
+    "name": "PP-051-Neutral Matte Rich",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5600,
@@ -858,7 +858,7 @@
   {
     "id": "PP-052",
     "slug": "pp-052",
-    "name": "PP-052-Neutral Soft Rich Dark",
+    "name": "PP-052-Neutral Soft Dark",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5400,
@@ -966,7 +966,7 @@
   {
     "id": "PP-054",
     "slug": "pp-054",
-    "name": "PP-054-Cool Deep Vivid",
+    "name": "PP-054-Cool Crisp Vivid",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5200,
@@ -1023,7 +1023,7 @@
   {
     "id": "PP-055",
     "slug": "pp-055",
-    "name": "PP-055-Warm Deep Vivid Crisp",
+    "name": "PP-055-Warm Deep Vivid",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5800,
@@ -1080,7 +1080,7 @@
   {
     "id": "PP-056",
     "slug": "pp-056",
-    "name": "PP-056-Warm Deep Vivid",
+    "name": "PP-056-Warm Dark Vivid",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 6000
@@ -1130,7 +1130,7 @@
   {
     "id": "PP-057",
     "slug": "pp-057",
-    "name": "PP-057-Warm Soft Rich Gentle",
+    "name": "PP-057-Warm Gentle Vivid",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 6000,
@@ -1299,7 +1299,7 @@
   {
     "id": "PP-060",
     "slug": "pp-060",
-    "name": "PP-060-Warm Deep Vivid",
+    "name": "PP-060-Warm Punchy Vivid",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5000,
@@ -1356,7 +1356,7 @@
   {
     "id": "PP-061",
     "slug": "pp-061",
-    "name": "PP-061-Warm Matte Rich Gentle",
+    "name": "PP-061-Warm Gentle Rich",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 3400
@@ -1406,7 +1406,7 @@
   {
     "id": "PP-062",
     "slug": "pp-062",
-    "name": "PP-062-Cool Soft Rich",
+    "name": "PP-062-Cool Dark Vivid",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 3800,
@@ -1463,7 +1463,7 @@
   {
     "id": "PP-063",
     "slug": "pp-063",
-    "name": "PP-063-Golden Soft Rich",
+    "name": "PP-063-Golden Deep Rich",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 4000
@@ -1616,7 +1616,7 @@
   {
     "id": "PP-066",
     "slug": "pp-066",
-    "name": "PP-066-Warm Soft Rich Dark",
+    "name": "PP-066-Warm Soft Dark",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 6000,
@@ -1673,7 +1673,7 @@
   {
     "id": "PP-067",
     "slug": "pp-067",
-    "name": "PP-067-Cool Matte Rich",
+    "name": "PP-067-Cool Soft Rich",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 4600,
@@ -1787,7 +1787,7 @@
   {
     "id": "PP-069",
     "slug": "pp-069",
-    "name": "PP-069-Mono Deep Crisp Dark",
+    "name": "PP-069-Mono Deep Punchy",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 7500
@@ -1838,7 +1838,7 @@
   {
     "id": "PP-070",
     "slug": "pp-070",
-    "name": "PP-070-Mono Matte Gentle",
+    "name": "PP-070-Mono Deep Gentle",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 4000
@@ -1889,7 +1889,7 @@
   {
     "id": "PP-071",
     "slug": "pp-071",
-    "name": "PP-071-Neutral Deep Muted",
+    "name": "PP-071-Neutral Deep Punchy",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5500,
@@ -1946,7 +1946,7 @@
   {
     "id": "PP-072",
     "slug": "pp-072",
-    "name": "PP-072-Warm Soft Vivid",
+    "name": "PP-072-Warm Dark Rich",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5600,
@@ -2003,7 +2003,7 @@
   {
     "id": "PP-073",
     "slug": "pp-073",
-    "name": "PP-073-Neutral Matte Muted",
+    "name": "PP-073-Neutral Soft Gentle",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5500
@@ -2111,7 +2111,7 @@
   {
     "id": "PP-075",
     "slug": "pp-075",
-    "name": "PP-075-Warm Matte Muted Gentle",
+    "name": "PP-075-Warm Bright Muted",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 6200,
@@ -2168,7 +2168,7 @@
   {
     "id": "PP-076",
     "slug": "pp-076",
-    "name": "PP-076-Cool Soft Vivid",
+    "name": "PP-076-Cool Rosy Vivid",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 4200,
@@ -2225,7 +2225,7 @@
   {
     "id": "PP-077",
     "slug": "pp-077",
-    "name": "PP-077-Cool Matte Muted Bright",
+    "name": "PP-077-Cool Bright Muted",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5000,
@@ -2280,7 +2280,7 @@
   {
     "id": "PP-078",
     "slug": "pp-078",
-    "name": "PP-078-Warm Deep Vivid",
+    "name": "PP-078-Warm Crisp Vivid",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 6000,
@@ -2337,7 +2337,7 @@
   {
     "id": "PP-079",
     "slug": "pp-079",
-    "name": "PP-079-Warm Soft Rich Crisp",
+    "name": "PP-079-Warm Soft Crisp",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5800,
@@ -2394,7 +2394,7 @@
   {
     "id": "PP-080",
     "slug": "pp-080",
-    "name": "PP-080-Neutral Flat Rich",
+    "name": "PP-080-Neutral Matte Muted",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5500
@@ -2445,7 +2445,7 @@
   {
     "id": "PP-081",
     "slug": "pp-081",
-    "name": "PP-081-Neutral Flat Natural",
+    "name": "PP-081-Neutral Soft Pale",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5500
@@ -2494,7 +2494,7 @@
   {
     "id": "PP-082",
     "slug": "pp-082",
-    "name": "PP-082-Cool Matte Rich Dark",
+    "name": "PP-082-Cool Soft Vivid",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 4800,
@@ -2549,7 +2549,7 @@
   {
     "id": "CL-001",
     "slug": "cl-001",
-    "name": "CL-001-Neutral Punchy Rich",
+    "name": "CL-001-Neutral Soft Bright",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB"
@@ -2576,7 +2576,7 @@
   {
     "id": "CL-002",
     "slug": "cl-002",
-    "name": "CL-002-Neutral Punchy Muted",
+    "name": "CL-002-Neutral Bright Muted",
     "whiteBalance": {
       "mode": "preset",
       "preset": "Cloudy",
@@ -2613,7 +2613,7 @@
   {
     "id": "CL-003",
     "slug": "cl-003",
-    "name": "CL-003-Neutral Even Natural",
+    "name": "CL-003-Neutral Punchy Crisp",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB"
@@ -2640,7 +2640,7 @@
   {
     "id": "CL-004",
     "slug": "cl-004",
-    "name": "CL-004-Neutral Matte Natural",
+    "name": "CL-004-Neutral Bright Rich",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5600
@@ -2667,7 +2667,7 @@
   {
     "id": "CL-005",
     "slug": "cl-005",
-    "name": "CL-005-Warm Punchy Natural",
+    "name": "CL-005-Warm Punchy Rich",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB",
@@ -2704,7 +2704,7 @@
   {
     "id": "CL-006",
     "slug": "cl-006",
-    "name": "CL-006-Neutral Punchy Rich Crisp",
+    "name": "CL-006-Neutral Punchy Vivid",
     "whiteBalance": {
       "mode": "preset",
       "preset": "Daylight"
@@ -2731,7 +2731,7 @@
   {
     "id": "CL-007",
     "slug": "cl-007",
-    "name": "CL-007-Neutral Even Natural",
+    "name": "CL-007-Neutral Punchy Rich",
     "whiteBalance": {
       "mode": "preset",
       "preset": "Daylight"
@@ -2758,7 +2758,7 @@
   {
     "id": "CL-008",
     "slug": "cl-008",
-    "name": "CL-008-Cool Even Natural",
+    "name": "CL-008-Cool Punchy Rich",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5000
@@ -2785,7 +2785,7 @@
   {
     "id": "CL-009",
     "slug": "cl-009",
-    "name": "CL-009-Cool Airy Rich",
+    "name": "CL-009-Cool Punchy Deep",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5500,
@@ -2876,7 +2876,7 @@
   {
     "id": "CL-012",
     "slug": "cl-012",
-    "name": "CL-012-Warm Soft Rich",
+    "name": "CL-012-Warm Soft Gentle",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 6000
@@ -2903,7 +2903,7 @@
   {
     "id": "CL-013",
     "slug": "cl-013",
-    "name": "CL-013-Golden Faded Natural",
+    "name": "CL-013-Golden Matte Muted",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5600,
@@ -2940,7 +2940,7 @@
   {
     "id": "CL-014",
     "slug": "cl-014",
-    "name": "CL-014-Golden Matte Rich",
+    "name": "CL-014-Golden Matte Bright",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 4700,
@@ -2977,7 +2977,7 @@
   {
     "id": "CL-015",
     "slug": "cl-015",
-    "name": "CL-015-Neutral Faded Natural",
+    "name": "CL-015-Neutral Matte Bright",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB"
@@ -3004,7 +3004,7 @@
   {
     "id": "CL-016",
     "slug": "cl-016",
-    "name": "CL-016-Neutral Faded Natural",
+    "name": "CL-016-Neutral Matte Airy",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB"
@@ -3085,7 +3085,7 @@
   {
     "id": "CL-019",
     "slug": "cl-019",
-    "name": "CL-019-Warm Matte Rich Dark",
+    "name": "CL-019-Warm Soft Mint",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5500,
@@ -3122,7 +3122,7 @@
   {
     "id": "CL-020",
     "slug": "cl-020",
-    "name": "CL-020-Warm Matte Natural",
+    "name": "CL-020-Warm Matte Bright",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB"
@@ -3149,7 +3149,7 @@
   {
     "id": "CL-021",
     "slug": "cl-021",
-    "name": "CL-021-Rosy Soft Natural",
+    "name": "CL-021-Rosy Soft Muted",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 6500,
@@ -3186,7 +3186,7 @@
   {
     "id": "CL-022",
     "slug": "cl-022",
-    "name": "CL-022-Cool Soft Natural",
+    "name": "CL-022-Cool Matte Soft",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5600,
@@ -3223,7 +3223,7 @@
   {
     "id": "CL-023",
     "slug": "cl-023",
-    "name": "CL-023-Warm Matte Rich Mint",
+    "name": "CL-023-Warm Soft Bright",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB",
@@ -3260,7 +3260,7 @@
   {
     "id": "CL-024",
     "slug": "cl-024",
-    "name": "CL-024-Golden Punchy Rich",
+    "name": "CL-024-Golden Soft Muted",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5000,
@@ -3297,7 +3297,7 @@
   {
     "id": "CL-025",
     "slug": "cl-025",
-    "name": "CL-025-Warm Punchy Natural Bright",
+    "name": "CL-025-Warm Punchy Muted",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5200,
@@ -3334,7 +3334,7 @@
   {
     "id": "CL-026",
     "slug": "cl-026",
-    "name": "CL-026-Warm Even Rich",
+    "name": "CL-026-Warm Soft Rosy",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5900,
@@ -3371,7 +3371,7 @@
   {
     "id": "CL-027",
     "slug": "cl-027",
-    "name": "CL-027-Neutral Deep Natural",
+    "name": "CL-027-Neutral Deep Bright",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5200,
@@ -3408,7 +3408,7 @@
   {
     "id": "CL-028",
     "slug": "cl-028",
-    "name": "CL-028-Warm Punchy Muted",
+    "name": "CL-028-Warm Mint Muted",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 7600,
@@ -3445,7 +3445,7 @@
   {
     "id": "CL-029",
     "slug": "cl-029",
-    "name": "CL-029-Neutral Soft Vivid",
+    "name": "CL-029-Neutral Deep Crisp",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB"
@@ -3472,7 +3472,7 @@
   {
     "id": "CL-030",
     "slug": "cl-030",
-    "name": "CL-030-Neutral Matte Natural Bright",
+    "name": "CL-030-Neutral Soft Matte",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5600
@@ -3499,7 +3499,7 @@
   {
     "id": "CL-031",
     "slug": "cl-031",
-    "name": "CL-031-Warm Punchy Muted Dark",
+    "name": "CL-031-Warm Deep Mint",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5600,
@@ -3536,7 +3536,7 @@
   {
     "id": "CL-032",
     "slug": "cl-032",
-    "name": "CL-032-Golden Matte Rich Dark",
+    "name": "CL-032-Golden Deep Muted",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 4700,
@@ -3573,7 +3573,7 @@
   {
     "id": "CL-033",
     "slug": "cl-033",
-    "name": "CL-033-Neutral Even Natural",
+    "name": "CL-033-Neutral Deep Muted",
     "whiteBalance": {
       "mode": "preset",
       "preset": "Daylight"
@@ -3600,7 +3600,7 @@
   {
     "id": "CL-034",
     "slug": "cl-034",
-    "name": "CL-034-Neutral Even Natural",
+    "name": "CL-034-Neutral Deep Muted",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB"
@@ -3627,7 +3627,7 @@
   {
     "id": "CL-035",
     "slug": "cl-035",
-    "name": "CL-035-Neutral Punchy Muted Crisp",
+    "name": "CL-035-Neutral Crisp Muted",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB"
@@ -3654,7 +3654,7 @@
   {
     "id": "CL-036",
     "slug": "cl-036",
-    "name": "CL-036-Warm Even Natural",
+    "name": "CL-036-Warm Deep Muted",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5000,
@@ -3691,7 +3691,7 @@
   {
     "id": "CL-037",
     "slug": "cl-037",
-    "name": "CL-037-Warm Soft Rich",
+    "name": "CL-037-Warm Soft Matte",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 6500
@@ -3773,7 +3773,7 @@
   {
     "id": "CL-040",
     "slug": "cl-040",
-    "name": "CL-040-Neutral Punchy Natural",
+    "name": "CL-040-Neutral Soft Crisp",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5500
@@ -3802,7 +3802,7 @@
   {
     "id": "CL-041",
     "slug": "cl-041",
-    "name": "CL-041-Warm Soft Rich Rosy",
+    "name": "CL-041-Warm Soft Muted",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5600,
@@ -3841,7 +3841,7 @@
   {
     "id": "CL-042",
     "slug": "cl-042",
-    "name": "CL-042-Cool Soft Muted",
+    "name": "CL-042-Cool Matte Bright",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5200,
@@ -3876,7 +3876,7 @@
   {
     "id": "CL-043",
     "slug": "cl-043",
-    "name": "CL-043-Neutral Faded Muted",
+    "name": "CL-043-Neutral Soft Muted",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5200,
@@ -3911,7 +3911,7 @@
   {
     "id": "CL-044",
     "slug": "cl-044",
-    "name": "CL-044-Golden Matte Rich",
+    "name": "CL-044-Golden Soft Matte",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5800,
@@ -3946,7 +3946,7 @@
   {
     "id": "CL-045",
     "slug": "cl-045",
-    "name": "CL-045-Warm Punchy Rich",
+    "name": "CL-045-Warm Bright Vivid",
     "whiteBalance": {
       "mode": "kelvin",
       "kelvin": 5800,

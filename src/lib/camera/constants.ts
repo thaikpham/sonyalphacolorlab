@@ -138,6 +138,20 @@ export const PP_COLOR_MODE = [
   'BT.2020', '709',
 ] as const;
 
+/**
+ * The Gamma / Color Mode pair the guide gives as the camera's rendering
+ * without a Picture Profile, for still images (TP0000909109, re-read
+ * 2026-10-28): Gamma [Still] "Standard gamma curve for still images"; Color
+ * Mode [Still] "Color tones for [Still] gamma curve (standard color
+ * reproduction for still images when Picture Profile is not used)". The page
+ * marks no option "default"; [Movie] / [Movie] is the same statement for
+ * movies. The recipe name measures a Picture Profile against this pair.
+ */
+export const PP_STANDARD_STILL = { gamma: 'Still', colorMode: 'Still' } as const satisfies {
+  gamma: (typeof PP_GAMMA)[number];
+  colorMode: (typeof PP_COLOR_MODE)[number];
+};
+
 export const PP_BLACK_GAMMA_RANGE = ['Narrow', 'Middle', 'Wide'] as const;
 export const PP_KNEE_MODE = ['Auto', 'Manual'] as const;
 export const PP_KNEE_AUTO_SENSITIVITY = ['Low', 'Mid', 'High'] as const;

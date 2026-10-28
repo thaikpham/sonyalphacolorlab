@@ -1,22 +1,23 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  computedRecipeName,
   getRecipeRecord,
   insertRecipeRecord,
   listRecipeRows,
   nextIdAmong,
   normaliseRecipe,
   slugifyRecipe,
-  uniqueRecipeSlug,
   unpublishRecipe,
   updateRecipeRecord,
 } from './admin-store';
 import recipesSeed from '../../../data/recipes.seed.json';
-import { recipeSchema } from '../camera/schema';
+import { recipeSchema, type Recipe } from '../camera/schema';
+import { nameFor } from './names';
 
 /**
  * The pure halves of the recipe admin store.
  *
- * `nextRecipeId`, `uniqueRecipeSlug` and the three writes all reach a backend,
+ * `nextRecipeId` and the three writes all reach a backend,
  * so they are covered by the route tests and by the boundary tests that assert
  * where they may be called from. What is tested here is what has no backend:
  * the slug rule and the validation seam, both of which decide what a URL and a
@@ -233,21 +234,39 @@ describe('creating', () => {
     await expect(insertRecipeRecord(recipe)).resolves.toBe('inserted');
   });
 
-  it('throws when the slug check could not read, rather than calling the slug free', async () => {
-    /* `error` was discarded, so a failed read reported every slug as free. */
-    answer.result = { data: null, error: { message: 'restricted', status: 402 } };
-    await expect(uniqueRecipeSlug('Golden Hour')).rejects.toThrow(/restricted/);
-    answer.result = { data: null, error: null };
-    await expect(uniqueRecipeSlug('Golden Hour')).resolves.toBe('golden-hour');
+});
+
+describe('computedRecipeName', () => {
+  const seed = recipesSeed as unknown as Recipe[];
+  const stored = async () => {
+    const { toRow } = await import('./row');
+    log.written = seed.map((r) => ({ ...toRow(r, null), updated_at: '2026-10-01T00:00:00Z' }));
+  };
+
+  it('gives a stored recipe saved unchanged the name the seed gives it, whatever its name field says', async () => {
+    /* Named among every other row, drafts included — the set the seed is
+       named across — so re-saving touches no word. */
+    await stored();
+    for (const r of seed) {
+      await expect(computedRecipeName({ ...r, name: 'Typed by hand' }), r.id).resolves.toBe(r.name);
+    }
   });
 
-  it('never hands out either spelling of a seed recipe’s slug, in either database state', async () => {
-    /* `mojave-sun` is PP-001's former slug and `pp-001-vivid-nostalgia-film`
-       its current one; the database holds only one of them at a time, and a
-       new recipe under the other would answer PP-001's links. */
-    answer.result = { data: null, error: null };
-    await expect(uniqueRecipeSlug('Mojave Sun')).resolves.toBe('mojave-sun-2');
-    await expect(uniqueRecipeSlug('PP-001-Vivid Nostalgia Film')).resolves.toBe('pp-001-vivid-nostalgia-film-2');
+  it('renames a recipe when a dial moves, from the settings alone', async () => {
+    await stored();
+    const cl = seed.find((r) => r.id === 'CL-011')!;
+    if (cl.format !== 'cl') throw new Error('CL-011 is a Creative Look');
+    const punchier = { ...cl, name: 'CL-011-Neutral Even Natural', settings: { ...cl.settings, contrast: 9 } };
+    const name = await computedRecipeName(punchier);
+    expect(name).not.toBe(cl.name);
+    expect(name).toBe(nameFor(punchier, seed.filter((r) => r.id !== cl.id)));
+    expect(name.startsWith('CL-011-')).toBe(true);
+  });
+
+  it('names a new recipe after every stored one, by its own number', async () => {
+    await stored();
+    const fresh = { ...seed.find((r) => r.id === 'CL-011')!, id: 'CL-046', slug: 'cl-046', name: 'CL-046' };
+    await expect(computedRecipeName(fresh)).resolves.toBe(nameFor(fresh, seed));
   });
 });
 

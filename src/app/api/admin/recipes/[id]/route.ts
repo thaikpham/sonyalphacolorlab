@@ -9,6 +9,7 @@ import { isRecipeDevStore } from '@/lib/recipes/dev-store';
 import {
   getRecipeRecord,
   normaliseRecipe,
+  computedRecipeName,
   unpublishRecipe,
   updateRecipeRecord,
 } from '@/lib/recipes/admin-store';
@@ -111,19 +112,20 @@ export async function PATCH(request: Request, { params }: Params) {
     return NextResponse.json({ error: 'staleEdit' }, { status: 409 });
   }
 
-  /* Trimmed and capped exactly as a create is. `recipeSchema` asks only for
-     `min(1)` and the table only for `length(name) > 0`, so a single space
-     saved a recipe card with a blank title; trimmed first, it fails `min(1)`
-     and the editor is told which field. */
-  const name = typeof fields.name === 'string' ? fields.name.trim().slice(0, 200) : fields.name;
-  const write = normaliseRecipe(id, { ...fields, name, slug: existing.recipe.slug });
+  /* The name is never the body's, exactly as on a create: it is recomputed
+     from the settings being saved, among the rest of the library, so a change
+     to a dial renames the recipe and a typed name cannot. The stored name
+     stands in until the settings have been validated. */
+  const write = normaliseRecipe(id, { ...fields, name: existing.recipe.name, slug: existing.recipe.slug });
   if (!write.ok) {
     return NextResponse.json({ error: 'invalidRecipe', issues: write.issues }, { status: 400 });
   }
 
   let version: string | null;
+  let recipe: typeof write.recipe;
   try {
-    version = await updateRecipeRecord(write.recipe, expected);
+    recipe = { ...write.recipe, name: await computedRecipeName(write.recipe) };
+    version = await updateRecipeRecord(recipe, expected);
   } catch (err) {
     console.error('[admin/recipes] update failed:', err);
     return NextResponse.json({ error: 'saveFailed' }, { status: 502 });
@@ -152,7 +154,7 @@ export async function PATCH(request: Request, { params }: Params) {
      not the editor's. When the re-read fails, the validated recipe and the
      version the write answered are still a matching pair — the editor's next
      save needs that version, and an answer without one strands it. */
-  const written = { recipe: write.recipe, legacyId: existing.legacyId, updatedAt: version };
+  const written = { recipe, legacyId: existing.legacyId, updatedAt: version };
   try {
     const fresh = await getRecipeRecord(id);
     return NextResponse.json({ ok: true, recipe: fresh ?? written });

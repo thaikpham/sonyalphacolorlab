@@ -20,7 +20,7 @@ import { truncateOnWord } from '@/lib/lab/outline'
 import type { Article, Block } from '@/lib/lab/types'
 import { buildGlossary } from '@/lib/learn/glossary'
 import { recipeIdAliases } from '@/lib/recipes/recipe-id'
-import { slugAliases } from '@/lib/recipes/slug-aliases'
+import { slugFor } from '@/lib/recipes/names'
 import { taxonomyTerms, type RecipeTaxonomy } from '@/lib/recipes/taxonomy'
 import { squash } from './text'
 import type { SearchKind } from './types'
@@ -82,12 +82,15 @@ export type RecipeForSearch = {
 }
 
 export function recipeDoc(r: RecipeForSearch, locale: Locale): SearchDoc {
-  /* "PP-001-Rosy Matte Vivid" — the code alone and the whole name are each an
-     exact hit, and so is the id and the slug. A row still on the old
-     "SCL-PP-001: Mojave Sun" shape (until the library sync reaches
-     production) keeps its bare name as an exact hit too. */
-  const bare = r.name.includes(': ') ? r.name.split(': ').slice(1).join(': ') : r.name
+  /* "PP-001-Neutral Soft Rich" — the code alone and the whole name are each
+     an exact hit, and so is the id and the slug. Nothing a recipe was called
+     before is (R4 of the 2026-10-28 names design): no former slug, no former
+     name — the owner dropped them, and an old link still lands through
+     `resolveRecipeSlug`, which search has no part in. The slug indexed is the
+     code (`slugFor`), not the stored one, which on a content plane before
+     20261028000000 still spells a former name. */
   const code = /^(PP|CL)-\d{3}/.exec(r.name)?.[0] ?? ''
+  const slug = slugFor(r.id)
   const look = r.format === 'cl' ? CREATIVE_LOOKS.find((l) => l.code === r.look) : undefined
   const formatLabel = r.format === 'pp' ? 'Picture Profile' : 'Creative Look'
   /* Every synonym of the recipe's situations, style and tone, both languages:
@@ -112,21 +115,14 @@ export function recipeDoc(r: RecipeForSearch, locale: Locale): SearchDoc {
     exact: [
       ...recipeIdAliases(r.id).map(squash),
       squash(code),
-      squash(bare),
       squash(r.name),
-      ...slugAliases(r.slug).map(squash),
+      squash(slug),
     ].filter(Boolean),
     aliases: [],
     titleText: r.name,
     summary: r.description,
     tags: [
-      /* Every spelling of the slug, whichever the row is stored under: the
-         code (`pp-001`), the code and name of 2026-10-24, and the first one,
-         which carries the name a reader learnt first ("Mojave Sun", "Raoul
-         Rutnam") and the place an original was imagined for ("Đà Lạt"). As a
-         tag, a typo of one still reaches the recipe through the near-miss
-         tier. */
-      ...slugAliases(r.slug).map((s) => s.replace(/-/g, ' ')),
+      slug.replace(/-/g, ' '),
       ...r.tags.map((t) => t.replace(/-/g, ' ')),
       ...inherited,
       formatLabel,

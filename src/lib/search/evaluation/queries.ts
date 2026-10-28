@@ -38,14 +38,16 @@ export type EvalQuery = {
 
 export const EVAL_QUERIES: readonly EvalQuery[] = [
   // --- exact names and ids --------------------------------------------
-  { q: 'Mojave Sun', locale: 'vi', type: 'exact', relevant: ['PP-001'], top1: 'PP-001' },
-  { q: 'Urban Teal', locale: 'en', type: 'exact', relevant: ['PP-009'], top1: 'PP-009' },
+  /* A recipe's name as the grid prints it, and its three words alone — the
+     only published recipe holding all three (data/recipes.seed.json). The
+     names it carried before 2026-10-28 are not here: the owner dropped them,
+     and search does not index them (R4 of the names design). */
+  { q: 'PP-001-Neutral Soft Rich', locale: 'vi', type: 'exact', relevant: ['PP-001'], top1: 'PP-001' },
+  { q: 'Warm Deep Muted', locale: 'en', type: 'exact', relevant: ['CL-036'], top1: 'CL-036' },
   { q: 'SCL-CL-017', locale: 'vi', type: 'exact', relevant: ['CL-017'], top1: 'CL-017' },
   { q: 'scl pp 009', locale: 'vi', type: 'exact', relevant: ['PP-009'], top1: 'PP-009' },
-  /* Both spellings of a slug, as a reader pastes them from a link: the one
-     that follows the name and the one shared before 2026-10-24. */
-  { q: 'pp-009-teal-muted-street', locale: 'en', type: 'exact', relevant: ['PP-009'], top1: 'PP-009' },
-  { q: 'mojave-sun', locale: 'en', type: 'exact', relevant: ['PP-001'], top1: 'PP-001' },
+  /* The slug, as a reader pastes it from a link: the code. */
+  { q: 'cl-020', locale: 'en', type: 'exact', relevant: ['CL-020'], top1: 'CL-020' },
   { q: 'ILCE-7CM2', locale: 'vi', type: 'exact', relevant: ['sony-ilce-7cm2-sqap2'], top1: 'sony-ilce-7cm2-sqap2' },
   { q: 'ZV-E10', locale: 'vi', type: 'exact', relevant: ['sony-zv-e10-bq-ap2'], top1: 'sony-zv-e10-bq-ap2' },
   { q: 'WH-1000XM6', locale: 'en', type: 'exact', relevant: ['sony-wh-1000xm6'], top1: 'sony-wh-1000xm6' },
@@ -53,7 +55,7 @@ export const EVAL_QUERIES: readonly EvalQuery[] = [
   { q: 'Knee', locale: 'en', type: 'exact', relevant: ['glossary-pp-knee'], top1: 'glossary-pp-knee' },
   { q: 'V/H Balance', locale: 'vi', type: 'exact', relevant: ['glossary-pp-detail-vhBalance'], top1: 'glossary-pp-detail-vhBalance' },
   { q: 'ISO Auto Min SS', locale: 'vi', type: 'exact', relevant: ['iso-auto-min-ss'], top1: 'iso-auto-min-ss' },
-  // The code a recipe's name starts with (`PP-009-Warm Deep Muted`).
+  // The code a recipe's name starts with (`PP-009-Warm Deep Dark`).
   { q: 'PP-009', locale: 'vi', type: 'exact', relevant: ['PP-009'], top1: 'PP-009' },
   { q: 'cl 013', locale: 'en', type: 'exact', relevant: ['CL-013'], top1: 'CL-013' },
 
@@ -65,10 +67,12 @@ export const EVAL_QUERIES: readonly EvalQuery[] = [
   { q: 'fx3', locale: 'vi', type: 'alias', relevant: ['sony-ilme-fx3a-q-ap2'], top1: 'sony-ilme-fx3a-q-ap2' },
 
   // --- typos ------------------------------------------------------------
-  { q: 'mojav sun', locale: 'vi', type: 'typo', relevant: ['PP-001'] },
-  { q: 'urban teel', locale: 'en', type: 'typo', relevant: ['PP-009'] },
-  { q: 'vintge slide', locale: 'en', type: 'typo', relevant: ['PP-015'] },
-  { q: 'kyotto jade', locale: 'vi', type: 'typo', relevant: ['PP-002'] },
+  // Of the words of a name; relevant is every published recipe whose name
+  // holds both words, read from data/recipes.seed.json.
+  { q: 'goldn matte', locale: 'vi', type: 'typo', relevant: ['CL-013', 'CL-014'] },
+  { q: 'sepai soft', locale: 'en', type: 'typo', relevant: ['CL-018'] },
+  { q: 'punchy vivd', locale: 'en', type: 'typo', relevant: ['CL-006'] },
+  { q: 'rosy deeep', locale: 'vi', type: 'typo', relevant: ['PP-027'] },
 
   // --- Vietnamese with and without diacritics ---------------------------
   { q: 'lấy nét bằng ngón tay cái', locale: 'vi', type: 'vi-accent', relevant: ['back-button-af'], top1: 'back-button-af' },
@@ -92,16 +96,15 @@ export const EVAL_QUERIES: readonly EvalQuery[] = [
   { q: 'S-Cinetone', locale: 'en', type: 'concept', relevant: ['PP-027'] },
 
   // --- a mood or a scene -------------------------------------------------
-  /* The night queries return with the originals (Neon Night, Bến Thành
-     Night, Sài Gòn Café) once they are published; no published recipe answers
-     them today, and a label with no document behind it is a label from the
-     ranker. */
+  /* The night queries return with the originals built for night light once
+     they are published; no published recipe answers them today, and a label
+     with no document behind it is a label from the ranker. */
   { q: 'warm golden hour', locale: 'en', type: 'mood', relevant: ['PP-001'] },
   { q: 'sepia look', locale: 'en', type: 'mood', relevant: ['CL-017', 'CL-018'] },
-  // The words of a name computed from the settings (`CL-013-Golden Faded
-  // Natural`, `CL-018-Sepia Soft Crisp`): the only published recipes whose
+  // The words of a name computed from the palette (`CL-024-Golden Soft
+  // Muted`, `CL-018-Sepia Soft Crisp`): the only published recipes whose
   // names hold both words.
-  { q: 'golden faded', locale: 'en', type: 'mood', relevant: ['CL-013'] },
+  { q: 'golden soft', locale: 'en', type: 'mood', relevant: ['CL-024'] },
   { q: 'sepia crisp', locale: 'vi', type: 'mood', relevant: ['CL-018'] },
 
   // --- a situation, a style or a tone, by its browse label -----------------
@@ -137,4 +140,9 @@ export const EVAL_QUERIES: readonly EvalQuery[] = [
   { q: 'xqzvbnmw', locale: 'vi', type: 'none', relevant: [] },
   { q: 'zzzz 12345', locale: 'en', type: 'none', relevant: [] },
   { q: 'canon eos r5', locale: 'en', type: 'none', relevant: [] },
+  /* A name the owner dropped on 2026-10-28, and the slug it lived in until
+     2026-10-24: neither is indexed any more, and no document's own words
+     spell it. */
+  { q: 'mojave', locale: 'en', type: 'none', relevant: [] },
+  { q: 'kyoto', locale: 'vi', type: 'none', relevant: [] },
 ]

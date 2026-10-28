@@ -305,15 +305,18 @@ Do not write App Router code from memory. Read the relevant file first:
 ## Names, palette, pictures
 
 - **A recipe's name is computed, never typed** (2026-10-28):
-  `nameFor()` in `src/lib/recipes/names.ts` reads the White Balance and the
-  PP or CL settings into `PP-001-Rosy Matte Vivid` — format, the id's number,
-  then temperature (the palette's mid swatch, `gradeWarmth`), tonality (the
-  most salient contrast setting), colour (Saturation plus mean Color Depth;
-  detail for mono), and a fourth word only to break a tie. Every cut is a
-  range in `constants.ts` or an existing grade; no word names a place, a
-  situation, a Look code, a stock or a brand. Never translated. `seed:emit`
-  writes it and `names.test.ts` pins every seed name to it; to change a name,
-  change the settings or the reading, not the string.
+  `nameFor()` in `src/lib/recipes/names.ts` reads the recipe's rendered
+  palette (`paletteFor`, so White Balance, every dial, gamma, colour mode and
+  a Look's own base) into `PP-001-Neutral Soft Rich` — format, the id's
+  number, then exactly three words: temperature (the mid swatch,
+  `gradeWarmth`), tonality (the neutral ramp), colour (the hues' chroma;
+  detail for mono), each against a same-format reference (`PP_STANDARD_STILL`,
+  ST) on the palette's own reach. A clash replaces the least salient slot
+  with another honest reading; the words are unique except where two recipes
+  render alike. No word names a place, a situation, a Look code, a stock, a
+  brand or a person. Never translated. `seed:emit` and `/admin` write it;
+  nothing reads a typed name. To change a name, change the settings or the
+  reading, not the string.
 - **The slug is the code** (2026-10-28): `slugFor(id)`, `pp-048`, so a
   name can change without moving a URL. The id is `PP-048` (`RECIPE_ID_RE`).
   A seed recipe has had three spellings — its first slug (`hue-silk`), the
@@ -332,8 +335,9 @@ Do not write App Router code from memory. Read the relevant file first:
   `next.config.ts`); every control-plane read keyed by `recipe_slug` uses
   `.in('recipe_slug', slugAliases(slug))`, permanently, with every spelling;
   and `library:sync` writes whichever spelling the project holds. Search
-  indexes every spelling, so a former name ("mojave sun") and an original's
-  place ("da lat") still find it.
+  indexes none of the earlier spellings — the code, the current name and the
+  taxonomy only — so a former name ("mojave sun") finds nothing; the old link
+  still resolves.
 - **No recipe carries a photograph.** Pictures come only from readers: Google
   sign-in, an image URL, `community_photos` on the control plane, shown in the
   recipe's grid and lightbox. There is no primary photograph, no admin upload
