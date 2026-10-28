@@ -281,7 +281,7 @@ describe('stable ids', () => {
   it('steps past the ids and slugs ColorLab’s own Creative Looks hold', () => {
     /* The originals share the CL- sequence. emit-seed passes them as
        `reserved`, so a newcomer the scrape has never seen cannot be handed
-       CL-038 — the number Mono Deep Noir already holds. */
+       CL-038 — the number an original already holds. */
     const reserved = {
       ids: ORIGINAL_CL.map((o) => o.recipe.id),
       slugs: ORIGINAL_CL.map((o) => o.recipe.slug),

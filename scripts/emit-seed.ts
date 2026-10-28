@@ -4,10 +4,11 @@
  *   - ColorLab's own originals         -> the Picture Profile library and
  *                                         eight Creative Looks
  *   - Sony's Alpha Recipes microsite   -> Creative Look recipes
- * and names every recipe `PP-NNN-Mood Words` / `CL-NNN-Mood Words`
- * (src/lib/recipes/names.ts): the originals carry theirs, the legacy and
- * Sony Asia rows take theirs from RECIPE_NAMES. Every slug is then
- * `slugFor(name)`. data/former-slugs.json (former → current), which is how an
+ * and names every recipe from its own settings, `nameFor` in
+ * src/lib/recipes/names.ts (`PP-001-Warm Deep Vivid`): nobody types a name.
+ * A recipe whose slug moved keeps the slug it moved to (`currentSlugOf`), so a
+ * name changes no URL; a recipe in no batch takes `slugFor(name)`.
+ * data/former-slugs.json (former → current), which is how an
  * old link still reaches its recipe (`src/lib/recipes/slug-aliases.ts`), is
  * the frozen record of every slug move (`src/lib/recipes/slug-moves.ts`),
  * never recomputed from the sources.
@@ -19,8 +20,8 @@ import legacyRecipes from '../src/lib/legacy/recipes.legacy.js';
 import { migrateAll } from '../src/lib/legacy/migrate';
 import { ORIGINAL_CL } from '../src/lib/originals/cl';
 import { ORIGINAL_PP, type OriginalRecipe } from '../src/lib/originals/pp';
-import { NAME_VOCABULARY, RECIPE_NAMES, parseRecipeName, slugFor } from '../src/lib/recipes/names';
-import { formerSlugsFor } from '../src/lib/recipes/slug-moves';
+import { NAME_VOCABULARY, namesFor, parseRecipeName, slugFor } from '../src/lib/recipes/names';
+import { currentSlugOf, formerSlugsFor } from '../src/lib/recipes/slug-moves';
 import { importSonyAsia } from '../src/lib/sony-asia/import';
 import { SONY_ASIA_IDS } from '../src/lib/sony-asia/ids';
 
@@ -33,10 +34,12 @@ if (failed.length) {
 
 /* The originals are typed, but typed is not validated: the ranges and the
    gamma/colour-mode pairing live in the schema, and a number outside them
-   must stop the emit here rather than fail on a real camera. */
+   must stop the emit here rather than fail on a real camera. They carry no
+   name; a placeholder satisfies the schema until every recipe is named
+   below, from the whole catalogue at once. */
 const validated = (list: readonly OriginalRecipe[]) =>
   list.map((o) => {
-    const parsed = recipeSchema.safeParse(o.recipe);
+    const parsed = recipeSchema.safeParse({ ...o.recipe, name: o.recipe.id });
     if (!parsed.success) {
       const detail = parsed.error.issues
         .map((i) => `${i.path.join('.') || '(root)'}: ${i.message}`)
@@ -56,48 +59,36 @@ const sony = importSonyAsia(readFileSync('data/sony-asia-creative-looks.csv', 'u
   slugs: ORIGINAL_CL.map((o) => o.recipe.slug),
 });
 
-/* The legacy and Sony Asia rows keep their settings and take their new name
-   from RECIPE_NAMES (their slug follows the name below). A row with
-   no entry, or an entry no row uses, stops the emit: a recipe left on its old
-   name would fail the syntax below anyway, and a stray entry is a typo. */
-const unusedNames = new Set(Object.keys(RECIPE_NAMES));
-const renamed = <T extends { id: string; name: string }>(r: T): T => {
-  const name = RECIPE_NAMES[r.id];
-  if (!name) {
-    console.error(`✗ ${r.id} (${r.name}) has no entry in RECIPE_NAMES`);
-    process.exit(1);
-  }
-  unusedNames.delete(r.id);
-  return { ...r, name };
-};
-
 mkdirSync('data', { recursive: true });
 const ppRows = [
-  ...ok.map((r) => renamed({ ...r.recipe, legacyId: r.legacyId as string | null })),
+  ...ok.map((r) => ({ ...r.recipe, legacyId: r.legacyId as string | null })),
   ...originals.map(({ description: _description, ...recipe }) => recipe),
 ];
 // `images` and `credit` are provenance, not recipe fields — they are written to
 // their own file so a seed row still parses as a plain Recipe.
 const clRows = [
-  ...sony.recipes.map(({ images: _images, credit: _credit, ...recipe }) => renamed(recipe)),
+  ...sony.recipes.map(({ images: _images, credit: _credit, ...recipe }) => recipe),
   ...clOriginals.map(({ description: _description, ...recipe }) => recipe),
 ];
-/* The slug follows the name (S2 of the 2026-10-24 id design). Former slugs
-   are not read off the sources: they are the frozen record of the 2026-10-24
-   move, which both planes' migrations carry pair for pair. A recipe born
-   after it has no former slug even when its source spells one — a new Sony
-   Asia row arrives as `fl-…-4`, a slug no database ever held — and a recipe
-   whose slug already moved cannot move again without a new pair of
-   migrations (`slug-moves.ts`). */
-const rows = [...ppRows, ...clRows].map((r) => ({ ...r, slug: slugFor(r.name) }));
+/* Every name is computed from the settings (N1 of the 2026-10-28 names
+   design), over the whole catalogue at once so the tie-break sees every
+   earlier recipe; whatever the sources called a recipe is discarded. The slug
+   does not follow the name: a recipe whose slug moved keeps the slug it moved
+   to, the one both planes hold, and only a recipe in no batch takes
+   `slugFor(name)`. Former slugs are not read off the sources: they are the
+   frozen record of each move, which both planes' migrations carry pair for
+   pair. A recipe born after a move has no former slug even when its source
+   spells one — a new Sony Asia row arrives as `fl-…-4`, a slug no database
+   ever held — and a slug moves again only with a new pair of migrations
+   (`slug-moves.ts`). */
+const names = namesFor([...ppRows, ...clRows]);
+const rows = [...ppRows, ...clRows].map((r) => {
+  const name = names.get(r.id)!;
+  return { ...r, name, slug: currentSlugOf(r.id) ?? slugFor(name) };
+});
 const { formerSlugs, problems: slugMoveProblems } = formerSlugsFor(rows);
 if (slugMoveProblems.length) {
   for (const p of slugMoveProblems) console.error(`✗ ${p}`);
-  process.exit(1);
-}
-
-if (unusedNames.size) {
-  console.error(`✗ RECIPE_NAMES names recipes the seed does not have: ${[...unusedNames].join(', ')}`);
   process.exit(1);
 }
 
@@ -129,7 +120,7 @@ for (const [former, current] of Object.entries(formerSlugs)) {
 }
 
 /* Every name in the one syntax: the recipe's own format and number, then
-   two or three words from the closed vocabulary. */
+   three or four words from the closed vocabulary. */
 for (const r of rows) {
   const parsed = parseRecipeName(r.name);
   const stray = parsed?.words.filter((w) => !NAME_VOCABULARY.has(w)) ?? [];

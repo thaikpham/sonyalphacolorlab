@@ -82,7 +82,7 @@ export type RecipeForSearch = {
 }
 
 export function recipeDoc(r: RecipeForSearch, locale: Locale): SearchDoc {
-  /* "PP-001-Vivid Nostalgia Film" — the code alone and the whole name are each an
+  /* "PP-001-Rosy Matte Vivid" — the code alone and the whole name are each an
      exact hit, and so is the id and the slug. A row still on the old
      "SCL-PP-001: Mojave Sun" shape (until the library sync reaches
      production) keeps its bare name as an exact hit too. */

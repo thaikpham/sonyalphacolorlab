@@ -122,6 +122,15 @@ export const PP_GAMMA = [
   'HLG', 'HLG1', 'HLG2', 'HLG3',
 ] as const;
 
+/**
+ * The S-Log and HLG families of `PP_GAMMA`, filtered from it rather than
+ * retyped, so a gamma added to either family joins by its name. The palette
+ * flattens both (`PALETTE_WEIGHTS.gamma`) and the recipe name calls them Flat.
+ */
+export const PP_FLAT_GAMMA: readonly (typeof PP_GAMMA)[number][] = PP_GAMMA.filter(
+  (g) => g.startsWith('S-Log') || g.startsWith('HLG'),
+);
+
 export const PP_COLOR_MODE = [
   'Movie', 'Still', 'S-Cinetone', 'Cinema', 'Pro',
   '709tone', 'ITU709 Matrix', 'Black & White',

@@ -48,11 +48,13 @@ console.log('next: '+f+'-'+String(Math.max(0,...n)+1).padStart(3,'0'))"
 ```
 
 - `id` is `PP-NNN` / `CL-NNN` (no `SCL-` prefix since 2026-10-24).
-- `name` is `<ID>-<Mood Words>`, two or three words from `NAME_VOCABULARY`
-  in `src/lib/recipes/names.ts`, e.g. `CL-013-Airy Warm Pastel`.
-- `slug` is `slugFor(name)` — the name in kebab case, e.g.
-  `cl-013-airy-warm-pastel`. Never typed by hand; `names.test.ts` fails a
-  slug that is not.
+- `name` is never written by hand: `npm run seed:emit` computes it from the
+  White Balance and settings (`nameFor` in `src/lib/recipes/names.ts`), e.g.
+  `CL-013-Golden Faded Natural`. An originals entry has no `name` field.
+- `slug` is `slugFor(name)` for a new recipe, e.g.
+  `cl-046-golden-faded-natural`; a recipe whose slug already moved keeps it
+  (`currentSlugOf`). Never typed by hand; `names.test.ts` fails a slug that
+  is not.
 
 ## 4. Validate before writing anything
 

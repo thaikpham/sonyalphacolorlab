@@ -1,8 +1,9 @@
 /**
  * Every spelling a recipe's slug has had.
  *
- * Slugs follow the name since 2026-10-24 (`PP-001-Vivid Nostalgia Film` →
- * `pp-001-vivid-nostalgia-film`, `slugFor` in `names.ts`), and the slug each
+ * Slugs moved to the code and the name of the day on 2026-10-24
+ * (`pp-001-vivid-nostalgia-film`), and stay there while names are computed
+ * from the settings (2026-10-28), and the slug each
  * recipe was first published under is kept in `data/former-slugs.json`
  * (former → current), which `seed:emit` writes and nothing edits by hand.
  *

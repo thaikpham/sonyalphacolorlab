@@ -130,8 +130,8 @@ function toView(
  * without the search losing a word (D9).
  *
  * And to both spellings of its slug, whichever the row is stored under: the
- * name is a mood now (`PP-009-Teal Muted Street`) and the slug follows it, so
- * the former slug (`data/former-slugs.json`) is what still answers to the name
+ * name is read off the settings now (`PP-009-Warm Deep Muted`), so the
+ * former slug (`data/former-slugs.json`) is what still answers to the name
  * a reader learnt first ("mojave sun") and to the place an original was
  * imagined for ("da lat").
  */

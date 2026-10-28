@@ -6,7 +6,7 @@
  * rename. The pairs live here, not recomputed from the sources, because the
  * sources keep changing after the move: a Creative Look imported next month
  * arrives with an importer slug (`fl-sandeeshwara-perera-4`) that differs from
- * `slugFor(name)` and was never stored anywhere. Recomputing would call that a
+ * the slug it is emitted with and was never stored anywhere. Recomputing would call that a
  * former slug, and the paired migrations — which cannot be rewritten — would
  * stop matching the map.
  *
@@ -14,9 +14,11 @@
  * (`slug-aliases.ts`), is the union of these batches, written by `seed:emit`
  * and checked against them by `migration-roots.test.ts`.
  *
- * Renaming a recipe after its slug moved is a new batch: a new frozen JSON
- * under `data/slug-moves/`, a new migration on each plane carrying exactly its
- * pairs, and an entry below. `seed:emit` refuses the rename until then.
+ * A name no longer moves a slug (names are computed from the settings since
+ * 2026-10-28, and a moved recipe keeps the slug it moved to). Moving a slug
+ * again is a new batch: a new frozen JSON under `data/slug-moves/`, a new
+ * migration on each plane carrying exactly its pairs, and an entry below.
+ * `seed:emit` refuses the move until then.
  */
 
 import moves20261024 from '../../../data/slug-moves/2026-10-24.json';
@@ -48,9 +50,24 @@ export function recipeIdOfSlug(slug: string): string | null {
 }
 
 /**
+ * The slug a recipe last moved to, by id, or null for a recipe in no batch.
+ * `seed:emit` keeps every moved recipe at it, so a name computed from the
+ * settings (2026-10-28) changes no URL.
+ */
+export function currentSlugOf(id: string, batches: readonly SlugMoveBatch[] = SLUG_MOVES): string | null {
+  let slug: string | null = null;
+  for (const batch of batches) {
+    for (const current of Object.values(batch.moves)) {
+      if (recipeIdOfSlug(current) === recipeIdKey(id)) slug = current;
+    }
+  }
+  return slug;
+}
+
+/**
  * The former-slug map `seed:emit` writes, and what stops it.
  *
- * `rows` carry the slug they will be emitted with (`slugFor(name)`). The map
+ * `rows` carry the slug they will be emitted with (`currentSlugOf`). The map
  * is every batch's pairs, whole — a recipe later withdrawn from the seed keeps
  * its entry, because community rows and shared links still name it. A recipe
  * in no batch adds nothing, whatever slug its source gave it. A recipe whose

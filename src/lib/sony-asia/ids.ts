@@ -6,7 +6,7 @@
  * the id, and `push:supabase` never overwrites a row it already has. Ids lost
  * their `SCL-` prefix on 2026-10-24 and kept their number (`SCL-CL-013` →
  * `CL-013`). The slug here is the one each recipe was first published under;
- * the seed's slug is `slugFor(name)` since the same day, and the rows here on
+ * the seed's slug moved on the same day, and the rows here on
  * that day have this one frozen in `data/slug-moves/2026-10-24.json`, so its
  * links still land. A row added after was never published under the slug
  * here, and has no former slug. Numbering by row order meant one skipped

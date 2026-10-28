@@ -28,14 +28,20 @@ already used — is turned back into mireds through the palette's own cast scale
 |---|---|
 | strong-warm (≥ 55 mired) | Golden |
 | warm | Warm |
-| neutral (\|m\| < 12) | Neutral |
+| neutral (inside the band below) | Neutral |
 | cool | Cool |
 | strong-cool (≤ −80 mired) | Icy |
 
+The neutral band is `gradeWarmth`'s 12 mired (`NEUTRAL_MIRED_BAND`), widened to one
+shift step (`MIRED_PER_SHIFT_STEP`) while the recipe sets an A/B shift: the White
+Balance summary's rule, because a step's mired value is fitted, not published, and a
+name inside one step of neutral would be inventing a side (Mojave Sun, 7000K B3, reads
+Neutral).
+
 The green–magenta lean is the same projection on the magenta axis (hue 328,
 `WB_HUE.magenta`). It takes the slot — Rosy for magenta, Mint for green — when it
-"clearly dominates": it is larger than the amber–blue lean by a margin `gradeWarmth`
-itself does not call neutral (≥ 12 mired).
+"clearly dominates": it is larger than the amber–blue lean by at least its own neutral
+band (12 mired, one shift step while a G/M shift is set).
 
 Monochrome recipes (`monochromeOf`): Mono for black and white, Sepia for sepia.
 

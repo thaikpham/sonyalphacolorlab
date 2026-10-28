@@ -303,21 +303,26 @@ Do not write App Router code from memory. Read the relevant file first:
 
 ## Names, palette, pictures
 
-- **A recipe's name is its code and mood**: `PP-048-Soft Clean Portrait`,
-  `CL-013-Airy Warm Pastel` — format, the id's three-digit number, two or
-  three words from the closed `NAME_VOCABULARY` in `src/lib/recipes/names.ts`.
-  Never translated. A temperature word must agree with the recipe's tone
-  (Warm, Golden, Amber ⇒ warm; Cool ⇒ cool; Mono, Sepia ⇒ mono), names and
-  word sets are unique; `names.test.ts` and `emit-seed` refuse anything else.
-  The legacy and Sony Asia rows take their names from `RECIPE_NAMES`.
+- **A recipe's name is computed, never typed** (2026-10-28):
+  `nameFor()` in `src/lib/recipes/names.ts` reads the White Balance and the
+  PP or CL settings into `PP-001-Rosy Matte Vivid` — format, the id's number,
+  then temperature (the palette's mid swatch, `gradeWarmth`), tonality (the
+  most salient contrast setting), colour (Saturation plus mean Color Depth;
+  detail for mono), and a fourth word only to break a tie. Every cut is a
+  range in `constants.ts` or an existing grade; no word names a place, a
+  situation, a Look code, a stock or a brand. Never translated. `seed:emit`
+  writes it and `names.test.ts` pins every seed name to it; to change a name,
+  change the settings or the reading, not the string.
 - **Ids and slugs follow the code.** The id is `PP-048` (`RECIPE_ID_RE`), the
-  slug `slugFor(name)`, `pp-048-soft-clean-portrait`. URLs carry slugs, so the
+  slug the one it moved to on 2026-10-24, `pp-048-soft-clean-portrait`
+  (`currentSlugOf`; `slugFor(name)` only for a recipe in no batch), so a
+  computed name moves no URL. URLs carry slugs, so the
   old `SCL-` prefix had no SEO weight to keep. The slugs the seed recipes had
   before 2026-10-24 are frozen in `data/slug-moves/2026-10-24.json` with the
   two migrations that rename them (`SLUG_MOVES` in `slug-moves.ts`);
   `data/former-slugs.json` is the union of the batches, written by `seed:emit`,
   never hand-edited. A recipe born after has no former slug, whatever its
-  source spells. Renaming a moved recipe is a new batch — a frozen list, a
+  source spells. Moving a slug again is a new batch — a frozen list, a
   migration per plane carrying exactly it, an entry in `SLUG_MOVES` —
   `seed:emit` refuses it until then, and `migration-roots.test.ts` checks each
   batch against its own two files.
