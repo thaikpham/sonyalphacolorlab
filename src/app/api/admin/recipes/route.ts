@@ -117,8 +117,16 @@ export async function POST(request: Request) {
 
     let inserted: 'inserted' | 'taken';
     try {
-      const name = await computedRecipeName(write.recipe);
-      inserted = await insertRecipeRecord({ ...write.recipe, name });
+      const named = await computedRecipeName(write.recipe);
+      /* Every honest name these settings can carry is held by a recipe that
+         looks different: refused rather than stored as a duplicate. */
+      if (!named.ok) {
+        return NextResponse.json(
+          { error: 'nameTaken', issues: [`name: every honest name for these settings is held (${named.heldBy.join(', ')})`] },
+          { status: 409 },
+        );
+      }
+      inserted = await insertRecipeRecord({ ...write.recipe, name: named.name });
     } catch (err) {
       console.error('[admin/recipes] insert failed:', err);
       return NextResponse.json({ error: 'saveFailed' }, { status: 502 });

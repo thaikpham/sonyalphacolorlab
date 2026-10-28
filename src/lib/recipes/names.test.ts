@@ -25,8 +25,10 @@ import {
   TONALITY_WORDS,
   TONE_WORDS,
   comboOf,
+  nameAmong,
   nameFor,
   namesFor,
+  optionTiers,
   parseRecipeName,
   readName,
   readNames,
@@ -362,6 +364,25 @@ describe('the tie-break', () => {
     expect(b).toMatchObject({ id: 'CL-902', words: ['Neutral', 'Even', 'Natural'], tiedWith: null });
   });
 
+  it('names one recipe among stored names held fixed, and never moves a holder', () => {
+    const plain = cl({}, CL.whiteBalance, 'CL-800');
+    const sharp = cl({ sharpness: CL_RANGES.sharpness.max }, CL.whiteBalance, 'CL-902');
+    // Its own words free: taken.
+    expect(nameAmong(sharp, [])).toEqual({ ok: true, name: 'CL-902-Neutral Even Natural', tiedWith: null });
+    // Held by a row that reads alike: its most salient honest alternative.
+    const stored = { ...cl({}, CL.whiteBalance, 'CL-901'), name: 'CL-901-Neutral Even Natural' };
+    expect(nameAmong(sharp, [stored])).toEqual({ ok: true, name: 'CL-902-Neutral Even Crisp', tiedWith: null });
+    // Nothing left, and the holder reads alike: the tie is the truth.
+    expect(nameAmong(plain, [stored])).toEqual({ ok: true, name: 'CL-800-Neutral Even Natural', tiedWith: 'CL-901' });
+    // Nothing left, and the holder looks different: refused, though CL-800 is
+    // the earlier number and the whole-library assignment would move CL-902.
+    const heldBySharp = { ...sharp, name: 'CL-902-Neutral Even Natural' };
+    expect(nameAmong(plain, [heldBySharp])).toEqual({ ok: false, heldBy: ['CL-902'] });
+    expect(readNames([plain, sharp])[0]).toMatchObject({ id: 'CL-800', words: ['Neutral', 'Even', 'Natural'] });
+    // Its own row, in either id shape, holds nothing against it.
+    expect(nameAmong(plain, [{ ...heldBySharp, id: 'SCL-CL-800' }])).toMatchObject({ ok: true, tiedWith: null });
+  });
+
   it('holds a combination as a set of words, so a reordering is a collision too', () => {
     expect(comboOf(['Neutral', 'Deep', 'Punchy'])).toBe(comboOf(['Neutral', 'Punchy', 'Deep']));
     expect(comboOf(['Neutral', 'Deep', 'Punchy'])).not.toBe(comboOf(['Warm', 'Deep', 'Punchy']));
@@ -436,6 +457,52 @@ describe('every recipe in the seed', () => {
         expect(n.reading.alternatives.map((x) => x.word), r.name).toContain(w);
       }
       for (const w of [a, b]) expect(n.reading.supported.has(w), `${r.name}: ${w}`).toBe(true);
+    }
+  });
+
+  it('replaces a slot only when its own words are held, or it moved aside for a later recipe', () => {
+    for (const n of results) {
+      if (n.replaced === null) {
+        expect(n.words, n.id).toEqual(n.reading.words);
+        continue;
+      }
+      const own = comboOf(n.reading.words);
+      const held = results.some((o) => o.id !== n.id && comboOf(o.words) === own);
+      expect(held || n.yieldedTo !== null, `${n.id} swapped ${n.reading.words.join(' ')} with nothing holding it`).toBe(
+        true,
+      );
+    }
+  });
+
+  it('offers the least salient slot first, and the other only below the strong cut', () => {
+    let closed = 0;
+    for (const n of results) {
+      const [tonality, colour] = n.reading.slots;
+      const least = colour.salience <= tonality.salience ? 2 : 1;
+      const other = n.reading.slots[least === 2 ? 0 : 1];
+      const [primary, secondary] = optionTiers(n.reading);
+      expect(primary[0], n.id).toEqual({ words: n.reading.words, replaced: null });
+      for (const o of primary.slice(1)) expect(o.replaced?.slot, n.id).toBe(least);
+      for (const o of secondary) expect(o.replaced?.slot, n.id).toBe(least === 2 ? 1 : 2);
+      if (other.salience >= 0.55) {
+        expect(secondary, n.id).toEqual([]);
+        closed += 1;
+      }
+    }
+    expect(closed).toBeGreaterThan(0);
+  });
+
+  it('never drops a strong reading for a weaker one it keeps', () => {
+    /* R2: a clash replaces the least salient slot. The other slot is a last
+       resort, and never when its reading is past the strong cut. */
+    for (const n of results) {
+      if (!n.replaced) continue;
+      const [tonality, colour] = n.reading.slots;
+      const [dropped, kept] = n.replaced.slot === 1 ? [tonality, colour] : [colour, tonality];
+      expect(
+        dropped.salience >= 0.55 && kept.salience < dropped.salience,
+        `${n.id}: dropped ${dropped.word} ${dropped.salience.toFixed(2)}, kept ${kept.word} ${kept.salience.toFixed(2)}`,
+      ).toBe(false);
     }
   });
 

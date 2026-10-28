@@ -12,7 +12,8 @@ import {
 } from './admin-store';
 import recipesSeed from '../../../data/recipes.seed.json';
 import { recipeSchema, type Recipe } from '../camera/schema';
-import { nameFor } from './names';
+import { comboOf, optionsOf, parseRecipeName, readName, readsAlike } from './names';
+import { RETIRED_RECIPE_IDS } from './retired';
 
 /**
  * The pure halves of the recipe admin store.
@@ -238,35 +239,126 @@ describe('creating', () => {
 
 describe('computedRecipeName', () => {
   const seed = recipesSeed as unknown as Recipe[];
-  const stored = async () => {
+  const byId = new Map(seed.map((r) => [r.id, r]));
+  const store = async (rows: readonly (Recipe & { published?: boolean })[]) => {
     const { toRow } = await import('./row');
-    log.written = seed.map((r) => ({ ...toRow(r, null), updated_at: '2026-10-01T00:00:00Z' }));
+    log.written = rows.map((r) => ({ ...toRow(r, null), updated_at: '2026-10-01T00:00:00Z' }));
   };
+  const stored = () => store(seed);
+  const comboOfName = (name: string) => comboOf(parseRecipeName(name)!.words);
+  /** The stored rows, other than `id`, holding `name`'s three words in any order. */
+  const othersHolding = (rows: readonly Recipe[], id: string, name: string) =>
+    rows.filter((r) => r.id !== id && comboOfName(r.name) === comboOfName(name)).map((r) => r.id);
 
   it('gives a stored recipe saved unchanged the name the seed gives it, whatever its name field says', async () => {
-    /* Named among every other row, drafts included — the set the seed is
-       named across — so re-saving touches no word. */
+    /* Named among every other row, drafts included — with the store equal to
+       the seed, the set the seed is named across — so re-saving touches no word. */
     await stored();
     for (const r of seed) {
-      await expect(computedRecipeName({ ...r, name: 'Typed by hand' }), r.id).resolves.toBe(r.name);
+      await expect(computedRecipeName({ ...r, name: 'Typed by hand' }), r.id).resolves.toMatchObject({
+        ok: true,
+        name: r.name,
+      });
     }
   });
 
-  it('renames a recipe when a dial moves, from the settings alone', async () => {
-    await stored();
-    const cl = seed.find((r) => r.id === 'CL-011')!;
-    if (cl.format !== 'cl') throw new Error('CL-011 is a Creative Look');
-    const punchier = { ...cl, name: 'CL-011-Neutral Even Natural', settings: { ...cl.settings, contrast: 9 } };
-    const name = await computedRecipeName(punchier);
-    expect(name).not.toBe(cl.name);
-    expect(name).toBe(nameFor(punchier, seed.filter((r) => r.id !== cl.id)));
-    expect(name.startsWith('CL-011-')).toBe(true);
+  it('never names a recipe among the withdrawn Picture Profiles the content plane still stores', async () => {
+    /* Production holds the 36 withdrawn rows, unpublished, settings intact, in
+       either id shape. Here each carries a seed Picture Profile's settings and
+       words under its own number (PP-003 as PP-055, …): counted as holders,
+       they would push every one of those seed recipes off its seed name. */
+    const pps = seed.filter((r) => r.format === 'pp');
+    const start = pps.findIndex((r) => r.id === 'PP-055');
+    const withdrawn = RETIRED_RECIPE_IDS.map((id, i) => {
+      const like = pps[(start + i) % pps.length];
+      const words = parseRecipeName(like.name)!.words.join(' ');
+      return { ...like, id: i % 2 ? `SCL-${id}` : id, slug: id.toLowerCase(), name: `${id}-${words}`, published: false };
+    });
+    expect(withdrawn[0]).toMatchObject({ id: 'PP-003', name: `PP-003-${byId.get('PP-055')!.name.slice(7)}` });
+    await store([...seed, ...withdrawn]);
+    for (const r of seed) {
+      await expect(computedRecipeName(r), r.id).resolves.toMatchObject({ ok: true, name: r.name });
+    }
   });
 
-  it('names a new recipe after every stored one, by its own number', async () => {
+  it('renames a recipe when a dial moves, from the settings alone, into words no other row holds', async () => {
     await stored();
-    const fresh = { ...seed.find((r) => r.id === 'CL-011')!, id: 'CL-046', slug: 'cl-046', name: 'CL-046' };
-    await expect(computedRecipeName(fresh)).resolves.toBe(nameFor(fresh, seed));
+    const cl = byId.get('CL-011')!;
+    if (cl.format !== 'cl') throw new Error('CL-011 is a Creative Look');
+    const punchier = { ...cl, settings: { ...cl.settings, contrast: 9 } };
+    const named = await computedRecipeName(punchier);
+    if (!named.ok) throw new Error('CL-011 at Contrast +9 has a free name');
+    expect(named.name).not.toBe(cl.name);
+    expect(named.name.startsWith('CL-011-')).toBe(true);
+    expect(othersHolding(seed, cl.id, named.name)).toEqual([]);
+  });
+
+  it('holds every other row to its stored words: an edit never takes a name another row keeps', async () => {
+    /* The whole-library assignment, run again for one save, handed the edited
+       recipe words a later row held and moved that row aside — a move never
+       written, so two stored rows held the same words (PP-082 as PP-002 took
+       CL-020's). */
+    await stored();
+    const edits = [
+      ['PP-082', 'PP-002'],
+      ['PP-001', 'PP-055'],
+    ] as const;
+    for (const [id, like] of edits) {
+      const edited = { ...byId.get(like)!, id, slug: byId.get(id)!.slug, name: byId.get(id)!.name };
+      const named = await computedRecipeName(edited);
+      if (!named.ok) {
+        expect(named.heldBy.length, id).toBeGreaterThan(0);
+        continue;
+      }
+      expect(named.name.startsWith(`${id}-`), id).toBe(true);
+      const holders = othersHolding(seed, id, named.name);
+      if (named.tiedWith) {
+        /* A copy of another recipe's settings renders its palette: the one
+           tie R2 allows, and only with rows that read alike. */
+        expect(holders, id).toContain(named.tiedWith);
+        for (const h of holders) expect(readsAlike(edited, byId.get(h)!), `${id} and ${h}`).toBe(true);
+      } else {
+        expect(holders, `${id} as ${like}: ${named.name}`).toEqual([]);
+      }
+    }
+  });
+
+  it('refuses the save when every honest name is held by rows that look different', async () => {
+    /* Every option of PP-055's own reading, held by a stored row under another
+       number and with other settings: nothing honest is left. */
+    const like = byId.get('PP-055')!;
+    const other = byId.get('CL-011')!;
+    const held = optionsOf(readName(like)).map((o, i) => ({
+      ...other,
+      id: `CL-${900 + i}`,
+      slug: `cl-${900 + i}`,
+      name: `CL-${900 + i}-${o.words.join(' ')}`,
+    }));
+    await store(held);
+    const named = await computedRecipeName({ ...like, id: 'PP-899', slug: 'pp-899' });
+    expect(named).toEqual({ ok: false, heldBy: held.map((r) => r.id) });
+  });
+
+  it('names a new recipe after every stored one, by its own number, in words no row holds', async () => {
+    await stored();
+    const cl = byId.get('CL-011')!;
+    if (cl.format !== 'cl') throw new Error('CL-011 is a Creative Look');
+    const fresh = { ...cl, id: 'CL-046', slug: 'cl-046', name: 'CL-046', settings: { ...cl.settings, shadows: -6 } };
+    const named = await computedRecipeName(fresh);
+    expect(named).toMatchObject({ ok: true, tiedWith: null });
+    if (named.ok) expect(othersHolding(seed, fresh.id, named.name)).toEqual([]);
+  });
+
+  it('shares words only with a stored recipe that reads alike, and says which', async () => {
+    /* A copy of CL-011 renders CL-011's nine swatches: no word tells them
+       apart, so the tie is the truth and is reported, not refused. */
+    await stored();
+    const copy = { ...byId.get('CL-011')!, id: 'CL-046', slug: 'cl-046', name: 'CL-046' };
+    await expect(computedRecipeName(copy)).resolves.toEqual({
+      ok: true,
+      name: `CL-046-${byId.get('CL-011')!.name.slice(7)}`,
+      tiedWith: 'CL-011',
+    });
   });
 });
 

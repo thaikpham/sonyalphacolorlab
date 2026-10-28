@@ -696,6 +696,7 @@
       "notFound": "Công thức này không còn nữa.",
       "formatRequired": "Hãy chọn Picture Profile hoặc Creative Look trước.",
       "invalidRecipe": "Một số giá trị nằm ngoài dải máy ảnh cho phép. Danh sách bên dưới nêu rõ từng giá trị.",
+      "nameTaken": "Mọi tên mà các thông số này có thể mang đúng nghĩa đều đã thuộc về một công thức khác trông khác hẳn. Chưa có gì thay đổi — hãy chỉnh một thông số để phân biệt công thức này.",
       "idSpaceExhausted": "Đã dùng hết 999 mã cho định dạng này. Chưa có gì được tạo.",
       "staleEdit": "Công thức này vừa được lưu ở nơi khác. Chưa có gì thay đổi — mở lại công thức để tải bản mới nhất rồi sửa tiếp.",
       "mfaRequired": "Phiên này cần nhập lại mã authenticator. Chưa có gì thay đổi — hãy tải lại trang để hoàn tất đăng nhập."

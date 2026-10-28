@@ -498,19 +498,24 @@ type Option = { readonly words: Words; readonly replaced: NameResult['replaced']
 export const comboOf = (w: readonly string[]) => [w[0], ...[...w.slice(1)].sort()].join(' ');
 
 /**
- * What a recipe may be called, in preference order: its own three words,
- * then each honest alternative in its least salient slot — tonality or
- * colour, never the temperature — most salient first, then the same in the
- * other slot. Every option is honest: each word is one of the recipe's own
+ * What a recipe may be called, in two tiers.
+ *
+ * The first: its own three words, then each honest alternative in its least
+ * salient slot — tonality or colour, never the temperature — most salient
+ * first. The second, a last resort the naming reaches only when no option of
+ * the first is free or can be freed: the same alternatives in the other
+ * slot, and only while that slot's reading is below the strong cut — a strong
+ * reading is what the recipe looks like, and a tie-break never drops it for a
+ * weaker one. Every option is honest: each word is one of the recipe's own
  * readings.
  */
-function optionsOf(reading: NameReading): Option[] {
+export function optionTiers(reading: NameReading): readonly [Option[], Option[]] {
   const words = reading.words;
   const [tonality, third] = reading.slots;
-  const slots: (1 | 2)[] = third.salience <= tonality.salience ? [2, 1] : [1, 2];
-  const out: Option[] = [{ words, replaced: null }];
+  const [least, other]: [1 | 2, 1 | 2] = third.salience <= tonality.salience ? [2, 1] : [1, 2];
   const seen = new Set([comboOf(words)]);
-  for (const slot of slots) {
+  const swaps = (slot: 1 | 2): Option[] => {
+    const out: Option[] = [];
     for (const alt of reading.alternatives) {
       const next = [...words] as [string, string, string];
       next[slot] = alt.word;
@@ -518,9 +523,16 @@ function optionsOf(reading: NameReading): Option[] {
       seen.add(comboOf(next));
       out.push({ words: next, replaced: { slot, word: alt.word } });
     }
-  }
-  return out;
+    return out;
+  };
+  const primary = [{ words, replaced: null }, ...swaps(least)];
+  const otherReading = other === 1 ? tonality : third;
+  const secondary = isStrong(otherReading.salience) ? [] : swaps(other);
+  return [primary, secondary];
 }
+
+/** Every option, in preference order: the first tier, then the last resort. */
+export const optionsOf = (reading: NameReading): Option[] => optionTiers(reading).flat();
 
 /** Picture Profile first, then by number: the order recipes are named in. */
 export function namingOrder<T extends NameInput>(recipes: readonly T[]): T[] {
@@ -535,63 +547,75 @@ export function namingOrder<T extends NameInput>(recipes: readonly T[]): T[] {
  *
  * Each recipe takes its first option no earlier recipe holds — its own three
  * words, or, when they are held in any order, the most salient honest
- * alternative in its least salient slot (`optionsOf`). When every option is
- * held, an earlier holder moves to an option of its own that is free, or that
- * it can free the same way — the shortest honest re-route, searched in the
- * later recipe's order of preference — so a recipe whose readings allow only
- * a few names is not left without one because an earlier recipe with more to
- * choose from took them. With no re-route either, the recipe keeps its own
- * words and names the recipe it ties with: no word this vocabulary can say
- * tells their palettes apart.
+ * alternative in its least salient slot (`optionTiers`). When every such
+ * option is held, an earlier holder moves to an option of its own that is
+ * free, or that it can free the same way — the shortest honest re-route,
+ * searched in the later recipe's order of preference — so a recipe whose
+ * readings allow only a few names is not left without one because an earlier
+ * recipe with more to choose from took them. Only when no option of the first
+ * tier can be had, free or freed, does any recipe in the search reach for its
+ * last resort, the other slot (never a strong reading). With no re-route
+ * either, the recipe keeps its own words and names the recipe it ties with:
+ * no word this vocabulary can say tells their palettes apart.
  */
 export function readNames(recipes: readonly NameInput[]): NameResult[] {
   const order = namingOrder(recipes);
   const readings = order.map(readName);
-  const options = readings.map(optionsOf);
-  const choice: number[] = order.map(() => -1);
+  const tiers = readings.map(optionTiers);
+  const choice: (Option | null)[] = order.map(() => null);
   const yieldedTo: (string | null)[] = order.map(() => null);
   /** Combination → index of the recipe holding it. */
   const holder = new Map<string, number>();
 
-  const take = (i: number, k: number) => {
-    choice[i] = k;
-    holder.set(comboOf(options[i][k].words), i);
+  const take = (i: number, option: Option) => {
+    choice[i] = option;
+    holder.set(comboOf(option.words), i);
   };
 
-  /** Find recipe `i` a free option, re-routing holders where needed; `visited` bounds the search. */
-  const place = (i: number, visited: Set<string>): boolean => {
-    for (const [k, option] of options[i].entries()) {
-      const combo = comboOf(option.words);
-      if (!holder.has(combo) && !visited.has(combo)) {
-        take(i, k);
-        return true;
+  /**
+   * Find recipe `i` a free option, re-routing holders where needed; `visited`
+   * bounds the search. Each tier is tried whole — free, then freed — before
+   * the next, and `lastResort` decides whether the second tier is open to
+   * anyone in this search, `i` and every holder it moves alike.
+   */
+  const place = (i: number, visited: Set<string>, lastResort: boolean): boolean => {
+    for (const list of lastResort ? tiers[i] : [tiers[i][0]]) {
+      for (const option of list) {
+        const combo = comboOf(option.words);
+        if (!holder.has(combo) && !visited.has(combo)) {
+          take(i, option);
+          return true;
+        }
       }
-    }
-    for (const [k, option] of options[i].entries()) {
-      const combo = comboOf(option.words);
-      if (visited.has(combo)) continue;
-      visited.add(combo);
-      const h = holder.get(combo);
-      if (h === undefined || h === i) continue;
-      if (place(h, visited)) {
-        yieldedTo[h] = order[i].id;
-        take(i, k);
-        return true;
+      for (const option of list) {
+        const combo = comboOf(option.words);
+        if (visited.has(combo)) continue;
+        visited.add(combo);
+        const h = holder.get(combo);
+        if (h === undefined || h === i) continue;
+        if (place(h, visited, lastResort)) {
+          yieldedTo[h] = order[i].id;
+          take(i, option);
+          return true;
+        }
       }
     }
     return false;
   };
 
   const unplaced = new Set<number>();
-  for (let i = 0; i < order.length; i += 1) if (!place(i, new Set())) unplaced.add(i);
+  for (let i = 0; i < order.length; i += 1) {
+    if (!place(i, new Set(), false) && !place(i, new Set(), true)) unplaced.add(i);
+  }
 
   return order.map((r, i) => {
-    if (unplaced.has(i)) {
+    const chosen = choice[i];
+    if (unplaced.has(i) || !chosen) {
       const words = readings[i].words;
       const tie = holder.get(comboOf(words))!;
       return { id: r.id, words, reading: readings[i], replaced: null, yieldedTo: null, tiedWith: order[tie].id };
     }
-    const { words, replaced } = options[i][choice[i]];
+    const { words, replaced } = chosen;
     return { id: r.id, words, reading: readings[i], replaced, yieldedTo: yieldedTo[i], tiedWith: null };
   });
 }
@@ -614,11 +638,54 @@ export function namesFor(recipes: readonly NameInput[]): Map<string, string> {
 }
 
 /**
- * One recipe's name among `catalogue` (the recipes it must not read the same
- * as; itself by default). The seed names every recipe with the whole seed;
- * /admin names a recipe with the published catalogue.
+ * One recipe's name among `catalogue`, as the seed names it: the whole
+ * assignment run again with this recipe in it (itself alone by default).
+ * `seed:emit` names every recipe with the whole seed. /admin does not use
+ * this — it writes one row and cannot move the others — but `nameAmong`,
+ * naming among the stored rows minus the withdrawn ids, with the other rows'
+ * stored names held fixed.
  */
 export function nameFor(recipe: NameInput, catalogue: readonly NameInput[] = [recipe]): string {
   const all = [...catalogue.filter((r) => r.id !== recipe.id), recipe];
   return namesFor(all).get(recipe.id)!;
+}
+
+/** A stored recipe as /admin sees it: what it reads, and the name it holds. */
+export type StoredName = NameInput & { readonly name: string };
+
+/** What `nameAmong` answers. */
+export type NameAmong =
+  | { readonly ok: true; readonly name: string; readonly tiedWith: string | null }
+  | { readonly ok: false; readonly heldBy: readonly string[] };
+
+/**
+ * One recipe's name among rows that are already named and stay so — what
+ * /admin writes when it saves one row and cannot move any other. Each other
+ * row holds the three words of its stored name, fixed; a name that does not
+ * parse holds none. The recipe takes its first option (`optionsOf`) that no
+ * other row holds. With none free it keeps its own words only when the row
+ * holding them reads alike (`readsAlike`) — the truth, reported as a tie;
+ * otherwise there is no honest name left for these settings, and the save is
+ * refused with the rows that hold them. Never displaces a stored holder.
+ */
+export function nameAmong(recipe: NameInput, stored: readonly StoredName[]): NameAmong {
+  const self = recipeIdKey(recipe.id);
+  const holders = new Map<string, StoredName>();
+  for (const row of stored) {
+    if (recipeIdKey(row.id) === self) continue;
+    const words = parseRecipeName(row.name)?.words;
+    if (!words) continue;
+    const combo = comboOf(words);
+    if (!holders.has(combo)) holders.set(combo, row);
+  }
+  const reading = readName(recipe);
+  const options = optionsOf(reading);
+  const named = (words: readonly string[]) => `${codeOf(recipe)}-${words.join(' ')}`;
+  for (const option of options) {
+    if (!holders.has(comboOf(option.words))) return { ok: true, name: named(option.words), tiedWith: null };
+  }
+  const own = holders.get(comboOf(reading.words))!;
+  if (readsAlike(recipe, own)) return { ok: true, name: named(reading.words), tiedWith: own.id };
+  const heldBy = [...new Set(options.map((o) => holders.get(comboOf(o.words))!.id))];
+  return { ok: false, heldBy };
 }

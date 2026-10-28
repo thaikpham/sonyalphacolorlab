@@ -42,7 +42,7 @@ export const EVAL_QUERIES: readonly EvalQuery[] = [
      only published recipe holding all three (data/recipes.seed.json). The
      names it carried before 2026-10-28 are not here: the owner dropped them,
      and search does not index them (R4 of the names design). */
-  { q: 'PP-001-Neutral Soft Rich', locale: 'vi', type: 'exact', relevant: ['PP-001'], top1: 'PP-001' },
+  { q: 'PP-001-Neutral Rosy Rich', locale: 'vi', type: 'exact', relevant: ['PP-001'], top1: 'PP-001' },
   { q: 'Warm Deep Muted', locale: 'en', type: 'exact', relevant: ['CL-036'], top1: 'CL-036' },
   { q: 'SCL-CL-017', locale: 'vi', type: 'exact', relevant: ['CL-017'], top1: 'CL-017' },
   { q: 'scl pp 009', locale: 'vi', type: 'exact', relevant: ['PP-009'], top1: 'PP-009' },
@@ -55,7 +55,7 @@ export const EVAL_QUERIES: readonly EvalQuery[] = [
   { q: 'Knee', locale: 'en', type: 'exact', relevant: ['glossary-pp-knee'], top1: 'glossary-pp-knee' },
   { q: 'V/H Balance', locale: 'vi', type: 'exact', relevant: ['glossary-pp-detail-vhBalance'], top1: 'glossary-pp-detail-vhBalance' },
   { q: 'ISO Auto Min SS', locale: 'vi', type: 'exact', relevant: ['iso-auto-min-ss'], top1: 'iso-auto-min-ss' },
-  // The code a recipe's name starts with (`PP-009-Warm Deep Dark`).
+  // The code a recipe's name starts with (`PP-009-…`).
   { q: 'PP-009', locale: 'vi', type: 'exact', relevant: ['PP-009'], top1: 'PP-009' },
   { q: 'cl 013', locale: 'en', type: 'exact', relevant: ['CL-013'], top1: 'CL-013' },
 
@@ -72,7 +72,7 @@ export const EVAL_QUERIES: readonly EvalQuery[] = [
   { q: 'goldn matte', locale: 'vi', type: 'typo', relevant: ['CL-013', 'CL-014'] },
   { q: 'sepai soft', locale: 'en', type: 'typo', relevant: ['CL-018'] },
   { q: 'punchy vivd', locale: 'en', type: 'typo', relevant: ['CL-006'] },
-  { q: 'rosy deeep', locale: 'vi', type: 'typo', relevant: ['PP-027'] },
+  { q: 'rosy deeep', locale: 'vi', type: 'typo', relevant: ['PP-027', 'PP-045'] },
 
   // --- Vietnamese with and without diacritics ---------------------------
   { q: 'lấy nét bằng ngón tay cái', locale: 'vi', type: 'vi-accent', relevant: ['back-button-af'], top1: 'back-button-af' },

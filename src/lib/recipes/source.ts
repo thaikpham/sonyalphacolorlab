@@ -129,7 +129,7 @@ function toView(
  * without the search losing a word (D9).
  *
  * And to its code as a slug (`pp-009`), never to an earlier one: the name is
- * read off the settings now (`PP-009-Warm Deep Muted`) and the owner dropped
+ * read off the settings now (`nameFor`) and the owner dropped
  * every name a recipe had before, so "mojave sun" finds nothing (R4 of the
  * 2026-10-28 names design). An old link still reaches the recipe; that is
  * `resolveRecipeSlug`'s job, not search's.

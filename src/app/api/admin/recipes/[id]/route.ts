@@ -124,7 +124,16 @@ export async function PATCH(request: Request, { params }: Params) {
   let version: string | null;
   let recipe: typeof write.recipe;
   try {
-    recipe = { ...write.recipe, name: await computedRecipeName(write.recipe) };
+    const named = await computedRecipeName(write.recipe);
+    /* Nothing is written when every honest name for these settings is held
+       by a recipe that looks different — never a second row with its words. */
+    if (!named.ok) {
+      return NextResponse.json(
+        { error: 'nameTaken', issues: [`name: every honest name for these settings is held (${named.heldBy.join(', ')})`] },
+        { status: 409 },
+      );
+    }
+    recipe = { ...write.recipe, name: named.name };
     version = await updateRecipeRecord(recipe, expected);
   } catch (err) {
     console.error('[admin/recipes] update failed:', err);

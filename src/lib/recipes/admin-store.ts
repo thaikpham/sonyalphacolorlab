@@ -2,7 +2,9 @@ import 'server-only';
 import { contentAdmin } from '@/lib/supabase/server';
 import { recipeSchema, type Recipe } from '../camera/schema';
 import { fromRow, RECIPE_COLUMNS, toRow, type RecipeRow } from './row';
-import { nameFor } from './names';
+import { nameAmong, type NameAmong } from './names';
+import { recipeIdKey } from './recipe-id';
+import { RETIRED_RECIPE_IDS } from './retired';
 import type { RecipeRecord, UnreadableRecipe } from './admin-types';
 import {
   devGetRecipe,
@@ -191,24 +193,36 @@ export function slugifyRecipe(input: string): string {
     .replace(/-+$/g, '');
 }
 
+/** The withdrawn Picture Profiles, in either id shape: stored, unpublished, never named among. */
+const WITHDRAWN = new Set(RETIRED_RECIPE_IDS.map(recipeIdKey));
+
 /**
- * The name /admin writes for a recipe: `nameFor` computed from the recipe's
- * own validated settings (R3 of the 2026-10-28 names design). Nobody types a
+ * The name /admin writes for a recipe: computed from the recipe's own
+ * validated settings (R3 of the 2026-10-28 names design). Nobody types a
  * name, so nothing in a request body can set one; a create and every save
  * recompute it.
  *
- * Named among every other readable recipe in the store, drafts included —
- * the set `seed:emit` and `library:sync` name the library across. Against
- * the published rows alone, saving any of 34 seed recipes without changing a
- * dial would rename it, because a draft that held its words would no longer
- * be there to push it aside. The recipe itself is left out and placed by its
- * number, as the seed places it.
+ * Named among the stored rows minus the withdrawn ids (`RETIRED_RECIPE_IDS`),
+ * drafts included, with every other row's stored name held fixed
+ * (`nameAmong`): a save writes one row, so it may not take words another row
+ * holds and leave that row holding them too. The withdrawn Picture Profiles
+ * are left out because they are unpublished but still stored with their
+ * settings, and `seed:emit` and `library:sync` never name against them — with
+ * them in, re-saving a seed recipe with no dial changed could rename it away
+ * from the name the next `library:sync` writes back. With the store equal to
+ * the seed, an unchanged recipe keeps its seed name.
+ *
+ * `ok: false` when every honest name for these settings is held by a row
+ * that does not read alike: the save is refused, never given a duplicate.
  */
-export async function computedRecipeName(recipe: Recipe): Promise<string> {
+export async function computedRecipeName(recipe: Recipe): Promise<NameAmong> {
   const { records } = await listRecipeRows();
-  return nameFor(
+  const self = recipeIdKey(recipe.id);
+  return nameAmong(
     recipe,
-    records.map((r) => r.recipe).filter((r) => r.id !== recipe.id),
+    records
+      .map((r) => r.recipe)
+      .filter((r) => recipeIdKey(r.id) !== self && !WITHDRAWN.has(recipeIdKey(r.id))),
   );
 }
 

@@ -696,6 +696,7 @@
       "notFound": "That recipe no longer exists.",
       "formatRequired": "Pick Picture Profile or Creative Look first.",
       "invalidRecipe": "Some values are outside what the camera accepts. The list below names each one.",
+      "nameTaken": "Every name these settings can honestly carry already belongs to another recipe that looks different. Nothing was changed — move a dial to tell this one apart.",
       "idSpaceExhausted": "All 999 ids for this format are used. Nothing was created.",
       "staleEdit": "This recipe was saved somewhere else since you opened it. Nothing was changed — reopen it to load the latest version, then edit again.",
       "mfaRequired": "This session needs your authenticator code again. Nothing was changed — reload the page to finish signing in."

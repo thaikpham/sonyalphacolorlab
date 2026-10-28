@@ -24,10 +24,10 @@ that told them apart pushed the recipe page to 6.2109 screens, over
 
 | # | Question | Decision |
 |---|---|---|
-| N1 | Who writes a name | Nobody. `nameFor(recipe, catalogue)` in `src/lib/recipes/names.ts` returns `<PP\|CL>-<NNN>-<Word> <Word> <Word>`; the number is the id's. `RECIPE_NAMES` and every hand-written name in `src/lib/originals/pp.ts` and `cl.ts` are deleted. `seed:emit` sets `name = nameFor(recipe, seed)`; `/admin` sets it on every create and save (R3). `names.test.ts` pins every seed name to it. |
+| N1 | Who writes a name | Nobody. `nameFor(recipe, catalogue)` in `src/lib/recipes/names.ts` returns `<PP\|CL>-<NNN>-<Word> <Word> <Word>`; the number is the id's. `RECIPE_NAMES` and every hand-written name in `src/lib/originals/pp.ts` and `cl.ts` are deleted. `seed:emit` sets `name = nameFor(recipe, seed)`; `/admin` sets it on every create and save with `nameAmong` (R3). `names.test.ts` pins every seed name to it. |
 | R1 | Where the words come from | The rendered palette: `paletteFor(recipe, { light: designedLightFor(id) })`, which already combines the White Balance, every dial, the gamma and colour mode, and the Creative Look base. Each word is a change from a reference palette of the same format, graded as a fraction of the largest change the palette can make in that direction for that format, with the 55% strong cut of `effects.ts`. No magnitude lives in `names.ts`. |
 | R2 | How many words, and when two recipes clash | Exactly three, always. A clash replaces the later recipe's least salient slot with another honest reading of its own (below); the words are unique across the 90 seed recipes except where two recipes render the same palette with the same detail. |
-| R3 | /admin | The name is computed on the server from the validated settings, never read from the body (`computedRecipeName` in `admin-store.ts`); the field is a read-only display with field guidance. It is named among every other readable recipe in the store, drafts included — the set the seed is named across; among the published rows alone, saving 34 of the 90 seed recipes with no dial changed would rename them. The slug is `slugFor(id)` at creation and never changes. |
+| R3 | /admin | The name is computed on the server from the validated settings, never read from the body (`computedRecipeName` in `admin-store.ts`); the field is a read-only display with field guidance. A save writes one row, so it is named by `nameAmong`: among the stored rows minus the withdrawn ids (`RETIRED_RECIPE_IDS`), drafts included, with every other row's stored name held fixed. It takes its first option no other row holds, keeps its own words only beside a row that `readsAlike`, and otherwise the save is refused (`nameTaken`, 409) — never a second row with the same words, and never a holder moved by a write that is not saved. The withdrawn Picture Profiles are unpublished but still stored with their settings, and `seed:emit` and `library:sync` never name against them; counted, they would rename an unchanged seed recipe on save and `library:sync` would rename it back. With the store equal to the seed, an unchanged recipe keeps its seed name; among the published rows alone it would not, because a draft that holds words would no longer be there. The slug is `slugFor(id)` at creation and never changes. |
 | R5 | The gate | `npm run test:screens` passes at its existing caps, `e2e/first-screen.spec.ts` included; no budget is raised. |
 | R4 | Search | Indexes the current name, the code (and its `SCL-` id alias), the code slug and the taxonomy terms — never an earlier slug or name. Redirects and `slugAliases` for community rows are unchanged. |
 | N4 | What the tests pin | Every seed name equals `nameFor`; three words; the vocabulary is exactly what the reading can produce (swept over the range ends) and none is a situation synonym, a Look code or label (see "Three Look labels"), a place, a stock, a brand or a person; every word is supported by its own reading; the words are unique but for recipes that `readsAlike`; the temperature word agrees with the palette lean; the browse-tone agreement of task A. |
@@ -94,10 +94,13 @@ Plain, Gentle); Creative Look the larger of Sharpness and Clarity from the minim
 
 Recipes are named Picture Profile first, then by number. Three words clash when an
 earlier recipe holds the same three in any order ("Neutral Deep Punchy" and "Neutral
-Punchy Deep" read as one). A recipe's options, in order: its own three words; then
-each honest alternative in its least salient slot (tonality or colour — never the
-temperature), most salient first; then the same in the other slot. Honest
-alternatives, each a reading of its own:
+Punchy Deep" read as one). A recipe's options come in two tiers (`optionTiers`). The
+first: its own three words, then each honest alternative in its least salient slot
+(tonality or colour — never the temperature), most salient first. The second, a last
+resort: the same alternatives in the other slot, offered only while that slot's
+reading is below the strong cut (55%) — a strong reading is what the recipe looks
+like, and a tie-break never drops it to keep a weaker one. Honest alternatives, each a
+reading of its own:
 
 | reading | words | salience |
 |---|---|---|
@@ -109,13 +112,22 @@ alternatives, each a reading of its own:
 The tint needs the shift: the amber and blue hues are not opposite magenta, so a
 strong amber–blue cast alone projects onto that axis.
 
-A recipe takes its first option nobody holds. When every option is held, an earlier
-holder moves to a free option of its own, or one it can free the same way — the
-shortest honest re-route, searched in the later recipe's order — so a recipe whose
-readings allow few names is not left without one because an earlier recipe with more
-to choose from took them. With no re-route either, the recipe keeps its own words and
-the result names the recipe it ties with; `seed:emit` fails unless the two `readsAlike`
-(the same nine swatches and the same detail reading).
+A recipe takes its first option nobody holds. When every option of the first tier is
+held, an earlier holder moves to a free option of its own, or one it can free the same
+way — the shortest honest re-route, searched in the later recipe's order — so a recipe
+whose readings allow few names is not left without one because an earlier recipe with
+more to choose from took them. Every first-tier option, free or freed, is tried before
+any recipe in the search reaches for its second tier; in the seed that happens once
+(CL-029, which keeps Deep at 0.19 and gives up Rich at 0.40, below the cut). With no
+re-route either, the recipe keeps its own words and the result names the recipe it ties
+with; `seed:emit` fails unless the two `readsAlike` (the same nine swatches and the
+same detail reading). `names.test.ts` pins it on the seed: a slot is replaced only when
+the recipe's own words are held or it yielded them, and no replaced slot is strong
+while the kept one is weaker.
+
+/admin names one recipe at a time and cannot move another row, so it does not re-run
+this assignment: `nameAmong` takes the first option, in the same order, that no other
+stored row's name holds (R3).
 
 The one tie in the seed: CL-033 and CL-034, Film at every default under Daylight and
 under AWB. Neither publishes a Kelvin, so both palettes are the same nine swatches, and

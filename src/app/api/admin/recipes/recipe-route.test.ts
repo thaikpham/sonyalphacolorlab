@@ -35,7 +35,11 @@ const calls = {
   unpublish: vi.fn(async (_id: string): Promise<string | null> => V2),
   nextId: vi.fn(async (_format: string) => 'PP-900'),
   /** The store names a recipe from its settings; the spy records what it was asked to name. */
-  name: vi.fn(async (recipe: { id: string; format: string }) => `${recipe.format.toUpperCase()}-${recipe.id.slice(-3)}-Warm Deep Rich`),
+  name: vi.fn(
+    async (recipe: { id: string; format: string }): Promise<
+      { ok: true; name: string; tiedWith: string | null } | { ok: false; heldBy: string[] }
+    > => ({ ok: true, name: `${recipe.format.toUpperCase()}-${recipe.id.slice(-3)}-Warm Deep Rich`, tiedWith: null }),
+  ),
 };
 
 vi.mock('@/lib/supabase/server', () => ({
@@ -137,6 +141,16 @@ describe('POST /api/admin/recipes', () => {
     expect(calls.insert).not.toHaveBeenCalled();
   });
 
+  it('writes nothing, and says why, when every honest name is held by a recipe that looks different', async () => {
+    calls.name.mockResolvedValueOnce({ ok: false, heldBy: ['PP-002', 'CL-011'] });
+    const res = await list.POST(json('POST', PP));
+    expect(res.status).toBe(409);
+    const body = (await res.json()) as { error: string; issues: string[] };
+    expect(body.error).toBe('nameTaken');
+    expect(body.issues.join(' ')).toMatch(/PP-002, CL-011/);
+    expect(calls.insert).not.toHaveBeenCalled();
+  });
+
   it('answers 409 idSpaceExhausted when the format has no ids left', async () => {
     calls.nextId.mockRejectedValueOnce(new Error('idSpaceExhausted'));
     const res = await list.POST(json('POST', PP));
@@ -206,6 +220,14 @@ describe('PATCH /api/admin/recipes/[id]', () => {
     calls.name.mockRejectedValueOnce(new Error('listFailed'));
     const res = await one.PATCH(json('PATCH', { ...PP, expectedUpdatedAt: V1 }), params(ID));
     expect(res.status).toBe(502);
+    expect(calls.update).not.toHaveBeenCalled();
+  });
+
+  it('writes nothing when every honest name for the saved settings is held by a recipe that looks different', async () => {
+    calls.name.mockResolvedValueOnce({ ok: false, heldBy: ['PP-002'] });
+    const res = await one.PATCH(json('PATCH', { ...PP, expectedUpdatedAt: V1 }), params(ID));
+    expect(res.status).toBe(409);
+    expect(((await res.json()) as { error: string }).error).toBe('nameTaken');
     expect(calls.update).not.toHaveBeenCalled();
   });
 
