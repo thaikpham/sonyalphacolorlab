@@ -20,8 +20,7 @@
 
 import { adminClient } from './lib/db';
 import { requireTarget } from './supabase/args';
-import { ARTICLES } from '../src/lib/lab/articles';
-import { PILOT_DRAFTS } from '../src/lib/lab/pilot-drafts';
+import { labCandidates } from './lib/lab-candidates';
 
 /**
  * `--with-pilot-drafts` also inserts the nine pilot pages from
@@ -29,31 +28,30 @@ import { PILOT_DRAFTS } from '../src/lib/lab/pilot-drafts';
  * "Bản nháp" on `/blog` and `/learn` and reviews in each page's own editor
  * (`/learn/<id>/edit`). Without the flag the script does exactly what it
  * always did. `--dry-run` prints the plan and writes nothing.
+ *
+ * `--pack <name>` also inserts a content pack (`src/lib/lab/packs/<name>.ts`,
+ * written by the blog-content skill), as drafts, by the same insert-only path:
+ * a page already in the table is skipped, never overwritten. Run it with
+ * `--dry-run` first. An unknown pack stops the script before it connects.
  */
 async function main() {
   const { args, target } = requireTarget(process.argv.slice(2), [
     '--with-pilot-drafts',
+    '--pack',
     '--dry-run',
   ]);
   if (target !== 'content') {
     throw new Error('This script seeds content tables. Pass --target content.');
   }
-  const withPilots = args.withPilotDrafts;
   const dryRun = args.dryRun;
+  /* Before the client: an unknown pack fails without touching the network. */
+  const candidates = labCandidates({ withPilotDrafts: args.withPilotDrafts, pack: args.pack });
   const db = adminClient(target);
 
   const { data: existing, error: readError } = await db.from('lab_articles').select('id');
   if (readError) throw new Error(`read lab_articles: ${readError.message}`);
 
   const have = new Set((existing ?? []).map((r) => r.id as string));
-  const candidates = [
-    /* Published, because these three are already live on the site. A draft
-       here would take them off it, which is the opposite of a seed. */
-    ...ARTICLES.map((a) => ({ article: a, status: 'published' as const })),
-    /* Drafts, always: pilot content is for the owner to review and publish
-       by hand, after re-checking every source and filling every marker. */
-    ...(withPilots ? PILOT_DRAFTS.map((a) => ({ article: a, status: 'draft' as const })) : []),
-  ];
   const missing = candidates.filter((c) => !have.has(c.article.id));
 
   if (missing.length === 0) {
