@@ -13,13 +13,19 @@ import { TweakPanel } from '@/components/tweak-panel';
 import { WbShiftPlane } from '@/components/wb-shift-plane';
 import { FormattedWb, WbTable } from '@/components/wb-table';
 import { MyCameraWarning } from '@/components/my-camera-warning';
+import { MoreForSituation } from '@/components/more-for-situation';
 import { Link, permanentRedirect, redirect } from '@/i18n/navigation';
 import { routing, type Locale } from '@/i18n/routing';
 import { accentCss } from '@/lib/camera/color';
 import { CREATIVE_LOOKS } from '@/lib/camera/constants';
 import { getSonyCameras } from '@/lib/cameras/data';
-import { cameraOptions, cameraWarnings } from '@/lib/cameras/my-camera';
-import { colorlabPath, moreForSituation } from '@/lib/recipes/browse';
+import { cameraOptions, cameraRows, cameraWarnings } from '@/lib/cameras/my-camera';
+import {
+  MORE_FOR_SITUATION_CANDIDATES,
+  MORE_FOR_SITUATION_LIMIT,
+  colorlabPath,
+  moreForSituation,
+} from '@/lib/recipes/browse';
 import { listRecipes, listSlugs } from '@/lib/recipes/source';
 import { isPermanentMove } from '@/lib/recipes/slug-aliases';
 import { resolveRecipeSlug } from '@/lib/recipes/slug-resolve';
@@ -110,7 +116,8 @@ export default async function RecipePage({
   /* What each camera choice has to say about this recipe, worked out here so
      the page stays prerendered: the cookie is read in the browser, by the
      island, never by this render (ADR 0006). */
-  const warnings = cameraWarnings(recipe, cameraOptions(products));
+  const options = cameraOptions(products);
+  const warnings = cameraWarnings(recipe, options);
 
   const accent = accentCss(recipe.accent);
   const title = recipeTitle(recipe.name);
@@ -129,8 +136,11 @@ export default async function RecipePage({
     { key: 'tone', href: `/colorlab?tone=${recipe.tone}`, label: tBrowse(`tones.${recipe.tone}`) },
   ];
   /* Other recipes for this one's primary situation, or nothing at all — the
-     row is left out rather than shown empty. */
-  const more = moreForSituation(recipe, catalogue);
+     row is left out rather than shown empty. Three rows' worth, so a camera
+     that hides some still fills six; which six each choice sees is worked
+     out here, and the island reads the cookie (ADR 0006). */
+  const more = moreForSituation(recipe, catalogue, MORE_FOR_SITUATION_CANDIDATES);
+  const rows = more ? cameraRows(more.recipes, options, MORE_FOR_SITUATION_LIMIT) : null;
   const situationLabels = Object.fromEntries(
     SITUATIONS.map((id) => [id, tBrowse(`situations.${id}`)]),
   ) as Record<SituationId, string>;
@@ -145,7 +155,7 @@ export default async function RecipePage({
       <SiteHeader />
       <RecipeStructuredData recipe={recipe} locale={locale} url={shareUrl} />
 
-      <main className="mx-auto w-full max-w-[160rem] flex-1 inset-safe pb-24">
+      <main className="mx-auto w-full max-w-[86rem] flex-1 inset-safe pb-24">
         {/* Top Back Navigation */}
         <nav className="py-6">
           {/* Back to the catalogue this recipe belongs to, not the launcher. */}
@@ -322,33 +332,32 @@ export default async function RecipePage({
           </div>
         </div>
 
-        {/* Other recipes for the primary situation, as the browse draws them.
+        {/* Other recipes for the primary situation, as the browse draws them,
+            narrowed in the browser to what the reader's camera can install.
             The heading is the way into that situation's page, so the row
             needs no "see all" line. An h2 over the cards' h3s. */}
-        {more ? (
-          <section aria-labelledby="more-for-situation" className="mt-16 flex flex-col gap-4">
-            <h2 id="more-for-situation" className="text-title-3 font-semibold text-ink">
-              <Link
-                href={colorlabPath(more.situation)}
-                className="inline-flex min-h-[var(--layout-touch-target)] items-center gap-2 transition-colors hover:text-accent-400"
-              >
-                {tBrowse('moreFor', { situation: situationLabels[more.situation] })}
-                <svg className="h-4 w-4 shrink-0 fill-current" viewBox="0 0 16 16" aria-hidden="true">
-                  <path d="M5.47 2.97a.75.75 0 0 1 1.06 0l4.5 4.5a.75.75 0 0 1 0 1.06l-4.5 4.5a.75.75 0 0 1-1.06-1.06L9.44 8 5.47 4.03a.75.75 0 0 1 0-1.06Z" />
-                </svg>
-              </Link>
-            </h2>
-            <ul className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
-              {more.recipes.map((r) => (
-                /* `grid` stretches the card to the row's height: a name
-                   that wraps to three lines no longer leaves its neighbour
-                   short. */
-                <li key={r.id} className="grid">
-                  <RecipeCard recipe={r} situationLabels={situationLabels} />
-                </li>
-              ))}
-            </ul>
-          </section>
+        {more && rows ? (
+          <MoreForSituation
+            rows={{ row: rows.row, byChoice: rows.byChoice }}
+            heading={
+              <h2 id="more-for-situation" className="text-title-3 font-semibold text-ink">
+                <Link
+                  href={colorlabPath(more.situation)}
+                  className="inline-flex min-h-[var(--layout-touch-target)] items-center gap-2 transition-colors hover:text-accent-400"
+                >
+                  {tBrowse('moreFor', { situation: situationLabels[more.situation] })}
+                  <svg className="h-4 w-4 shrink-0 fill-current" viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M5.47 2.97a.75.75 0 0 1 1.06 0l4.5 4.5a.75.75 0 0 1 0 1.06l-4.5 4.5a.75.75 0 0 1-1.06-1.06L9.44 8 5.47 4.03a.75.75 0 0 1 0-1.06Z" />
+                  </svg>
+                </Link>
+              </h2>
+            }
+            cards={Object.fromEntries(
+              more.recipes
+                .filter((r) => rows.shown.includes(r.id))
+                .map((r) => [r.id, <RecipeCard key={r.id} recipe={r} situationLabels={situationLabels} />]),
+            )}
+          />
         ) : null}
       </main>
     </div>

@@ -28,8 +28,12 @@ export type ModerationPatch = z.infer<typeof moderationPatchSchema>;
 
 /**
  * Every row of one recipe, hidden ones included — bounded, as every read is.
- * The submission routes cap a recipe at `MAX_PHOTOS_PER_RECIPE` counting hidden
- * rows too, so this ceiling is reached only by rows written outside the app.
+ * The submission routes cap a recipe at `MAX_PHOTOS_PER_RECIPE` *visible*
+ * photos, and a hidden row no longer holds a place, so enough
+ * submit-and-hide cycles can reach this ceiling from inside the app. The list
+ * then shows the newest 200 rows only, and `hiddenPhotoUrls` in
+ * `/api/proposals` fails closed for that recipe — every sample dropped —
+ * rather than miss a hidden row.
  */
 export const MODERATION_LIST_LIMIT = 200;
 

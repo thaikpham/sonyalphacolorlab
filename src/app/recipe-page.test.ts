@@ -15,6 +15,15 @@ const messages = ['en', 'vi'].map(
   (l) => JSON.parse(readFileSync(`messages/${l}.json`, 'utf8')) as { recipe: Record<string, string> },
 );
 
+describe('the page width', () => {
+  /* A reading layout (AGENTS.md "Design"): the browse runs full-bleed at
+     160rem, a recipe stays at 86rem, where full width hurts it. */
+  it('is 86rem, not the browse’s full bleed', () => {
+    expect(page).toContain('<main className="mx-auto w-full max-w-[86rem] flex-1 inset-safe pb-24">');
+    expect(page).not.toContain('max-w-[160rem]');
+  });
+});
+
 describe('the settings column', () => {
   /* At 1024px a 5/12 column with gap-12 is about 342px inside its padding.
      ParamRow's 9rem + 8.5rem tracks and two gaps left the effect track about
@@ -108,22 +117,28 @@ describe('the row of other recipes for the same situation', () => {
      nothing request-bound beside it, so the page stays prerendered. */
   it('reads the catalogue the browse reads, once, and stays static', () => {
     expect(code(page).match(/listRecipes\([^)]*\)/g)).toEqual(['listRecipes(locale)']);
-    expect(page).toContain('const more = moreForSituation(recipe, catalogue);');
+    expect(page).toContain('const more = moreForSituation(recipe, catalogue, MORE_FOR_SITUATION_CANDIDATES);');
     expect(page).toMatch(/export async function generateStaticParams\(\)/);
     expect(code(page)).not.toMatch(/\bcookies\(|\bheaders\(|searchParams|force-dynamic|connection\(/);
   });
 
   it('draws the browse’s card, under an h2 that links to the situation', () => {
-    expect(page).toMatch(/\{more \? \(\s*<section aria-labelledby="more-for-situation"/);
+    /* The section is the camera island's (more-for-situation.tsx), so a
+       camera that can install none of the row draws none; the heading and
+       the cards are rendered here, on the server. */
+    const island = readFileSync('src/components/more-for-situation.tsx', 'utf8');
+    expect(page).toMatch(/\{more && rows \? \(\s*<MoreForSituation/);
+    expect(island).toContain('<section aria-labelledby="more-for-situation" className="mt-16 flex flex-col gap-4">');
     expect(page).toMatch(/<h2 id="more-for-situation" className="text-title-3 font-semibold text-ink">\s*<Link\s+href=\{colorlabPath\(more\.situation\)\}/);
     expect(page).toContain("{tBrowse('moreFor', { situation: situationLabels[more.situation] })}");
-    expect(page).toContain('{more.recipes.map((r) => (');
-    expect(page).toMatch(/<li key=\{r\.id\} className="grid">\s*<RecipeCard recipe=\{r\} situationLabels=\{situationLabels\} \/>/);
-    expect(page).toContain('grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6');
+    expect(page).toContain('<RecipeCard key={r.id} recipe={r} situationLabels={situationLabels} />');
+    expect(island).toMatch(/<li key=\{id\} className="grid">\s*\{cards\[id\]\}/);
+    expect(island).toContain('grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6');
     /* No `see all` line and no helper copy: the heading is the link. */
-    const row = page.slice(page.indexOf('<section aria-labelledby="more-for-situation"'), page.indexOf('</section>', page.indexOf('more-for-situation')));
+    const row = page.slice(page.indexOf('<MoreForSituation'), page.indexOf('/>', page.indexOf('<RecipeCard key')));
     expect(row).not.toMatch(/<p\b/);
     expect(row.match(/<Link\b/g)).toHaveLength(1);
+    expect(code(island)).not.toMatch(/<p\b|<Link\b/);
   });
 
   /* An eager prefetch of every card is what once put thousands of requests a

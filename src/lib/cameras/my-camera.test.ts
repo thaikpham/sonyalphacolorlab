@@ -3,9 +3,12 @@ import { describe, expect, it } from 'vitest';
 import type { Recipe } from '@/lib/camera/schema';
 import camerasSeed from '../../../data/sony-cameras.seed.json';
 import { capabilitiesForModel } from './capabilities/installable';
+import { MORE_FOR_SITUATION_CANDIDATES, MORE_FOR_SITUATION_LIMIT, moreForSituation } from '@/lib/recipes/browse';
+import { taxonomyFor } from '@/lib/recipes/taxonomy-assign';
 import {
   OLDER_CAMERA_CHOICE,
   cameraOptions,
+  cameraRows,
   cameraShortName,
   cameraWarnings,
   installableFor,
@@ -162,5 +165,68 @@ describe('the recipe page’s lines', () => {
 
   it('a recipe every camera can install: no line for anyone', () => {
     expect(cameraWarnings(plainPp, options)).toEqual({});
+  });
+});
+
+describe('the recipe page’s row of other recipes', () => {
+  /* The real candidates of real recipes: their situation's recipes, three
+     rows' worth, in the page's own order. The first whose first six hold a
+     Creative Look, with a Picture Profile after the sixth to fill from. */
+  const situated = recipes.map((r) => ({ ...r, ...taxonomyFor(r) }));
+  const candidatesOf = (self: (typeof situated)[number]) =>
+    moreForSituation(self, situated, MORE_FOR_SITUATION_CANDIDATES)?.recipes ?? [];
+  const self = situated.find((r) => {
+    const c = candidatesOf(r);
+    return (
+      c.slice(0, MORE_FOR_SITUATION_LIMIT).some((x) => x.format === 'cl') &&
+      c.slice(MORE_FOR_SITUATION_LIMIT).some((x) => x.format === 'pp')
+    );
+  })!;
+  const candidates = candidatesOf(self);
+  const rows = cameraRows(candidates, options, MORE_FOR_SITUATION_LIMIT);
+
+  it('is tested on a recipe whose row a Creative Style body changes', () => {
+    expect(self).toBeDefined();
+    expect(candidates.length).toBeGreaterThan(MORE_FOR_SITUATION_LIMIT);
+    expect(candidates.length).toBeLessThanOrEqual(MORE_FOR_SITUATION_CANDIDATES);
+  });
+
+  it('no cookie, or one that is no camera: the first six, today’s row', () => {
+    expect(rows.row).toEqual(moreForSituation(self, situated)!.recipes.map((r) => r.id));
+    for (const raw of ['unknown', 'ILCE-9M3', 'not a camera']) expect(rows.byChoice[raw], raw).toBeUndefined();
+  });
+
+  it('a7 III: hides every Creative Look and fills from the candidates after the sixth, in order', () => {
+    const a7iii = rows.byChoice['ILCE-7M3'];
+    const byId = new Map(candidates.map((r) => [r.id, r]));
+    expect(a7iii.length).toBeGreaterThan(0);
+    expect(a7iii.some((id) => byId.get(id)!.format === 'cl')).toBe(false);
+    /* The browse's own rule, the S-Cinetone the a7 III lacks included. */
+    expect(a7iii).toEqual(
+      installableFor(candidates, resolveMyCamera('ILCE-7M3', options))
+        .slice(0, MORE_FOR_SITUATION_LIMIT)
+        .map((r) => r.id),
+    );
+    /* Backfilled: a recipe beyond today's six is in the a7 III's row. */
+    expect(a7iii.some((id) => !rows.row.includes(id))).toBe(true);
+    expect(rows.byChoice[OLDER_CAMERA_CHOICE]).toEqual(
+      installableFor(candidates, resolveMyCamera(OLDER_CAMERA_CHOICE, options))
+        .slice(0, MORE_FOR_SITUATION_LIMIT)
+        .map((r) => r.id),
+    );
+  });
+
+  it('a camera that installs every candidate keeps no row of its own', () => {
+    expect(rows.byChoice['ILCE-7M4']).toBeUndefined();
+  });
+
+  it('renders only the cards some row shows, in candidate order', () => {
+    const used = new Set([...rows.row, ...Object.values(rows.byChoice).flat()]);
+    expect(rows.shown).toEqual(candidates.map((r) => r.id).filter((id) => used.has(id)));
+  });
+
+  it('an empty row for a camera that can install none of them', () => {
+    const looks = candidates.filter((r) => r.format === 'cl');
+    expect(cameraRows(looks, options, MORE_FOR_SITUATION_LIMIT).byChoice['ILCE-7M3']).toEqual([]);
   });
 });

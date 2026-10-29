@@ -30,3 +30,11 @@ export const PHOTO_COLUMNS = 'image_url, author_name, author_social';
  * anon and why the public read leaves the `approved` filter to RLS.
  */
 export const MODERATION_PHOTO_COLUMNS = 'id, image_url, author_name, approved, created_at';
+
+/**
+ * `community_photos` — what the moderation PATCH reads before it shows a
+ * hidden photo: which recipe's cap to count, and whether the row is hidden.
+ * Same service role, so the same rule: named columns, no address. Nothing of
+ * it is sent back; the answer is the update's own row, through the mapper.
+ */
+export const MODERATION_TARGET_COLUMNS = 'recipe_slug, approved';

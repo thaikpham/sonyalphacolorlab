@@ -92,16 +92,23 @@ describe('the photo moderation route', () => {
   /* Comments out, so a sentence that mentions `.select()` is not a call. */
   const code = source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
 
-  it('selects only the shared moderation list', () => {
+  /* Two shared lists: the rows it lists and answers with, and the two
+     columns the PATCH reads before showing a hidden photo (whose recipe, and
+     whether it is hidden) to check the cap. Both from `community/columns`. */
+  const LISTS = ['MODERATION_PHOTO_COLUMNS', 'MODERATION_TARGET_COLUMNS'] as const;
+
+  it('selects only the shared moderation lists', () => {
     expect(code).not.toMatch(/\.select\(\s*['"`]\*['"`]\s*\)/);
     const selects = [...code.matchAll(/\.select\(\s*([^)]*)\)/g)].map((m) => m[1].trim());
     expect(selects.length).toBeGreaterThan(0);
-    for (const s of selects) expect(s).toBe('MODERATION_PHOTO_COLUMNS');
-    expect(source).toMatch(/import \{[^}]*\bMODERATION_PHOTO_COLUMNS\b[^}]*\} from '@\/lib\/community\/columns'/);
+    for (const s of selects) expect(LISTS as readonly string[]).toContain(s);
+    for (const list of LISTS) {
+      expect(source).toMatch(new RegExp(`import \\{[^}]*\\b${list}\\b[^}]*\\} from '@/lib/community/columns'`));
+    }
   });
 
-  it('names no address and no wildcard in that list', () => {
-    const columns = COLUMN_LISTS.MODERATION_PHOTO_COLUMNS.split(',').map((c) => c.trim());
+  it.each(LISTS)('names no address and no wildcard in %s', (list) => {
+    const columns = COLUMN_LISTS[list].split(',').map((c) => c.trim());
     expect(columns).not.toContain('*');
     for (const column of columns) expect(column).not.toMatch(/email|submitted_by|updated_by/);
   });

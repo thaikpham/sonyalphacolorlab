@@ -24,6 +24,7 @@ import {
   TINT_WORDS,
   TONALITY_WORDS,
   TONE_WORDS,
+  adaptiveTwin,
   comboOf,
   nameAmong,
   nameFor,
@@ -69,7 +70,7 @@ describe('the name syntax', () => {
        reading in names.ts, so a name can never widen the list by itself. */
     expect([...NAME_VOCABULARY].sort()).toEqual(
       [
-        'Golden', 'Warm', 'Neutral', 'Cool', 'Icy', 'Rosy', 'Mint', 'Mono', 'Sepia',
+        'Golden', 'Warm', 'Neutral', 'Cool', 'Icy', 'Rosy', 'Mint', 'Adaptive', 'Mono', 'Sepia',
         'Matte', 'Faded', 'Deep', 'Punchy', 'Soft', 'Flat', 'Airy', 'Even',
         'Vivid', 'Rich', 'Natural', 'Muted', 'Pale',
         'Crisp', 'Gentle', 'Plain',
@@ -332,6 +333,10 @@ describe('the reading', () => {
                   note(cl({ look, contrast, highlights, shadows, fade, sharpness, saturation: mono ? undefined : contrast }, wb));
                 }
     }
+    /* Adaptive is no reading of one recipe: the last resort between an auto
+       White Balance twin and a fixed one (`adaptiveTwin`). */
+    for (const n of readNames([cl({}, { mode: 'preset', preset: 'Daylight' }, 'CL-901'), cl({}, { mode: 'auto', auto: 'AWB' }, 'CL-902')]))
+      for (const w of n.words) seen.add(w);
     expect([...seen].sort()).toEqual([...NAME_VOCABULARY].sort());
   });
 });
@@ -390,11 +395,45 @@ describe('the tie-break', () => {
 
   it('reports a tie only between recipes that read alike', () => {
     const a = cl({}, { mode: 'preset', preset: 'Daylight' }, 'CL-901');
-    const b = cl({}, { mode: 'auto', auto: 'AWB' }, 'CL-902');
+    const b = cl({}, { mode: 'preset', preset: 'Daylight' }, 'CL-902');
     expect(readsAlike(a, b)).toBe(true);
     expect(readNames([a, b])[1]).toMatchObject({ id: 'CL-902', tiedWith: 'CL-901' });
+    // Two auto twins have no White Balance difference either: still a tie.
+    const autoA = cl({}, { mode: 'auto', auto: 'AWB' }, 'CL-903');
+    const autoB = cl({}, { mode: 'auto', auto: 'AWB (Priority White)' }, 'CL-904');
+    expect(readNames([autoA, autoB])[1]).toMatchObject({ id: 'CL-904', tiedWith: 'CL-903' });
     expect(readsAlike(a, cl({ contrast: 1 }, a.whiteBalance, 'CL-903'))).toBe(false);
     expect(readsAlike(a, cl({ sharpness: CL_RANGES.sharpness.max }, a.whiteBalance, 'CL-903'))).toBe(false);
+  });
+
+  it('gives Adaptive, as a last resort, only to the auto White Balance twin of a fixed one that reads alike', () => {
+    const fixed = cl({}, { mode: 'preset', preset: 'Daylight' }, 'CL-901');
+    const auto = cl({}, { mode: 'auto', auto: 'AWB' }, 'CL-902');
+    expect(readsAlike(fixed, auto)).toBe(true);
+    expect(adaptiveTwin(auto, fixed)).toBe(true);
+    expect(adaptiveTwin(fixed, auto)).toBe(false);
+    // The auto twin takes Adaptive whichever comes first; the fixed one keeps its words.
+    const later = readNames([fixed, auto]);
+    expect(later[0]).toMatchObject({ id: 'CL-901', words: ['Neutral', 'Even', 'Natural'], replaced: null, tiedWith: null });
+    expect(later[1]).toMatchObject({ id: 'CL-902', words: ['Adaptive', 'Even', 'Natural'], replaced: { slot: 0, word: 'Adaptive' }, tiedWith: null });
+    const fixedLater = { ...fixed, id: 'CL-903' };
+    const earlier = readNames([auto, fixedLater]);
+    expect(earlier[0]).toMatchObject({ id: 'CL-902', words: ['Adaptive', 'Even', 'Natural'], yieldedTo: 'CL-903' });
+    expect(earlier[1]).toMatchObject({ id: 'CL-903', words: ['Neutral', 'Even', 'Natural'], tiedWith: null });
+    // Never while an honest reading is left: a sharper auto twin takes Crisp, not Adaptive.
+    const sharp = cl({ sharpness: CL_RANGES.sharpness.max }, { mode: 'auto', auto: 'AWB' }, 'CL-904');
+    expect(namesFor([fixed, sharp]).get('CL-904')).toBe('CL-904-Neutral Even Crisp');
+    // Not a twin that looks different, and not a monochrome one: Mono says what it renders.
+    expect(adaptiveTwin(cl({ contrast: 1 }, auto.whiteBalance, 'CL-905'), fixed)).toBe(false);
+    const monoFixed = cl({ look: 'BW' }, fixed.whiteBalance, 'CL-906');
+    const monoAuto = cl({ look: 'BW' }, auto.whiteBalance, 'CL-907');
+    expect(readsAlike(monoFixed, monoAuto)).toBe(true);
+    expect(adaptiveTwin(monoAuto, monoFixed)).toBe(false);
+    // /admin, holding the stored twin fixed, follows the same rule.
+    const storedFixed = { ...fixed, name: 'CL-901-Neutral Even Natural' };
+    expect(nameAmong(auto, [storedFixed])).toEqual({ ok: true, name: 'CL-902-Adaptive Even Natural', tiedWith: null });
+    const storedAuto = { ...auto, name: 'CL-902-Neutral Even Natural' };
+    expect(nameAmong(fixedLater, [storedAuto])).toEqual({ ok: true, name: 'CL-903-Neutral Even Natural', tiedWith: 'CL-902' });
   });
 });
 
@@ -439,18 +478,28 @@ describe('every recipe in the seed', () => {
         expect(readsAlike(byId.get(ids[0])!, byId.get(id)!), `${ids.join(', ')} share words but not a palette`).toBe(true);
       }
     }
-    /* The one pair today: Film at every dial's default under Daylight and
-       under AWB — neither publishes a Kelvin, so their palettes are the same
-       nine swatches, and both have Sharpness 4, Clarity 1. */
-    expect(shared).toEqual([['CL-033', 'CL-034']]);
-    expect(results.filter((n) => n.tiedWith).map((n) => [n.id, n.tiedWith])).toEqual([['CL-034', 'CL-033']]);
+    /* No pair today. The one there was — Film at every dial's default under
+       Daylight (CL-033) and under AWB (CL-034), the same nine swatches and
+       Sharpness 4, Clarity 1 — is told apart by Adaptive on the AWB one. */
+    expect(shared).toEqual([]);
+    expect(results.filter((n) => n.tiedWith)).toEqual([]);
+    expect(seed.filter((r) => wordsOf(r.name)[0] === 'Adaptive').map((r) => r.id)).toEqual(['CL-034']);
+  });
+
+  it('says Adaptive only on an auto White Balance recipe that reads alike a fixed twin', () => {
+    for (const r of seed) {
+      if (wordsOf(r.name)[0] !== 'Adaptive') continue;
+      expect(r.whiteBalance.mode, r.id).toBe('auto');
+      expect(seed.some((o) => o.id !== r.id && adaptiveTwin(r, o)), r.id).toBe(true);
+    }
   });
 
   it('says every word honestly: the temperature as read, the other two from its own readings', () => {
     for (const n of results) {
       const r = byId.get(n.id)!;
       const [t, a, b] = wordsOf(r.name);
-      expect(t, r.name).toBe(n.reading.words[0]);
+      if (n.replaced?.slot === 0) expect([t, n.replaced.word], r.name).toEqual(['Adaptive', 'Adaptive']);
+      else expect(t, r.name).toBe(n.reading.words[0]);
       for (const [slot, w] of [[1, a], [2, b]] as const) {
         if (w === n.reading.words[slot]) continue;
         expect(n.replaced, `${r.name}: ${w} is not its reading`).toEqual({ slot, word: w });
@@ -496,7 +545,7 @@ describe('every recipe in the seed', () => {
     /* R2: a clash replaces the least salient slot. The other slot is a last
        resort, and never when its reading is past the strong cut. */
     for (const n of results) {
-      if (!n.replaced) continue;
+      if (!n.replaced || n.replaced.slot === 0) continue;
       const [tonality, colour] = n.reading.slots;
       const [dropped, kept] = n.replaced.slot === 1 ? [tonality, colour] : [colour, tonality];
       expect(

@@ -13,6 +13,15 @@ const readChoice = () => readCookie(document.cookie, MY_CAMERA_COOKIE);
 const noChoice = () => null;
 
 /**
+ * The cookie's value in the browser; `null` on the server and in the first
+ * client render, so a prerendered page hydrates without a mismatch and then
+ * looks the value up in a map it was built with.
+ */
+export function useMyCameraChoice(): string | null {
+  return useSyncExternalStore(subscribe, readChoice, noChoice);
+}
+
+/**
  * The recipe page's accuracy line for the reader's camera (ADR 0006):
  * "a7 III has no Creative Look", "An older camera may have no S-Cinetone".
  *
@@ -23,7 +32,7 @@ const noChoice = () => null;
  * mismatch — and a value the map does not hold, malformed or not, is no line.
  */
 export function MyCameraWarning({ warnings }: { warnings: Readonly<Record<string, CameraWarning>> }) {
-  const choice = useSyncExternalStore(subscribe, readChoice, noChoice);
+  const choice = useMyCameraChoice();
   /* `Object.hasOwn`: a cookie reading `constructor` must not find the prototype's. */
   const warning = choice && Object.hasOwn(warnings, choice) ? warnings[choice] : null;
   return warning ? <CameraWarningLines camera={warning.camera} reasons={warning.reasons} /> : null;

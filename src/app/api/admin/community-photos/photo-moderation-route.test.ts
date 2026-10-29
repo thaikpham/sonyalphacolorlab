@@ -2,8 +2,9 @@ import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { MfaRequiredError, requireAdmin, type AdminUser } from '@/lib/auth/require-admin';
-import { MODERATION_PHOTO_COLUMNS } from '@/lib/community/columns';
+import { MODERATION_PHOTO_COLUMNS, MODERATION_TARGET_COLUMNS } from '@/lib/community/columns';
 import { MODERATION_LIST_LIMIT } from '@/lib/community/moderation';
+import { MAX_PHOTOS_PER_RECIPE } from '@/lib/community/gallery';
 import { ControlUnavailableError } from '@/lib/supabase/errors';
 import { routeHandlers } from '../route-handlers';
 
@@ -23,16 +24,19 @@ type Call = {
   table: string;
   op: 'select' | 'update';
   columns?: string;
+  head?: boolean;
   payload?: Record<string, unknown>;
   filters: [string, unknown][];
   order?: [string, unknown];
   limit?: number;
 };
-type Result = { data: unknown; error: unknown };
+type Result = { data: unknown; error: unknown; count?: number | null };
 
 const db = {
   calls: [] as Call[],
   answer: (_call: Call): Result | undefined => undefined,
+  /* What a head count of the recipe's visible photos answers. */
+  visible: 0,
 };
 const env = { control: true };
 
@@ -44,6 +48,7 @@ const ID = '6f1c1d2e-8a4b-4c3d-9e5f-0a1b2c3d4e5f';
 const ROWS = [
   {
     id: ID,
+    recipe_slug: SLUG,
     image_url: 'https://cdn.example.com/new.jpg',
     author_name: 'Nguyễn Văn An',
     approved: false,
@@ -54,6 +59,7 @@ const ROWS = [
   },
   {
     id: '0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d',
+    recipe_slug: SLUG,
     image_url: 'https://cdn.example.com/old.jpg',
     author_name: null,
     approved: true,
@@ -73,16 +79,18 @@ function client() {
       const settle = (terminal: 'many' | 'maybe'): Promise<Result> => {
         const answered = db.answer(call!);
         if (answered) return Promise.resolve(answered);
+        const row = ROWS.find((r) => call!.filters.some(([c, v]) => c === 'id' && v === r.id));
         if (call!.op === 'update') {
-          const row = ROWS.find((r) => call!.filters.some(([c, v]) => c === 'id' && v === r.id));
           return Promise.resolve({ data: row ? { ...row, ...call!.payload } : null, error: null });
         }
+        if (call!.head) return Promise.resolve({ data: null, error: null, count: db.visible });
+        if (terminal === 'maybe') return Promise.resolve({ data: row ?? null, error: null });
         return Promise.resolve({ data: terminal === 'many' ? ROWS : null, error: null });
       };
       const builder = {
-        select(columns: string) {
+        select(columns: string, options?: { head?: boolean }) {
           if (call) call.columns = columns;
-          else start('select', { columns });
+          else start('select', { columns, head: options?.head === true });
           return builder;
         },
         update(payload: Record<string, unknown>) {
@@ -161,6 +169,7 @@ const patch = (body: unknown) =>
 beforeEach(() => {
   db.calls = [];
   db.answer = () => undefined;
+  db.visible = 0;
   env.control = true;
   vi.mocked(requireAdmin).mockReset().mockResolvedValue(admin('super'));
 });
@@ -278,8 +287,9 @@ describe('PATCH /api/admin/community-photos', () => {
     });
     expect(JSON.stringify(body)).not.toContain('@');
 
-    const [call] = db.calls;
-    expect(db.calls).toHaveLength(1);
+    const updates = db.calls.filter((c) => c.op === 'update');
+    expect(updates).toHaveLength(1);
+    const [call] = updates;
     expect(call).toMatchObject({ client: 'controlAdmin', table: 'community_photos', op: 'update' });
     expect(call.payload).toEqual({ approved: true });
     expect(call.filters).toEqual([['id', ID]]);
@@ -308,6 +318,62 @@ describe('PATCH /api/admin/community-photos', () => {
     const res = await route.PATCH(patch({ id: '11111111-2222-4333-8444-555555555555', approved: false }));
     expect(res.status).toBe(404);
     expect(await res.json()).toEqual({ error: 'notFound' });
+  });
+
+  it('hides with a single update, never checking the cap', async () => {
+    /* A recipe over the cap — rows written outside the app — must still be
+       able to lose a photo. */
+    db.visible = 99;
+    const res = await route.PATCH(patch({ id: ROWS[1].id, approved: false }));
+    expect(res.status).toBe(200);
+    expect(db.calls).toHaveLength(1);
+    expect(db.calls[0]).toMatchObject({ op: 'update', payload: { approved: false } });
+  });
+
+  it('refuses to show a hidden photo once 40 are visible, and writes nothing', async () => {
+    db.visible = MAX_PHOTOS_PER_RECIPE;
+    const res = await route.PATCH(patch({ id: ID, approved: true }));
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({ error: 'photoLimitReached' });
+    expect(db.calls.some((c) => c.op === 'update')).toBe(false);
+
+    const [read, count] = db.calls;
+    expect(read).toMatchObject({ op: 'select', columns: MODERATION_TARGET_COLUMNS, filters: [['id', ID]] });
+    /* The visible photos of the row's own recipe, under every spelling. */
+    expect(count).toMatchObject({ op: 'select', head: true });
+    expect(count.filters).toEqual([
+      ['recipe_slug', [SLUG, 'pp-048-soft-clean-portrait', 'hue-silk']],
+      ['approved', true],
+    ]);
+  });
+
+  it('shows a hidden photo at 39 visible', async () => {
+    db.visible = MAX_PHOTOS_PER_RECIPE - 1;
+    const res = await route.PATCH(patch({ id: ID, approved: true }));
+    expect(res.status).toBe(200);
+    expect(db.calls.filter((c) => c.op === 'update')).toHaveLength(1);
+  });
+
+  it('does not count when the photo is already visible: it holds its own place', async () => {
+    db.visible = MAX_PHOTOS_PER_RECIPE;
+    const res = await route.PATCH(patch({ id: ROWS[1].id, approved: true }));
+    expect(res.status).toBe(200);
+    expect(db.calls.some((c) => c.head)).toBe(false);
+  });
+
+  it('answers 404 before counting when the photo to show is not there', async () => {
+    const res = await route.PATCH(patch({ id: '11111111-2222-4333-8444-555555555555', approved: true }));
+    expect(res.status).toBe(404);
+    expect(await res.json()).toEqual({ error: 'notFound' });
+    expect(db.calls).toHaveLength(1);
+  });
+
+  it('answers 502 saveFailed when the count cannot be read, and writes nothing', async () => {
+    db.answer = (call) => (call.head ? { data: null, error: { message: 'boom' }, count: null } : undefined);
+    const res = await route.PATCH(patch({ id: ID, approved: true }));
+    expect(res.status).toBe(502);
+    expect(await res.json()).toEqual({ error: 'saveFailed' });
+    expect(db.calls.some((c) => c.op === 'update')).toBe(false);
   });
 
   it('answers a failed write with 502 saveFailed', async () => {

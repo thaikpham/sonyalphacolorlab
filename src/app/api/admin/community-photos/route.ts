@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import { adminGate } from '@/lib/auth/admin-gate';
 import { controlAdmin, hasControlConfig } from '@/lib/supabase/server';
-import { MODERATION_PHOTO_COLUMNS } from '@/lib/community/columns';
+import { MODERATION_PHOTO_COLUMNS, MODERATION_TARGET_COLUMNS } from '@/lib/community/columns';
 import { recipeSlugSchema } from '@/lib/community/request';
 import { slugAliases } from '@/lib/recipes/slug-aliases';
+import { MAX_PHOTOS_PER_RECIPE, visiblePhotoCount } from '@/lib/community/gallery';
 import {
   MODERATION_LIST_LIMIT,
   moderationPatchSchema,
@@ -86,9 +87,40 @@ export async function PATCH(request: Request) {
   if (!parsed.success) return NextResponse.json({ error: 'badRequest' }, { status: 400 });
 
   try {
+    const db = controlAdmin();
+    /* Showing a photo is checked against the cap; hiding never is. The cap
+       counts visible rows only, so a hidden photo frees its place and a new
+       submission may take it. Showing the hidden one again on top would make
+       a 41st visible photo, and the public gallery, which reads the newest
+       `MAX_PHOTOS_PER_RECIPE`, would silently push the oldest one off. */
+    if (parsed.data.approved) {
+      const { data: row, error: readError } = await db
+        .from('community_photos')
+        .select(MODERATION_TARGET_COLUMNS)
+        .eq('id', parsed.data.id)
+        .maybeSingle();
+      if (readError) {
+        console.error('[admin/community-photos] read failed:', readError.message);
+        return NextResponse.json({ error: 'saveFailed' }, { status: 502 });
+      }
+      if (!row) return NextResponse.json({ error: 'notFound' }, { status: 404 });
+      const current = row as { recipe_slug: string; approved: boolean };
+      /* Already visible: it holds its place, and showing it again is a no-op. */
+      if (current.approved === false) {
+        const visible = await visiblePhotoCount(db, current.recipe_slug);
+        if (visible.error) {
+          console.error('[admin/community-photos] count failed:', visible.error.message);
+          return NextResponse.json({ error: 'saveFailed' }, { status: 502 });
+        }
+        if (visible.count >= MAX_PHOTOS_PER_RECIPE) {
+          return NextResponse.json({ error: 'photoLimitReached' }, { status: 409 });
+        }
+      }
+    }
+
     /* `.select()` turns "no row has that id" into an empty answer rather than
        PostgREST's silent success, so a photo that is gone reads as 404. */
-    const { data, error } = await controlAdmin()
+    const { data, error } = await db
       .from('community_photos')
       .update({ approved: parsed.data.approved })
       .eq('id', parsed.data.id)
