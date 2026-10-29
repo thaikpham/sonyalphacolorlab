@@ -6,7 +6,7 @@ import { publishedRecipeExists } from '@/lib/recipes/existence';
 import { slugAliases } from '@/lib/recipes/slug-aliases';
 import { COMMUNITY_ERRORS, communityErrorBody, outageErrorCode } from '@/lib/community/errors';
 import { requireUser, UNAUTHENTICATED, type AuthedUser } from '@/lib/auth/require-user';
-import { MAX_PHOTOS_PER_RECIPE, clientKey, photoInGallery } from '@/lib/community/gallery';
+import { MAX_PHOTOS_PER_RECIPE, clientKey, photoInGallery, visiblePhotoCount } from '@/lib/community/gallery';
 import {
   EXPIRING_IMAGE_HOST_ISSUE,
   httpsImageUrlSchema,
@@ -172,14 +172,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true, saved: true, duplicate: true });
     }
 
-    const { count, error: countError } = await db
-      .from('community_photos')
-      .select('id', { count: 'exact', head: true })
-      /* The cap is the recipe's, whichever spelling its photos were sent under. */
-      .in('recipe_slug', slugAliases(body.slug));
+    /* The cap is the recipe's visible photos, whichever spelling they were
+       sent under; a hidden one no longer holds a place (`visiblePhotoCount`). */
+    const { count, error: countError } = await visiblePhotoCount(db, body.slug);
     if (countError) throw new Error(countError.message);
 
-    if ((count ?? 0) >= MAX_PHOTOS_PER_RECIPE) {
+    if (count >= MAX_PHOTOS_PER_RECIPE) {
       return NextResponse.json(
         communityErrorBody('photoLimitReached'),
         { status: 409 },

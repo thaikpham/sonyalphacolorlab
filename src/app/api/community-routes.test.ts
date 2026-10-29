@@ -743,7 +743,11 @@ describe('community rows across the slug renames', () => {
     );
     expect(res.status).toBe(200);
     const [count] = callsTo('community_photos', 'select').filter((c) => c.options?.head);
-    expect(count.filters).toEqual([['recipe_slug', EVERY]]);
+    expect(count.client).toBe('controlAdmin');
+    expect(count.filters).toEqual([
+      ['recipe_slug', EVERY],
+      ['approved', true],
+    ]);
     const [insert] = callsTo('community_photos', 'insert');
     expect(insert.payload).toMatchObject({ recipe_slug: FORMER });
   });
@@ -807,6 +811,58 @@ describe('community rows across the slug renames', () => {
     );
     expect(res.status).toBe(409);
     expect(callsTo('community_photos', 'insert')).toHaveLength(0);
+  });
+
+  /* Moderation hides a photo and never deletes it, so a hidden row counted
+     toward the cap kept a place on a page that no longer shows it. */
+  const atCap = (approved: boolean, extra = 0) =>
+    Array.from({ length: MAX_PHOTOS_PER_RECIPE + extra }, (_, i) => ({
+      recipe_slug: EVERY[i % 3],
+      image_url: `https://cdn.example.com/${approved ? 'shown' : 'hidden'}-${i}.jpg`,
+      approved,
+    }));
+
+  it('counts only visible photos toward the cap, in both write paths', async () => {
+    gallery = [...atCap(false, 5), ...atCap(true).slice(1)];
+    const photo = await photos.POST(
+      post('/api/community-photos', { slug: FORMER, imageUrl: 'https://cdn.example.com/fortieth.jpg' }),
+    );
+    expect(photo.status).toBe(200);
+    expect(await photo.json()).toEqual({ ok: true, saved: true, source: 'supabase' });
+
+    gallery = [...atCap(false, 5), ...atCap(true).slice(1)];
+    const proposal = await proposals.POST(
+      post('/api/proposals', proposalBody({ recipeSlug: MIDDLE, sampleImageUrl: 'https://cdn.example.com/sample.jpg' })),
+    );
+    expect(proposal.status).toBe(200);
+    expect(callsTo('community_photos', 'insert').map((c) => c.payload?.image_url)).toEqual([
+      'https://cdn.example.com/fortieth.jpg',
+      'https://cdn.example.com/sample.jpg',
+    ]);
+  });
+
+  it('still refuses at forty visible photos, whatever is hidden beside them', async () => {
+    gallery = [...atCap(true), ...atCap(false, 3)];
+    const photo = await photos.POST(
+      post('/api/community-photos', { slug: PP.slug, imageUrl: 'https://cdn.example.com/one-more.jpg' }),
+    );
+    expect(photo.status).toBe(409);
+    expect(await photo.json()).toEqual({ ok: false, error: 'photoLimitReached' });
+
+    const proposal = await proposals.POST(
+      post('/api/proposals', proposalBody({ recipeSlug: PP.slug, sampleImageUrl: 'https://cdn.example.com/sample.jpg' })),
+    );
+    expect(proposal.status).toBe(200);
+    expect(callsTo('community_photos', 'insert')).toHaveLength(0);
+  });
+
+  it('still answers duplicate to a hidden link sent again, now that hidden rows hold no place', async () => {
+    gallery = [{ recipe_slug: MIDDLE, image_url: HIDDEN, approved: false }];
+    const res = await photos.POST(post('/api/community-photos', { slug: PP.slug, imageUrl: HIDDEN }));
+    expect(await res.json()).toEqual({ ok: true, saved: true, duplicate: true });
+    await proposals.POST(post('/api/proposals', proposalBody({ recipeSlug: FORMER, sampleImageUrl: HIDDEN })));
+    expect(callsTo('community_photos', 'insert')).toHaveLength(0);
+    expect(gallery).toEqual([{ recipe_slug: MIDDLE, image_url: HIDDEN, approved: false }]);
   });
 });
 

@@ -13,7 +13,7 @@ import { hasContentConfig } from '@/lib/supabase/server';
 import { publishedRecipeFormat } from '@/lib/recipes/existence';
 import { slugAliases } from '@/lib/recipes/slug-aliases';
 import { clSettingsSchema, ppSettingsSchema, whiteBalanceSchema } from '@/lib/camera/schema';
-import { MAX_PHOTOS_PER_RECIPE, clientKey, photoInGallery } from '@/lib/community/gallery';
+import { MAX_PHOTOS_PER_RECIPE, clientKey, photoInGallery, visiblePhotoCount } from '@/lib/community/gallery';
 import {
   EXPIRING_IMAGE_HOST_ISSUE,
   httpsImageUrlSchema,
@@ -368,7 +368,7 @@ export async function POST(request: Request) {
      * checked by hand.
      *
      * Held to the same rules as `POST /api/community-photos`: the per-recipe
-     * cap, the session's name as the credit (the old `name (title)` reached 253
+     * cap on visible photos (`visiblePhotoCount`), the session's name as the credit (the old `name (title)` reached 253
      * characters against a CHECK of 100, so the insert failed and only the log
      * knew), an origin marker rather than the author's address in
      * `submitted_by`, and a URL already in the gallery under either spelling
@@ -378,13 +378,10 @@ export async function POST(request: Request) {
     if (dup.error) {
       logFallback('proposals/gallery', dup.error);
     } else if (!dup.taken) {
-      const { count, error: countError } = await db
-        .from('community_photos')
-        .select('id', { count: 'exact', head: true })
-        .in('recipe_slug', slugAliases(recipeSlug));
+      const { count, error: countError } = await visiblePhotoCount(db, recipeSlug);
       if (countError) {
         logFallback('proposals/gallery', countError);
-      } else if ((count ?? 0) < MAX_PHOTOS_PER_RECIPE) {
+      } else if (count < MAX_PHOTOS_PER_RECIPE) {
         const { error: photoError } = await db.from('community_photos').insert({
           recipe_slug: recipeSlug,
           image_url: sampleImageUrl,

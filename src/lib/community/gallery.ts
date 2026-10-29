@@ -58,3 +58,28 @@ export async function photoInGallery(
   if (error) return { taken: false, error };
   return { taken: (data ?? []).length > 0, error: null };
 }
+
+/**
+ * How many photos count toward `MAX_PHOTOS_PER_RECIPE`: the visible ones
+ * (`approved = true`), under every spelling of the slug. A photo an editor hid
+ * is not on the page, so it no longer holds a place in the cap; it still
+ * holds its link, through `photoInGallery`, so sending it again stays a
+ * duplicate and stays hidden.
+ *
+ * `db` is the client the caller writes with, `controlAdmin()`: the service
+ * role bypasses RLS and keeps the table's full grant (0019 narrowed anon and
+ * authenticated only), so it may filter on `approved`. Anon could not — it
+ * holds no grant on that column. `error` is returned, as `photoInGallery`'s is.
+ */
+export async function visiblePhotoCount(
+  db: SupabaseClient,
+  slug: string,
+): Promise<{ count: number; error: { message: string } | null }> {
+  const { count, error } = await db
+    .from('community_photos')
+    .select('id', { count: 'exact', head: true })
+    .in('recipe_slug', slugAliases(slug))
+    .eq('approved', true);
+  if (error) return { count: 0, error };
+  return { count: count ?? 0, error: null };
+}

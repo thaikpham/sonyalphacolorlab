@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 /**
@@ -147,5 +147,26 @@ describe('the existence helper', () => {
   it('asks the content plane with the anon client, not a service credential', () => {
     expect(source).toContain('contentRead()');
     expect(source).not.toContain('contentAdmin');
+  });
+});
+
+/* The photo cap filters on `approved`, which anon holds no grant on (0019):
+   only the service role may ask, past RLS and every column grant. */
+describe('the photo cap', () => {
+  it('counts visible rows with the client each write path writes with, the service role', () => {
+    for (const name of ['photos', 'proposals'] as const) {
+      expect(sources[name], name).toContain('const db = controlAdmin()');
+      expect(sources[name], name).toMatch(/visiblePhotoCount\(db, /);
+    }
+    expect(readFileSync('src/lib/community/gallery.ts', 'utf8')).toContain(".eq('approved', true)");
+  });
+
+  it('is never narrowed for the service role by a control migration', () => {
+    const dir = 'supabase/migrations';
+    const sql = readdirSync(dir)
+      .filter((f) => f.endsWith('.sql'))
+      .map((f) => readFileSync(`${dir}/${f}`, 'utf8'))
+      .join('\n');
+    expect(sql).not.toMatch(/service_role/i);
   });
 });
