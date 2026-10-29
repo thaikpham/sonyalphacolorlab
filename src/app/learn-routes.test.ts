@@ -79,11 +79,14 @@ describe('canonical URLs for Vietnamese bodies (ADR 0004)', () => {
 
 describe('article structured data', () => {
   const src = read('src/components/structured-data.tsx');
+  /* The article nodes are built here; the component only renders them. */
+  const nodes = read('src/lib/lab/jsonld.ts');
 
   it('never claims a publication date the store does not keep', () => {
-    expect(src).not.toMatch(/datePublished['"]?\s*:/);
-    expect(src).toMatch(/dateModified: article\.updatedAt/);
-    expect(src).toMatch(/inLanguage: ARTICLE_LANG/);
+    expect(src).toMatch(/articleJsonLd\(article, \{ site: SITE, path, learnTitle \}\)/);
+    for (const s of [src, nodes]) expect(s).not.toMatch(/datePublished['"]?\s*:/);
+    expect(nodes).toMatch(/dateModified: article\.updatedAt/);
+    expect(nodes).toMatch(/inLanguage: ARTICLE_LANG/);
   });
 
   it('points SearchAction at the page that searches', () => {

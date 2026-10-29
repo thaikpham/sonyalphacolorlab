@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import type { RecipeView } from '@/lib/recipes/source';
 import type { Article } from '@/lib/lab/types';
 import { ARTICLE_LANG } from '@/lib/lab/articles';
+import { articleJsonLd } from '@/lib/lab/jsonld';
 
 /**
  * JSON-LD structured data.
@@ -116,58 +117,22 @@ export function RecipeStructuredData({
  * row's `updated_at` when there is one; there is no `datePublished`, because
  * nothing records when a draft became visible and `created_at` is when it was
  * started. The reviewed date is shown on the page and deliberately absent
- * here. The author is a display name with no credentials attached.
+ * here. The author is a display name with no credentials attached. The nodes
+ * themselves are built by `articleJsonLd()` in `src/lib/lab/jsonld.ts`.
  */
 export async function ArticleStructuredData({ article, path }: { article: Article; path: string }) {
-  const url = `${SITE}${path}`;
-  const vi = `${SITE}/${ARTICLE_LANG}`;
-  const knowledge = article.kind === 'knowledge';
   /* In the body's language, because the canonical URL is the Vietnamese one.
      `Alpha Tech Blogs` is a product name and is the same in both. */
-  const learnTitle = knowledge
-    ? (await getTranslations({ locale: ARTICLE_LANG, namespace: 'learn' }))('title')
-    : '';
-  const parent = knowledge
-    ? { name: learnTitle, item: `${vi}/learn` }
-    : { name: 'Alpha Tech Blogs', item: `${vi}/blog` };
+  const learnTitle =
+    article.kind === 'knowledge'
+      ? (await getTranslations({ locale: ARTICLE_LANG, namespace: 'learn' }))('title')
+      : '';
 
   return (
     <>
-      <Ld
-        data={{
-          '@context': 'https://schema.org',
-          '@type': knowledge ? 'TechArticle' : 'BlogPosting',
-          headline: article.title,
-          ...(article.dek ? { description: article.dek } : {}),
-          url,
-          mainEntityOfPage: url,
-          inLanguage: ARTICLE_LANG,
-          ...(article.updatedAt ? { dateModified: article.updatedAt } : {}),
-          ...(article.meta.authorName
-            ? { author: { '@type': 'Person', name: article.meta.authorName } }
-            : {}),
-          ...(article.meta.sources.length > 0
-            ? {
-                citation: article.meta.sources.map((s) => ({
-                  '@type': 'CreativeWork',
-                  name: s.title,
-                  url: s.url,
-                })),
-              }
-            : {}),
-          isPartOf: { '@type': 'WebSite', name: 'Alpha ColorLab', url: SITE },
-        }}
-      />
-      <Ld
-        data={{
-          '@context': 'https://schema.org',
-          '@type': 'BreadcrumbList',
-          itemListElement: [
-            { '@type': 'ListItem', position: 1, name: parent.name, item: parent.item },
-            { '@type': 'ListItem', position: 2, name: article.title, item: url },
-          ],
-        }}
-      />
+      {articleJsonLd(article, { site: SITE, path, learnTitle }).map((data, i) => (
+        <Ld key={i} data={data} />
+      ))}
     </>
   );
 }
