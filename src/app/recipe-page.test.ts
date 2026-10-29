@@ -15,6 +15,15 @@ const messages = ['en', 'vi'].map(
   (l) => JSON.parse(readFileSync(`messages/${l}.json`, 'utf8')) as { recipe: Record<string, string> },
 );
 
+describe('the page width', () => {
+  /* A reading layout (AGENTS.md "Design"): the browse runs full-bleed at
+     160rem, a recipe stays at 86rem, where full width hurts it. */
+  it('is 86rem, not the browse’s full bleed', () => {
+    expect(page).toContain('<main className="mx-auto w-full max-w-[86rem] flex-1 inset-safe pb-24">');
+    expect(page).not.toContain('max-w-[160rem]');
+  });
+});
+
 describe('the settings column', () => {
   /* At 1024px a 5/12 column with gap-12 is about 342px inside its padding.
      ParamRow's 9rem + 8.5rem tracks and two gaps left the effect track about

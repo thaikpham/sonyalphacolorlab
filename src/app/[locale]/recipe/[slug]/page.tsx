@@ -155,7 +155,7 @@ export default async function RecipePage({
       <SiteHeader />
       <RecipeStructuredData recipe={recipe} locale={locale} url={shareUrl} />
 
-      <main className="mx-auto w-full max-w-[160rem] flex-1 inset-safe pb-24">
+      <main className="mx-auto w-full max-w-[86rem] flex-1 inset-safe pb-24">
         {/* Top Back Navigation */}
         <nav className="py-6">
           {/* Back to the catalogue this recipe belongs to, not the launcher. */}
