@@ -33,6 +33,16 @@ describe('llmsTxt', () => {
   })
 })
 
+describe('an empty section', () => {
+  /* Nothing published in a section (the seed has no knowledge page) is no
+     heading at all: an empty "## Learn" reads as a broken index. */
+  it('is left out, heading included', () => {
+    const none = llmsTxt({ ...input, knowledge: [] })
+    expect(none).not.toContain('## Learn')
+    expect(none).toContain('## Blog')
+  })
+})
+
 describe('firstSentence', () => {
   it('stops at the first full stop followed by a space or the end', () => {
     expect(firstSentence('One. Two.')).toBe('One.')

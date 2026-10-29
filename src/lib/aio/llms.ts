@@ -20,7 +20,8 @@ const item = (name: string, url: string, note?: string) =>
 
 export function llmsTxt(i: LlmsInput): string {
   const vi = `${i.site}/${ARTICLE_LANG}`
-  const section = (title: string, lines: string[]) => [`## ${title}`, '', ...lines].join('\n')
+  /* A section with nothing published is left out whole: an empty heading reads as a broken index. */
+  const section = (title: string, lines: string[]) => (lines.length ? [`## ${title}`, '', ...lines].join('\n') : '')
   return [
     '# Alpha ColorLab',
     '> Colour recipes for Sony Alpha cameras — White Balance with a Picture Profile or a Creative Look — plus a Sony camera, lens and audio catalogue and Vietnamese articles on camera settings. Recipe names and camera terms are as printed on the camera.',
@@ -38,5 +39,7 @@ export function llmsTxt(i: LlmsInput): string {
       item('Blog', `${vi}/blog`),
       item('Search', `${i.site}/search`),
     ]),
-  ].join('\n\n') + '\n'
+  ]
+    .filter(Boolean)
+    .join('\n\n') + '\n'
 }
