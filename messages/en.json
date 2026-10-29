@@ -715,7 +715,8 @@
       "show": "Show again",
       "errors": {
         "notConfigured": "Community photos are not configured on this deployment.",
-        "notFound": "That photo no longer exists."
+        "notFound": "That photo no longer exists.",
+        "photoLimitReached": "This recipe already shows the most community photos it can hold. Hide one before showing this one."
       }
     }
   },
