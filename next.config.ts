@@ -81,6 +81,14 @@ const nextConfig: NextConfig = {
   async redirects() {
     return legacyRedirects();
   },
+  // The Markdown twin of an article: its canonical URL plus `.md`. A dotted
+  // path never reaches the proxy, so no locale rewrite gets in the way.
+  async rewrites() {
+    return [
+      { source: '/vi/blog/:id([a-z0-9-]+)\\.md', destination: '/md/article/:id' },
+      { source: '/vi/learn/:id([a-z0-9-]+)\\.md', destination: '/md/knowledge/:id' },
+    ];
+  },
   async headers() {
     return [{ source: '/:path*', headers: [...SECURITY_HEADERS] }];
   },

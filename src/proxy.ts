@@ -29,8 +29,11 @@ export const config = {
    * rewrite the bare `/admin` to `/en/admin` — back into `[locale]`, onto the
    * pages that now redirect to here, which is a loop. The admin document names
    * its own `lang`; it has no locale for this middleware to negotiate.
+   *
+   * `/md` is the Markdown twin's route handler, reached by a rewrite from
+   * `/vi/blog/<id>.md`; hit directly it must not be locale-routed either.
    */
   matcher: [
-    '/((?!api|admin|_next|_vercel|icon|apple-icon|opengraph-image|twitter-image|sitemap|robots|.*/opengraph-image|.*\\..*).*)',
+    '/((?!api|admin|md|_next|_vercel|icon|apple-icon|opengraph-image|twitter-image|sitemap|robots|.*/opengraph-image|.*\\..*).*)',
   ],
 };

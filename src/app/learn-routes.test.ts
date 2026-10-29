@@ -47,11 +47,15 @@ describe('canonical URLs for Vietnamese bodies (ADR 0004)', () => {
   it.each([
     [BLOG_PAGE, '/blog/'],
     [LEARN_PAGE, '/learn/'],
-  ])('%s names the Vietnamese URL canonical and declares no alternates', (path, prefix) => {
+  ])('%s names the Vietnamese URL canonical and declares no language alternates', (path, prefix) => {
     const src = read(path);
     expect(src).toMatch(/ARTICLE_LANG === routing\.defaultLocale/);
     expect(src).toContain(`\`/\${ARTICLE_LANG}${prefix}\${id}\``);
-    expect(src).toMatch(/alternates: \{ canonical: canonicalPath\(id\) \}/);
+    /* The only alternate is the page's own Markdown twin, a format and not a
+       language. */
+    expect(src).toMatch(
+      /alternates: \{\s*canonical: canonicalPath\(id\),\s*types: \{ 'text\/markdown': `\$\{canonicalPath\(id\)\}\.md` \},\s*\}/,
+    );
     /* No hreflang: the English route is the same Vietnamese body under
        English chrome, not a translation. */
     expect(src).not.toMatch(/languages:/);

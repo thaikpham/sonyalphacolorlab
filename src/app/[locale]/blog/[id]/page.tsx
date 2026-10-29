@@ -88,7 +88,10 @@ export async function generateMetadata({
   return {
     title: article.title,
     description: article.dek,
-    alternates: { canonical: canonicalPath(id) },
+    alternates: {
+      canonical: canonicalPath(id),
+      types: { 'text/markdown': `${canonicalPath(id)}.md` },
+    },
     openGraph: { type: 'article', title: article.title, description: article.dek, locale: 'vi_VN' },
   }
 }
