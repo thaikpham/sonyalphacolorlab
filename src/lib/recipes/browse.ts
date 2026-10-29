@@ -192,6 +192,14 @@ export const isSituation = (v: unknown): v is SituationId => parseSituation(v) !
 /** The most recipes the row under a recipe page shows. */
 export const MORE_FOR_SITUATION_LIMIT = 6;
 
+/**
+ * How many the page reads, in the same order, so a reader's camera can hide
+ * what it cannot install and the row still fills from the ones after
+ * (`cameraRows`). Three rows' worth: a Creative Style body hides every
+ * Creative Look, often half a situation.
+ */
+export const MORE_FOR_SITUATION_CANDIDATES = MORE_FOR_SITUATION_LIMIT * 3;
+
 export type Relatable = RecipeTaxonomy & { readonly id: string; readonly published?: boolean };
 
 /**

@@ -93,6 +93,44 @@ export function installableFor<T extends InstallableRecipe>(recipes: readonly T[
   return recipes.filter((r) => installability(r, camera.caps).installable);
 }
 
+/** Every value the cookie may hold that means a camera: the generic older one, then each listed model. */
+const cameraChoices = (options: readonly CameraOption[]) => [OLDER_CAMERA_CHOICE, ...options.map((o) => o.id)];
+
+/** The recipe page's row of other recipes, for no camera and for each choice whose row differs. */
+export type CameraRows = {
+  /** No camera's row, and the server render's: the first `limit` candidates. */
+  readonly row: readonly string[];
+  /** The first `limit` candidates each choice can install, keyed by the cookie's value. */
+  readonly byChoice: Readonly<Record<string, readonly string[]>>;
+  /** Every candidate some row shows, in candidate order: the only cards the page renders. */
+  readonly shown: readonly string[];
+};
+
+/**
+ * The row under a recipe page, for every camera a reader may have chosen,
+ * worked out when the page is prerendered — the same evidence the browse
+ * filters by (`installableFor` over `resolveMyCamera`), so the page stays
+ * static and the browser only looks its cookie up. Each row is the first
+ * `limit` of `candidates` that choice can install, in their order; a choice
+ * whose row is no camera's is left out, and one that can install none of
+ * them maps to an empty row.
+ */
+export function cameraRows<T extends InstallableRecipe & { readonly id: string }>(
+  candidates: readonly T[],
+  options: readonly CameraOption[],
+  limit: number,
+): CameraRows {
+  const ids = (list: readonly T[]) => list.slice(0, Math.max(0, limit)).map((r) => r.id);
+  const row = ids(candidates);
+  const byChoice: Record<string, readonly string[]> = {};
+  for (const choice of cameraChoices(options)) {
+    const own = ids(installableFor(candidates, resolveMyCamera(choice, options)));
+    if (own.join() !== row.join()) byChoice[choice] = own;
+  }
+  const used = new Set([...row, ...Object.values(byChoice).flat()]);
+  return { row, byChoice, shown: candidates.filter((r) => used.has(r.id)).map((r) => r.id) };
+}
+
 /** One choice's accuracy lines for one recipe. `camera` is `null` for the generic choice. */
 export type CameraWarning = { readonly camera: string | null; readonly reasons: readonly InstallReason[] };
 

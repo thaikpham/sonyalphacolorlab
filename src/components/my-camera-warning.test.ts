@@ -63,7 +63,8 @@ describe('the recipe page', () => {
   const page = readFileSync('src/app/[locale]/recipe/[slug]/page.tsx', 'utf8');
 
   it('renders the line from warnings it computes for every choice', () => {
-    expect(page).toContain('const warnings = cameraWarnings(recipe, cameraOptions(products));');
+    expect(page).toContain('const options = cameraOptions(products);');
+    expect(page).toContain('const warnings = cameraWarnings(recipe, options);');
     expect(page).toMatch(/<div className="mt-4 empty:hidden">\s*<MyCameraWarning warnings=\{warnings\} \/>\s*<\/div>/);
   });
 });
