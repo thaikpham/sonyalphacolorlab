@@ -72,8 +72,14 @@ const WARMTH_WORDS: Readonly<Record<Warmth, string>> = {
 
 /** The tint words: the temperature slot when the tint dominates, a tie-break otherwise. */
 export const TINT_WORDS = ['Rosy', 'Mint'] as const;
-/** Slot 1 of a colour recipe: the amber–blue grade, or the tint when it dominates. */
-export const TEMPERATURE_WORDS = [...Object.values(WARMTH_WORDS), ...TINT_WORDS] as const;
+/**
+ * The last resort's temperature word: an auto White Balance against a fixed
+ * twin that reads alike (`adaptiveTwin`). The camera picks the White Balance
+ * for each scene, which is the one honest difference left between them.
+ */
+export const ADAPTIVE = 'Adaptive';
+/** Slot 1 of a colour recipe: the amber–blue grade, the tint when it dominates, or Adaptive. */
+export const TEMPERATURE_WORDS = [...Object.values(WARMTH_WORDS), ...TINT_WORDS, ADAPTIVE] as const;
 /** Slot 1 of a monochrome recipe. */
 export const MONO_WORDS = ['Mono', 'Sepia'] as const;
 /** Slot 2: what the neutral ramp does. Even when nothing on it moves. */
@@ -101,7 +107,7 @@ export const NAME_VOCABULARY: ReadonlySet<string> = new Set<string>([
 /** `PP-048-Neutral Soft Rich`: format, three digits, exactly three Title Case words. */
 export const RECIPE_NAME_RE = /^(PP|CL)-(\d{3})-([A-Z][a-z]+(?: [A-Z][a-z]+){2})$/;
 
-/** The temperature words that claim a browse tone. Rosy and Mint claim none. */
+/** The temperature words that claim a browse tone. Rosy, Mint and Adaptive claim none. */
 export const TONE_WORDS: Readonly<Record<ToneId, readonly string[]>> = {
   warm: ['Golden', 'Warm'],
   cool: ['Cool', 'Icy'],
@@ -488,8 +494,11 @@ export type NameResult = {
   readonly id: string;
   readonly words: readonly [string, string, string];
   readonly reading: NameReading;
-  /** The slot a tie-break replaced (1 tonality, 2 colour), and the word it took. */
-  readonly replaced: { readonly slot: 1 | 2; readonly word: string } | null;
+  /**
+   * The slot a tie-break replaced (1 tonality, 2 colour), and the word it
+   * took; 0, the temperature, only for Adaptive (`adaptiveTwin`).
+   */
+  readonly replaced: { readonly slot: 0 | 1 | 2; readonly word: string } | null;
   /** The later recipe that took the words this one held before it moved aside. */
   readonly yieldedTo: string | null;
   /** The recipe holding the same three words when no honest alternative was left. */
@@ -563,8 +572,10 @@ export function namingOrder<T extends NameInput>(recipes: readonly T[]): T[] {
  * recipe with more to choose from took them. Only when no option of the first
  * tier can be had, free or freed, does any recipe in the search reach for its
  * last resort, the other slot (never a strong reading). With no re-route
- * either, the recipe keeps its own words and names the recipe it ties with:
- * no word this vocabulary can say tells their palettes apart.
+ * either, a twin on auto White Balance beside a fixed one takes Adaptive
+ * (`adaptiveTwin`); otherwise the recipe keeps its own words and names the
+ * recipe it ties with: no word this vocabulary can say tells their palettes
+ * apart.
  */
 export function readNames(recipes: readonly NameInput[]): NameResult[] {
   const order = namingOrder(recipes);
@@ -616,6 +627,28 @@ export function readNames(recipes: readonly NameInput[]): NameResult[] {
     if (!place(i, new Set(), false) && !place(i, new Set(), true)) unplaced.add(i);
   }
 
+  /* The last resort, once every honest reading is spent: of two twins that
+     read alike and hold the same three words, the one on auto White Balance
+     takes Adaptive in the temperature slot. When that is the earlier holder,
+     it moves aside and the later recipe takes the words it held. No option of
+     any recipe names Adaptive, so the combination can only be held here. */
+  for (const i of [...unplaced]) {
+    const tie = holder.get(comboOf(readings[i].words))!;
+    if (comboOf(readings[tie].words) !== comboOf(readings[i].words)) continue;
+    const auto = adaptiveTwin(order[i], order[tie]) ? i : adaptiveTwin(order[tie], order[i]) ? tie : -1;
+    if (auto < 0) continue;
+    const adaptive: Option = { words: adaptiveWords(readings[auto].words), replaced: { slot: 0, word: ADAPTIVE } };
+    if (holder.has(comboOf(adaptive.words))) continue;
+    if (auto === tie) {
+      take(tie, adaptive);
+      yieldedTo[tie] = order[i].id;
+      take(i, { words: readings[i].words, replaced: null });
+    } else {
+      take(i, adaptive);
+    }
+    unplaced.delete(i);
+  }
+
   return order.map((r, i) => {
     const chosen = choice[i];
     if (unplaced.has(i) || !chosen) {
@@ -638,6 +671,21 @@ export function readsAlike(a: NameInput, b: NameInput): boolean {
   const swatches = (r: NameInput) => JSON.stringify(designedPalette(r).map(({ l, c, h }) => [l, c, h]));
   return a.format === b.format && swatches(a) === swatches(b) && detailReading(a).word === detailReading(b).word;
 }
+
+const isAutoWb = (r: NameInput) => r.whiteBalance.mode === 'auto';
+
+/**
+ * Whether `r` takes Adaptive against `twin`: the two read alike, `r` is on
+ * auto White Balance (the AWB family, `WB_AUTO_MODES`) and `twin` on a fixed
+ * one — a Kelvin or a preset. Two auto twins, or two fixed ones, have no such
+ * difference and stay tied. A monochrome recipe keeps Mono or Sepia: its
+ * temperature slot says what it renders, and no cast survives to adapt.
+ */
+export function adaptiveTwin(r: NameInput, twin: NameInput): boolean {
+  return isAutoWb(r) && !isAutoWb(twin) && monochromeOf(r) === null && readsAlike(r, twin);
+}
+
+const adaptiveWords = (words: Words): Words => [ADAPTIVE, words[1], words[2]];
 
 /** Every recipe's name, keyed by id. */
 export function namesFor(recipes: readonly NameInput[]): Map<string, string> {
@@ -672,7 +720,9 @@ export type NameAmong =
  * row holds the three words of its stored name, fixed; a name that does not
  * parse holds none. The recipe takes its first option (`optionsOf`) that no
  * other row holds. With none free it keeps its own words only when the row
- * holding them reads alike (`readsAlike`) — the truth, reported as a tie;
+ * holding them reads alike (`readsAlike`) — the truth, reported as a tie —
+ * unless this recipe is on auto White Balance and the holder on a fixed one,
+ * when it takes Adaptive as the whole-library naming does (`adaptiveTwin`);
  * otherwise there is no honest name left for these settings, and the save is
  * refused with the rows that hold them. Never displaces a stored holder.
  */
@@ -693,6 +743,10 @@ export function nameAmong(recipe: NameInput, stored: readonly StoredName[]): Nam
     if (!holders.has(comboOf(option.words))) return { ok: true, name: named(option.words), tiedWith: null };
   }
   const own = holders.get(comboOf(reading.words))!;
+  if (adaptiveTwin(recipe, own)) {
+    const words = adaptiveWords(reading.words);
+    if (!holders.has(comboOf(words))) return { ok: true, name: named(words), tiedWith: null };
+  }
   if (readsAlike(recipe, own)) return { ok: true, name: named(reading.words), tiedWith: own.id };
   const heldBy = [...new Set(options.map((o) => holders.get(comboOf(o.words))!.id))];
   return { ok: false, heldBy };

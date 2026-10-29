@@ -129,10 +129,21 @@ while the kept one is weaker.
 this assignment: `nameAmong` takes the first option, in the same order, that no other
 stored row's name holds (R3).
 
-The one tie in the seed: CL-033 and CL-034, Film at every default under Daylight and
+The last resort, once every honest reading is spent (2026-10-29): of two twins that
+`readsAlike` and still hold the same three words, the one whose White Balance mode is
+auto (the AWB family, `WB_AUTO_MODES`) takes **Adaptive** in the temperature slot when
+the other is fixed — a Kelvin or a preset (`adaptiveTwin`). The camera adapts the White
+Balance to each scene: that is the honest difference left, and the palette, read under
+one light, cannot show it. Two auto twins or two fixed twins keep the tie; a
+monochrome twin keeps Mono or Sepia. When the auto twin is the earlier holder, it moves
+aside and the later recipe takes the words it held. No option of the reading names
+Adaptive, so it is reached only here. `nameAmong` follows the same rule against a
+stored fixed twin, and never moves a stored auto one.
+
+The one tie the seed had: CL-033 and CL-034, Film at every default under Daylight and
 under AWB. Neither publishes a Kelvin, so both palettes are the same nine swatches, and
-both carry Sharpness 4, Clarity 1. They read `Neutral Deep Muted` because they look
-the same.
+both carry Sharpness 4, Clarity 1. CL-033 reads `Neutral Deep Muted`; CL-034, the AWB
+one, `Adaptive Deep Muted`. No two seed names share their words.
 
 ### Three Look labels
 
@@ -144,7 +155,7 @@ exceptions so a fourth cannot slip in.
 
 ### Vocabulary
 
-Exactly the words above, 27: Golden, Warm, Neutral, Cool, Icy, Rosy, Mint, Mono, Sepia ·
+Exactly the words above, 28: Golden, Warm, Neutral, Cool, Icy, Rosy, Mint, Adaptive, Mono, Sepia ·
 Matte, Faded, Deep, Punchy, Soft, Flat, Airy, Even · Vivid, Rich, Natural, Muted, Pale ·
 Crisp, Gentle, Plain · Bright, Dark. `RECIPE_NAME_RE` allows exactly three words.
 

@@ -3600,7 +3600,7 @@
   {
     "id": "CL-034",
     "slug": "cl-034",
-    "name": "CL-034-Neutral Deep Muted",
+    "name": "CL-034-Adaptive Deep Muted",
     "whiteBalance": {
       "mode": "auto",
       "auto": "AWB"
