@@ -34,6 +34,7 @@ describe('the proxy matcher', () => {
     '/opengraph-image',
     '/admin',
     '/admin/blog',
+    '/md/article/back-button-af',
     '/api/search',
     '/api/search/predictive',
     '/_next/static/chunks/main.js',
